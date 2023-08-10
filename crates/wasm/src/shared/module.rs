@@ -4,6 +4,7 @@ use super::Source;
 #[cfg(feature = "wit")]
 use super::{bindings::BindingsBound, conversion::IntoBindgen};
 use ambient_ecs::{EntityId, World};
+use ambient_native_std::asset_cache::AssetCache;
 use data_encoding::BASE64;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
@@ -130,21 +131,22 @@ pub struct ModuleState {
     inner: Arc<RwLock<dyn ModuleStateBehavior>>,
 }
 impl ModuleState {
-    #[cfg(feature = "wit")]
     fn new<Bindings: BindingsBound + 'static>(
+        assets: &AssetCache,
         args: ModuleStateArgs<'_>,
         bindings: fn(EntityId) -> Bindings,
     ) -> anyhow::Result<Self> {
         Ok(Self {
-            inner: Arc::new(RwLock::new(ModuleStateInnerImpl::new(args, bindings)?)),
+            inner: Arc::new(RwLock::new(InstanceState::new(assets, args, bindings)?)),
         })
     }
 
-    #[cfg(feature = "wit")]
     pub fn create_state_maker<Bindings: BindingsBound + 'static>(
+        assets: &AssetCache,
         bindings: fn(EntityId) -> Bindings,
     ) -> Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Send + Sync> {
-        Arc::new(move |args: ModuleStateArgs<'_>| Self::new(args, bindings))
+        let assets = assets.clone();
+        Arc::new(move |args: ModuleStateArgs<'_>| Self::new(&assets, args, bindings))
     }
 }
 impl ModuleStateBehavior for ModuleState {
@@ -175,7 +177,8 @@ impl ModuleStateBehavior for ModuleState {
 
 #[cfg(feature = "wit")]
 /// Stores the wasmtime context and loaded instances
-struct ModuleStateInnerImpl<Bindings: BindingsBound> {
+struct InstanceState<Bindings: BindingsBound> {
+    /// Stores the context and loaded instances
     store: wasmtime::Store<ExecutionContext<Bindings>>,
 
     guest_bindings: shared::wit::Bindings,
@@ -186,15 +189,19 @@ struct ModuleStateInnerImpl<Bindings: BindingsBound> {
 }
 
 #[cfg(feature = "wit")]
-impl<Bindings: BindingsBound> std::fmt::Debug for ModuleStateInnerImpl<Bindings> {
+impl<Bindings: BindingsBound> std::fmt::Debug for InstanceState<Bindings> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ModuleStateInner").finish_non_exhaustive()
     }
 }
 
 #[cfg(feature = "wit")]
-impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
-    fn new(args: ModuleStateArgs<'_>, bindings: fn(EntityId) -> Bindings) -> anyhow::Result<Self> {
+impl<Bindings: BindingsBound> InstanceState<Bindings> {
+    fn new(
+        assets: &AssetCache,
+        args: ModuleStateArgs<'_>,
+        bindings: fn(EntityId) -> Bindings,
+    ) -> anyhow::Result<Self> {
         let ModuleStateArgs {
             component_bytecode,
             stdout_output,
@@ -231,6 +238,7 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
         );
 
         let mut linker = wasmtime::component::Linker::<ExecutionContext<Bindings>>::new(engine);
+
         wasi_preview2::wasi::command::add_to_linker(&mut linker)?;
         shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 
@@ -261,7 +269,7 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
 }
 
 #[cfg(feature = "wit")]
-impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindings> {
+impl<Bindings: BindingsBound> ModuleStateBehavior for InstanceState<Bindings> {
     fn run(
         &mut self,
         world: &mut World,

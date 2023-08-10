@@ -1,5 +1,6 @@
 use crate::shared;
 use ambient_ecs::{EntityId, SystemGroup, World};
+use ambient_native_std::asset_cache::AssetCache;
 use std::sync::Arc;
 
 mod implementation;
@@ -7,10 +8,12 @@ mod network;
 
 pub fn initialize(
     world: &mut World,
+    assets: &AssetCache,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
 ) -> anyhow::Result<()> {
     shared::initialize(
         world,
+        assets,
         messenger,
         |id| Bindings {
             base: Default::default(),

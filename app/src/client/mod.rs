@@ -5,7 +5,7 @@ use ambient_audio::AudioMixer;
 use ambient_cameras::UICamera;
 use ambient_client_shared::game_view::GameView;
 use ambient_core::{
-    gpu, runtime,
+    asset_cache, gpu, runtime,
     window::{window_ctl, ExitStatus, WindowCtl},
 };
 use ambient_ecs::{Entity, SystemGroup};
@@ -140,8 +140,9 @@ fn MainApp(
             // loading.
             on_loaded: cb(move |_, game_state| {
                 let world = &mut game_state.world;
+                let assets = world.resource(asset_cache()).clone();
 
-                wasm::initialize(world, mixer.clone()).unwrap();
+                wasm::initialize(world, &assets, mixer.clone()).unwrap();
 
                 UICamera.el().spawn_static(world);
                 set_loaded(true);

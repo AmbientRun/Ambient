@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use ambient_ecs::{EntityId, SystemGroup, World};
-use ambient_native_std::{asset_url::AbsAssetUrl, Cb};
+use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, Cb};
 use ambient_project::Identifier;
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{module_name, remote_paired_id, spawn_module, MessageType};
@@ -13,6 +13,7 @@ pub fn systems() -> SystemGroup {
 
 pub async fn initialize(
     world: &mut World,
+    assets: &AssetCache,
     project_path: AbsAssetUrl,
     build_metadata: &ambient_build::Metadata,
     build_project: Option<Cb<dyn Fn(&mut World) + Send + Sync>>,
@@ -36,7 +37,13 @@ pub async fn initialize(
         },
     );
 
-    ambient_wasm::server::initialize(world, project_path.clone(), messenger, build_project)?;
+    ambient_wasm::server::initialize(
+        world,
+        assets,
+        project_path.clone(),
+        messenger,
+        build_project,
+    )?;
 
     let build_dir = project_path.push("build").unwrap();
 

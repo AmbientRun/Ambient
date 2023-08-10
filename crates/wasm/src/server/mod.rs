@@ -1,6 +1,6 @@
 use crate::shared::{self, message::RuntimeMessageExt};
 use ambient_ecs::{components, query, EntityId, FnSystem, Resource, SystemGroup, World};
-use ambient_native_std::{asset_url::AbsAssetUrl, Cb};
+use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, Cb};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use std::sync::Arc;
 
@@ -14,6 +14,7 @@ components!("wasm::server", {
 
 pub fn initialize(
     world: &mut World,
+    assets: &AssetCache,
     project_path: AbsAssetUrl,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
     build_project: Option<Cb<dyn Fn(&mut World) + Send + Sync>>,
@@ -34,6 +35,7 @@ pub fn initialize(
 
     shared::initialize(
         world,
+        assets,
         messenger,
         |id| Bindings {
             base: Default::default(),

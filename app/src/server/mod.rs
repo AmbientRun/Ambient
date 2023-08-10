@@ -175,6 +175,7 @@ pub async fn start(
 
         wasm::initialize(
             &mut server_world,
+            &assets,
             project_path.clone(),
             &metadata,
             build_config.map(|config| {

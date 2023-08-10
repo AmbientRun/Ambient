@@ -1,4 +1,5 @@
 pub(crate) mod bindings;
+pub(crate) mod engine;
 pub(crate) mod implementation;
 
 mod module;
@@ -26,7 +27,9 @@ use ambient_ecs::{
     Message, SystemGroup, World, WorldEventReader,
 };
 
-use ambient_native_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
+use ambient_native_std::{
+    asset_cache::AssetCache, asset_url::AbsAssetUrl, download_asset::download_uncached_bytes,
+};
 use itertools::Itertools;
 #[cfg(feature = "wit")]
 use wasi_cap_std_sync::Dir;
@@ -235,9 +238,10 @@ pub fn systems() -> SystemGroup {
     )
 }
 
-#[cfg(feature = "wit")]
+/// Initialize the core of the WASM runtime
 pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
     world: &mut World,
+    assets: &AssetCache,
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
     bindings: fn(EntityId) -> Bindings,
     preopened_dir_path: Option<&'a Path>,
@@ -247,8 +251,9 @@ pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
     world.add_resource(self::messenger(), messenger);
     world.add_resource(
         self::module_state_maker(),
-        ModuleState::create_state_maker(bindings),
+        ModuleState::create_state_maker(assets, bindings),
     );
+
     world.add_resource(message::pending_messages(), vec![]);
 
     if let Some(preopened_dir_path) = preopened_dir_path {
