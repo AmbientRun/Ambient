@@ -25,11 +25,13 @@ Whenever a file changes the client will automatically rebuild and the changes wi
 
 ## Connecting
 
-If using self-signed certificates, you need to toll Chrome to trust it
+**Note**: Skip this section if you are connecting to a hosted Ember.
+
+If using self-signed certificates, you need to toll Chrome to trust it.
 
 
 ```sh
-cargo campfire open-browser
+cargo run -p campfire --features openssl -- web open-browser
 ```
 
 **Note**: If you are on mac **make sure you close any existing Chrome instances using `Quit`**
