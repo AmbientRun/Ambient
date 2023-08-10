@@ -144,7 +144,7 @@ async fn build_ember(
         .is_some_and(|(build, modified)| modified < build)
     {
         tracing::info!(
-            "Skipping build of unmodified project \"{name}\" ({})",
+            "Skipping unmodified project \"{name}\" ({})",
             manifest.ember.id
         );
         return Ok(());
