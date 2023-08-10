@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use ambient_ecs::{
-    components, ArchetypeFilter, Entity, EntityId, FrozenWorldDiff, Query, Serializable, World,
-    WorldDiff, WorldStream, WorldStreamFilter,
+    components, ArchetypeFilter, Entity, EntityId, FrozenWorldDiff, Serializable, World, WorldDiff,
+    WorldStream, WorldStreamFilter,
 };
 use itertools::Itertools;
 
@@ -25,7 +25,10 @@ fn from_a_to_b_diff() {
     Entity::new().with(a(), 5.).with(b(), 2.).spawn(&mut from);
     let to = from.clone();
     let diff = WorldDiff::from_a_to_b(WorldStreamFilter::default(), &from, &to);
-    assert_eq!(diff.changes.len(), 0);
+
+    let mut replicated = from.clone();
+    diff.apply(&mut replicated, Entity::default());
+    assert_eq!(dump_content_string(&replicated), dump_content_string(&to));
 }
 
 #[test]
@@ -38,10 +41,10 @@ fn from_a_to_b_remove_component() {
     to.remove_component(x, b()).unwrap();
     to.remove_component(y, b()).unwrap();
     let diff = WorldDiff::from_a_to_b(WorldStreamFilter::default(), &from, &to);
-    assert_eq!(diff.changes.len(), 2);
-    for c in &diff.changes {
-        c.is_remove_components();
-    }
+
+    let mut replicated = from.clone();
+    diff.apply(&mut replicated, Entity::default());
+    assert_eq!(dump_content_string(&replicated), dump_content_string(&to));
 }
 
 #[test]
@@ -60,45 +63,41 @@ fn streaming() {
 
     let x = Entity::new().with(a(), 1.).spawn(&mut source);
     let diff = stream.next_diff(&source);
-    diff.apply(&mut dest, Entity::new(), true);
+    diff.apply(&mut dest, Entity::new());
     assert_eq!(dump_content_string(&source), dump_content_string(&dest));
 
     source.set(x, a(), 2.).unwrap();
     let diff = stream.next_diff(&source);
-    diff.apply(&mut dest, Entity::new(), true);
+    diff.apply(&mut dest, Entity::new());
     assert_eq!(dump_content_string(&source), dump_content_string(&dest));
 
     source.add_component(x, b(), 9.).unwrap();
     let diff = stream.next_diff(&source);
-    assert_eq!(diff.changes.iter().filter(|c| c.is_set()).count(), 1);
-    diff.apply(&mut dest, Entity::new(), true);
+    diff.apply(&mut dest, Entity::new());
     assert_eq!(dump_content_string(&source), dump_content_string(&dest));
 
     source.remove_component(x, a()).unwrap();
     let diff = stream.next_diff(&source);
-    diff.apply(&mut dest, Entity::new(), true);
+    diff.apply(&mut dest, Entity::new());
     assert_eq!(dump_content_string(&source), dump_content_string(&dest));
 
     source.despawn(x).unwrap();
     let diff = stream.next_diff(&source);
-    diff.apply(&mut dest, Entity::new(), true);
+    diff.apply(&mut dest, Entity::new());
     assert_eq!(dump_content_string(&source), dump_content_string(&dest));
 }
 
 fn dump_content_string(world: &World) -> String {
-    Query::all()
-        .iter(world, None)
-        .filter_map(|ea| {
-            let id = ea.id();
+    let mut entities = world.entities();
+    entities.sort_unstable_by_key(|(id, _)| *id);
+
+    entities
+        .into_iter()
+        .filter_map(|(id, entity)| {
             if id != world.resource_entity() {
-                let data = world
-                    .get_components(id)
-                    .unwrap()
-                    .into_iter()
-                    .map(|desc| {
-                        let value = world.get_entry(id, desc).unwrap();
-                        format!("{:?}: {:?}", desc, desc.as_debug(&value))
-                    })
+                let data = entity
+                    .iter()
+                    .map(|entry| format!("{:?}: {:?}", entry.path(), entry))
                     .join(", ");
                 Some(format!("[{id} {data}]"))
             } else {

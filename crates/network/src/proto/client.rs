@@ -121,11 +121,7 @@ impl ConnectedClient {
     ) -> anyhow::Result<()> {
         let mut gs = state.lock();
         tracing::debug!(diff=?diff.len(), "Applying diff");
-        diff.apply(
-            &mut gs.world,
-            Entity::new().with(is_remote_entity(), ()),
-            false,
-        );
+        diff.apply(&mut gs.world, Entity::new().with(is_remote_entity(), ()));
         Ok(())
     }
 

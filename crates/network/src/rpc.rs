@@ -30,7 +30,6 @@ pub async fn rpc_world_diff(args: ServerRpcArgs, diff: WorldDiff) {
             .unwrap()
             .world,
         Entity::new(),
-        false,
     );
 }
 
