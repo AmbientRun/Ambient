@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-
 use ambient_sys::{
     task::RuntimeHandle,
     time::{Instant, SystemTime},
@@ -16,13 +13,13 @@ use ambient_ecs::{
 use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKey};
-pub use paste;
+
 use serde::{Deserialize, Serialize};
 
 pub mod async_ecs;
 pub mod bounding;
 pub mod camera;
-pub mod gpu_ecs;
+
 pub mod hierarchy;
 pub mod player;
 pub mod transform;
@@ -73,7 +70,7 @@ pub fn init_all_components() {
     init_components();
     window::init_components();
     async_ecs::init_components();
-    gpu_ecs::init_components();
+    ambient_gpu_ecs::init_components();
     camera::init_components();
     transform::init_components();
     transform::init_gpu_components();

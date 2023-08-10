@@ -8,7 +8,6 @@ use ambient_core::{
     bounding::bounding_systems,
     camera::camera_systems,
     frame_index,
-    gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
     hierarchy::dump_world_hierarchy_to_user,
     name, refcount_system, remove_at_time_system, runtime,
     transform::TransformSystem,
@@ -29,6 +28,7 @@ use ambient_gpu::{
     mesh_buffer::MeshBufferKey,
     settings::SettingsKey,
 };
+use ambient_gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate};
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     fps_counter::{FpsCounter, FpsSample},
@@ -75,17 +75,17 @@ pub fn init_all_components() {
     ambient_procedurals::init_components();
 }
 
-pub fn gpu_world_sync_systems() -> SystemGroup<GpuWorldSyncEvent> {
+pub fn gpu_world_sync_systems(gpu: Arc<Gpu>) -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "gpu_world",
         vec![
             // Note: All Gpu sync systems must run immediately after GpuWorldUpdate, as that's the only time we know
             // the layout of the GpuWorld is correct
-            Box::new(GpuWorldUpdate),
-            Box::new(ambient_core::transform::transform_gpu_systems()),
-            Box::new(ambient_renderer::gpu_world_systems()),
-            Box::new(ambient_core::bounding::gpu_world_systems()),
-            Box::new(ambient_ui_native::layout::gpu_world_systems()),
+            Box::new(GpuWorldUpdate(gpu.clone())),
+            Box::new(ambient_core::transform::transform_gpu_systems(gpu.clone())),
+            Box::new(ambient_renderer::gpu_world_systems(gpu.clone())),
+            Box::new(ambient_core::bounding::gpu_world_systems(gpu.clone())),
+            Box::new(ambient_ui_native::layout::gpu_world_systems(gpu.clone())),
         ],
     )
 }
@@ -443,7 +443,7 @@ impl AppBuilder {
                 ],
             ),
             world,
-            gpu_world_sync_systems: gpu_world_sync_systems(),
+            gpu_world_sync_systems: gpu_world_sync_systems(gpu.clone()),
             window_event_systems,
             event_loop,
 

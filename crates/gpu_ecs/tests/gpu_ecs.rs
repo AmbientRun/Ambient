@@ -3,19 +3,17 @@
 
 use std::sync::Arc;
 
-use ambient_core::{
-    gpu, gpu_components,
-    gpu_ecs::{
-        ComponentToGpuSystem, GpuComponentFormat, GpuWorld, GpuWorldShaderModuleKey,
-        GpuWorldSyncEvent, GpuWorldUpdater, ENTITIES_BIND_GROUP,
-    },
-};
+use ambient_core::gpu;
 use ambient_ecs::{
     components, ArchetypeFilter, Component, Entity, EntityId, System, SystemGroup, World,
 };
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     gpu_run::GpuRun,
+};
+use ambient_gpu_ecs::{
+    gpu_components, ComponentToGpuSystem, GpuComponentFormat, GpuWorld, GpuWorldShaderModuleKey,
+    GpuWorldSyncEvent, GpuWorldUpdater, ENTITIES_BIND_GROUP,
 };
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use glam::{vec4, Vec4};
@@ -57,11 +55,13 @@ impl TestCommon {
             "sync",
             vec![
                 Box::new(ComponentToGpuSystem::new(
+                    gpu.clone(),
                     GpuComponentFormat::Vec4,
                     carrot(),
                     gpu_components::carrot(),
                 )),
                 Box::new(ComponentToGpuSystem::new(
+                    gpu.clone(),
                     GpuComponentFormat::Vec4,
                     tomato(),
                     gpu_components::tomato(),
@@ -71,7 +71,7 @@ impl TestCommon {
         world
             .add_component(
                 world.resource_entity(),
-                ambient_core::gpu_ecs::gpu_world(),
+                ambient_gpu_ecs::gpu_world(),
                 gpu_world.clone(),
             )
             .unwrap();

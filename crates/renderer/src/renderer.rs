@@ -8,9 +8,7 @@ use super::{
 use crate::{
     bind_groups::BindGroups, get_common_layout, globals_layout, to_linear_format, ShaderDebugParams,
 };
-use ambient_core::{
-    asset_cache, camera::*, gpu, gpu_ecs::gpu_world, player::local_user_id, ui_scene,
-};
+use ambient_core::{asset_cache, camera::*, gpu, player::local_user_id, ui_scene};
 use ambient_ecs::{ArchetypeFilter, Component, World};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
@@ -18,6 +16,7 @@ use ambient_gpu::{
     shader_module::BindGroupDesc,
 };
 use ambient_gpu::{mesh_buffer::MeshBufferKey, settings::SettingsKey};
+use ambient_gpu_ecs::gpu_world;
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     color::Color,

@@ -259,6 +259,7 @@ dependencies = [
  "ambient_element",
  "ambient_gizmos",
  "ambient_gpu",
+ "ambient_gpu_ecs",
  "ambient_input",
  "ambient_model",
  "ambient_native_std",
@@ -482,23 +483,20 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_gpu",
+ "ambient_gpu_ecs",
  "ambient_native_std",
  "ambient_sys",
  "bytemuck",
  "chrono",
- "derive_more",
  "flume",
  "glam 0.24.0",
  "itertools",
- "lazy_static",
  "ordered-float",
  "parking_lot",
- "paste",
  "profiling",
  "serde",
  "tokio",
  "tracing",
- "tracing-subscriber",
  "wgpu 0.16.1",
  "winit",
  "yaml-rust-davvid",
@@ -547,6 +545,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_element",
  "ambient_gpu",
+ "ambient_gpu_ecs",
  "ambient_meshes",
  "ambient_native_std",
  "ambient_primitives",
@@ -801,6 +800,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_gpu_ecs"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_native_std",
+ "bytemuck",
+ "derive_more",
+ "glam 0.24.0",
+ "itertools",
+ "lazy_static",
+ "parking_lot",
+ "paste",
+ "profiling",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "wgpu 0.16.1",
+]
+
+[[package]]
 name = "ambient_guest_bridge"
 version = "0.3.0-dev"
 dependencies = [
@@ -862,6 +883,8 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
+ "ambient_gpu",
+ "ambient_gpu_ecs",
  "ambient_input",
  "glam 0.24.0",
  "itertools",
@@ -1047,6 +1070,7 @@ dependencies = [
  "ambient_element",
  "ambient_gizmos",
  "ambient_gpu",
+ "ambient_gpu_ecs",
  "ambient_native_std",
  "ambient_proxy",
  "ambient_renderer",
@@ -1313,6 +1337,7 @@ dependencies = [
  "ambient_element",
  "ambient_gizmos",
  "ambient_gpu",
+ "ambient_gpu_ecs",
  "ambient_meshes",
  "ambient_model_import",
  "ambient_native_std",

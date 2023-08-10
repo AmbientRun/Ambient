@@ -1,19 +1,22 @@
 use ambient_core::{
     bounding::world_bounding_sphere,
     camera::{fovy, get_active_camera},
-    gpu_components,
-    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
     hierarchy::children,
     main_scene,
     player::local_user_id,
     transform::translation,
 };
 use ambient_ecs::{components, query, ECSError, EntityId, Networked, Store, SystemGroup, World};
+use ambient_gpu_ecs::{
+    gpu_components, ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent,
+};
 use bytemuck::{Pod, Zeroable};
 use glam::Vec3;
 use serde::{Deserialize, Serialize};
 
 use crate::primitives;
+use ambient_gpu::gpu::Gpu;
+use std::sync::Arc;
 
 /// Maximum number of LOD levels
 pub const MAX_LOD_LEVELS: usize = 16;
@@ -127,10 +130,11 @@ pub fn lod_system() -> SystemGroup {
     )
 }
 
-pub fn gpu_world_system() -> SystemGroup<GpuWorldSyncEvent> {
+pub fn gpu_world_system(gpu: Arc<Gpu>) -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "lod/gpu_world",
         vec![Box::new(ComponentToGpuSystem::new(
+            gpu,
             GpuComponentFormat::Mat4,
             lod_cutoffs(),
             gpu_components::lod_cutoffs(),

@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, sync::Arc};
 
 use ambient_ecs::{
     Archetype, ArchetypeFilter, Component, ComponentDesc, ComponentValue, EntityId, System, World,
@@ -8,6 +8,7 @@ use itertools::Itertools;
 
 use super::{gpu_world, GpuComponentFormat, GpuComponentId};
 use crate::gpu;
+use gpu::gpu::Gpu;
 
 /// GpuWorld sync/update systems need to run immediately after the GpuWorld has updated it's layout,
 /// so by forcing them to use this even we can make sure they're all in order
@@ -42,6 +43,7 @@ impl ArchChangeDetection {
 }
 
 pub struct ComponentToGpuSystem<T: ComponentValue + bytemuck::Pod> {
+    gpu: Arc<Gpu>,
     format: GpuComponentFormat,
     source_archetypes: ArchetypeFilter,
     source_component: Component<T>,
@@ -50,12 +52,14 @@ pub struct ComponentToGpuSystem<T: ComponentValue + bytemuck::Pod> {
 }
 impl<T: ComponentValue + bytemuck::Pod> ComponentToGpuSystem<T> {
     pub fn new(
+        gpu: Arc<Gpu>,
         format: GpuComponentFormat,
         source_component: Component<T>,
         destination_component: GpuComponentId,
     ) -> Self {
         assert_eq!(format.size(), std::mem::size_of::<T>() as u64);
         Self {
+            gpu,
             format,
             source_component,
             source_archetypes: ArchetypeFilter::new().incl(source_component),
@@ -72,7 +76,7 @@ impl<T: ComponentValue + bytemuck::Pod> System<GpuWorldSyncEvent> for ComponentT
     fn run(&mut self, world: &mut World, _: &GpuWorldSyncEvent) {
         profiling::scope!("ComponentToGpuSystem.run");
         let gpu_world = world.resource(gpu_world()).lock();
-        let gpu = world.resource(gpu()).clone();
+        let gpu = self.gpu.clone();
         for arch in self.source_archetypes.iter_archetypes(world) {
             if let Some((gpu_buff, offset, layout_version)) =
                 gpu_world.get_buffer(self.format, self.destination_component, arch.id)
@@ -96,6 +100,7 @@ impl<T: ComponentValue + bytemuck::Pod> Debug for ComponentToGpuSystem<T> {
 }
 
 pub struct MappedComponentToGpuSystem<A: ComponentValue, B: bytemuck::Pod> {
+    gpu: Arc<Gpu>,
     format: GpuComponentFormat,
     source_component: Component<A>,
     destination_component: GpuComponentId,
@@ -104,6 +109,7 @@ pub struct MappedComponentToGpuSystem<A: ComponentValue, B: bytemuck::Pod> {
 }
 impl<A: ComponentValue, B: bytemuck::Pod> MappedComponentToGpuSystem<A, B> {
     pub fn new(
+        gpu: Arc<Gpu>,
         format: GpuComponentFormat,
         source_component: Component<A>,
         destination_component: GpuComponentId,
@@ -111,6 +117,7 @@ impl<A: ComponentValue, B: bytemuck::Pod> MappedComponentToGpuSystem<A, B> {
     ) -> Self {
         assert_eq!(format.size(), std::mem::size_of::<B>() as u64);
         Self {
+            gpu,
             format,
             source_component,
             destination_component,
@@ -125,7 +132,7 @@ impl<A: ComponentValue, B: bytemuck::Pod> System<GpuWorldSyncEvent>
     fn run(&mut self, world: &mut World, _: &GpuWorldSyncEvent) {
         profiling::scope!("MappedComponentToGpu.run");
         let gpu_world = world.resource(gpu_world()).lock();
-        let gpu = world.resource(gpu());
+        let gpu = self.gpu.clone();
         for arch in world.archetypes() {
             if let Some((gpu_buff, offset, layout_version)) =
                 gpu_world.get_buffer(self.format, self.destination_component, arch.id)

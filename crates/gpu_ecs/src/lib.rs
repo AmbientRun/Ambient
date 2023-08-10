@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate lazy_static;
 use std::{collections::HashMap, sync::Arc};
 
 use ambient_ecs::{components, ArchetypeId, Resource, System, World};
@@ -12,11 +14,12 @@ mod update;
 use ambient_gpu::gpu::GpuKey;
 use ambient_native_std::asset_cache::SyncAssetKeyExt;
 pub use component::*;
+pub use paste;
 pub use sync::*;
 pub use update::*;
 use wgpu::{BindGroupLayout, COPY_BUFFER_ALIGNMENT};
 
-use crate::gpu;
+use ambient_gpu as gpu;
 
 components!("rendering", {
     @[Resource]
@@ -225,15 +228,14 @@ impl GpuComponentsBuffer {
 }
 
 #[derive(Debug)]
-pub struct GpuWorldUpdate;
+pub struct GpuWorldUpdate(pub Arc<Gpu>);
 impl System<GpuWorldSyncEvent> for GpuWorldUpdate {
     fn run(&mut self, world: &mut World, _event: &GpuWorldSyncEvent) {
         profiling::scope!("GpuWorldUpdate.run");
-        let gpu = world.resource(gpu()).clone();
         world
             .resource_mut(gpu_world())
             .clone()
             .lock()
-            .update(&gpu, world);
+            .update(&self.0, world);
     }
 }

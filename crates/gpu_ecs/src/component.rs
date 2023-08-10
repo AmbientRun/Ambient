@@ -265,7 +265,7 @@ macro_rules! gpu_components {
         mod gpu_components {
             $(
                 $crate::paste::paste! {
-                    pub fn $name () -> $crate::gpu_ecs::GpuComponentId {
+                    pub fn $name () -> $crate::GpuComponentId {
                         stringify!($name)
                     }
                 }
@@ -275,9 +275,9 @@ macro_rules! gpu_components {
         static INIT_GPU_COMPONENTS: std::sync::Once = std::sync::Once::new();
         pub fn init_gpu_components() {
             INIT_GPU_COMPONENTS.call_once(|| {
-                let mut registry = $crate::gpu_ecs::GPU_COMPONENT_REGISTRY.lock();
+                let mut registry = $crate::GPU_COMPONENT_REGISTRY.lock();
                 $(
-                    registry.components.push($crate::gpu_ecs::GpuComponent {
+                    registry.components.push($crate::GpuComponent {
                         name: stringify!($name).to_string(),
                         format: $format,
                         filter: ambient_ecs::ArchetypeFilter::new()

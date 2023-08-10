@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 use ambient_ecs::{
     components, query_mut, Debuggable, EntityId, FramedEventsReader, MaybeResource, Networked,
@@ -11,13 +11,11 @@ use ambient_native_std::{
 use glam::{uvec4, UVec4};
 use itertools::Itertools;
 
-use crate::{
-    gpu, gpu_components,
-    gpu_ecs::{
-        gpu_world, ArchChangeDetection, ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent,
-    },
-    hierarchy::children,
-    transform::local_to_world,
+use crate::{gpu, hierarchy::children, transform::local_to_world};
+use ambient_gpu::gpu::Gpu;
+use ambient_gpu_ecs::gpu_components;
+use ambient_gpu_ecs::{
+    gpu_world, ArchChangeDetection, ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent,
 };
 
 components!("rendering", {
@@ -52,11 +50,12 @@ pub fn bounding_systems() -> SystemGroup {
     )
 }
 
-pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
+pub fn gpu_world_systems(gpu: Arc<Gpu>) -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "bounding/gpu_world",
         vec![
             Box::new(ComponentToGpuSystem::new(
+                gpu,
                 GpuComponentFormat::Vec4,
                 world_bounding_sphere(),
                 gpu_components::world_bounding_sphere(),

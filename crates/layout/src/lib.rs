@@ -1,12 +1,13 @@
 use ambient_core::{
-    gpu_components,
-    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
     hierarchy::{children, parent},
     transform::{local_to_parent, local_to_world, mesh_to_local, translation},
 };
 use ambient_ecs::{
     components, query, query_mut, Debuggable, Description, DynSystem, EntityId, Name, Networked,
     Store, SystemGroup, World,
+};
+use ambient_gpu_ecs::{
+    gpu_components, ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent,
 };
 use ambient_input::picking::mouse_pickable;
 use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec4};
@@ -19,6 +20,8 @@ pub use ambient_ecs::generated::components::core::layout::{
     fit_horizontal_parent, gpu_ui_size, height, is_book_file, margin, max_height, max_width,
     mesh_to_local_from_size, min_height, min_width, padding, screen, space_between_items, width,
 };
+use ambient_gpu::gpu::Gpu;
+use std::sync::Arc;
 
 components!("layout", {
     @[Debuggable, Networked, Store, Name["Layout"], Description["The layout to apply to this entity's children."]]
@@ -279,10 +282,11 @@ pub fn layout_systems() -> SystemGroup {
     )
 }
 
-pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
+pub fn gpu_world_systems(gpu: Arc<Gpu>) -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "layout/gpu_world",
         vec![Box::new(ComponentToGpuSystem::new(
+            gpu,
             GpuComponentFormat::Vec4,
             gpu_ui_size(),
             gpu_components::ui_size(),
