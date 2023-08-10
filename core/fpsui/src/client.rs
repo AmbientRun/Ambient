@@ -49,7 +49,7 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
                 .with(min_width(), 100.0),
             Separator { vertical: false }.el(),
             Text::el("rules:").section_style(),
-            Text::el("shoot every one you see to death to gain a point."),
+            Text::el("shoot everyone you see to death to gain a point."),
             Text::el("once you die, you lose a point and will be respawned."),
             Separator { vertical: false }.el(),
             Text::el("control:").section_style(),
@@ -118,18 +118,15 @@ fn Crosshair(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn Hud(hooks: &mut Hooks) -> Element {
-    let (local_health, set_local_health) = hooks.use_state(100);
-    hooks.use_frame(move |world| {
-        let local_player = player::get_local();
-        if let Ok(health) = world.get(local_player, player_health()) {
-            set_local_health(health);
-        }
-    });
+    let (local_health, _) = hooks.use_entity_component(player::get_local(), player_health());
 
-    WindowSized::el([Dock::el([Text::el(format!("health: {:?}", local_health))
-        // .header_style()
-        .with(docking(), Docking::Bottom)
-        .with_margin_even(10.)])])
+    WindowSized::el([Dock::el([Text::el(format!(
+        "health: {:?}",
+        local_health.unwrap_or_default()
+    ))
+    // .header_style()
+    .with(docking(), Docking::Bottom)
+    .with_margin_even(10.)])])
     .with_padding_even(20.)
 }
 
