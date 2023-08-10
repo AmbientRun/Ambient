@@ -44,7 +44,7 @@ pub async fn build(
     } = config;
 
     if clean_build {
-        tracing::info!("Removing build directory: {build_path:?}");
+        tracing::debug!("Removing build directory: {build_path:?}");
         match tokio::fs::remove_dir_all(&build_path).await {
             Ok(_) => {}
             Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
@@ -125,7 +125,7 @@ async fn build_ember(
         .as_deref()
         .unwrap_or_else(|| manifest.ember.id.as_str());
 
-    tracing::info!("Building project `{}` ({})", manifest.ember.id, name);
+    tracing::info!("Building project \"{name}\" ({})", manifest.ember.id);
 
     let assets_path = path.join("assets");
     tokio::fs::create_dir_all(&build_path)
@@ -204,7 +204,7 @@ async fn build_assets(
             }
         }),
         on_status: Arc::new(|msg| {
-            log::info!("{}", msg);
+            log::debug!("{}", msg);
             async {}.boxed()
         }),
         on_error: Arc::new({

@@ -383,7 +383,6 @@ fn setup_logging() -> anyhow::Result<()> {
         (
             LevelFilter::Warn,
             &[
-                "ambient_build",
                 "ambient_gpu",
                 "ambient_model",
                 "ambient_physics",

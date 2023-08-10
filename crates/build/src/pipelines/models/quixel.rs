@@ -274,11 +274,11 @@ pub async fn object_pipelines_from_quixel_json(
                                         resolution.get("formats").unwrap().as_array().unwrap()
                                     {
                                         let format = format.as_object().unwrap();
-                                        tracing::info!(
+                                        tracing::debug!(
                                             "format={}",
                                             format.get("mimeType").unwrap().as_str().unwrap()
                                         );
-                                        tracing::info!(
+                                        tracing::debug!(
                                             "uri={}",
                                             format.get("uri").unwrap().as_str().unwrap()
                                         );
