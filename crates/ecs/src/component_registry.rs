@@ -45,21 +45,27 @@ pub struct ExternalComponentDesc {
 }
 
 macro_rules! define_external_component_attribute {
-    ($(($field_name:ident, $type_name:ty)),*) => {
+    (
+        standard: {$($field_name:ident: $type_name:ty),*},
+        special: {$($special_field_name:ident: $special_type_name:ty),*}
+    ) => {
         #[derive(Serialize, Deserialize, Clone, Debug, Default)]
         pub struct ExternalComponentAttributes {
             $(pub $field_name: bool,)*
+            $(pub $special_field_name: bool,)*
         }
         impl ExternalComponentAttributes {
             pub fn from_existing_component(desc: ComponentDesc) -> Self {
                 Self {
                     $($field_name: desc.has_attribute::<$type_name>(),)*
+                    $($special_field_name: desc.has_attribute::<$special_type_name>(),)*
                 }
             }
 
             pub fn iter(&self) -> impl Iterator<Item = &'static str> {
                 [
                     $(self.$field_name.then_some(stringify!($type_name)),)*
+                    $(self.$special_field_name.then_some(stringify!($special_type_name)),)*
                 ]
                 .into_iter()
                 .flatten()
@@ -71,6 +77,10 @@ macro_rules! define_external_component_attribute {
                         <$type_name as AttributeConstructor<T, _>>::construct(store, ());
                     }
                 )*
+
+                if self.enum_ {
+                    <Enum as AttributeConstructor<u32, _>>::construct(store, ());
+                }
             }
         }
         impl<'a> FromIterator<&'a str> for ExternalComponentAttributes {
@@ -79,9 +89,7 @@ macro_rules! define_external_component_attribute {
                 for flag_str in iter {
                     match flag_str {
                         $(stringify!($type_name) => { flags.$field_name = true; },)*
-                        "Enum" => {
-                            log::warn!("The Enum attribute is not currently supported for external components");
-                        }
+                        $(stringify!($special_type_name) => { flags.$special_field_name = true; },)*
                         _ => panic!("Unexpected attribute flag: {flag_str}"),
                     }
                 }
@@ -90,13 +98,18 @@ macro_rules! define_external_component_attribute {
         }
     }
 }
-define_external_component_attribute![
-    (debuggable, Debuggable),
-    (networked, Networked),
-    (resource, Resource),
-    (store, Store),
-    (maybe_resource, MaybeResource) // ,(enum_, Enum)
-];
+define_external_component_attribute! {
+    standard: {
+        debuggable: Debuggable,
+        networked: Networked,
+        resource: Resource,
+        store: Store,
+        maybe_resource: MaybeResource
+    },
+    special: {
+        enum_: Enum
+    }
+}
 
 #[derive(Default)]
 pub struct ComponentRegistry {

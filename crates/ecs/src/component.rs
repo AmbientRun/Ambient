@@ -37,6 +37,18 @@ pub trait EnumComponent: Clone + Send + Sync {
     where
         Self: Sized;
 }
+impl EnumComponent for u32 {
+    fn to_u32(&self) -> u32 {
+        *self
+    }
+
+    fn from_u32(v: u32) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        Some(v)
+    }
+}
 
 /// Component key
 pub struct Component<T: 'static> {
