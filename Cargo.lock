@@ -1472,6 +1472,7 @@ dependencies = [
  "ambient_editor_derive",
  "ambient_element",
  "ambient_gpu",
+ "ambient_gpu_ecs",
  "ambient_intent",
  "ambient_meshes",
  "ambient_native_std",

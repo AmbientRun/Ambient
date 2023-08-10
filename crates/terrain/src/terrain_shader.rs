@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_core::gpu_ecs::ENTITIES_BIND_GROUP;
+use ambient_gpu_ecs::ENTITIES_BIND_GROUP;
 use anyhow::Context;
 use async_trait::async_trait;
 
