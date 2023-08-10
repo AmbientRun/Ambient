@@ -7,7 +7,7 @@ use ambient_api::{
     prelude::*,
 };
 use editor::{
-    components::{editor_camera, in_editor, mouseover_entity, mouseover_position},
+    components::{editor_camera, in_editor, mouseover_entity, mouseover_position, selected_entity},
     messages::{Input, ToggleEditor},
 };
 
@@ -17,6 +17,7 @@ pub fn main() {
     let mut fixed_tick_last = game_time();
 
     let mut accumulated_aim_delta = Vec2::ZERO;
+    let mut select_pressed = false;
 
     Frame::subscribe(move |_| {
         let fixed_tick_dt = game_time() - fixed_tick_last;
@@ -34,6 +35,7 @@ pub fn main() {
         } else if delta.mouse_buttons_released.contains(&MouseButton::Right) {
             input_lock = None;
         }
+        select_pressed |= delta.mouse_buttons.contains(&MouseButton::Left);
 
         let movement = [
             (KeyCode::W, -Vec2::Y),
@@ -55,16 +57,21 @@ pub fn main() {
         if fixed_tick_dt > Duration::from_millis(20) {
             let ray = camera::screen_position_to_world_ray(camera_id, input.mouse_position);
 
+            let boost = input.keys.contains(&KeyCode::LShift);
+
             Input {
                 aim_delta: accumulated_aim_delta,
                 movement,
-                boost: input.keys.contains(&KeyCode::LShift),
+                boost,
                 ray_origin: ray.origin,
                 ray_direction: ray.dir,
+                select: select_pressed,
             }
             .send_server_reliable();
 
             accumulated_aim_delta = Vec2::ZERO;
+            select_pressed = false;
+
             fixed_tick_last = game_time();
         }
     });
@@ -102,10 +109,18 @@ pub fn App(hooks: &mut Hooks) -> Element {
 }
 
 #[element_component]
-fn MenuBar(_hooks: &mut Hooks) -> Element {
+fn MenuBar(hooks: &mut Hooks) -> Element {
+    let (selected_entity, _) = hooks.use_entity_component(player::get_local(), selected_entity());
+
     WindowSized::el([with_rect(
-        FlowRow::el([Text::el(format!("Editor {}", env!("CARGO_PKG_VERSION")))])
-            .with_padding_even(4.0),
+        FlowRow::el([Text::el(format!(
+            "Editor {} | Selected Entity: {}",
+            env!("CARGO_PKG_VERSION"),
+            selected_entity
+                .map(display_entity)
+                .unwrap_or_else(|| "none".to_string())
+        ))])
+        .with_padding_even(4.0),
     )
     .with(fit_horizontal(), Fit::Parent)
     .with_background(vec4(0.0, 0.0, 0.0, 0.5))])
@@ -123,11 +138,7 @@ fn MouseoverDisplay(hooks: &mut Hooks) -> Element {
 
     let mut text = format!("{:.02?}", mouseover_position.to_array());
     if let Some(mouseover_entity) = mouseover_entity {
-        text += &format!(
-            "\n{}",
-            entity::get_component(mouseover_entity, name())
-                .unwrap_or_else(|| mouseover_entity.to_string())
-        );
+        text += &format!("\n{}", display_entity(mouseover_entity));
     }
 
     let mouseover_position_2d = camera::world_to_screen(camera_id, mouseover_position).extend(0.0);
@@ -149,4 +160,8 @@ pub fn fixed_rate_tick(dt: Duration, mut callback: impl FnMut(Duration) + 'stati
 
         last_tick = game_time();
     });
+}
+
+fn display_entity(id: EntityId) -> String {
+    entity::get_component(id, name()).unwrap_or_else(|| id.to_string())
 }

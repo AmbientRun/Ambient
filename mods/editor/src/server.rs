@@ -8,6 +8,7 @@ use ambient_api::{
             concepts::make_perspective_infinite_reverse_camera,
         },
         player::components::user_id,
+        rendering::components::outline_recursive,
         transform::components::{rotation, translation},
     },
     prelude::*,
@@ -15,7 +16,10 @@ use ambient_api::{
 
 use afps_schema::components::player_name;
 use editor::{
-    components::{camera_angle, editor_camera, in_editor, mouseover_entity, mouseover_position},
+    components::{
+        camera_angle, editor_camera, in_editor, mouseover_entity, mouseover_position,
+        selected_entity,
+    },
     messages::{Input, ToggleEditor},
 };
 
@@ -88,6 +92,15 @@ pub fn main() {
         } else {
             entity::remove_component(id, mouseover_position());
             entity::remove_component(id, mouseover_entity());
+        }
+
+        if let (Some(entity), true) = (entity::get_component(id, mouseover_entity()), msg.select) {
+            if let Some(selected) = entity::get_component(id, selected_entity()) {
+                entity::add_component(selected, outline_recursive(), Vec4::ZERO);
+            }
+
+            entity::add_component(entity, outline_recursive(), Vec4::ONE);
+            entity::add_component(id, selected_entity(), entity);
         }
     });
 }
