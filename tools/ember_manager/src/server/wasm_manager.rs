@@ -3,7 +3,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::ember_manager::messages::{ErrorMessage, WasmReload, WasmSetEnabled};
+use crate::ember_manager::messages::{WasmReload, WasmSetEnabled};
 
 pub fn main() {
     WasmSetEnabled::subscribe(|_, msg| {
@@ -11,15 +11,10 @@ pub fn main() {
     });
 
     WasmReload::subscribe(|source, msg| {
-        let Some(user_id) = source.client_user_id() else { return; };
+        let Some(_user_id) = source.client_user_id() else { return; };
         let id = msg.id;
 
         run_async(async move {
-            // if let Err(err) = asset::build_wasm().await {
-            //     ErrorMessage::new(err.to_string()).send_client_targeted_reliable(user_id);
-            //     return;
-            // }
-
             if let Some(url) = entity::get_component(id, bytecode_from_url()) {
                 entity::set_component(id, bytecode_from_url(), url);
             }
