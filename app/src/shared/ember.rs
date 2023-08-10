@@ -7,7 +7,9 @@ use ambient_ecs::{
 use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::ServerWorldExt;
 use ambient_project::{BuildMetadata, Manifest};
-use ambient_project_semantic::{Item, ItemId, PrimitiveType, Scope, Semantic, TypeInner};
+use ambient_project_semantic::{
+    Item, ItemId, ItemSource, PrimitiveType, Scope, Semantic, TypeInner,
+};
 
 pub async fn add(
     world: Option<&mut World>,
@@ -89,6 +91,10 @@ fn all_defined_components(semantic: &Semantic) -> anyhow::Result<Vec<ExternalCom
     root_scope.visit_recursive(items, |scope| {
         for id in scope.components.values().copied() {
             let component = items.get(id)?;
+
+            if component.data.source != ItemSource::User {
+                continue;
+            }
 
             let attributes: Vec<_> = component
                 .attributes
