@@ -16,6 +16,12 @@ The client is fundamentally designed around runtime flexibility of logic, which 
 
 If on 0.2 or above, consult the [clientside](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/intermediate/clientside/ambient.toml) example to see how to define networked components.
 
+### Entities synchronization
+
+The Ambient runtime synchronizes entities using a diff-based approach. The server sends a `WorldDiff` to the client, which contains a list of entities to spawn and despawn, and components to add, update, and remove. Note that some operations might be batched for performance or not included in the update sent to the clients if they effectively don't change any values. For example adding 0 to a number or changing a boolean to false and back to true within the same frame might not emit an update and might not trigger a `change_query`. We recommend using messaging if such events are important to your game.
+
+Currently the client applies the changes to its local world as soon as they are received.
+
 ## Logic and Prediction
 
 All gameplay logic is currently server-authoritative. We currently do not have any form of latency-hiding, including prediction, rollback, or clientside logic. We previously had rollback but it was removed due to its relative inflexibility (the solution would have to be different for each class of game.)
