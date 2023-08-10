@@ -390,16 +390,15 @@ macro_rules! components {
 
                     static ATTRIBUTES: $crate::OnceCell<$crate::parking_lot::RwLock<$crate::AttributeStore>> = $crate::OnceCell::new();
 
-                    // This path will use the wrong convention for the name, but it's only used for debugging
-                    static DEBUG_PATH: &str = concat!("ambient_core::", $ns, "::", stringify!($name));
+                    static PATH: &str = concat!("ambient_core::", $ns, "::", stringify!($name));
                     static VTABLE: &$crate::ComponentVTable<$ty> = &$crate::ComponentVTable::construct(
-                        DEBUG_PATH,
+                        PATH,
                         |desc| $crate::parking_lot::RwLockReadGuard::map(ATTRIBUTES.get_or_init(|| init_attr($crate::Component::new(desc))).read(), |v| v),
                         |desc| $crate::parking_lot::RwLockWriteGuard::map(ATTRIBUTES.get_or_init(|| init_attr($crate::Component::new(desc))).write(), |v| v)
                     );
 
                     *[<comp_ $name>].get_or_init(|| {
-                        reg.register_static(&concat!("ambient_core::", $ns, "::", stringify!($name)), unsafe { VTABLE.erase() } )
+                        reg.register_static(PATH, unsafe { VTABLE.erase() } )
                     })
                 }
 
@@ -480,7 +479,7 @@ mod test {
 
     #[test]
     fn component_macro() {
-        components! ("component-macro",{
+        components! ("component_macro",{
             @[Serializable, Debuggable]
             foo: String,
             /// This is a person
@@ -532,7 +531,7 @@ mod test {
             }
         }
 
-        components! ("make-default", {
+        components! ("make_default", {
             @[MakeDefault, Debuggable]
             people: Vec<Person>,
             @[MakeDefault[default_person], Debuggable, Store, Networked]
@@ -580,7 +579,7 @@ mod test {
 
     #[test]
     fn test_take() {
-        components! ("test-take", {
+        components! ("test_take", {
             @[Store]
             my_component: Arc<String>,
         });
@@ -609,7 +608,7 @@ mod test {
     fn leak_test() {
         let shared = Arc::new("Foo".to_string());
 
-        components! ("leak-test", {
+        components! ("leak_test", {
             my_component: Arc<String>,
         });
 

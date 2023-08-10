@@ -11,8 +11,6 @@ categories = ["Example"]
 name = "Hello"
 description = "Sent when a client joins the server, then sent back from the server"
 fields = { text = "String", source_reliable = "Bool" }
-# see all the supported types here:
-# https://ambientrun.github.io/Ambient/reference/project.html#components_-components
 
 [messages.Local]
 description = "Sent until it's acknowledged"
