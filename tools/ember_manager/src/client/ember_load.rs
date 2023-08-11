@@ -8,7 +8,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::ember_manager::messages;
+use crate::embers::ember_manager::messages;
 
 use super::{use_hotkey_toggle, use_input_request, Window};
 

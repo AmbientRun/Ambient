@@ -7,12 +7,17 @@ use ambient_api::{
     ui::ImageFromUrl,
 };
 
-use afps_schema::{
-    components::player_name,
-    components::{kill_log, player_deathcount, player_health, player_killcount, player_last_frame},
-    messages::StartGame,
+use embers::{
+    afps_fpsui::assets,
+    afps_schema::{
+        components::player_name,
+        components::{
+            kill_log, player_deathcount, player_health, player_killcount, player_last_frame,
+        },
+        messages::StartGame,
+    },
+    input_schema::messages::{ReleaseInput, RequestInput},
 };
-use input_schema::messages::{ReleaseInput, RequestInput};
 
 #[main]
 pub fn main() {
@@ -67,7 +72,7 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
         .with(space_between_items(), STREET)])
         .with_padding_even(20.),
         ImageFromUrl {
-            url: afps_fpsui::assets::url("afps.png"),
+            url: assets::url("afps.png"),
         }
         .el()
         .with(width(), hooks.use_window_logical_resolution().x as f32)

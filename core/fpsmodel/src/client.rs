@@ -1,5 +1,5 @@
 use ambient_api::{
-    animation::{get_bone_by_bind_id, BindId},
+    animation::{self, BindId},
     core::{
         model::components::model_loaded,
         player::components::player,
@@ -14,7 +14,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use afps_schema::components;
+use embers::{afps_fpsmodel::assets, afps_schema::components};
 
 #[main]
 pub fn main() {
@@ -23,14 +23,14 @@ pub fn main() {
             run_async(async move {
                 entity::wait_for_component(model, model_loaded()).await;
                 println!("___model loaded___waiting for binding__");
-                let hand = get_bone_by_bind_id(model, &BindId::RightHand);
+                let hand = animation::get_bone_by_bind_id(model, &BindId::RightHand);
                 if hand.is_none() {
                     return;
                 }
                 let hand = hand.unwrap();
                 let gun = Entity::new()
                     .with_merge(make_transformable())
-                    .with(prefab_from_url(), afps_fpsmodel::assets::url("red.glb"))
+                    .with(prefab_from_url(), assets::url("red.glb"))
                     .with(translation(), vec3(-0.06, 0.2, 0.0))
                     .with(
                         rotation(),

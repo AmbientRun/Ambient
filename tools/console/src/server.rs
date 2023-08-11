@@ -3,7 +3,7 @@ use ambient_api::prelude::*;
 use shared::*;
 mod shared;
 
-use console::messages::{ConsoleServerInput, ConsoleServerOutput};
+use embers::console::messages::{ConsoleServerInput, ConsoleServerOutput};
 
 #[main]
 pub async fn main() {

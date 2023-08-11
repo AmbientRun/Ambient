@@ -1,9 +1,11 @@
-use afps_schema::components::player_last_frame;
-use afps_world_latency::{components::server_frame, messages::FrameSeen};
 use ambient_api::{
     core::{messages::Frame, player::components::player},
     entity::{add_component, add_component_if_required, mutate_component, set_component},
     prelude::*,
+};
+use embers::{
+    afps_schema::components::player_last_frame,
+    afps_world_latency::{components::server_frame, messages::FrameSeen},
 };
 
 #[main]

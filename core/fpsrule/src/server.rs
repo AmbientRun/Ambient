@@ -18,7 +18,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use afps_schema::{
+use embers::afps_schema::{
     components::{
         self, heal_timeout, hit_freeze, player_deathcount, player_health, player_killcount,
         player_name, player_team, player_vspeed,

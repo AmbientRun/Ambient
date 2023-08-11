@@ -19,7 +19,10 @@ use ambient_api::{
     prelude::*,
 };
 
-use afps_schema::components::{player_cam_ref, player_model_ref, player_name, player_zoomed};
+use embers::{
+    afps_fpsmodel::assets,
+    afps_schema::components::{player_cam_ref, player_model_ref, player_name, player_zoomed},
+};
 
 #[main]
 pub async fn main() {
@@ -53,7 +56,7 @@ pub async fn main() {
                     .spawn();
                 let model = Entity::new()
                     .with_merge(make_transformable())
-                    .with(prefab_from_url(), afps_fpsmodel::assets::url("Y Bot.fbx"))
+                    .with(prefab_from_url(), assets::url("Y Bot.fbx"))
                     .with(rotation(), Quat::from_rotation_z(-std::f32::consts::PI))
                     .with_default(local_to_parent())
                     .with(parent(), id)

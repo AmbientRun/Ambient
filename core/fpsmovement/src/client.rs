@@ -6,11 +6,13 @@ use ambient_api::{
     prelude::*,
 };
 
-use afps_schema::{
-    components::{hit_freeze, player_cam_ref},
-    messages::Input,
+use embers::{
+    afps_schema::{
+        components::{hit_freeze, player_cam_ref},
+        messages::Input,
+    },
+    input_schema::messages::{ReleaseInput, RequestInput},
 };
-use input_schema::messages::{ReleaseInput, RequestInput};
 
 #[main]
 pub async fn main() {

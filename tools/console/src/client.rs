@@ -10,8 +10,10 @@ use ambient_api::{
 };
 use shared::*;
 
-use console::messages::{ConsoleServerInput, ConsoleServerOutput};
-use input_schema::messages::{ReleaseInput, RequestInput};
+use embers::{
+    console::messages::{ConsoleServerInput, ConsoleServerOutput},
+    input_schema::messages::{ReleaseInput, RequestInput},
+};
 
 mod shared;
 

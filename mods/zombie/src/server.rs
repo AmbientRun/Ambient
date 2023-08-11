@@ -18,14 +18,14 @@ use ambient_api::{
     prelude::*,
 };
 
-use afps_zombie::components;
+use embers::afps_zombie::{assets, components};
 
 #[main]
 pub async fn main() {
     let chars = [
-        afps_zombie::assets::url("Zombiegirl W Kurniawan.fbx"),
-        afps_zombie::assets::url("copzombie_l_actisdato.fbx"),
-        afps_zombie::assets::url("Yaku J Ignite.fbx"),
+        assets::url("Zombiegirl W Kurniawan.fbx"),
+        assets::url("copzombie_l_actisdato.fbx"),
+        assets::url("Yaku J Ignite.fbx"),
     ];
 
     run_async(async move {
@@ -56,9 +56,8 @@ pub async fn main() {
                     .with_default(components::is_zombie()),
             );
 
-            let run = PlayClipFromUrlNode::new(afps_zombie::assets::url(
-                "Zombie Run.fbx/animations/mixamo.com.anim",
-            ));
+            let run =
+                PlayClipFromUrlNode::new(assets::url("Zombie Run.fbx/animations/mixamo.com.anim"));
 
             let blend = BlendNode::new(&run, &run, 0.);
             let anim_player = AnimationPlayer::new(&blend);

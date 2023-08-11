@@ -3,7 +3,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::ember_manager::messages::{WasmReload, WasmSetEnabled};
+use crate::embers::ember_manager::messages::{WasmReload, WasmSetEnabled};
 
 pub fn main() {
     WasmSetEnabled::subscribe(|_, msg| {

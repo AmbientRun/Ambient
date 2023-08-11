@@ -11,7 +11,7 @@ use ambient_api::{
     ui::ImageFromUrl,
 };
 
-use crate::ember_manager::{
+use crate::embers::ember_manager::{
     self,
     messages::{WasmReload, WasmSetEnabled},
 };
