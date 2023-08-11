@@ -39,3 +39,4 @@
 - [Contributing](runtime_internals/contributing.md)
 - [ECS](runtime_internals/ecs.md)
 - [Renderer](runtime_internals/renderer.md)
+- [Asset cache](runtime_internals/asset_cache.md)
