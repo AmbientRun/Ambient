@@ -96,12 +96,20 @@ pub fn main() {
         }
 
         if let (Some(entity), true) = (entity::get_component(id, mouseover_entity()), msg.select) {
-            if let Some(selected) = entity::get_component(id, selected_entity()) {
-                entity::add_component(selected, outline_recursive(), Vec4::ZERO);
-            }
+            let already_selected =
+                if let Some(selected) = entity::get_component(id, selected_entity()) {
+                    entity::add_component(selected, outline_recursive(), Vec4::ZERO);
+                    selected == entity
+                } else {
+                    false
+                };
 
-            entity::add_component(entity, outline_recursive(), Vec4::ONE);
-            entity::add_component(id, selected_entity(), entity);
+            if !already_selected {
+                entity::add_component(entity, outline_recursive(), Vec4::ONE);
+                entity::add_component(id, selected_entity(), entity);
+            } else {
+                entity::remove_component(id, selected_entity());
+            }
         }
 
         if let Some(entity) = entity::get_component(id, selected_entity()) {
