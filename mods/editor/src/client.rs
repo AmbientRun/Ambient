@@ -174,20 +174,16 @@ fn MenuBar(_hooks: &mut Hooks) -> Element {
 fn MouseoverDisplay(hooks: &mut Hooks) -> Element {
     let player_id = player::get_local();
     let (mouseover_position, _) = hooks.use_entity_component(player_id, mouseover_position());
-    let (mouseover_entity, _) = hooks.use_entity_component(player_id, mouseover_entity());
     let (camera_id, _) = hooks.use_entity_component(player_id, editor_camera());
 
     let Some(mouseover_position) = mouseover_position else { return Element::new(); };
     let Some(camera_id) = camera_id else { return Element::new(); };
 
-    let mut text = format!("{:.02?}", mouseover_position.to_array());
-    if let Some(mouseover_entity) = mouseover_entity {
-        text += &format!("\n{}", entity_name(mouseover_entity));
-    }
-
-    let mouseover_position_2d = camera::world_to_screen(camera_id, mouseover_position).extend(0.0);
-    Text::el(text)
-        .with(translation(), mouseover_position_2d)
+    Text::el(format!("{:.02?}", mouseover_position.to_array()))
+        .with(
+            translation(),
+            camera::world_to_screen(camera_id, mouseover_position).extend(0.0),
+        )
         .with(color(), Vec4::ONE)
 }
 
@@ -206,18 +202,7 @@ fn SelectedDisplay(hooks: &mut Hooks) -> Element {
     let Some(selected_entity) = selected_entity else { return Element::new(); };
     let Some(camera_id) = camera_id else { return Element::new(); };
 
-    let position = entity::get_component(selected_entity, translation()).unwrap_or_default();
     Group::el([
-        Text::el(format!(
-            "{:.02?}\n{}",
-            position.to_array(),
-            entity_name(selected_entity)
-        ))
-        .with(
-            translation(),
-            camera::world_to_screen(camera_id, position).extend(0.0),
-        )
-        .with(color(), Vec4::ONE),
         EntityView::el(selected_entity),
         GizmoDisplay::el(camera_id, selected_entity),
     ])
