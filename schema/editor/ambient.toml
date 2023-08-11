@@ -1,0 +1,8 @@
+[ember]
+id = "editor_schema"
+name = "Editor Schema"
+description = "Probably something to standardize"
+
+[components]
+# Player components
+in_editor = { type = "Bool", attributes = ["Networked", "Debuggable"] }

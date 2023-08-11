@@ -5,3 +5,4 @@ name = "AFPS Movmement"
 [dependencies]
 afps_schema = { path = "../../schema/afps" }
 input_schema = { path = "../../schema/input" }
+editor_schema = { path = "../../schema/editor" }

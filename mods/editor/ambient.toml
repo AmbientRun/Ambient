@@ -4,11 +4,10 @@ name = "editor"
 version = "0.0.1"
 
 [dependencies]
-afps_schema = { path = "../../schema/afps" }
+editor_schema = { path = "../../schema/editor" }
 
 [components]
 # Player components
-in_editor = { type = "Bool", attributes = ["Networked", "Debuggable"] }
 editor_camera = { type = "EntityId", attributes = ["Networked", "Debuggable"] }
 mouseover_position = { type = "Vec3", attributes = ["Networked", "Debuggable"] }
 mouseover_entity = { type = "EntityId", attributes = [

@@ -15,14 +15,13 @@ use ambient_api::{
     prelude::*,
 };
 
-use afps_schema::components::player_name;
 use editor::{
     components::{
-        camera_angle, editor_camera, in_editor, mouseover_entity, mouseover_position,
-        selected_entity,
+        camera_angle, editor_camera, mouseover_entity, mouseover_position, selected_entity,
     },
     messages::{Input, ToggleEditor},
 };
+use editor_schema::components::in_editor;
 
 #[main]
 pub fn main() {
@@ -34,7 +33,6 @@ pub fn main() {
         });
 
         if in_editor {
-            entity::add_component_if_required(id, player_name(), "Editor".to_string());
             let player_user_id = entity::get_component(id, user_id()).unwrap();
             let player_position = entity::get_component(id, translation()).unwrap_or_default();
 

@@ -10,15 +10,15 @@ input_schema = { path = "schema/input" }
 fpsanim = { path = "core/fpsanim" }
 fpsaudio = { path = "core/fpsaudio" }
 fpsmodel = { path = "core/fpsmodel" }
-fpsmovement = { path = "core/fpsmovement", enabled = false }
-fpsrule = { path = "core/fpsrule", enabled = false }
-fpsui = { path = "core/fpsui", enabled = false }
+fpsmovement = { path = "core/fpsmovement", enabled = true }
+fpsrule = { path = "core/fpsrule", enabled = true }
+fpsui = { path = "core/fpsui", enabled = true }
 
 console = { path = "tools/console", enabled = false }
 ember_manager = { path = "tools/ember_manager", enabled = false }
 
 scene = { path = "mods/scene", enabled = true }
-spraypaint = { path = "mods/spraypaint", enabled = false }
-zombie = { path = "mods/zombie", enabled = false }
-world_latency = { path = "mods/world_latency", enabled = false }
+spraypaint = { path = "mods/spraypaint", enabled = true }
+zombie = { path = "mods/zombie", enabled = true }
+world_latency = { path = "mods/world_latency", enabled = true }
 editor = { path = "mods/editor" }

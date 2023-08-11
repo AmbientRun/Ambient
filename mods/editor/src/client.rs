@@ -13,9 +13,10 @@ use ambient_api::{
     prelude::*,
 };
 use editor::{
-    components::{editor_camera, in_editor, mouseover_entity, mouseover_position, selected_entity},
+    components::{editor_camera, mouseover_entity, mouseover_position, selected_entity},
     messages::{Input, ToggleEditor},
 };
+use editor_schema::components::in_editor;
 
 #[main]
 pub fn main() {
@@ -150,15 +151,6 @@ pub fn App(hooks: &mut Hooks) -> Element {
         if modifiers == ModifiersState::empty() && keycode == Some(VirtualKeyCode::F5) && !pressed {
             ToggleEditor {}.send_server_reliable();
         }
-    });
-
-    // hack: I'm lazy
-    hooks.use_spawn(move |_| {
-        if !in_editor {
-            ToggleEditor {}.send_server_reliable();
-        }
-
-        |_| {}
     });
 
     FocusRoot::el([if in_editor {

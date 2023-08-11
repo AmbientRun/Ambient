@@ -10,6 +10,7 @@ use afps_schema::{
     components::{hit_freeze, player_cam_ref},
     messages::Input,
 };
+use editor_schema::components::in_editor;
 use input_schema::messages::{ReleaseInput, RequestInput};
 
 #[main]
@@ -20,6 +21,11 @@ pub async fn main() {
     // TODO: fixed?
     let mut input_lock = InputLock::new();
     Frame::subscribe(move |_| {
+        if entity::get_component(player::get_local(), in_editor()).unwrap_or_default() {
+            input_lock.clear_lock();
+            return;
+        }
+
         let (delta, input) = input::get_delta();
         if !input_lock.update(&input) {
             return;
@@ -156,6 +162,10 @@ impl InputLock {
             Some(lock) => lock.auto_unlock_on_escape(input),
             _ => false,
         }
+    }
+
+    fn clear_lock(&mut self) {
+        self.cursor_lock = None;
     }
 }
 impl Drop for InputLock {
