@@ -6,3 +6,15 @@ description = "Probably something to standardize"
 [components]
 # Player components
 in_editor = { type = "Bool", attributes = ["Networked", "Debuggable"] }
+
+[messages.EditorLoad]
+description = "Sent by the editor when it has loaded to signal to other modules to add themselves."
+fields = {}
+
+[messages.EditorMenuBarAdd]
+description = "Sent by other modules to add themselves to the editor's menubar."
+fields = { name = "String" }
+
+[messages.EditorMenuBarClick]
+description = "Sent by the editor when a menu item is clicked."
+fields = { name = "String" }

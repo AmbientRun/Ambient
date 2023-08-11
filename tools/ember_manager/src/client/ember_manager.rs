@@ -21,6 +21,10 @@ use super::{use_hotkey_toggle, use_input_request, Window};
 #[element_component]
 pub fn EmberManager(hooks: &mut Hooks) -> Element {
     let (visible, set_visible) = use_hotkey_toggle(hooks, VirtualKeyCode::F4);
+    use_editor_menu_bar(hooks, "Ember Manager".to_string(), {
+        let set_visible = set_visible.clone();
+        move || set_visible(!visible)
+    });
 
     FocusRoot::el([Window::el(
         "Ember Manager".to_string(),
@@ -146,4 +150,36 @@ fn EmberManagerInner(hooks: &mut Hooks) -> Element {
     }))
     .with(space_between_items(), 4.0)
     .with_margin_even(STREET)
+}
+
+// TODO: is there a way to share this?
+fn use_editor_menu_bar(
+    hooks: &mut Hooks,
+    name: String,
+    on_click: impl Fn() + Send + Sync + 'static,
+) {
+    use crate::editor_schema::messages::{EditorLoad, EditorMenuBarAdd, EditorMenuBarClick};
+
+    let add = cb({
+        let name = name.clone();
+        move || EditorMenuBarAdd { name: name.clone() }.send_local_broadcast(false)
+    });
+
+    hooks.use_module_message::<EditorLoad>({
+        let add = add.clone();
+        move |_, _, _| {
+            add();
+        }
+    });
+
+    hooks.use_spawn(move |_| {
+        add();
+        |_| {}
+    });
+
+    hooks.use_module_message::<EditorMenuBarClick>(move |_, _, message| {
+        if message.name == name {
+            on_click();
+        }
+    });
 }

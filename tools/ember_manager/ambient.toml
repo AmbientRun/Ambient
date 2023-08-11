@@ -29,3 +29,4 @@ url = "String"
 
 [dependencies]
 input_schema = { path = "../../schema/input" }
+editor_schema = { path = "../../schema/editor" }

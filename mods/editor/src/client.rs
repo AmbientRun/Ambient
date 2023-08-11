@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use ambient_api::{
     core::{
         app::components::{main_scene, name},
@@ -13,10 +15,13 @@ use ambient_api::{
     prelude::*,
 };
 use editor::{
-    components::{editor_camera, mouseover_entity, mouseover_position, selected_entity},
+    components::{editor_camera, mouseover_position, selected_entity},
     messages::{Input, ToggleEditor},
 };
-use editor_schema::components::in_editor;
+use editor_schema::{
+    components::in_editor,
+    messages::{EditorLoad, EditorMenuBarAdd, EditorMenuBarClick},
+};
 
 #[main]
 pub fn main() {
@@ -153,18 +158,59 @@ pub fn App(hooks: &mut Hooks) -> Element {
         }
     });
 
+    let (menu_bar_items, set_menu_bar_items) = hooks.use_state_with(|_| HashSet::new());
+
+    hooks.use_module_message::<EditorMenuBarAdd>({
+        let menu_bar_items = menu_bar_items.clone();
+        move |_, source, msg| {
+            let Some(id) = source.local() else { return; };
+
+            let mut menu_bar_items = menu_bar_items.clone();
+            menu_bar_items.insert((id, msg.name.clone()));
+            set_menu_bar_items(menu_bar_items);
+        }
+    });
+
+    hooks.use_spawn(move |_| {
+        EditorLoad {}.send_local_broadcast(false);
+
+        |_| {}
+    });
+
     FocusRoot::el([if in_editor {
-        Group::el([MenuBar::el(), MouseoverDisplay::el(), SelectedDisplay::el()])
+        Group::el([
+            MenuBar::el(menu_bar_items),
+            MouseoverDisplay::el(),
+            SelectedDisplay::el(),
+        ])
     } else {
         Element::new()
     }])
 }
 
 #[element_component]
-fn MenuBar(_hooks: &mut Hooks) -> Element {
+fn MenuBar(_hooks: &mut Hooks, menu_bar_items: HashSet<(EntityId, String)>) -> Element {
+    let mut sorted_menu_bar_items: Vec<_> = menu_bar_items.into_iter().collect();
+    sorted_menu_bar_items.sort_by_key(|(_, name)| name.clone());
+
     WindowSized::el([with_rect(
-        FlowRow::el([Text::el(format!("Editor {}", env!("CARGO_PKG_VERSION")))])
-            .with_padding_even(4.0),
+        FlowRow::el(
+            [
+                Text::el(format!("Editor {}", env!("CARGO_PKG_VERSION")))
+                    .with(font_style(), FontStyle::Bold),
+                Text::el("|"),
+            ]
+            .into_iter()
+            .chain(sorted_menu_bar_items.into_iter().map(|(id, name)| {
+                Button::new(name.clone(), move |_| {
+                    EditorMenuBarClick { name: name.clone() }.send_local(id);
+                })
+                .style(ButtonStyle::Inline)
+                .el()
+            })),
+        )
+        .with_padding_even(4.0)
+        .with(space_between_items(), 4.0),
     )
     .with(fit_horizontal(), Fit::Parent)
     .with_background(vec4(0.0, 0.0, 0.0, 0.5))])

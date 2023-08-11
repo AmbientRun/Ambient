@@ -14,8 +14,8 @@ fpsmovement = { path = "core/fpsmovement", enabled = true }
 fpsrule = { path = "core/fpsrule", enabled = true }
 fpsui = { path = "core/fpsui", enabled = true }
 
-console = { path = "tools/console", enabled = false }
-ember_manager = { path = "tools/ember_manager", enabled = false }
+console = { path = "tools/console", enabled = true }
+ember_manager = { path = "tools/ember_manager", enabled = true }
 
 scene = { path = "mods/scene", enabled = true }
 spraypaint = { path = "mods/spraypaint", enabled = true }
