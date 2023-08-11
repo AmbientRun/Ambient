@@ -2,10 +2,13 @@ use ambient_api::{
     core::{
         app::components::{main_scene, name},
         messages::Frame,
+        physics::components::mass,
         rect::components::{line_from, line_to, line_width, rect},
         rendering::components::{color, double_sided},
-        transform::components::{rotation, translation},
+        text::{components::font_style, types::FontStyle},
+        transform::components::{rotation, scale, translation},
     },
+    ecs::SupportedValue,
     input::CursorLockGuard,
     prelude::*,
 };
@@ -158,26 +161,18 @@ pub fn App(hooks: &mut Hooks) -> Element {
         |_| {}
     });
 
-    if in_editor {
+    FocusRoot::el([if in_editor {
         Group::el([MenuBar::el(), MouseoverDisplay::el(), SelectedDisplay::el()])
     } else {
         Element::new()
-    }
+    }])
 }
 
 #[element_component]
-fn MenuBar(hooks: &mut Hooks) -> Element {
-    let (selected_entity, _) = hooks.use_entity_component(player::get_local(), selected_entity());
-
+fn MenuBar(_hooks: &mut Hooks) -> Element {
     WindowSized::el([with_rect(
-        FlowRow::el([Text::el(format!(
-            "Editor {} | Selected Entity: {}",
-            env!("CARGO_PKG_VERSION"),
-            selected_entity
-                .map(display_entity)
-                .unwrap_or_else(|| "none".to_string())
-        ))])
-        .with_padding_even(4.0),
+        FlowRow::el([Text::el(format!("Editor {}", env!("CARGO_PKG_VERSION")))])
+            .with_padding_even(4.0),
     )
     .with(fit_horizontal(), Fit::Parent)
     .with_background(vec4(0.0, 0.0, 0.0, 0.5))])
@@ -195,7 +190,7 @@ fn MouseoverDisplay(hooks: &mut Hooks) -> Element {
 
     let mut text = format!("{:.02?}", mouseover_position.to_array());
     if let Some(mouseover_entity) = mouseover_entity {
-        text += &format!("\n{}", display_entity(mouseover_entity));
+        text += &format!("\n{}", entity_name(mouseover_entity));
     }
 
     let mouseover_position_2d = camera::world_to_screen(camera_id, mouseover_position).extend(0.0);
@@ -224,19 +219,56 @@ fn SelectedDisplay(hooks: &mut Hooks) -> Element {
         Text::el(format!(
             "{:.02?}\n{}",
             position.to_array(),
-            display_entity(selected_entity)
+            entity_name(selected_entity)
         ))
         .with(
             translation(),
             camera::world_to_screen(camera_id, position).extend(0.0),
         )
         .with(color(), Vec4::ONE),
+        EntityView::el(selected_entity),
         GizmoDisplay::el(camera_id, selected_entity),
     ])
 }
 
 const GIZMO_LENGTH: f32 = 5.;
 const GIZMO_WIDTH: f32 = 0.25;
+
+#[element_component]
+fn EntityView(_hooks: &mut Hooks, entity: EntityId) -> Element {
+    struct Displays(EntityId, Vec<Element>);
+    impl Displays {
+        fn add<T: Editor + SupportedValue>(&mut self, name: &str, component: Component<T>) {
+            let Some(value) = entity::get_component(self.0, component) else {return;};
+
+            self.1.push(
+                FlowColumn::el([
+                    Text::el(name).with(font_style(), FontStyle::Bold),
+                    value.editor(cb(|_| {}), EditorOpts::default()),
+                ])
+                .with(space_between_items(), 4.0),
+            )
+        }
+    }
+
+    let mut displays = Displays(entity, vec![]);
+    displays.add("Name", name());
+    displays.add("Translation", translation());
+    displays.add("Scale", scale());
+    displays.add("Mass", mass());
+
+    WindowSized::el([with_rect(
+        FlowColumn::el(
+            std::iter::once(Text::el(entity_name(entity)).section_style())
+                .chain(displays.1.into_iter()),
+        )
+        .with_padding_even(4.0)
+        .with(space_between_items(), 4.0),
+    )
+    .with(docking(), Docking::Right)
+    .with(margin(), vec4(STREET * 4., STREET, STREET, STREET))
+    .with_background(vec4(0.0, 0.0, 0.0, 0.5))])
+}
 
 #[element_component]
 fn GizmoDisplay(_hooks: &mut Hooks, camera_id: EntityId, entity: EntityId) -> Element {
@@ -365,6 +397,6 @@ pub fn fixed_rate_tick(dt: Duration, mut callback: impl FnMut(Duration) + 'stati
     });
 }
 
-fn display_entity(id: EntityId) -> String {
+fn entity_name(id: EntityId) -> String {
     entity::get_component(id, name()).unwrap_or_else(|| id.to_string())
 }
