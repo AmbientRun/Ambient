@@ -291,6 +291,7 @@ fn reload(world: &mut World, module_id: EntityId, bytecode: Option<ModuleBytecod
     }
 }
 
+/// Loads a wasm module from the given bytecode and attaches it to the given entity.
 fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
     let messenger = world.resource(messenger()).clone();
     let module_state_maker = world.resource(module_state_maker()).clone();
@@ -302,7 +303,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
         .map(|x| x.clone())
         .unwrap_or_else(|_| "Unknown".to_string());
 
-    #[cfg(feature = "wit")]
+    #[cfg(not(target_os = "unknown"))]
     let preopened_dir = world
         .resource_opt(preopened_dir())
         .map(|d| d.try_clone().unwrap());
@@ -323,7 +324,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
                     messenger(world, id, MessageType::Stderr, msg);
                 }),
                 id,
-                #[cfg(feature = "wit")]
+                #[cfg(not(target_os = "unknown"))]
                 preopened_dir,
             });
             log::info!("Done loading module: {}", name);

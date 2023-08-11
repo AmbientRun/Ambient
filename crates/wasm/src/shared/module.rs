@@ -1,10 +1,10 @@
 use crate::shared;
 
-use super::Source;
 #[cfg(feature = "wit")]
 use super::{bindings::BindingsBound, conversion::IntoBindgen};
+use super::{engine::EngineKey, Source};
 use ambient_ecs::{EntityId, World};
-use ambient_native_std::asset_cache::AssetCache;
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use data_encoding::BASE64;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
@@ -120,7 +120,8 @@ pub struct ModuleStateArgs<'a> {
     pub stdout_output: Messenger,
     pub stderr_output: Messenger,
     pub id: EntityId,
-    #[cfg(feature = "wit")]
+    #[cfg(not(target_os = "unknown"))]
+    /// Makes the `data` directory available during development
     pub preopened_dir: Option<Dir>,
 }
 
@@ -130,6 +131,7 @@ pub struct ModuleState {
     // the precise bindings in use
     inner: Arc<RwLock<dyn ModuleStateBehavior>>,
 }
+
 impl ModuleState {
     fn new<Bindings: BindingsBound + 'static>(
         assets: &AssetCache,
@@ -149,6 +151,7 @@ impl ModuleState {
         Arc::new(move |args: ModuleStateArgs<'_>| Self::new(&assets, args, bindings))
     }
 }
+
 impl ModuleStateBehavior for ModuleState {
     fn run(
         &mut self,
@@ -202,25 +205,20 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
         args: ModuleStateArgs<'_>,
         bindings: fn(EntityId) -> Bindings,
     ) -> anyhow::Result<Self> {
-        let ModuleStateArgs {
-            component_bytecode,
-            stdout_output,
-            stderr_output,
-            id,
-            preopened_dir,
-        } = args;
+        let bindings = bindings(args.id);
 
-        let bindings = bindings(id);
+        let engine = EngineKey
+            .get(assets)
+            .map_err(|err| anyhow::bail!("{err:?}"));
 
-        let engine = &*crate::WASMTIME_ENGINE;
-
-        let (stdout_output, stdout_consumer) = WasiOutputStream::make(stdout_output);
-        let (stderr_output, stderr_consumer) = WasiOutputStream::make(stderr_output);
+        let (stdout_output, stdout_consumer) = WasiOutputStream::make(args.stdout_output);
+        let (stderr_output, stderr_consumer) = WasiOutputStream::make(args.stderr_output);
         let mut table = wasi_preview2::Table::new();
         let wasi = wasi_preview2::WasiCtxBuilder::new()
             .set_stdout(stdout_output)
             .set_stderr(stderr_output);
 
+        #[cfg(not(target_os = "unknown"))]
         let wasi = if let Some(dir) = preopened_dir {
             wasi.push_preopened_dir(dir, DirPerms::all(), FilePerms::all(), "/")
         } else {
