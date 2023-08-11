@@ -10,8 +10,11 @@ use ambient_api::{
         physics::components::dynamic,
         player::components::user_id,
         rendering::components::outline_recursive,
-        transform::components::{rotation, translation},
+        transform::components::{local_to_world, rotation, translation},
     },
+    ecs::GeneralQuery,
+    glam::EulerRot,
+    once_cell::sync::Lazy,
     prelude::*,
 };
 
@@ -34,15 +37,29 @@ pub fn main() {
 
         if in_editor {
             let player_user_id = entity::get_component(id, user_id()).unwrap();
-            let player_position = entity::get_component(id, translation()).unwrap_or_default();
+
+            let old_camera_transform = get_active_camera(&player_user_id)
+                .and_then(|camera_id| entity::get_component(camera_id, local_to_world()))
+                .map(|transform| transform.to_scale_rotation_translation())
+                .map(|(_, r, t)| (r, t));
+
+            let new_camera_position = old_camera_transform.map(|(_, t)| t).unwrap_or_else(|| {
+                entity::get_component(id, translation()).unwrap_or_default() + vec3(0.0, 0.0, 5.0)
+            });
+            let new_camera_angle = old_camera_transform
+                .map(|(rot, _)| {
+                    let euler = rot.to_euler(EulerRot::ZYX);
+                    vec2(euler.0, euler.2)
+                })
+                .unwrap_or_else(|| vec2(0.0, PI / 2.));
 
             let camera_id = Entity::new()
                 .with_merge(make_perspective_infinite_reverse_camera())
                 .with(aspect_ratio_from_window(), EntityId::resources())
                 .with_default(main_scene())
                 .with(user_id(), player_user_id)
-                .with(translation(), player_position + vec3(0.0, 0.0, 5.0))
-                .with(camera_angle(), vec2(0.0, PI / 2.))
+                .with(translation(), new_camera_position)
+                .with(camera_angle(), new_camera_angle)
                 .with(name(), "Editor Camera".to_string())
                 .with(active_camera(), 10.0)
                 .spawn();
@@ -130,4 +147,18 @@ pub fn main() {
             }
         }
     });
+}
+
+// TODO: Move this to ambient_api?
+pub fn get_active_camera(player_user_id: &str) -> Option<EntityId> {
+    static QUERY: Lazy<GeneralQuery<(Component<f32>, Component<String>)>> =
+        Lazy::new(|| query((active_camera(), user_id())).build());
+
+    QUERY
+        .evaluate()
+        .into_iter()
+        .filter(|(_, (_, uid))| *uid == player_user_id)
+        .map(|(id, (ordering, _))| (id, ordering))
+        .max_by(|x, y| x.1.partial_cmp(&y.1).unwrap_or(std::cmp::Ordering::Less))
+        .map(|(id, _)| id)
 }
