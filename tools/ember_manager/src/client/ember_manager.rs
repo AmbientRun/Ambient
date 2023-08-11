@@ -4,14 +4,14 @@ use ambient_api::{
     core::{
         text::{components::font_style, types::FontStyle},
         wasm::components::{
-            bytecode_from_url, module, module_enabled, module_name, module_on_server,
+            bytecode_from_url, is_module, is_module_on_server, module_enabled, module_name,
         },
     },
     prelude::*,
     ui::ImageFromUrl,
 };
 
-use crate::ember_manager::{
+use crate::embers::ember_manager::{
     self,
     messages::{WasmReload, WasmSetEnabled},
 };
@@ -40,7 +40,7 @@ fn EmberManagerInner(hooks: &mut Hooks) -> Element {
 
     let modules: Vec<_> = hooks
         .use_query((
-            module(),
+            is_module(),
             module_name(),
             module_enabled(),
             bytecode_from_url(),
@@ -50,7 +50,7 @@ fn EmberManagerInner(hooks: &mut Hooks) -> Element {
             (
                 id,
                 (
-                    entity::has_component(id, module_on_server()),
+                    entity::has_component(id, is_module_on_server()),
                     name,
                     enabled,
                     url,
@@ -158,7 +158,9 @@ fn use_editor_menu_bar(
     name: String,
     on_click: impl Fn() + Send + Sync + 'static,
 ) {
-    use crate::editor_schema::messages::{EditorLoad, EditorMenuBarAdd, EditorMenuBarClick};
+    use crate::embers::editor_schema::messages::{
+        EditorLoad, EditorMenuBarAdd, EditorMenuBarClick,
+    };
 
     let add = cb({
         let name = name.clone();

@@ -1,9 +1,9 @@
 use ambient_api::{
-    core::{player::components::player, transform::components::rotation},
+    core::{player::components::is_player, transform::components::rotation},
     prelude::*,
 };
 
-use afps_schema::{
+use embers::afps_schema::{
     components::{
         player_cam_ref, player_direction, player_jumping, player_name, player_pitch,
         player_running, player_shooting_status, player_vspeed, player_yaw, player_zoomed,
@@ -16,7 +16,7 @@ const FALLING_VSPEED: f32 = 0.4;
 
 #[main]
 pub fn main() {
-    spawn_query(player()).bind(|results| {
+    spawn_query(is_player()).bind(|results| {
         for (id, ()) in results {
             run_async(async move {
                 entity::wait_for_component(id, player_name()).await;
@@ -115,7 +115,7 @@ pub fn main() {
     });
 
     query((
-        player(),
+        is_player(),
         player_direction(),
         rotation(),
         player_vspeed(),

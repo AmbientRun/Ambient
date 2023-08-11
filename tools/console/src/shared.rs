@@ -295,7 +295,7 @@ mod wasm {
             ctx.module_query.evaluate().into_iter().filter(|(id, _)| {
                 let on_server = entity::has_component(
                     *id,
-                    ambient_api::core::wasm::components::module_on_server(),
+                    ambient_api::core::wasm::components::is_module_on_server(),
                 );
                 match filter {
                     ListFilter::Client => !on_server,

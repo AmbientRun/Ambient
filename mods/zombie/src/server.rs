@@ -8,7 +8,7 @@ use ambient_api::{
         physics::components::{
             character_controller_height, character_controller_radius, physics_controlled,
         },
-        player::components::player,
+        player::components::is_player,
         prefab::components::prefab_from_url,
         transform::{
             components::{local_to_parent, local_to_world, rotation, translation},
@@ -18,14 +18,14 @@ use ambient_api::{
     prelude::*,
 };
 
-use afps_zombie::components;
+use embers::afps_zombie::{assets, components};
 
 #[main]
 pub async fn main() {
     let chars = [
-        afps_zombie::assets::url("Zombiegirl W Kurniawan.fbx"),
-        afps_zombie::assets::url("copzombie_l_actisdato.fbx"),
-        afps_zombie::assets::url("Yaku J Ignite.fbx"),
+        assets::url("Zombiegirl W Kurniawan.fbx"),
+        assets::url("copzombie_l_actisdato.fbx"),
+        assets::url("Yaku J Ignite.fbx"),
     ];
 
     run_async(async move {
@@ -56,9 +56,8 @@ pub async fn main() {
                     .with_default(components::is_zombie()),
             );
 
-            let run = PlayClipFromUrlNode::new(afps_zombie::assets::url(
-                "Zombie Run.fbx/animations/mixamo.com.anim",
-            ));
+            let run =
+                PlayClipFromUrlNode::new(assets::url("Zombie Run.fbx/animations/mixamo.com.anim"));
 
             let blend = BlendNode::new(&run, &run, 0.);
             let anim_player = AnimationPlayer::new(&blend);
@@ -68,7 +67,7 @@ pub async fn main() {
         }
     });
 
-    let player_query = query(translation()).requires(player()).build();
+    let player_query = query(translation()).requires(is_player()).build();
 
     query((translation(), components::is_zombie())).each_frame(move |zombies| {
         for (zombie, (pos, _)) in zombies {

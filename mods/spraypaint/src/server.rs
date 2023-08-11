@@ -6,7 +6,7 @@
 // };
 use ambient_api::{
     core::{
-        player::components::player,
+        player::components::is_player,
         prefab::components::prefab_from_url,
         primitives::components::{cube, quad},
         rendering::components::decal_from_url,
@@ -18,10 +18,11 @@ use ambient_api::{
     prelude::*,
 };
 
-use afps_schema::components;
-use afps_spraypaint::{components::claymore, messages::Spraypaint};
-
-use crate::afps_schema::messages::Explosion;
+use embers::afps_schema::components;
+use embers::{
+    afps_schema::messages::Explosion,
+    afps_spraypaint::{assets, components::claymore, messages::Spraypaint},
+};
 
 #[main]
 
@@ -42,7 +43,7 @@ pub fn main() {
                 return;
             }
 
-            let decal_url = afps_spraypaint::assets::url("pipeline.toml/0/mat.json");
+            let decal_url = assets::url("pipeline.toml/0/mat.json");
 
             Entity::new()
                 .with_merge(make_transformable())
@@ -52,10 +53,7 @@ pub fn main() {
 
             Entity::new()
                 .with_merge(make_transformable())
-                .with(
-                    prefab_from_url(),
-                    afps_spraypaint::assets::url("claymore.glb"),
-                )
+                .with(prefab_from_url(), assets::url("claymore.glb"))
                 .with(claymore(), msg.source)
                 .with(translation(), hit.position + vec3(0., 0., 0.15))
                 .with(scale(), Vec3::ONE * 1.0)
@@ -64,7 +62,7 @@ pub fn main() {
     });
 
     // claymore
-    let player_query = query(translation()).requires(player()).build();
+    let player_query = query(translation()).requires(is_player()).build();
     query((claymore(), translation())).each_frame(move |entities| {
         for (e, (source_id, cm_pos)) in entities {
             let source = entity::get_component(source_id, components::player_name())

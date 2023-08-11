@@ -1,14 +1,16 @@
-use afps_schema::components::player_last_frame;
-use afps_world_latency::{components::server_frame, messages::FrameSeen};
 use ambient_api::{
-    core::{messages::Frame, player::components::player},
+    core::{messages::Frame, player::components::is_player},
     entity::{add_component, add_component_if_required, mutate_component, set_component},
     prelude::*,
+};
+use embers::{
+    afps_schema::components::player_last_frame,
+    afps_world_latency::{components::server_frame, messages::FrameSeen},
 };
 
 #[main]
 pub fn main() {
-    spawn_query(player()).bind(|results| {
+    spawn_query(is_player()).bind(|results| {
         for (id, _) in results {
             add_component_if_required(id, player_last_frame(), 0);
         }

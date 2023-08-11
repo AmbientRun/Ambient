@@ -1,15 +1,17 @@
-use afps_fpsanim::components;
-use afps_schema::components::{
-    player_direction, player_health, player_jumping, player_model_ref, player_running,
-};
 use ambient_api::{
     animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
     core::{
         animation::components::apply_animation_player,
         ecs::components::{children, parent},
-        player::components::player,
+        player::components::is_player,
     },
     prelude::*,
+};
+use embers::{
+    afps_fpsanim::{assets, components},
+    afps_schema::components::{
+        player_direction, player_health, player_jumping, player_model_ref, player_running,
+    },
 };
 
 fn calculate_blend_from_weight(weights: &[f32]) -> Vec<f32> {
@@ -31,58 +33,24 @@ fn calculate_blend_from_weight(weights: &[f32]) -> Vec<f32> {
 }
 
 fn add_anim_clip_and_blend_to_player(id: EntityId) {
-    let walk_fd = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Walk Forward.fbx/animations/mixamo.com.anim",
-    ));
-    let walk_bk = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Walk Backward.fbx/animations/mixamo.com.anim",
-    ));
-    let walk_lt = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Walk Left.fbx/animations/mixamo.com.anim",
-    ));
-    let walk_rt = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Walk Right.fbx/animations/mixamo.com.anim",
-    ));
-    let walk_fd_lt = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Walk Forward Left.fbx/animations/mixamo.com.anim",
-    ));
-    let walk_fd_rt = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Walk Forward Right.fbx/animations/mixamo.com.anim",
-    ));
-    let walk_bk_lt = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Walk Backward Left.fbx/animations/mixamo.com.anim",
-    ));
-    let walk_bk_rt = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Walk Backward Right.fbx/animations/mixamo.com.anim",
-    ));
-    let run_fd = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Run Forward.fbx/animations/mixamo.com.anim",
-    ));
-    let run_bk = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Run Backward.fbx/animations/mixamo.com.anim",
-    ));
-    let run_lt = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Run Left.fbx/animations/mixamo.com.anim",
-    ));
-    let run_rt = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Run Right.fbx/animations/mixamo.com.anim",
-    ));
-    let run_fd_lt = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Run Forward Left.fbx/animations/mixamo.com.anim",
-    ));
-    let run_fd_rt = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Run Forward Right.fbx/animations/mixamo.com.anim",
-    ));
-    let run_bk_lt = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Run Backward Left.fbx/animations/mixamo.com.anim",
-    ));
-    let run_bk_rt = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Run Backward Right.fbx/animations/mixamo.com.anim",
-    ));
+    let walk_fd = make_node("Walk Forward.fbx");
+    let walk_bk = make_node("Walk Backward.fbx");
+    let walk_lt = make_node("Walk Left.fbx");
+    let walk_rt = make_node("Walk Right.fbx");
+    let walk_fd_lt = make_node("Walk Forward Left.fbx");
+    let walk_fd_rt = make_node("Walk Forward Right.fbx");
+    let walk_bk_lt = make_node("Walk Backward Left.fbx");
+    let walk_bk_rt = make_node("Walk Backward Right.fbx");
+    let run_fd = make_node("Run Forward.fbx");
+    let run_bk = make_node("Run Backward.fbx");
+    let run_lt = make_node("Run Left.fbx");
+    let run_rt = make_node("Run Right.fbx");
+    let run_fd_lt = make_node("Run Forward Left.fbx");
+    let run_fd_rt = make_node("Run Forward Right.fbx");
+    let run_bk_lt = make_node("Run Backward Left.fbx");
+    let run_bk_rt = make_node("Run Backward Right.fbx");
 
-    let idle = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-        "Rifle Aiming Idle.fbx/animations/mixamo.com.anim",
-    ));
+    let idle = make_node("Rifle Aiming Idle.fbx");
     let blend1 = BlendNode::new(&walk_fd, &walk_bk, 0.0);
     let blend2 = BlendNode::new(&blend1, &walk_lt, 0.0);
     let blend3 = BlendNode::new(&blend2, &walk_rt, 0.0);
@@ -156,7 +124,7 @@ fn set_blend_weights_on_entity(id: EntityId, blend_weights: Vec<f32>) {
 
 #[main]
 pub fn main() {
-    spawn_query((player(), player_model_ref())).bind(move |v| {
+    spawn_query((is_player(), player_model_ref())).bind(move |v| {
         for (id, (_, model)) in v {
             add_anim_clip_and_blend_to_player(id);
             let output_blend_node =
@@ -169,7 +137,7 @@ pub fn main() {
     });
 
     change_query((
-        player(),
+        is_player(),
         player_health(),
         components::player_output_blend_node(),
         components::player_persistant_anim_node(),
@@ -178,9 +146,7 @@ pub fn main() {
     .bind(move |res| {
         for (_, (_, health, output_node, persistant_node)) in res {
             if health <= 0 {
-                let clip = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-                    "Rifle Death.fbx/animations/mixamo.com.anim",
-                ));
+                let clip = make_node("Rifle Death.fbx");
                 clip.looping(false);
 
                 entity::mutate_component(output_node, children(), |v| {
@@ -191,9 +157,7 @@ pub fn main() {
                 entity::add_component(clip.0.get_entity_id(), parent(), output_node);
 
                 run_async(async move {
-                    let clip = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-                        "Rifle Death.fbx/animations/mixamo.com.anim",
-                    ));
+                    let clip = make_node("Rifle Death.fbx");
                     clip.looping(false);
                     let dur = clip.clip_duration().await;
                     sleep(dur).await;
@@ -210,7 +174,7 @@ pub fn main() {
     });
 
     change_query((
-        player(),
+        is_player(),
         player_jumping(),
         components::player_output_blend_node(),
         components::player_persistant_anim_node(),
@@ -219,9 +183,7 @@ pub fn main() {
     .bind(move |res| {
         for (_, (_, is_jumping, output_node, persistant_node)) in res {
             if is_jumping {
-                let clip = PlayClipFromUrlNode::new(afps_fpsanim::assets::url(
-                    "Rifle Jump.fbx/animations/mixamo.com.anim",
-                ));
+                let clip = make_node("Rifle Jump.fbx");
                 clip.looping(false);
                 entity::mutate_component(output_node, children(), |v| {
                     v.clear();
@@ -240,7 +202,7 @@ pub fn main() {
         }
     });
     query((
-        player(),
+        is_player(),
         player_model_ref(),
         player_direction(),
         player_running(),
@@ -305,4 +267,8 @@ pub fn main() {
             set_blend_weights_on_entity(player_id, blend_weight);
         }
     });
+}
+
+fn make_node(url: &str) -> PlayClipFromUrlNode {
+    PlayClipFromUrlNode::new(assets::url(&format!("{url}/animations/mixamo.com.anim")))
 }

@@ -14,13 +14,15 @@ use ambient_api::{
     input::CursorLockGuard,
     prelude::*,
 };
-use editor::{
-    components::{editor_camera, mouseover_position, selected_entity},
-    messages::{Input, ToggleEditor},
-};
-use editor_schema::{
-    components::in_editor,
-    messages::{EditorLoad, EditorMenuBarAdd, EditorMenuBarClick},
+use embers::{
+    editor::{
+        components::{editor_camera, mouseover_position, selected_entity},
+        messages::{Input, ToggleEditor},
+    },
+    editor_schema::{
+        components::in_editor,
+        messages::{EditorLoad, EditorMenuBarAdd, EditorMenuBarClick},
+    },
 };
 
 #[main]

@@ -9,7 +9,7 @@ use ambient_api::{
         physics::components::{
             character_controller_height, character_controller_radius, physics_controlled,
         },
-        player::components::{player, user_id},
+        player::components::{is_player, user_id},
         prefab::components::prefab_from_url,
         transform::{
             components::{local_to_parent, local_to_world, rotation, translation},
@@ -19,16 +19,19 @@ use ambient_api::{
     prelude::*,
 };
 
-use afps_schema::components::{player_cam_ref, player_model_ref, player_name, player_zoomed};
+use embers::{
+    afps_fpsmodel::assets,
+    afps_schema::components::{player_cam_ref, player_model_ref, player_name, player_zoomed},
+};
 
 #[main]
 pub async fn main() {
-    query((player(), player_zoomed(), player_cam_ref())).each_frame(|v| {
+    query((is_player(), player_zoomed(), player_cam_ref())).each_frame(|v| {
         for (_, ((), zoomed, cam_ref)) in v {
             entity::set_component(cam_ref, fovy(), if zoomed { 0.3 } else { 1.0 })
         }
     });
-    spawn_query((player(), user_id())).bind(move |players| {
+    spawn_query((is_player(), user_id())).bind(move |players| {
         for (id, (_, uid)) in players {
             run_async(async move {
                 entity::wait_for_component(id, player_name()).await;
@@ -53,7 +56,7 @@ pub async fn main() {
                     .spawn();
                 let model = Entity::new()
                     .with_merge(make_transformable())
-                    .with(prefab_from_url(), afps_fpsmodel::assets::url("Y Bot.fbx"))
+                    .with(prefab_from_url(), assets::url("Y Bot.fbx"))
                     .with(rotation(), Quat::from_rotation_z(-std::f32::consts::PI))
                     .with_default(local_to_parent())
                     .with(parent(), id)

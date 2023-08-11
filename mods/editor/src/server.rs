@@ -18,13 +18,15 @@ use ambient_api::{
     prelude::*,
 };
 
-use editor::{
-    components::{
-        camera_angle, editor_camera, mouseover_entity, mouseover_position, selected_entity,
+use embers::{
+    editor::{
+        components::{
+            camera_angle, editor_camera, mouseover_entity, mouseover_position, selected_entity,
+        },
+        messages::{Input, ToggleEditor},
     },
-    messages::{Input, ToggleEditor},
+    editor_schema::components::in_editor,
 };
-use editor_schema::components::in_editor;
 
 #[main]
 pub fn main() {
@@ -89,7 +91,7 @@ pub fn main() {
             vec2(0.0, -PI),
             |angle| {
                 *angle += msg.aim_delta;
-                angle.x = angle.x % PI;
+                angle.x %= PI;
                 angle.y = angle.y.clamp(0., PI);
             },
         );

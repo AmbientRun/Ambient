@@ -1,6 +1,6 @@
 use ambient_api::{element::Setter, prelude::*};
 
-use crate::input_schema::messages::{ReleaseInput, RequestInput};
+use crate::embers::input_schema::messages::{ReleaseInput, RequestInput};
 
 pub fn use_hotkey_toggle(
     hooks: &mut Hooks,
