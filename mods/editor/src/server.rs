@@ -7,6 +7,7 @@ use ambient_api::{
             components::{active_camera, aspect_ratio_from_window},
             concepts::make_perspective_infinite_reverse_camera,
         },
+        physics::components::dynamic,
         player::components::user_id,
         rendering::components::outline_recursive,
         transform::components::{rotation, translation},
@@ -103,11 +104,23 @@ pub fn main() {
             entity::add_component(id, selected_entity(), entity);
         }
 
-        if let Some((entity, translate_to)) =
-            entity::get_component(id, selected_entity()).zip(msg.translate_to)
-        {
-            if entity::has_component(entity, translation()) {
-                entity::set_component(entity, translation(), translate_to);
+        if let Some(entity) = entity::get_component(id, selected_entity()) {
+            if let Some(translate_to) = msg.translate_to {
+                if entity::has_component(entity, translation()) {
+                    entity::set_component(entity, translation(), translate_to);
+                }
+            }
+
+            // TODO: Unfreezing doesn't work because dynamic() isn't updated.
+            // With that being said, dynamic() should probably be replaced by a collider_type() enum.
+            // Even then, though, that isn't synced back.
+            if msg.freeze {
+                let is_dynamic = entity::get_component(entity, dynamic()).unwrap_or_default();
+                if is_dynamic {
+                    physics::freeze(entity)
+                } else {
+                    physics::unfreeze(entity)
+                }
             }
         }
     });

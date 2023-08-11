@@ -36,4 +36,5 @@ boost = "Bool"
 ray_origin = "Vec3"
 ray_direction = "Vec3"
 select = "Bool"
+freeze = "Bool"
 translate_to = { type = "Option", element_type = "Vec3" }

@@ -22,6 +22,7 @@ pub fn main() {
     let mut accumulated_aim_delta = Vec2::ZERO;
 
     let mut select_pressed = false;
+    let mut freeze_pressed = false;
 
     let mut gizmo_active = None;
     let mut gizmo_accumulated_drag = 0.0;
@@ -40,12 +41,13 @@ pub fn main() {
 
         let (delta, input) = input::get_delta();
 
-        if delta.mouse_buttons.contains(&MouseButton::Right) {
+        if gizmo_active.is_none() && delta.mouse_buttons.contains(&MouseButton::Right) {
             input_lock = Some(CursorLockGuard::new());
         } else if delta.mouse_buttons_released.contains(&MouseButton::Right) {
             input_lock = None;
         }
         select_pressed |= delta.mouse_buttons.contains(&MouseButton::Left);
+        freeze_pressed |= delta.keys_released.contains(&KeyCode::R);
 
         let movement = [
             (KeyCode::W, -Vec2::Y),
@@ -117,6 +119,7 @@ pub fn main() {
                 ray_origin: ray.origin,
                 ray_direction: ray.dir,
                 select: select_pressed,
+                freeze: freeze_pressed,
                 translate_to: gizmo_original_translation
                     .zip(gizmo_active.as_ref())
                     .map(|(t, g)| t + (g.direction * gizmo_accumulated_drag)),
