@@ -10,7 +10,7 @@ use ambient_api::{
     global::game_time,
     prelude::*,
 };
-use ambient_example_music_sequencer::{
+use embers::ambient_example_music_sequencer::{
     components::{bpm, track, track_audio_url, track_note_selection},
     messages::{Click, SetBpm},
 };

@@ -7,7 +7,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use ambient_example_tictactoe::{
+use embers::ambient_example_tictactoe::{
     components::{cell, cells, owned_by},
     messages::Input,
 };

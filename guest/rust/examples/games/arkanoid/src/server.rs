@@ -14,11 +14,12 @@ use ambient_api::{
 };
 
 mod constants;
-use ambient_example_arkanoid::{
+use constants::*;
+use embers::ambient_example_arkanoid::{
+    assets,
     components::{player_movement_direction, track_audio_url},
     messages::{Input, Ping},
 };
-use constants::*;
 
 fn spawn_enemies(enemies: &mut Vec<EntityId>, y_pos: f32, color: Vec3) {
     for i in 0..7 {
@@ -45,7 +46,7 @@ fn gen_ball_velocity() -> Vec3 {
 
 #[main]
 pub fn main() {
-    let bounce_url = ambient_example_arkanoid::assets::url("paddle_bounce.wav");
+    let bounce_url = assets::url("paddle_bounce.wav");
 
     entity::add_component(
         entity::synchronized_resources(),

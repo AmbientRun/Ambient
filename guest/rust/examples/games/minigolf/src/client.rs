@@ -2,7 +2,10 @@ use ambient_api::{
     core::{messages::Frame, physics::components::linear_velocity},
     prelude::*,
 };
-use ambient_example_minigolf::messages::{Bonk, Hit, Input};
+use embers::ambient_example_minigolf::{
+    assets,
+    messages::{Bonk, Hit, Input},
+};
 
 #[main]
 fn main() {
@@ -32,7 +35,7 @@ fn main() {
         amp = amp.sqrt().clamp(0.0, 1.0);
         amp = amp * amp;
         ball_hit_player.set_amplitude(amp);
-        ball_hit_player.play(ambient_example_minigolf::assets::url("ball-hit.ogg"));
+        ball_hit_player.play(assets::url("ball-hit.ogg"));
     });
 
     Bonk::subscribe(move |_source, data| {
@@ -44,6 +47,6 @@ fn main() {
         amp = amp.sqrt().clamp(0.0, 1.0);
         amp = amp * amp;
         ball_drop_player.set_amplitude(amp);
-        ball_drop_player.play(ambient_example_minigolf::assets::url("ball-drop.ogg"));
+        ball_drop_player.play(assets::url("ball-drop.ogg"));
     });
 }

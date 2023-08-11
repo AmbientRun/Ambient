@@ -27,17 +27,15 @@ use ambient_api::{
     entity::resources,
     prelude::*,
 };
-use ambient_example_minigolf::{
-    components::player_shoot_requested,
-    messages::{Bonk, Hit, Input},
-};
-use ambient_example_minigolf::{
+use embers::ambient_example_minigolf::{
+    assets,
     components::{
         ball, next_player_hue, origin, player_ball, player_camera_state, player_color,
-        player_indicator, player_indicator_arrow, player_restore_point, player_stroke_count,
-        player_text, player_text_container,
+        player_indicator, player_indicator_arrow, player_restore_point, player_shoot_requested,
+        player_stroke_count, player_text, player_text_container,
     },
     concepts::{make_player_camera_state, make_player_state},
+    messages::{Bonk, Hit, Input},
 };
 use utils::CameraState;
 
@@ -62,22 +60,13 @@ fn create_environment() {
     make_transformable().with_default(sky()).spawn();
 
     make_transformable()
-        .with(
-            prefab_from_url(),
-            ambient_example_minigolf::assets::url("level.glb"),
-        )
+        .with(prefab_from_url(), assets::url("level.glb"))
         .with(translation(), Vec3::Z * -0.25)
         .spawn();
 
     make_transformable()
-        .with(
-            model_from_url(),
-            ambient_example_minigolf::assets::url("fan.glb"),
-        )
-        .with(
-            collider_from_url(),
-            ambient_example_minigolf::assets::url("fan.glb"),
-        )
+        .with(model_from_url(), assets::url("fan.glb"))
+        .with(collider_from_url(), assets::url("fan.glb"))
         .with(kinematic(), ())
         .with(dynamic(), true)
         .with(angular_velocity(), vec3(0., 90_f32.to_radians(), 0.))
@@ -92,10 +81,7 @@ fn make_golf_ball() -> Entity {
         .with_default(physics_controlled())
         .with(dynamic(), true)
         .with(sphere_collider(), BALL_RADIUS)
-        .with(
-            model_from_url(),
-            ambient_example_minigolf::assets::url("ball.glb"),
-        )
+        .with(model_from_url(), assets::url("ball.glb"))
 }
 
 fn make_text() -> Entity {
@@ -187,10 +173,7 @@ pub fn main() {
                     make_transformable()
                         .with(color(), next_color)
                         .with(user_id(), player_user_id.clone())
-                        .with(
-                            model_from_url(),
-                            ambient_example_minigolf::assets::url("indicator.glb"),
-                        )
+                        .with(model_from_url(), assets::url("indicator.glb"))
                         .spawn(),
                 );
 
@@ -200,10 +183,7 @@ pub fn main() {
                     make_transformable()
                         .with(color(), next_color)
                         .with(user_id(), player_user_id.clone())
-                        .with(
-                            model_from_url(),
-                            ambient_example_minigolf::assets::url("indicator_arrow.glb"),
-                        )
+                        .with(model_from_url(), assets::url("indicator_arrow.glb"))
                         .spawn(),
                 );
 
@@ -212,14 +192,8 @@ pub fn main() {
         });
 
     let flag = make_transformable()
-        .with(
-            model_from_url(),
-            ambient_example_minigolf::assets::url("flag.glb"),
-        )
-        .with(
-            collider_from_url(),
-            ambient_example_minigolf::assets::url("flag.glb"),
-        )
+        .with(model_from_url(), assets::url("flag.glb"))
+        .with(collider_from_url(), assets::url("flag.glb"))
         .with(dynamic(), true)
         .with(kinematic(), ())
         .with(origin(), vec3(-35., 205., 0.3166))

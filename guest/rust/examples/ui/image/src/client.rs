@@ -9,12 +9,13 @@ use ambient_api::{
     prelude::*,
     ui::ImageFromUrl,
 };
+use embers::ambient_example_image::assets;
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
     Group::el([FlowColumn::el([
         ImageFromUrl {
-            url: ambient_example_image::assets::url("squirrel.png"),
+            url: assets::url("squirrel.png"),
         }
         .el()
         .with_default(size_from_background_image()),

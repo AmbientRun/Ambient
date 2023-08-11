@@ -6,7 +6,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use ambient_example_clientside::components::{grid_position, grid_side_length};
+use embers::ambient_example_clientside::components::{grid_position, grid_side_length};
 
 #[main]
 pub fn main() {

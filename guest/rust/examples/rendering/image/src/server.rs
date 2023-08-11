@@ -31,7 +31,7 @@ pub fn main() {
         .with(scale(), Vec3::ONE * 10.)
         .with(
             pbr_material_from_url(),
-            ambient_example_image_quad::assets::url("pipeline.toml/0/mat.json"),
+            embers::ambient_example_image_quad::assets::url("pipeline.toml/0/mat.json"),
         )
         .spawn();
 }

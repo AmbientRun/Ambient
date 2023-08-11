@@ -6,7 +6,8 @@ use ambient_api::{
     entity::{resources, synchronized_resources},
     prelude::*,
 };
-use ambient_example_music_sequencer::{
+use embers::ambient_example_music_sequencer::{
+    assets,
     components::{bpm, next_player_hue, player_hue, track, track_audio_url, track_note_selection},
     messages::{Click, SetBpm},
 };
@@ -35,10 +36,7 @@ pub async fn main() {
         Entity::new()
             .with(name(), track_name.to_string())
             .with(track(), idx as u32)
-            .with(
-                track_audio_url(),
-                ambient_example_music_sequencer::assets::url(track_url),
-            )
+            .with(track_audio_url(), assets::url(track_url))
             .with(track_note_selection(), vec![0; common::NOTE_COUNT])
             .spawn();
     }

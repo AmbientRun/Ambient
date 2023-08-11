@@ -13,6 +13,7 @@ use ambient_api::{
     },
     prelude::*,
 };
+use embers::ambient_example_samplers::assets;
 
 #[main]
 pub fn main() {
@@ -27,18 +28,12 @@ pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
         .with(translation(), vec3(-1.25, 0.0, 0.0))
-        .with(
-            prefab_from_url(),
-            ambient_example_samplers::assets::url("quad-linear.glb"),
-        )
+        .with(prefab_from_url(), assets::url("quad-linear.glb"))
         .spawn();
 
     Entity::new()
         .with_merge(make_transformable())
         .with(translation(), vec3(1.25, 0.0, 0.0))
-        .with(
-            prefab_from_url(),
-            ambient_example_samplers::assets::url("quad-nearest.glb"),
-        )
+        .with(prefab_from_url(), assets::url("quad-nearest.glb"))
         .spawn();
 }

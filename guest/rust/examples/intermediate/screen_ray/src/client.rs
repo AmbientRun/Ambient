@@ -11,7 +11,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use ambient_example_screen_ray::messages::{Input, WorldPosition};
+use embers::ambient_example_screen_ray::messages::{Input, WorldPosition};
 
 #[main]
 pub fn main() {

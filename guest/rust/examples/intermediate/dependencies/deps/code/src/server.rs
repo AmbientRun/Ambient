@@ -8,10 +8,12 @@ use ambient_api::{
     },
     prelude::*,
 };
-use ambient_example_deps_assets::{components::spin_speed, types::SpinDirection};
-use ambient_example_deps_code::{
-    components::{spawned_by_us, spin_direction},
-    messages::Spawn,
+use embers::{
+    ambient_example_deps_assets::{assets, components::spin_speed, types::SpinDirection},
+    ambient_example_deps_code::{
+        components::{spawned_by_us, spin_direction},
+        messages::Spawn,
+    },
 };
 
 #[main]
@@ -20,10 +22,7 @@ pub fn main() {
         Entity::new()
             .with_merge(make_transformable())
             .with_default(spawned_by_us())
-            .with(
-                prefab_from_url(),
-                ambient_example_deps_assets::assets::url("Teapot.glb"),
-            )
+            .with(prefab_from_url(), assets::url("Teapot.glb"))
             .with(spin_direction(), msg.spin_direction)
             .with(spin_speed(), msg.spin_speed)
             .with(translation(), (random::<Vec3>() - 0.5) * 5.0)

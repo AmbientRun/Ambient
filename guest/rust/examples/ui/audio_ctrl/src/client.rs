@@ -5,6 +5,7 @@ use ambient_api::{
     },
     prelude::*,
 };
+use embers::ambient_example_audio_ctrl::assets;
 
 #[element_component]
 fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
@@ -71,11 +72,10 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
         Button::new("play sound", {
             let set_sound = set_sound.clone();
             move |_| {
-                let id =
-                    audio_player.play(ambient_example_audio_ctrl::assets::url("amen_break.wav"));
+                let id = audio_player.play(assets::url("amen_break.wav"));
                 // mono ogg
                 // let id = audio_player.play(
-                //     ambient_example_audio_ctrl::assets::url("455516__ispeakwaves__the-plan-upbeat-loop-no-voice-edit-mono-track.ogg")
+                //     assets::url("455516__ispeakwaves__the-plan-upbeat-loop-no-voice-edit-mono-track.ogg")
                 // );
                 set_sound(Some(id));
             }

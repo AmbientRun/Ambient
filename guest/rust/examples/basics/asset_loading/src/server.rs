@@ -20,7 +20,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use ambient_example_asset_loading::components::is_the_best;
+use embers::ambient_example_asset_loading::{assets, components::is_the_best};
 
 #[main]
 pub async fn main() {
@@ -52,10 +52,7 @@ pub async fn main() {
     let model = Entity::new()
         .with_merge(make_transformable())
         .with_default(cast_shadows())
-        .with(
-            prefab_from_url(),
-            ambient_example_asset_loading::assets::url("Teapot.glb"),
-        )
+        .with(prefab_from_url(), assets::url("Teapot.glb"))
         .with(is_the_best(), true)
         .spawn();
 

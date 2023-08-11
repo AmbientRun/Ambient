@@ -1,5 +1,5 @@
 use ambient_api::{core::layout::components::space_between_items, prelude::*};
-use ambient_example_todo::{
+use embers::ambient_example_todo::{
     components::{todo_item, todo_time},
     messages::{DeleteItem, NewItem},
 };

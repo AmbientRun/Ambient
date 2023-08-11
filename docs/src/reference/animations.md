@@ -27,6 +27,12 @@ As an example:
 - The build process will produce `build/ambient_example_skinmesh/assets/Capoeira.fbx/animations/mixamo.com.anim`.
 - The animation clip URL is this path after `assets/`: `Capoeira.fbx/animations/mixamo.com.anim`.
 
+In the following examples, it is assumed that you have imported `assets` from an ember, like so:
+
+```rust
+use embers::ambient_example_skinmesh::assets;
+```
+
 ## Animation player
 
 An `AnimationPlayer` is used to play animations. The player executes a graph of animation nodes; at present,
@@ -36,14 +42,14 @@ Here's an example of how to set up a graph and play it for a single animation:
 
 ```rust
 let clip = PlayClipFromUrlNode::new(
-    ambient_example_skinmesh::assets::url("Capoeira.fbx/animations/mixamo.com.anim")
+    assets::url("Capoeira.fbx/animations/mixamo.com.anim")
 );
 let player = AnimationPlayer::new(&clip);
 
 // Let's load a character model to apply the animation to.
 Entity::new()
     .with_merge(make_transformable())
-    .with(prefab_from_url(), ambient_example_skinmesh::assets::url("Peasant Man.fbx"))
+    .with(prefab_from_url(), assets::url("Peasant Man.fbx"))
     .with(apply_animation_player(), player.0)
     .spawn();
 ```
@@ -56,10 +62,10 @@ A `BlendNode` can be used to blend two animations together:
 
 ```rust
 let capoeira = PlayClipFromUrlNode::new(
-    ambient_example_skinmesh::assets::url("Capoeira.fbx/animations/mixamo.com.anim")
+    assets::url("Capoeira.fbx/animations/mixamo.com.anim")
 );
 let robot = PlayClipFromUrlNode::new(
-    ambient_example_skinmesh::assets::url("Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
+    assets::url("Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
 );
 let blend = BlendNode::new(&capoeira, &robot, 0.3);
 let anim_player = AnimationPlayer::new(&blend);
@@ -75,10 +81,10 @@ body:
 
 ```rust
 let capoeira = PlayClipFromUrlNode::new(
-    ambient_example_skinmesh::assets::url("Capoeira.fbx/animations/mixamo.com.anim")
+    assets::url("Capoeira.fbx/animations/mixamo.com.anim")
 );
 let robot = PlayClipFromUrlNode::new(
-    ambient_example_skinmesh::assets::url("Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
+    assets::url("Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
 );
 
 let blend = BlendNode::new(&capoeira, &robot, 0.0);
@@ -124,7 +130,7 @@ Animations can be pre-loaded by creating a `PlayClipFromUrlNode` node and waitin
 
 ```rust
 let capoeira = PlayClipFromUrlNode::new(
-    ambient_example_skinmesh::assets::url("Capoeira.fbx/animations/mixamo.com.anim")
+    assets::url("Capoeira.fbx/animations/mixamo.com.anim")
 );
 capoeira.wait_for_load().await;
 ```

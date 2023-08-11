@@ -19,6 +19,7 @@ use ambient_api::{
     },
     prelude::*,
 };
+use embers::ambient_example_skinmesh::assets;
 
 #[main]
 pub async fn main() {
@@ -40,17 +41,12 @@ pub async fn main() {
 
     let unit_id = Entity::new()
         .with_merge(make_transformable())
-        .with(
-            prefab_from_url(),
-            ambient_example_skinmesh::assets::url("Peasant Man.fbx"),
-        )
+        .with(prefab_from_url(), assets::url("Peasant Man.fbx"))
         .with(name(), "Peasant".to_string())
         .spawn();
 
-    let capoeira = PlayClipFromUrlNode::new(ambient_example_skinmesh::assets::url(
-        "Capoeira.fbx/animations/mixamo.com.anim",
-    ));
-    let robot = PlayClipFromUrlNode::new(ambient_example_skinmesh::assets::url(
+    let capoeira = PlayClipFromUrlNode::new(assets::url("Capoeira.fbx/animations/mixamo.com.anim"));
+    let robot = PlayClipFromUrlNode::new(assets::url(
         "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
     ));
     let blend = BlendNode::new(&capoeira, &robot, 0.);
@@ -130,7 +126,7 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
         ]),
         FlowRow::el([
             Button::new("Play single animation", move |_| {
-                let robot = PlayClipFromUrlNode::new(ambient_example_skinmesh::assets::url(
+                let robot = PlayClipFromUrlNode::new(assets::url(
                     "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
                 ));
                 robot.looping(false);
@@ -142,7 +138,7 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
             })
             .el(),
             Button::new("Freeze animation", move |_| {
-                let robot = PlayClipFromUrlNode::new(ambient_example_skinmesh::assets::url(
+                let robot = PlayClipFromUrlNode::new(assets::url(
                     "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
                 ));
                 robot.looping(false);

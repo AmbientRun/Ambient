@@ -9,10 +9,12 @@ use ambient_api::{
     },
     prelude::*,
 };
-use ambient_example_deps_assets::types::SpinDirection;
-use deps_code::{
-    components::{spawned_by_us, spin_direction},
-    messages::Spawn,
+use embers::{
+    ambient_example_deps_assets::types::SpinDirection,
+    deps_code::{
+        components::{spawned_by_us, spin_direction},
+        messages::Spawn,
+    },
 };
 
 #[main]

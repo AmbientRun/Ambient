@@ -94,6 +94,18 @@ pub async fn generate_code(
         #components_init
     };
 
+    let output = if context == Context::GuestUser {
+        // In guest code, we wrap all generated output in an `embers` module to avoid polluting their
+        // global scope.
+        quote! {
+            pub mod embers {
+                #output
+            }
+        }
+    } else {
+        output
+    };
+
     Ok(output)
 }
 

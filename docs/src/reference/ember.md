@@ -24,6 +24,12 @@ wasm-tools component new target/wasm32-wasi/debug/your_ember_server.wasm -o buil
 
 using [wasm-tools](https://github.com/bytecodealliance/wasm-tools) and a bundled version of the [preview2-prototyping WASI adapter](https://github.com/bytecodealliance/preview2-prototyping).
 
+## Rust
+
+Rust is a first-class language for Ambient embers. The default new ember template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both.
+
+The API provides a `#[main]` attribute macro that generates code ("projects") for the ember hierarchy of your ember. This allows you to access the functionality of other embers in your ember's code. All embers, including your own, will be in the `embers` module.
+
 ## Reference
 
 - `SnakeCaseIdentifier`s are snake-case ASCII identifiers (as a string)

@@ -15,7 +15,7 @@ use ambient_api::{
 mod constants;
 use constants::*;
 
-use ambient_example_arkanoid::{
+use embers::ambient_example_arkanoid::{
     components::track_audio_url,
     messages::{Input, Ping},
 };

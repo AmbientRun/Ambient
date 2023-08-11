@@ -19,7 +19,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use ambient_example_instancing::components::instance_index;
+use embers::ambient_example_instancing::{assets, components::instance_index};
 
 #[main]
 pub async fn main() {
@@ -43,9 +43,9 @@ pub async fn main() {
                 let index = k * INSTANCES.z * j * INSTANCES.y * INSTANCES.y + i;
 
                 let model = if index % 2 == 0 {
-                    ambient_example_instancing::assets::url("Teapot.glb")
+                    assets::url("Teapot.glb")
                 } else {
-                    ambient_example_instancing::assets::url("Monkey.glb")
+                    assets::url("Monkey.glb")
                 };
 
                 Entity::new()

@@ -11,7 +11,8 @@ use ambient_api::{
     },
     prelude::*,
 };
-use ambient_example_pong::{
+use embers::ambient_example_pong::{
+    assets,
     components::{player_movement_direction, track_audio_url},
     messages::{Input, Ping},
 };
@@ -41,7 +42,7 @@ fn gen_ball_velocity() -> Vec3 {
 
 #[main]
 pub fn main() {
-    let bgm_url = ambient_example_pong::assets::url("Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg");
+    let bgm_url = assets::url("Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg");
 
     entity::add_component(entity::synchronized_resources(), track_audio_url(), bgm_url);
     // Spawn field, paddles and ball

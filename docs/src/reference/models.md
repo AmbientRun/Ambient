@@ -20,7 +20,7 @@ The model can then be spawned using `prefab_from_url`, assuming that `output_pre
 ```rust
 Entity::new()
     .with_merge(make_transformable())
-    .with(prefab_from_url(), my_ember::assets::url("MyModel.fbx"))
+    .with(prefab_from_url(), embers::my_ember::assets::url("MyModel.fbx"))
     .spawn();
 ```
 
@@ -45,7 +45,7 @@ You can get individual bones of a loaded model using the `animation::get_bone_by
 ```rust
 let unit_id = Entity::new()
     .with_merge(make_transformable())
-    .with(prefab_from_url(), my_ember::assets::url("MyModel.fbx"))
+    .with(prefab_from_url(), embers::my_ember::assets::url("MyModel.fbx"))
     .spawn();
 let left_foot = animation::get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
 entity::set_component(left_foot, rotation(), Quat::from_rotation_x(0.3));

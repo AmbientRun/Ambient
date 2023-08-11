@@ -19,7 +19,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use ambient_example_messaging::messages::{Hello, Local};
+use embers::ambient_example_messaging::messages::{Hello, Local};
 
 #[main]
 pub fn main() {

@@ -21,7 +21,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use ambient_example_physics::messages::Bonk;
+use embers::ambient_example_physics::{assets, messages::Bonk};
 
 #[main]
 pub async fn main() {
@@ -51,10 +51,7 @@ pub async fn main() {
 
     Entity::new()
         .with_merge(make_transformable())
-        .with(
-            prefab_from_url(),
-            ambient_example_physics::assets::url("shape.glb"),
-        )
+        .with(prefab_from_url(), assets::url("shape.glb"))
         .spawn();
 
     Collision::subscribe(move |msg| {

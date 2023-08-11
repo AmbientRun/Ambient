@@ -15,11 +15,12 @@ use ambient_api::{
 };
 
 mod constants;
-use ambient_example_tictactoe::{
+use constants::*;
+
+use embers::ambient_example_tictactoe::{
     components::{cell, cells, owned_by},
     messages::Input,
 };
-use constants::*;
 
 #[main]
 pub fn main() {
