@@ -1,0 +1,6 @@
+[ember]
+id = "afps_scene"
+name = "AFPS Scene"
+
+[dependencies]
+afps_schema = { path = "../../schema/afps" }

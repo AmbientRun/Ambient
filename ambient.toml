@@ -3,17 +3,21 @@ id = "afps"
 name = "afps"
 version = "0.0.1"
 
-includes = [
-    "src/zombie/ambient.toml",
-    "src/fpsmodel/ambient.toml",
-    "src/fpsmovement/ambient.toml",
-    "src/fpsrule/ambient.toml",
-    "src/fpsanim/ambient.toml",
-    "src/fpsui/ambient.toml",
-    "src/fpsaudio/ambient.toml",
+[dependencies]
+afps_schema = { path = "schema/afps" }
+input_schema = { path = "schema/input" }
 
-    "src/world_latency/ambient.toml",
-    "src/console/ambient.toml",
-    "src/ember_reloader/ambient.toml",
-    "src/spraypaint/ambient.toml",
-]
+fpsanim = { path = "core/fpsanim" }
+fpsaudio = { path = "core/fpsaudio" }
+fpsmodel = { path = "core/fpsmodel" }
+fpsmovement = { path = "core/fpsmovement" }
+fpsrule = { path = "core/fpsrule" }
+fpsui = { path = "core/fpsui" }
+
+console = { path = "tools/console" }
+ember_manager = { path = "tools/ember_manager" }
+
+scene = { path = "mods/scene" }
+spraypaint = { path = "mods/spraypaint" }
+zombie = { path = "mods/zombie" }
+world_latency = { path = "mods/world_latency" }

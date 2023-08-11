@@ -1,0 +1,7 @@
+[ember]
+id = "afps_fpsui"
+name = "AFPS UI"
+
+[dependencies]
+input_schema = { path = "../../schema/input" }
+afps_schema = { path = "../../schema/afps" }

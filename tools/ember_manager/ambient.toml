@@ -1,0 +1,31 @@
+[ember]
+id = "ember_manager"
+name = "Ember Manager"
+
+[messages.EmberLoad.fields]
+url = "String"
+
+[messages.EmberLoadSuccess.fields]
+id = "String"
+name = { container_type = "Option", element_type = "String" }
+version = "String"
+authors = { container_type = "Vec", element_type = "String" }
+client_wasms = { container_type = "Vec", element_type = "String" }
+server_wasms = { container_type = "Vec", element_type = "String" }
+
+[messages.ErrorMessage.fields]
+reason = "String"
+
+[messages.WasmSetEnabled.fields]
+id = "EntityId"
+enabled = "Bool"
+
+[messages.WasmReload.fields]
+id = "EntityId"
+
+[messages.WasmReplaceBytecodeUrl.fields]
+id = "EntityId"
+url = "String"
+
+[dependencies]
+input_schema = { path = "../../schema/input" }

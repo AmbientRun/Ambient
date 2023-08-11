@@ -1,5 +1,0 @@
-[components]
-player_name = { type = "String", attributes = ["Networked", "Debuggable"] }
-
-[messages.start_game.fields]
-name = { type = "String" }

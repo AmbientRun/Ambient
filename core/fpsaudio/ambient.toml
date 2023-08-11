@@ -1,0 +1,6 @@
+[ember]
+id = "afps_fpsaudio"
+name = "AFPS Audio"
+
+[dependencies]
+afps_schema = { path = "../../schema/afps" }
