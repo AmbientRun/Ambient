@@ -66,6 +66,8 @@ pub fn main() {
 
             entity::add_component(id, editor_camera(), camera_id);
         } else {
+            deselect(id);
+
             if let Some(camera_id) = entity::get_component(id, editor_camera()) {
                 entity::remove_component(id, editor_camera());
                 entity::despawn(camera_id);
@@ -110,20 +112,12 @@ pub fn main() {
             entity::remove_component(id, mouseover_entity());
         }
 
-        if let (Some(entity), true) = (entity::get_component(id, mouseover_entity()), msg.select) {
-            let already_selected =
-                if let Some(selected) = entity::get_component(id, selected_entity()) {
-                    entity::add_component(selected, outline_recursive(), Vec4::ZERO);
-                    selected == entity
-                } else {
-                    false
-                };
-
-            if !already_selected {
-                entity::add_component(entity, outline_recursive(), Vec4::ONE);
-                entity::add_component(id, selected_entity(), entity);
-            } else {
-                entity::remove_component(id, selected_entity());
+        if let (Some(mouseover_id), true) =
+            (entity::get_component(id, mouseover_entity()), msg.select)
+        {
+            let previously_selected_id = deselect(id);
+            if Some(mouseover_id) != previously_selected_id {
+                select(id, mouseover_id);
             }
         }
 
@@ -161,4 +155,17 @@ pub fn get_active_camera(player_user_id: &str) -> Option<EntityId> {
         .map(|(id, (ordering, _))| (id, ordering))
         .max_by(|x, y| x.1.partial_cmp(&y.1).unwrap_or(std::cmp::Ordering::Less))
         .map(|(id, _)| id)
+}
+
+fn deselect(player_id: EntityId) -> Option<EntityId> {
+    let Some(selected_id) = entity::get_component(player_id, selected_entity()) else { return None; };
+    entity::add_component(selected_id, outline_recursive(), Vec4::ZERO);
+    entity::remove_component(player_id, selected_entity());
+
+    Some(selected_id)
+}
+
+fn select(player_id: EntityId, entity_id: EntityId) {
+    entity::add_component(entity_id, outline_recursive(), Vec4::ONE);
+    entity::add_component(player_id, selected_entity(), entity_id);
 }
