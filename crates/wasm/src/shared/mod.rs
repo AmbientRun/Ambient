@@ -5,12 +5,9 @@ pub(crate) mod implementation;
 mod module;
 
 pub mod build;
-#[cfg(feature = "wit")]
 pub mod conversion;
 pub mod host_guest_state;
 pub mod message;
-
-#[cfg(feature = "wit")]
 pub mod wit;
 
 pub use ambient_ecs::generated::components::core::wasm::*;
@@ -31,7 +28,7 @@ use ambient_native_std::{
     asset_cache::AssetCache, asset_url::AbsAssetUrl, download_asset::download_uncached_bytes,
 };
 use itertools::Itertools;
-#[cfg(feature = "wit")]
+#[cfg(feature = "native")]
 use wasi_cap_std_sync::Dir;
 
 mod internal {
@@ -72,14 +69,14 @@ mod internal_wit {
     });
 }
 
-#[cfg(feature = "wit")]
+#[cfg(feature = "native")]
 use self::internal_wit::preopened_dir;
 use self::message::Source;
 use crate::shared::message::{RuntimeMessageExt, Target};
 
 pub fn init_all_components() {
     internal::init_components();
-    #[cfg(feature = "wit")]
+    #[cfg(feature = "native")]
     internal_wit::init_components();
     message::init_components();
 }

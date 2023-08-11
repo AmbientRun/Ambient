@@ -1,4 +1,4 @@
-wasmtime::component::bindgen!({
+wasm_bridge::component::bindgen!({
     path: "wit",
     async: true,
 });

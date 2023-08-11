@@ -12,7 +12,6 @@ pub struct BindingsBase {
     pub query_states: QueryStateMap,
 }
 
-#[cfg(feature = "wit")]
 pub trait BindingsBound:
     // Shared
     super::wit::types::Host
