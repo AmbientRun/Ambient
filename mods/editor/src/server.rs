@@ -161,7 +161,7 @@ pub fn get_active_camera(player_user_id: &str) -> Option<EntityId> {
 
 fn deselect(player_id: EntityId) -> Option<EntityId> {
     let Some(selected_id) = entity::get_component(player_id, selected_entity()) else { return None; };
-    entity::add_component(selected_id, outline_recursive(), Vec4::ZERO);
+    entity::remove_component(selected_id, outline_recursive());
     entity::remove_component(player_id, selected_entity());
 
     Some(selected_id)
