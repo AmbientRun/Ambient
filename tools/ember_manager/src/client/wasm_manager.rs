@@ -2,7 +2,7 @@ use ambient_api::{
     core::{
         text::{components::font_style, types::FontStyle},
         wasm::components::{
-            bytecode_from_url, module, module_enabled, module_name, module_on_server,
+            bytecode_from_url, is_module, is_module_on_server, module_enabled, module_name,
         },
     },
     prelude::*,
@@ -30,7 +30,7 @@ fn WasmManagerInner(hooks: &mut Hooks) -> Element {
 
     let mut modules: Vec<_> = hooks
         .use_query((
-            module(),
+            is_module(),
             module_name(),
             module_enabled(),
             bytecode_from_url(),
@@ -40,7 +40,7 @@ fn WasmManagerInner(hooks: &mut Hooks) -> Element {
             (
                 id,
                 (
-                    entity::has_component(id, module_on_server()),
+                    entity::has_component(id, is_module_on_server()),
                     name,
                     enabled,
                     url,

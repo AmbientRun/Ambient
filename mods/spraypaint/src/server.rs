@@ -6,7 +6,7 @@
 // };
 use ambient_api::{
     core::{
-        player::components::player,
+        player::components::is_player,
         prefab::components::prefab_from_url,
         primitives::components::{cube, quad},
         rendering::components::decal_from_url,
@@ -62,7 +62,7 @@ pub fn main() {
     });
 
     // claymore
-    let player_query = query(translation()).requires(player()).build();
+    let player_query = query(translation()).requires(is_player()).build();
     query((claymore(), translation())).each_frame(move |entities| {
         for (e, (source_id, cm_pos)) in entities {
             let source = entity::get_component(source_id, components::player_name())

@@ -8,7 +8,7 @@ use ambient_api::{
         physics::components::{
             character_controller_height, character_controller_radius, physics_controlled,
         },
-        player::components::player,
+        player::components::is_player,
         prefab::components::prefab_from_url,
         transform::{
             components::{local_to_parent, local_to_world, rotation, translation},
@@ -67,7 +67,7 @@ pub async fn main() {
         }
     });
 
-    let player_query = query(translation()).requires(player()).build();
+    let player_query = query(translation()).requires(is_player()).build();
 
     query((translation(), components::is_zombie())).each_frame(move |zombies| {
         for (zombie, (pos, _)) in zombies {

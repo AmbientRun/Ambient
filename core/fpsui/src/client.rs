@@ -1,7 +1,7 @@
 // TODO: add menu to choose game type
 
 use ambient_api::{
-    core::player::components::player,
+    core::player::components::is_player,
     core::rect::components::{background_color, line_from, line_to, line_width},
     prelude::*,
     ui::ImageFromUrl,
@@ -169,7 +169,7 @@ fn Scoreboard(hooks: &mut Hooks) -> Element {
     use_input_request(hooks);
 
     let players = hooks.use_query((
-        player(),
+        is_player(),
         player_name(),
         player_killcount(),
         player_deathcount(),

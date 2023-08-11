@@ -3,7 +3,7 @@ use ambient_api::{
     core::{
         animation::components::apply_animation_player,
         ecs::components::{children, parent},
-        player::components::player,
+        player::components::is_player,
     },
     prelude::*,
 };
@@ -124,7 +124,7 @@ fn set_blend_weights_on_entity(id: EntityId, blend_weights: Vec<f32>) {
 
 #[main]
 pub fn main() {
-    spawn_query((player(), player_model_ref())).bind(move |v| {
+    spawn_query((is_player(), player_model_ref())).bind(move |v| {
         for (id, (_, model)) in v {
             add_anim_clip_and_blend_to_player(id);
             let output_blend_node =
@@ -137,7 +137,7 @@ pub fn main() {
     });
 
     change_query((
-        player(),
+        is_player(),
         player_health(),
         components::player_output_blend_node(),
         components::player_persistant_anim_node(),
@@ -174,7 +174,7 @@ pub fn main() {
     });
 
     change_query((
-        player(),
+        is_player(),
         player_jumping(),
         components::player_output_blend_node(),
         components::player_persistant_anim_node(),
@@ -202,7 +202,7 @@ pub fn main() {
         }
     });
     query((
-        player(),
+        is_player(),
         player_model_ref(),
         player_direction(),
         player_running(),

@@ -7,7 +7,7 @@ use ambient_api::{
         physics::components::{
             angular_velocity, cube_collider, dynamic, linear_velocity, physics_controlled,
         },
-        player::components::player,
+        player::components::is_player,
         primitives::components::cube,
         rendering::components::{cast_shadows, color},
         transform::{
@@ -28,7 +28,7 @@ use embers::afps_schema::{
 
 #[main]
 pub fn main() {
-    spawn_query(player()).bind(|results| {
+    spawn_query(is_player()).bind(|results| {
         for (id, ()) in results {
             run_async(async move {
                 entity::wait_for_component(id, player_name()).await;
@@ -247,14 +247,14 @@ pub fn main() {
     //     }
     // });
 
-    query((player(), heal_timeout())).each_frame(move |entities| {
+    query((is_player(), heal_timeout())).each_frame(move |entities| {
         for (e, (_, old_timeout)) in entities {
             let new_timeout = old_timeout - 1;
             entity::set_component(e, heal_timeout(), new_timeout);
         }
     });
 
-    let healables = query((player(), player_health())).build();
+    let healables = query((is_player(), player_health())).build();
     run_async(async move {
         loop {
             sleep(1.0).await;

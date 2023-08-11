@@ -2,7 +2,7 @@ use ambient_api::{
     animation::{self, BindId},
     core::{
         model::components::model_loaded,
-        player::components::player,
+        player::components::is_player,
         prefab::components::prefab_from_url,
         // primitives::quad,
         rendering::components::color, //pbr_material_from_url
@@ -18,7 +18,7 @@ use embers::{afps_fpsmodel::assets, afps_schema::components};
 
 #[main]
 pub fn main() {
-    spawn_query((player(), components::player_model_ref())).bind(move |results| {
+    spawn_query((is_player(), components::player_model_ref())).bind(move |results| {
         for (_, (_, model)) in results {
             run_async(async move {
                 entity::wait_for_component(model, model_loaded()).await;
