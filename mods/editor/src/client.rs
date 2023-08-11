@@ -277,28 +277,41 @@ impl Gizmo {
         }
         .extend(1.0);
 
-        let head_length = 0.1;
-        let line_end = self.origin + self.direction * (GIZMO_LENGTH * (1. - head_length));
-        let head_end = line_end + self.direction * (GIZMO_LENGTH * head_length);
+        let head_length_pct = 0.1;
+        let head_segments = 4;
+        let head_segment_length = GIZMO_LENGTH * (head_length_pct / head_segments as f32);
+        let line_end = self.origin + self.direction * (GIZMO_LENGTH * (1. - head_length_pct));
 
-        Group::el([
-            Element::new()
-                .init_default(rect())
-                .with_default(main_scene())
-                .with(line_from(), self.origin)
-                .with(line_to(), line_end)
-                .with(line_width(), GIZMO_WIDTH)
-                .with(double_sided(), true)
-                .with(color(), our_color),
-            Element::new()
-                .init_default(rect())
-                .with_default(main_scene())
-                .with(line_from(), line_end)
-                .with(line_to(), head_end)
-                .with(line_width(), GIZMO_WIDTH * 3.)
-                .with(double_sided(), true)
-                .with(color(), our_color),
-        ])
+        Group::el(
+            std::iter::once(
+                Element::new()
+                    .init_default(rect())
+                    .with_default(main_scene())
+                    .with(line_from(), self.origin)
+                    .with(line_to(), line_end)
+                    .with(line_width(), GIZMO_WIDTH)
+                    .with(double_sided(), true)
+                    .with(color(), our_color),
+            )
+            .chain((0..head_segments).map(|i| {
+                let width = GIZMO_WIDTH * (2. - 1.5 * (i as f32 / head_segments as f32));
+
+                Element::new()
+                    .init_default(rect())
+                    .with_default(main_scene())
+                    .with(
+                        line_from(),
+                        line_end + (i as f32 * head_segment_length) * self.direction,
+                    )
+                    .with(
+                        line_to(),
+                        line_end + ((i + 1) as f32 * head_segment_length) * self.direction,
+                    )
+                    .with(line_width(), width)
+                    .with(double_sided(), true)
+                    .with(color(), our_color)
+            })),
+        )
     }
 
     fn is_hovered(&self, camera_id: EntityId, mouse_position: Vec2) -> bool {
