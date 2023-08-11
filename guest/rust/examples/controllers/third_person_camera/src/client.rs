@@ -1,21 +1,26 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        player::{local_user_id, player, user_id},
-        transform::{lookat_target, rotation, translation},
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        messages::Frame,
+        player::components::{is_player, local_user_id, user_id},
+        transform::components::{lookat_target, rotation, translation},
     },
-    concepts::make_perspective_infinite_reverse_camera,
     prelude::*,
 };
-use components::player_camera_ref;
 
-use crate::components::camera_follow_distance;
+use embers::ambient_example_third_person_camera::{
+    components::{camera_follow_distance, player_camera_ref},
+    messages::Input,
+};
 
 #[main]
 fn main() {
     eprintln!("Client started");
-    spawn_query((player(), user_id())).bind(move |players| {
+    spawn_query((is_player(), user_id())).bind(move |players| {
         for (id, (_, user)) in players {
             let local_user_id =
                 entity::get_component(entity::resources(), local_user_id()).unwrap();
@@ -39,7 +44,7 @@ fn main() {
     // Since we're only attaching player_camera_ref to the local player, this system will only
     // run for the local player
     query((
-        player(),
+        is_player(),
         player_camera_ref(),
         translation(),
         rotation(),
@@ -54,7 +59,7 @@ fn main() {
     });
 
     let mut cursor_lock = input::CursorLockGuard::new();
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         let (delta, input) = input::get_delta();
         if !cursor_lock.auto_unlock_on_escape(&input) {
             return;
@@ -74,7 +79,6 @@ fn main() {
             displace.y += 1.0;
         }
 
-        messages::Input::new(displace, delta.mouse_position.x, input.mouse_wheel)
-            .send_server_reliable();
+        Input::new(displace, delta.mouse_position.x, input.mouse_wheel).send_server_reliable();
     });
 }

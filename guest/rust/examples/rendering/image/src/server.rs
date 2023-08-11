@@ -1,12 +1,17 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        primitives::quad,
-        rendering::pbr_material_from_url,
-        transform::{lookat_target, scale, translation},
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        primitives::components::quad,
+        rendering::components::pbr_material_from_url,
+        transform::{
+            components::{lookat_target, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
 
@@ -26,7 +31,7 @@ pub fn main() {
         .with(scale(), Vec3::ONE * 10.)
         .with(
             pbr_material_from_url(),
-            asset::url("assets/pipeline.toml/0/mat.json").unwrap(),
+            embers::ambient_example_image_quad::assets::url("pipeline.toml/0/mat.json"),
         )
         .spawn();
 }

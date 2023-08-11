@@ -7,13 +7,11 @@ repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/example
 type = "Game"
 categories = ["Example"]
 
-[messages.hello]
+[messages.Hello]
 name = "Hello"
 description = "Sent when a client joins the server, then sent back from the server"
 fields = { text = "String", source_reliable = "Bool" }
-# see all the supported types here:
-# https://ambientrun.github.io/Ambient/reference/project.html#components--components
 
-[messages.local]
+[messages.Local]
 description = "Sent until it's acknowledged"
 fields = { text = "String" }

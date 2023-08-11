@@ -1,5 +1,6 @@
 [ember]
-id = "ambient_testcase_588"
+id = "ambient_testcase_i588"
 name = "Test Case 588"
-description = "Reproduces https://github.com/AmbientRun/Ambient/issues/588"
 version = "0.0.1"
+description = "Reproduces https://github.com/AmbientRun/Ambient/issues/588"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/testcases/588-prefab-despawn-panic"

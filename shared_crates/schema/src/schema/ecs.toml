@@ -1,33 +1,33 @@
-
-[components."core::ecs"]
+[ember]
+id = "ecs"
 name = "Entity Component System"
 description = "Core components for the ECS and entities."
 
-[components."core::ecs::children"]
+[components.children]
 type = { type = "Vec", element_type = "EntityId" }
 name = "Children"
 description = "The children of this entity."
 attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]
 
-[components."core::ecs::dont_despawn_on_unload"]
+[components.dont_despawn_on_unload]
 type = "Empty"
 name = "Don't automatically despawn on module unload"
 description = "Indicates that this entity shouldn't be despawned when the module that spawned it unloads."
 attributes = ["Debuggable", "Store"]
 
-[components."core::ecs::dont_store"]
+[components.dont_store]
 type = "Empty"
 name = "Don't store"
 description = "Indicates that this entity shouldn't be stored on disk."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::ecs::id"]
+[components.id]
 type = "EntityId"
 name = "ID"
 description = "The ID of the entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::ecs::parent"]
+[components.parent]
 type = "EntityId"
 name = "Parent"
 description = "The parent of this entity."

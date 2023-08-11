@@ -30,6 +30,26 @@ impl<T: Send + Sync + 'static> ComponentValueBase for T {}
 pub trait ComponentValue: ComponentValueBase + Clone {}
 impl<T: ComponentValueBase + Clone> ComponentValue for T {}
 
+/// Implemented for component values that can be used as an enum
+pub trait EnumComponent: Clone + Send + Sync {
+    fn to_u32(&self) -> u32;
+    fn from_u32(v: u32) -> Option<Self>
+    where
+        Self: Sized;
+}
+impl EnumComponent for u32 {
+    fn to_u32(&self) -> u32 {
+        *self
+    }
+
+    fn from_u32(v: u32) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        Some(v)
+    }
+}
+
 /// Component key
 pub struct Component<T: 'static> {
     desc: ComponentDesc,
@@ -370,8 +390,7 @@ macro_rules! components {
 
                     static ATTRIBUTES: $crate::OnceCell<$crate::parking_lot::RwLock<$crate::AttributeStore>> = $crate::OnceCell::new();
 
-                    static PATH: &str = concat!("core::", $ns, "::", stringify!($name));
-
+                    static PATH: &str = concat!("ambient_core::", $ns, "::", stringify!($name));
                     static VTABLE: &$crate::ComponentVTable<$ty> = &$crate::ComponentVTable::construct(
                         PATH,
                         |desc| $crate::parking_lot::RwLockReadGuard::map(ATTRIBUTES.get_or_init(|| init_attr($crate::Component::new(desc))).read(), |v| v),
@@ -386,8 +405,9 @@ macro_rules! components {
                 $(#[$outer])*
                 pub fn $name() -> $crate::Component<$ty> {
 
-                    let desc = *[<comp_ $name>].get()
-                        .expect(concat!("Component: ", "core::", $ns, "::", stringify!($name), " is not initialized"));
+                    let desc = *[<comp_ $name>].get().unwrap_or_else(|| {
+                        panic!("Component {} is not initialized", concat!("ambient_core::", $ns, "::", stringify!($name)))
+                    });
 
                     $crate::Component::new(desc)
                 }
@@ -433,6 +453,8 @@ mod test {
 
         let value = ComponentEntry::new(component, "Hello, World".into());
 
+        // Clone is for purpose of comparison
+        #[allow(clippy::redundant_clone)]
         let value2 = value.clone();
 
         let s = value.downcast_ref::<String>();

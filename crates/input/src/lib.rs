@@ -109,18 +109,18 @@ impl System<Event<'static, ()>> for InputSystem {
                         ElementState::Released => false,
                     };
                     world.resource_mut(world_events()).add_message(
-                        messages::WindowKeyboardInput::new(keycode, modifiers, pressed),
+                        messages::WindowKeyboardInput::new(pressed, modifiers, keycode),
                     );
                 }
 
                 WindowEvent::MouseInput { state, button, .. } => {
                     world.resource_mut(world_events()).add_message(
                         messages::WindowMouseInput::new(
-                            ambient_shared_types::MouseButton::from(*button),
                             match state {
                                 ElementState::Pressed => true,
                                 ElementState::Released => false,
                             },
+                            ambient_shared_types::MouseButton::from(*button),
                         ),
                     );
                 }

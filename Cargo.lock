@@ -135,6 +135,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_editor_derive",
  "ambient_element",
+ "ambient_ember_semantic_native",
  "ambient_gizmos",
  "ambient_gpu",
  "ambient_input",
@@ -148,7 +149,7 @@ dependencies = [
  "ambient_prefab",
  "ambient_primitives",
  "ambient_project",
- "ambient_project_native",
+ "ambient_project_semantic",
  "ambient_renderer",
  "ambient_rpc",
  "ambient_shared_types",
@@ -230,6 +231,7 @@ dependencies = [
  "once_cell",
  "paste",
  "rand 0.8.5",
+ "serde",
  "thiserror",
  "ulid",
  "wit-bindgen",
@@ -246,6 +248,7 @@ dependencies = [
  "proc-macro2 1.0.66",
  "quote 1.0.28",
  "syn 1.0.109",
+ "tokio",
 ]
 
 [[package]]
@@ -383,7 +386,7 @@ dependencies = [
  "ambient_physics",
  "ambient_pipeline_types",
  "ambient_project",
- "ambient_project_native",
+ "ambient_project_semantic",
  "ambient_renderer",
  "ambient_rustc",
  "ambient_std",
@@ -394,6 +397,7 @@ dependencies = [
  "async-recursion",
  "async-trait",
  "cargo_toml",
+ "chrono",
  "convert_case 0.6.0",
  "dyn-clonable",
  "futures",
@@ -578,9 +582,10 @@ name = "ambient_ecs"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_native_std",
- "ambient_project_macro",
+ "ambient_project_macro_common",
  "ambient_project_rt",
  "ambient_shared_types",
+ "ambient_sys",
  "anyhow",
  "atomic_refcell",
  "bincode",
@@ -606,7 +611,6 @@ dependencies = [
  "serde_yaml",
  "smallvec",
  "thiserror",
- "tokio",
  "tracing",
  "yaml-rust-davvid",
 ]
@@ -738,6 +742,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_ember_semantic_native"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_ecs",
+ "ambient_native_std",
+ "ambient_network",
+ "ambient_project_semantic",
+ "anyhow",
+]
+
+[[package]]
 name = "ambient_friendly_id"
 version = "0.3.0-dev"
 dependencies = [
@@ -773,6 +788,7 @@ version = "0.3.0-dev"
 dependencies = [
  "aho-corasick 0.7.20",
  "ambient_native_std",
+ "ambient_std",
  "ambient_sys",
  "anyhow",
  "async-trait",
@@ -1226,7 +1242,9 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_shared_types",
  "anyhow",
- "log",
+ "convert_case 0.6.0",
+ "indexmap 2.0.0",
+ "once_cell",
  "paste",
  "proc-macro2 1.0.66",
  "quote 1.0.28",
@@ -1238,20 +1256,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_project_macro"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_project_macro_common",
- "ambient_schema",
- "proc-macro2 1.0.66",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "ambient_project_macro_common"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_project",
+ "ambient_project_semantic",
  "ambient_shared_types",
  "anyhow",
  "indoc",
@@ -1260,18 +1269,8 @@ dependencies = [
  "serde",
  "syn 1.0.109",
  "thiserror",
+ "tokio",
  "toml 0.7.4",
-]
-
-[[package]]
-name = "ambient_project_native"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_ecs",
- "ambient_project",
- "ambient_shared_types",
- "paste",
- "serde_json",
 ]
 
 [[package]]
@@ -1281,6 +1280,27 @@ dependencies = [
  "byteorder",
  "glam 0.24.0",
  "thiserror",
+]
+
+[[package]]
+name = "ambient_project_semantic"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_project",
+ "ambient_schema",
+ "ambient_shared_types",
+ "ambient_std",
+ "anyhow",
+ "async-recursion",
+ "async-trait",
+ "data-encoding",
+ "glam 0.24.0",
+ "indexmap 2.0.0",
+ "paste",
+ "thiserror",
+ "tokio",
+ "toml 0.7.4",
+ "ulid",
 ]
 
 [[package]]
@@ -1398,6 +1418,7 @@ name = "ambient_shared_types"
 version = "0.3.0-dev"
 dependencies = [
  "bitflags 1.3.2",
+ "itertools",
  "paste",
  "serde",
  "strum",
@@ -1432,6 +1453,7 @@ name = "ambient_std"
 version = "0.3.0-dev"
 dependencies = [
  "itertools",
+ "thiserror",
 ]
 
 [[package]]
@@ -1623,6 +1645,7 @@ dependencies = [
  "ambient_app",
  "ambient_core",
  "ambient_ecs",
+ "ambient_ember_semantic_native",
  "ambient_gpu",
  "ambient_input",
  "ambient_model",
@@ -1632,6 +1655,7 @@ dependencies = [
  "ambient_prefab",
  "ambient_procedurals",
  "ambient_project",
+ "ambient_project_macro_common",
  "ambient_renderer",
  "ambient_shared_types",
  "ambient_std",
@@ -1661,6 +1685,7 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "slotmap",
+ "syn 1.0.109",
  "tokio",
  "tracing",
  "ulid",

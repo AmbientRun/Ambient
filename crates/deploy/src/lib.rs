@@ -48,9 +48,13 @@ pub async fn deploy(
             .ember
             .name
             .as_deref()
-            .unwrap_or_else(|| manifest.ember.id.as_ref())
+            .unwrap_or_else(|| manifest.ember.id.as_str())
     );
     let base_path = path.as_ref().to_owned();
+
+    if !manifest.dependencies.is_empty() {
+        anyhow::bail!("Deploying embers with dependencies is not supported yet");
+    }
 
     // create a client and open channel to the server
     let mut client = create_client(api_server, auth_token).await?;
@@ -143,33 +147,32 @@ pub async fn deploy(
 // Get all files from "build" and EXTRA_FILES_FROM_PROJECT_ROOT
 fn collect_files_to_deploy(base_path: PathBuf) -> anyhow::Result<HashMap<String, PathBuf>> {
     // collect all files to deploy (everything in the build directory)
-    let asset_path_to_file_path: Option<HashMap<String, PathBuf>> =
-        WalkDir::new(base_path.join("build"))
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
-            .map(|x| {
-                let file_path = x.into_path();
-                let path = file_path
-                    .strip_prefix(&base_path)
-                    .expect("file path should be in base path")
-                    .to_str();
-                if let Some(path) = path {
-                    if path.chars().any(|c| c == '\n' || c == '\r') {
-                        log::error!(
-                            "Path contains Line Feed or Carriage Return character: {:?}",
-                            file_path
-                        );
-                        None
-                    } else {
-                        Some((path.into(), file_path))
-                    }
-                } else {
-                    log::error!("Non-UTF-8 path: {:?}", file_path);
+    let asset_path_to_file_path: Option<HashMap<String, PathBuf>> = WalkDir::new(base_path.clone())
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
+        .map(|x| {
+            let file_path = x.into_path();
+            let path = file_path
+                .strip_prefix(&base_path)
+                .expect("file path should be in base path")
+                .to_str();
+            if let Some(path) = path {
+                if path.chars().any(|c| c == '\n' || c == '\r') {
+                    log::error!(
+                        "Path contains Line Feed or Carriage Return character: {:?}",
+                        file_path
+                    );
                     None
+                } else {
+                    Some((format!("build/{path}"), file_path))
                 }
-            })
-            .collect();
+            } else {
+                log::error!("Non-UTF-8 path: {:?}", file_path);
+                None
+            }
+        })
+        .collect();
     let Some(mut asset_path_to_file_path) = asset_path_to_file_path else {
         anyhow::bail!("Can only deploy files with UTF-8 paths that don't have newline characters");
     };

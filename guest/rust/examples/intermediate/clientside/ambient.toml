@@ -8,5 +8,11 @@ type = "Game"
 categories = ["Example"]
 
 [components]
-grid_side_length = {name = "Grid Side Length", description = "The length of a grid side, ignoring the centre (i.e. if this is 10, the total axis length is 21)", type = "I32", attributes = ["Networked", "Debuggable"]}
-grid_position = {name = "Grid Position", description = "The position of the cell on the grid", type = "Ivec2", attributes = ["Networked", "Debuggable"]}
+grid_side_length = { name = "Grid Side Length", description = "The length of a grid side, ignoring the centre (i.e. if this is 10, the total axis length is 21)", type = "I32", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+grid_position = { name = "Grid Position", description = "The position of the cell on the grid", type = "Ivec2", attributes = [
+    "Networked",
+    "Debuggable",
+] }

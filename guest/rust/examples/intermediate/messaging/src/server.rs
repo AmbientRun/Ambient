@@ -4,14 +4,17 @@ use std::sync::{
 };
 
 use ambient_api::{
-    components::core::{
-        primitives::cube,
-        rendering::color,
-        transform::{scale, translation},
+    core::{
+        primitives::components::cube,
+        rendering::components::color,
+        transform::{
+            components::{scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::make_transformable,
     prelude::*,
 };
+use embers::ambient_example_messaging::messages::{Hello, Local};
 
 #[main]
 pub fn main() {
@@ -27,28 +30,28 @@ pub fn main() {
     // See <https://github.com/AmbientRun/Ambient/issues/590> for more details.
 
     // 1
-    messages::Hello::subscribe(|source, data| {
+    Hello::subscribe(|source, data| {
         let Some(user_id) = source.client_user_id() else { return; };
         println!("{user_id}: {:?}", data);
 
         let source_reliable = data.source_reliable;
 
         // 2
-        messages::Hello::new(
-            true,
+        Hello::new(
             format!("{source_reliable}: Hello, world from the server!"),
+            true,
         )
         .send_client_targeted_reliable(user_id.clone());
 
-        messages::Hello::new(
-            false,
+        Hello::new(
             format!("{source_reliable}: Hello, world from the server!"),
+            false,
         )
         .send_client_targeted_unreliable(user_id);
 
-        messages::Hello::new(
-            true,
+        Hello::new(
             format!("{source_reliable}: Hello, world (everyone) from the server!"),
+            true,
         )
         .send_client_broadcast_reliable();
 
@@ -73,7 +76,7 @@ pub fn main() {
 
     // 3
     let handled = Arc::new(AtomicBool::new(false));
-    messages::Local::subscribe({
+    Local::subscribe({
         let handled = handled.clone();
         move |source, data| {
             handled.store(true, Ordering::SeqCst);
@@ -85,7 +88,7 @@ pub fn main() {
     run_async(async move {
         while !handled.load(Ordering::SeqCst) {
             sleep(1.0).await;
-            messages::Local::new("Hello!").send_local_broadcast(true);
+            Local::new("Hello!").send_local_broadcast(true);
         }
     });
 }

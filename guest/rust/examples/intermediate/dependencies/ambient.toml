@@ -1,0 +1,8 @@
+[ember]
+id = "ambient_example_dependencies"
+name = "dependencies"
+version = "0.0.1"
+
+[dependencies]
+deps_assets = { path = "deps/assets" }
+deps_code = { path = "deps/code" }

@@ -22,7 +22,7 @@ pub mod out_asset;
 pub use importer::*;
 
 pub async fn process_pipeline(pipeline: &Pipeline, ctx: PipelineCtx) -> Vec<OutAsset> {
-    log::info!("Processing pipeline: {:?}", ctx.pipeline_path());
+    log::debug!("Processing pipeline: {:?}", ctx.pipeline_path());
     let mut assets = match &pipeline.processor {
         PipelineProcessor::Models(config) => models::pipeline(&ctx, config.clone()).await,
         PipelineProcessor::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
@@ -54,7 +54,7 @@ fn get_pipelines(
             )
         })
         .then(move |file| async move {
-            log::info!("Found pipeline file: {:?}, parsing...", file.0.path());
+            log::debug!("Found pipeline file: {:?}, parsing...", file.0.path());
             let schema = file
                 .download_toml::<PipelinesFile>(&ctx.assets)
                 .await
@@ -65,11 +65,11 @@ fn get_pipelines(
 }
 
 pub async fn process_pipelines(ctx: &ProcessCtx) -> anyhow::Result<Vec<OutAsset>> {
-    tracing::info!(?ctx.out_root, "Processing pipelines");
+    tracing::debug!(?ctx.out_root, "Processing pipelines");
 
     get_pipelines(ctx)
         .map_ok(|(file, pipelines)| {
-            log::info!(
+            log::debug!(
                 "Found pipelines file: {:?} with {} pipelines",
                 file.0.path(),
                 pipelines.pipelines.len()

@@ -24,8 +24,14 @@ As an example:
 
 - The [skinmesh example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh)
   has an animation called `assets/Capoeira.fbx`.
-- The build process will produce `build/assets/Capoeira.fbx/animations/mixamo.com.anim`.
-- The animation clip URL is this path without `build/`: `assets/Capoeira.fbx/animations/mixamo.com.anim`.
+- The build process will produce `build/ambient_example_skinmesh/assets/Capoeira.fbx/animations/mixamo.com.anim`.
+- The animation clip URL is this path after `assets/`: `Capoeira.fbx/animations/mixamo.com.anim`.
+
+In the following examples, it is assumed that you have imported `assets` from an ember, like so:
+
+```rust
+use embers::ambient_example_skinmesh::assets;
+```
 
 ## Animation player
 
@@ -36,14 +42,14 @@ Here's an example of how to set up a graph and play it for a single animation:
 
 ```rust
 let clip = PlayClipFromUrlNode::new(
-    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap()
+    assets::url("Capoeira.fbx/animations/mixamo.com.anim")
 );
 let player = AnimationPlayer::new(&clip);
 
 // Let's load a character model to apply the animation to.
 Entity::new()
     .with_merge(make_transformable())
-    .with(prefab_from_url(), asset::url("assets/Peasant Man.fbx").unwrap())
+    .with(prefab_from_url(), assets::url("Peasant Man.fbx"))
     .with(apply_animation_player(), player.0)
     .spawn();
 ```
@@ -56,10 +62,10 @@ A `BlendNode` can be used to blend two animations together:
 
 ```rust
 let capoeira = PlayClipFromUrlNode::new(
-    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap()
+    assets::url("Capoeira.fbx/animations/mixamo.com.anim")
 );
 let robot = PlayClipFromUrlNode::new(
-    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap()
+    assets::url("Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
 );
 let blend = BlendNode::new(&capoeira, &robot, 0.3);
 let anim_player = AnimationPlayer::new(&blend);
@@ -75,10 +81,10 @@ body:
 
 ```rust
 let capoeira = PlayClipFromUrlNode::new(
-    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap()
+    assets::url("Capoeira.fbx/animations/mixamo.com.anim")
 );
 let robot = PlayClipFromUrlNode::new(
-    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap()
+    assets::url("Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
 );
 
 let blend = BlendNode::new(&capoeira, &robot, 0.0);
@@ -124,7 +130,7 @@ Animations can be pre-loaded by creating a `PlayClipFromUrlNode` node and waitin
 
 ```rust
 let capoeira = PlayClipFromUrlNode::new(
-    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap()
+    assets::url("Capoeira.fbx/animations/mixamo.com.anim")
 );
 capoeira.wait_for_load().await;
 ```

@@ -9,9 +9,7 @@ use ambient_core::{
     ui_scene,
 };
 use ambient_ecs::{
-    ensure_has_component, ensure_has_component_with_default,
-    generated::components::core::rect::{pixel_line_from, pixel_line_to},
-    query, query_mut, Entity, SystemGroup,
+    ensure_has_component, ensure_has_component_with_default, query, query_mut, Entity, SystemGroup,
 };
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
@@ -41,9 +39,9 @@ use async_trait::async_trait;
 use glam::{uvec4, vec4, Quat, UVec3, UVec4, Vec3, Vec4};
 use wgpu::{BindGroup, BindGroupLayoutEntry, Extent3d};
 
-pub use ambient_ecs::generated::components::core::rect::{
+pub use ambient_ecs::generated::rect::components::{
     background_color, background_url, border_color, border_radius, border_thickness, line_from,
-    line_to, line_width, rect, size_from_background_image,
+    line_to, line_width, pixel_line_from, pixel_line_to, rect, size_from_background_image,
 };
 
 #[repr(C)]

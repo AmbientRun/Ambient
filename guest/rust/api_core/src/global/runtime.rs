@@ -7,7 +7,8 @@ use std::{
 };
 
 use crate::{
-    components, entity,
+    core::app,
+    entity,
     global::{OkEmpty, ResultEmpty},
     internal::executor::EXECUTOR,
     prelude::RuntimeMessage,
@@ -15,17 +16,17 @@ use crate::{
 
 /// The time, relative to the start of the game. Guaranteed to be monotonic.
 pub fn game_time() -> Duration {
-    entity::get_component(entity::resources(), components::core::app::game_time()).unwrap()
+    entity::get_component(entity::resources(), app::components::game_time()).unwrap()
 }
 
 /// The time, relative to Jan 1, 1970. Not guaranteed to be monotonic. Use [game_time] for most applications.
 pub fn epoch_time() -> Duration {
-    entity::get_component(entity::resources(), components::core::app::epoch_time()).unwrap()
+    entity::get_component(entity::resources(), app::components::epoch_time()).unwrap()
 }
 
 /// The length of the previous frame, in seconds.
 pub fn delta_time() -> f32 {
-    entity::get_component(entity::resources(), components::core::app::delta_time()).unwrap()
+    entity::get_component(entity::resources(), app::components::delta_time()).unwrap()
 }
 
 /// A trait that abstracts over return types so that you can return an [ResultEmpty] or nothing.

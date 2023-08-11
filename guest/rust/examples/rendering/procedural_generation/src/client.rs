@@ -1,17 +1,25 @@
 use ambient_api::{
     client::{material, mesh, sampler, texture},
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        primitives::{cube, quad, sphere_radius},
-        procedurals::{procedural_material, procedural_mesh},
-        rendering::{cast_shadows, color, light_diffuse, sun},
-        transform::{lookat_target, rotation, scale, translation},
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        primitives::{
+            components::{cube, quad, sphere_radius},
+            concepts::make_sphere,
+        },
+        procedurals::components::{procedural_material, procedural_mesh},
+        rendering::components::{cast_shadows, color, light_diffuse, sun},
+        transform::{
+            components::{lookat_target, rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     prelude::*,
 };
-use components::rotating_sun;
+use embers::ambient_example_procedural_generation::components::rotating_sun;
 use noise::{utils::*, Fbm, Perlin};
 use palette::IntoColor;
 

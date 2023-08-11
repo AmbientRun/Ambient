@@ -1,18 +1,17 @@
 //! Defines a scroll area.
 use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::{
-    components::{
-        app::window_scale_factor,
-        ecs::children,
-        input::{mouse_over, mouse_pickable_max, mouse_pickable_min},
-        layout::{
-            fit_horizontal_children, fit_horizontal_parent, fit_vertical_children, height, width,
-        },
-        rect::{background_color, border_radius},
-        rendering::scissors_recursive,
-        transform::{local_to_parent, local_to_world, translation},
+use ambient_guest_bridge::core::{
+    app::components::window_scale_factor,
+    ecs::components::children,
+    input::components::{mouse_over, mouse_pickable_max, mouse_pickable_min},
+    layout::{
+        components::{fit_horizontal, fit_vertical, height, width},
+        types::Fit,
     },
     messages,
+    rect::components::{background_color, border_radius},
+    rendering::components::scissors_recursive,
+    transform::components::{local_to_parent, local_to_world, translation},
 };
 use glam::{uvec4, vec3, vec4, Vec2, Vec3, Vec4};
 
@@ -132,12 +131,12 @@ pub fn ScrollArea(
                     .with(translation(), vec3(0., scroll, 0.));
                 match sizing {
                     ScrollAreaSizing::FitParentWidth => flow
-                        .with_default(fit_vertical_children())
-                        .with_default(fit_horizontal_parent())
+                        .with(fit_vertical(), Fit::Children)
+                        .with(fit_horizontal(), Fit::Parent)
                         .with(width(), outer_size.x),
                     ScrollAreaSizing::FitChildrenWidth => flow
-                        .with_default(fit_vertical_children())
-                        .with_default(fit_horizontal_children()),
+                        .with(fit_vertical(), Fit::Children)
+                        .with(fit_horizontal(), Fit::Children),
                 }
             },
             set_inner_size,

@@ -3,9 +3,11 @@
 use ambient_cb::{cb, Cb};
 use ambient_element::{to_owned, Element, ElementComponent, Hooks};
 use ambient_guest_bridge::{
-    components::input::{mouse_over, mouse_pickable_max, mouse_pickable_min},
+    core::{
+        input::components::{mouse_over, mouse_pickable_max, mouse_pickable_min},
+        messages,
+    },
     ecs::{EntityId, World},
-    messages,
 };
 use ambient_shared_types::MouseButton;
 use glam::{Vec2, Vec3};

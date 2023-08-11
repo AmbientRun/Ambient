@@ -17,14 +17,14 @@ use ambient_shared_types::{
 
 // implementation
 macro_rules! build_attribute_registration {
-    ($type:ty, $store:ident, $attributes:ident) => {{
-        if let Some(name) = $attributes.name {
+    ($type:ty, $store:ident, $name:ident, $description:ident, $attributes:ident) => {{
+        if let Some(name) = $name {
             <Name as AttributeConstructor<$type, _>>::construct(&mut $store, &name);
         }
-        if let Some(description) = $attributes.description {
+        if let Some(description) = $description {
             <Description as AttributeConstructor<$type, _>>::construct(&mut $store, &description);
         }
-        $attributes.flags.construct_for_store::<$type>(&mut $store);
+        $attributes.construct_for_store::<$type>(&mut $store);
 
         static VTABLE: &ComponentVTable<$type> = &ComponentVTable::construct_external();
         unsafe { VTABLE.erase() }
@@ -112,18 +112,18 @@ macro_rules! make_primitive_component {
                     }
                 }
 
-                pub(crate) fn register(&self, reg: &mut ComponentRegistry, path: &str, attributes: ExternalComponentAttributes) {
+                pub(crate) fn register(&self, reg: &mut ComponentRegistry, path: &str, name: Option<&str>, description: Option<&str>, attributes: ExternalComponentAttributes) {
                     let mut store = AttributeStore::new();
                     let vtable = match self {
                         $(
                             PrimitiveComponentType::$value => {
-                                build_attribute_registration!($type, store, attributes)
+                                build_attribute_registration!($type, store, name, description, attributes)
                             },
                             PrimitiveComponentType::[< Vec $value >] => {
-                                build_attribute_registration!(Vec<$type>, store, attributes)
+                                build_attribute_registration!(Vec<$type>, store, name, description, attributes)
                             },
                             PrimitiveComponentType::[< Option $value >] => {
-                                build_attribute_registration!(Option<$type>, store, attributes)
+                                build_attribute_registration!(Option<$type>, store, name, description, attributes)
                             },
                         )*
                     };

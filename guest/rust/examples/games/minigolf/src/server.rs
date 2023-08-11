@@ -1,35 +1,42 @@
-use crate::{
-    components::{
-        ball, next_player_hue, origin, player_ball, player_camera_state, player_color,
-        player_indicator, player_indicator_arrow, player_restore_point, player_stroke_count,
-        player_text, player_text_container,
-    },
-    concepts::{make_player_camera_state, make_player_state},
-};
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::{active_camera, aspect_ratio_from_window},
-        ecs::children,
-        model::model_from_url,
-        physics::{
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::{active_camera, aspect_ratio_from_window},
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        ecs::components::children,
+        messages::Collision,
+        model::components::model_from_url,
+        physics::components::{
             angular_velocity, collider_from_url, dynamic, kinematic, linear_velocity,
             physics_controlled, sphere_collider,
         },
-        player::{player, user_id},
-        prefab::prefab_from_url,
-        rendering::{color, fog_density, light_diffuse, sky, sun, water},
-        text::{font_size, text},
+        player::components::{is_player, user_id},
+        prefab::components::prefab_from_url,
+        rendering::components::{color, fog_density, light_diffuse, sky, sun, water},
+        text::components::{font_size, text},
         transform::{
-            inv_local_to_world, local_to_parent, local_to_world, mesh_to_local, mesh_to_world,
-            rotation, scale, spherical_billboard, translation,
+            components::{
+                inv_local_to_world, local_to_parent, local_to_world, mesh_to_local, mesh_to_world,
+                rotation, scale, spherical_billboard, translation,
+            },
+            concepts::make_transformable,
         },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     entity::resources,
     prelude::*,
 };
-use components::player_shoot_requested;
+use embers::ambient_example_minigolf::{
+    assets,
+    components::{
+        is_ball, next_player_hue, origin, player_ball, player_camera_state, player_color,
+        player_indicator, player_indicator_arrow, player_restore_point, player_shoot_requested,
+        player_stroke_count, player_text, player_text_container,
+    },
+    concepts::{make_player_camera_state, make_player_state},
+    messages::{Bonk, Hit, Input},
+};
 use utils::CameraState;
 
 mod utils;
@@ -53,13 +60,13 @@ fn create_environment() {
     make_transformable().with_default(sky()).spawn();
 
     make_transformable()
-        .with(prefab_from_url(), asset::url("assets/level.glb").unwrap())
+        .with(prefab_from_url(), assets::url("level.glb"))
         .with(translation(), Vec3::Z * -0.25)
         .spawn();
 
     make_transformable()
-        .with(model_from_url(), asset::url("assets/fan.glb").unwrap())
-        .with(collider_from_url(), asset::url("assets/fan.glb").unwrap())
+        .with(model_from_url(), assets::url("fan.glb"))
+        .with(collider_from_url(), assets::url("fan.glb"))
         .with(kinematic(), ())
         .with(dynamic(), true)
         .with(angular_velocity(), vec3(0., 90_f32.to_radians(), 0.))
@@ -70,11 +77,11 @@ fn create_environment() {
 
 fn make_golf_ball() -> Entity {
     make_transformable()
-        .with_default(ball())
+        .with_default(is_ball())
         .with_default(physics_controlled())
         .with(dynamic(), true)
         .with(sphere_collider(), BALL_RADIUS)
-        .with(model_from_url(), asset::url("assets/ball.glb").unwrap())
+        .with(model_from_url(), assets::url("ball.glb"))
 }
 
 fn make_text() -> Entity {
@@ -100,7 +107,7 @@ pub fn main() {
 
     // When a player spawns, create their player state.
     spawn_query(user_id())
-        .requires(player())
+        .requires(is_player())
         .bind(move |players| {
             for (player, player_user_id) in players {
                 let next_color = utils::hsv_to_rgb(&[
@@ -166,10 +173,7 @@ pub fn main() {
                     make_transformable()
                         .with(color(), next_color)
                         .with(user_id(), player_user_id.clone())
-                        .with(
-                            model_from_url(),
-                            asset::url("assets/indicator.glb").unwrap(),
-                        )
+                        .with(model_from_url(), assets::url("indicator.glb"))
                         .spawn(),
                 );
 
@@ -179,10 +183,7 @@ pub fn main() {
                     make_transformable()
                         .with(color(), next_color)
                         .with(user_id(), player_user_id.clone())
-                        .with(
-                            model_from_url(),
-                            asset::url("assets/indicator_arrow.glb").unwrap(),
-                        )
+                        .with(model_from_url(), assets::url("indicator_arrow.glb"))
                         .spawn(),
                 );
 
@@ -191,8 +192,8 @@ pub fn main() {
         });
 
     let flag = make_transformable()
-        .with(model_from_url(), asset::url("assets/flag.glb").unwrap())
-        .with(collider_from_url(), asset::url("assets/flag.glb").unwrap())
+        .with(model_from_url(), assets::url("flag.glb"))
+        .with(collider_from_url(), assets::url("flag.glb"))
         .with(dynamic(), true)
         .with(kinematic(), ())
         .with(origin(), vec3(-35., 205., 0.3166))
@@ -200,7 +201,7 @@ pub fn main() {
 
     // Update the flag every frame.
     query(translation())
-        .requires(ball())
+        .requires(is_ball())
         .each_frame(move |balls| {
             let flag_origin = entity::get_component(flag, origin()).unwrap_or_default();
             let mut min_distance = std::f32::MAX;
@@ -235,7 +236,7 @@ pub fn main() {
 
     // When a player despawns, clean up their objects.
     let player_objects_query = query(user_id()).build();
-    despawn_query(user_id()).requires(player()).bind({
+    despawn_query(user_id()).requires(is_player()).bind({
         move |players| {
             let player_objects = player_objects_query.evaluate();
             for (_, player_user_id) in &players {
@@ -249,7 +250,7 @@ pub fn main() {
         }
     });
 
-    messages::Input::subscribe(|source, msg| {
+    Input::subscribe(|source, msg| {
         let Some(user_id) = source.client_entity_id() else { return; };
 
         if let Some(player_camera_state) = entity::get_component(user_id, player_camera_state()) {
@@ -266,9 +267,9 @@ pub fn main() {
         }
     });
 
-    ambient_api::messages::Collision::subscribe(move |msg| {
+    Collision::subscribe(move |msg| {
         // TODO: change msg.ids[0] to the bouncing ball
-        messages::Bonk::new(msg.ids[0]).send_client_broadcast_unreliable();
+        Bonk::new(msg.ids[0]).send_client_broadcast_unreliable();
     });
 
     let start_time = game_time();
@@ -283,7 +284,7 @@ pub fn main() {
         player_camera_state(),
         player_shoot_requested(),
     ))
-    .requires(player())
+    .requires(is_player())
     .each_frame(move |players| {
         for (
             player,
@@ -370,14 +371,14 @@ pub fn main() {
                         linear_velocity(),
                         camera_direction * 50. * force_multiplier,
                     );
-                    messages::Hit::new(player_ball).send_client_broadcast_unreliable();
+                    Hit::new(player_ball).send_client_broadcast_unreliable();
                     let stroke_count = entity::get_component(player, player_stroke_count())
                         .unwrap_or_default()
                         + 1;
                     entity::set_component(player_text, text(), stroke_count.to_string());
                     entity::set_component(player, player_stroke_count(), stroke_count);
                 }
-                entity::set_component(player, components::player_shoot_requested(), false);
+                entity::set_component(player, self::player_shoot_requested(), false);
             }
 
             // HACK: Artificially slow down ball until https://github.com/AmbientRun/Ambient/issues/182 is available

@@ -1,22 +1,33 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        ecs::{children, parent},
-        physics::{
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        ecs::components::{children, parent},
+        physics::components::{
             character_controller_height, character_controller_radius, physics_controlled,
             plane_collider, sphere_collider,
         },
-        player::{player, user_id},
-        primitives::{cube, quad},
-        rendering::color,
-        transform::{local_to_parent, rotation, scale, translation},
+        player::components::{is_player, user_id},
+        primitives::{
+            components::{cube, quad},
+            concepts::make_sphere,
+        },
+        rendering::components::color,
+        transform::{
+            components::{local_to_parent, rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     prelude::*,
 };
+use embers::ambient_example_first_person_camera::{
+    components::{ball_ref, player_head_ref, player_movement_direction, player_pitch, player_yaw},
+    messages::Input,
+};
 
-use components::{ball_ref, player_head_ref, player_movement_direction, player_pitch, player_yaw};
 use std::f32::consts::{PI, TAU};
 
 #[main]
@@ -36,7 +47,7 @@ pub fn main() {
         .with(translation(), vec3(5., 5., 1.))
         .spawn();
 
-    spawn_query((player(), user_id())).bind(move |players| {
+    spawn_query((is_player(), user_id())).bind(move |players| {
         for (id, (_, uid)) in players {
             let head = Entity::new()
                 .with_merge(make_perspective_infinite_reverse_camera())
@@ -67,7 +78,7 @@ pub fn main() {
         }
     });
 
-    messages::Input::subscribe(move |source, msg| {
+    Input::subscribe(move |source, msg| {
         let Some(player_id) = source.client_entity_id() else { return; };
 
         entity::set_component(player_id, player_movement_direction(), msg.direction);
@@ -87,7 +98,7 @@ pub fn main() {
         }
     });
 
-    query((player(), player_movement_direction(), rotation())).each_frame(move |players| {
+    query((is_player(), player_movement_direction(), rotation())).each_frame(move |players| {
         for (player_id, (_, direction, rot)) in players {
             let speed = 0.1;
 

@@ -17,13 +17,13 @@ ambient_core = { path = "../core" }
 ambient_ecs = { path = "../ecs" }
 ambient_world_audio = { path = "../world_audio" }
 ambient_physics = { path = "../physics" }
-ambient_project_native = { path = "../project_native" }
 ambient_rustc = { path = "../rustc" }
 ambient_decals = { path = "../decals" }
 ambient_wasm = { path = "../wasm" }
 ambient_pipeline_types = { path = "../pipeline_types" }
 
 ambient_project = { path = "../../shared_crates/project" }
+ambient_project_semantic = { path = "../../shared_crates/project_semantic" }
 ambient_std = { path = "../../shared_crates/std" }
 
 ambient_unity_parser = { path = "../../libs/unity_parser" }
@@ -53,3 +53,4 @@ cargo_toml = { workspace = true }
 symphonia = { workspace = true }
 vorbis_rs = { workspace = true }
 optivorbis = { workspace = true }
+chrono = { workspace = true }

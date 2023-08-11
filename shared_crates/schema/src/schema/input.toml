@@ -1,21 +1,21 @@
-
-[components."core::input"]
+[ember]
+id = "input"
 name = "Input"
 description = "Mouse, keyboard and controller input."
 
-[components."core::input::mouse_over"]
+[components.mouse_over]
 type = "U32"
 name = "Mouse over"
 description = "The number of mouse cursors that are currently over this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::input::mouse_pickable_max"]
+[components.mouse_pickable_max]
 type = "Vec3"
 name = "Mouse pickable max"
 description = "This entity can be clicked by the mouse, and this component defines the max AABB bound of the click area."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::input::mouse_pickable_min"]
+[components.mouse_pickable_min]
 type = "Vec3"
 name = "Mouse pickable min"
 description = "This entity can be clicked by the mouse, and this component defines the min AABB bound of the click area."

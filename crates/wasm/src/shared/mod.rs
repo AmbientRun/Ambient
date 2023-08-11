@@ -12,7 +12,7 @@ pub mod message;
 #[cfg(feature = "wit")]
 pub mod wit;
 
-pub use ambient_ecs::generated::components::core::wasm::*;
+pub use ambient_ecs::generated::wasm::components::*;
 pub use internal::{
     messenger, module_bytecode, module_errors, module_state, module_state_maker, remote_paired_id,
 };
@@ -25,6 +25,8 @@ use ambient_ecs::{
     dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
     Message, SystemGroup, World, WorldEventReader,
 };
+
+pub use ambient_ecs::generated::wasm::components::*;
 
 use ambient_native_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
 use itertools::Itertools;
@@ -99,7 +101,7 @@ pub fn systems() -> SystemGroup {
         "core/wasm",
         vec![
             query(bytecode_from_url())
-                .incl(module())
+                .incl(is_module())
                 .excl(module_name())
                 .spawned()
                 .to_system(move |q, world, qs, _| {
@@ -116,7 +118,7 @@ pub fn systems() -> SystemGroup {
                     }
                 }),
             query(module_name())
-                .incl(module())
+                .incl(is_module())
                 .excl(ambient_core::name())
                 .spawned()
                 .to_system(move |q, world, qs, _| {
@@ -130,7 +132,7 @@ pub fn systems() -> SystemGroup {
                             .ok();
                     }
                 }),
-            query(module())
+            query(is_module())
                 .excl(module_errors())
                 .spawned()
                 .to_system(move |q, world, qs, _| {
@@ -145,7 +147,7 @@ pub fn systems() -> SystemGroup {
                 let is_server = world.name() == "server";
 
                 for (id, url) in q.collect_cloned(world, qs) {
-                    let on_server = world.has_component(id, module_on_server());
+                    let on_server = world.has_component(id, is_module_on_server());
                     if is_server != on_server {
                         continue;
                     }
@@ -217,9 +219,7 @@ pub fn systems() -> SystemGroup {
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module frame event");
                 // trigger frame event
-                ambient_ecs::generated::messages::Frame::new()
-                    .run(world, None)
-                    .unwrap();
+                messages::Frame::new().run(world, None).unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module pending messages");
@@ -266,7 +266,7 @@ pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
 }
 
 pub(crate) fn reload_all(world: &mut World) {
-    let modules = query((module(), module_bytecode(), module_enabled()))
+    let modules = query((is_module(), module_bytecode(), module_enabled()))
         .iter(world, None)
         .map(|(id, (_, bc, enabled))| (id, enabled.then(|| bc.clone())))
         .collect_vec();
@@ -440,12 +440,12 @@ pub fn spawn_module(
     on_server: bool,
 ) -> EntityId {
     let entity = Entity::new()
-        .with_default(module())
+        .with_default(is_module())
         .with(self::bytecode_from_url(), bytecode_from_url.to_string())
         .with(module_enabled(), enabled);
 
     let entity = if on_server {
-        entity.with_default(module_on_server())
+        entity.with_default(is_module_on_server())
     } else {
         entity
     };

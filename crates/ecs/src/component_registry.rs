@@ -39,41 +39,33 @@ pub(crate) struct RegistryComponent {
 pub struct ExternalComponentDesc {
     pub path: String,
     pub ty: PrimitiveComponentType,
+    pub name: Option<String>,
+    pub description: Option<String>,
     pub attributes: ExternalComponentAttributes,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct ExternalComponentAttributes {
-    pub name: Option<String>,
-    pub description: Option<String>,
-    pub flags: ExternalComponentFlagAttributes,
-}
-impl ExternalComponentAttributes {
-    pub fn from_existing_component(desc: ComponentDesc) -> Self {
-        Self {
-            name: desc.attribute::<Name>().map(|n| n.0.clone()),
-            description: desc.attribute::<Description>().map(|n| n.0.clone()),
-            flags: ExternalComponentFlagAttributes::from_existing_component(desc),
-        }
-    }
-}
-
-macro_rules! define_external_component_attribute_flags {
-    ($(($field_name:ident, $type_name:ty)),*) => {
+macro_rules! define_external_component_attribute {
+    (
+        standard: {$($field_name:ident: $type_name:ty),*},
+        special: {$($special_field_name:ident: $special_type_name:ty),*}
+    ) => {
         #[derive(Serialize, Deserialize, Clone, Debug, Default)]
-        pub struct ExternalComponentFlagAttributes {
+        pub struct ExternalComponentAttributes {
             $(pub $field_name: bool,)*
+            $(pub $special_field_name: bool,)*
         }
-        impl ExternalComponentFlagAttributes {
+        impl ExternalComponentAttributes {
             pub fn from_existing_component(desc: ComponentDesc) -> Self {
                 Self {
                     $($field_name: desc.has_attribute::<$type_name>(),)*
+                    $($special_field_name: desc.has_attribute::<$special_type_name>(),)*
                 }
             }
 
             pub fn iter(&self) -> impl Iterator<Item = &'static str> {
                 [
                     $(self.$field_name.then_some(stringify!($type_name)),)*
+                    $(self.$special_field_name.then_some(stringify!($special_type_name)),)*
                 ]
                 .into_iter()
                 .flatten()
@@ -85,14 +77,19 @@ macro_rules! define_external_component_attribute_flags {
                         <$type_name as AttributeConstructor<T, _>>::construct(store, ());
                     }
                 )*
+
+                if self.enum_ {
+                    <Enum as AttributeConstructor<u32, _>>::construct(store, ());
+                }
             }
         }
-        impl<'a> FromIterator<&'a str> for ExternalComponentFlagAttributes {
+        impl<'a> FromIterator<&'a str> for ExternalComponentAttributes {
             fn from_iter<T: IntoIterator<Item = &'a str>>(iter: T) -> Self {
                 let mut flags = Self::default();
                 for flag_str in iter {
                     match flag_str {
                         $(stringify!($type_name) => { flags.$field_name = true; },)*
+                        $(stringify!($special_type_name) => { flags.$special_field_name = true; },)*
                         _ => panic!("Unexpected attribute flag: {flag_str}"),
                     }
                 }
@@ -101,13 +98,18 @@ macro_rules! define_external_component_attribute_flags {
         }
     }
 }
-define_external_component_attribute_flags![
-    (debuggable, Debuggable),
-    (networked, Networked),
-    (resource, Resource),
-    (store, Store),
-    (maybe_resource, MaybeResource)
-];
+define_external_component_attribute! {
+    standard: {
+        debuggable: Debuggable,
+        networked: Networked,
+        resource: Resource,
+        store: Store,
+        maybe_resource: MaybeResource
+    },
+    special: {
+        enum_: Enum
+    }
+}
 
 #[derive(Default)]
 pub struct ComponentRegistry {
@@ -129,7 +131,13 @@ impl ComponentRegistry {
 
     pub fn add_external(&mut self, components: Vec<ExternalComponentDesc>) {
         for desc in components {
-            desc.ty.register(self, &desc.path, desc.attributes);
+            desc.ty.register(
+                self,
+                &desc.path,
+                desc.name.as_deref(),
+                desc.description.as_deref(),
+                desc.attributes,
+            );
         }
 
         for handler in self.on_external_components_change.iter() {
@@ -143,10 +151,6 @@ impl ComponentRegistry {
         vtable: &'static ComponentVTable<()>,
         attributes: Option<AttributeStore>,
     ) -> ComponentDesc {
-        if let Some(vpath) = vtable.path {
-            assert_eq!(path, vpath, "Static name does not match provided name");
-        }
-
         let index = match self.component_paths.entry(path.to_owned()) {
             Entry::Occupied(slot) => *slot.get(),
             Entry::Vacant(slot) => {
@@ -205,7 +209,7 @@ impl ComponentRegistry {
 
     pub fn register_static(
         &mut self,
-        path: &'static str,
+        path: &str,
         vtable: &'static ComponentVTable<()>,
     ) -> ComponentDesc {
         log::debug!("Registering static component: {path}");
@@ -251,6 +255,8 @@ impl ComponentRegistry {
                     ExternalComponentDesc {
                         path: pc.desc.path(),
                         ty: pc.ty,
+                        name: pc.desc.attribute::<Name>().map(|n| n.0.clone()),
+                        description: pc.desc.attribute::<Description>().map(|n| n.0.clone()),
                         attributes: ExternalComponentAttributes::from_existing_component(pc.desc),
                     },
                     pc.desc,

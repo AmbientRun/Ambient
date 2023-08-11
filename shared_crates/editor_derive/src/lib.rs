@@ -92,7 +92,7 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
         Ok(FoundCrate::Itself) => unreachable!(),
         Ok(FoundCrate::Name(name)) => {
             let name = Ident::new(&name, Span::call_site());
-            quote! { #name::components::core::layout }
+            quote! { #name::ui::layout }
         }
         Err(_) => match crate_name("ambient_ui_native") {
             Ok(FoundCrate::Itself) => unreachable!(),
@@ -187,7 +187,7 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
             fn render(self: Box<Self>, hooks: &mut #element_crate::Hooks) -> #element_crate::Element {
                 use #element_crate::{Element, ElementComponentExt};
                 use #ui_crate::{editor::{Editor, EditorRow, EditorColumn, Slider, IntegerSlider}, select::{ListSelect, DropdownSelect}, layout::{FlowRow, FlowColumn}, text::Text};
-                use #layout_crate::{margin, fit_horizontal_parent};
+                use #layout_crate::{margin, fit_horizontal, Fit};
                 let Self { value, on_change, opts } = *self;
                 #body
             }
@@ -587,9 +587,11 @@ fn fields_editor(
         } else {
             quote! {
                 FlowColumn(vec![
-                    #(#rows .set(fit_horizontal_parent(), ())),*
+                    #(#rows
+                        .set(fit_horizontal(), Fit::Parent)
+                    ),*
                 ]).el()
-                    .set(fit_horizontal_parent(), ())
+                .set(fit_horizontal(), Fit::Parent)
             }
         }
     } else {

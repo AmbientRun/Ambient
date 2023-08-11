@@ -13,7 +13,7 @@ use ambient_core::{
     },
 };
 use ambient_ecs::{
-    generated::components::core::animation::bind_id, query, ComponentDesc, Entity, EntityId, World,
+    generated::animation::components::bind_id, query, ComponentDesc, Entity, EntityId, World,
 };
 use ambient_gpu::gpu::Gpu;
 use ambient_native_std::{

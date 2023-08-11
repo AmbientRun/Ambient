@@ -1,5 +1,12 @@
-use ambient_api::{components::core::layout::space_between_items, prelude::*};
-use components::{ball_ref, player_head_ref};
+use ambient_api::{
+    core::{layout::components::space_between_items, messages::Frame},
+    prelude::*,
+};
+use embers::ambient_example_first_person_camera::{
+    assets,
+    components::{ball_ref, player_head_ref},
+    messages::Input,
+};
 
 #[main]
 fn main() {
@@ -11,8 +18,7 @@ fn main() {
     spawn_query((player_head_ref(), ball_ref())).bind(move |v| {
         for (_id, (head, ball)) in v {
             spatial_audio_player.set_listener(head);
-            spatial_audio_player
-                .play_sound_on_entity(asset::url("assets/amen_break.ogg").unwrap(), ball);
+            spatial_audio_player.play_sound_on_entity(assets::url("assets/amen_break.ogg"), ball);
             run_async(async move {
                 sleep(10.).await;
                 println!("stop audio 10 seconds...");
@@ -21,7 +27,7 @@ fn main() {
         }
     });
 
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         let input = input::get();
         if !cursor_lock.auto_unlock_on_escape(&input) {
             return;
@@ -41,10 +47,8 @@ fn main() {
             displace.x += 1.0;
         }
 
-        messages::Input::new(displace, input.mouse_delta).send_server_unreliable();
+        Input::new(displace, input.mouse_delta).send_server_unreliable();
     });
-
-
 
     App.el().spawn_interactive();
 }

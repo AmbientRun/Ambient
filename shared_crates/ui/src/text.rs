@@ -2,12 +2,12 @@
 
 use crate::{UIBase, UIElement};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{
-    app::{name, ui_scene},
-    layout::{height, width},
-    rendering::color,
-    text::{font_family, font_size, text},
-    transform::mesh_to_local,
+use ambient_guest_bridge::core::{
+    app::components::{name, ui_scene},
+    layout::components::{height, width},
+    rendering::components::color,
+    text::components::{font_family, font_size, text},
+    transform::components::mesh_to_local,
 };
 use glam::{vec4, Mat4};
 

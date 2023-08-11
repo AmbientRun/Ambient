@@ -6,11 +6,11 @@ repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/example
 type = "Game"
 categories = ["Example"]
 
-[messages.new_item]
+[messages.NewItem]
 description = "Add a new todo item"
 fields = { description = "String" }
 
-[messages.delete_item]
+[messages.DeleteItem]
 description = "Remove todo item"
 fields = { id = "EntityId" }
 

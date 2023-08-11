@@ -5,7 +5,10 @@ use ambient_core::{
     asset_cache, async_ecs::async_run, gpu, mesh, runtime, transform::*,
     window::window_scale_factor,
 };
-use ambient_ecs::{components, ensure_has_component, query, Debuggable, Entity, SystemGroup};
+use ambient_ecs::{
+    components, ensure_has_component, generated::text::types::FontStyle, query, Debuggable, Entity,
+    SystemGroup,
+};
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use ambient_layout::{height, max_height, max_width, min_height, min_width, width};
 use ambient_native_std::{
@@ -30,13 +33,10 @@ use log::info;
 use parking_lot::Mutex;
 
 use crate::text_material::{get_text_shader, TextMaterial};
-use strum::EnumString;
 
 mod text_material;
 
-pub use ambient_ecs::generated::components::core::text::{
-    font_family, font_size, font_style, text,
-};
+pub use ambient_ecs::generated::text::components::{font_family, font_size, font_style, text};
 
 components!("text", {
     @[Debuggable]
@@ -66,23 +66,6 @@ impl TextCase {
             TextCase::Uppercase => text.to_uppercase(),
             TextCase::Lowercase => text.to_lowercase(),
         }
-    }
-}
-
-#[derive(Debug, Clone, EnumString)]
-pub enum FontStyle {
-    Bold,
-    BoldItalic,
-    Medium,
-    MediumItalic,
-    Regular,
-    Italic,
-    Light,
-    LightItalic,
-}
-impl Default for FontStyle {
-    fn default() -> Self {
-        Self::Regular
     }
 }
 
@@ -209,7 +192,7 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
         "ui/text",
         vec![
             ensure_has_component(text(), font_family(), FontFamily::Default.to_string()),
-            ensure_has_component(text(), font_style(), format!("{:?}", FontStyle::Regular)),
+            ensure_has_component(text(), font_style(), FontStyle::Regular),
             ensure_has_component(text(), font_size(), 12.),
             query(())
                 .incl(text())
@@ -273,7 +256,7 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                         world.resource(runtime()).spawn(async move {
                             let font = FontDef(
                                 unwrap_log_warn!(FontFamily::from_str(&font_family)),
-                                unwrap_log_warn!(FontStyle::from_str(&font_style)),
+                                font_style,
                             )
                             .get(&assets)
                             .await;

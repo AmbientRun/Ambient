@@ -423,4 +423,4 @@ mod serde {
 
     procedural_storage_handle_definitions!(make_procedural_storage_handle_serializers);
 }
-pub use serde::*;
+pub use self::serde::*;

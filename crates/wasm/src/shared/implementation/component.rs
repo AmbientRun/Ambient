@@ -1,6 +1,7 @@
 use ambient_ecs::{
-    with_component_registry, Component, ComponentSet, ComponentValue, Entity, EntityAccessor,
-    EntityId, PrimitiveComponent, PrimitiveComponentType as PCT, QueryEvent, QueryState, World,
+    with_component_registry, Component, ComponentEntry, ComponentSet, ComponentValue, Entity,
+    EntityAccessor, EntityId, Enum, PrimitiveComponent, PrimitiveComponentType as PCT, QueryEvent,
+    QueryState, World,
 };
 use ambient_shared_types::primitive_component_definitions;
 use ambient_shared_types::{
@@ -120,12 +121,28 @@ macro_rules! define_component_types {
 
 primitive_component_definitions!(define_component_types);
 
+fn enum_value_to_entry(index: u32, value: &wit::component::Value) -> Option<ComponentEntry> {
+    with_component_registry(|cr| {
+        if let wit::component::Value::TypeU32(value) = *value {
+            let desc = cr.get_by_index(index)?;
+            (desc.attribute::<Enum>()?.from_u32)(desc, value)
+        } else {
+            None
+        }
+    })
+}
+
 pub(crate) fn add_component(
     world: &mut World,
     id: wit::entity::EntityId,
     index: u32,
     value: wit::component::Value,
 ) -> anyhow::Result<()> {
+    if let Some(entry) = enum_value_to_entry(index, &value) {
+        world.add_entry(id.from_bindgen(), entry)?;
+        return Ok(());
+    }
+
     struct WorldAdd(EntityId);
     impl<'a> WitValueVisitor<&'a mut World> for WorldAdd {
         fn visit<T: ComponentValue>(
@@ -138,7 +155,6 @@ pub(crate) fn add_component(
             Ok(())
         }
     }
-
     visit_wit_value(world, index, value, WorldAdd(id.from_bindgen()))
 }
 
@@ -148,6 +164,11 @@ pub(crate) fn set_component(
     index: u32,
     value: wit::component::Value,
 ) -> anyhow::Result<()> {
+    if let Some(entry) = enum_value_to_entry(index, &value) {
+        world.set_entry(id.from_bindgen(), entry)?;
+        return Ok(());
+    }
+
     struct WorldSet(EntityId);
     impl<'a> WitValueVisitor<&'a mut World> for WorldSet {
         fn visit<T: ComponentValue>(
@@ -160,7 +181,6 @@ pub(crate) fn set_component(
             Ok(())
         }
     }
-
     visit_wit_value(world, index, value, WorldSet(id.from_bindgen()))
 }
 
@@ -271,6 +291,11 @@ pub(crate) fn wit_entity_to_host_entity(
 
     let mut entity = Entity::new();
     for (index, value) in wit_entity {
+        if let Some(entry) = enum_value_to_entry(index, &value) {
+            entity.set_entry(entry);
+            continue;
+        }
+
         visit_wit_value(&mut entity, index, value, EntityProducer)?;
     }
     Ok(entity)

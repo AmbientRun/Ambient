@@ -20,11 +20,11 @@ owned_by = { type = "EntityId", name = "Owned By", description = "The ID of the 
     "Networked",
 ] }
 
-[messages.input]
+[messages.Input]
 description = "The player's input"
-[messages.input.fields]
-up = { type = "Bool", name = "Up", description = "Whether the player is pressing the up key" }
-down = { type = "Bool", name = "Down", description = "Whether the player is pressing the down key" }
-left = { type = "Bool", name = "Left", description = "Whether the player is pressing the left key" }
-right = { type = "Bool", name = "Right", description = "Whether the player is pressing the right key" }
-capture = { type = "Bool", name = "Capture", description = "Whether the player is pressing the capture key" }
+[messages.Input.fields]
+up = "Bool"
+down = "Bool"
+left = "Bool"
+right = "Bool"
+capture = "Bool"

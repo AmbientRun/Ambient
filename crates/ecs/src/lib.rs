@@ -12,7 +12,7 @@ use bit_vec::BitVec;
 use itertools::Itertools;
 /// Expose to macros
 #[doc(hidden)]
-pub use once_cell::sync::OnceCell;
+pub use once_cell::sync::{Lazy, OnceCell};
 /// Expose to macros
 #[doc(hidden)]
 pub use parking_lot;
@@ -44,7 +44,7 @@ mod stream;
 pub use ambient_project_rt::message_serde::*;
 pub use archetype::*;
 pub use attributes::*;
-pub use component::{Component, ComponentDesc, ComponentValue, ComponentValueBase};
+pub use component::{Component, ComponentDesc, ComponentValue, ComponentValueBase, EnumComponent};
 pub use component_entry::*;
 pub use component_registry::*;
 pub use component_ser::*;
@@ -97,11 +97,11 @@ mod internal_components {
         world_events: WorldEvents,
     });
 }
-pub use generated::components::core::ecs::*;
+pub use generated::ecs::components::*;
 pub use internal_components::{world_events, WorldEventsExt};
 
 pub fn init_components() {
-    generated::components::init();
+    generated::init();
     internal_components::init_components();
 }
 
@@ -160,7 +160,7 @@ impl World {
     #[cfg(not(target_os = "unknown"))]
     pub async fn from_file(path: impl AsRef<std::path::Path>) -> anyhow::Result<Self> {
         use anyhow::Context;
-        let content = tokio::fs::read(&path)
+        let content = ambient_sys::fs::read(path.as_ref())
             .await
             .with_context(|| format!("No such file: {:?}", path.as_ref()))?;
         Self::from_slice(&content)

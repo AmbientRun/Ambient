@@ -16,7 +16,7 @@ components!("test", {
 });
 
 pub fn initialize() -> World {
-    ambient_guest_bridge::ecs::generated::components::init();
+    ambient_guest_bridge::ecs::generated::init();
     ambient_element::init_components();
     init_components();
 

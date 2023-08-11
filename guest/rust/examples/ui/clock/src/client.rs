@@ -1,11 +1,11 @@
 use ambient_api::{
-    components::core::{
-        layout::{height, width},
-        rect::{
+    core::{
+        layout::components::{height, width},
+        rect::components::{
             background_color, border_color, border_radius, border_thickness, line_from, line_to,
             line_width,
         },
-        transform::translation,
+        transform::components::translation,
     },
     prelude::*,
 };

@@ -3,7 +3,7 @@ use std::{sync::Arc, time::Duration};
 use ambient_core::name;
 use ambient_ecs::{query, EntityId, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_layout::{fit_horizontal, max_width, width};
+use ambient_layout::{fit_horizontal, max_width, width, Fit};
 use ambient_native_std::{cb, Cb};
 use ambient_renderer::color;
 use ambient_ui_native::{
@@ -307,10 +307,10 @@ fn ComponentBlock(_hooks: &mut Hooks, component: InspectedComponent, odd: bool) 
         FlowRow::el([Text::el(component.name)
             .with(color(), vec4(1., 1., 1., 1.))
             .with(max_width(), 250.)])
-        .with(fit_horizontal(), ambient_layout::Fit::None)
+        .with(fit_horizontal(), Fit::None)
         .with(width(), 260.),
         FlowRow::el([Text::el(component.value).with(max_width(), 300.)])
-            .with(fit_horizontal(), ambient_layout::Fit::None)
+            .with(fit_horizontal(), Fit::None)
             .with(width(), 300.),
     ]);
     if odd {

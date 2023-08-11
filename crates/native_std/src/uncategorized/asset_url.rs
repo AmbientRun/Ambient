@@ -37,7 +37,7 @@ impl SyncAssetKey<AbsAssetUrl> for ServerBaseUrlKey {
 pub struct ContentBaseUrlKey;
 impl SyncAssetKey<AbsAssetUrl> for ContentBaseUrlKey {
     fn load(&self, _assets: AssetCache) -> AbsAssetUrl {
-        panic!("ContentBaseUrlKey should never be loaded implicitely");
+        panic!("ContentBaseUrlKey should never be loaded implicitly");
     }
 }
 

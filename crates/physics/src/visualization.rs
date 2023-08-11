@@ -10,9 +10,7 @@ use ambient_core::{
 };
 use ambient_ecs::{
     components, dont_store, ensure_has_component, ensure_has_component_with_default,
-    generated::components::core::rect::{
-        background_color, line_width, pixel_line_from, pixel_line_to,
-    },
+    generated::rect::components::{background_color, line_width, pixel_line_from, pixel_line_to},
     query, Entity, EntityId, FnSystem, SystemGroup, World,
 };
 use ambient_gizmos::{local_gizmos, GizmoPrimitive};
@@ -24,7 +22,7 @@ use physxx::{
     PxVisualizationParameter,
 };
 
-pub use ambient_ecs::generated::components::core::physics::visualize_collider;
+pub use ambient_ecs::generated::physics::components::visualize_collider;
 
 components!("physics", {
     physx_viz_line: PxDebugLine,

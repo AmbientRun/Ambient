@@ -4,11 +4,7 @@ use super::Bindings;
 use crate::shared::{implementation::unsupported, wit};
 
 #[async_trait::async_trait]
-impl wit::server_asset::Host for Bindings {
-    async fn build_wasm(&mut self) -> anyhow::Result<()> {
-        unsupported()
-    }
-}
+impl wit::server_asset::Host for Bindings {}
 #[async_trait::async_trait]
 impl wit::server_physics::Host for Bindings {
     async fn add_force(

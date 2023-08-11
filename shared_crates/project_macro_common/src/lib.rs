@@ -1,100 +1,179 @@
 extern crate proc_macro;
 
-use ambient_project::{IdentifierPathBuf, Manifest};
-use quote::quote;
+use ambient_project::ItemPathBuf;
+use ambient_project_semantic::{
+    ArrayFileProvider, Item, ItemId, ItemMap, ItemSource, Scope, Semantic, Type, TypeInner,
+};
+use proc_macro2::TokenStream;
+use quote::{quote, ToTokens};
+use std::{collections::HashMap, path::Path};
 
-use proc_macro2::Ident;
-use std::path::PathBuf;
-use tree::Tree;
+mod assets;
+mod components;
+mod concepts;
+mod context;
+mod enums;
+mod messages;
 
-#[cfg(test)]
-mod tests;
+pub use context::Context;
 
-mod component;
-mod concept;
-mod message;
-mod tree;
-mod util;
-
-pub enum Context {
-    Host,
-    Guest {
-        api_path: syn::Path,
-        fully_qualified_path: bool,
-    },
+pub enum ManifestSource<'a> {
+    Path { ember_path: &'a Path },
+    Array(&'a [(&'a str, &'a str)]),
 }
 
-pub enum ManifestSource {
-    Path(PathBuf),
-    String(String),
-}
-impl ManifestSource {
-    fn build(&self) -> anyhow::Result<(Manifest, proc_macro2::TokenStream)> {
-        match self {
-            Self::Path(file_path) => {
-                let manifest = Manifest::from_file(file_path)?;
-                let mut file_paths = vec![file_path.to_str().unwrap().to_string()];
-                let dir = file_path.parent().unwrap();
-                for include in &manifest.ember.includes {
-                    let path = dir.join(include);
-                    let file_path = path.to_str().unwrap().to_string();
-                    file_paths.push(file_path);
-                }
-                let force_reload = file_paths.into_iter().enumerate().map(|(i, file_path)| {
-                    let name = Ident::new(
-                        &format!("_PROJECT_MANIFEST_{}", i),
-                        proc_macro2::Span::call_site(),
-                    );
-                    quote! { const #name: &'static str = include_str!(#file_path); }
-                });
-                Ok((manifest, quote! { #(#force_reload)* }))
+pub async fn generate_code(
+    manifest: Option<ManifestSource<'_>>,
+    context: context::Context,
+    generate_from_scope_path: Option<&str>,
+) -> anyhow::Result<TokenStream> {
+    let mut semantic = Semantic::new().await?;
+
+    if let Some(manifest) = manifest {
+        match manifest {
+            ManifestSource::Path { ember_path } => semantic.add_ember(ember_path).await,
+            ManifestSource::Array(files) => {
+                semantic
+                    .add_file(
+                        Path::new("ambient.toml"),
+                        &ArrayFileProvider { files },
+                        ItemSource::User,
+                        None,
+                    )
+                    .await
             }
-            Self::String(string) => Ok((Manifest::parse(string)?, quote! {})),
-        }
+        }?;
     }
-}
 
-pub fn generate_code(
-    manifest: ManifestSource,
-    context: Context,
-    is_api_manifest: bool,
-    validate_namespaces_documented: bool,
-) -> anyhow::Result<proc_macro2::TokenStream> {
-    let (manifest, force_reload) = manifest.build()?;
+    semantic.resolve()?;
 
-    let project_path = if !is_api_manifest {
-        manifest.project_path()
-    } else {
-        IdentifierPathBuf::empty()
+    let items = &semantic.items;
+    let root_scope = &*semantic.root_scope();
+    let type_printer = {
+        let mut map = HashMap::new();
+        for type_id in root_scope.types.values() {
+            let type_ = items.get(*type_id).expect("type id not in items");
+            if let TypeInner::Primitive(pt) = type_.inner {
+                let ty_tokens = syn::parse_str::<syn::Type>(&pt.to_string())?.to_token_stream();
+                map.insert(*type_id, ty_tokens.clone());
+                map.insert(items.get_vec_id(*type_id), quote! {Vec::<#ty_tokens>});
+                map.insert(items.get_option_id(*type_id), quote! {Option::<#ty_tokens>});
+            }
+        }
+        TypePrinter(map)
     };
 
-    let component_tree = Tree::new(&manifest.components, validate_namespaces_documented)?;
-    let components_tokens =
-        component::tree_to_token_stream(&component_tree, &context, project_path.as_path())?;
+    let generate_from_scope_id = generate_from_scope_path
+        .map(|id| ItemPathBuf::new(id).expect("invalid generate_from_scope_path"))
+        .map(|id| {
+            items
+                .get_scope_id(
+                    semantic.root_scope_id,
+                    id.as_path().scope_iter().expect(
+                        "invalid generate_from_scope_path: the last element must be a scope",
+                    ),
+                )
+                .unwrap()
+        })
+        .unwrap_or(semantic.root_scope_id);
+    let generate_from_scope = &*items.get(generate_from_scope_id)?;
 
-    let concept_tree = Tree::new(&manifest.concepts, validate_namespaces_documented)?;
-    let concept_tokens = concept::tree_to_token_stream(&concept_tree, &component_tree, &context)?;
+    let generated_output = generate(
+        context,
+        items,
+        &type_printer,
+        generate_from_scope_id,
+        generate_from_scope,
+    )?;
 
-    let message_tree = Tree::new(&manifest.messages, validate_namespaces_documented)?;
-    let message_tokens = message::tree_to_token_stream(&message_tree, &context, is_api_manifest)?;
+    let components_init =
+        components::generate_init(context, items, generate_from_scope_id, generate_from_scope)?;
 
-    Ok(quote!(
-        #force_reload
+    let output = quote! {
+        #generated_output
+        #components_init
+    };
 
-        /// Auto-generated component definitions. These come from `ambient.toml` in the root of the project.
-        pub mod components {
-            #components_tokens
+    let output = if context == Context::GuestUser {
+        // In guest code, we wrap all generated output in an `embers` module to avoid polluting their
+        // global scope.
+        quote! {
+            pub mod embers {
+                #output
+            }
         }
-        /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
-        ///
-        /// They do not have any runtime representation outside of the components that compose them.
-        pub mod concepts {
-            #concept_tokens
+    } else {
+        output
+    };
+
+    Ok(output)
+}
+
+fn generate(
+    context: context::Context,
+    items: &ItemMap,
+    type_printer: &TypePrinter,
+    root_scope_id: ItemId<Scope>,
+    scope: &Scope,
+) -> anyhow::Result<TokenStream> {
+    let scopes = scope
+        .scopes
+        .values()
+        .map(|s| {
+            let scope = items.get(*s)?;
+            if !context.should_generate(scope.data()) {
+                return Ok(quote! {});
+            }
+
+            let id = make_path(scope.data.id.as_str());
+            let inner = generate(context, items, type_printer, root_scope_id, &scope)?;
+            if inner.is_empty() {
+                return Ok(quote! {});
+            }
+
+            Ok(quote! {
+                #[allow(unused)]
+                pub mod #id {
+                    #inner
+                }
+            })
+        })
+        .collect::<anyhow::Result<Vec<_>>>()?;
+
+    let components = components::generate(context, items, type_printer, root_scope_id, scope)?;
+    let concepts = concepts::generate(context, items, type_printer, root_scope_id, scope)?;
+    let messages = messages::generate(context, items, type_printer, root_scope_id, scope)?;
+    let types = enums::generate(context, items, scope)?;
+    let assets = assets::generate(context, items, scope)?;
+
+    Ok(quote! {
+        #(#scopes)*
+
+        #components
+        #concepts
+        #messages
+        #types
+        #assets
+    })
+}
+
+fn make_path(id: &str) -> syn::Path {
+    syn::parse_str(id).unwrap()
+}
+
+pub struct TypePrinter(HashMap<ItemId<Type>, TokenStream>);
+impl TypePrinter {
+    pub fn get(
+        &self,
+        context: context::Context,
+        items: &ItemMap,
+        prefix: Option<&str>,
+        root_scope_id: ItemId<Scope>,
+        id: ItemId<Type>,
+    ) -> anyhow::Result<TokenStream> {
+        match self.0.get(&id) {
+            Some(ts) => Ok(ts.clone()),
+            None => context.get_path(items, prefix, root_scope_id, id),
         }
-        /// Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,
-        /// and with other modules.
-        pub mod messages {
-            #message_tokens
-        }
-    ))
+    }
 }

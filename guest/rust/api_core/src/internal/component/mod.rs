@@ -45,14 +45,6 @@ impl<T> UntypedComponent for Component<T> {
     }
 }
 
-#[doc(hidden)]
-#[macro_export]
-macro_rules! lazy_component {
-    ($id:literal) => {
-        $crate::LazyComponent::new(|| $crate::__internal_get_component($id))
-    };
-}
-
 /// A tuple of [Component]s.
 pub trait ComponentsTuple {
     /// The types of the data stored in this tuple
@@ -119,4 +111,14 @@ impl ComponentsTuple for () {
         assert!(component_types.is_empty());
         Some(())
     }
+}
+
+/// Implemented for component values that can be used as an enum
+pub trait EnumComponent {
+    /// Convert this value to a u32
+    fn to_u32(&self) -> u32;
+    /// Convert a u32 to this value
+    fn from_u32(v: u32) -> Option<Self>
+    where
+        Self: Sized;
 }

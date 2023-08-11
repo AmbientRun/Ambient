@@ -13,7 +13,7 @@ use ambient_native_std::{
 use anyhow::Context;
 use async_trait::async_trait;
 
-pub use ambient_ecs::generated::components::core::prefab::{prefab_from_url, spawned};
+pub use ambient_ecs::generated::prefab::components::{prefab_from_url, spawned};
 
 pub fn systems() -> SystemGroup {
     SystemGroup::new(

@@ -32,6 +32,7 @@ glam = { workspace = true }
 wit-bindgen = { workspace = true }
 ulid = { workspace = true }
 indexmap = { workspace = true }
+serde = { workspace = true }
 
 [features]
 client = []

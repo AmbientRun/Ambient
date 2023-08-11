@@ -1,19 +1,27 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        physics::{
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        messages::{Collision, Frame},
+        physics::components::{
             angular_velocity, cube_collider, dynamic, linear_velocity, physics_controlled,
             visualize_collider,
         },
-        prefab::prefab_from_url,
-        primitives::cube,
-        rendering::{cast_shadows, color},
-        transform::{lookat_target, rotation, scale, translation},
+        prefab::components::prefab_from_url,
+        primitives::components::cube,
+        rendering::components::{cast_shadows, color},
+        transform::{
+            components::{lookat_target, rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
+
+use embers::ambient_example_physics::{assets, messages::Bonk};
 
 #[main]
 pub async fn main() {
@@ -43,15 +51,15 @@ pub async fn main() {
 
     Entity::new()
         .with_merge(make_transformable())
-        .with(prefab_from_url(), asset::url("assets/Shape.glb").unwrap())
+        .with(prefab_from_url(), assets::url("shape.glb"))
         .spawn();
 
-    ambient_api::messages::Collision::subscribe(move |msg| {
+    Collision::subscribe(move |msg| {
         println!("Bonk! {:?} collided", msg.ids);
-        messages::Bonk::new(cube, camera).send_client_broadcast_unreliable();
+        Bonk::new(cube, camera).send_client_broadcast_unreliable();
     });
 
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         for hit in physics::raycast(Vec3::Z * 20., -Vec3::Z) {
             if hit.entity == cube {
                 println!("The raycast hit the cube: {hit:?}");

@@ -1,12 +1,14 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        primitives::{cube, quad},
-        rendering::{color, decal_from_url, transparency_group},
-        transform::{lookat_target, rotation, scale, translation},
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        primitives::components::{cube, quad},
+        rendering::components::{color, decal_from_url, transparency_group},
+        transform::components::{lookat_target, rotation, scale, translation},
     },
-    concepts::make_perspective_infinite_reverse_camera,
     prelude::*,
 };
 
@@ -41,7 +43,7 @@ pub fn main() {
     // Decal projection volume.
     let decal_scale = vec3(1.0, 1.0, 1.0);
     let decal_rotation = Quat::from_rotation_z(PI / 4.0);
-    let decal_url = asset::url("assets/pipeline.toml/0/mat.json").unwrap();
+    let decal_url = embers::ambient_example_decals::assets::url("pipeline.toml/0/mat.json");
     Entity::new()
         .with(rotation(), decal_rotation)
         .with(scale(), decal_scale)

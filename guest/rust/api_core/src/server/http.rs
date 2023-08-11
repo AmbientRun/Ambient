@@ -2,7 +2,7 @@ use std::fmt;
 
 use thiserror::Error;
 
-use crate::{global, internal::wit, messages::HttpResponse};
+use crate::{core::messages::HttpResponse, global, internal::wit};
 
 #[derive(Error, Debug, Clone)]
 /// Errors that can occur when making an HTTP request.

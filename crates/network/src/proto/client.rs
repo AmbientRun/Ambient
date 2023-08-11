@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_ecs::{
-    generated::components::core::network::is_remote_entity, ComponentRegistry, Entity, WorldDiff,
+    generated::network::components::is_remote_entity, ComponentRegistry, Entity, WorldDiff,
 };
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},

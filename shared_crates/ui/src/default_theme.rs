@@ -4,11 +4,14 @@ use glam::{vec4, Vec4};
 use crate::UIExt;
 use ambient_color::Color;
 use ambient_element::Element;
-use ambient_guest_bridge::components::{
-    layout::{align_vertical_center, space_between_items},
-    rect::border_radius,
-    rendering::color,
-    text::font_size,
+use ambient_guest_bridge::core::{
+    layout::{
+        components::{align_vertical, space_between_items},
+        types::Align,
+    },
+    rect::components::border_radius,
+    rendering::components::color,
+    text::components::font_size,
 };
 
 /// The primary color.
@@ -87,7 +90,7 @@ impl StylesExt for Element {
     fn keyboard(self) -> Self {
         self.with(space_between_items(), STREET)
             .with_padding_even(STREET)
-            .with_default(align_vertical_center())
+            .with(align_vertical(), Align::Center)
     }
 }
 

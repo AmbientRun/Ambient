@@ -1,12 +1,12 @@
 use crate::{
-    components::core::{
-        animation::{
-            animation_player, apply_base_pose, bind_ids, blend, clip_duration,
-            freeze_at_percentage, freeze_at_time, looping, mask_bind_ids, mask_weights,
-            retarget_animation_scaled, retarget_model_from_url, start_time,
+    core::{
+        animation::components::{
+            apply_base_pose, bind_id, bind_ids, blend, clip_duration, freeze_at_percentage,
+            freeze_at_time, is_animation_player, looping, mask_bind_ids, mask_weights,
+            play_clip_from_url, retarget_animation_scaled, retarget_model_from_url, start_time,
         },
-        app::{name, ref_count},
-        ecs::{children, parent},
+        app::components::{name, ref_count},
+        ecs::components::{children, parent},
     },
     entity,
     prelude::{epoch_time, Entity, EntityId},
@@ -21,7 +21,7 @@ impl AnimationPlayer {
     pub fn new(root: impl AsRef<AnimationNode>) -> Self {
         let root: &AnimationNode = root.as_ref();
         let player = Entity::new()
-            .with_default(animation_player())
+            .with_default(is_animation_player())
             .with(children(), vec![root.0])
             .with(name(), "Animation player".to_string())
             .spawn();
@@ -88,11 +88,10 @@ pub struct PlayClipFromUrlNode(pub AnimationNode);
 impl PlayClipFromUrlNode {
     /// Create a new node.
     pub fn new(url: impl Into<String>) -> Self {
-        use crate::components::core::animation;
         let node = Entity::new()
-            .with(animation::play_clip_from_url(), url.into())
+            .with(play_clip_from_url(), url.into())
             .with(name(), "Play clip from URL".to_string())
-            .with(animation::looping(), true)
+            .with(looping(), true)
             .with(start_time(), epoch_time())
             .with(ref_count(), 1)
             .spawn();
@@ -196,11 +195,10 @@ impl BlendNode {
         right: impl AsRef<AnimationNode>,
         weight: f32,
     ) -> Self {
-        use crate::components::core::animation;
         let left: &AnimationNode = left.as_ref();
         let right: &AnimationNode = right.as_ref();
         let node = Entity::new()
-            .with(animation::blend(), weight)
+            .with(blend(), weight)
             .with(name(), "Blend".to_string())
             .with(children(), vec![left.0, right.0])
             .with(ref_count(), 1)
@@ -286,8 +284,7 @@ impl Default for AnimationRetargeting {
 
 /// Get the bone entity from the bind_id; for example "LeftFoot"
 pub fn get_bone_by_bind_id(entity: EntityId, bind_id: &BindId) -> Option<EntityId> {
-    if let Some(bid) = entity::get_component(entity, crate::components::core::animation::bind_id())
-    {
+    if let Some(bid) = entity::get_component(entity, self::bind_id()) {
         if bid == bind_id.as_str() {
             return Some(entity);
         }

@@ -1,15 +1,18 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        primitives::cube,
-        rendering::color,
-        transform::{lookat_target, translation},
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        messages::Frame,
+        primitives::components::cube,
+        rendering::components::color,
+        transform::components::{lookat_target, translation},
     },
-    concepts::make_perspective_infinite_reverse_camera,
     prelude::*,
 };
-use components::{grid_position, grid_side_length};
+use embers::ambient_example_clientside::components::{grid_position, grid_side_length};
 
 #[main]
 pub async fn main() {
@@ -28,7 +31,7 @@ pub async fn main() {
 
     let start_time = game_time();
 
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         let t = game_time() - start_time;
         entity::set_component(
             id,

@@ -1,6 +1,6 @@
 use super::EntityId;
 use crate::{
-    components::core::transform::local_to_world,
+    core::transform::components::local_to_world,
     entity::get_component,
     internal::{conversion::FromBindgen, wit},
 };

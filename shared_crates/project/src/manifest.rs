@@ -1,73 +1,63 @@
-use std::{collections::BTreeMap, fs, path::Path};
+use std::path::PathBuf;
 
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
-use crate::{Component, Concept, Identifier, IdentifierPathBuf, Message, Version};
-use anyhow::Context;
+use crate::{
+    Component, Concept, Enum, ItemPathBuf, Message, PascalCaseIdentifier, SnakeCaseIdentifier,
+    Version,
+};
+
+#[derive(Error, Debug, PartialEq)]
+pub enum ManifestParseError {
+    #[error("manifest was not valid TOML")]
+    TomlError(#[from] toml::de::Error),
+    #[error("manifest contains a project section; projects have been renamed to embers")]
+    ProjectRenamedToEmberError,
+}
 
 #[derive(Deserialize, Clone, Debug, Default, PartialEq, Serialize)]
 pub struct Manifest {
     #[serde(default)]
-    #[serde(alias = "project")]
     pub ember: Ember,
     #[serde(default)]
     pub build: Build,
     #[serde(default)]
-    pub components: BTreeMap<IdentifierPathBuf, NamespaceOr<Component>>,
+    #[serde(alias = "component")]
+    pub components: IndexMap<ItemPathBuf, Component>,
     #[serde(default)]
-    pub concepts: BTreeMap<IdentifierPathBuf, NamespaceOr<Concept>>,
+    #[serde(alias = "concept")]
+    pub concepts: IndexMap<ItemPathBuf, Concept>,
     #[serde(default)]
-    pub messages: BTreeMap<IdentifierPathBuf, NamespaceOr<Message>>,
+    #[serde(alias = "message")]
+    pub messages: IndexMap<ItemPathBuf, Message>,
+    #[serde(default)]
+    #[serde(alias = "enum")]
+    pub enums: IndexMap<PascalCaseIdentifier, Enum>,
+    #[serde(default)]
+    pub dependencies: IndexMap<SnakeCaseIdentifier, Dependency>,
 }
 impl Manifest {
-    pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
-        let parsed_manifest = toml::from_str(manifest)?;
+    pub fn parse(manifest: &str) -> Result<Self, ManifestParseError> {
         let raw = toml::from_str::<toml::Table>(manifest)?;
         if raw.contains_key("project") {
-            log::warn!("The `project` key is deprecated. Please use `ember` instead.");
+            return Err(ManifestParseError::ProjectRenamedToEmberError);
         }
-        Ok(parsed_manifest)
+
+        Ok(toml::from_str(manifest)?)
     }
-    pub fn from_file(path: impl AsRef<Path>) -> anyhow::Result<Self> {
-        let mut res = Self::parse(
-            &fs::read_to_string(path.as_ref())
-                .context(format!("Failed to read file: {:?}", path.as_ref()))?,
-        )?;
-        res.resolve_imports(path.as_ref().parent().context("No parent directory")?)?;
-        Ok(res)
-    }
+
     pub fn to_toml_string(&self) -> String {
         toml::to_string_pretty(self).unwrap()
-    }
-
-    pub fn project_path(&self) -> IdentifierPathBuf {
-        self.ember
-            .organization
-            .iter()
-            .chain(std::iter::once(&self.ember.id))
-            .cloned()
-            .collect()
-    }
-
-    fn resolve_imports(&mut self, directory: impl AsRef<Path>) -> anyhow::Result<()> {
-        let mut new_includes = vec![];
-        for include in &self.ember.includes {
-            let manifest = Manifest::from_file(directory.as_ref().join(include))?;
-            new_includes.extend(manifest.ember.includes);
-            self.components.extend(manifest.components);
-            self.concepts.extend(manifest.concepts);
-            self.messages.extend(manifest.messages);
-        }
-        self.ember.includes.extend(new_includes);
-        Ok(())
     }
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
 pub struct Ember {
-    pub id: Identifier,
+    pub id: SnakeCaseIdentifier,
     pub name: Option<String>,
-    pub version: Version,
+    pub version: Option<Version>,
     pub description: Option<String>,
     pub repository: Option<String>,
     #[serde(default)]
@@ -76,9 +66,8 @@ pub struct Ember {
     pub type_: EmberType,
     #[serde(default)]
     pub categories: Vec<Category>,
-    pub organization: Option<Identifier>,
     #[serde(default)]
-    pub includes: Vec<String>,
+    pub includes: Vec<PathBuf>,
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize, Default)]
@@ -119,58 +108,44 @@ impl Default for BuildRust {
     }
 }
 
-#[derive(Deserialize, Debug, Clone, PartialEq, Serialize)]
-pub struct Namespace {
-    pub name: Option<String>,
-    pub description: Option<String>,
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
+pub struct Dependency {
+    pub path: PathBuf,
+    #[serde(default = "return_true")]
+    pub enabled: bool,
 }
 
-#[derive(Deserialize, Debug, Clone, PartialEq, Serialize)]
-#[serde(untagged)]
-pub enum NamespaceOr<T> {
-    Other(T),
-    Namespace(Namespace),
-}
-impl<T> NamespaceOr<T> {
-    pub fn other(&self) -> Option<&T> {
-        match self {
-            NamespaceOr::Other(o) => Some(o),
-            NamespaceOr::Namespace(_) => None,
-        }
-    }
-
-    pub fn namespace(&self) -> Option<&Namespace> {
-        match self {
-            NamespaceOr::Other(_) => None,
-            NamespaceOr::Namespace(n) => Some(n),
-        }
-    }
-}
-
-impl<T> From<Namespace> for NamespaceOr<T> {
-    fn from(value: Namespace) -> Self {
-        Self::Namespace(value)
-    }
-}
-impl From<Component> for NamespaceOr<Component> {
-    fn from(value: Component) -> Self {
-        Self::Other(value)
-    }
-}
-impl From<Concept> for NamespaceOr<Concept> {
-    fn from(value: Concept) -> Self {
-        Self::Other(value)
-    }
+fn return_true() -> bool {
+    true
 }
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
+    use std::path::PathBuf;
+
+    use indexmap::IndexMap;
 
     use crate::{
-        Build, BuildRust, Component, ComponentType, Concept, Ember, Identifier, IdentifierPathBuf,
-        Manifest, Namespace, Version, VersionSuffix,
+        Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Ember,
+        Enum, Identifier, ItemPathBuf, Manifest, ManifestParseError, PascalCaseIdentifier,
+        SnakeCaseIdentifier, Version, VersionSuffix,
     };
+
+    fn i(s: &str) -> Identifier {
+        Identifier::new(s).unwrap()
+    }
+
+    fn sci(s: &str) -> SnakeCaseIdentifier {
+        SnakeCaseIdentifier::new(s).unwrap()
+    }
+
+    fn pci(s: &str) -> PascalCaseIdentifier {
+        PascalCaseIdentifier::new(s).unwrap()
+    }
+
+    fn ipb(s: &str) -> ItemPathBuf {
+        ItemPathBuf::new(s).unwrap()
+    }
 
     #[test]
     fn can_parse_minimal_toml() {
@@ -185,18 +160,18 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 ember: Ember {
-                    id: Identifier::new("test").unwrap(),
+                    id: SnakeCaseIdentifier::new("test").unwrap(),
                     name: Some("Test".to_string()),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
                 },
                 ..Default::default()
             })
-        )
+        );
     }
 
     #[test]
-    fn can_parse_minimal_legacy_toml() {
+    fn will_fail_on_legacy_project_toml() {
         const TOML: &str = r#"
         [project]
         id = "test"
@@ -206,15 +181,7 @@ mod tests {
 
         assert_eq!(
             Manifest::parse(TOML),
-            Ok(Manifest {
-                ember: Ember {
-                    id: Identifier::new("test").unwrap(),
-                    name: Some("Test".to_string()),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
-                    ..Default::default()
-                },
-                ..Default::default()
-            })
+            Err(ManifestParseError::ProjectRenamedToEmberError)
         )
     }
 
@@ -227,7 +194,7 @@ mod tests {
         version = "0.0.1"
 
         [components]
-        cell = { type = "I32", name = "Cell", description = "The ID of the cell this player is in", attributes = ["Store"] }
+        cell = { type = "i32", name = "Cell", description = "The ID of the cell this player is in", attributes = ["store"] }
 
         [concepts.cell]
         name = "Cell"
@@ -240,9 +207,9 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 ember: Ember {
-                    id: Identifier::new("tictactoe").unwrap(),
+                    id: sci("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
                 },
                 build: Build {
@@ -250,31 +217,28 @@ mod tests {
                         feature_multibuild: vec!["client".to_string(), "server".to_string()]
                     }
                 },
-                components: BTreeMap::from_iter([(
-                    IdentifierPathBuf::new("cell").unwrap(),
+                components: IndexMap::from_iter([(
+                    ipb("cell"),
                     Component {
                         name: Some("Cell".to_string()),
                         description: Some("The ID of the cell this player is in".to_string()),
-                        type_: ComponentType::String("I32".to_string()),
-                        attributes: vec!["Store".to_string()],
+                        type_: ComponentType::Item(i("i32").into()),
+                        attributes: vec![i("store").into()],
                         default: None,
                     }
-                    .into()
                 )]),
-                concepts: BTreeMap::from_iter([(
-                    IdentifierPathBuf::new("cell").unwrap(),
+                concepts: IndexMap::from_iter([(
+                    ipb("cell"),
                     Concept {
                         name: Some("Cell".to_string()),
                         description: Some("A cell object".to_string()),
                         extends: vec![],
-                        components: BTreeMap::from_iter([(
-                            IdentifierPathBuf::new("cell").unwrap(),
-                            toml::Value::Integer(0)
-                        )])
+                        components: IndexMap::from_iter([(ipb("cell"), toml::Value::Integer(0))])
                     }
-                    .into()
                 )]),
-                messages: BTreeMap::new(),
+                messages: Default::default(),
+                enums: Default::default(),
+                dependencies: Default::default(),
             })
         )
     }
@@ -295,9 +259,9 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 ember: Ember {
-                    id: Identifier::new("tictactoe").unwrap(),
+                    id: sci("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
                 },
                 build: Build {
@@ -305,73 +269,7 @@ mod tests {
                         feature_multibuild: vec!["client".to_string()]
                     }
                 },
-                components: BTreeMap::new(),
-                concepts: BTreeMap::new(),
-                messages: BTreeMap::new(),
-            })
-        )
-    }
-
-    #[test]
-    fn can_parse_manifest_with_namespaces() {
-        const TOML: &str = r#"
-        [ember]
-        id = "tictactoe"
-        name = "Tic Tac Toe"
-        version = "0.0.1"
-
-        [components]
-        "core" = { name = "Core" }
-        "core::app" = { name = "App" }
-
-        "core::app::main_scene" = { name = "Main Scene", type = "Empty" }
-        "#;
-
-        assert_eq!(
-            Manifest::parse(TOML),
-            Ok(Manifest {
-                ember: Ember {
-                    id: Identifier::new("tictactoe").unwrap(),
-                    name: Some("Tic Tac Toe".to_string()),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
-                    ..Default::default()
-                },
-                build: Build {
-                    rust: BuildRust {
-                        feature_multibuild: vec!["client".to_string(), "server".to_string()]
-                    }
-                },
-                components: BTreeMap::from_iter([
-                    (
-                        IdentifierPathBuf::new("core").unwrap(),
-                        Namespace {
-                            name: Some("Core".to_string()),
-                            description: None
-                        }
-                        .into()
-                    ),
-                    (
-                        IdentifierPathBuf::new("core::app").unwrap(),
-                        Namespace {
-                            name: Some("App".to_string()),
-                            description: None
-                        }
-                        .into()
-                    ),
-                    (
-                        IdentifierPathBuf::new("core::app::main_scene").unwrap(),
-                        Component {
-                            name: Some("Main Scene".to_string()),
-                            description: None,
-                            type_: ComponentType::String("Empty".to_string()),
-                            attributes: vec![],
-                            default: None,
-                        }
-                        .into()
-                    )
-                ]),
-                concepts: BTreeMap::new(),
-                messages: BTreeMap::new(),
+                ..Default::default()
             })
         )
     }
@@ -387,23 +285,30 @@ mod tests {
         version = "0.0.1"
 
         [components]
-        "core::transform::rotation" = { type = "Quat", name = "Rotation", description = "" }
-        "core::transform::scale" = { type = "Vec3", name = "Scale", description = "" }
-        "core::transform::spherical_billboard" = { type = "Empty", name = "Spherical billboard", description = "" }
-        "core::transform::translation" = { type = "Vec3", name = "Translation", description = "" }
+        "core::transform::rotation" = { type = "quat", name = "Rotation", description = "" }
+        "core::transform::scale" = { type = "vec3", name = "Scale", description = "" }
+        "core::transform::spherical_billboard" = { type = "empty", name = "Spherical billboard", description = "" }
+        "core::transform::translation" = { type = "vec3", name = "Translation", description = "" }
 
-        [concepts]
-        "ns" = { name = "Namespace", description = "A Test Namespace" }
-        "ns::transformable" = { name = "Transformable", description = "Can be translated, rotated and scaled.", components = {"core::transform::translation" = [0, 0, 0], "core::transform::rotation" = [0, 0, 0, 1], "core::transform::scale" = [1, 1, 1]} }
+        [concepts."ns::transformable"]
+        name = "Transformable"
+        description = "Can be translated, rotated and scaled."
+
+        [concepts."ns::transformable".components]
+        # This is intentionally out of order to ensure that order is preserved
+        "core::transform::translation" = [0, 0, 0]
+        "core::transform::scale" = [1, 1, 1]
+        "core::transform::rotation" = [0, 0, 0, 1]
         "#;
 
+        let manifest = Manifest::parse(TOML).unwrap();
         assert_eq!(
-            Manifest::parse(TOML),
-            Ok(Manifest {
+            manifest,
+            Manifest {
                 ember: Ember {
-                    id: Identifier::new("my_project").unwrap(),
+                    id: sci("my_project"),
                     name: Some("My Project".to_string()),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
                 },
                 build: Build {
@@ -411,99 +316,276 @@ mod tests {
                         feature_multibuild: vec!["client".to_string(), "server".to_string()]
                     }
                 },
-                components: BTreeMap::from_iter([
+                components: IndexMap::from_iter([
                     (
-                        IdentifierPathBuf::new("core::transform::rotation").unwrap(),
+                        ipb("core::transform::rotation"),
                         Component {
                             name: Some("Rotation".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::String("Quat".to_string()),
+                            type_: ComponentType::Item(i("quat").into()),
                             attributes: vec![],
                             default: None,
                         }
-                        .into()
                     ),
                     (
-                        IdentifierPathBuf::new("core::transform::scale").unwrap(),
+                        ipb("core::transform::scale"),
                         Component {
                             name: Some("Scale".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::String("Vec3".to_string()),
+                            type_: ComponentType::Item(i("vec3").into()),
                             attributes: vec![],
                             default: None,
                         }
-                        .into()
                     ),
                     (
-                        IdentifierPathBuf::new("core::transform::spherical_billboard").unwrap(),
+                        ipb("core::transform::spherical_billboard"),
                         Component {
                             name: Some("Spherical billboard".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::String("Empty".to_string()),
+                            type_: ComponentType::Item(i("empty").into()),
                             attributes: vec![],
                             default: None,
                         }
-                        .into()
                     ),
                     (
-                        IdentifierPathBuf::new("core::transform::translation").unwrap(),
+                        ipb("core::transform::translation"),
                         Component {
                             name: Some("Translation".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::String("Vec3".to_string()),
+                            type_: ComponentType::Item(i("vec3").into()),
                             attributes: vec![],
                             default: None,
                         }
-                        .into()
                     ),
                 ]),
-                concepts: BTreeMap::from_iter([
+                concepts: IndexMap::from_iter([(
+                    ipb("ns::transformable"),
+                    Concept {
+                        name: Some("Transformable".to_string()),
+                        description: Some("Can be translated, rotated and scaled.".to_string()),
+                        extends: vec![],
+                        components: IndexMap::from_iter([
+                            (
+                                ipb("core::transform::translation"),
+                                Value::Array(vec![
+                                    Value::Integer(0),
+                                    Value::Integer(0),
+                                    Value::Integer(0)
+                                ])
+                            ),
+                            (
+                                ipb("core::transform::scale"),
+                                Value::Array(vec![
+                                    Value::Integer(1),
+                                    Value::Integer(1),
+                                    Value::Integer(1)
+                                ])
+                            ),
+                            (
+                                ipb("core::transform::rotation"),
+                                Value::Array(vec![
+                                    Value::Integer(0),
+                                    Value::Integer(0),
+                                    Value::Integer(0),
+                                    Value::Integer(1)
+                                ])
+                            ),
+                        ])
+                    }
+                )]),
+                messages: Default::default(),
+                enums: Default::default(),
+                dependencies: Default::default(),
+            }
+        );
+
+        assert_eq!(
+            manifest
+                .concepts
+                .first()
+                .unwrap()
+                .1
+                .components
+                .keys()
+                .collect::<Vec<_>>(),
+            vec![
+                &ipb("core::transform::translation"),
+                &ipb("core::transform::scale"),
+                &ipb("core::transform::rotation"),
+            ]
+        );
+    }
+
+    #[test]
+    fn can_parse_enums() {
+        const TOML: &str = r#"
+        [ember]
+        id = "tictactoe"
+        name = "Tic Tac Toe"
+        version = "0.0.1"
+
+        [enums.CellState]
+        description = "The current cell state"
+        [enums.CellState.members]
+        Taken = "The cell is taken"
+        Free = "The cell is free"
+        "#;
+
+        assert_eq!(
+            Manifest::parse(TOML),
+            Ok(Manifest {
+                ember: Ember {
+                    id: sci("tictactoe"),
+                    name: Some("Tic Tac Toe".to_string()),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    ..Default::default()
+                },
+                build: Build::default(),
+                components: Default::default(),
+                concepts: Default::default(),
+                messages: Default::default(),
+                enums: IndexMap::from_iter([(
+                    pci("CellState"),
+                    Enum {
+                        description: Some("The current cell state".to_string()),
+                        members: IndexMap::from_iter([
+                            (pci("Taken"), "The cell is taken".to_string()),
+                            (pci("Free"), "The cell is free".to_string()),
+                        ])
+                    }
+                )]),
+                dependencies: Default::default(),
+            })
+        )
+    }
+
+    #[test]
+    fn can_parse_container_types() {
+        const TOML: &str = r#"
+        [ember]
+        id = "test"
+        name = "Test"
+        version = "0.0.1"
+
+        [components]
+        test = { type = "I32", name = "Test", description = "Test" }
+        vec_test = { type = { container_type = "Vec", element_type = "I32" }, name = "Test", description = "Test" }
+        option_test = { type = { container_type = "Option", element_type = "I32" }, name = "Test", description = "Test" }
+
+        "#;
+
+        assert_eq!(
+            Manifest::parse(TOML),
+            Ok(Manifest {
+                ember: Ember {
+                    id: sci("test"),
+                    name: Some("Test".to_string()),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    ..Default::default()
+                },
+                build: Build {
+                    rust: BuildRust {
+                        feature_multibuild: vec!["client".to_string(), "server".to_string()]
+                    }
+                },
+                components: IndexMap::from_iter([
                     (
-                        IdentifierPathBuf::new("ns").unwrap(),
-                        Namespace {
-                            name: Some("Namespace".to_string()),
-                            description: Some("A Test Namespace".to_string())
+                        ipb("test"),
+                        Component {
+                            name: Some("Test".to_string()),
+                            description: Some("Test".to_string()),
+                            type_: ComponentType::Item(i("I32").into()),
+                            attributes: vec![],
+                            default: None,
                         }
-                        .into()
                     ),
                     (
-                        IdentifierPathBuf::new("ns::transformable").unwrap(),
-                        Concept {
-                            name: Some("Transformable".to_string()),
-                            description: Some("Can be translated, rotated and scaled.".to_string()),
-                            extends: vec![],
-                            components: BTreeMap::from_iter([
-                                (
-                                    IdentifierPathBuf::new("core::transform::translation").unwrap(),
-                                    Value::Array(vec![
-                                        Value::Integer(0),
-                                        Value::Integer(0),
-                                        Value::Integer(0)
-                                    ])
-                                ),
-                                (
-                                    IdentifierPathBuf::new("core::transform::rotation").unwrap(),
-                                    Value::Array(vec![
-                                        Value::Integer(0),
-                                        Value::Integer(0),
-                                        Value::Integer(0),
-                                        Value::Integer(1)
-                                    ])
-                                ),
-                                (
-                                    IdentifierPathBuf::new("core::transform::scale").unwrap(),
-                                    Value::Array(vec![
-                                        Value::Integer(1),
-                                        Value::Integer(1),
-                                        Value::Integer(1)
-                                    ])
-                                )
-                            ])
+                        ipb("vec_test"),
+                        Component {
+                            name: Some("Test".to_string()),
+                            description: Some("Test".to_string()),
+                            type_: ComponentType::Contained {
+                                type_: ContainerType::Vec,
+                                element_type: i("I32").into()
+                            },
+                            attributes: vec![],
+                            default: None,
                         }
-                        .into()
+                    ),
+                    (
+                        ipb("option_test"),
+                        Component {
+                            name: Some("Test".to_string()),
+                            description: Some("Test".to_string()),
+                            type_: ComponentType::Contained {
+                                type_: ContainerType::Option,
+                                element_type: i("I32").into()
+                            },
+                            attributes: vec![],
+                            default: None,
+                        }
                     )
                 ]),
-                messages: BTreeMap::new(),
+                concepts: Default::default(),
+                messages: Default::default(),
+                enums: Default::default(),
+                dependencies: Default::default(),
+            })
+        )
+    }
+
+    #[test]
+    fn can_parse_dependencies() {
+        const TOML: &str = r#"
+        [ember]
+        id = "dependencies"
+        name = "dependencies"
+        version = "0.0.1"
+
+        [dependencies]
+        deps_assets = { path = "deps/assets" }
+        deps_code = { path = "deps/code" }
+        deps_ignore_me = { path = "deps/ignore_me", enabled = false }
+
+        "#;
+
+        assert_eq!(
+            Manifest::parse(TOML),
+            Ok(Manifest {
+                ember: Ember {
+                    id: sci("dependencies"),
+                    name: Some("dependencies".to_string()),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    ..Default::default()
+                },
+                build: Default::default(),
+                components: Default::default(),
+                concepts: Default::default(),
+                messages: Default::default(),
+                enums: Default::default(),
+                dependencies: IndexMap::from_iter([
+                    (
+                        sci("deps_assets"),
+                        Dependency {
+                            path: PathBuf::from("deps/assets"),
+                            enabled: true,
+                        }
+                    ),
+                    (
+                        sci("deps_code"),
+                        Dependency {
+                            path: PathBuf::from("deps/code"),
+                            enabled: true,
+                        }
+                    ),
+                    (
+                        sci("deps_ignore_me"),
+                        Dependency {
+                            path: PathBuf::from("deps/ignore_me"),
+                            enabled: false,
+                        }
+                    )
+                ])
             })
         )
     }

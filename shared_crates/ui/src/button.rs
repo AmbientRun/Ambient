@@ -14,17 +14,21 @@ use ambient_element::{
     element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::{
-    components::{
+    core::{
         layout::{
-            align_vertical_center, fit_horizontal_parent, height, margin, min_height, padding,
-            space_between_items,
+            components::{
+                align_vertical, fit_horizontal, height, margin, min_height, padding,
+                space_between_items,
+            },
+            types::{Align, Fit},
         },
-        rect::{border_color, border_radius, border_thickness},
-        rendering::color,
-        text::font_style,
+        messages,
+        rect::components::{border_color, border_radius, border_thickness},
+        rendering::components::color,
+        text::{components::font_style, types::FontStyle},
     },
     ecs::World,
-    messages, run_async,
+    run_async,
 };
 use ambient_shared_types::{CursorIcon, ModifiersState, VirtualKeyCode};
 use futures::{future::BoxFuture, Future, FutureExt};
@@ -161,14 +165,14 @@ impl ButtonStyle {
                 content,
                 UIBase
                     .el()
-                    .with_default(fit_horizontal_parent())
+                    .with(fit_horizontal(), Fit::Parent)
                     .with(height(), 2.)
                     .with_background(Color::WHITE.into())
                     .with(margin(), vec4(2., 0., 0., 0.)),
             ])
             .with_background(background.into())
         } else {
-            let content = content.with(font_style(), "Bold".to_string());
+            let content = content.with(font_style(), FontStyle::Bold);
             let tooltip = if let Some(hotkey) = hotkey {
                 let modifier = if hotkey_modifier != ModifiersState::empty() {
                     format!("{hotkey_modifier:?} + ")
@@ -203,7 +207,7 @@ impl ButtonStyle {
                         },
                     ),
                 )
-                .with_default(align_vertical_center())
+                .with(align_vertical(), Align::Center)
                 .with_background(background.into())
                 .with(
                     border_radius(),

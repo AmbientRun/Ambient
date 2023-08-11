@@ -23,7 +23,7 @@ use super::{
 };
 use crate::{bind_groups::BindGroups, PostSubmitFunc, RendererConfig};
 
-pub use ambient_ecs::generated::components::core::rendering::{outline, outline_recursive};
+pub use ambient_ecs::generated::rendering::components::{outline, outline_recursive};
 
 gpu_components! {
     outline() => outline: GpuComponentFormat::Vec4,

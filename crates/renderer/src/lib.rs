@@ -61,7 +61,7 @@ pub use tree_renderer::*;
 
 pub const MAX_PRIMITIVE_COUNT: usize = 16;
 
-pub use ambient_ecs::generated::components::core::rendering::{
+pub use ambient_ecs::generated::rendering::components::{
     cast_shadows, color, double_sided, fog_color, fog_density, fog_height_falloff, light_ambient,
     light_diffuse, overlay, pbr_material_from_url, scissors, scissors_recursive, sun,
     transparency_group,

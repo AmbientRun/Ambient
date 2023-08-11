@@ -4,14 +4,14 @@ use std::time::Instant;
 use ambient_cb::{cb, Cb};
 use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
-    components::{
-        layout::{height, min_height, min_width, width},
-        rect::background_color,
-        rendering::color,
-        text::text,
-        transform::translation,
+    core::{
+        layout::components::{height, min_height, min_width, width},
+        messages,
+        rect::components::background_color,
+        rendering::components::color,
+        text::components::text,
+        transform::components::translation,
     },
-    messages,
     window::set_cursor,
 };
 use ambient_shared_types::{CursorIcon, VirtualKeyCode};

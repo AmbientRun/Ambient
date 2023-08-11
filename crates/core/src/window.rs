@@ -3,7 +3,7 @@ use ambient_native_std::math::interpolate;
 use glam::{uvec2, vec2, UVec2, Vec2};
 use winit::window::{CursorGrabMode, CursorIcon, Window};
 
-pub use ambient_ecs::generated::components::core::app::{
+pub use ambient_ecs::generated::app::components::{
     cursor_position, window_logical_size, window_physical_size, window_scale_factor,
 };
 

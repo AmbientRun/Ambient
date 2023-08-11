@@ -8,6 +8,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
     ambient_primitives::init_components();
     ambient_sky::init_components();
     ambient_water::init_components();
+    ambient_ember_semantic_native::init_components();
 
     Ok(())
 }

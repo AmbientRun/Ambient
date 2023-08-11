@@ -5,7 +5,7 @@ use ambient_element::{
     define_el_function_for_vec_element_newtype, to_owned, Element, ElementComponent,
     ElementComponentExt, Hooks,
 };
-use ambient_guest_bridge::components::layout::margin;
+use ambient_guest_bridge::core::layout::components::margin;
 use convert_case::{Case, Casing};
 use glam::{vec4, Vec2, Vec3, Vec4};
 use itertools::Itertools;

@@ -1,27 +1,27 @@
-
-[components."core::rect"]
+[ember]
+id = "rect"
 name = "Rect"
 description = "Rounded corners rectangle rendering components, with an optional border."
 
-[components."core::rect::background_color"]
+[components.background_color]
 type = "Vec4"
 name = "Background color"
 description = "Background color of an entity with a `rect` component."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rect::background_url"]
+[components.background_url]
 type = "String"
-name = "Background url"
-description = "Url to an image asset."
+name = "Background URL"
+description = "URL to an image asset."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rect::border_color"]
+[components.border_color]
 type = "Vec4"
 name = "Border color"
 description = "Border color of an entity with a `rect` component."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rect::border_radius"]
+[components.border_radius]
 type = "Vec4"
 name = "Border radius"
 description = """
@@ -29,49 +29,49 @@ Radius for each corner of an entity with a `rect` component.
 `x` = top-left, `y` = top-right, `z` = bottom-left, `w` = bottom-right."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rect::border_thickness"]
+[components.border_thickness]
 type = "F32"
 name = "Border thickness"
 description = "Border thickness of an entity with a `rect` component."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rect::pixel_line_from"]
+[components.pixel_line_from]
 type = "Vec3"
 name = "Pixel Line from"
 description = "Start point of a pixel sized line."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rect::pixel_line_to"]
+[components.pixel_line_to]
 type = "Vec3"
 name = "Pixel Line to"
 description = "End point of a pixel sized line."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rect::line_from"]
+[components.line_from]
 type = "Vec3"
 name = "Line from"
 description = "Start point of a line."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rect::line_to"]
+[components.line_to]
 type = "Vec3"
 name = "Line to"
 description = "End point of a line."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rect::line_width"]
+[components.line_width]
 type = "F32"
 name = "Line width"
 description = "Width of line."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rect::rect"]
+[components.rect]
 type = "Empty"
 name = "Rect"
 description = "If attached to an entity, the entity will be converted to a UI rectangle, with optionally rounded corners and borders."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rect::size_from_background_image"]
+[components.size_from_background_image]
 type = "Empty"
 name = "Size from background image"
 description = "Resize this rect based on the size of the background image."

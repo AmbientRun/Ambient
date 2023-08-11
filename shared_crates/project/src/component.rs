@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::ItemPathBuf;
+
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Component {
     pub name: Option<String>,
@@ -7,20 +9,36 @@ pub struct Component {
     #[serde(rename = "type")]
     pub type_: ComponentType,
     #[serde(default)]
-    pub attributes: Vec<String>,
+    pub attributes: Vec<ItemPathBuf>,
     #[serde(default)]
     pub default: Option<toml::Value>,
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Eq, Serialize)]
+pub enum ContainerType {
+    Vec,
+    Option,
+}
+
+#[derive(Deserialize, Clone, PartialEq, Eq, Serialize)]
 #[serde(untagged)]
 pub enum ComponentType {
-    String(String),
-    ContainerType {
+    Item(ItemPathBuf),
+    Contained {
         #[serde(rename = "type")]
         #[serde(alias = "container_type")]
-        type_: String,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        element_type: Option<String>,
+        type_: ContainerType,
+        element_type: ItemPathBuf,
     },
+}
+impl std::fmt::Debug for ComponentType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Item(arg0) => write!(f, "{}", arg0),
+            Self::Contained {
+                type_,
+                element_type,
+            } => write!(f, "{:?}<{}>", type_, element_type),
+        }
+    }
 }

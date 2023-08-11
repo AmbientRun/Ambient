@@ -1,14 +1,19 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        rendering::color,
-        text::text,
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        rendering::components::color,
+        text::components::text,
         transform::{
-            local_to_world, lookat_target, mesh_to_local, mesh_to_world, scale, translation,
+            components::{
+                local_to_world, lookat_target, mesh_to_local, mesh_to_world, scale, translation,
+            },
+            concepts::make_transformable,
         },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
 

@@ -10,3 +10,7 @@ mod version;
 pub use version::*;
 mod message;
 pub use message::*;
+mod enum_;
+pub use enum_::*;
+mod build_metadata;
+pub use build_metadata::*;

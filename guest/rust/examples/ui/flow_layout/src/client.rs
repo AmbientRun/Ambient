@@ -1,11 +1,10 @@
 use ambient_api::{
-    components::core::{
-        layout::{
-            align_horizontal_center, align_horizontal_end, align_vertical_center,
-            align_vertical_end, fit_horizontal_children, fit_horizontal_none,
-            fit_vertical_children, fit_vertical_none, height, space_between_items, width,
+    core::{
+        layout::components::{
+            align_horizontal, align_vertical, fit_horizontal, fit_vertical, height,
+            space_between_items, width,
         },
-        text::font_size,
+        text::components::font_size,
     },
     prelude::*,
 };
@@ -16,19 +15,19 @@ fn App(_hooks: &mut Hooks) -> Element {
     FlowColumn::el([
         FlowRow::el([Text::el("Basic")])
             .with_background(vec4(0.1, 0.1, 0.1, 1.))
-            .with_default(fit_vertical_children())
-            .with_default(fit_horizontal_children())
+            .with(fit_vertical(), Fit::Children)
+            .with(fit_horizontal(), Fit::Children)
             .with_padding_even(10.),
         FlowRow::el([Text::el("Spacing"), Text::el("between"), Text::el("items")])
             .with_background(vec4(0.1, 0.1, 0.1, 1.))
-            .with_default(fit_vertical_children())
-            .with_default(fit_horizontal_children())
+            .with(fit_vertical(), Fit::Children)
+            .with(fit_horizontal(), Fit::Children)
             .with_padding_even(10.)
             .with(space_between_items(), 50.),
         FlowRow::el([Text::el("Break"), Text::el("line")])
             .with_background(vec4(0.1, 0.1, 0.1, 1.))
-            .with_default(fit_vertical_children())
-            .with_default(fit_horizontal_none())
+            .with(fit_vertical(), Fit::Children)
+            .with(fit_horizontal(), Fit::None)
             .with(width(), 50.)
             .with_padding_even(10.),
         FlowRow::el([
@@ -36,10 +35,10 @@ fn App(_hooks: &mut Hooks) -> Element {
             background(Text::el("Center").with(font_size(), 30.)),
         ])
         .with_background(vec4(0.1, 0.1, 0.1, 1.))
-        .with_default(fit_vertical_none())
-        .with_default(fit_horizontal_none())
-        .with_default(align_horizontal_center())
-        .with_default(align_vertical_center())
+        .with(fit_vertical(), Fit::None)
+        .with(fit_horizontal(), Fit::None)
+        .with(align_horizontal(), Align::Center)
+        .with(align_vertical(), Align::Center)
         .with(width(), 200.)
         .with(height(), 70.)
         .with_padding_even(10.)
@@ -49,10 +48,10 @@ fn App(_hooks: &mut Hooks) -> Element {
             background(Text::el("End").with(font_size(), 30.)),
         ])
         .with_background(vec4(0.1, 0.1, 0.1, 1.))
-        .with_default(fit_vertical_none())
-        .with_default(fit_horizontal_none())
-        .with_default(align_horizontal_end())
-        .with_default(align_vertical_end())
+        .with(fit_vertical(), Fit::None)
+        .with(fit_horizontal(), Fit::None)
+        .with(align_horizontal(), Align::End)
+        .with(align_vertical(), Align::End)
         .with(width(), 200.)
         .with(height(), 70.)
         .with_padding_even(10.)

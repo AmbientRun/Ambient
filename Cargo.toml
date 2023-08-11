@@ -130,7 +130,7 @@ walkdir = "2"
 relative-path = { version = "1.7", features = ["serde"] }
 pin-project = "1.0"
 abort-on-drop = "0.2"
-toml = "0.7.1"
+toml = { version = "0.7.4", features = ["preserve_order"] }
 percent-encoding = "2.2.0"
 indoc = "2.0"
 cargo_toml = "0.15.0"

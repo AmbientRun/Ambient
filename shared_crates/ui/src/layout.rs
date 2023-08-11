@@ -10,19 +10,17 @@ use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent,
     ElementComponentExt, Hooks,
 };
-use ambient_guest_bridge::components::{
-    ecs::children,
-    layout::{
-        align_horizontal_begin, align_horizontal_center, align_vertical_begin,
-        align_vertical_center, fit_horizontal_children, fit_horizontal_none, fit_horizontal_parent,
-        fit_vertical_children, fit_vertical_none, fit_vertical_parent, height, is_book_file,
-        layout_bookcase, layout_dock, layout_flow, orientation_horizontal, orientation_vertical,
-        width,
-    },
-    transform::{local_to_parent, local_to_world, translation},
+use ambient_guest_bridge::core::{
+    ecs::components::children,
+    transform::components::{local_to_parent, local_to_world, translation},
 };
 use glam::{vec2, vec3, Mat4, Vec2, Vec3};
 use itertools::Itertools;
+
+pub use ambient_guest_bridge::core::layout::{
+    components::*,
+    types::{Align, Docking, Fit, Layout, Orientation},
+};
 
 #[derive(Debug, Clone)]
 /// A [Dock] that is always the size of the window.
@@ -51,7 +49,7 @@ define_el_function_for_vec_element_newtype!(Dock);
 impl ElementComponent for Dock {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Element::from(UIBase)
-            .init_default(layout_dock())
+            .init(layout(), Layout::Dock)
             .init_default(children())
             .children(self.0)
     }
@@ -67,7 +65,7 @@ define_el_function_for_vec_element_newtype!(Flow);
 impl ElementComponent for Flow {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Element::from(UIBase)
-            .init_default(layout_flow())
+            .init(layout(), Layout::Flow)
             .init_default(children())
             .children(self.0)
     }
@@ -81,7 +79,7 @@ pub struct Bookcase(pub Vec<BookFile>);
 impl ElementComponent for Bookcase {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Element::from(UIBase)
-            .init_default(layout_bookcase())
+            .init(layout(), Layout::Bookcase)
             .init_default(children())
             .children(self.0.into_iter().map(|x| x.el()).collect())
     }
@@ -112,16 +110,11 @@ impl ElementComponent for FlowColumn {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Flow(self.0)
             .el()
-            .with_default(orientation_vertical())
-            .with_default(align_horizontal_begin())
-            .with_default(align_vertical_begin())
-            .with_default(fit_horizontal_children())
-            .with_default(fit_vertical_children())
-        // .set(orientation(), Orientation::Vertical)
-        // .set(align_horizontal(), Align::Begin)
-        // .set(align_vertical(), Align::Begin)
-        // .set(fit_horizontal(), Fit::Children)
-        // .set(fit_vertical(), Fit::Children)
+            .with(orientation(), Orientation::Vertical)
+            .with(align_horizontal(), Align::Begin)
+            .with(align_vertical(), Align::Begin)
+            .with(fit_horizontal(), Fit::Children)
+            .with(fit_vertical(), Fit::Children)
     }
 }
 
@@ -135,16 +128,11 @@ impl ElementComponent for FlowRow {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Flow(self.0)
             .el()
-            .with_default(orientation_horizontal())
-            .with_default(align_horizontal_begin())
-            .with_default(align_vertical_begin())
-            .with_default(fit_horizontal_children())
-            .with_default(fit_vertical_children())
-        // .set(orientation(), Orientation::Horizontal)
-        // .set(align_horizontal(), Align::Begin)
-        // .set(align_vertical(), Align::Begin)
-        // .set(fit_horizontal(), Fit::Children)
-        // .set(fit_vertical(), Fit::Children)
+            .with(orientation(), Orientation::Horizontal)
+            .with(align_horizontal(), Align::Begin)
+            .with(align_vertical(), Align::Begin)
+            .with(fit_horizontal(), Fit::Children)
+            .with(fit_vertical(), Fit::Children)
     }
 }
 
@@ -157,16 +145,11 @@ impl ElementComponent for Centered {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Flow(self.0)
             .el()
-            .with_default(orientation_vertical())
-            .with_default(align_horizontal_center())
-            .with_default(align_vertical_center())
-            .with_default(fit_horizontal_none())
-            .with_default(fit_vertical_none())
-        // .set(orientation(), Orientation::Vertical)
-        // .set(align_horizontal(), Align::Center)
-        // .set(align_vertical(), Align::Center)
-        // .set(fit_horizontal(), Fit::None)
-        // .set(fit_vertical(), Fit::None)
+            .with(orientation(), Orientation::Vertical)
+            .with(align_horizontal(), Align::Center)
+            .with(align_vertical(), Align::Center)
+            .with(fit_horizontal(), Fit::None)
+            .with(fit_vertical(), Fit::None)
     }
 }
 
@@ -260,11 +243,11 @@ pub fn Separator(
         .with_background(Color::rgba(0., 0., 0., 0.8).into());
     if vertical {
         el.with(width(), 1.)
-            .with_default(fit_horizontal_none())
-            .with_default(fit_vertical_parent())
+            .with(fit_horizontal(), Fit::None)
+            .with(fit_vertical(), Fit::Parent)
     } else {
         el.with(height(), 1.)
-            .with_default(fit_horizontal_parent())
-            .with_default(fit_vertical_none())
+            .with(fit_horizontal(), Fit::Parent)
+            .with(fit_vertical(), Fit::None)
     }
 }

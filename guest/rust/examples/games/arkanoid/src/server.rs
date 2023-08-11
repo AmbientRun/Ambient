@@ -2,20 +2,24 @@ use std::f32::consts::PI;
 use std::vec::Vec;
 
 use ambient_api::{
-    components::core::{
-        physics::linear_velocity,
-        player::{player, user_id},
-        primitives::cube,
-        rendering,
-        transform::*,
+    core::{
+        messages::Frame,
+        physics::components::linear_velocity,
+        player::components::{is_player, user_id},
+        primitives::{components::cube, concepts::make_sphere},
+        rendering::components::color,
+        transform::{components::*, concepts::make_transformable},
     },
-    concepts::{make_sphere, make_transformable},
     prelude::*,
 };
-use components::{player_movement_direction, track_audio_url};
 
 mod constants;
 use constants::*;
+use embers::ambient_example_arkanoid::{
+    assets,
+    components::{player_movement_direction, track_audio_url},
+    messages::{Input, Ping},
+};
 
 fn spawn_enemies(enemies: &mut Vec<EntityId>, y_pos: f32, color: Vec3) {
     for i in 0..7 {
@@ -24,7 +28,7 @@ fn spawn_enemies(enemies: &mut Vec<EntityId>, y_pos: f32, color: Vec3) {
                 .with_default(cube())
                 .with(scale(), vec3(PADDLE_WIDTH, PADDLE_HEIGHT / 2., 1.))
                 .with(translation(), vec3(-1. + (i as f32 / 3.), y_pos, 0.))
-                .with(rendering::color(), color.extend(1.))
+                .with(self::color(), color.extend(1.))
                 .spawn(),
         );
     }
@@ -42,7 +46,7 @@ fn gen_ball_velocity() -> Vec3 {
 
 #[main]
 pub fn main() {
-    let bounce_url = asset::url("assets/paddle_bounce.wav").unwrap();
+    let bounce_url = assets::url("paddle_bounce.wav");
 
     entity::add_component(
         entity::synchronized_resources(),
@@ -64,7 +68,7 @@ pub fn main() {
         .with_default(cube())
         .with(scale(), vec3(X_BOUNDARY * 2.5, Y_BOUNDARY * 2.3, 1.))
         .with(translation(), vec3(0., 0., 1.0))
-        .with(rendering::color(), vec4(1., 1., 1., 1.))
+        .with(self::color(), vec4(1., 1., 1., 1.))
         .spawn();
 
     make_transformable()
@@ -74,25 +78,25 @@ pub fn main() {
             vec3(X_BOUNDARY * 2.5 - 0.1, Y_BOUNDARY * 2.3 - 0.1, 1.),
         )
         .with(translation(), vec3(0., 0., 0.9))
-        .with(rendering::color(), vec4(0., 0., 0., 1.))
+        .with(self::color(), vec4(0., 0., 0., 1.))
         .spawn();
 
     let paddle = make_transformable()
         .with_default(cube())
         .with(scale(), vec3(PADDLE_WIDTH, PADDLE_HEIGHT, 1.))
         .with(translation(), vec3(0., -0.9, 0.))
-        .with(rendering::color(), vec4(0., 1., 1., 1.))
+        .with(self::color(), vec4(0., 1., 1., 1.))
         .spawn();
 
     let ball = make_transformable()
         .with_merge(make_sphere())
         .with(scale(), vec3(BALL_RADIUS, BALL_RADIUS, 1.))
         .with(translation(), vec3(0., -0.9 + BALL_RADIUS, 0.))
-        .with(rendering::color(), vec4(1., 1., 1., 1.))
+        .with(self::color(), vec4(1., 1., 1., 1.))
         .spawn();
 
     // When a player spawns, create a camera and other components for them
-    spawn_query(player()).bind(move |players| {
+    spawn_query(is_player()).bind(move |players| {
         for (player, _) in players {
             entity::add_component(player, player_movement_direction(), 0.0);
         }
@@ -100,7 +104,7 @@ pub fn main() {
 
     // When a player despawns, clean up their objects
     let player_objects_query = query(user_id()).build();
-    despawn_query(user_id()).requires(player()).bind({
+    despawn_query(user_id()).requires(is_player()).bind({
         move |players| {
             let player_objects = player_objects_query.evaluate();
             for (_, player_user_id) in &players {
@@ -134,7 +138,7 @@ pub fn main() {
         }
     });
 
-    messages::Input::subscribe(move |source, msg| {
+    Input::subscribe(move |source, msg| {
         let Some(player_id) = source.client_entity_id() else { return; };
 
         entity::set_component(player_id, player_movement_direction(), msg.direction);
@@ -147,8 +151,8 @@ pub fn main() {
         }
     });
 
-    ambient_api::messages::Frame::subscribe(move |_| {
-        let players = entity::get_all(player());
+    Frame::subscribe(move |_| {
+        let players = entity::get_all(is_player());
 
         // handle players' input
         for (_i, player) in players.into_iter().enumerate() {
@@ -179,7 +183,7 @@ pub fn main() {
                         && ball_position.x < paddle_position.x + PADDLE_WIDTH / 2.
                     {
                         // bounce from the paddle
-                        messages::Ping::new().send_client_broadcast_reliable();
+                        Ping::new().send_client_broadcast_reliable();
                         // accelerate a bit
                         let new_v_len = (velocity.x.powi(2) + velocity.y.powi(2)).sqrt()
                             * (1. + BALL_ACCELERATION);

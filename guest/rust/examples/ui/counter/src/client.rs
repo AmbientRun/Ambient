@@ -1,4 +1,4 @@
-use ambient_api::{components::core::layout::space_between_items, prelude::*};
+use ambient_api::{core::layout::components::space_between_items, prelude::*};
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
