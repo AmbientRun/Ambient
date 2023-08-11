@@ -3,10 +3,16 @@ use std::sync::Arc;
 use ambient_native_std::asset_cache::SyncAssetKey;
 use anyhow::Context;
 
+/// JIT execution
 #[derive(Clone)]
-// JIT execution
 pub struct Engine {
     engine: wasm_bridge::Engine,
+}
+
+impl Engine {
+    pub fn inner(&self) -> &wasm_bridge::Engine {
+        &self.engine
+    }
 }
 
 impl std::fmt::Debug for Engine {

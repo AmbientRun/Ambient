@@ -1,3 +1,4 @@
+use crate::wasm;
 use ambient_cameras::UICamera;
 use ambient_client_shared::{game_view::GameView, player};
 use ambient_ecs::{Entity, SystemGroup};
@@ -39,7 +40,7 @@ pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {
             let world = &mut game_state.world;
 
             // TODO: client side wasm on the web
-            // wasm::initialize(world).unwrap();
+            wasm::initialize(world).unwrap();
 
             UICamera.el().spawn_static(world);
 

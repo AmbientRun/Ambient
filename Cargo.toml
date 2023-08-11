@@ -170,7 +170,7 @@ web-sys = { version = "0.3.61", features = [
     "Performance",
     "Window",
 ] }
-js-sys = { version = "0.3.61" }
+js-sys = { version = "0.3.64" }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 
@@ -205,9 +205,9 @@ wit-component = "0.11.0"
 
 # Required since the webtransport stuff is yet on crates.io
 # TODO: use crates.io dependencies
-[patch.crates-io]
-web-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-js-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-wasm-bindgen-futures = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-wasm-bindgen-shared = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+# [patch.crates-io]
+# web-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+# wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+# js-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+# wasm-bindgen-futures = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+# wasm-bindgen-shared = { git = "https://github.com/rustwasm/wasm-bindgen.git" }

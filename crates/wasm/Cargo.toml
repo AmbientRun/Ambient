@@ -70,6 +70,14 @@ wasm-bridge = { git = "https://github.com/kajacx/wasm-bridge", version = "0.2", 
     "component-model",
 ] }
 
+[target.'cfg(target_os = "unknown")'.dependencies]
+wasm-bindgen = { workspace = true }
+wasm-bindgen-futures = { workspace = true }
+wasm-bridge-js = { git = "https://github.com/kajacx/wasm-bridge", version = "0.2", features = [
+    "component-model",
+] }
+
+
 [target.'cfg(windows)'.build-dependencies]
 tracing = { workspace = true }
 dunce = "1.0"

@@ -11,6 +11,7 @@ use tracing_web::MakeConsoleWriter;
 use wasm_bindgen::prelude::*;
 
 mod app;
+mod wasm;
 
 #[wasm_bindgen]
 /// Initialize ambient

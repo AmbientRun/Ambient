@@ -200,7 +200,7 @@ impl<Bindings: BindingsBound> std::fmt::Debug for InstanceState<Bindings> {
 
 #[cfg(feature = "wit")]
 impl<Bindings: BindingsBound> InstanceState<Bindings> {
-    fn new(
+    async fn new(
         assets: &AssetCache,
         args: ModuleStateArgs<'_>,
         bindings: fn(EntityId) -> Bindings,
@@ -209,7 +209,7 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
 
         let engine = EngineKey
             .get(assets)
-            .map_err(|err| anyhow::bail!("{err:?}"));
+            .map_err(|err| anyhow::anyhow!("{err:?}"))?;
 
         let (stdout_output, stdout_consumer) = WasiOutputStream::make(args.stdout_output);
         let (stderr_output, stderr_consumer) = WasiOutputStream::make(args.stderr_output);
@@ -219,15 +219,15 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
             .set_stderr(stderr_output);
 
         #[cfg(not(target_os = "unknown"))]
-        let wasi = if let Some(dir) = preopened_dir {
+        let wasi = if let Some(dir) = args.preopened_dir {
             wasi.push_preopened_dir(dir, DirPerms::all(), FilePerms::all(), "/")
         } else {
             wasi
         };
 
         let wasi = wasi.build(&mut table)?;
-        let mut store = wasmtime::Store::new(
-            engine,
+        let mut store = wasm_bridge::Store::new(
+            engine.inner(),
             ExecutionContext {
                 wasi,
                 bindings,
@@ -235,25 +235,36 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
             },
         );
 
-        let mut linker = wasmtime::component::Linker::<ExecutionContext<Bindings>>::new(engine);
+        // let mut store = wasmtime::Store::new(
+        //     engine,
+        //     ExecutionContext {
+        //         wasi,
+        //         bindings,
+        //         table,
+        //     },
+        // );
+
+        let mut linker = wasm_bridge::Linker::<ExecutionContext<Bindings>>::new(engine.inner());
+        // let mut linker = wasmtime::component::Linker::<ExecutionContext<Bindings>>::new(engine);
 
         wasi_preview2::wasi::command::add_to_linker(&mut linker)?;
         shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 
-        let component = wasmtime::component::Component::from_binary(engine, component_bytecode)?;
+        let component =
+            wasmtime::component::Component::from_binary(engine.inner(), component_bytecode)?;
 
-        let (guest_bindings, guest_instance) = pollster::block_on(async {
+        let (guest_bindings, guest_instance) = async {
             let (guest_bindings, guest_instance) =
                 shared::wit::Bindings::instantiate_async(&mut store, &component, &linker).await?;
 
-            // // Initialise the runtime.
+            // Initialise the runtime.
             guest_bindings
                 .ambient_bindings_guest()
                 .call_init(&mut store)
                 .await?;
 
             anyhow::Ok((guest_bindings, guest_instance))
-        })?;
+        }?;
 
         Ok(Self {
             store,
