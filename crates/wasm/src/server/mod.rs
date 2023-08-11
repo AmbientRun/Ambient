@@ -79,7 +79,7 @@ pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
     SystemGroup::new(
         "core/wasm/server/on_shutdown_systems",
         vec![Box::new(FnSystem::new(move |world, _| {
-            let modules = query(()).incl(shared::module()).collect_ids(world, None);
+            let modules = query(()).incl(shared::is_module()).collect_ids(world, None);
             for module_id in modules {
                 shared::unload(world, module_id, "shutting down");
             }

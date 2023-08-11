@@ -3,14 +3,14 @@ id = "wasm"
 name = "WASM"
 description = "State related to WASM functionality."
 
-[components.module]
-name = "Module"
+[components.is_module]
+name = "is module"
 description = "A module."
 type = "Empty"
 attributes = ["Networked", "Store", "Debuggable"]
 
-[components.module_on_server]
-name = "Module on server"
+[components.is_module_on_server]
+name = "Is module on server"
 description = "Whether or not this module is on the server."
 type = "Empty"
 attributes = ["Networked", "Store", "Debuggable"]

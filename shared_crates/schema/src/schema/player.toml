@@ -9,9 +9,9 @@ name = "Local user ID"
 description = "The user ID of the local player."
 attributes = ["Debuggable", "Networked", "Resource", "Store"]
 
-[components.player]
+[components.is_player]
 type = "Empty"
-name = "Player"
+name = "Is player"
 description = """
 This entity is a player.
 Note that this is a logical construct; a player's body may be separate from the player itself."""

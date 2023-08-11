@@ -5,7 +5,7 @@ use ambient_api::{
             components::aspect_ratio_from_window,
             concepts::make_perspective_infinite_reverse_camera,
         },
-        player::components::player,
+        player::components::is_player,
         primitives::components::cube,
         rendering::components::color,
         transform::{
@@ -26,7 +26,7 @@ pub fn main() {
         .with(lookat_target(), vec3(0., 0., 0.))
         .spawn();
 
-    spawn_query(player()).bind(move |players| {
+    spawn_query(is_player()).bind(move |players| {
         // For each player joining, spawn a random colored box somewhere
         for _ in players {
             Entity::new()

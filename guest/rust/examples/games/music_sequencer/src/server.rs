@@ -1,7 +1,7 @@
 use ambient_api::{
     core::{
         app::components::name,
-        player::components::{player, user_id},
+        player::components::{is_player, user_id},
     },
     entity::{resources, synchronized_resources},
     prelude::*,
@@ -43,7 +43,7 @@ pub async fn main() {
 
     // When a player spawns, give them a color.
     spawn_query(user_id())
-        .requires(player())
+        .requires(is_player())
         .bind(move |players| {
             for (player, _player_user_id) in players {
                 let mut h = entity::get_component(resources(), next_player_hue()).unwrap();

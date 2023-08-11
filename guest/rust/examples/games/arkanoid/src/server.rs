@@ -5,7 +5,7 @@ use ambient_api::{
     core::{
         messages::Frame,
         physics::components::linear_velocity,
-        player::components::{player, user_id},
+        player::components::{is_player, user_id},
         primitives::{components::cube, concepts::make_sphere},
         rendering::components::color,
         transform::{components::*, concepts::make_transformable},
@@ -96,7 +96,7 @@ pub fn main() {
         .spawn();
 
     // When a player spawns, create a camera and other components for them
-    spawn_query(player()).bind(move |players| {
+    spawn_query(is_player()).bind(move |players| {
         for (player, _) in players {
             entity::add_component(player, player_movement_direction(), 0.0);
         }
@@ -104,7 +104,7 @@ pub fn main() {
 
     // When a player despawns, clean up their objects
     let player_objects_query = query(user_id()).build();
-    despawn_query(user_id()).requires(player()).bind({
+    despawn_query(user_id()).requires(is_player()).bind({
         move |players| {
             let player_objects = player_objects_query.evaluate();
             for (_, player_user_id) in &players {
@@ -152,7 +152,7 @@ pub fn main() {
     });
 
     Frame::subscribe(move |_| {
-        let players = entity::get_all(player());
+        let players = entity::get_all(is_player());
 
         // handle players' input
         for (_i, player) in players.into_iter().enumerate() {

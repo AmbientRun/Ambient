@@ -3,9 +3,9 @@ id = "animation"
 name = "Animation"
 description = "Components relating to animations."
 
-[components.animation_player]
+[components.is_animation_player]
 type = "Empty"
-name = "Animation player"
+name = "Is animation player"
 description = "This entity is treated as an animation player. Attach an animation node as a child for it to play."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 

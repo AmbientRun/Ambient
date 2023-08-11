@@ -12,7 +12,7 @@ use ambient_api::{
             angular_velocity, collider_from_url, dynamic, kinematic, linear_velocity,
             physics_controlled, sphere_collider,
         },
-        player::components::{player, user_id},
+        player::components::{is_player, user_id},
         prefab::components::prefab_from_url,
         rendering::components::{color, fog_density, light_diffuse, sky, sun, water},
         text::components::{font_size, text},
@@ -30,7 +30,7 @@ use ambient_api::{
 use embers::ambient_example_minigolf::{
     assets,
     components::{
-        ball, next_player_hue, origin, player_ball, player_camera_state, player_color,
+        is_ball, next_player_hue, origin, player_ball, player_camera_state, player_color,
         player_indicator, player_indicator_arrow, player_restore_point, player_shoot_requested,
         player_stroke_count, player_text, player_text_container,
     },
@@ -77,7 +77,7 @@ fn create_environment() {
 
 fn make_golf_ball() -> Entity {
     make_transformable()
-        .with_default(ball())
+        .with_default(is_ball())
         .with_default(physics_controlled())
         .with(dynamic(), true)
         .with(sphere_collider(), BALL_RADIUS)
@@ -107,7 +107,7 @@ pub fn main() {
 
     // When a player spawns, create their player state.
     spawn_query(user_id())
-        .requires(player())
+        .requires(is_player())
         .bind(move |players| {
             for (player, player_user_id) in players {
                 let next_color = utils::hsv_to_rgb(&[
@@ -201,7 +201,7 @@ pub fn main() {
 
     // Update the flag every frame.
     query(translation())
-        .requires(ball())
+        .requires(is_ball())
         .each_frame(move |balls| {
             let flag_origin = entity::get_component(flag, origin()).unwrap_or_default();
             let mut min_distance = std::f32::MAX;
@@ -236,7 +236,7 @@ pub fn main() {
 
     // When a player despawns, clean up their objects.
     let player_objects_query = query(user_id()).build();
-    despawn_query(user_id()).requires(player()).bind({
+    despawn_query(user_id()).requires(is_player()).bind({
         move |players| {
             let player_objects = player_objects_query.evaluate();
             for (_, player_user_id) in &players {
@@ -284,7 +284,7 @@ pub fn main() {
         player_camera_state(),
         player_shoot_requested(),
     ))
-    .requires(player())
+    .requires(is_player())
     .each_frame(move |players| {
         for (
             player,

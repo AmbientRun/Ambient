@@ -1,15 +1,17 @@
 use ambient_api::{
     core::{
-        self,
         app::components::main_scene,
-        camera::components::aspect_ratio_from_window,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        player::components::is_player,
         primitives::components::cube,
         rendering::components::color,
-        transform::components::{lookat_target, scale, translation},
-    },
-    core::{
-        camera::concepts::make_perspective_infinite_reverse_camera,
-        transform::concepts::make_transformable,
+        transform::{
+            components::{lookat_target, scale, translation},
+            concepts::make_transformable,
+        },
     },
     prelude::*,
 };
@@ -57,13 +59,13 @@ pub fn main() {
         cell_entities.clone(),
     );
 
-    spawn_query(core::player::components::player()).bind(|ids| {
+    spawn_query(is_player()).bind(|ids| {
         for (id, _) in ids {
             entity::add_component(id, cell(), 0);
         }
     });
 
-    despawn_query(core::player::components::player()).bind(|ids| {
+    despawn_query(is_player()).bind(|ids| {
         let cells = entity::get_component(entity::synchronized_resources(), cells()).unwrap();
 
         for (id, _) in ids {

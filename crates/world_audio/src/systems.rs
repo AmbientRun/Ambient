@@ -40,7 +40,7 @@ pub fn audio_systems() -> SystemGroup {
     SystemGroup::new(
         "audio",
         vec![
-            query((spatial_audio_player(), play_now())).to_system(|q, world, qs, _| {
+            query((is_spatial_audio_player(), play_now())).to_system(|q, world, qs, _| {
                 for (audio_player_enitty, _) in q.collect_cloned(world, qs) {
                     // check if mute_audio is set
                     let r = world.resource_entity();
@@ -226,7 +226,7 @@ pub fn audio_systems() -> SystemGroup {
                     *freq_arc.lock() = freq;
                 }
             }),
-            query((audio_player(), play_now(), audio_url())).to_system(|q, world, qs, _| {
+            query((is_audio_player(), play_now(), audio_url())).to_system(|q, world, qs, _| {
                 for (audio_player_enitty, (_, _, url)) in q.collect_cloned(world, qs) {
                     // check if mute_audio is set
                     let r = world.resource_entity();

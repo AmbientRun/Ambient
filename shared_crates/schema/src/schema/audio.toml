@@ -3,15 +3,15 @@ id = "audio"
 name = "Audio"
 description = "Audio functionality and state."
 
-[components.audio_player]
+[components.is_audio_player]
 type = "Empty"
-name = "Audio player"
+name = "Is audio player"
 description = "The entity is an audio player."
 attributes = ["MaybeResource", "Debuggable"]
 
-[components.spatial_audio_player]
+[components.is_spatial_audio_player]
 type = "Empty"
-name = "Spatial audio player"
+name = "Is spatial audio player"
 description = "The entity is a spatial audio player."
 attributes = ["MaybeResource", "Debuggable"]
 

@@ -13,8 +13,9 @@ use itertools::Itertools;
 pub use ambient_ecs::generated::layout::{
     components::{
         align_horizontal, align_vertical, docking, fit_horizontal, fit_vertical, gpu_ui_size,
-        height, is_book_file, layout, margin, max_height, max_width, mesh_to_local_from_size,
-        min_height, min_width, orientation, padding, screen, space_between_items, width,
+        height, is_book_file, is_screen, layout, margin, max_height, max_width,
+        mesh_to_local_from_size, min_height, min_width, orientation, padding, space_between_items,
+        width,
     },
     types::{Align, Docking, Fit, Layout, Orientation},
 };
@@ -679,7 +680,7 @@ fn screens_systems() -> SystemGroup {
     SystemGroup::new(
         "layout/screens",
         vec![query((local_to_world().changed(), children().changed()))
-            .incl(screen())
+            .incl(is_screen())
             .to_system(|q, world, qs, _| {
                 for (_, (ltw, children)) in q.collect_cloned(world, qs) {
                     let (_, _, pos) = ltw.to_scale_rotation_translation();

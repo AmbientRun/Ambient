@@ -16,10 +16,9 @@ use ambient_native_std::{
     asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
 };
 use ambient_network::{
+    is_persistent_resources, is_synced_resources,
     native::server::{Crypto, GameServer},
-    persistent_resources,
     server::{ForkingEvent, ProxySettings, ShutdownEvent},
-    synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_project::BuildMetadata;
@@ -158,14 +157,14 @@ pub async fn start(
 
         Entity::new()
             .with(ambient_core::name(), "Synced resources".to_string())
-            .with_default(synced_resources())
+            .with_default(is_synced_resources())
             .with_default(dont_store())
             .with_default(ambient_ember_semantic_native::ember_name_to_url())
             .spawn(&mut server_world);
         // Note: this should not be reset every time the server is created. Remove this when it becomes possible to load/save worlds.
         Entity::new()
             .with(ambient_core::name(), "Persistent resources".to_string())
-            .with(persistent_resources(), ())
+            .with(is_persistent_resources(), ())
             .spawn(&mut server_world);
 
         wasm::initialize(&mut server_world, working_directory.join("data"))

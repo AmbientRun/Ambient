@@ -12,7 +12,7 @@ next_player_hue = { type = "F32", name = "Next Player Hue", description = "Contr
     "Resource",
 ] }
 
-ball = { type = "Empty", name = "Ball", description = "Used to tag a ball" }
+is_ball = { type = "Empty", name = "Ball", description = "Used to tag a ball" }
 origin = { type = "Vec3", name = "Origin", description = "An object's origin in world space" }
 
 player_ball = { type = "EntityId", name = "Player Ball", description = "Used to tag a player's ball" }

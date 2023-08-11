@@ -11,7 +11,7 @@ use ambient_rpc::RpcError;
 use thiserror::Error;
 
 pub use ambient_ecs::generated::network::components::{
-    is_remote_entity, persistent_resources, synced_resources,
+    is_persistent_resources, is_remote_entity, is_synced_resources,
 };
 
 pub type AsyncMutex<T> = tokio::sync::Mutex<T>;
@@ -70,7 +70,7 @@ pub trait ServerWorldExt {
 impl ServerWorldExt for World {
     fn persisted_resource_entity(&self) -> Option<EntityId> {
         query(())
-            .incl(persistent_resources())
+            .incl(is_persistent_resources())
             .iter(self, None)
             .map(|(id, _)| id)
             .next()
@@ -91,7 +91,7 @@ impl ServerWorldExt for World {
 
     fn synced_resource_entity(&self) -> Option<EntityId> {
         query(())
-            .incl(synced_resources())
+            .incl(is_synced_resources())
             .iter(self, None)
             .map(|(id, _)| id)
             .next()

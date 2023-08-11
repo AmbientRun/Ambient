@@ -111,6 +111,18 @@ These PRs are not directly user-facing, but improve the development experience. 
 
       This will allow you to access the components, messages, etc. of the `my_cool_ember` ember from your ember. The name that you use to import the ember will be used as the namespace, not the ember's original ID.
 
+- **Components**: Several "tag components" have been prefixed with `is_` to indicate their tag nature. These include:
+
+  - `core::animation::animation_player` -> `core::animation::is_animation_player`
+  - `core::audio::audio_player` -> `core::audio::is_audio_player`
+  - `core::audio::spatial_audio_player` -> `core::audio::is_spatial_audio_player`
+  - `core::layout::screen` -> `core::layout::is_screen`
+  - `core::network::persistent_resources` -> `core::network::is_persistent_resources`
+  - `core::network::synced_resources` -> `core::network::is_synced_resources`
+  - `core::player::player` -> `core::player::is_player`
+  - `core::wasm::module` -> `core::wasm::is_module`
+  - `core::wasm::module_on_server` -> `core::wasm::is_module_on_server`
+
 - **API**: Locally-broadcasted messages can now choose to include the originating module in the broadcast; this is an additional boolean parameter to `ModuleMessage::send_local_broadcast` and `message::Target::LocalBroadcast`.
 - **Audio**: Audio API has completely changed to adapt to the ECS style. See the [audio documentation](https://ambientrun.github.io/Ambient/reference/audio.html) for the new usage. A CLI option `--mute-audio` is also added.
 - **Camera**: Renamed `screen_to_world_direction` to `screen_position_to_world_ray` and `clip_space_ray` to `clip_position_to_world_ray`. See [#410](https://github.com/AmbientRun/Ambient/issues/410).

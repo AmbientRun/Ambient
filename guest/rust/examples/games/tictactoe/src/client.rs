@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use ambient_api::{
     core::{
         messages::Frame,
+        player::components::is_player,
         rendering::components::{color, outline},
     },
     prelude::*,
@@ -51,7 +52,7 @@ fn process_colors(cells: &[EntityId]) {
         entity::remove_component(*cell, outline());
     }
 
-    let players = entity::get_all(ambient_api::core::player::components::player());
+    let players = entity::get_all(is_player());
     let n_players = players.len();
     let player_colors: HashMap<_, _> = players
         .iter()

@@ -33,7 +33,7 @@ impl Default for SpatialAudioPlayer {
 impl SpatialAudioPlayer {
     pub fn new() -> Self {
         let player = Entity::new()
-            .with_default(spatial_audio_player())
+            .with_default(is_spatial_audio_player())
             .with(name(), "Spatial audio player".to_string())
             .spawn();
         Self { player }
@@ -79,7 +79,7 @@ impl AudioPlayer {
     /// Create new audio player from URL
     pub fn new() -> Self {
         let player = Entity::new()
-            .with_default(audio_player())
+            .with_default(is_audio_player())
             .with(name(), "Audio player".to_string())
             .with(children(), vec![])
             .spawn();

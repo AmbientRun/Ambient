@@ -9,8 +9,8 @@ use ambient_core::{asset_cache, async_ecs::async_run, epoch_time, runtime};
 use ambient_ecs::{
     children, components,
     generated::animation::components::{
-        animation_errors, animation_player, apply_animation_player, apply_base_pose, bind_ids,
-        blend, clip_duration, freeze_at_percentage, freeze_at_time, looping, mask_bind_ids,
+        animation_errors, apply_animation_player, apply_base_pose, bind_ids, blend, clip_duration,
+        freeze_at_percentage, freeze_at_time, is_animation_player, looping, mask_bind_ids,
         mask_weights, play_clip_from_url, retarget_animation_scaled, retarget_model_from_url,
         speed, start_time,
     },
@@ -282,7 +282,7 @@ pub fn animation_player_systems() -> SystemGroup {
                         world.add_component(id, mask(), mask_map).ok();
                     }
                 }),
-            query((animation_player(), children())).to_system(|q, world, qs, _| {
+            query((is_animation_player(), children())).to_system(|q, world, qs, _| {
                 let time = *world.resource(epoch_time());
                 for (id, (_, children)) in q.collect_cloned(world, qs) {
                     let mut errors = Default::default();

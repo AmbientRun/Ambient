@@ -7,7 +7,7 @@ use std::str::FromStr;
 use ambient_core::{
     asset_cache,
     async_ecs::async_run,
-    player::{player, user_id},
+    player::{is_player, user_id},
     runtime,
 };
 use ambient_ecs::{generated::messages::HttpResponse, query, EntityId, Message, World};
@@ -79,7 +79,7 @@ fn send_networked(
     reliable: bool,
 ) -> anyhow::Result<()> {
     let connections: Vec<_> = query((user_id(), player_transport()))
-        .incl(player())
+        .incl(is_player())
         .iter(world, None)
         .filter(|(_, (uid, _))| {
             target_user_id

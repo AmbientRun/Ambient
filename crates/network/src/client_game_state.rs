@@ -22,7 +22,7 @@ use ambient_renderer::{RenderTarget, Renderer, RendererConfig, RendererTarget};
 use ambient_world_audio::systems::{audio_systems, setup_audio};
 use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 
-use ambient_core::player::{player, user_id};
+use ambient_core::player::{is_player, user_id};
 use tracing::debug_span;
 
 components!("rendering", {
@@ -202,7 +202,7 @@ impl ClientGameState {
     }
 
     pub fn is_master_client(&self) -> bool {
-        let first = query((user_id(), player()))
+        let first = query((user_id(), is_player()))
             .iter(&self.world, None)
             .map(|(_, (id, _))| id.clone())
             .min();

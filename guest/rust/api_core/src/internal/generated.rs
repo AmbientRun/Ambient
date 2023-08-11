@@ -12,11 +12,12 @@ pub mod ambient_core {
                 once_cell::sync::Lazy,
                 prelude::*,
             };
-            static ANIMATION_PLAYER: Lazy<Component<()>> =
-                Lazy::new(|| __internal_get_component("ambient_core::animation::animation_player"));
-            #[doc = "**Animation player**: This entity is treated as an animation player. Attach an animation node as a child for it to play.\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
-            pub fn animation_player() -> Component<()> {
-                *ANIMATION_PLAYER
+            static IS_ANIMATION_PLAYER: Lazy<Component<()>> = Lazy::new(|| {
+                __internal_get_component("ambient_core::animation::is_animation_player")
+            });
+            #[doc = "**Is animation player**: This entity is treated as an animation player. Attach an animation node as a child for it to play.\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
+            pub fn is_animation_player() -> Component<()> {
+                *IS_ANIMATION_PLAYER
             }
             static ANIMATION_ERRORS: Lazy<Component<Vec<String>>> =
                 Lazy::new(|| __internal_get_component("ambient_core::animation::animation_errors"));
@@ -262,17 +263,18 @@ pub mod ambient_core {
                 once_cell::sync::Lazy,
                 prelude::*,
             };
-            static AUDIO_PLAYER: Lazy<Component<()>> =
-                Lazy::new(|| __internal_get_component("ambient_core::audio::audio_player"));
-            #[doc = "**Audio player**: The entity is an audio player.\n\n*Attributes*: MaybeResource, Debuggable"]
-            pub fn audio_player() -> Component<()> {
-                *AUDIO_PLAYER
+            static IS_AUDIO_PLAYER: Lazy<Component<()>> =
+                Lazy::new(|| __internal_get_component("ambient_core::audio::is_audio_player"));
+            #[doc = "**Is audio player**: The entity is an audio player.\n\n*Attributes*: MaybeResource, Debuggable"]
+            pub fn is_audio_player() -> Component<()> {
+                *IS_AUDIO_PLAYER
             }
-            static SPATIAL_AUDIO_PLAYER: Lazy<Component<()>> =
-                Lazy::new(|| __internal_get_component("ambient_core::audio::spatial_audio_player"));
-            #[doc = "**Spatial audio player**: The entity is a spatial audio player.\n\n*Attributes*: MaybeResource, Debuggable"]
-            pub fn spatial_audio_player() -> Component<()> {
-                *SPATIAL_AUDIO_PLAYER
+            static IS_SPATIAL_AUDIO_PLAYER: Lazy<Component<()>> = Lazy::new(|| {
+                __internal_get_component("ambient_core::audio::is_spatial_audio_player")
+            });
+            #[doc = "**Is spatial audio player**: The entity is a spatial audio player.\n\n*Attributes*: MaybeResource, Debuggable"]
+            pub fn is_spatial_audio_player() -> Component<()> {
+                *IS_SPATIAL_AUDIO_PLAYER
             }
             static SPATIAL_AUDIO_EMITTER: Lazy<Component<EntityId>> = Lazy::new(|| {
                 __internal_get_component("ambient_core::audio::spatial_audio_emitter")
@@ -870,11 +872,11 @@ pub mod ambient_core {
             pub fn max_width() -> Component<f32> {
                 *MAX_WIDTH
             }
-            static SCREEN: Lazy<Component<()>> =
-                Lazy::new(|| __internal_get_component("ambient_core::layout::screen"));
-            #[doc = "**Screen**: This entity will be treated as a screen. Used by the Screen ui component.\n\n*Attributes*: Debuggable, Networked, Store"]
-            pub fn screen() -> Component<()> {
-                *SCREEN
+            static IS_SCREEN: Lazy<Component<()>> =
+                Lazy::new(|| __internal_get_component("ambient_core::layout::is_screen"));
+            #[doc = "**Is screen**: This entity will be treated as a screen. Used by the Screen ui component.\n\n*Attributes*: Debuggable, Networked, Store"]
+            pub fn is_screen() -> Component<()> {
+                *IS_SCREEN
             }
             static SPACE_BETWEEN_ITEMS: Lazy<Component<f32>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::space_between_items"));
@@ -1257,18 +1259,19 @@ pub mod ambient_core {
             pub fn is_remote_entity() -> Component<()> {
                 *IS_REMOTE_ENTITY
             }
-            static PERSISTENT_RESOURCES: Lazy<Component<()>> = Lazy::new(|| {
-                __internal_get_component("ambient_core::network::persistent_resources")
+            static IS_PERSISTENT_RESOURCES: Lazy<Component<()>> = Lazy::new(|| {
+                __internal_get_component("ambient_core::network::is_persistent_resources")
             });
-            #[doc = "**Persistent resources**: If attached, this entity contains global resources that are persisted to disk and synchronized to clients.\n\n*Attributes*: Debuggable, Networked"]
-            pub fn persistent_resources() -> Component<()> {
-                *PERSISTENT_RESOURCES
+            #[doc = "**Is persistent resources**: If attached, this entity contains global resources that are persisted to disk and synchronized to clients.\n\n*Attributes*: Debuggable, Networked"]
+            pub fn is_persistent_resources() -> Component<()> {
+                *IS_PERSISTENT_RESOURCES
             }
-            static SYNCED_RESOURCES: Lazy<Component<()>> =
-                Lazy::new(|| __internal_get_component("ambient_core::network::synced_resources"));
-            #[doc = "**Synchronized resources**: If attached, this entity contains global resources that are synchronized to clients, but not persisted.\n\n*Attributes*: Debuggable, Networked"]
-            pub fn synced_resources() -> Component<()> {
-                *SYNCED_RESOURCES
+            static IS_SYNCED_RESOURCES: Lazy<Component<()>> = Lazy::new(|| {
+                __internal_get_component("ambient_core::network::is_synced_resources")
+            });
+            #[doc = "**Is synchronized resources**: If attached, this entity contains global resources that are synchronized to clients, but not persisted.\n\n*Attributes*: Debuggable, Networked"]
+            pub fn is_synced_resources() -> Component<()> {
+                *IS_SYNCED_RESOURCES
             }
         }
     }
@@ -1433,11 +1436,11 @@ pub mod ambient_core {
             pub fn local_user_id() -> Component<String> {
                 *LOCAL_USER_ID
             }
-            static PLAYER: Lazy<Component<()>> =
-                Lazy::new(|| __internal_get_component("ambient_core::player::player"));
-            #[doc = "**Player**: This entity is a player.\n\nNote that this is a logical construct; a player's body may be separate from the player itself.\n\n*Attributes*: Debuggable, Networked, Store"]
-            pub fn player() -> Component<()> {
-                *PLAYER
+            static IS_PLAYER: Lazy<Component<()>> =
+                Lazy::new(|| __internal_get_component("ambient_core::player::is_player"));
+            #[doc = "**Is player**: This entity is a player.\n\nNote that this is a logical construct; a player's body may be separate from the player itself.\n\n*Attributes*: Debuggable, Networked, Store"]
+            pub fn is_player() -> Component<()> {
+                *IS_PLAYER
             }
             static USER_ID: Lazy<Component<String>> =
                 Lazy::new(|| __internal_get_component("ambient_core::player::user_id"));
@@ -2280,17 +2283,17 @@ pub mod ambient_core {
                 once_cell::sync::Lazy,
                 prelude::*,
             };
-            static MODULE: Lazy<Component<()>> =
-                Lazy::new(|| __internal_get_component("ambient_core::wasm::module"));
-            #[doc = "**Module**: A module.\n\n*Attributes*: Networked, Store, Debuggable"]
-            pub fn module() -> Component<()> {
-                *MODULE
+            static IS_MODULE: Lazy<Component<()>> =
+                Lazy::new(|| __internal_get_component("ambient_core::wasm::is_module"));
+            #[doc = "**is module**: A module.\n\n*Attributes*: Networked, Store, Debuggable"]
+            pub fn is_module() -> Component<()> {
+                *IS_MODULE
             }
-            static MODULE_ON_SERVER: Lazy<Component<()>> =
-                Lazy::new(|| __internal_get_component("ambient_core::wasm::module_on_server"));
-            #[doc = "**Module on server**: Whether or not this module is on the server.\n\n*Attributes*: Networked, Store, Debuggable"]
-            pub fn module_on_server() -> Component<()> {
-                *MODULE_ON_SERVER
+            static IS_MODULE_ON_SERVER: Lazy<Component<()>> =
+                Lazy::new(|| __internal_get_component("ambient_core::wasm::is_module_on_server"));
+            #[doc = "**Is module on server**: Whether or not this module is on the server.\n\n*Attributes*: Networked, Store, Debuggable"]
+            pub fn is_module_on_server() -> Component<()> {
+                *IS_MODULE_ON_SERVER
             }
             static BYTECODE_FROM_URL: Lazy<Component<String>> =
                 Lazy::new(|| __internal_get_component("ambient_core::wasm::bytecode_from_url"));

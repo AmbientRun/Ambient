@@ -6,7 +6,7 @@ use ambient_api::{
             concepts::make_perspective_infinite_reverse_camera,
         },
         messages::Frame,
-        player::components::{local_user_id, player, user_id},
+        player::components::{is_player, local_user_id, user_id},
         transform::components::{lookat_target, rotation, translation},
     },
     prelude::*,
@@ -20,7 +20,7 @@ use embers::ambient_example_third_person_camera::{
 #[main]
 fn main() {
     eprintln!("Client started");
-    spawn_query((player(), user_id())).bind(move |players| {
+    spawn_query((is_player(), user_id())).bind(move |players| {
         for (id, (_, user)) in players {
             let local_user_id =
                 entity::get_component(entity::resources(), local_user_id()).unwrap();
@@ -44,7 +44,7 @@ fn main() {
     // Since we're only attaching player_camera_ref to the local player, this system will only
     // run for the local player
     query((
-        player(),
+        is_player(),
         player_camera_ref(),
         translation(),
         rotation(),

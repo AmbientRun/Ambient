@@ -5,7 +5,7 @@ use ambient_api::{
             character_controller_height, character_controller_radius, physics_controlled,
             plane_collider, sphere_collider,
         },
-        player::components::player,
+        player::components::is_player,
         primitives::{
             components::{cube, quad},
             concepts::make_sphere,
@@ -55,7 +55,7 @@ pub fn main() {
     // And an atmosphere to go with id
     make_transformable().with_default(sky()).spawn();
 
-    spawn_query(player()).bind(move |players| {
+    spawn_query(is_player()).bind(move |players| {
         for (id, _) in players {
             entity::add_components(
                 id,
@@ -83,7 +83,7 @@ pub fn main() {
     });
 
     query((
-        player(),
+        is_player(),
         player_movement_direction(),
         player_mouse_delta_x(),
         player_scroll(),

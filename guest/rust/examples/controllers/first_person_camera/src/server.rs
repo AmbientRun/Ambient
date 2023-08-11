@@ -10,7 +10,7 @@ use ambient_api::{
             character_controller_height, character_controller_radius, physics_controlled,
             plane_collider, sphere_collider,
         },
-        player::components::{player, user_id},
+        player::components::{is_player, user_id},
         primitives::{
             components::{cube, quad},
             concepts::make_sphere,
@@ -47,7 +47,7 @@ pub fn main() {
         .with(translation(), vec3(5., 5., 1.))
         .spawn();
 
-    spawn_query((player(), user_id())).bind(move |players| {
+    spawn_query((is_player(), user_id())).bind(move |players| {
         for (id, (_, uid)) in players {
             let head = Entity::new()
                 .with_merge(make_perspective_infinite_reverse_camera())
@@ -98,7 +98,7 @@ pub fn main() {
         }
     });
 
-    query((player(), player_movement_direction(), rotation())).each_frame(move |players| {
+    query((is_player(), player_movement_direction(), rotation())).each_frame(move |players| {
         for (player_id, (_, direction, rot)) in players {
             let speed = 0.1;
 

@@ -93,9 +93,9 @@ name = "Maximum width"
 description = "The maximum width of a UI element."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components.screen]
+[components.is_screen]
 type = "Empty"
-name = "Screen"
+name = "Is screen"
 description = "This entity will be treated as a screen. Used by the Screen ui component."
 attributes = ["Debuggable", "Networked", "Store"]
 

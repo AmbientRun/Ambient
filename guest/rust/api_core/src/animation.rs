@@ -1,8 +1,8 @@
 use crate::{
     core::{
         animation::components::{
-            animation_player, apply_base_pose, bind_id, bind_ids, blend, clip_duration,
-            freeze_at_percentage, freeze_at_time, looping, mask_bind_ids, mask_weights,
+            apply_base_pose, bind_id, bind_ids, blend, clip_duration, freeze_at_percentage,
+            freeze_at_time, is_animation_player, looping, mask_bind_ids, mask_weights,
             play_clip_from_url, retarget_animation_scaled, retarget_model_from_url, start_time,
         },
         app::components::{name, ref_count},
@@ -21,7 +21,7 @@ impl AnimationPlayer {
     pub fn new(root: impl AsRef<AnimationNode>) -> Self {
         let root: &AnimationNode = root.as_ref();
         let player = Entity::new()
-            .with_default(animation_player())
+            .with_default(is_animation_player())
             .with(children(), vec![root.0])
             .with(name(), "Animation player".to_string())
             .spawn();

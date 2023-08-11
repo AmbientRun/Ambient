@@ -9,7 +9,9 @@ use ambient_element::{
     define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt,
     Hooks,
 };
-use ambient_guest_bridge::core::{layout::components::screen, transform::components::translation};
+use ambient_guest_bridge::core::{
+    layout::components::is_screen, transform::components::translation,
+};
 use glam::vec3;
 
 #[derive(Clone, Debug)]
@@ -21,7 +23,7 @@ impl ElementComponent for ScreenContainer {
         if let Some(content) = self.0 {
             UIBase
                 .el()
-                .with(screen(), ())
+                .with(is_screen(), ())
                 .children(vec![WindowSized(vec![Dock(vec![content])
                     .el()
                     .with(translation(), vec3(0., 0., 0.1))])
