@@ -20,16 +20,23 @@ pub fn main() {
     let mut fixed_tick_last = game_time();
 
     let mut accumulated_aim_delta = Vec2::ZERO;
+
     let mut select_pressed = false;
+
+    let mut gizmo_active = None;
+    let mut gizmo_accumulated_drag = 0.0;
+    let mut gizmo_original_translation = None;
+
+    let player_id = player::get_local();
 
     Frame::subscribe(move |_| {
         let fixed_tick_dt = game_time() - fixed_tick_last;
 
-        if !entity::get_component(player::get_local(), in_editor()).unwrap_or_default() {
+        if !entity::get_component(player_id, in_editor()).unwrap_or_default() {
             return;
         }
 
-        let Some(camera_id) = entity::get_component(player::get_local(), editor_camera()) else { return; };
+        let Some(camera_id) = entity::get_component(player_id, editor_camera()) else { return; };
 
         let (delta, input) = input::get_delta();
 
@@ -50,10 +57,51 @@ pub fn main() {
         .filter(|(key, _)| input.keys.contains(key))
         .fold(Vec2::ZERO, |acc, (_, dir)| acc + *dir);
 
+        let mut aiming = false;
         if let Some(input_lock) = &mut input_lock {
             if input_lock.auto_unlock_on_escape(&input) {
                 let speed = 4.0 * delta_time();
                 accumulated_aim_delta += delta.mouse_position * speed;
+                aiming = true;
+            }
+        }
+
+        if !aiming {
+            if let Some(selected_entity) = entity::get_component(player_id, selected_entity()) {
+                let gizmos = Gizmo::for_entity(selected_entity);
+                let gizmo = gizmos
+                    .into_iter()
+                    .find(|g| g.is_hovered(camera_id, input.mouse_position));
+
+                if input.mouse_buttons.contains(&MouseButton::Left) {
+                    if gizmo_active.is_none() {
+                        if let Some(gizmo) = gizmo {
+                            gizmo_active = Some(gizmo);
+                            gizmo_original_translation =
+                                entity::get_component(selected_entity, translation());
+                            gizmo_accumulated_drag = 0.0;
+                        }
+                    }
+                } else {
+                    gizmo_active = None;
+                    gizmo_original_translation = None;
+                    gizmo_accumulated_drag = 0.0;
+                }
+
+                if let Some(gizmo) = &gizmo_active {
+                    let gizmo_start_2d = camera::world_to_screen(camera_id, gizmo.origin);
+                    let gizmo_end_2d =
+                        camera::world_to_screen(camera_id, gizmo.origin + gizmo.direction);
+                    let gizmo_dir_2d = (gizmo_end_2d - gizmo_start_2d).normalize();
+
+                    let gizmo_mouse_alignment =
+                        gizmo_dir_2d.dot(delta.mouse_position.normalize_or_zero());
+
+                    let speed = 10.0 * delta_time();
+                    gizmo_accumulated_drag += gizmo_mouse_alignment * speed;
+
+                    select_pressed = false;
+                }
             }
         }
 
@@ -69,6 +117,9 @@ pub fn main() {
                 ray_origin: ray.origin,
                 ray_direction: ray.dir,
                 select: select_pressed,
+                translate_to: gizmo_original_translation
+                    .zip(gizmo_active.as_ref())
+                    .map(|(t, g)| t + (g.direction * gizmo_accumulated_drag)),
             }
             .send_server_reliable();
 
@@ -177,7 +228,7 @@ fn SelectedDisplay(hooks: &mut Hooks) -> Element {
             camera::world_to_screen(camera_id, position).extend(0.0),
         )
         .with(color(), Vec4::ONE),
-        Gizmo::el(camera_id, selected_entity),
+        GizmoDisplay::el(camera_id, selected_entity),
     ])
 }
 
@@ -185,20 +236,20 @@ const GIZMO_LENGTH: f32 = 5.;
 const GIZMO_WIDTH: f32 = 0.25;
 
 #[element_component]
-fn Gizmo(_hooks: &mut Hooks, camera_id: EntityId, entity: EntityId) -> Element {
+fn GizmoDisplay(_hooks: &mut Hooks, camera_id: EntityId, entity: EntityId) -> Element {
     Group::el(
-        GizmoLine::for_entity(entity)
+        Gizmo::for_entity(entity)
             .into_iter()
             .map(|l| l.as_element(camera_id)),
     )
 }
 
-struct GizmoLine {
+struct Gizmo {
     origin: Vec3,
     direction: Vec3,
     color: Vec3,
 }
-impl GizmoLine {
+impl Gizmo {
     fn new(origin: Vec3, direction: Vec3, color: Vec3) -> Self {
         Self {
             origin,
@@ -219,7 +270,7 @@ impl GizmoLine {
     }
 
     fn as_element(&self, camera_id: EntityId) -> Element {
-        let our_color = if self.is_moused_over(camera_id, input::get().mouse_position) {
+        let our_color = if self.is_hovered(camera_id, input::get().mouse_position) {
             self.color
         } else {
             self.color * 0.6
@@ -250,7 +301,7 @@ impl GizmoLine {
         ])
     }
 
-    fn is_moused_over(&self, camera_id: EntityId, mouse_position: Vec2) -> bool {
+    fn is_hovered(&self, camera_id: EntityId, mouse_position: Vec2) -> bool {
         is_mouse_in_cylinder(
             self.origin,
             self.direction,

@@ -102,5 +102,13 @@ pub fn main() {
             entity::add_component(entity, outline_recursive(), Vec4::ONE);
             entity::add_component(id, selected_entity(), entity);
         }
+
+        if let Some((entity, translate_to)) =
+            entity::get_component(id, selected_entity()).zip(msg.translate_to)
+        {
+            if entity::has_component(entity, translation()) {
+                entity::set_component(entity, translation(), translate_to);
+            }
+        }
     });
 }
