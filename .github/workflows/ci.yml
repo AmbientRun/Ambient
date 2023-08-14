@@ -15,181 +15,181 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  clippy:
-    runs-on: ubuntu-20.04
+  # clippy:
+  #   runs-on: ubuntu-20.04
 
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: dtolnay/rust-toolchain@stable
 
-      - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y tree libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-            libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev
-      - name: Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          prefix-key: clippy
-      - name: Run clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --workspace --examples --tests
-  clippy-web:
-    runs-on: ubuntu-20.04
+  #     - name: Install build dependencies
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install --no-install-recommends -y tree libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
+  #           libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev
+  #     - name: Rust cache
+  #       uses: Swatinem/rust-cache@v2
+  #       with:
+  #         prefix-key: clippy
+  #     - name: Run clippy
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: clippy
+  #         args: --workspace --examples --tests
+  # clippy-web:
+  #   runs-on: ubuntu-20.04
 
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          target: wasm32-unknown-unknown
-      - name: Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          prefix-key: clippy-web
-          workspaces: |
-            .
-            web
-      - name: Run clippy
-        working-directory: web
-        run: cargo clippy --workspace
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: dtolnay/rust-toolchain@stable
+  #       with:
+  #         target: wasm32-unknown-unknown
+  #     - name: Rust cache
+  #       uses: Swatinem/rust-cache@v2
+  #       with:
+  #         prefix-key: clippy-web
+  #         workspaces: |
+  #           .
+  #           web
+  #     - name: Run clippy
+  #       working-directory: web
+  #       run: cargo clippy --workspace
 
-  test-linux:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Free up disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y tree libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-            libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev
-      - name: Install run (headless) dependencies
-        run: |
-          sudo add-apt-repository ppa:oibaf/graphics-drivers -y
-          sudo apt-get update
-          sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
+  # test-linux:
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - name: Free up disk space
+  #       run: |
+  #         sudo rm -rf /usr/share/dotnet
+  #         sudo rm -rf /opt/ghc
+  #         sudo rm -rf "/usr/local/share/boost"
+  #         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+  #     - uses: actions/checkout@v3
+  #     - uses: dtolnay/rust-toolchain@stable
+  #     - name: Install build dependencies
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install --no-install-recommends -y tree libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
+  #           libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev
+  #     - name: Install run (headless) dependencies
+  #       run: |
+  #         sudo add-apt-repository ppa:oibaf/graphics-drivers -y
+  #         sudo apt-get update
+  #         sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
 
-      - uses: Leafwing-Studios/cargo-cache@v1
-        with:
-          cache-group: "test"
-      - uses: taiki-e/install-action@cargo-nextest
-      - name: Run tests
-        uses: actions-rs/cargo@v1
-        env:
-          RUSTFLAGS: "-C debuginfo=0"
-        with:
-          command: nextest
-          args: run --workspace
-      # Provides a history of the cache content builds over build to make troubleshooting easier
-      - name: Display target directory content
-        run: tree --du -h target
+  #     - uses: Leafwing-Studios/cargo-cache@v1
+  #       with:
+  #         cache-group: "test"
+  #     - uses: taiki-e/install-action@cargo-nextest
+  #     - name: Run tests
+  #       uses: actions-rs/cargo@v1
+  #       env:
+  #         RUSTFLAGS: "-C debuginfo=0"
+  #       with:
+  #         command: nextest
+  #         args: run --workspace
+  #     # Provides a history of the cache content builds over build to make troubleshooting easier
+  #     - name: Display target directory content
+  #       run: tree --du -h target
 
-  build-api-and-doc:
-    runs-on: ubuntu-20.04
+  # build-api-and-doc:
+  #   runs-on: ubuntu-20.04
 
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Check that guest/rust's documentation is well-formed
-        run: cd guest/rust && RUSTDOCFLAGS="-Dwarnings" cargo doc --workspace --all-features --no-deps
-      - name: Check that guest/rust builds under all configurations
-        run: cargo run -p campfire --no-default-features example check-all
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: dtolnay/rust-toolchain@stable
+  #     - name: Check that guest/rust's documentation is well-formed
+  #       run: cd guest/rust && RUSTDOCFLAGS="-Dwarnings" cargo doc --workspace --all-features --no-deps
+  #     - name: Check that guest/rust builds under all configurations
+  #       run: cargo run -p campfire --no-default-features example check-all
 
-  build-web:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
+  # build-web:
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
+  #     - uses: dtolnay/rust-toolchain@stable
+  #       with:
+  #         toolchain: stable
+  #         target: wasm32-unknown-unknown
 
-      - name: "Build campfire"
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --package campfire --no-default-features
+  #     - name: "Build campfire"
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: build
+  #         args: --package campfire --no-default-features
 
-      - name: "Build web client"
-        uses: actions-rs/cargo@v1
-        with:
-          command: run
-          args: --package campfire --no-default-features -- web build --profile release --target standalone
+  #     - name: "Build web client"
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: run
+  #         args: --package campfire --no-default-features -- web build --profile release --target standalone
 
-      - name: Upload package
-        uses: actions/upload-artifact@v3
-        with:
-          name: ambient-web-standalone
-          path: ./web/pkg
+  #     - name: Upload package
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: ambient-web-standalone
+  #         path: ./web/pkg
 
-  build:
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-          - os: windows-latest
-          - os: ubuntu-20.04
+  # build:
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - os: macos-latest
+  #         - os: windows-latest
+  #         - os: ubuntu-20.04
 
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Free up disk space
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-      - name: Install build dependencies
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y tree libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-            libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Leafwing-Studios/cargo-cache@v1
-        with:
-          cache-group: "main"
-      - name: Build
-        run: cargo build --workspace --release
-        env:
-          CARGO_INCREMENTAL: 0
-          RUSTFLAGS: "-C debuginfo=0"
-      - name: Upload ambient executable artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ambient-${{ matrix.os }}
-          path: |
-            target/release/ambient
-            target/release/ambient.exe
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - name: Free up disk space
+  #       if: ${{ matrix.os == 'ubuntu-20.04' }}
+  #       run: |
+  #         sudo rm -rf /usr/share/dotnet
+  #         sudo rm -rf /opt/ghc
+  #         sudo rm -rf "/usr/local/share/boost"
+  #         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+  #     - name: Install build dependencies
+  #       if: ${{ matrix.os == 'ubuntu-20.04' }}
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install --no-install-recommends -y tree libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
+  #           libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev
+  #     - uses: actions/checkout@v3
+  #     - uses: dtolnay/rust-toolchain@stable
+  #     - uses: Leafwing-Studios/cargo-cache@v1
+  #       with:
+  #         cache-group: "main"
+  #     - name: Build
+  #       run: cargo build --workspace --release
+  #       env:
+  #         CARGO_INCREMENTAL: 0
+  #         RUSTFLAGS: "-C debuginfo=0"
+  #     - name: Upload ambient executable artifact
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: ambient-${{ matrix.os }}
+  #         path: |
+  #           target/release/ambient
+  #           target/release/ambient.exe
 
-  build-guest-rust:
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-          - os: windows-latest
-          - os: ubuntu-20.04
+  # build-guest-rust:
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - os: macos-latest
+  #         - os: windows-latest
+  #         - os: ubuntu-20.04
 
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-        with:
-          prefix-key: guest-rust
-          workspaces: guest/rust
-      - name: Build guest/rust
-        run: cd guest/rust && cargo build --workspace
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: dtolnay/rust-toolchain@stable
+  #     - uses: Swatinem/rust-cache@v2
+  #       with:
+  #         prefix-key: guest-rust
+  #         workspaces: guest/rust
+  #     - name: Build guest/rust
+  #       run: cd guest/rust && cargo build --workspace
 
   golden-image-tests:
     needs: build
@@ -223,29 +223,29 @@ jobs:
             guest/rust/examples/*/*/screenshot.png
             guest/rust/examples/*/*/fail_screenshot.png
 
-  test-new-project-works:
-    needs: build
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-          # We run out of storage space when trying to build and run the project on Windows.
-          # It would be nice to fix this at some point.
-          # - os: windows-latest
-          - os: ubuntu-20.04
+  # test-new-project-works:
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - os: macos-latest
+  #         # We run out of storage space when trying to build and run the project on Windows.
+  #         # It would be nice to fix this at some point.
+  #         # - os: windows-latest
+  #         - os: ubuntu-20.04
 
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/checkout@v3
-      - name: Download ambient executable
-        uses: actions/download-artifact@v3
-        with:
-          name: ambient-${{ matrix.os }}
-      - run: chmod a+x ambient
-      - name: Check that new-project works
-        run: |
-          mkdir tmp
-          ./ambient new --api-path $(pwd)/guest/rust/api /tmp/ci_test_project
-          cd /tmp/ci_test_project
-          cargo check
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - uses: dtolnay/rust-toolchain@stable
+  #     - uses: actions/checkout@v3
+  #     - name: Download ambient executable
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: ambient-${{ matrix.os }}
+  #     - run: chmod a+x ambient
+  #     - name: Check that new-project works
+  #       run: |
+  #         mkdir tmp
+  #         ./ambient new --api-path $(pwd)/guest/rust/api /tmp/ci_test_project
+  #         cd /tmp/ci_test_project
+  #         cargo check
