@@ -200,7 +200,7 @@ fn get_asset_files(assets_path: &Path) -> impl Iterator<Item = PathBuf> {
         .map(|x| x.into_path())
 }
 
-async fn build_assets(
+pub async fn build_assets(
     assets: &AssetCache,
     assets_path: &Path,
     build_path: &Path,
@@ -208,6 +208,9 @@ async fn build_assets(
     let files = get_asset_files(assets_path).map(Into::into).collect_vec();
 
     let has_errored = Arc::new(AtomicBool::new(false));
+
+    let anim_files = Arc::new(parking_lot::Mutex::new(vec![]));
+    let anim_files_clone = anim_files.clone();
 
     let ctx = ProcessCtx {
         assets: assets.clone(),
@@ -220,6 +223,15 @@ async fn build_assets(
             let build_path = build_path.to_owned();
             move |path, contents| {
                 let path = build_path.join("assets").join(path);
+                if let Some(ext) = path.extension() {
+                    if ext == "anim" {
+                        if !anim_files_clone.lock().contains(&path) {
+                            anim_files_clone.lock().push(path.clone());
+                        } else {
+                            println!("🤔 repeated importing; please check the pipeline.toml");
+                        }
+                    }
+                }
                 async move {
                     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
                     tokio::fs::write(&path, contents).await.unwrap();
@@ -247,7 +259,20 @@ async fn build_assets(
     pipelines::process_pipelines(&ctx)
         .await
         .with_context(|| format!("Failed to process pipelines for {assets_path:?}"))?;
-
+    if !anim_files.lock().is_empty() {
+        println!("🐆 Available animation files: {:?}", anim_files.lock());
+        println!("🧂 You can use the animation files like this:");
+        println!("```rust");
+        for path in anim_files.lock().iter() {
+            println!(
+                "PlayClipFromUrlNode::new(assets::url({}));",
+                format!("{:?}", path).replace("build/assets/", "")
+            );
+        }
+        println!("```");
+        println!("📘 Learn more about animations:");
+        println!("🔗 https://ambientrun.github.io/Ambient/reference/animations.html");
+    }
     if has_errored.load(Ordering::SeqCst) {
         anyhow::bail!("Failed to build assets");
     }

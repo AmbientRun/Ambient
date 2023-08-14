@@ -35,7 +35,7 @@ pub struct ImportOptions {
     pub collider_from_model: bool,
 }
 
-pub async fn handle(command: &AssetCommand) -> anyhow::Result<()> {
+pub async fn handle(command: &AssetCommand, assets: &crate::AssetCache) -> anyhow::Result<()> {
     match command {
         AssetCommand::MigratePipelinesToml(opt) => {
             let path = ProjectPath::new_local(opt.path.clone())?;
@@ -59,6 +59,12 @@ pub async fn handle(command: &AssetCommand) -> anyhow::Result<()> {
                 } else {
                     anyhow::bail!("Unsupported file type");
                 }
+                ambient_build::build_assets(
+                    &assets,
+                    &PathBuf::from("assets"),
+                    &PathBuf::from("build"),
+                )
+                .await?;
             }
             None => anyhow::bail!("Unknown file type"),
         },

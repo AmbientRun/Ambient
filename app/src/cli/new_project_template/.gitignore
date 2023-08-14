@@ -1,3 +1,5 @@
-/target
-/build
-/tmp
+**/target
+**/build
+**/tmp
+**/.DS_Store
+**/data

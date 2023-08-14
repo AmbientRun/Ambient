@@ -54,7 +54,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     if let Commands::Assets { command } = &cli.command {
-        return rt.block_on(cli::assets::handle(command));
+        return rt.block_on(cli::assets::handle(command, &assets));
     }
 
     // Build the project if required. Note that this only runs if the project is local,
