@@ -74,7 +74,7 @@ pub async fn run(
 
     AppBuilder::new()
         .ui_renderer(true)
-        .with_asset_cache(assets)
+        // .with_asset_cache(assets)
         .headless(headless)
         .update_title_with_fps_stats(false)
         .run(move |app, _runtime| {
