@@ -32,25 +32,21 @@ use axum::{
 };
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
-use crate::{
-    cli::{Cli, Commands, HostCli},
-    shared,
-};
+use crate::{cli::HostCli, shared};
 
 pub mod wasm;
 
 #[allow(clippy::too_many_arguments)]
 pub async fn start(
-    runtime: &tokio::runtime::Handle,
     assets: AssetCache,
-    cli: Cli,
+    host_cli: &HostCli,
+    view_asset_path: Option<PathBuf>,
     working_directory: PathBuf,
     project_path: AbsAssetUrl,
     build_path: AbsAssetUrl,
     manifest: ambient_project::Manifest,
     crypto: Crypto,
 ) -> SocketAddr {
-    let host_cli = cli.host().unwrap();
     let quic_interface_port = host_cli.quic_interface_port;
 
     let proxy_settings = (!host_cli.no_proxy).then(|| ProxySettings {
@@ -90,21 +86,11 @@ pub async fn start(
     let addr = server.local_addr();
 
     tracing::info!("Created server, running at {addr}");
-    let http_interface_port = cli
-        .host()
-        .unwrap()
-        .http_interface_port
-        .unwrap_or(HTTP_INTERFACE_PORT);
+    let http_interface_port = host_cli.http_interface_port.unwrap_or(HTTP_INTERFACE_PORT);
 
-    let public_host = match (cli.host().as_ref(), addr.ip()) {
+    let public_host = match (&host_cli.public_host, addr.ip()) {
         // use public_host if specified in cli
-        (
-            Some(&HostCli {
-                public_host: Some(host),
-                ..
-            }),
-            _,
-        ) => host.clone(),
+        (Some(host), _) => host.clone(),
 
         // if the bind address is not specified (0.0.0.0, ::0) then use localhost
         (_, IpAddr::V4(Ipv4Addr::UNSPECIFIED)) => IpAddr::V4(Ipv4Addr::LOCALHOST).to_string(),
@@ -121,17 +107,17 @@ pub async fn start(
         ServerBaseUrlKey.insert(&assets, base_url.clone());
         ContentBaseUrlKey.insert(&assets, base_url);
 
-        start_http_interface(runtime, Some(&build_path_fs), http_interface_port);
+        start_http_interface(Some(&build_path_fs), http_interface_port);
     } else {
         let base_url = build_path.clone();
 
         ServerBaseUrlKey.insert(&assets, base_url.clone());
         ContentBaseUrlKey.insert(&assets, base_url);
 
-        start_http_interface(runtime, None, http_interface_port);
+        start_http_interface(None, http_interface_port);
     }
 
-    runtime.spawn(async move {
+    tokio::task::spawn(async move {
         let mut server_world = World::new_with_config("server", true);
         server_world.init_shape_change_tracking();
 
@@ -213,7 +199,7 @@ pub async fn start(
             wasm::instantiate_ember(&mut server_world, ember_id).unwrap();
         }
 
-        if let Commands::View { asset_path, .. } = cli.command.clone() {
+        if let Some(asset_path) = view_asset_path {
             let asset_path = build_path
                 .push(asset_path.to_string_lossy())
                 .expect("FIXME")
@@ -319,11 +305,7 @@ fn create_resources(assets: AssetCache) -> Entity {
 
 pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
-fn start_http_interface(
-    runtime: &tokio::runtime::Handle,
-    build_path: Option<&Path>,
-    http_interface_port: u16,
-) {
+fn start_http_interface(build_path: Option<&Path>, http_interface_port: u16) {
     let mut router = Router::new().route("/ping", get(|| async move { "ok" }));
 
     if let Some(build_path) = build_path {
@@ -350,7 +332,7 @@ fn start_http_interface(
 
     let build_path = build_path.map(ToOwned::to_owned);
 
-    runtime.spawn(async move {
+    tokio::task::spawn(async move {
         let addr = SocketAddr::from(([0, 0, 0, 0], http_interface_port));
 
         tracing::debug!(?build_path, "Starting HTTP interface on: {addr}");
