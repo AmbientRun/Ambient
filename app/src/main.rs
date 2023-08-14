@@ -131,7 +131,7 @@ fn main() -> anyhow::Result<()> {
             &assets,
         ))?
     } else {
-        unreachable!()
+        anyhow::bail!("No host or join command specified")
     };
 
     // Time to join!
