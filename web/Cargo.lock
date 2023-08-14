@@ -114,6 +114,7 @@ dependencies = [
  "ambient_element",
  "ambient_gizmos",
  "ambient_gpu",
+ "ambient_gpu_ecs",
  "ambient_input",
  "ambient_model",
  "ambient_native_std",
@@ -239,18 +240,16 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_gpu",
+ "ambient_gpu_ecs",
  "ambient_native_std",
  "ambient_sys",
  "bytemuck",
  "chrono",
- "derive_more",
  "flume",
  "glam",
  "itertools",
- "lazy_static",
  "ordered-float 3.7.0",
  "parking_lot",
- "paste",
  "profiling",
  "serde",
  "tokio",
@@ -288,10 +287,11 @@ dependencies = [
 name = "ambient_ecs"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_profiling",
+ "ambient_native_std",
  "ambient_project_macro_common",
  "ambient_project_rt",
  "ambient_shared_types",
+ "ambient_sys",
  "anyhow",
  "atomic_refcell",
  "bit-set",
@@ -316,7 +316,6 @@ dependencies = [
  "serde_yaml",
  "smallvec",
  "thiserror",
- "tokio",
  "tracing",
  "yaml-rust-davvid",
 ]
@@ -385,6 +384,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_ember_semantic_native"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_ecs",
+ "ambient_native_std",
+ "ambient_network",
+ "ambient_project_semantic",
+ "anyhow",
+]
+
+[[package]]
 name = "ambient_friendly_id"
 version = "0.3.0-dev"
 dependencies = [
@@ -417,6 +427,7 @@ version = "0.3.0-dev"
 dependencies = [
  "aho-corasick 0.7.20",
  "ambient_native_std",
+ "ambient_std",
  "ambient_sys",
  "anyhow",
  "async-trait",
@@ -440,6 +451,25 @@ dependencies = [
  "ulid",
  "wgpu",
  "winit",
+]
+
+[[package]]
+name = "ambient_gpu_ecs"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_native_std",
+ "bytemuck",
+ "derive_more",
+ "glam",
+ "itertools",
+ "lazy_static",
+ "parking_lot",
+ "paste",
+ "profiling",
+ "tracing",
+ "wgpu",
 ]
 
 [[package]]
@@ -480,6 +510,8 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
+ "ambient_gpu",
+ "ambient_gpu_ecs",
  "ambient_input",
  "glam",
  "itertools",
@@ -590,6 +622,7 @@ dependencies = [
  "ambient_element",
  "ambient_gizmos",
  "ambient_gpu",
+ "ambient_gpu_ecs",
  "ambient_native_std",
  "ambient_proxy",
  "ambient_renderer",
@@ -676,6 +709,7 @@ dependencies = [
  "anyhow",
  "convert_case 0.6.0",
  "indexmap 2.0.0",
+ "once_cell",
  "proc-macro2",
  "quote",
  "serde",
@@ -697,6 +731,7 @@ dependencies = [
  "serde",
  "syn 1.0.109",
  "thiserror",
+ "tokio",
  "toml",
 ]
 
@@ -716,7 +751,10 @@ dependencies = [
  "ambient_project",
  "ambient_schema",
  "ambient_shared_types",
+ "ambient_std",
  "anyhow",
+ "async-recursion",
+ "async-trait",
  "data-encoding",
  "glam",
  "indexmap 2.0.0",
@@ -776,6 +814,7 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_gpu",
+ "ambient_gpu_ecs",
  "ambient_meshes",
  "ambient_native_std",
  "ambient_sys",
@@ -831,6 +870,7 @@ name = "ambient_std"
 version = "0.3.0-dev"
 dependencies = [
  "itertools",
+ "thiserror",
 ]
 
 [[package]]
@@ -963,6 +1003,7 @@ dependencies = [
  "ambient_app",
  "ambient_core",
  "ambient_ecs",
+ "ambient_ember_semantic_native",
  "ambient_gpu",
  "ambient_input",
  "ambient_model",
@@ -1217,6 +1258,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fa24f727524730b077666307f2734b4a1a1c57acb79193127dcc8914d5242dd7"
 dependencies = [
  "event-listener",
+]
+
+[[package]]
+name = "async-recursion"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0e97ce7de6cf12de5d7226c73f5ba9811622f4db3a5b91b55c53e987e5f91cba"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.28",
 ]
 
 [[package]]

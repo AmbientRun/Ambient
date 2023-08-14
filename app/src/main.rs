@@ -99,6 +99,12 @@ fn main() -> anyhow::Result<()> {
                         } else {
                             bail!("Unsupported file type");
                         }
+                        ambient_build::build_assets(
+                            &assets,
+                            &PathBuf::from("assets"),
+                            &PathBuf::from("build"),
+                        )
+                        .await?;
                     }
                     None => bail!("Unknown file type"),
                 },
