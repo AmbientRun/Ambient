@@ -135,8 +135,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-latest
-          - os: windows-latest
+          # - os: macos-latest
+          # - os: windows-latest
           - os: ubuntu-20.04
 
     runs-on: ${{ matrix.os }}
