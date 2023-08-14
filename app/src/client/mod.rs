@@ -34,7 +34,7 @@ pub async fn run(
     run: &RunCli,
     golden_image_output_dir: Option<PathBuf>,
     mixer: Option<AudioMixer>,
-) -> ExitStatus {
+) {
     let user_id = run
         .user_id
         .clone()
@@ -66,26 +66,32 @@ pub async fn run(
         }
     };
 
-    AppBuilder::new()
-        .ui_renderer(true)
-        .with_asset_cache(assets)
-        .headless(headless)
-        .update_title_with_fps_stats(false)
-        .run(move |app, _runtime| {
-            *app.world.resource_mut(window_title()) = "Ambient".to_string();
-            MainApp {
-                server_addr,
-                user_id,
-                show_debug: is_debug,
-                golden_image_cmd: run.golden_image,
-                golden_image_output_dir,
-                cert,
-                mixer,
-            }
-            .el()
-            .spawn_interactive(&mut app.world);
-        })
-        .await
+    log::info!(
+        "server_addr, golden_image_output_dir, {:?} {:?}",
+        server_addr,
+        golden_image_output_dir,
+    );
+
+    // AppBuilder::new()
+    //     .ui_renderer(true)
+    //     .with_asset_cache(assets)
+    //     .headless(headless)
+    //     .update_title_with_fps_stats(false)
+    //     .run(move |app, _runtime| {
+    //         *app.world.resource_mut(window_title()) = "Ambient".to_string();
+    //         MainApp {
+    //             server_addr,
+    //             user_id,
+    //             show_debug: is_debug,
+    //             golden_image_cmd: run.golden_image,
+    //             golden_image_output_dir,
+    //             cert,
+    //             mixer,
+    //         }
+    //         .el()
+    //         .spawn_interactive(&mut app.world);
+    //     })
+    //     .await
 }
 
 #[element_component]

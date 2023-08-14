@@ -37,13 +37,13 @@ pub fn handle(
     };
 
     // If we have run parameters, start a client and join a server
-    // let exit_status = rt.block_on(client::run(
-    //     assets,
-    //     server_addr,
-    //     run,
-    //     original_project_path.fs_path,
-    //     mixer,
-    // ));
+    let exit_status = rt.block_on(client::run(
+        assets,
+        server_addr,
+        run,
+        original_project_path.fs_path,
+        mixer,
+    ));
 
     // if exit_status == ExitStatus::FAILURE {
     //     anyhow::bail!("client::run failed with {exit_status:?}");
