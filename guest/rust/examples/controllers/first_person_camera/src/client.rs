@@ -18,7 +18,7 @@ fn main() {
     spawn_query((player_head_ref(), ball_ref())).bind(move |v| {
         for (_id, (head, ball)) in v {
             spatial_audio_player.set_listener(head);
-            spatial_audio_player.play_sound_on_entity(assets::url("assets/amen_break.ogg"), ball);
+            spatial_audio_player.play_sound_on_entity(assets::url("amen_break.ogg"), ball);
             run_async(async move {
                 sleep(10.).await;
                 println!("stop audio 10 seconds...");
