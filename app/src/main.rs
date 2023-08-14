@@ -135,15 +135,15 @@ fn main() -> anyhow::Result<()> {
     };
 
     // Time to join!
-    // if let Some(run) = cli.run() {
-    //     cli::client::handle(run, &rt, assets, server_addr, original_project_path)?;
-    // } else {
-    //     // Otherwise, wait for the Ctrl+C signal
-    //     match rt.block_on(tokio::signal::ctrl_c()) {
-    //         Ok(()) => {}
-    //         Err(err) => log::error!("Unable to listen for shutdown signal: {}", err),
-    //     }
-    // }
+    if let Some(run) = cli.run() {
+        cli::client::handle(run, &rt, assets, server_addr, original_project_path)?;
+    } else {
+        // Otherwise, wait for the Ctrl+C signal
+        match rt.block_on(tokio::signal::ctrl_c()) {
+            Ok(()) => {}
+            Err(err) => log::error!("Unable to listen for shutdown signal: {}", err),
+        }
+    }
 
     Ok(())
 }
