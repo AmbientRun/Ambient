@@ -61,6 +61,7 @@ fn main() {
         .map(|de| de.path())
         .filter(|de| de.is_dir())
     {
+        continue;
         eprintln!("Reading file in guest path: {guest_path:?}");
         // HACK: Build wit files ahead of time so that we don't need to use a macro in the guest code.
         if guest_path.file_name().unwrap_or_default() == "rust" {
@@ -69,7 +70,11 @@ fn main() {
 
             let mut generator = wit_bindgen_rust::Opts::default().build();
             let mut resolve = Resolve::new();
-            let pkg = resolve.push_dir(Path::new("wit")).unwrap().0;
+
+            let pkg = resolve
+                .push_dir(Path::new("wit"))
+                .expect("Failed to parse wit package")
+                .0;
 
             let mut files = Files::default();
             let world = resolve.select_world(pkg, None).unwrap();

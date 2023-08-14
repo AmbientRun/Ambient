@@ -1,28 +1,28 @@
 package ambient:bindings
 
 world bindings {
-    import types
+    // import types
 
-    import asset
+    // import asset
     import component
-    import entity
-    import message
-    import player
-    import client-message
-    import client-player
-    import client-input
-    import client-camera
-    import client-clipboard
-    import client-window
-    import client-mesh
-    import client-texture
-    import client-sampler
-    import client-material
+    // import entity
+    // import message
+    // import player
+    // import client-message
+    // import client-player
+    // import client-input
+    // import client-camera
+    // import client-clipboard
+    // import client-window
+    // import client-mesh
+    // import client-texture
+    // import client-sampler
+    // import client-material
 
-    import server-asset
-    import server-physics
-    import server-message
-    import server-http
+    // import server-asset
+    // import server-physics
+    // import server-message
+    // import server-http
 
-    export guest
+    // export guest
 }

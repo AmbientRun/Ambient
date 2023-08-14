@@ -1,3 +1,0 @@
-interface server-asset {
-    build-wasm: func()
-}

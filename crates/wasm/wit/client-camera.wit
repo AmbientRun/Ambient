@@ -1,8 +1,0 @@
-interface client-camera {
-    use types.{vec3, vec2, ray, entity-id}
-
-    clip-position-to-world-ray: func(camera: entity-id, clip-space-pos: vec2) -> ray
-    screen-to-clip-space: func(screen-pos: vec2) -> vec2
-    screen-position-to-world-ray: func(camera: entity-id, screen-pos: vec2) -> ray
-    world-to-screen: func(camera: entity-id, screen-pos: vec3) -> vec2
-}

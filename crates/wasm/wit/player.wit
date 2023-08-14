@@ -1,5 +1,0 @@
-interface player {
-    use types.{entity-id}
-
-    get-by-user-id: func(user-id: string) -> option<entity-id>
-}

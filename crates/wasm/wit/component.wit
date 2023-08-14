@@ -4,10 +4,10 @@
 // To work around this, we just give it its own interface and have functions that use it in the same interface.
 interface component {
     use types.{entity-id, mat4, quat, vec2, vec3, vec4, uvec2, uvec3, uvec4, ivec2, ivec3, ivec4, duration}
-    use client-mesh.{handle as procedural-mesh-handle}
-    use client-texture.{handle as procedural-texture-handle}
-    use client-sampler.{handle as procedural-sampler-handle}
-    use client-material.{handle as procedural-material-handle}
+    // use client-mesh.{handle as procedural-mesh-handle}
+    // use client-texture.{handle as procedural-texture-handle}
+    // use client-sampler.{handle as procedural-sampler-handle}
+    // use client-material.{handle as procedural-material-handle}
 
     variant vec-value {
         type-empty(list<tuple<>>),
@@ -36,14 +36,14 @@ interface component {
         type-ivec3(list<ivec3>),
         type-ivec4(list<ivec4>),
         type-duration(list<duration>),
-        type-procedural-mesh-handle(list<procedural-mesh-handle>),
-        type-procedural-texture-handle(list<procedural-texture-handle>),
-        type-procedural-sampler-handle(list<procedural-sampler-handle>),
-        type-procedural-material-handle(list<procedural-material-handle>),
+        // type-procedural-mesh-handle(list<procedural-mesh-handle>),
+        // type-procedural-texture-handle(list<procedural-texture-handle>),
+        // type-procedural-sampler-handle(list<procedural-sampler-handle>),
+        // type-procedural-material-handle(list<procedural-material-handle>),
     }
 
     variant option-value {
-        type-empty(option<tuple<>>),
+        // type-empty(option<tuple<>>),
         type-bool(option<bool>),
         type-entity-id(option<entity-id>),
         type-f32(option<float32>),
@@ -68,15 +68,15 @@ interface component {
         type-ivec2(option<ivec2>),
         type-ivec3(option<ivec3>),
         type-ivec4(option<ivec4>),
-        type-duration(option<duration>),
-        type-procedural-mesh-handle(option<procedural-mesh-handle>),
-        type-procedural-texture-handle(option<procedural-texture-handle>),
-        type-procedural-sampler-handle(option<procedural-sampler-handle>),
-        type-procedural-material-handle(option<procedural-material-handle>),
+        // type-duration(option<duration>),
+        // type-procedural-mesh-handle(option<procedural-mesh-handle>),
+        // type-procedural-texture-handle(option<procedural-texture-handle>),
+        // type-procedural-sampler-handle(option<procedural-sampler-handle>),
+        // type-procedural-material-handle(option<procedural-material-handle>),
     }
 
     variant value {
-        type-empty(tuple<>),
+        // type-empty(tuple<>),
         type-bool(bool),
         type-entity-id(entity-id),
         type-f32(float32),
@@ -101,11 +101,11 @@ interface component {
         type-ivec2(ivec2),
         type-ivec3(ivec3),
         type-ivec4(ivec4),
-        type-duration(duration),
-        type-procedural-mesh-handle(procedural-mesh-handle),
-        type-procedural-texture-handle(procedural-texture-handle),
-        type-procedural-sampler-handle(procedural-sampler-handle),
-        type-procedural-material-handle(procedural-material-handle),
+        // type-duration(duration),
+        // type-procedural-mesh-handle(procedural-mesh-handle),
+        // type-procedural-texture-handle(procedural-texture-handle),
+        // type-procedural-sampler-handle(procedural-sampler-handle),
+        // type-procedural-material-handle(procedural-material-handle),
         type-vec(vec-value),
         type-option(option-value),
     }
@@ -130,19 +130,19 @@ interface component {
     remove-component: func(entity: entity-id, index: u32)
     remove-components: func(entity: entity-id, indices: list<u32>)
 
-    record query-build {
-        components: list<u32>,
-        includes: list<u32>,
-        excludes: list<u32>,
-        changed: list<u32>,
-    }
+    // record query-build {
+        // components: list<u32>,
+        // includes: list<u32>,
+        // excludes: list<u32>,
+        // changed: list<u32>,
+    // }
 
-    enum query-event {
-        frame,
-        spawn,
-        despawn
-    }
+    // enum query-event {
+        // frame,
+        // spawn,
+        // despawn
+    // }
 
-    query: func(q: query-build, t: query-event) -> u64
-    query-eval: func(q: u64) -> list<tuple<entity-id, list<value>>>
+    // query: func(q: query-build, t: query-event) -> u64
+    // query-eval: func(q: u64) -> list<tuple<entity-id, list<value>>>
 }

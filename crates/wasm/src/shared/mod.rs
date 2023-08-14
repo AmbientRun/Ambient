@@ -243,8 +243,6 @@ pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
     bindings: fn(EntityId) -> Bindings,
     preopened_dir_path: Option<&'a Path>,
 ) -> anyhow::Result<()> {
-    use wasi_cap_std_sync::ambient_authority;
-
     world.add_resource(self::messenger(), messenger);
     world.add_resource(
         self::module_state_maker(),
@@ -253,13 +251,14 @@ pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
 
     world.add_resource(message::pending_messages(), vec![]);
 
+    #[cfg(feature = "native")]
     if let Some(preopened_dir_path) = preopened_dir_path {
         std::fs::create_dir_all(preopened_dir_path)?;
         world.add_resource(
             preopened_dir(),
             Arc::new(Dir::open_ambient_dir(
                 preopened_dir_path,
-                ambient_authority(),
+                wasi_cap_std_sync::ambient_authority(),
             )?),
         );
     }
@@ -278,12 +277,12 @@ pub(crate) fn reload_all(world: &mut World) {
     }
 }
 
-fn reload(world: &mut World, module_id: EntityId, bytecode: Option<ModuleBytecode>) {
+fn reload(world: &mut World, module_id: EntityId, new_bytecode: Option<ModuleBytecode>) {
     unload(world, module_id, "reloading");
 
-    if let Some(bytecode) = bytecode {
-        if !bytecode.0.is_empty() {
-            load(world, module_id, &bytecode.0);
+    if let Some(new_bytecode) = new_bytecode {
+        if !new_bytecode.0.is_empty() {
+            load(world, module_id, &new_bytecode.0);
         }
     }
 }
