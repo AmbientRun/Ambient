@@ -4,6 +4,7 @@ use crate::retrieve_project_path_and_manifest;
 
 use super::ProjectPath;
 
+#[allow(clippy::too_many_arguments)]
 pub async fn handle(
     project_path: &ProjectPath,
     assets: &AssetCache,

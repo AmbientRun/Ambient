@@ -169,8 +169,7 @@ pub fn audio_systems() -> SystemGroup {
                     }
                     world.remove_component(playing_entity, stop_now()).unwrap();
                     let p = world.get(playing_entity, parent());
-                    if !p.is_err() {
-                        let parent_entity = p.unwrap();
+                    if let Ok(parent_entity) = p {
                         let c = world.get_ref(parent_entity, children());
                         if c.is_err() {
                             log::error!("No children component on parent entity; cannot stop audio.");
@@ -310,8 +309,8 @@ pub fn audio_systems() -> SystemGroup {
 
                         let count = *count_arc_clone.lock();
                         let sr = *sr_arc_clone.lock();
-                        if count.is_some() && sr.is_some() {
-                            let dur = count.unwrap() as f32 / sr.unwrap() as f32 * 1.001;
+                        if let Some((count, sr)) = count.zip(sr) {
+                            let dur = count as f32 / sr as f32 * 1.001;
                             ambient_sys::time::sleep(std::time::Duration::from_secs_f32(dur)).await;
                             async_run.run(move |world| {
                                 world.despawn(id_arc_clone.lock().unwrap());

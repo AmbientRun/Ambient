@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeSet, HashSet},
+    collections::BTreeSet,
     path::{Path, PathBuf},
     time::Duration,
 };
@@ -14,7 +14,6 @@ use notify::{
 };
 use notify_debouncer_full::{DebounceEventResult, Debouncer, FileIdMap};
 use tokio::select;
-use walkdir::DirEntry;
 
 use super::build::{self, BuildOptions};
 

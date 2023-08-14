@@ -130,7 +130,7 @@ async fn build_ember(
 
     let last_modified_time = get_asset_files(&path)
         .filter_map(|f| f.metadata().ok()?.modified().ok())
-        .map(|t| chrono::DateTime::<chrono::Utc>::from(t))
+        .map(chrono::DateTime::<chrono::Utc>::from)
         .max();
 
     let name = manifest

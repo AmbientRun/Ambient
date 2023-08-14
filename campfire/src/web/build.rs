@@ -24,7 +24,7 @@ pub struct BuildOptions {
 pub async fn run(opts: &BuildOptions) -> anyhow::Result<()> {
     ensure_wasm_pack().await?;
 
-    let output_path = run_cargo_build(&opts).await?;
+    let output_path = run_cargo_build(opts).await?;
 
     eprintln!("Built package: {:?}", output_path);
 

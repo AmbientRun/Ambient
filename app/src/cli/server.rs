@@ -19,7 +19,7 @@ pub async fn handle(
     assets: &AssetCache,
 ) -> anyhow::Result<ResolvedAddr> {
     let (project_path, manifest, build_path) =
-        retrieve_project_path_and_manifest(&project_path, &assets, build_path.as_ref()).await?;
+        retrieve_project_path_and_manifest(&project_path, assets, build_path.as_ref()).await?;
 
     let crypto = if let (Some(cert_file), Some(key_file)) = (&host.cert, &host.key) {
         let raw_cert = std::fs::read(cert_file).context("Failed to read certificate file")?;

@@ -127,7 +127,7 @@ impl WorldDiff {
                 .filter_map(|&c| {
                     (from.get_component_content_version(id, *c.0).unwrap()
                         != to.get_component_content_version(id, *c.0).unwrap())
-                    .then(|| c.1)
+                    .then_some(c.1)
                 })
                 .collect_vec();
 
