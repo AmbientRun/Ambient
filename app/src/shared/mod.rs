@@ -1,6 +1,7 @@
 use ambient_network::server;
 use ambient_rpc::RpcRegistry;
 
+pub mod certs;
 pub mod components;
 pub mod ember;
 

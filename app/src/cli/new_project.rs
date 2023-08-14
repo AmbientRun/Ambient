@@ -5,11 +5,17 @@ use ambient_project::SnakeCaseIdentifier;
 use anyhow::Context;
 use convert_case::Casing;
 
-pub(crate) fn new_project(
-    project_path: &Path,
+use super::ProjectPath;
+
+pub(crate) fn handle(
+    project_path: &ProjectPath,
     name: Option<&str>,
     api_path: Option<&str>,
 ) -> anyhow::Result<()> {
+    let Some(project_path) = &project_path.fs_path else {
+        anyhow::bail!("Cannot create project in a remote directory.");
+    };
+
     // Build the identifier.
     let project_path = if let Some(name) = name {
         project_path.join(name)

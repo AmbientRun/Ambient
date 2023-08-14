@@ -22,7 +22,7 @@ use glam::uvec2;
 
 use crate::{
     cli::{GoldenImageCommand, RunCli},
-    shared,
+    shared::{self, certs::CERT},
 };
 
 mod wasm;
@@ -58,7 +58,7 @@ pub async fn run(
     } else {
         #[cfg(not(feature = "no_bundled_certs"))]
         {
-            Some(super::CERT.to_vec())
+            Some(CERT.to_vec())
         }
         #[cfg(feature = "no_bundled_certs")]
         {

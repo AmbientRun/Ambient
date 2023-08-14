@@ -302,15 +302,6 @@ impl SnakeCaseIdentifier {
             return Err("identifier must be snake-case ASCII");
         }
 
-        if !id
-            .split('_')
-            .all(|c| c.chars().next().map(|c| c.is_ascii_lowercase()) == Some(true))
-        {
-            return Err(
-                "each segment of an identifier must start with a lowercase ASCII character",
-            );
-        }
-
         if BANNED_SNAKE_CASE_IDENTIFIERS.contains(id) {
             return Err("identifier is banned");
         }
@@ -533,10 +524,6 @@ mod tests {
         assert_eq!(
             I::new("cool_component_c00"),
             Ok(I("cool_component_c00".to_string()))
-        );
-        assert_eq!(
-            I::new("cool_5_component"),
-            Err("each segment of an identifier must start with a lowercase ASCII character")
         );
 
         assert_eq!(

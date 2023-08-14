@@ -25,7 +25,7 @@ The general idea is that in the ECS system, you can create an `audio::AudioPlaye
 pub fn main() {
     let player = audio::AudioPlayer::new();
     player.set_amplitude();
-    let playing_sound = player.play(assets::url("assets/sound.ogg"));
+    let playing_sound = player.play(assets::url("sound.ogg"));
     entity::add_component(playing_sound, amplitude(), 0.1);
 }
 ```
