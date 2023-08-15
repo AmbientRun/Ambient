@@ -66,12 +66,12 @@ physxx = { path = "../../libs/physxx", optional = true }
 # Uses physx
 ambient_prefab = { path = "../prefab", optional = true }
 
-wasm-bridge = { git = "https://github.com/kajacx/wasm-bridge", version = "0.2", features = [
+wasm-bridge = { git = "https://github.com/AmbientRun/wasm-bridge", version = "0.2", features = [
     "component-model",
     "async",
     "wasi",
 ] }
-wasm-bridge-js = { git = "https://github.com/kajacx/wasm-bridge", version = "0.2", features = [
+wasm-bridge-js = { git = "https://github.com/AmbientRun/wasm-bridge", version = "0.2", features = [
     "component-model",
     "async",
     "wasi",

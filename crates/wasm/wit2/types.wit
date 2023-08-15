@@ -1,0 +1,86 @@
+interface types {
+    record entity-id {
+        id0: u64,
+        id1: u64,
+    }
+
+    record vec2 {
+        x: float32,
+        y: float32,
+    }
+
+    record vec3 {
+        x: float32,
+        y: float32,
+        z: float32,
+    }
+
+    record vec4 {
+        x: float32,
+        y: float32,
+        z: float32,
+        w: float32,
+    }
+
+    record uvec2 {
+        x: u32,
+        y: u32,
+    }
+
+    record uvec3 {
+        x: u32,
+        y: u32,
+        z: u32,
+    }
+
+    record uvec4 {
+        x: u32,
+        y: u32,
+        z: u32,
+        w: u32,
+    }
+
+    record ivec2 {
+        x: s32,
+        y: s32,
+    }
+
+    record ivec3 {
+        x: s32,
+        y: s32,
+        z: s32,
+    }
+
+    record ivec4 {
+        x: s32,
+        y: s32,
+        z: s32,
+        w: s32,
+    }
+
+    record quat {
+        x: float32,
+        y: float32,
+        z: float32,
+        w: float32,
+    }
+
+    record mat4 {
+        x: vec4,
+        y: vec4,
+        z: vec4,
+        w: vec4,
+    }
+
+    record duration {
+        seconds: u64,
+        nanoseconds: u32,
+    }
+
+    record ray {
+        origin: vec3,
+        dir: vec3,
+    }
+
+    type ulid = tuple<u64, u64>
+}

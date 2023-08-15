@@ -1,0 +1,5 @@
+interface message {
+    use component.{entity}
+
+    subscribe: func(name: string)
+}

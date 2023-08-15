@@ -1,0 +1,7 @@
+interface asset {
+    variant url-error {
+        invalid-url(string),
+    }
+
+    url: func(ember-id: string, path: string) -> result<string, url-error>
+}

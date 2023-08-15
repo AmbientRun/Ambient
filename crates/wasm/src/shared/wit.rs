@@ -3,5 +3,5 @@ wasm_bridge::component::bindgen!({
     async: true,
 });
 
-// pub use ambient::bindings::*;
-// pub use exports::ambient::bindings::guest;
+pub use ambient::bindings::*;
+pub use exports::ambient::bindings::guest;

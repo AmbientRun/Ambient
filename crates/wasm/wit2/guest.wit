@@ -1,0 +1,13 @@
+interface guest {
+    use types.{entity-id}
+
+    variant source {
+        runtime,
+        local(entity-id),
+        server,
+        client(string),
+    }
+
+    init: func()
+    exec: func(message-source: source, message-name: string, message-data: list<u8>)
+}

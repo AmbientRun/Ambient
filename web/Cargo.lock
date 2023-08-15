@@ -6406,7 +6406,7 @@ checksum = "ca6ad05a4870b2bf5fe995117d3728437bd27d7cd5f06f13c17443ef369775a1"
 [[package]]
 name = "wasm-bridge"
 version = "0.2.2"
-source = "git+https://github.com/kajacx/wasm-bridge#4a9af252fd2993f93eb29140c79abc068e20d7fe"
+source = "git+https://github.com/AmbientRun/wasm-bridge#c3942ce8bd6244c4c7800007db238c108b0b53e3"
 dependencies = [
  "async-trait",
  "wasm-bridge-js",
@@ -6418,7 +6418,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge-js"
 version = "0.2.2"
-source = "git+https://github.com/kajacx/wasm-bridge#4a9af252fd2993f93eb29140c79abc068e20d7fe"
+source = "git+https://github.com/AmbientRun/wasm-bridge#c3942ce8bd6244c4c7800007db238c108b0b53e3"
 dependencies = [
  "anyhow",
  "heck",
@@ -6434,7 +6434,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge-macros"
 version = "0.2.2"
-source = "git+https://github.com/kajacx/wasm-bridge#4a9af252fd2993f93eb29140c79abc068e20d7fe"
+source = "git+https://github.com/AmbientRun/wasm-bridge#c3942ce8bd6244c4c7800007db238c108b0b53e3"
 dependencies = [
  "anyhow",
  "heck",

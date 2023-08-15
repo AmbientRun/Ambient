@@ -1,0 +1,16 @@
+interface entity {
+    use types.{entity-id, vec3, quat, mat4}
+    use component.{entity as entity-data}
+
+    get-transforms-relative-to: func(entities: list<entity-id>, origin: entity-id) -> list<mat4>
+
+    spawn: func(data: entity-data) -> entity-id
+    despawn: func(entity: entity-id) -> option<entity-data>
+    in-area: func(position: vec3, radius: float32) -> list<entity-id>
+
+    exists: func(entity: entity-id) -> bool
+    get-all: func(index: u32) -> list<entity-id>
+    resources: func() -> entity-id
+    synchronized-resources: func() -> entity-id
+    persisted-resources: func() -> entity-id
+}

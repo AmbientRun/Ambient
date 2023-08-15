@@ -1,0 +1,30 @@
+interface client-sampler {
+    use types.{ulid}
+
+    variant address-mode {
+        clamp-to-edge,
+        repeat,
+        mirror-repeat,
+    }
+
+    variant filter-mode {
+        nearest,
+        linear,
+    }
+
+    record descriptor {
+        address-mode-u: address-mode,
+        address-mode-v: address-mode,
+        address-mode-w: address-mode,
+        mag-filter: filter-mode,
+        min-filter: filter-mode,
+        mipmap-filter: filter-mode,
+    }
+
+    record handle {
+        ulid: ulid
+    }
+
+    create: func(desc: descriptor) -> handle
+    destroy: func(handle: handle)
+}
