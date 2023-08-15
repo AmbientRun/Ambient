@@ -213,7 +213,7 @@ jobs:
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers gdb
       - name: Run golden image tests with GDB
-        run: gdb --batch -ex "run" -ex "bt" --args cargo campfire-slim golden-images --ambient-path=./ambient check > gdb_output.txt
+        run: gdb --batch -ex "run" -ex "bt" --args cargo campfire-slim golden-images --ambient-path=./ambient check
         env:
           RUST_BACKTRACE: 1
       - uses: actions/upload-artifact@v3

@@ -1,0 +1,7 @@
+[[pipelines]]
+type = "Audio"
+convert = true
+
+[[pipelines]]
+type = "Models"
+sources = ["X Bot.fbx"]
