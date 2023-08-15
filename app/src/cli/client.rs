@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use ambient_audio::AudioStream;
 use ambient_core::window::ExitStatus;
 use ambient_native_std::asset_cache::AssetCache;
@@ -6,14 +8,14 @@ use anyhow::Context;
 
 use crate::client;
 
-use super::{ProjectPath, RunCli};
+use super::RunCli;
 
 pub fn handle(
     run: &RunCli,
     rt: &tokio::runtime::Runtime,
     assets: AssetCache,
     server_addr: ResolvedAddr,
-    original_project_path: ProjectPath,
+    golden_image_output_dir: Option<PathBuf>,
 ) -> anyhow::Result<()> {
     // Hey! listen, it is time to setup audio
     let audio_stream = if !run.mute_audio {
@@ -41,7 +43,7 @@ pub fn handle(
         assets,
         server_addr,
         run,
-        original_project_path.fs_path,
+        golden_image_output_dir,
         mixer,
     ));
 
