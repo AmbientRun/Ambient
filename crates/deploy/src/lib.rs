@@ -28,7 +28,7 @@ use deploy_proto::{
 
 const CHUNK_SIZE: usize = 1024 * 1024 * 3; // 3MB
 const EXTRA_FILES_FROM_PROJECT_ROOT: &[&str] = &["screenshot.png", "README.md"];
-const REQUIRED_FILES: &[&str] = &["build/ambient.toml"];
+const REQUIRED_FILES: &[&str] = &["ambient.toml"];
 
 /// This takes the path to an Ambient ember and deploys it. An Ambient ember is expected to
 /// be already built.
@@ -164,7 +164,7 @@ fn collect_files_to_deploy(base_path: PathBuf) -> anyhow::Result<HashMap<String,
                     );
                     None
                 } else {
-                    Some((format!("build/{path}"), file_path))
+                    Some((path.to_string(), file_path))
                 }
             } else {
                 log::error!("Non-UTF-8 path: {:?}", file_path);

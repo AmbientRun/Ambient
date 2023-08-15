@@ -5,21 +5,38 @@ use crate::shared;
 
 use super::{ProjectCli, ProjectPath};
 
+pub struct BuildDirectories {
+    /// The location where all built embers are stored. Used for the HTTP host.
+    pub build_root_path: AbsAssetUrl,
+    /// The location of the main ember being executed. Used for everything else.
+    pub main_ember_path: AbsAssetUrl,
+}
+impl BuildDirectories {
+    pub fn new_with_same_paths(path: AbsAssetUrl) -> Self {
+        Self {
+            build_root_path: path.clone(),
+            main_ember_path: path,
+        }
+    }
+}
+
 pub async fn build(
     project: Option<&ProjectCli>,
     project_path: ProjectPath,
     assets: &AssetCache,
-) -> anyhow::Result<(ProjectPath, Option<AbsAssetUrl>)> {
+) -> anyhow::Result<BuildDirectories> {
     let Some(project) = project else {
-        return Ok((project_path, None));
+        return Ok(BuildDirectories::new_with_same_paths(project_path.url.clone()));
     };
 
     if project.no_build {
-        return Ok((project_path, None));
+        return Ok(BuildDirectories::new_with_same_paths(
+            project_path.url.clone(),
+        ));
     }
 
     let Some(project_path) = project_path.fs_path else {
-        return Ok((project_path, None));
+        return Ok(BuildDirectories::new_with_same_paths(project_path.url.clone()));
     };
 
     let build_path = project_path.join("build");
@@ -57,8 +74,8 @@ pub async fn build(
         .await
         .context("Failed to build project")?;
 
-    anyhow::Ok((
-        ProjectPath::new_local(output_path)?,
-        Some(AbsAssetUrl::from_file_path(build_path)),
-    ))
+    anyhow::Ok(BuildDirectories {
+        build_root_path: AbsAssetUrl::from_file_path(build_path),
+        main_ember_path: AbsAssetUrl::from_file_path(output_path),
+    })
 }
