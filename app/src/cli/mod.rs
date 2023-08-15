@@ -148,9 +148,13 @@ pub struct ProjectCli {
     /// The path or URL of the project to run; if not specified, this will default to the current directory
     pub path: Option<String>,
 
-    /// Build all the assets with full optimization; this will make debugging more difficult
+    /// Build all the assets with debug information; this will make them larger (default for all commands appart from `deploy` and `serve`)
+    #[arg(short, long, conflicts_with = "release")]
+    debug: bool,
+
+    /// Build all the assets with full optimization; this will make debugging more difficult (default for `deploy` and `serve`)
     #[arg(short, long)]
-    pub release: bool,
+    release: bool,
 
     /// Avoid building the project
     #[arg(long)]
@@ -240,6 +244,32 @@ impl Cli {
             Commands::View { .. } => None,
             Commands::Join { .. } => None,
             Commands::Assets { .. } => None,
+        }
+    }
+    pub fn use_release_build(&self) -> bool {
+        match &self.command {
+            Commands::New { .. } => false,
+            Commands::Run { project_args, .. } => project_args.is_release().unwrap_or(false),
+            Commands::Build { project_args, .. } => project_args.is_release().unwrap_or(false),
+            Commands::Deploy { project_args, .. } => project_args.is_release().unwrap_or(true),
+            Commands::Serve { project_args, .. } => project_args.is_release().unwrap_or(true),
+            Commands::View { project_args, .. } => project_args.is_release().unwrap_or(false),
+            Commands::Join { .. } => false,
+            Commands::Assets { .. } => false,
+        }
+    }
+}
+
+impl ProjectCli {
+    pub fn is_release(&self) -> Option<bool> {
+        match (self.debug, self.release) {
+            (true, false) => Some(false),
+            (false, true) => Some(true),
+            (false, false) => None,
+            (true, true) => {
+                // clap's conflict_with should prevent this from happening
+                panic!("debug and release are mutually exclusive")
+            }
         }
     }
 }

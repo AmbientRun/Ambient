@@ -9,6 +9,7 @@ pub async fn build(
     project: Option<&ProjectCli>,
     project_path: ProjectPath,
     assets: &AssetCache,
+    release_build: bool,
 ) -> anyhow::Result<(ProjectPath, Option<AbsAssetUrl>)> {
     let Some(project) = project else {
         return Ok((project_path, None));
@@ -40,7 +41,7 @@ pub async fn build(
         build_path: build_path.clone(),
         assets: assets.clone(),
         semantic: &mut semantic,
-        optimize: project.release,
+        optimize: release_build,
         clean_build: project.clean_build,
         build_wasm_only: project.build_wasm_only,
     };

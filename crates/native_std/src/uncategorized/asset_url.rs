@@ -41,6 +41,14 @@ impl SyncAssetKey<AbsAssetUrl> for ContentBaseUrlKey {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct UsingLocalDebugAssetsKey;
+impl SyncAssetKey<bool> for UsingLocalDebugAssetsKey {
+    fn load(&self, _assets: AssetCache) -> bool {
+        false
+    }
+}
+
 /// This is a thin wrapper around Url, which is guaranteed to always
 /// be an absolute url (including when pointing to a local file).
 ///

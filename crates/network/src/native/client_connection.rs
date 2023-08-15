@@ -24,6 +24,13 @@ impl From<ProxiedConnection> for ConnectionKind {
 }
 
 impl ConnectionKind {
+    pub fn is_local(&self) -> bool {
+        match self {
+            ConnectionKind::Direct(conn) => conn.remote_address().ip().is_loopback(),
+            ConnectionKind::Proxied(_) => false,
+        }
+    }
+
     #[inline]
     pub async fn open_uni(&self) -> Result<SendStream, NetworkError> {
         match self {

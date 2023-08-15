@@ -1,7 +1,10 @@
 use std::sync::Arc;
 
 use ambient_ecs::WorldStreamFilter;
-use ambient_native_std::asset_url::AbsAssetUrl;
+use ambient_native_std::{
+    asset_cache::SyncAssetKeyExt,
+    asset_url::{AbsAssetUrl, UsingLocalDebugAssetsKey},
+};
 use anyhow::Context;
 use bytes::Bytes;
 use futures::{SinkExt, StreamExt};
@@ -28,6 +31,12 @@ pub async fn handle_h3_connection(
     world_stream_filter: WorldStreamFilter,
     content_base_url: AbsAssetUrl,
 ) -> anyhow::Result<()> {
+    if !conn.remote_address().ip().is_loopback()
+        && UsingLocalDebugAssetsKey.get(&state.lock().assets)
+    {
+        tracing::warn!("Client connected from remote address but server is using debug assets. This might involve uploading large files to the client.");
+    }
+
     // Establish an HTTP/3 connection
     //
     // The webtransport client will soon send a `CONNECT` request

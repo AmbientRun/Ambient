@@ -1,6 +1,6 @@
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, ContentBaseUrlKey},
+    asset_url::{AbsAssetUrl, ContentBaseUrlKey, UsingLocalDebugAssetsKey},
     download_asset::{AssetsCacheOnDisk, ReqwestClientKey},
 };
 use ambient_network::native::client::ResolvedAddr;
@@ -62,8 +62,12 @@ fn main() -> anyhow::Result<()> {
     //
     // Update the project path to match the build path if necessary.
     let original_project_path = project_path.clone();
-    let (project_path, build_path) =
-        rt.block_on(cli::build::build(project, project_path, &assets))?;
+    let (project_path, build_path) = rt.block_on(cli::build::build(
+        project,
+        project_path,
+        &assets,
+        cli.use_release_build(),
+    ))?;
 
     // If this is just a build, exit now
     if matches!(&cli.command, Commands::Build { .. }) {
@@ -80,6 +84,9 @@ fn main() -> anyhow::Result<()> {
         ..
     } = &cli.command
     {
+        if !cli.use_release_build() {
+            log::warn!("Deploying a debug build which might involve uploading large files. Remove `--debug` to deploy a release build.");
+        }
         return rt.block_on(cli::deploy::handle(
             &project_path,
             &assets,
@@ -119,6 +126,10 @@ fn main() -> anyhow::Result<()> {
             ResolvedAddr::localhost_with_port(QUIC_INTERFACE_PORT)
         }
     } else if let Some(host) = &cli.host() {
+        UsingLocalDebugAssetsKey.insert(
+            &assets,
+            !project_path.is_remote() && !cli.use_release_build(),
+        );
         rt.block_on(cli::server::handle(
             host,
             if let cli::Commands::View { asset_path, .. } = &cli.command {
