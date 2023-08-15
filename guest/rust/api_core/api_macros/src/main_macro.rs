@@ -22,8 +22,7 @@ pub fn main(item: TokenStream, ambient_toml: ManifestSource) -> TokenStream {
         })
         .unwrap_or_else(|e| {
             let msg = format!(
-                "Error while running Ambient ember macro: {}{}",
-                e.to_string(),
+                "Error while running Ambient ember macro: {e}{}",
                 e.source()
                     .map(|e| format!("\nCaused by: {e}"))
                     .unwrap_or_default()
@@ -73,10 +72,9 @@ fn parse_function(item: TokenStream) -> (TokenStream, Option<ParsedFunction>) {
 
             let mut seen_main = false;
             return (
-                TokenStream::from(item)
-                    .into_iter()
+                item.into_iter()
                     .map(|tt| match tt {
-                        TokenTree::Ident(ident) if ident.to_string() == "main" && !seen_main => {
+                        TokenTree::Ident(ident) if ident == "main" && !seen_main => {
                             seen_main = true;
                             TokenTree::Ident(Ident::new("_main_impl", Span::call_site()))
                         }

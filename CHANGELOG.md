@@ -155,6 +155,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **UI**: The `ScrollArea` now has a scroll bar.
 - **Input**: Input is now cleared when the window loses focus, preventing "stuck input" bugs.
 - **UI**: Layout-related properties, like alignment and fit, did not work correctly for certain values. This has been fixed with the introduction of enums.
+- **Build**: Rust compilation errors are now more readable with more colors and fewer unused warnings.
 
 ### Community PRs to internals
 
