@@ -4,7 +4,7 @@ name = "Procedural generation"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/procedural_generation"
 type = "Game"
-categories = ["Example"]
+categories = ["game/example"]
 
 [components]
 rotating_sun = { type = "Bool", name = "Rotating sun", description = "Whether or not rotate the sun automatically" }

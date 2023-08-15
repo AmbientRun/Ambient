@@ -90,6 +90,30 @@ The `ember` section contains metadata about the ember itself, such as its name a
 | `name`        | `String`              | _Optional_. A human-readable name for the ember.                                            |
 | `description` | `String`              | _Optional_. A human-readable description of the ember.                                      |
 | `version`     | `String`              | _Optional_. The ember's version, in `(major, minor, patch)` format. Semantically versioned. |
+| `categories`  | `Vec<Category>`       | _Optional_. A list of categories for this Ember.                                            |
+
+#### Category
+
+These are the valid categories for the ember catgories field:
+
+```
+game/example
+game/fps
+game/survival
+game/simulation
+game/strategy
+game/sports
+game/racing
+game/other
+
+asset/model
+asset/texture
+asset/audio
+asset/font
+asset/code
+asset/tool
+asset/mod
+```
 
 #### Example
 

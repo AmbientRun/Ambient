@@ -4,4 +4,4 @@ name = "Slider"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/slider"
 type = "Game"
-categories = ["Example"]
+categories = ["game/example"]

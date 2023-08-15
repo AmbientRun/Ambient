@@ -19,6 +19,8 @@ thiserror = { workspace = true }
 indexmap = { workspace = true }
 convert_case = { workspace = true }
 once_cell = { workspace = true }
+parse-display = { workspace = true }
+serde_with = { workspace = true }
 
 [dev-dependencies]
 paste = { workspace = true }
