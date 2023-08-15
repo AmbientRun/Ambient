@@ -148,11 +148,11 @@ pub struct ProjectCli {
     /// The path or URL of the project to run; if not specified, this will default to the current directory
     pub path: Option<String>,
 
-    /// Build all the assets with debug information; this will make them larger (default for all commands apart from `deploy` and `serve`)
+    /// Build all the assets with debug information; this will make them less performant and larger but easier to debug (default for all commands apart from `deploy` and `serve`)
     #[arg(short, long, conflicts_with = "release")]
     debug: bool,
 
-    /// Build all the assets with full optimization; this will make debugging more difficult (default for `deploy` and `serve`)
+    /// Build all the assets with full optimization; this will make them faster and smaller but more difficult to debug (default for `deploy` and `serve`)
     #[arg(short, long)]
     release: bool,
 
@@ -248,14 +248,13 @@ impl Cli {
     }
     pub fn use_release_build(&self) -> bool {
         match &self.command {
-            Commands::New { .. } => false,
-            Commands::Run { project_args, .. } => project_args.is_release().unwrap_or(false),
-            Commands::Build { project_args, .. } => project_args.is_release().unwrap_or(false),
-            Commands::Deploy { project_args, .. } => project_args.is_release().unwrap_or(true),
-            Commands::Serve { project_args, .. } => project_args.is_release().unwrap_or(true),
-            Commands::View { project_args, .. } => project_args.is_release().unwrap_or(false),
-            Commands::Join { .. } => false,
-            Commands::Assets { .. } => false,
+            Commands::Deploy { project_args, .. } | Commands::Serve { project_args, .. } => {
+                project_args.is_release().unwrap_or(true)
+            }
+            Commands::Run { project_args, .. }
+            | Commands::Build { project_args, .. }
+            | Commands::View { project_args, .. } => project_args.is_release().unwrap_or(false),
+            Commands::New { .. } | Commands::Join { .. } | Commands::Assets { .. } => false,
         }
     }
 }
