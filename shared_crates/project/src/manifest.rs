@@ -1,7 +1,9 @@
 use std::path::PathBuf;
 
 use indexmap::IndexMap;
+use parse_display::{Display, FromStr};
 use serde::{Deserialize, Serialize};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use thiserror::Error;
 
 use crate::{
@@ -62,32 +64,48 @@ pub struct Ember {
     pub repository: Option<String>,
     #[serde(default)]
     pub authors: Vec<String>,
-    #[serde(default, rename = "type")]
-    pub type_: EmberType,
     #[serde(default)]
     pub categories: Vec<Category>,
     #[serde(default)]
     pub includes: Vec<PathBuf>,
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Serialize, Default)]
-pub enum EmberType {
-    #[default]
-    Game,
-    Mod,
+// ----- NOTE: Update docs/reference/ember.md when changing this ----
+
+#[derive(Clone, Copy, Debug, PartialEq, Display, FromStr, SerializeDisplay, DeserializeFromStr)]
+pub enum Category {
+    #[display("game/{0}")]
+    Game(GameCategory),
+    #[display("asset/{0}")]
+    Asset(AssetCategory),
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
-pub enum Category {
+#[derive(Clone, Copy, Debug, PartialEq, Display, FromStr, SerializeDisplay, DeserializeFromStr)]
+#[display(style = "snake_case")]
+pub enum GameCategory {
     Example,
     Fps,
     Survival,
     Simulation,
-    Multiplayer,
     Strategy,
     Sports,
     Racing,
+    Other,
 }
+
+#[derive(Clone, Copy, Debug, PartialEq, Display, FromStr, SerializeDisplay, DeserializeFromStr)]
+#[display(style = "snake_case")]
+pub enum AssetCategory {
+    Model,
+    Texture,
+    Audio,
+    Font,
+    Code,
+    Tool,
+    Mod,
+}
+
+// -----------------------------------------------------------------
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
 pub struct Build {
