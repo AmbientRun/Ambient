@@ -37,7 +37,7 @@ fn make_camera() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(translation(), vec3(0.0, 3.0, 4.0) * 2.0)
         .with(lookat_target(), vec3(0.0, 3.0, 0.0))
         .spawn();
@@ -60,14 +60,14 @@ fn App(_hooks: &mut Hooks, sun_id: EntityId) -> Element {
 fn make_lighting() {
     let sun_id = Entity::new()
         .with_merge(make_transformable())
-        .with_default(sun())
+        .with(sun(), 0.0)
         .with(
             rotation(),
             Quat::from_rotation_y(-45_f32.to_radians())
                 * Quat::from_rotation_z(-45_f32.to_radians()),
         )
         .with(light_diffuse(), Vec3::ONE * 4.0)
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(rotating_sun(), false)
         .spawn();
     App::el(sun_id).spawn_interactive();
@@ -90,11 +90,11 @@ fn make_lighting() {
 fn make_simple_cube(t: Vec3, s: Vec3, c: Vec4) {
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(cube())
+        .with(cube(), ())
         .with(translation(), t)
         .with(scale(), s)
         .with(color(), c)
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .spawn();
 }
 
@@ -105,7 +105,7 @@ fn make_simple_sphere(t: Vec3, r: f32, c: Vec4) {
         .with(translation(), t)
         .with(sphere_radius(), r)
         .with(color(), c)
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .spawn();
 }
 
@@ -123,7 +123,7 @@ fn make_coordinate_system() {
 fn make_ground() {
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(quad())
+        .with(quad(), ())
         .with(color(), vec4(0.25, 1.0, 0.25, 1.0))
         .with(translation(), vec3(0.0, 0.0, -0.5))
         .with(scale(), 32.0 * Vec3::ONE)
@@ -261,7 +261,7 @@ fn make_procedural<BaseColorFn, NormalFn, MetallicRoughnessFn, SamplerFn>(
         .with(procedural_mesh(), mesh)
         .with(procedural_material(), material)
         .with(translation(), world_translation)
-        .with_default(cast_shadows())
+        .with(cast_shadows(), ())
         .spawn();
 }
 

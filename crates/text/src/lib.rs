@@ -242,8 +242,8 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                                         )),
                                     )
                                     .with(primitives(), vec![])
-                                    .with_default(gpu_primitives_mesh())
-                                    .with_default(gpu_primitives_lod()),
+                                    .with(gpu_primitives_mesh(), Default::default())
+                                    .with(gpu_primitives_lod(), Default::default()),
                             )
                             .unwrap();
                     }

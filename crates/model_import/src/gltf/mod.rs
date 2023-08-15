@@ -321,7 +321,7 @@ pub async fn import(
                 .with(translation(), Vec3::from_slice(&trans))
                 .with(rotation(), Quat::from_slice(&rot))
                 .with(scale(), Vec3::from_slice(&scal))
-                .with_default(local_to_world())
+                .with(local_to_world(), Default::default())
                 .with(bind_id(), bind_ids.get(&node));
 
             if let Some(node_name) = node.name() {

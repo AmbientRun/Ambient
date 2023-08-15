@@ -23,7 +23,7 @@ use constants::*;
 fn spawn_paddle(left: bool, paddle_color: Vec3) -> EntityId {
     let x = X_BOUNDARY + PADDLE_WIDTH / 2.;
     make_transformable()
-        .with_default(cube())
+        .with(cube(), ())
         .with(scale(), vec3(PADDLE_WIDTH, PADDLE_LENGTH, 1.))
         .with(translation(), vec3(if left { -x } else { x }, 0., 0.))
         .with(color(), paddle_color.extend(1.))
@@ -47,7 +47,7 @@ pub fn main() {
     entity::add_component(entity::synchronized_resources(), track_audio_url(), bgm_url);
     // Spawn field, paddles and ball
     make_transformable()
-        .with_default(cube())
+        .with(cube(), ())
         .with(scale(), vec3(X_BOUNDARY * 2., Y_BOUNDARY * 2., 1.))
         .with(translation(), vec3(0., 0., 1.))
         .with(color(), vec4(1., 1., 1., 1.))

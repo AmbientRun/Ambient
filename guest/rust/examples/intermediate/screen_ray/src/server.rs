@@ -12,13 +12,13 @@ use embers::ambient_example_screen_ray::messages::{Input, WorldPosition};
 pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(quad())
-        .with_default(plane_collider())
+        .with(quad(), ())
+        .with(plane_collider(), ())
         .spawn();
 
     let cube_id = Entity::new()
         .with_merge(make_transformable())
-        .with_default(cube())
+        .with(cube(), ())
         .spawn();
 
     Input::subscribe(move |_source, msg| {

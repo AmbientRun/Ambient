@@ -60,7 +60,7 @@ pub async fn handle(command: &AssetCommand, assets: &crate::AssetCache) -> anyho
                     anyhow::bail!("Unsupported file type");
                 }
                 ambient_build::build_assets(
-                    &assets,
+                    assets,
                     &PathBuf::from("assets"),
                     &PathBuf::from("build"),
                 )

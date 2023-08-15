@@ -114,10 +114,10 @@ let ball = Entity::new()
     .with_merge(make_transformable())
     .with_merge(make_sphere())
     .with(parent(), left_foot)
-    .with_default(local_to_parent())
+    .with(local_to_parent(), Default::default())
     // Without reset_scale, the ball would take the scale of the
     // bone we're attaching it to
-    .with_default(reset_scale())
+    .with(reset_scale(), ())
     .spawn();
 entity::add_child(left_foot, ball);
 ```

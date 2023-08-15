@@ -34,10 +34,10 @@ use std::f32::consts::{PI, TAU};
 pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(quad())
+        .with(quad(), ())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(1., 0., 0., 1.))
-        .with_default(plane_collider())
+        .with(plane_collider(), ())
         .spawn();
 
     let ball = Entity::new()
@@ -52,20 +52,20 @@ pub fn main() {
             let head = Entity::new()
                 .with_merge(make_perspective_infinite_reverse_camera())
                 .with(aspect_ratio_from_window(), EntityId::resources())
-                .with_default(main_scene())
+                .with(main_scene(), ())
                 .with(user_id(), uid)
                 .with(translation(), Vec3::Z * 2.)
                 .with(parent(), id)
-                .with_default(local_to_parent())
+                .with(local_to_parent(), Default::default())
                 .with(rotation(), Quat::from_rotation_x(PI / 2.))
                 .spawn();
             entity::add_components(
                 id,
                 Entity::new()
                     .with_merge(make_transformable())
-                    .with_default(cube())
-                    .with_default(physics_controlled())
-                    .with_default(player_movement_direction())
+                    .with(cube(), ())
+                    .with(physics_controlled(), ())
+                    .with(player_movement_direction(), Vec2::default())
                     .with(color(), Vec4::ONE)
                     .with(character_controller_height(), 2.)
                     .with(character_controller_radius(), 0.5)

@@ -57,7 +57,7 @@ impl<W: Watcher> WatcherState<W> {
         Ok(())
     }
 
-    pub fn update_subdir(&mut self, dir: impl AsRef<Path>) -> anyhow::Result<()> {
+    pub fn _update_subdir(&mut self, dir: impl AsRef<Path>) -> anyhow::Result<()> {
         let dir = dir.as_ref();
         for entry in find_watched_dirs(dir) {
             let entry = entry?;

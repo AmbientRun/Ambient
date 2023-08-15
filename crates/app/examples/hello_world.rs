@@ -16,7 +16,7 @@ async fn init(app: &mut App) {
     Cube.el()
         .with(color(), vec4(0.5, 0.5, 0.5, 1.))
         .with(translation(), Vec3::Z)
-        .with_default(cast_shadows())
+        .with(cast_shadows(), ())
         .with(outline(), Vec4::ONE)
         .spawn_static(world);
     Quad.el().with(scale(), Vec3::ONE * 10.).spawn_static(world);

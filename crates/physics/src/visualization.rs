@@ -162,7 +162,7 @@ pub(crate) fn server_systems() -> SystemGroup {
                 if render_buffer.lines.len() > existing.len() {
                     for i in existing.len()..render_buffer.lines.len() {
                         Entity::new()
-                            .with_default(dont_store())
+                            .with(dont_store(), ())
                             .with(physx_viz_line(), render_buffer.lines[i].clone())
                             .spawn(world);
                     }

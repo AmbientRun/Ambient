@@ -70,11 +70,11 @@ async fn init(app: &mut App) {
         max: Vec3::ONE,
     };
     Entity::new()
-        .with_default(local_to_world())
-        .with_default(mesh_to_world())
-        .with_default(translation())
-        .with_default(gpu_primitives_mesh())
-        .with_default(gpu_primitives_lod())
+        .with(local_to_world(), Default::default())
+        .with(mesh_to_world(), Default::default())
+        .with(translation(), Default::default())
+        .with(gpu_primitives_mesh(), Default::default())
+        .with(gpu_primitives_lod(), Default::default())
         .with(color(), Vec4::ONE)
         .with(main_scene(), ())
         .with(local_bounding_aabb(), aabb)
@@ -82,7 +82,7 @@ async fn init(app: &mut App) {
         .with(world_bounding_aabb(), aabb)
         .with(primitives(), prims)
         .with(lod_cutoffs(), LodCutoffs::new(&lods))
-        .with_default(gpu_lod())
+        .with(gpu_lod(), Default::default())
         .spawn(world);
 
     ambient_cameras::spherical::new(

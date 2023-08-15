@@ -25,7 +25,7 @@ fn spawn_enemies(enemies: &mut Vec<EntityId>, y_pos: f32, color: Vec3) {
     for i in 0..7 {
         enemies.push(
             make_transformable()
-                .with_default(cube())
+                .with(cube(), ())
                 .with(scale(), vec3(PADDLE_WIDTH, PADDLE_HEIGHT / 2., 1.))
                 .with(translation(), vec3(-1. + (i as f32 / 3.), y_pos, 0.))
                 .with(self::color(), color.extend(1.))
@@ -65,14 +65,14 @@ pub fn main() {
 
     //Spawn field
     make_transformable()
-        .with_default(cube())
+        .with(cube(), ())
         .with(scale(), vec3(X_BOUNDARY * 2.5, Y_BOUNDARY * 2.3, 1.))
         .with(translation(), vec3(0., 0., 1.0))
         .with(self::color(), vec4(1., 1., 1., 1.))
         .spawn();
 
     make_transformable()
-        .with_default(cube())
+        .with(cube(), ())
         .with(
             scale(),
             vec3(X_BOUNDARY * 2.5 - 0.1, Y_BOUNDARY * 2.3 - 0.1, 1.),
@@ -82,7 +82,7 @@ pub fn main() {
         .spawn();
 
     let paddle = make_transformable()
-        .with_default(cube())
+        .with(cube(), ())
         .with(scale(), vec3(PADDLE_WIDTH, PADDLE_HEIGHT, 1.))
         .with(translation(), vec3(0., -0.9, 0.))
         .with(self::color(), vec4(0., 1., 1., 1.))

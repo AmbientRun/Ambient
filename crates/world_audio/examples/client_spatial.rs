@@ -72,7 +72,7 @@ fn init(app: &mut App) {
     let size = 16.0;
     Cube.el()
         .with(scale(), vec3(size, size, 1.))
-        .with_default(cast_shadows())
+        .with(cast_shadows(), Default::default())
         .spawn_static(world);
 
     ambient_cameras::spherical::new(

@@ -155,14 +155,6 @@ impl Element {
         self.config.components.set(component, value);
         self
     }
-    /// Adds the given `component` with the default value for the component's type to the element.
-    pub fn with_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(
-        mut self,
-        component: Component<T>,
-    ) -> Self {
-        self.config.components.set(component, T::default());
-        self
-    }
     /// Sets the given `component` to `value` on the element during initialization only.
     pub fn init<T: ComponentValue + Sync + Send + Clone + 'static>(
         mut self,

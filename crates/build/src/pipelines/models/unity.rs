@@ -475,7 +475,7 @@ async fn recursively_create_game_objects<'a: 'async_recursion>(
 
             Entity::new()
                 .with(lod_cutoffs(), LodCutoffs::new(&cutoffs))
-                .with_default(gpu_lod())
+                .with(gpu_lod(), ())
                 .with(pbr_renderer_primitives_from_url(), model_lods)
         } else if let Some(mesh_renderer) =
             object.get_component::<unity_parser::prefab::MeshRenderer>(prefab)
@@ -491,8 +491,8 @@ async fn recursively_create_game_objects<'a: 'async_recursion>(
             )
             .await?;
             Entity::new()
-                .with_default(lod_cutoffs())
-                .with_default(gpu_lod())
+                .with(lod_cutoffs(), Default::default())
+                .with(gpu_lod(), ())
                 .with(pbr_renderer_primitives_from_url(), primitives)
         } else {
             Entity::new()

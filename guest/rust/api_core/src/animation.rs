@@ -21,7 +21,7 @@ impl AnimationPlayer {
     pub fn new(root: impl AsRef<AnimationNode>) -> Self {
         let root: &AnimationNode = root.as_ref();
         let player = Entity::new()
-            .with_default(is_animation_player())
+            .with(is_animation_player(), ())
             .with(children(), vec![root.0])
             .with(name(), "Animation player".to_string())
             .spawn();
