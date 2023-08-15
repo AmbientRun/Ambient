@@ -440,12 +440,12 @@ pub fn spawn_module(
     on_server: bool,
 ) -> EntityId {
     let entity = Entity::new()
-        .with_default(is_module())
+        .with(is_module(), ())
         .with(self::bytecode_from_url(), bytecode_from_url.to_string())
         .with(module_enabled(), enabled);
 
     let entity = if on_server {
-        entity.with_default(is_module_on_server())
+        entity.with(is_module_on_server(), ())
     } else {
         entity
     };

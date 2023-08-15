@@ -59,11 +59,11 @@ async fn init(app: &mut App) {
                     }],
                 )
                 .with(color(), Vec4::ONE)
-                .with_default(gpu_primitives_mesh())
-                .with_default(gpu_primitives_lod())
+                .with(gpu_primitives_mesh(), Default::default())
+                .with(gpu_primitives_lod(), Default::default())
                 .with(main_scene(), ())
-                .with_default(local_to_world())
-                .with_default(mesh_to_world())
+                .with(local_to_world(), Default::default())
+                .with(mesh_to_world(), Default::default())
                 .with(translation(), vec3(x as f32, y as f32, 0.))
                 .with(scale(), Vec3::ONE * 0.4)
                 .spawn(world);
@@ -79,11 +79,11 @@ async fn init(app: &mut App) {
                     }],
                 )
                 .with(color(), Vec4::ONE)
-                .with_default(gpu_primitives_mesh())
-                .with_default(gpu_primitives_lod())
+                .with(gpu_primitives_mesh(), Default::default())
+                .with(gpu_primitives_lod(), Default::default())
                 .with(main_scene(), ())
-                .with_default(local_to_world())
-                .with_default(mesh_to_world())
+                .with(local_to_world(), Default::default())
+                .with(mesh_to_world(), Default::default())
                 .with(translation(), vec3(x as f32, y as f32, 2.))
                 .with(scale(), Vec3::ONE * 0.4)
                 .spawn(world);

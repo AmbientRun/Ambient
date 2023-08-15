@@ -30,9 +30,7 @@ async fn main() {
     bgm_player.set_amplitude(0.2);
     bgm_player.play(url_from_server);
 
-    let camera_id = make_orthographic_camera()
-        .with_default(main_scene())
-        .spawn();
+    let camera_id = make_orthographic_camera().with(main_scene(), ()).spawn();
 
     Frame::subscribe(move |_| {
         let input = input::get();

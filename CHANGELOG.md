@@ -136,6 +136,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Rendering**: Removing the `outline_recursive` component from a entity will now remove the outline from its children as well.
 - **API**: The `ambient_ui` prelude (and the `ambient_api` prelude, by extension) no longer glob-imports components into the global namespace. This means that you will need to import components explicitly.
 - **Input**: `CursorLockGuard` no longer takes an initial argument for its lock state. Instead, it will automatically lock and unlock on focus change.
+- **API**: Removed `Entity::with_default` due to its confusing behaviour (Rust defaults are not necessarily the same as component or concept defaults). You will now have to explicitly specify a value for each component.
 
 #### Non-breaking
 

@@ -129,7 +129,7 @@ pub fn systems() -> SystemGroup {
                             Entity::new()
                                 .with(translation(), (from + to) / 2.)
                                 .with(rotation(), rot)
-                                .with_default(rect())
+                                .with(rect(), ())
                                 .with(width(), (from - to).length())
                                 .with(height(), line_width),
                         )

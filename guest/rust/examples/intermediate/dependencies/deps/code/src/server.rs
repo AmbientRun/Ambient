@@ -21,7 +21,7 @@ pub fn main() {
     Spawn::subscribe(|_, msg| {
         Entity::new()
             .with_merge(make_transformable())
-            .with_default(spawned_by_us())
+            .with(spawned_by_us(), ())
             .with(prefab_from_url(), assets::url("Teapot.glb"))
             .with(spin_direction(), msg.spin_direction)
             .with(spin_speed(), msg.spin_speed)

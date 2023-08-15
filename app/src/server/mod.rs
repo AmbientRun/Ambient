@@ -143,9 +143,12 @@ pub async fn start(
 
         Entity::new()
             .with(ambient_core::name(), "Synced resources".to_string())
-            .with_default(is_synced_resources())
-            .with_default(dont_store())
-            .with_default(ambient_ember_semantic_native::ember_name_to_url())
+            .with(is_synced_resources(), ())
+            .with(dont_store(), ())
+            .with(
+                ambient_ember_semantic_native::ember_name_to_url(),
+                Default::default(),
+            )
             .spawn(&mut server_world);
         // Note: this should not be reset every time the server is created. Remove this when it becomes possible to load/save worlds.
         Entity::new()
@@ -274,7 +277,7 @@ fn create_resources(assets: AssetCache) -> Entity {
         .with(name(), "Resources".to_string())
         .with(asset_cache(), assets.clone())
         .with(no_sync(), ())
-        .with_default(world_events());
+        .with(world_events(), Default::default());
     ambient_physics::create_server_resources(&assets, &mut server_resources);
     server_resources.merge(ambient_core::async_ecs::async_ecs_resources());
     server_resources.set(ambient_core::runtime(), RuntimeHandle::current());

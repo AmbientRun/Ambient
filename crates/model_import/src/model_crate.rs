@@ -329,7 +329,7 @@ impl ModelCrate {
         let mut root = Entity::new()
             .with(name(), "root".to_string())
             .with(lod_cutoffs(), LodCutoffs::new(&cutoffs))
-            .with_default(gpu_lod())
+            .with(gpu_lod(), ())
             .with(
                 mesh_to_local(),
                 lod_0_world
@@ -351,8 +351,8 @@ impl ModelCrate {
                     .get(lod_0_node, local_bounding_aabb())
                     .unwrap_or_default(),
             )
-            .with_default(local_to_world())
-            .with_default(pbr_renderer_primitives_from_url());
+            .with(local_to_world(), Default::default())
+            .with(pbr_renderer_primitives_from_url(), Default::default());
 
         for (i, lod) in lods.iter().enumerate() {
             let lod_world = lod.world();

@@ -56,7 +56,7 @@ fn init(world: &mut World) -> PxSceneRef {
         scene.add_actor(&actor);
         Cube.el()
             .with(rigid_dynamic(), actor)
-            .with_default(physics_controlled())
+            .with(physics_controlled(), ())
             .spawn_static(world);
     }
 

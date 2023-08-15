@@ -314,8 +314,8 @@ impl ElementTree {
             let instance = self.instances.get(instance_id).unwrap();
             if instance.entity.is_null() {
                 let mut entity_data = Entity::new()
-                    .with_default(crate::element())
-                    .with_default(name());
+                    .with(crate::element(), String::new())
+                    .with(name(), String::new());
                 if let Some(parent_entity) = instance.parent_entity {
                     entity_data = entity_data.with(parent(), parent_entity);
                 }

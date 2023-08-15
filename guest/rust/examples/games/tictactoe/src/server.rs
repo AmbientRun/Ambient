@@ -29,7 +29,7 @@ pub fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), entity::resources())
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(translation(), vec3(SIZE as f32, SIZE as f32, SIZE as f32))
         .with(
             lookat_target(),
@@ -43,7 +43,7 @@ pub fn main() {
             for x in 0..SIZE {
                 let id = Entity::new()
                     .with_merge(make_transformable())
-                    .with_default(cube())
+                    .with(cube(), ())
                     .with(translation(), vec3(x as f32, y as f32, 0.))
                     .with(scale(), vec3(0.6, 0.6, 0.6))
                     .with(color(), DEFAULT_COLOR)

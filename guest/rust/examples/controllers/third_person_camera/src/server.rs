@@ -29,10 +29,10 @@ use embers::ambient_example_third_person_camera::{
 pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(quad())
+        .with(quad(), ())
         .with(scale(), Vec3::ONE * 10.0)
         .with(color(), vec4(1.0, 0.0, 0.0, 1.0))
-        .with_default(plane_collider())
+        .with(plane_collider(), ())
         .spawn();
 
     Entity::new()
@@ -45,15 +45,15 @@ pub fn main() {
 
     // Spawn a sun
     make_transformable()
-        .with_default(sun())
+        .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-1.0))
         .with(light_diffuse(), Vec3::ONE)
         .with(fog_density(), 0.001)
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .spawn();
 
     // And an atmosphere to go with id
-    make_transformable().with_default(sky()).spawn();
+    make_transformable().with(sky(), ()).spawn();
 
     spawn_query(is_player()).bind(move |players| {
         for (id, _) in players {
@@ -61,11 +61,11 @@ pub fn main() {
                 id,
                 Entity::new()
                     .with_merge(make_transformable())
-                    .with_default(player_movement_direction())
-                    .with_default(player_mouse_delta_x())
-                    .with_default(player_scroll())
-                    .with_default(physics_controlled())
-                    .with_default(cube())
+                    .with(player_movement_direction(), Vec2::ZERO)
+                    .with(player_mouse_delta_x(), 0.0)
+                    .with(player_scroll(), 0.0)
+                    .with(physics_controlled(), ())
+                    .with(cube(), ())
                     .with(color(), Vec4::ONE)
                     .with(character_controller_height(), 2.0)
                     .with(character_controller_radius(), 0.5)

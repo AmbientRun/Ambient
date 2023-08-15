@@ -23,17 +23,17 @@ fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
-        .with_default(main_scene())
-        .with_default(fog())
+        .with(main_scene(), ())
+        .with(fog(), ())
         .with(translation(), vec3(0., -5., 3.))
         .with(lookat_target(), vec3(0., 0., 2.))
         .spawn();
 
     let sun = Entity::new()
         .with_merge(make_transformable())
-        .with_default(sun())
+        .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-1.))
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(light_diffuse(), Vec3::ONE)
         .with(fog_color(), vec3(1., 1., 1.))
         .with(fog_density(), 0.1)
@@ -42,12 +42,12 @@ fn main() {
 
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(sky())
+        .with(sky(), ())
         .spawn();
 
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(quad())
+        .with(quad(), ())
         .with(scale(), Vec3::ONE * 1000.)
         .with(color(), vec4(1., 0., 0., 1.))
         .spawn();
@@ -55,11 +55,11 @@ fn main() {
     for i in 0..10 {
         Entity::new()
             .with_merge(make_transformable())
-            .with_default(cube())
+            .with(cube(), ())
             .with(translation(), vec3(0., 1. * (2f32).powi(i), 1.))
             .with(scale(), Vec3::ONE * 2.)
             .with(color(), vec4(0., 1., 0., 1.))
-            .with_default(cast_shadows())
+            .with(cast_shadows(), ())
             .spawn();
     }
 

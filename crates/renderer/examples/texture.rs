@@ -57,11 +57,11 @@ async fn init(app: &mut App) {
                 lod: 0,
             }],
         )
-        .with_default(gpu_primitives_mesh())
-        .with_default(gpu_primitives_lod())
+        .with(gpu_primitives_mesh(), Default::default())
+        .with(gpu_primitives_lod(), Default::default())
         .with(main_scene(), ())
-        .with_default(local_to_world())
-        .with_default(mesh_to_world())
+        .with(local_to_world(), Default::default())
+        .with(mesh_to_world(), Default::default())
         .spawn(world);
 
     ambient_cameras::spherical::new(

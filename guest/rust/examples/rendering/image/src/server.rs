@@ -22,12 +22,12 @@ pub fn main() {
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with(translation(), vec3(5., 5., 6.))
         .with(lookat_target(), vec3(0., 0., 2.))
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .spawn();
 
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(quad())
+        .with(quad(), ())
         .with(scale(), Vec3::ONE * 10.)
         .with(
             pbr_material_from_url(),

@@ -113,7 +113,7 @@ pub fn spawn_terrain(
         .with(scale(), Vec3::ONE)
         .with(rotation(), Quat::IDENTITY)
         .with(translation(), position)
-        .with_default(local_to_world())
+        .with(local_to_world(), Default::default())
         .with(collider_type(), ColliderType::Static)
         .with(terrain_state_cpu(), terrain_compressed)
         .with(name(), "Terrain".to_string())
@@ -328,7 +328,7 @@ pub fn client_systems() -> SystemGroup {
                             heightmap_position: pos.xy(),
                         }
                         .el()
-                        .with_default(local_to_parent())])
+                        .with(local_to_parent(), Default::default())])
                         .el(),
                     );
                 }
@@ -995,8 +995,8 @@ impl ElementComponent for Terrain {
             )
             .with(material(), terrain_material)
             .with(primitives(), vec![])
-            .with_default(gpu_primitives_mesh())
-            .with_default(gpu_primitives_lod())
+            .with(gpu_primitives_mesh(), Default::default())
+            .with(gpu_primitives_lod(), Default::default())
             .with(main_scene(), ())
             .with(mesh(), lod_meshes[0].clone())
             .with(terrain_lods(), lod_meshes.clone())
@@ -1008,9 +1008,9 @@ impl ElementComponent for Terrain {
             .with(world_bounding_aabb(), aabb)
             .with(world_bounding_sphere(), bound_sphere)
             .with(color(), Vec4::ONE)
-            .with_default(cast_shadows())
-            .with_default(local_to_parent())
-            .with_default(local_to_world())
+            .with(cast_shadows(), ())
+            .with(local_to_parent(), Default::default())
+            .with(local_to_world(), Default::default())
             .init_default(mesh_to_world())
     }
 }

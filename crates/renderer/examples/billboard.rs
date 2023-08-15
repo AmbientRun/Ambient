@@ -15,13 +15,13 @@ async fn init(app: &mut App) {
         .spawn_static(world);
     Quad.el()
         .with(color(), vec4(1., 0., 0., 1.))
-        .with_default(spherical_billboard())
+        .with(spherical_billboard(), Default::default())
         .with(translation(), vec3(-1., 0., 1.))
         .with(scale(), vec3(0.5, 0.5, 0.5))
         .spawn_static(world);
     Quad.el()
         .with(color(), vec4(1., 0., 0., 1.))
-        .with_default(cylindrical_billboard_z())
+        .with(cylindrical_billboard_z(), Default::default())
         .with(translation(), vec3(1., 0., 1.))
         .with(scale(), vec3(0.5, 0.5, 0.5))
         .spawn_static(world);
