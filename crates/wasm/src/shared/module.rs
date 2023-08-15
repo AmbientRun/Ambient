@@ -1,6 +1,5 @@
 use crate::shared;
 
-#[cfg(feature = "wit")]
 use super::{bindings::BindingsBound, conversion::IntoBindgen};
 use super::{engine::EngineKey, Source};
 use ambient_ecs::{EntityId, World};
@@ -10,12 +9,10 @@ use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::{any::Any, collections::HashSet, sync::Arc};
 
-#[cfg(feature = "wit")]
-use wasi_cap_std_sync::Dir;
-#[cfg(feature = "wit")]
-use wasmtime_wasi::preview2 as wasi_preview2;
+// use wasi_cap_std_sync::Dir;
+// use wasmtime_wasi::preview2 as wasi_preview2;
 
-#[cfg(feature = "wit")]
+#[cfg(feature = "native")]
 use wasi_preview2::{DirPerms, FilePerms};
 
 #[derive(Clone)]
@@ -75,27 +72,29 @@ impl<'de> Deserialize<'de> for ModuleBytecode {
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct ModuleErrors(pub Vec<String>);
 
-#[cfg(feature = "wit")]
-struct ExecutionContext<Bindings: BindingsBound> {
+/// Binding and linking table generic over the host and guest bindings
+struct BindingContext<Bindings: BindingsBound> {
     bindings: Bindings,
-    wasi: wasi_preview2::WasiCtx,
-    table: wasi_preview2::Table,
+    #[cfg(feature = "native")]
+    wasi: wasmtime_wasi::preview2::WasiCtx,
+    #[cfg(feature = "native")]
+    table: wasmtime_wasi::preview2::Table,
 }
-#[cfg(feature = "wit")]
-impl<B: BindingsBound> wasi_preview2::WasiView for ExecutionContext<B> {
-    fn table(&self) -> &wasi_preview2::Table {
+#[cfg(feature = "native")]
+impl<B: BindingsBound> wasmtime_wasi::preview2::WasiView for BindingContext<B> {
+    fn table(&self) -> &wasmtime_wasi::preview2::Table {
         &self.table
     }
 
-    fn table_mut(&mut self) -> &mut wasi_preview2::Table {
+    fn table_mut(&mut self) -> &mut wasmtime_wasi::preview2::Table {
         &mut self.table
     }
 
-    fn ctx(&self) -> &wasi_preview2::WasiCtx {
+    fn ctx(&self) -> &wasmtime_wasi::preview2::WasiCtx {
         &self.wasi
     }
 
-    fn ctx_mut(&mut self) -> &mut wasi_preview2::WasiCtx {
+    fn ctx_mut(&mut self) -> &mut wasmtime_wasi::preview2::WasiCtx {
         &mut self.wasi
     }
 }
@@ -120,14 +119,14 @@ pub struct ModuleStateArgs<'a> {
     pub stdout_output: Messenger,
     pub stderr_output: Messenger,
     pub id: EntityId,
-    #[cfg(not(target_os = "unknown"))]
+    #[cfg(feature = "native")]
     /// Makes the `data` directory available during development
-    pub preopened_dir: Option<Dir>,
+    pub preopened_dir: Option<wasi_cap_std_sync::Dir>,
 }
 
 #[derive(Clone)]
 pub struct ModuleState {
-    // Wrap the inner state to make it easily clonable and to allow for erasing
+    // Wrap the inner state to make it easily cloneable and to allow for erasing
     // the precise bindings in use
     inner: Arc<RwLock<dyn ModuleStateBehavior>>,
 }
@@ -178,11 +177,10 @@ impl ModuleStateBehavior for ModuleState {
     }
 }
 
-#[cfg(feature = "wit")]
-/// Stores the wasmtime context and loaded instances
+/// Stores the execution context and store
 struct InstanceState<Bindings: BindingsBound> {
     /// Stores the context and loaded instances
-    store: wasmtime::Store<ExecutionContext<Bindings>>,
+    store: wasmtime::Store<BindingContext<Bindings>>,
 
     guest_bindings: shared::wit::Bindings,
     _guest_instance: wasmtime::component::Instance,
@@ -191,14 +189,12 @@ struct InstanceState<Bindings: BindingsBound> {
     stderr_consumer: WasiOutputStreamConsumer,
 }
 
-#[cfg(feature = "wit")]
 impl<Bindings: BindingsBound> std::fmt::Debug for InstanceState<Bindings> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ModuleStateInner").finish_non_exhaustive()
     }
 }
 
-#[cfg(feature = "wit")]
 impl<Bindings: BindingsBound> InstanceState<Bindings> {
     async fn new(
         assets: &AssetCache,
@@ -228,7 +224,7 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
         let wasi = wasi.build(&mut table)?;
         let mut store = wasm_bridge::Store::new(
             engine.inner(),
-            ExecutionContext {
+            BindingContext {
                 wasi,
                 bindings,
                 table,
@@ -244,7 +240,7 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
         //     },
         // );
 
-        let mut linker = wasm_bridge::Linker::<ExecutionContext<Bindings>>::new(engine.inner());
+        let mut linker = wasm_bridge::Linker::<BindingContext<Bindings>>::new(engine.inner());
         // let mut linker = wasmtime::component::Linker::<ExecutionContext<Bindings>>::new(engine);
 
         wasi_preview2::wasi::command::add_to_linker(&mut linker)?;

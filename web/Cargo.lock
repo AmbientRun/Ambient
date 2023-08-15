@@ -1008,8 +1008,6 @@ dependencies = [
  "tokio",
  "tracing",
  "ulid",
- "wasm-bindgen",
- "wasm-bindgen-futures",
  "wasm-bridge",
  "wasm-bridge-js",
  "wgpu",

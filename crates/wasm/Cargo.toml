@@ -77,13 +77,11 @@ wasm-bridge-js = { git = "https://github.com/AmbientRun/wasm-bridge", version = 
     "wasi",
 ] }
 
-[target.'cfg(target_os = "unknown")'.dependencies]
-wasm-bindgen = { workspace = true }
-wasm-bindgen-futures = { workspace = true }
+wasm-bindgen = { workspace = true, optional = true }
+wasm-bindgen-futures = { workspace = true, optional = true }
 
 
 [target.'cfg(windows)'.build-dependencies]
-tracing = { workspace = true }
 dunce = "1.0"
 
 [build-dependencies]
@@ -92,5 +90,12 @@ wit-bindgen-core = { workspace = true }
 wit-bindgen-rust = { workspace = true }
 
 [features]
-native = ["wasmtime", "wasmtime-wasi", "wasi-common", "wasi-cap-std-sync"]
+native = [
+    "wasmtime",
+    "wasmtime-wasi",
+    "wasi-common",
+    "wasi-cap-std-sync",
+    "wasm-bindgen",
+    "wasm-bindgen-futures",
+]
 physics = ["physxx", "ambient_prefab", "ambient_physics"]
