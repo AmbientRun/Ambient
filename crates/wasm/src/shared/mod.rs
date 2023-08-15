@@ -56,8 +56,8 @@ mod internal {
     });
 }
 
-#[cfg(feature = "wit")]
-mod internal_wit {
+#[cfg(feature = "native")]
+mod native_bindings {
     use std::sync::Arc;
 
     use ambient_ecs::{components, Resource};
@@ -69,15 +69,15 @@ mod internal_wit {
     });
 }
 
-#[cfg(feature = "native")]
-use self::internal_wit::preopened_dir;
 use self::message::Source;
+#[cfg(feature = "native")]
+use self::native_bindings::preopened_dir;
 use crate::shared::message::{RuntimeMessageExt, Target};
 
 pub fn init_all_components() {
     internal::init_components();
     #[cfg(feature = "native")]
-    internal_wit::init_components();
+    native_bindings::init_components();
     message::init_components();
 }
 

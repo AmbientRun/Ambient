@@ -3,5 +3,5 @@ interface asset {
         invalid-url(string),
     }
 
-    url: func(ember-id: string, path: string) -> result<string, url-error>
+    url: func(path: string) -> result<string, url-error>
 }
