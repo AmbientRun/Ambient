@@ -73,12 +73,12 @@ pub async fn run(
     );
 
     AppBuilder::new()
-        .ui_renderer(true)
+        // .ui_renderer(true)
         // .with_asset_cache(assets)
-        .headless(headless)
-        .update_title_with_fps_stats(false)
+        // .headless(headless)
+        // .update_title_with_fps_stats(false)
         .run(move |app, _runtime| {
-            *app.world.resource_mut(window_title()) = "Ambient".to_string();
+            // *app.world.resource_mut(window_title()) = "Ambient".to_string();
             MainApp {
                 server_addr,
                 user_id,
