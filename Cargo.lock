@@ -1403,6 +1403,7 @@ name = "ambient_rustc"
 version = "0.3.0-dev"
 dependencies = [
  "anyhow",
+ "is-terminal",
  "itertools",
  "log",
  "reqwest",

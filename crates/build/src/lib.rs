@@ -163,7 +163,7 @@ async fn build_ember(
 
     build_rust_if_available(&path, &manifest, &build_path, optimize)
         .await
-        .with_context(|| format!("Failed to build rust {build_path:?}"))?;
+        .with_context(|| format!("Failed to build Rust {build_path:?}"))?;
 
     // Bodge: for local builds, rewrite the dependencies to be relative to this ember,
     // assuming that they are all in the same folder

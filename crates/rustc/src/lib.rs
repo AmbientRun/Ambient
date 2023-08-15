@@ -7,6 +7,7 @@ use std::{
 };
 
 use anyhow::Context;
+use is_terminal::IsTerminal;
 use itertools::Itertools;
 
 const MINIMUM_RUST_VERSION: Version = Version((1, 65, 0));
@@ -51,17 +52,28 @@ impl Rust {
             vec!["--features".to_string(), features.iter().join(",")]
         };
 
+        // HACK: If this is being called from within a terminal context, tell Cargo to build
+        // with color on so that we can see the color in the resulting output.
+        //
+        // This information could probably be propagated from upwards to make this crate
+        // usable in other contexts, but hey, fix it when it's a problem, not before.
+        let is_terminal = std::io::stdout().is_terminal();
         let result = self.0.run(
             "cargo",
             [
                 "build",
                 if optimize { "--release" } else { "" },
+                if is_terminal { "--color always" } else { "" },
                 "--message-format",
-                "json",
-                "--target",
-                "wasm32-wasi",
+                if is_terminal {
+                    "json-diagnostic-rendered-ansi"
+                } else {
+                    "json"
+                },
+                "--target wasm32-wasi",
             ]
             .into_iter()
+            .flat_map(|s| s.split_ascii_whitespace())
             .chain(features.iter().map(|s| s.as_str()))
             .filter(|a| !a.is_empty()),
             Some(working_directory),
@@ -195,7 +207,7 @@ fn parse_command_result_for_filenames(
             .join("");
 
         anyhow::bail!(
-            "failed to compile, {}",
+            "failed to compile\n{}",
             generate_error_report(stdout_errors, stderr)
         );
     }
@@ -208,7 +220,7 @@ fn handle_command_failure(
     let (success, stdout, stderr) = result?;
     if !success {
         anyhow::bail!(
-            "failed to {task}: {}",
+            "failed to {task}\n{}",
             generate_error_report(stdout, stderr)
         )
     }
@@ -219,8 +231,8 @@ fn generate_error_report(stdout: String, stderr: String) -> String {
     [("stdout", stdout), ("stderr", stderr)]
         .into_iter()
         .filter(|(_, errors)| !errors.is_empty())
-        .map(|(name, errors)| format!("{name}: {errors}"))
-        .join(", ")
+        .map(|(name, errors)| format!("{name}:\n{}\n", errors.trim()))
+        .join("\n")
 }
 
 fn exe(app: &str) -> String {
