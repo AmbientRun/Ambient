@@ -4,4 +4,4 @@ name = "Auto editor"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/auto_editor"
 type = "Game"
-categories = ["Example"]
+categories = ["game/example"]

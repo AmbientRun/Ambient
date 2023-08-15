@@ -156,7 +156,7 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(self::window_title(), "".to_string())
         .with(self::fps_stats(), FpsSample::default())
         .with(self::asset_cache(), resources.assets.clone())
-        .with_default(world_events())
+        .with(world_events(), Default::default())
         .with(frame_index(), 0_usize)
         .with(ambient_core::window::cursor_position(), Vec2::ZERO)
         .with(

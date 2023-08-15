@@ -57,7 +57,7 @@ pub fn main() {
 
         Entity::new()
             .with_merge(make_transformable())
-            .with_default(cube())
+            .with(cube(), ())
             .with(
                 translation(),
                 vec3(if source_reliable { -1. } else { 1. }, 0., 0.),

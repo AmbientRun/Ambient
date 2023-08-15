@@ -1,24 +1,20 @@
 use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 
-use crate::retrieve_project_path_and_manifest;
-
-use super::ProjectPath;
+use crate::retrieve_manifest;
 
 #[allow(clippy::too_many_arguments)]
 pub async fn handle(
-    project_path: &ProjectPath,
+    built_project_path: &AbsAssetUrl,
     assets: &AssetCache,
-    build_path: Option<&AbsAssetUrl>,
     token: &str,
     api_server: &str,
     force_upload: bool,
     ensure_running: bool,
     context: &str,
 ) -> Result<(), anyhow::Error> {
-    let (project_path, manifest, _build_path) =
-        retrieve_project_path_and_manifest(project_path, assets, build_path).await?;
+    let manifest = retrieve_manifest(built_project_path, assets).await?;
 
-    let Some(project_fs_path) = &project_path.fs_path else {
+    let Some(project_fs_path) = built_project_path.to_file_path()? else {
         anyhow::bail!("Can only deploy a local project");
     };
 

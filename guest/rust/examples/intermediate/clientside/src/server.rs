@@ -21,7 +21,7 @@ pub fn main() {
         for x in 0..2 * side_length + 1 {
             Entity::new()
                 .with_merge(make_transformable())
-                .with_default(cube())
+                .with(cube(), ())
                 .with(grid_position(), IVec2::new(x, y))
                 .with(color(), Vec4::ONE)
                 .with(

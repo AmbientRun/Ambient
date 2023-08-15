@@ -49,12 +49,12 @@ pub fn client_systems() -> SystemGroup {
                             id,
                             Entity::new()
                                 .with(ambient_core::mesh(), gpu_mesh)
-                                .with_default(main_scene())
-                                .with_default(gpu_primitives_mesh())
-                                .with_default(gpu_primitives_lod())
-                                .with_default(primitives())
-                                .with_default(local_to_world())
-                                .with_default(mesh_to_world())
+                                .with(main_scene(), ())
+                                .with(gpu_primitives_mesh(), Default::default())
+                                .with(gpu_primitives_lod(), Default::default())
+                                .with(primitives(), Default::default())
+                                .with(local_to_world(), Default::default())
+                                .with(mesh_to_world(), Default::default())
                                 .with(local_bounding_aabb(), mesh_aabb)
                                 .with(world_bounding_aabb(), mesh_aabb)
                                 .with(world_bounding_sphere(), mesh_aabb.to_sphere()),

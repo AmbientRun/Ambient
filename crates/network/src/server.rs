@@ -88,7 +88,7 @@ pub fn create_player_entity_data(
         .with(player_transport(), transport)
         .with(player_entity_stream(), entities_tx)
         .with(player_connection_id(), connection_id)
-        .with_default(dont_store())
+        .with(dont_store(), ())
 }
 
 pub fn register_rpc_bi_stream_handler(

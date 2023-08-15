@@ -51,8 +51,8 @@ pub fn event_systems() -> SystemGroup<Event<'static, ()>> {
 
 pub fn resources() -> Entity {
     Entity::new()
-        .with_default(player_raw_input())
-        .with_default(player_prev_raw_input())
+        .with(player_raw_input(), Default::default())
+        .with(player_prev_raw_input(), Default::default())
 }
 
 #[derive(Debug)]

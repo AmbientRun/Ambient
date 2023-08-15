@@ -28,7 +28,7 @@ pub struct PickerIntersection {
 }
 
 pub fn resources() -> Entity {
-    Entity::new().with_default(picker_intersecting())
+    Entity::new().with(picker_intersecting(), Default::default())
 }
 
 pub fn frame_systems() -> SystemGroup {

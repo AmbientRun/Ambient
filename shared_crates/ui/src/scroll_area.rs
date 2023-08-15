@@ -147,8 +147,8 @@ pub fn ScrollArea(
                 .with(height(), bar_height)
                 .with(border_radius(), Vec4::ONE * 4.0)
                 .with(background_color(), vec4(0.6, 0.6, 0.6, 1.0))
-                .with_default(local_to_parent())
-                .with_default(local_to_world())
+                .with(local_to_parent(), Default::default())
+                .with(local_to_world(), Default::default())
                 .with(translation(), vec3(outer_size.x - 5.0, -offset, -0.1))
         } else {
             Element::new()

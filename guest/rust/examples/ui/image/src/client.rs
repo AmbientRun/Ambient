@@ -18,7 +18,7 @@ fn App(_hooks: &mut Hooks) -> Element {
             url: assets::url("squirrel.png"),
         }
         .el()
-        .with_default(size_from_background_image()),
+        .with(size_from_background_image(), ()),
         FlowRow::el([
             ImageFromUrl {
                 url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Bucephala-albeola-010.jpg"

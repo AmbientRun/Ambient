@@ -30,11 +30,6 @@ impl ProjectPath {
     pub fn is_remote(&self) -> bool {
         self.fs_path.is_none()
     }
-
-    // 'static to limit only to compile-time known paths
-    pub fn push(&self, path: &'static str) -> AbsAssetUrl {
-        self.url.push(path).unwrap()
-    }
 }
 
 impl TryFrom<Option<String>> for ProjectPath {
@@ -48,6 +43,11 @@ impl TryFrom<Option<String>> for ProjectPath {
                     || project_path.starts_with("file:/") =>
             {
                 let url = AbsAssetUrl::from_str(&project_path)?;
+                if url.extension().is_some() {
+                    anyhow::bail!("Project path must be a directory");
+                }
+
+                let url = url.as_directory();
                 if let Some(local) = url.to_file_path()? {
                     Self::new_local(local)
                 } else {

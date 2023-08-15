@@ -13,7 +13,7 @@ mod shared;
 
 use ambient_physics::physx::PhysicsKey;
 use anyhow::Context;
-use cli::{Cli, Commands, ProjectPath};
+use cli::{build::BuildDirectories, Cli, Commands, ProjectPath};
 use log::LevelFilter;
 use server::QUIC_INTERFACE_PORT;
 
@@ -41,10 +41,11 @@ fn main() -> anyhow::Result<()> {
     }
 
     let project_path: ProjectPath = project.and_then(|p| p.path.clone()).try_into()?;
+    let golden_image_output_dir = project_path.fs_path.clone();
 
     if project_path.is_remote() {
         // project path is a URL, so let's use it as the content base URL
-        ContentBaseUrlKey.insert(&assets, project_path.url.push("build/")?);
+        ContentBaseUrlKey.insert(&assets, project_path.url.clone());
     }
 
     // If new: create project, immediately exit
@@ -59,10 +60,10 @@ fn main() -> anyhow::Result<()> {
 
     // Build the project if required. Note that this only runs if the project is local,
     // and if a build has actually been requested.
-    //
-    // Update the project path to match the build path if necessary.
-    let original_project_path = project_path.clone();
-    let (project_path, build_path) = rt.block_on(cli::build::build(
+    let BuildDirectories {
+        build_root_path,
+        main_ember_path,
+    } = rt.block_on(cli::build::build(
         project,
         project_path,
         &assets,
@@ -88,9 +89,8 @@ fn main() -> anyhow::Result<()> {
             log::warn!("Deploying a debug build which might involve uploading large files. Remove `--debug` to deploy a release build.");
         }
         return rt.block_on(cli::deploy::handle(
-            &project_path,
+            &main_ember_path,
             &assets,
-            build_path.as_ref(),
             token,
             api_server,
             *force_upload,
@@ -137,8 +137,8 @@ fn main() -> anyhow::Result<()> {
             } else {
                 None
             },
-            project_path,
-            build_path,
+            build_root_path,
+            main_ember_path,
             &assets,
         ))?
     } else {
@@ -147,7 +147,7 @@ fn main() -> anyhow::Result<()> {
 
     // Time to join!
     if let Some(run) = cli.run() {
-        cli::client::handle(run, &rt, assets, server_addr, original_project_path)?;
+        cli::client::handle(run, &rt, assets, server_addr, golden_image_output_dir)?;
     } else {
         // Otherwise, wait for the Ctrl+C signal
         match rt.block_on(tokio::signal::ctrl_c()) {
@@ -160,37 +160,20 @@ fn main() -> anyhow::Result<()> {
 }
 
 // Read the project manifest from the project path (which may have been updated by the build step)
-// We attempt both the root and build/ as `ambient.toml` is in the former for local builds,
-// and in the latter for deployed builds. This will likely be improved if/when deployments
-// no longer have their own build directory.
-async fn retrieve_project_path_and_manifest(
-    project_path: &ProjectPath,
+async fn retrieve_manifest(
+    built_project_path: &AbsAssetUrl,
     assets: &AssetCache,
-    build_path: Option<&AbsAssetUrl>,
-) -> anyhow::Result<(ProjectPath, ambient_project::Manifest, AbsAssetUrl)> {
-    async fn get_new_project_path_and_manifest(
-        project_path: &ProjectPath,
-        assets: &AssetCache,
-    ) -> anyhow::Result<(ProjectPath, ambient_project::Manifest)> {
-        let paths = [project_path.url.clone(), project_path.push("build")];
-
-        for path in &paths {
-            if let Ok(toml) = path.push("ambient.toml")?.download_string(assets).await {
-                return Ok((
-                    Some(path.to_string()).try_into()?,
-                    ambient_project::Manifest::parse(&toml)?,
-                ));
-            }
+) -> anyhow::Result<ambient_project::Manifest> {
+    match built_project_path
+        .push("ambient.toml")?
+        .download_string(assets)
+        .await
+    {
+        Ok(toml) => Ok(ambient_project::Manifest::parse(&toml)?),
+        Err(_) => {
+            anyhow::bail!("Failed to find ambient.toml in project");
         }
-
-        anyhow::bail!("Failed to find ambient.toml in project");
     }
-
-    let (project_path, manifest) = get_new_project_path_and_manifest(project_path, assets).await?;
-    let build_path = build_path
-        .cloned()
-        .unwrap_or_else(|| project_path.url.push("build").unwrap());
-    Ok((project_path, manifest, build_path))
 }
 
 fn setup_logging() -> anyhow::Result<()> {

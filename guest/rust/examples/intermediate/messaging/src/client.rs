@@ -37,7 +37,7 @@ pub fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(translation(), Vec3::ONE * 5.)
         .with(lookat_target(), vec3(0., 0., 0.))
         .spawn();
@@ -53,7 +53,7 @@ pub fn main() {
         let source_reliable = data.source_reliable;
         Entity::new()
             .with_merge(make_transformable())
-            .with_default(cube())
+            .with(cube(), ())
             .with(
                 translation(),
                 vec3(0., if source_reliable { -1. } else { 1. }, 0.),

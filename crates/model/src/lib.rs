@@ -100,14 +100,14 @@ async fn internal_spawn_models_from_defs(
                 lod: 0,
             }],
         )
-        .with_default(gpu_primitives_mesh())
-        .with_default(gpu_primitives_lod())
+        .with(gpu_primitives_mesh(), Default::default())
+        .with(gpu_primitives_lod(), Default::default())
         .with(color(), vec4(0.0, 0.5, 1.0, 1.0))
         .with(main_scene(), ())
-        .with_default(local_to_world())
-        .with_default(mesh_to_world())
-        .with_default(local_to_world())
-        .with_default(inv_local_to_world());
+        .with(local_to_world(), Default::default())
+        .with(mesh_to_world(), Default::default())
+        .with(local_to_world(), Default::default())
+        .with(inv_local_to_world(), Default::default());
 
     let mut ids = entities_with_models
         .values()

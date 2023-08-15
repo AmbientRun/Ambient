@@ -80,7 +80,7 @@ spawn_query(player()).bind(move |players| {
     for _ in players {
         Entity::new()
             .with_merge(make_transformable())
-            .with_default(cube())
+            .with(cube(), ())
             .with(translation(), rand::random())
             .with(color(), rand::random::<Vec3>().extend(1.0))
             .spawn();

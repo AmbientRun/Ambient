@@ -45,19 +45,19 @@ const BALL_RADIUS: f32 = 0.34;
 
 fn create_environment() {
     make_transformable()
-        .with_default(water())
+        .with(water(), ())
         .with(scale(), Vec3::ONE * 2000.)
         .spawn();
 
     make_transformable()
-        .with_default(sun())
+        .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-45_f32.to_radians()))
         .with(light_diffuse(), Vec3::ONE)
         .with(fog_density(), 0.)
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .spawn();
 
-    make_transformable().with_default(sky()).spawn();
+    make_transformable().with(sky(), ()).spawn();
 
     make_transformable()
         .with(prefab_from_url(), assets::url("level.glb"))
@@ -77,8 +77,8 @@ fn create_environment() {
 
 fn make_golf_ball() -> Entity {
     make_transformable()
-        .with_default(is_ball())
-        .with_default(physics_controlled())
+        .with(is_ball(), ())
+        .with(physics_controlled(), ())
         .with(dynamic(), true)
         .with(sphere_collider(), BALL_RADIUS)
         .with(model_from_url(), assets::url("ball.glb"))
@@ -92,10 +92,10 @@ fn make_text() -> Entity {
         )
         .with(color(), vec4(1., 0., 0., 1.))
         .with(font_size(), 36.)
-        .with_default(main_scene())
-        .with_default(local_to_world())
-        .with_default(mesh_to_local())
-        .with_default(mesh_to_world())
+        .with(main_scene(), ())
+        .with(local_to_world(), Default::default())
+        .with(mesh_to_local(), Default::default())
+        .with(mesh_to_world(), Default::default())
 }
 
 #[main]
@@ -128,11 +128,11 @@ pub fn main() {
                     .with(aspect_ratio_from_window(), EntityId::resources())
                     .with(user_id(), player_user_id.clone())
                     .with(player_camera_state(), camera_state)
-                    .with_default(main_scene())
-                    .with_default(local_to_world())
-                    .with_default(inv_local_to_world())
-                    .with_default(translation())
-                    .with_default(rotation())
+                    .with(main_scene(), ())
+                    .with(local_to_world(), Default::default())
+                    .with(inv_local_to_world(), Default::default())
+                    .with(translation(), Default::default())
+                    .with(rotation(), Default::default())
                     .spawn();
 
                 // TODO: This is a bit... odd
@@ -149,9 +149,9 @@ pub fn main() {
                     player,
                     player_text_container(),
                     make_transformable()
-                        .with_default(main_scene())
-                        .with_default(local_to_world())
-                        .with_default(spherical_billboard())
+                        .with(main_scene(), ())
+                        .with(local_to_world(), Default::default())
+                        .with(spherical_billboard(), ())
                         .with(translation(), vec3(-5., 0., 5.))
                         .with(children(), vec![text])
                         .spawn(),

@@ -86,8 +86,8 @@ pub fn systems() -> SystemGroup {
                             .with(overlay(), ())
                             .with(mesh(), QuadMeshKey.get(&assets))
                             .with(primitives(), vec![])
-                            .with_default(gpu_primitives_mesh())
-                            .with_default(gpu_primitives_lod())
+                            .with(gpu_primitives_mesh(), Default::default())
+                            .with(gpu_primitives_lod(), Default::default())
                             .with(translation(), vec3(0.0, 0.0, -1.0));
                         world.add_components(id, data).unwrap();
                     }

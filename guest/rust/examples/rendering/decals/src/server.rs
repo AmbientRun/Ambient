@@ -25,18 +25,18 @@ pub fn main() {
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with(translation(), vec3(1.0, 1.0, 2.0))
         .with(lookat_target(), vec3(0.0, 0.0, 0.0))
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .spawn();
 
     // Scene geometry.
     Entity::new()
-        .with_default(cube())
+        .with(cube(), ())
         .with(translation(), vec3(-0.5, -0.5, 0.0))
         .with(scale(), vec3(0.9, 0.9, 0.9))
         .with(color(), vec4(0.5, 0.5, 0.5, 1.0))
         .spawn();
     Entity::new()
-        .with_default(quad())
+        .with(quad(), ())
         .with(scale(), 3.0 * Vec3::ONE)
         .spawn();
 
@@ -52,7 +52,7 @@ pub fn main() {
 
     // Decal projection volume visualization.
     Entity::new()
-        .with_default(cube())
+        .with(cube(), ())
         .with(rotation(), decal_rotation)
         .with(scale(), decal_scale)
         .with(color(), vec4(0.0, 1.0, 1.0, 0.5))

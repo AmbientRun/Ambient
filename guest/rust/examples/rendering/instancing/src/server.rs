@@ -26,7 +26,7 @@ pub async fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(translation(), Vec3::ONE * 5.)
         .with(lookat_target(), vec3(0., 0., 0.))
         .spawn();
@@ -53,7 +53,7 @@ pub async fn main() {
                     .with(translation(), (vec3(x, y, z) - 0.5) * 7.0)
                     .with(instance_index(), uvec3(i, j, k))
                     .with(scale(), Vec3::ONE * 0.2)
-                    .with_default(cast_shadows())
+                    .with(cast_shadows(), ())
                     .with(prefab_from_url(), model)
                     .spawn();
             }
@@ -62,9 +62,9 @@ pub async fn main() {
 
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(sun())
+        .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-1.))
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(light_diffuse(), Vec3::ONE * 5.0)
         .with(light_ambient(), Vec3::ZERO)
         .spawn();
