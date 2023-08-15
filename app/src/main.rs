@@ -58,6 +58,13 @@ fn main() -> anyhow::Result<()> {
         return rt.block_on(cli::assets::handle(command, &assets));
     }
 
+    // Store a flag that we are using local debug assets
+    // Used for emitting warnings when local debug assets are sent to remote clients
+    UsingLocalDebugAssetsKey.insert(
+        &assets,
+        !project_path.is_remote() && !cli.use_release_build(),
+    );
+
     // Build the project if required. Note that this only runs if the project is local,
     // and if a build has actually been requested.
     let BuildDirectories {
@@ -126,10 +133,6 @@ fn main() -> anyhow::Result<()> {
             ResolvedAddr::localhost_with_port(QUIC_INTERFACE_PORT)
         }
     } else if let Some(host) = &cli.host() {
-        UsingLocalDebugAssetsKey.insert(
-            &assets,
-            !project_path.is_remote() && !cli.use_release_build(),
-        );
         rt.block_on(cli::server::handle(
             host,
             if let cli::Commands::View { asset_path, .. } = &cli.command {
