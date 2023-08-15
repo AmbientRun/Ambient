@@ -148,7 +148,7 @@ pub struct ProjectCli {
     /// The path or URL of the project to run; if not specified, this will default to the current directory
     pub path: Option<String>,
 
-    /// Build all the assets with debug information; this will make them larger (default for all commands appart from `deploy` and `serve`)
+    /// Build all the assets with debug information; this will make them larger (default for all commands apart from `deploy` and `serve`)
     #[arg(short, long, conflicts_with = "release")]
     debug: bool,
 
