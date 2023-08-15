@@ -45,9 +45,9 @@ pub fn handle(
         mixer,
     ));
 
-    // if exit_status == ExitStatus::FAILURE {
-    //     anyhow::bail!("client::run failed with {exit_status:?}");
-    // }
+    if exit_status == ExitStatus::FAILURE {
+        anyhow::bail!("client::run failed with {exit_status:?}");
+    }
 
     Ok(())
 }

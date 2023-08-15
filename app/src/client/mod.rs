@@ -73,12 +73,12 @@ pub async fn run(
     );
 
     AppBuilder::new()
-        // .ui_renderer(true)
-        // .with_asset_cache(assets)
-        // .headless(headless)
-        // .update_title_with_fps_stats(false)
+        .ui_renderer(true)
+        .with_asset_cache(assets)
+        .headless(headless)
+        .update_title_with_fps_stats(false)
         .run(move |app, _runtime| {
-            // *app.world.resource_mut(window_title()) = "Ambient".to_string();
+            *app.world.resource_mut(window_title()) = "Ambient".to_string();
             MainApp {
                 server_addr,
                 user_id,
@@ -130,67 +130,66 @@ fn MainApp(
     cert: Option<Vec<u8>>,
     mixer: Option<AudioMixer>,
 ) -> Element {
-    Element::new()
-    // let (loaded, set_loaded) = hooks.use_state(false);
+    let (loaded, set_loaded) = hooks.use_state(false);
 
-    // FocusRoot::el([
-    //     UICamera.el(),
-    //     ambient_client_shared::player::PlayerRawInputHandler.el(),
-    //     WindowSized::el([ClientView {
-    //         server_addr,
-    //         user_id,
-    //         // NOTE: client.game_state is **locked** and accesible through game_state.
-    //         //
-    //         // This is to prevent another thread from updating using the client after connection but
-    //         // just before `on_loaded`. This is a very small window of time, but does occasionally
-    //         // happen, especially when joining a server which is already running and finished
-    //         // loading.
-    //         on_loaded: cb(move |_, game_state| {
-    //             let world = &mut game_state.world;
+    FocusRoot::el([
+        UICamera.el(),
+        ambient_client_shared::player::PlayerRawInputHandler.el(),
+        WindowSized::el([ClientView {
+            server_addr,
+            user_id,
+            // NOTE: client.game_state is **locked** and accesible through game_state.
+            //
+            // This is to prevent another thread from updating using the client after connection but
+            // just before `on_loaded`. This is a very small window of time, but does occasionally
+            // happen, especially when joining a server which is already running and finished
+            // loading.
+            on_loaded: cb(move |_, game_state| {
+                let world = &mut game_state.world;
 
-    //             wasm::initialize(world, mixer.clone()).unwrap();
+                wasm::initialize(world, mixer.clone()).unwrap();
 
-    //             UICamera.el().spawn_static(world);
-    //             set_loaded(true);
+                UICamera.el().spawn_static(world);
+                set_loaded(true);
 
-    //             Ok(Box::new(|| {
-    //                 log::info!("Disconnecting client");
-    //             }))
-    //         }),
-    //         systems_and_resources: cb(|| {
-    //             let mut resources = Entity::new();
+                Ok(Box::new(|| {
+                    log::info!("Disconnecting client");
+                }))
+            }),
+            systems_and_resources: cb(|| {
+                let mut resources = Entity::new();
 
-    //             let bistream_handlers = HashMap::new();
-    //             resources.set(
-    //                 ambient_network::client::bi_stream_handlers(),
-    //                 bistream_handlers,
-    //             );
+                let bistream_handlers = HashMap::new();
+                resources.set(
+                    ambient_network::client::bi_stream_handlers(),
+                    bistream_handlers,
+                );
 
-    //             let unistream_handlers = HashMap::new();
-    //             resources.set(
-    //                 ambient_network::client::uni_stream_handlers(),
-    //                 unistream_handlers,
-    //             );
+                let unistream_handlers = HashMap::new();
+                resources.set(
+                    ambient_network::client::uni_stream_handlers(),
+                    unistream_handlers,
+                );
 
-    //             let dgram_handlers = HashMap::new();
-    //             resources.set(ambient_network::client::datagram_handlers(), dgram_handlers);
+                let dgram_handlers = HashMap::new();
+                resources.set(ambient_network::client::datagram_handlers(), dgram_handlers);
 
-    //             (systems(), resources)
-    //         }),
-    //         cert,
-    //         create_rpc_registry: cb(shared::create_server_rpc_registry),
-    //         inner: Dock::el(vec![
-    //             TitleUpdater.el(),
-    //             if let Some(golden_image_cmd) = golden_image_cmd.filter(|_| loaded) {
-    //                 GoldenImageTest::el(golden_image_output_dir, golden_image_cmd)
-    //             } else {
-    //                 Element::new()
-    //             },
-    //             GameView { show_debug }.el(),
-    //         ]),
-    //     }
-    //     .el()]),
-    // ])
+                (systems(), resources)
+            }),
+            cert,
+            create_rpc_registry: cb(shared::create_server_rpc_registry),
+            inner: Dock::el(vec![
+                TitleUpdater.el(),
+                if let Some(golden_image_cmd) = golden_image_cmd.filter(|_| loaded) {
+                    GoldenImageTest::el(golden_image_output_dir, golden_image_cmd)
+                } else {
+                    Element::new()
+                },
+                GameView { show_debug }.el(),
+            ]),
+        }
+        .el()]),
+    ])
 }
 
 #[element_component]

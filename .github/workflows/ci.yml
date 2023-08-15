@@ -215,6 +215,8 @@ jobs:
 
       - name: Run golden image tests
         run: cargo campfire-slim golden-images --ambient-path=./ambient check
+        env:
+          RUST_BACKTRACE: 1
       - uses: actions/upload-artifact@v3
         if: always()
         with:
