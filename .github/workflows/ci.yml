@@ -192,40 +192,42 @@ jobs:
   #       run: cd guest/rust && cargo build --workspace
 
   golden-image-tests:
-  needs: build
-  runs-on: ubuntu-latest
-  env:
-    RUST_LOG: ambient_gpu=info
-  steps:
-    - uses: actions/checkout@v3
-    - uses: dtolnay/rust-toolchain@stable
-    - run: rustup target add --toolchain stable wasm32-wasi
-    - name: Download ambient executable
-      uses: actions/download-artifact@v3
-      with:
-        name: ambient-ubuntu-20.04
-    - run: chmod a+x ambient
-    - name: Install run (headless) dependencies
-      run: |
-        sudo add-apt-repository ppa:oibaf/graphics-drivers -y
-        sudo apt-get update
-        sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers gdb
-    - name: Run golden image tests with GDB
-      run: gdb --batch -ex "run" -ex "bt" --args cargo campfire-slim golden-images --ambient-path=./ambient check > gdb_output.txt
-      env:
-        RUST_BACKTRACE: 1
-    - uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: screenshots
-        path: |
-          guest/rust/examples/*/*/screenshot.png
-          guest/rust/examples/*/*/fail_screenshot.png
-    - uses: actions/upload-artifact@v3
-      if: failure()
-      with:
-        name: gdb-output
-        path: gdb_output.txt
+    needs: build
+    # Note: we must use a newer Ubuntu for golden image tests, because older
+    # llvmpipe versions can randomly fail.
+    runs-on: ubuntu-latest
+    env:
+      RUST_LOG: ambient_gpu=info
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - run: rustup target add --toolchain stable wasm32-wasi
+      - name: Download ambient executable
+        uses: actions/download-artifact@v3
+        with:
+          name: ambient-ubuntu-20.04
+      - run: chmod a+x ambient
+      - name: Install run (headless) dependencies
+        run: |
+          sudo add-apt-repository ppa:oibaf/graphics-drivers -y
+          sudo apt-get update
+          sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers gdb
+      - name: Run golden image tests with GDB
+        run: gdb --batch -ex "run" -ex "bt" --args cargo campfire-slim golden-images --ambient-path=./ambient check > gdb_output.txt
+        env:
+          RUST_BACKTRACE: 1
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: screenshots
+          path: |
+            guest/rust/examples/*/*/screenshot.png
+            guest/rust/examples/*/*/fail_screenshot.png
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: gdb-output
+          path: gdb_output.txt
 
   # test-new-project-works:
   #   needs: build
