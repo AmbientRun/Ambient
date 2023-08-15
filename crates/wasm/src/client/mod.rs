@@ -9,6 +9,7 @@ pub fn initialize(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
 ) -> anyhow::Result<()> {
+    // anyhow::bail!("test");
     shared::initialize(
         world,
         messenger,
