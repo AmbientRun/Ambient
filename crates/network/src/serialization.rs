@@ -1,5 +1,9 @@
-/// A wrapper around a type that can be serialized and deserialized transparently but captures deserialize errors instead of failing.
+/// A wrapper around a type that can be serialized and deserialized transparently but captures deserialize errors
+/// instead of failing.
 /// This allows for more graceful handling of errors in the deserialization process and for getting partial results.
+///
+/// Note that when using FailableDeserialization for part of your type then it is supposed to be used for last field(s)
+/// of your type as anything deserialized after it will most likely fail.
 #[derive(Clone, Debug)]
 pub struct FailableDeserialization<T>(Result<T, String>);
 
