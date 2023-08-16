@@ -55,30 +55,12 @@ tracing = { workspace = true }
 wit-component = { workspace = true }
 pollster = { workspace = true }
 
-wasmtime = { workspace = true, optional = true }
-wasmtime-wasi = { workspace = true, optional = true }
-wasi-common = { workspace = true, optional = true }
-wasi-cap-std-sync = { workspace = true, optional = true }
-
-ambient_physics = { path = "../physics", optional = true }
-physxx = { path = "../../libs/physxx", optional = true }
-
-# Uses physx
-ambient_prefab = { path = "../prefab", optional = true }
 
 wasm-bridge = { git = "https://github.com/AmbientRun/wasm-bridge", version = "0.2", features = [
     "component-model",
     "async",
     "wasi",
 ] }
-wasm-bridge-js = { git = "https://github.com/AmbientRun/wasm-bridge", version = "0.2", features = [
-    "component-model",
-    "async",
-    "wasi",
-] }
-
-wasm-bindgen = { workspace = true, optional = true }
-wasm-bindgen-futures = { workspace = true, optional = true }
 
 
 [target.'cfg(windows)'.build-dependencies]
@@ -88,14 +70,23 @@ dunce = "1.0"
 ambient_std = { path = "../../shared_crates/std" }
 wit-bindgen-core = { workspace = true }
 wit-bindgen-rust = { workspace = true }
+ambient_prefab = { path = "../prefab" }
 
-[features]
-native = [
-    "wasmtime",
-    "wasmtime-wasi",
-    "wasi-common",
-    "wasi-cap-std-sync",
-    "wasm-bindgen",
-    "wasm-bindgen-futures",
-]
-physics = ["physxx", "ambient_prefab", "ambient_physics"]
+[target.'cfg(target_os = "unknown")'.dependencies]
+wasm-bridge-js = { git = "https://github.com/AmbientRun/wasm-bridge", version = "0.2", features = [
+    "component-model",
+    "async",
+    "wasi",
+] }
+
+[target.'cfg(not(target_os = "unknown"))'.dependencies]
+wasmtime = { workspace = true }
+wasmtime-wasi = { workspace = true }
+wasi-common = { workspace = true }
+wasi-cap-std-sync = { workspace = true }
+
+wasm-bindgen = { workspace = true }
+wasm-bindgen-futures = { workspace = true }
+
+ambient_physics = { path = "../physics" }
+physxx = { path = "../../libs/physxx" }
