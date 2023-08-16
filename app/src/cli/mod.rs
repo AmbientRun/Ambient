@@ -149,7 +149,7 @@ pub struct ProjectCli {
     pub path: Option<String>,
 
     /// Build all the assets with debug information; this will make them less performant and larger but easier to debug (default for all commands apart from `deploy` and `serve`)
-    #[arg(short, long, conflicts_with = "release")]
+    #[arg(long, conflicts_with = "release")]
     debug: bool,
 
     /// Build all the assets with full optimization; this will make them faster and smaller but more difficult to debug (default for `deploy` and `serve`)
