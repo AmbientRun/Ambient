@@ -14,6 +14,7 @@ use ambient_ecs::{
 use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
+    git_revision_full,
 };
 use ambient_network::{
     is_persistent_resources, is_synced_resources,
@@ -309,7 +310,21 @@ fn create_resources(assets: AssetCache) -> Entity {
 pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
 fn start_http_interface(build_path: Option<&Path>, http_interface_port: u16) {
-    let mut router = Router::new().route("/ping", get(|| async move { "ok" }));
+    let mut router = Router::new()
+        .route("/ping", get(|| async move { "ok" }))
+        .route(
+            "/info",
+            get(|| async move {
+                axum::Json(
+                    [
+                        ("version", env!("CARGO_PKG_VERSION").to_string()),
+                        ("revision", git_revision_full().unwrap_or_default()),
+                    ]
+                    .into_iter()
+                    .collect::<HashMap<_, _>>(),
+                )
+            }),
+        );
 
     if let Some(build_path) = build_path {
         router = router.nest_service(
