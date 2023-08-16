@@ -1,8 +1,4 @@
-use std::path::PathBuf;
-
-use ambient_project::{
-    BuildMetadata, ComponentType, ItemPath, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
-};
+use ambient_project::{ComponentType, ItemPath, PascalCaseIdentifier, SnakeCaseIdentifier};
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
@@ -93,14 +89,6 @@ impl Context {
 #[derive(Clone, PartialEq)]
 pub struct Scope {
     pub data: ItemData,
-    pub original_id: SnakeCaseIdentifier,
-    pub manifest_path: Option<PathBuf>,
-    pub manifest: Option<Manifest>,
-    pub build_metadata: Option<BuildMetadata>,
-
-    pub dependencies: Vec<ItemId<Scope>>,
-
-    pub enabled_by_default: bool,
 
     pub scopes: IndexMap<SnakeCaseIdentifier, ItemId<Scope>>,
     pub components: IndexMap<SnakeCaseIdentifier, ItemId<Component>>,
@@ -113,13 +101,6 @@ impl std::fmt::Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut ds = f.debug_struct("Scope");
         ds.field("data", &self.data);
-        ds.field("original_id", &self.original_id);
-        ds.field("path", &self.manifest_path);
-        ds.field("manifest", &self.manifest);
-
-        if !self.dependencies.is_empty() {
-            ds.field("dependencies", &self.dependencies);
-        }
 
         if !self.scopes.is_empty() {
             ds.field("scopes", &self.scopes);
@@ -210,24 +191,9 @@ impl ResolveClone for Scope {
 }
 impl Scope {
     /// Creates a new empty scope with the specified data.
-    pub fn new(
-        data: ItemData,
-        original_id: SnakeCaseIdentifier,
-        path: Option<PathBuf>,
-        manifest: Option<Manifest>,
-        enabled: bool,
-    ) -> Self {
+    pub fn new(data: ItemData) -> Self {
         Self {
             data,
-            original_id,
-            manifest_path: path,
-            manifest,
-            build_metadata: Default::default(),
-
-            dependencies: Default::default(),
-
-            enabled_by_default: enabled,
-
             scopes: Default::default(),
             components: Default::default(),
             concepts: Default::default(),

@@ -1,5 +1,5 @@
 use crate::{
-    Attribute, Component, Concept, Item, ItemId, ItemMap, Message, ResolvableItemId, Scope,
+    Attribute, Component, Concept, Ember, Item, ItemId, ItemMap, Message, ResolvableItemId, Scope,
     Semantic, Type, TypeInner,
 };
 
@@ -13,7 +13,58 @@ impl Printer {
 
     pub fn print(&mut self, semantic: &Semantic) -> anyhow::Result<()> {
         let items = &semantic.items;
-        self.print_scope(items, &*items.get(semantic.root_scope_id)?)?;
+        println!("root_scope:");
+        self.with_indent(|p| {
+            p.print_scope(items, &*items.get(semantic.root_scope_id)?)?;
+            Ok(())
+        })?;
+
+        println!("embers:");
+        self.with_indent(|p| {
+            for id in semantic.embers.values() {
+                p.print_ember(items, &*items.get(*id)?)?;
+            }
+            Ok(())
+        })?;
+
+        Ok(())
+    }
+
+    fn print_ember(&mut self, items: &ItemMap, ember: &Ember) -> anyhow::Result<()> {
+        self.print_indent();
+        println!(
+            "{}",
+            fully_qualified_display_path_ambient_style(items, ember)?
+        );
+
+        self.with_indent(|p| {
+            p.print_indent();
+            println!("source: {:?}", ember.source);
+
+            p.print_indent();
+            println!("dependencies:");
+
+            p.with_indent(|p| {
+                for (name, dependency) in &ember.dependencies {
+                    p.print_indent();
+                    println!(
+                        "{}: {} ({})",
+                        name,
+                        fully_qualified_display_path_ambient_style(
+                            items,
+                            &*items.get(dependency.id)?
+                        )?,
+                        dependency.enabled
+                    );
+                }
+                Ok(())
+            });
+
+            p.print_scope(items, &*items.get(ember.scope_id)?)?;
+
+            Ok(())
+        });
+
         Ok(())
     }
 
@@ -21,35 +72,10 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, scope, false, true, None)?
+            fully_qualified_display_path_ambient_style(items, scope)?
         );
 
         self.with_indent(|p| {
-            if let Some(path) = scope.manifest_path.as_deref() {
-                p.print_indent();
-                println!("path: {}", path.display());
-            }
-
-            p.print_indent();
-            print!("dependencies: ");
-            for (idx, id) in scope.dependencies.iter().copied().enumerate() {
-                if idx > 0 {
-                    print!(", ");
-                }
-
-                print!(
-                    "{}",
-                    fully_qualified_display_path_ambient_style(
-                        items,
-                        &*items.get(id)?,
-                        false,
-                        false,
-                        None
-                    )?
-                );
-            }
-            println!();
-
             for id in scope.components.values() {
                 p.print_component(items, &*items.get(*id)?)?;
             }
@@ -84,7 +110,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, component, true, true, None)?
+            fully_qualified_display_path_ambient_style(items, component)?
         );
 
         self.with_indent(|p| {
@@ -121,7 +147,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, concept, false, true, None)?
+            fully_qualified_display_path_ambient_style(items, concept)?
         );
 
         self.with_indent(|p| {
@@ -159,7 +185,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, message, false, true, None)?
+            fully_qualified_display_path_ambient_style(items, message)?
         );
 
         self.with_indent(|p| {
@@ -187,7 +213,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, type_, false, true, None)?,
+            fully_qualified_display_path_ambient_style(items, type_)?,
         );
         if let TypeInner::Enum(e) = &type_.inner {
             self.with_indent(|p| {
@@ -220,7 +246,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, attribute, false, true, None)?
+            fully_qualified_display_path_ambient_style(items, attribute)?
         );
         Ok(())
     }
@@ -248,29 +274,15 @@ fn write_resolvable_id<T: Item>(
 ) -> anyhow::Result<String> {
     Ok(match r {
         ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
-        ResolvableItemId::Resolved(resolved) => fully_qualified_display_path_ambient_style(
-            items,
-            &*items.get(*resolved)?,
-            true,
-            true,
-            None,
-        )?,
+        ResolvableItemId::Resolved(resolved) => {
+            fully_qualified_display_path_ambient_style(items, &*items.get(*resolved)?)?
+        }
     })
 }
 
 pub fn fully_qualified_display_path_ambient_style<T: Item>(
     items: &ItemMap,
     item: &T,
-    use_original_scope_ids: bool,
-    display_affixes: bool,
-    relative_to: Option<ItemId<Scope>>,
 ) -> anyhow::Result<String> {
-    items.fully_qualified_display_path_impl(
-        item,
-        "::",
-        use_original_scope_ids,
-        (display_affixes, display_affixes),
-        relative_to,
-        None,
-    )
+    items.fully_qualified_display_path_impl(item, "::", (true, true), None, None)
 }

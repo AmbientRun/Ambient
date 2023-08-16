@@ -1255,6 +1255,7 @@ dependencies = [
  "syn 1.0.109",
  "thiserror",
  "toml 0.7.4",
+ "url",
 ]
 
 [[package]]
@@ -1299,10 +1300,12 @@ dependencies = [
  "glam 0.24.0",
  "indexmap 2.0.0",
  "paste",
+ "reqwest",
  "thiserror",
  "tokio",
  "toml 0.7.4",
  "ulid",
+ "url",
 ]
 
 [[package]]

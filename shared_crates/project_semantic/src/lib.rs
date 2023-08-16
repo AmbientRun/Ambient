@@ -1,19 +1,22 @@
 use std::{
     cell::Ref,
-    collections::HashSet,
-    fmt::Debug,
-    path::{Path, PathBuf},
+    collections::{HashMap, HashSet},
+    path::PathBuf,
 };
+
+use anyhow::Context as AnyhowContext;
+use async_recursion::async_recursion;
 
 use ambient_project::{
-    BuildMetadata, Dependency, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
+    BuildMetadata, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
 };
 use ambient_shared_types::primitive_component_definitions;
-use anyhow::Context as AnyhowContext;
 
 mod scope;
-use async_recursion::async_recursion;
 pub use scope::{Context, Scope};
+
+mod ember;
+pub use ember::{Dependency, Ember, EmberLocator, EmberSource};
 
 mod item;
 pub use item::{
@@ -40,88 +43,123 @@ mod message;
 pub use message::Message;
 
 mod value;
+use url::Url;
+use util::read_file;
 pub use value::{ResolvableValue, ScalarValue, Value};
 
 mod printer;
 pub use printer::Printer;
 
-mod providers;
-pub use providers::*;
+mod util;
+
+pub type Schema = HashMap<&'static str, &'static str>;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Semantic {
+    pub schema: Schema,
     pub items: ItemMap,
     pub root_scope_id: ItemId<Scope>,
+    pub embers: HashMap<EmberLocator, ItemId<Ember>>,
     pub standard_definitions: StandardDefinitions,
 }
 impl Semantic {
     pub async fn new() -> anyhow::Result<Self> {
         let mut items = ItemMap::default();
         let (root_scope_id, standard_definitions) = create_root_scope(&mut items)?;
+
         let mut semantic = Self {
+            schema: HashMap::from_iter(ambient_schema::FILES.iter().copied()),
             items,
             root_scope_id,
+            embers: HashMap::new(),
             standard_definitions,
         };
 
         semantic
-            .add_file(
-                Path::new("ambient.toml"),
-                &ArrayFileProvider::from_schema(),
-                ItemSource::Ambient,
-                None,
-            )
+            .add_ember(EmberSource::Ambient(PathBuf::default()))
             .await?;
 
         Ok(semantic)
     }
 
-    pub async fn add_file(
-        &mut self,
-        filename: &Path,
-        file_provider: &dyn FileProvider,
-        source: ItemSource,
-        scope_name: Option<SnakeCaseIdentifier>,
-    ) -> anyhow::Result<ItemId<Scope>> {
-        self.add_file_internal(
-            filename,
-            file_provider,
-            &mut HashSet::new(),
-            source,
-            scope_name,
-            true,
-        )
-        .await
-    }
+    #[async_recursion]
+    pub async fn add_ember(&mut self, source: EmberSource) -> anyhow::Result<ItemId<Ember>> {
+        let (manifest, manifest_url) = source.get_manifest(&self.schema).await?;
 
-    pub async fn add_ember(&mut self, ember_path: &Path) -> anyhow::Result<ItemId<Scope>> {
-        self.add_file(
-            Path::new("ambient.toml"),
-            &DiskFileProvider(ember_path.to_owned()),
-            ItemSource::User,
-            None,
-        )
-        .await
-    }
+        let locator = EmberLocator::from_manifest(&manifest, source.clone());
+        if let Some(id) = self.embers.get(&locator) {
+            return Ok(*id);
+        }
 
-    /// HACK! This is used to allow the use of no-dependency embers for now.
-    /// Will be removed once we figure this out.
-    pub async fn add_ember_manifest(
-        &mut self,
-        ember_manifest: &Manifest,
-    ) -> anyhow::Result<ItemId<Scope>> {
-        self.add_file(
-            Path::new("ambient.toml"),
-            &ArrayFileProvider {
-                files: &[("ambient.toml", &toml::to_string(ember_manifest)?)],
+        let build_metadata = if let Some(url) = manifest_url.as_ref() {
+            Some(BuildMetadata::parse(
+                &read_file(&url.join(BuildMetadata::FILENAME)?).await?,
+            )?)
+        } else {
+            None
+        };
+
+        let mut dependencies = HashMap::new();
+        for (dependency_name, dependency) in &manifest.dependencies {
+            let Some(manifest_url) = manifest_url.as_ref() else {
+                anyhow::bail!("the manifest URL is empty; are you trying to add dependencies to the Ambient schema?");
+            };
+
+            // path takes precedence over url
+            let source = match (&dependency.path, &dependency.url) {
+                (None, None) => {
+                    anyhow::bail!("dependency {dependency_name} has no sources specified")
+                }
+                (Some(path), _) => EmberSource::Url(if path.is_relative() {
+                    manifest_url.join(&path.to_string_lossy())?
+                } else {
+                    Url::from_file_path(path).unwrap()
+                }),
+                (_, Some(url)) => EmberSource::Url(url.clone()),
+            };
+
+            let dependency_id = self.add_ember(source).await?;
+
+            dependencies.insert(
+                dependency_name.clone(),
+                Dependency {
+                    id: dependency_id,
+                    enabled: dependency.enabled,
+                },
+            );
+        }
+
+        let scope_id = self
+            .add_scope_from_manifest_with_includes(None, &manifest, source.clone())
+            .await?;
+
+        let ember = Ember {
+            data: ItemData {
+                parent_id: None,
+                id: locator.id.clone().into(),
+                source: match source {
+                    EmberSource::Ambient(_) => ItemSource::Ambient,
+                    EmberSource::Path(_) | EmberSource::Url(_) => ItemSource::User,
+                },
             },
-            ItemSource::User,
-            None,
-        )
-        .await
+            source,
+            manifest,
+            build_metadata,
+            dependencies,
+            scope_id,
+        };
+
+        Ok(self.items.add(ember))
     }
 
     pub fn resolve(&mut self) -> anyhow::Result<()> {
+        let mut ids = HashSet::new();
+        for locator in self.embers.keys() {
+            if !ids.insert(locator.id.clone()) {
+                anyhow::bail!("duplicate ember found with ID: {} (the system does not currently support having an ember with multiple different versions)", locator.id);
+            }
+        }
+
         let root_scopes = self
             .items
             .get(self.root_scope_id)?
@@ -149,217 +187,65 @@ impl Semantic {
     }
 }
 impl Semantic {
-    // TODO(philpax): This merges scopes together, which may lead to some degree of semantic conflation,
-    // especially with dependencies: a parent may be able to access a child's dependencies.
-    //
-    // This is a simplifying assumption that will enable the cross-cutting required for Ambient's ecosystem,
-    // but will lead to unexpected behaviour in future.
-    //
-    // A fix may be to treat each added manifest as an "island", and then have the resolution step
-    // jump between islands as required to resolve things. There are a couple of nuances here that
-    // I decided to push to another day in the interest of getting this working.
-    //
-    // These nuances include:
-    // - Sharing the same "ambient" types between islands (primitive types, Ambient API)
-    // - If one module/island (P) has dependencies on two islands (A, B), both of which have a shared dependency (C),
-    //   both A and B should have the same C and not recreate it. C should not be visible from P.
-    // - Local changes should not have global effects, unless they are globally visible. If, using the above configuration,
-    //   a change occurs to C, there should be absolutely no impact on P if P does not depend on C.
-    //
-    // At the present, there's just one big island, so P can see C, and changes to C will affect P.
     #[async_recursion]
-    async fn add_file_internal(
-        &mut self,
-        filename: &Path,
-        file_provider: &dyn FileProvider,
-        visited_files: &mut HashSet<PathBuf>,
-        source: ItemSource,
-        scope_name: Option<SnakeCaseIdentifier>,
-        enabled: bool,
-    ) -> anyhow::Result<ItemId<Scope>> {
-        let manifest = Manifest::parse(&file_provider.get(filename).await.with_context(|| {
-            format!(
-                "failed to read top-level file {:?}",
-                file_provider.full_path(filename)
-            )
-        })?)
-        .with_context(|| {
-            format!(
-                "failed to parse toml for {:?}",
-                file_provider.full_path(filename)
-            )
-        })?;
-
-        let build_metadata_path = Path::new(BuildMetadata::FILENAME);
-        let build_metadata = file_provider
-            .get(build_metadata_path)
-            .await
-            .ok()
-            .map(|f| BuildMetadata::parse(&f))
-            .transpose()
-            .with_context(|| {
-                format!(
-                    "failed to parse build metadata for {:?}",
-                    file_provider.full_path(build_metadata_path)
-                )
-            })?;
-
-        let root_id = self.root_scope_id;
-
-        // Check that this scope hasn't already been created for this scope
-        let scope_name = scope_name.unwrap_or_else(|| manifest.ember.id.clone());
-        if let Some(existing_scope_id) = self.items.get(root_id)?.scopes.get(&scope_name) {
-            let existing_path = self.items.get(*existing_scope_id)?.manifest_path.clone();
-            if existing_path == Some(file_provider.full_path(filename)) {
-                return Ok(*existing_scope_id);
-            }
-
-            anyhow::bail!(
-                "attempted to add {:?}, but a scope already exists at `{scope_name}`",
-                file_provider.full_path(filename)
-            );
-        }
-
-        // Create a new scope and add it to the root scope
-        let manifest_path = file_provider.full_path(filename);
-        let item_id = self
-            .add_scope_from_manifest(
-                Some(root_id),
-                file_provider,
-                visited_files,
-                manifest,
-                manifest_path,
-                build_metadata,
-                scope_name.clone(),
-                source,
-                enabled,
-            )
-            .await?;
-        self.items
-            .get_mut(root_id)?
-            .scopes
-            .insert(scope_name, item_id);
-        Ok(item_id)
-    }
-
-    #[async_recursion]
-    async fn add_file_at_non_toplevel(
-        &mut self,
-        parent_scope: ItemId<Scope>,
-        filename: &Path,
-        file_provider: &dyn FileProvider,
-        visited_files: &mut HashSet<PathBuf>,
-        source: ItemSource,
-        enabled: bool,
-    ) -> anyhow::Result<ItemId<Scope>> {
-        let manifest = Manifest::parse(&file_provider.get(filename).await.with_context(|| {
-            format!("failed to read file {filename:?} within parent scope {parent_scope:?}")
-        })?)
-        .with_context(|| format!("failed to parse toml for {filename:?}"))?;
-
-        let id = manifest.ember.id.clone();
-        self.add_scope_from_manifest(
-            Some(parent_scope),
-            file_provider,
-            visited_files,
-            manifest,
-            file_provider.full_path(filename),
-            None,
-            id,
-            source,
-            enabled,
-        )
-        .await
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    async fn add_scope_from_manifest(
+    async fn add_scope_from_manifest_with_includes(
         &mut self,
         parent_id: Option<ItemId<Scope>>,
-        file_provider: &dyn FileProvider,
-        visited_files: &mut HashSet<PathBuf>,
-        manifest: Manifest,
-        manifest_path: PathBuf,
-        build_metadata: Option<BuildMetadata>,
-        id: SnakeCaseIdentifier,
-        source: ItemSource,
-        enabled: bool,
+        manifest: &Manifest,
+        source: EmberSource,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let mut scope = Scope::new(
-            ItemData {
-                parent_id,
-                id: id.into(),
-                source,
-            },
-            manifest.ember.id.clone(),
-            Some(manifest_path.clone()),
-            Some(manifest.clone()),
-            enabled,
-        );
-        scope.build_metadata = build_metadata;
-        let scope_id = self.items.add(scope);
+        let includes = manifest.ember.includes.clone();
+        let scope_id =
+            self.add_scope_from_manifest_without_includes(parent_id, manifest, source.clone())?;
 
-        let full_path = file_provider.full_path(&manifest_path);
-        if !visited_files.insert(full_path.clone()) {
-            anyhow::bail!("circular dependency detected at {manifest_path:?}; previously visited files: {visited_files:?}");
-        }
+        for include in &includes {
+            anyhow::ensure!(
+                include.extension().is_some(),
+                "include {} must have a path",
+                include.display()
+            );
 
-        for include in &manifest.ember.includes {
-            let child_scope_id = self
-                .add_file_at_non_toplevel(
-                    scope_id,
-                    include,
-                    file_provider,
-                    visited_files,
-                    source,
-                    enabled,
+            let include_source = source.join(include.parent().context("include has no parent")?)?;
+            let include_manifest = include_source.get_manifest(&self.schema).await?.0;
+            let include_scope_id = self
+                .add_scope_from_manifest_with_includes(
+                    Some(scope_id),
+                    &include_manifest,
+                    include_source,
                 )
                 .await?;
-            let id = self.items.get(child_scope_id)?.data().id.clone();
+            let id = self.items.get(include_scope_id)?.data().id.clone();
+
             self.items
                 .get_mut(scope_id)?
                 .scopes
-                .insert(id.as_snake()?.clone(), child_scope_id);
+                .insert(id.as_snake()?.clone(), include_scope_id);
         }
 
-        let mut dependency_scopes = vec![];
-        for (dependency_name, dependency) in manifest.dependencies.iter() {
-            let Dependency { path, enabled } = dependency;
+        Ok(scope_id)
+    }
 
-            let file_provider = ProxyFileProvider {
-                provider: file_provider,
-                base: path,
-            };
-
-            let ambient_toml = Path::new("ambient.toml");
-            let new_scope_id = self
-                        .add_file_internal(
-                            ambient_toml,
-                            &file_provider,
-                            visited_files,
-                            source,
-                            Some(dependency_name.clone()),
-                            *enabled,
-                        ).await
-                        .with_context(|| {
-                            format!(
-                            "failed to add dependency `{dependency_name}` ({full_path:?}) for manifest {manifest_path:?}"
-                        )
-                        })?;
-
-            dependency_scopes.push(new_scope_id);
-        }
-
-        self.items
-            .get_mut(scope_id)?
-            .dependencies
-            .append(&mut dependency_scopes);
+    fn add_scope_from_manifest_without_includes(
+        &mut self,
+        parent_id: Option<ItemId<Scope>>,
+        manifest: &Manifest,
+        source: EmberSource,
+    ) -> anyhow::Result<ItemId<Scope>> {
+        let item_source = match source {
+            EmberSource::Ambient(_) => ItemSource::Ambient,
+            _ => ItemSource::User,
+        };
+        let scope_id = self.items.add(Scope::new(ItemData {
+            parent_id,
+            id: manifest.ember.id.clone().into(),
+            source: item_source,
+        }));
 
         let make_item_data = |item_id: &Identifier| -> ItemData {
             ItemData {
                 parent_id: Some(scope_id),
                 id: item_id.clone(),
-                source,
+                source: item_source,
             }
         };
 
@@ -370,7 +256,7 @@ impl Semantic {
 
             let value = items.add(Component::from_project(make_item_data(item), component));
             items
-                .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
+                .get_or_create_scope_mut(scope_id, scope_path)?
                 .components
                 .insert(item.as_snake()?.clone(), value);
         }
@@ -381,7 +267,7 @@ impl Semantic {
 
             let value = items.add(Concept::from_project(make_item_data(item), concept));
             items
-                .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
+                .get_or_create_scope_mut(scope_id, scope_path)?
                 .concepts
                 .insert(item.as_snake()?.clone(), value);
         }
@@ -392,7 +278,7 @@ impl Semantic {
 
             let value = items.add(Message::from_project(make_item_data(item), message));
             items
-                .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
+                .get_or_create_scope_mut(scope_id, scope_path)?
                 .messages
                 .insert(item.as_pascal()?.clone(), value);
         }
@@ -407,8 +293,6 @@ impl Semantic {
                 .types
                 .insert(segment.clone(), enum_id);
         }
-
-        visited_files.remove(&full_path);
 
         Ok(scope_id)
     }
@@ -438,17 +322,11 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<(ItemId<Scope>, Stan
         };
     }
 
-    let root_scope = items.add(Scope::new(
-        ItemData {
-            parent_id: None,
-            id: SnakeCaseIdentifier::default().into(),
-            source: ItemSource::System,
-        },
-        SnakeCaseIdentifier::default(),
-        None,
-        None,
-        true,
-    ));
+    let root_scope = items.add(Scope::new(ItemData {
+        parent_id: None,
+        id: SnakeCaseIdentifier::default().into(),
+        source: ItemSource::System,
+    }));
 
     for (id, pt) in primitive_component_definitions!(define_primitive_types) {
         let id = PascalCaseIdentifier::new(id)

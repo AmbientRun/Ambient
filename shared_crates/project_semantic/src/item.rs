@@ -3,7 +3,8 @@ use ambient_std::topological_sort::{topological_sort, TopologicalSortable};
 use ulid::Ulid;
 
 use crate::{
-    Attribute, Component, Concept, Context, Message, Scope, StandardDefinitions, Type, TypeInner,
+    Attribute, Component, Concept, Context, Ember, Message, Scope, StandardDefinitions, Type,
+    TypeInner,
 };
 use anyhow::Context as AnyhowContext;
 use std::{
@@ -11,7 +12,6 @@ use std::{
     collections::HashMap,
     fmt::{self, Debug, Display},
     marker::PhantomData,
-    path::PathBuf,
 };
 
 #[derive(Clone, PartialEq, Debug, Default)]
@@ -155,7 +155,6 @@ impl ItemMap {
 
     pub(crate) fn get_or_create_scope_mut(
         &mut self,
-        manifest_path: PathBuf,
         start_scope_id: ItemId<Scope>,
         path: &[SnakeCaseIdentifier],
     ) -> anyhow::Result<RefMut<Scope>> {
@@ -166,17 +165,11 @@ impl ItemMap {
                 Some(id) => id,
                 None => {
                     let parent_scope_data = self.get(scope_id)?.data().clone();
-                    let new_id = self.add(Scope::new(
-                        ItemData {
-                            parent_id: Some(scope_id),
-                            id: segment.clone().into(),
-                            ..parent_scope_data
-                        },
-                        segment.clone(),
-                        Some(manifest_path.clone()),
-                        None,
-                        true,
-                    ));
+                    let new_id = self.add(Scope::new(ItemData {
+                        parent_id: Some(scope_id),
+                        id: segment.clone().into(),
+                        ..parent_scope_data
+                    }));
                     self.get_mut(scope_id)?
                         .scopes
                         .insert(segment.clone(), new_id);
@@ -192,7 +185,6 @@ impl ItemMap {
         &self,
         item: &T,
         separator: &str,
-        use_original_scope_ids: bool,
         (type_prefix, source_suffix): (bool, bool),
         relative_to: Option<ItemId<Scope>>,
         item_prefix: Option<&str>,
@@ -213,11 +205,7 @@ impl ItemMap {
             }
 
             let parent = self.get(this_parent_id)?;
-            let id = if use_original_scope_ids {
-                parent.original_id.to_string()
-            } else {
-                parent.data().id.to_string()
-            };
+            let id = parent.data().id.to_string();
             if !id.is_empty() {
                 path.push(id);
             }
@@ -245,29 +233,27 @@ impl ItemMap {
     pub fn fully_qualified_display_path<T: Item>(
         &self,
         item: &T,
-        use_original_scope_ids: bool,
         relative_to: Option<ItemId<Scope>>,
         item_prefix: Option<&str>,
     ) -> anyhow::Result<String> {
-        self.fully_qualified_display_path_impl(
-            item,
-            "::",
-            use_original_scope_ids,
-            (false, false),
-            relative_to,
-            item_prefix,
-        )
+        self.fully_qualified_display_path_impl(item, "::", (false, false), relative_to, item_prefix)
     }
 
     /// Returns a topological sort of `id` and its dependencies.
-    pub fn scope_and_dependencies(&self, id: ItemId<Scope>) -> Vec<ItemId<Scope>> {
-        impl TopologicalSortable<ItemMap> for ItemId<Scope> {
+    pub fn scope_and_dependencies(&self, id: ItemId<Ember>) -> Vec<ItemId<Ember>> {
+        impl TopologicalSortable<ItemMap> for ItemId<Ember> {
             fn dependencies(&self, items: &ItemMap) -> Vec<Self> {
-                items.get(*self).unwrap().dependencies.clone()
+                items
+                    .get(*self)
+                    .unwrap()
+                    .dependencies
+                    .values()
+                    .map(|d| d.id)
+                    .collect()
             }
 
             fn id(&self, items: &ItemMap) -> String {
-                items.get(*self).unwrap().original_id.to_string()
+                items.get(*self).unwrap().data.id.to_string()
             }
         }
 
@@ -283,6 +269,7 @@ pub enum ItemType {
     Type,
     Attribute,
     Scope,
+    Ember,
 }
 impl Display for ItemType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -298,6 +285,7 @@ pub enum ItemValue {
     Type(Type),
     Attribute(Attribute),
     Scope(Scope),
+    Ember(Ember),
 }
 
 #[derive(Clone, PartialEq, Debug, Eq)]

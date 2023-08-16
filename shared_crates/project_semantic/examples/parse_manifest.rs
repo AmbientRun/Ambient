@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use ambient_project_semantic::{Printer, Semantic};
+use ambient_project_semantic::{EmberSource, Printer, Semantic};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -15,7 +15,7 @@ async fn main() -> anyhow::Result<()> {
         }
     };
     for path in paths {
-        semantic.add_ember(&path).await?;
+        semantic.add_ember(EmberSource::Path(path)).await?;
     }
 
     let mut printer = Printer::new();
