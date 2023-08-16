@@ -24,6 +24,7 @@ pub mod diff_serialization;
 pub mod hooks;
 pub mod proto;
 pub mod rpc;
+pub mod serialization;
 pub mod server;
 pub mod stream;
 
