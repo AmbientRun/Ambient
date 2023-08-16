@@ -74,23 +74,17 @@ pub struct Ember {
 
 #[derive(Clone, Copy, Debug, PartialEq, Display, FromStr, SerializeDisplay, DeserializeFromStr)]
 pub enum Category {
-    #[display("game/{0}")]
-    Game(GameCategory),
+    #[display("app/{0}")]
+    App(AppCategory),
     #[display("asset/{0}")]
     Asset(AssetCategory),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Display, FromStr, SerializeDisplay, DeserializeFromStr)]
 #[display(style = "snake_case")]
-pub enum GameCategory {
+pub enum AppCategory {
     Example,
-    Fps,
-    Survival,
-    Simulation,
-    Strategy,
-    Sports,
-    Racing,
-    Other,
+    Game,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Display, FromStr, SerializeDisplay, DeserializeFromStr)]

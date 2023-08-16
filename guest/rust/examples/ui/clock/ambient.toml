@@ -4,4 +4,4 @@ name = "clock"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/clock"
 type = "Game"
-categories = ["game/example"]
+categories = ["app/example"]

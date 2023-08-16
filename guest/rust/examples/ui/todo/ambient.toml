@@ -4,7 +4,7 @@ name = "todo"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/todo"
 type = "Game"
-categories = ["game/example"]
+categories = ["app/example"]
 
 [messages.NewItem]
 description = "Add a new todo item"

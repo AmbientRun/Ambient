@@ -4,7 +4,7 @@ name = "Physics"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics"
 type = "Game"
-categories = ["game/example"]
+categories = ["app/example"]
 
 [messages.Bonk]
 description = "Collision between two objects."

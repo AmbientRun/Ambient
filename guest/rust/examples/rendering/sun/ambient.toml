@@ -4,4 +4,4 @@ name = "Sun"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/sun"
 type = "Game"
-categories = ["game/example"]
+categories = ["app/example"]

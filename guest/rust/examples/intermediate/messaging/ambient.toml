@@ -5,7 +5,7 @@ description = "This shows how to Ambient message passing system works."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/messaging"
 type = "Game"
-categories = ["game/example"]
+categories = ["app/example"]
 
 [messages.Hello]
 name = "Hello"

@@ -5,4 +5,4 @@ description = "This shows how to load and display images in 3d."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/image"
 type = "Game"
-categories = ["game/example"]
+categories = ["app/example"]

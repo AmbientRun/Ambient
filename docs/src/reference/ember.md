@@ -97,14 +97,8 @@ The `ember` section contains metadata about the ember itself, such as its name a
 These are the valid categories for the ember catgories field:
 
 ```
-game/example
-game/fps
-game/survival
-game/simulation
-game/strategy
-game/sports
-game/racing
-game/other
+app/example
+app/game
 
 asset/model
 asset/texture

@@ -4,7 +4,7 @@ name = "Screen Ray"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/screen_ray"
 type = "Game"
-categories = ["game/example"]
+categories = ["app/example"]
 
 [messages.Input.fields]
 ray_origin = "Vec3"
