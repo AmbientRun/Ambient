@@ -148,9 +148,13 @@ pub struct ProjectCli {
     /// The path or URL of the project to run; if not specified, this will default to the current directory
     pub path: Option<String>,
 
-    /// Build all the assets with full optimization; this will make debugging more difficult
+    /// Build all the assets with debug information; this will make them less performant and larger but easier to debug (default for all commands apart from `deploy` and `serve`)
+    #[arg(short, long, conflicts_with = "release")]
+    debug: bool,
+
+    /// Build all the assets with full optimization; this will make them faster and smaller but more difficult to debug (default for `deploy` and `serve`)
     #[arg(short, long)]
-    pub release: bool,
+    release: bool,
 
     /// Avoid building the project
     #[arg(long)]
@@ -240,6 +244,31 @@ impl Cli {
             Commands::View { .. } => None,
             Commands::Join { .. } => None,
             Commands::Assets { .. } => None,
+        }
+    }
+    pub fn use_release_build(&self) -> bool {
+        match &self.command {
+            Commands::Deploy { project_args, .. } | Commands::Serve { project_args, .. } => {
+                project_args.is_release().unwrap_or(true)
+            }
+            Commands::Run { project_args, .. }
+            | Commands::Build { project_args, .. }
+            | Commands::View { project_args, .. } => project_args.is_release().unwrap_or(false),
+            Commands::New { .. } | Commands::Join { .. } | Commands::Assets { .. } => false,
+        }
+    }
+}
+
+impl ProjectCli {
+    pub fn is_release(&self) -> Option<bool> {
+        match (self.debug, self.release) {
+            (true, false) => Some(false),
+            (false, true) => Some(true),
+            (false, false) => None,
+            (true, true) => {
+                // clap's conflict_with should prevent this from happening
+                panic!("debug and release are mutually exclusive")
+            }
         }
     }
 }

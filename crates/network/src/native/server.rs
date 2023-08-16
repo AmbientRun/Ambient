@@ -13,7 +13,7 @@ use ambient_ecs::{
 };
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, ServerBaseUrlKey},
+    asset_url::{AbsAssetUrl, ServerBaseUrlKey, UsingLocalDebugAssetsKey},
     fps_counter::FpsCounter,
     log_result,
 };
@@ -290,6 +290,11 @@ async fn handle_quinn_connection(
     content_base_url: AbsAssetUrl,
 ) -> anyhow::Result<()> {
     tracing::debug!("Handling server connection");
+
+    if !conn.is_local() && UsingLocalDebugAssetsKey.get(&state.lock().assets) {
+        tracing::warn!("Client connected from remote address but server is using debug assets. This might involve uploading large files to the client.");
+    }
+
     let (diffs_tx, diffs_rx) = flume::unbounded();
 
     let server_info = ServerInfo::new(&mut state.lock(), content_base_url);

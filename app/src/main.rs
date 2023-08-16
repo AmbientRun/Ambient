@@ -1,6 +1,6 @@
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, ContentBaseUrlKey},
+    asset_url::{AbsAssetUrl, ContentBaseUrlKey, UsingLocalDebugAssetsKey},
     download_asset::{AssetsCacheOnDisk, ReqwestClientKey},
 };
 use ambient_network::native::client::ResolvedAddr;
@@ -58,12 +58,24 @@ fn main() -> anyhow::Result<()> {
         return rt.block_on(cli::assets::handle(command, &assets));
     }
 
+    // Store a flag that we are using local debug assets
+    // Used for emitting warnings when local debug assets are sent to remote clients
+    UsingLocalDebugAssetsKey.insert(
+        &assets,
+        !project_path.is_remote() && !cli.use_release_build(),
+    );
+
     // Build the project if required. Note that this only runs if the project is local,
     // and if a build has actually been requested.
     let BuildDirectories {
         build_root_path,
         main_ember_path,
-    } = rt.block_on(cli::build::build(project, project_path, &assets))?;
+    } = rt.block_on(cli::build::build(
+        project,
+        project_path,
+        &assets,
+        cli.use_release_build(),
+    ))?;
 
     // If this is just a build, exit now
     if matches!(&cli.command, Commands::Build { .. }) {
@@ -80,6 +92,9 @@ fn main() -> anyhow::Result<()> {
         ..
     } = &cli.command
     {
+        if !cli.use_release_build() {
+            log::warn!("Deploying a debug build which might involve uploading large files. Remove `--debug` to deploy a release build.");
+        }
         return rt.block_on(cli::deploy::handle(
             &main_ember_path,
             &assets,

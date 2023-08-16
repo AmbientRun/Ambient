@@ -24,6 +24,7 @@ pub async fn build(
     project: Option<&ProjectCli>,
     project_path: ProjectPath,
     assets: &AssetCache,
+    release_build: bool,
 ) -> anyhow::Result<BuildDirectories> {
     let Some(project) = project else {
         return Ok(BuildDirectories::new_with_same_paths(project_path.url.clone()));
@@ -57,7 +58,7 @@ pub async fn build(
         build_path: build_path.clone(),
         assets: assets.clone(),
         semantic: &mut semantic,
-        optimize: project.release,
+        optimize: release_build,
         clean_build: project.clean_build,
         build_wasm_only: project.build_wasm_only,
     };
