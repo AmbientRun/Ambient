@@ -328,7 +328,7 @@ async fn store_manifest(manifest: &ProjectManifest, build_path: &Path) -> anyhow
 }
 
 async fn store_metadata(build_path: &Path) -> anyhow::Result<BuildMetadata> {
-    let AmbientVersion { version, revision } = AmbientVersion::new();
+    let AmbientVersion { version, revision } = AmbientVersion::default();
     let metadata = BuildMetadata {
         ambient_version: Version::new_from_str(&version)
             .expect("Failed to parse CARGO_PKG_VERSION"),

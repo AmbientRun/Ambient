@@ -12,9 +12,9 @@ use ambient_ecs::{
     WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_native_std::{
+    ambient_version,
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
-    AmbientVersion,
 };
 use ambient_network::{
     is_persistent_resources, is_synced_resources,
@@ -314,7 +314,7 @@ fn start_http_interface(build_path: Option<&Path>, http_interface_port: u16) {
         .route("/ping", get(|| async move { "ok" }))
         .route(
             "/info",
-            get(|| async move { axum::Json(AmbientVersion::new()) }),
+            get(|| async move { axum::Json(ambient_version()) }),
         );
 
     if let Some(build_path) = build_path {
