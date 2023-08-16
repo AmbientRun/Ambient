@@ -1,4 +1,4 @@
 pub mod client;
-#[cfg(feature = "native")]
+#[cfg(not(target_os = "unknown"))]
 pub mod server;
 pub mod shared;

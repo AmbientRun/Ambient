@@ -28,7 +28,7 @@ use ambient_native_std::{
     asset_cache::AssetCache, asset_url::AbsAssetUrl, download_asset::download_uncached_bytes,
 };
 use itertools::Itertools;
-#[cfg(feature = "native")]
+#[cfg(not(target_os = "unknown"))]
 use wasi_cap_std_sync::Dir;
 
 mod internal {
@@ -56,7 +56,7 @@ mod internal {
     });
 }
 
-#[cfg(feature = "native")]
+#[cfg(not(target_os = "unknown"))]
 mod native_bindings {
     use std::sync::Arc;
 
@@ -70,13 +70,13 @@ mod native_bindings {
 }
 
 use self::message::Source;
-#[cfg(feature = "native")]
+#[cfg(not(target_os = "unknown"))]
 use self::native_bindings::preopened_dir;
 use crate::shared::message::{RuntimeMessageExt, Target};
 
 pub fn init_all_components() {
     internal::init_components();
-    #[cfg(feature = "native")]
+    #[cfg(not(target_os = "unknown"))]
     native_bindings::init_components();
     message::init_components();
 }
@@ -251,7 +251,7 @@ pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
 
     world.add_resource(message::pending_messages(), vec![]);
 
-    #[cfg(feature = "native")]
+    #[cfg(not(target_os = "unknown"))]
     if let Some(preopened_dir_path) = preopened_dir_path {
         std::fs::create_dir_all(preopened_dir_path)?;
         world.add_resource(

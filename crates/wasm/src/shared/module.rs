@@ -12,8 +12,8 @@ use std::{any::Any, collections::HashSet, sync::Arc};
 // use wasi_cap_std_sync::Dir;
 // use wasmtime_wasi::preview2 as wasi_preview2;
 
-#[cfg(feature = "native")]
-use wasi_preview2::{DirPerms, FilePerms};
+#[cfg(not(target_os = "unknown"))]
+use wasmtime_wasi::preview2::{DirPerms, FilePerms};
 
 #[derive(Clone)]
 pub struct ModuleBytecode(pub Vec<u8>);
@@ -75,12 +75,12 @@ pub struct ModuleErrors(pub Vec<String>);
 /// Binding and linking table generic over the host and guest bindings
 struct BindingContext<Bindings: BindingsBound> {
     bindings: Bindings,
-    #[cfg(feature = "native")]
+    #[cfg(not(target_os = "unknown"))]
     wasi: wasmtime_wasi::preview2::WasiCtx,
-    #[cfg(feature = "native")]
+    #[cfg(not(target_os = "unknown"))]
     table: wasmtime_wasi::preview2::Table,
 }
-#[cfg(feature = "native")]
+#[cfg(not(target_os = "unknown"))]
 impl<B: BindingsBound> wasmtime_wasi::preview2::WasiView for BindingContext<B> {
     fn table(&self) -> &wasmtime_wasi::preview2::Table {
         &self.table
@@ -119,7 +119,7 @@ pub struct ModuleStateArgs<'a> {
     pub stdout_output: Messenger,
     pub stderr_output: Messenger,
     pub id: EntityId,
-    #[cfg(feature = "native")]
+    #[cfg(not(target_os = "unknown"))]
     /// Makes the `data` directory available during development
     pub preopened_dir: Option<wasi_cap_std_sync::Dir>,
 }
@@ -177,13 +177,21 @@ impl ModuleStateBehavior for ModuleState {
     }
 }
 
+#[cfg(target_os = "unknown")]
+use wasm_bridge_js::{
+    wasi::preview2::{wasi::command::add_to_linker, Table, WasiCtx, WasiCtxBuilder},
+    Instance,
+};
+#[cfg(not(target_os = "unknown"))]
+use wasmtime::{component::Instance, wasi::preview2::Table, WasiCtxBuilder};
+
 /// Stores the execution context and store
 struct InstanceState<Bindings: BindingsBound> {
     /// Stores the context and loaded instances
     store: wasmtime::Store<BindingContext<Bindings>>,
 
     guest_bindings: shared::wit::Bindings,
-    _guest_instance: wasmtime::component::Instance,
+    _guest_instance: Instance,
 
     stdout_consumer: WasiOutputStreamConsumer,
     stderr_consumer: WasiOutputStreamConsumer,
@@ -209,8 +217,8 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
 
         let (stdout_output, stdout_consumer) = WasiOutputStream::make(args.stdout_output);
         let (stderr_output, stderr_consumer) = WasiOutputStream::make(args.stderr_output);
-        let mut table = wasi_preview2::Table::new();
-        let wasi = wasi_preview2::WasiCtxBuilder::new()
+        let mut table = Table::new();
+        let wasi = WasiCtxBuilder::new()
             .set_stdout(stdout_output)
             .set_stderr(stderr_output);
 
@@ -243,17 +251,18 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
         let mut linker = wasm_bridge::Linker::<BindingContext<Bindings>>::new(engine.inner());
         // let mut linker = wasmtime::component::Linker::<ExecutionContext<Bindings>>::new(engine);
 
-        wasi_preview2::wasi::command::add_to_linker(&mut linker)?;
+        add_to_linker(&mut linker)?;
         shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 
         let component =
-            wasmtime::component::Component::from_binary(engine.inner(), component_bytecode)?;
+            wasmtime::component::Component::from_binary(engine.inner(), args.component_bytecode)?;
 
         let (guest_bindings, guest_instance) = async {
             let (guest_bindings, guest_instance) =
                 shared::wit::Bindings::instantiate_async(&mut store, &component, &linker).await?;
 
             // Initialise the runtime.
+            tracing::debug!(id=?args.id, "initialize runtime");
             guest_bindings
                 .ambient_bindings_guest()
                 .call_init(&mut store)
@@ -346,7 +355,7 @@ impl WasiOutputStream {
 }
 
 #[async_trait::async_trait]
-#[cfg(feature = "native")]
+#[cfg(not(target_os = "unknown"))]
 impl wasi_preview2::OutputStream for WasiOutputStream {
     fn as_any(&self) -> &dyn Any {
         self
