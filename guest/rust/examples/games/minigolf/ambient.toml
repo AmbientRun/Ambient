@@ -4,7 +4,7 @@ name = "Minigolf"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/minigolf"
 type = "Game"
-categories = ["app/example"]
+content = { type = "Playable", example = true }
 
 [components]
 next_player_hue = { type = "F32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = [

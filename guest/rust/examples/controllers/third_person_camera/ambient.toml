@@ -4,7 +4,7 @@ name = "Third person camera"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/third_person_camera"
 type = "Game"
-categories = ["app/example"]
+content = { type = "Playable", example = true }
 
 [components]
 player_camera_ref = { type = "EntityId", name = "Player camera ref", description = "The player's camera.", attributes = [
