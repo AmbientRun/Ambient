@@ -281,6 +281,7 @@ impl AppBuilder {
 
     pub async fn build(self) -> anyhow::Result<App> {
         crate::init_all_components();
+        println!("hello world");
 
         let runtime = RuntimeHandle::current();
 
