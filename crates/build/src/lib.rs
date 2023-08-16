@@ -8,7 +8,7 @@ use std::{
 };
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
-use ambient_native_std::{asset_url::AbsAssetUrl, git_revision_full};
+use ambient_native_std::{asset_url::AbsAssetUrl, AmbientVersion};
 use ambient_project::{BuildMetadata, Manifest as ProjectManifest, Version};
 use ambient_project_semantic::{ItemId, Scope, Semantic};
 use ambient_std::path::path_to_unix_string;
@@ -328,10 +328,11 @@ async fn store_manifest(manifest: &ProjectManifest, build_path: &Path) -> anyhow
 }
 
 async fn store_metadata(build_path: &Path) -> anyhow::Result<BuildMetadata> {
+    let AmbientVersion { version, revision } = AmbientVersion::new();
     let metadata = BuildMetadata {
-        ambient_version: Version::new_from_str(env!("CARGO_PKG_VERSION"))
+        ambient_version: Version::new_from_str(&version)
             .expect("Failed to parse CARGO_PKG_VERSION"),
-        ambient_revision: git_revision_full().unwrap_or_default(),
+        ambient_revision: revision,
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
         last_build_time: Some(chrono::Utc::now().to_rfc3339()),

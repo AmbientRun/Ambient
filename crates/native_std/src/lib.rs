@@ -159,6 +159,21 @@ pub fn git_revision_full() -> Option<String> {
     ))
 }
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct AmbientVersion {
+    pub version: String,
+    pub revision: String,
+}
+
+impl AmbientVersion {
+    pub fn new() -> Self {
+        Self {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            revision: git_revision_full().unwrap_or_default(),
+        }
+    }
+}
+
 #[test]
 fn test_parse_git_revision() {
     assert_eq!(parse_git_revision("9f244c3"), Some("9f244c3".to_string()));

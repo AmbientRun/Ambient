@@ -14,7 +14,7 @@ use ambient_ecs::{
 use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
-    git_revision_full,
+    AmbientVersion,
 };
 use ambient_network::{
     is_persistent_resources, is_synced_resources,
@@ -314,16 +314,7 @@ fn start_http_interface(build_path: Option<&Path>, http_interface_port: u16) {
         .route("/ping", get(|| async move { "ok" }))
         .route(
             "/info",
-            get(|| async move {
-                axum::Json(
-                    [
-                        ("version", env!("CARGO_PKG_VERSION").to_string()),
-                        ("revision", git_revision_full().unwrap_or_default()),
-                    ]
-                    .into_iter()
-                    .collect::<HashMap<_, _>>(),
-                )
-            }),
+            get(|| async move { axum::Json(AmbientVersion::new()) }),
         );
 
     if let Some(build_path) = build_path {
