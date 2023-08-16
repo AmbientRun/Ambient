@@ -4,4 +4,4 @@ name = "samplers"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/samplers"
 type = "Game"
-categories = ["game/example"]
+content = { type = "Playable", example = true }

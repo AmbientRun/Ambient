@@ -4,4 +4,4 @@ name = "Flow Layout"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/flow_layout"
 type = "Game"
-categories = ["game/example"]
+content = { type = "Playable", example = true }

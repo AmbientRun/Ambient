@@ -4,4 +4,4 @@ name = "Multiplayer"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/multiplayer"
 type = "Game"
-categories = ["game/example"]
+content = { type = "Playable", example = true }

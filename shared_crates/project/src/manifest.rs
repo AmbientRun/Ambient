@@ -1,9 +1,7 @@
 use std::path::PathBuf;
 
 use indexmap::IndexMap;
-use parse_display::{Display, FromStr};
 use serde::{Deserialize, Serialize};
-use serde_with::{DeserializeFromStr, SerializeDisplay};
 use thiserror::Error;
 
 use crate::{
@@ -65,44 +63,44 @@ pub struct Ember {
     #[serde(default)]
     pub authors: Vec<String>,
     #[serde(default)]
-    pub categories: Vec<Category>,
+    pub content: EmberContent,
     #[serde(default)]
     pub includes: Vec<PathBuf>,
 }
 
 // ----- NOTE: Update docs/reference/ember.md when changing this ----
 
-#[derive(Clone, Copy, Debug, PartialEq, Display, FromStr, SerializeDisplay, DeserializeFromStr)]
-pub enum Category {
-    #[display("game/{0}")]
-    Game(GameCategory),
-    #[display("asset/{0}")]
-    Asset(AssetCategory),
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Display, FromStr, SerializeDisplay, DeserializeFromStr)]
-#[display(style = "snake_case")]
-pub enum GameCategory {
-    Example,
-    Fps,
-    Survival,
-    Simulation,
-    Strategy,
-    Sports,
-    Racing,
-    Other,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Display, FromStr, SerializeDisplay, DeserializeFromStr)]
-#[display(style = "snake_case")]
-pub enum AssetCategory {
-    Model,
-    Texture,
-    Audio,
-    Font,
-    Code,
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub enum EmberContent {
+    Playable {
+        #[serde(default)]
+        example: bool,
+    },
+    /// Assets are something that you can use as a dependency in your project
+    Asset {
+        #[serde(default)]
+        models: bool,
+        #[serde(default)]
+        textures: bool,
+        #[serde(default)]
+        audio: bool,
+        #[serde(default)]
+        fonts: bool,
+        #[serde(default)]
+        code: bool,
+    },
     Tool,
-    Mod,
+    Mod {
+        /// List of ember ids that this mod is applicable to
+        #[serde(default)]
+        for_playables: Vec<String>,
+    },
+}
+impl Default for EmberContent {
+    fn default() -> Self {
+        Self::Playable { example: false }
+    }
 }
 
 // -----------------------------------------------------------------

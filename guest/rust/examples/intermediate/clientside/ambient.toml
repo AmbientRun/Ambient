@@ -5,7 +5,7 @@ description = "How to use client side code."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/clientside"
 type = "Game"
-categories = ["game/example"]
+content = { type = "Playable", example = true }
 
 [components]
 grid_side_length = { name = "Grid Side Length", description = "The length of a grid side, ignoring the centre (i.e. if this is 10, the total axis length is 21)", type = "I32", attributes = [
