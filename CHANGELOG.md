@@ -157,6 +157,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Input**: Input is now cleared when the window loses focus, preventing "stuck input" bugs.
 - **UI**: Layout-related properties, like alignment and fit, did not work correctly for certain values. This has been fixed with the introduction of enums.
 - **Build**: Rust compilation errors are now more readable with more colors and fewer unused warnings.
+- **ECS**: The `transformable` concept now includes `local_to_world` to ensure that the world transform is always available.
 
 ### Community PRs to internals
 
