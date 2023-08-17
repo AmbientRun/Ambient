@@ -11,6 +11,7 @@ pub mod message;
 pub mod wit;
 
 pub use ambient_ecs::generated::components::core::wasm::*;
+use ambient_sys::task::PlatformBoxFuture;
 pub use internal::{
     messenger, module_bytecode, module_errors, module_state, module_state_maker, remote_paired_id,
 };
@@ -38,7 +39,9 @@ mod internal {
         components, Debuggable, Description, EntityId, Networked, Resource, Store, World,
     };
 
-    use super::{MessageType, ModuleBytecode, ModuleErrors, ModuleState, ModuleStateArgs};
+    use super::{
+        MessageType, ModuleBytecode, ModuleErrors, ModuleState, ModuleStateArgs, ModuleStateMaker,
+    };
 
     components!("wasm::shared", {
         module_state: ModuleState,
@@ -52,7 +55,7 @@ mod internal {
         @[Resource, Description["Used to signal messages from the WASM host/runtime."]]
         messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
         @[Resource]
-        module_state_maker: Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Sync + Send>,
+        module_state_maker: ModuleStateMaker,
     });
 }
 
@@ -235,6 +238,10 @@ pub fn systems() -> SystemGroup {
     )
 }
 
+pub type ModuleStateMaker = Arc<
+    dyn Fn(ModuleStateArgs<'_>) -> PlatformBoxFuture<anyhow::Result<ModuleState>> + Send + Sync,
+>;
+
 /// Initialize the core of the WASM runtime
 pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
     world: &mut World,
@@ -292,6 +299,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
     let messenger = world.resource(messenger()).clone();
     let module_state_maker = world.resource(module_state_maker()).clone();
 
+    let rt = world.resource(runtime());
     let async_run = world.resource(async_run()).clone();
     let component_bytecode = component_bytecode.to_vec();
     let name = world
@@ -305,30 +313,31 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
         .map(|d| d.try_clone().unwrap());
 
     // Spawn the module on another thread to ensure that it does not block the main thread during compilation.
-    std::thread::spawn(move || {
-        let result = run_and_catch_panics(|| {
-            log::info!("Loading module: {}", name);
-            let res = module_state_maker(module::ModuleStateArgs {
-                component_bytecode: &component_bytecode,
-                stdout_output: Box::new({
-                    let messenger = messenger.clone();
-                    move |world, msg| {
-                        messenger(world, id, MessageType::Stdout, msg);
-                    }
-                }),
-                stderr_output: Box::new(move |world, msg| {
-                    messenger(world, id, MessageType::Stderr, msg);
-                }),
-                id,
-                #[cfg(not(target_os = "unknown"))]
-                preopened_dir,
-            });
-            log::info!("Done loading module: {}", name);
-            res
-        });
+    // TODO: offload to thread
+    rt.spawn_local(async move {
+        // let result = run_and_catch_panics(|| {
+        log::info!("Loading module: {}", name);
+        let res = module_state_maker(module::ModuleStateArgs {
+            component_bytecode: &component_bytecode,
+            stdout_output: Box::new({
+                let messenger = messenger.clone();
+                move |world, msg| {
+                    messenger(world, id, MessageType::Stdout, msg);
+                }
+            }),
+            stderr_output: Box::new(move |world, msg| {
+                messenger(world, id, MessageType::Stderr, msg);
+            }),
+            id,
+            #[cfg(not(target_os = "unknown"))]
+            preopened_dir,
+        })
+        .await;
+        log::info!("Done loading module: {}", name);
+        // });
 
         async_run.run(move |world| {
-            match result {
+            match res {
                 Ok(mut sms) => {
                     // Subscribe the module to messages that it should be aware of.
                     let autosubscribe_messages =
@@ -342,7 +351,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
                     log::info!("Running startup event for module: {}", name);
                     messages::ModuleLoad::new().run(world, Some(id)).unwrap();
                 }
-                Err(err) => update_errors(world, &[(id, err)]),
+                Err(err) => update_errors(world, &[(id, format!("{err:?}"))]),
             }
         });
     });

@@ -1,5 +1,6 @@
 use crate::shared;
 
+use super::ModuleStateMaker;
 use super::{bindings::BindingsBound, conversion::IntoBindgen};
 use super::{engine::EngineKey, Source};
 use ambient_ecs::{EntityId, World};
@@ -7,12 +8,11 @@ use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_sys::task::PlatformBoxFuture;
 use anyhow::Context;
 use data_encoding::BASE64;
-use flume::{SendError, TrySendError};
-use futures::future::BoxFuture;
+use flume::TrySendError;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::io;
-use std::{any::Any, collections::HashSet, sync::Arc};
+use std::{collections::HashSet, sync::Arc};
 use wasm_bridge::Store;
 
 // use wasi_cap_std_sync::Dir;
@@ -154,9 +154,7 @@ impl ModuleState {
     pub fn create_state_maker<Bindings: BindingsBound + 'static>(
         assets: &AssetCache,
         bindings: fn(EntityId) -> Bindings,
-    ) -> Arc<
-        dyn Fn(ModuleStateArgs<'_>) -> PlatformBoxFuture<anyhow::Result<ModuleState>> + Send + Sync,
-    > {
+    ) -> ModuleStateMaker {
         let assets = assets.clone();
         Arc::new(move |args: ModuleStateArgs<'_>| {
             // Generic over send or not send, depending on the target platform.
@@ -271,7 +269,6 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
 
         let mut linker =
             wasm_bridge::component::Linker::<BindingContext<Bindings>>::new(engine.inner());
-        // let mut linker = wasmtime::component::Linker::<ExecutionContext<Bindings>>::new(engine);
 
         add_to_linker(&mut linker)?;
 
@@ -281,14 +278,13 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
 
         let (guest_bindings, guest_instance) = async {
             let (guest_bindings, guest_instance) =
-                shared::wit::Bindings::instantiate_async(&mut store, &component, &linker).await?;
+                shared::wit::Bindings::instantiate(&mut store, &component, &linker)?;
 
             // Initialise the runtime.
             tracing::debug!(id=?args.id, "initialize runtime");
             guest_bindings
                 .ambient_bindings_guest()
-                .call_init(&mut store)
-                .await?;
+                .call_init(&mut store)?;
 
             anyhow::Ok((guest_bindings, guest_instance))
         }
@@ -348,7 +344,7 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for InstanceState<Bindings> {
         self.store.data_mut().bindings.set_world(world);
 
         let guest = &self.guest_bindings.ambient_bindings_guest();
-        let result = pollster::block_on(guest.call_exec(
+        let result = guest.call_exec(
             &mut self.store,
             &match message_source {
                 Source::Runtime => shared::wit::guest::Source::Runtime,
@@ -358,7 +354,7 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for InstanceState<Bindings> {
             },
             message_name,
             message_data,
-        ));
+        );
 
         self.store.data_mut().bindings.clear_world();
 
