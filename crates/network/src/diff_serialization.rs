@@ -719,7 +719,7 @@ mod tests {
         let id = EntityId::new();
         let entity = Entity::new()
             .with(text(), "foo".to_string())
-            .with(float(), 3.14)
+            .with(float(), 1234.567)
             .with(counter(), 42);
         assert_passes_through_serialization(WorldDiff {
             changes: vec![WorldChange::Spawn(id, entity.clone())],
