@@ -294,6 +294,7 @@ mod tests {
     use crate::{value::EntityId, PrimitiveType, ScalarValue};
 
     #[test]
+    #[allow(clippy::approx_constant)]
     fn test_scalar_value_from_toml() -> anyhow::Result<()> {
         {
             let value = toml::Value::Array(vec![]);
