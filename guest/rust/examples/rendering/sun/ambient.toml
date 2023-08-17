@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_sun"
 name = "Sun"
 version = "0.0.1"

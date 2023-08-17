@@ -261,5 +261,5 @@ pub struct ProxySettings {
     pub endpoint: String,
     pub build_path: AbsAssetUrl,
     pub pre_cache_assets: bool,
-    pub primary_ember_id: String,
+    pub primary_package_id: String,
 }

@@ -6,7 +6,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use ambient_core::{asset_cache, name, no_sync, project_name, FIXED_SERVER_TICK_TIME};
+use ambient_core::{asset_cache, name, no_sync, package_name, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
     dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World,
     WorldEventsSystem, WorldStreamCompEvent,
@@ -21,8 +21,8 @@ use ambient_network::{
     native::server::{Crypto, GameServer},
     server::{ForkingEvent, ProxySettings, ShutdownEvent},
 };
+use ambient_package::BuildMetadata;
 use ambient_prefab::PrefabFromUrl;
-use ambient_project::BuildMetadata;
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
 use axum::{
@@ -42,10 +42,10 @@ pub async fn start(
     assets: AssetCache,
     host_cli: &HostCli,
     build_root_path: AbsAssetUrl,
-    main_ember_path: AbsAssetUrl,
+    main_package_path: AbsAssetUrl,
     view_asset_path: Option<PathBuf>,
     working_directory: PathBuf,
-    manifest: ambient_project::Manifest,
+    manifest: ambient_package::Manifest,
     crypto: Crypto,
 ) -> SocketAddr {
     let quic_interface_port = host_cli.quic_interface_port;
@@ -58,7 +58,7 @@ pub async fn start(
             .unwrap_or("http://proxy.ambient.run/proxy".to_string()),
         build_path: build_root_path.clone(),
         pre_cache_assets: host_cli.proxy_pre_cache_assets,
-        primary_ember_id: manifest.ember.id.to_string(),
+        primary_package_id: manifest.package.id.to_string(),
     });
 
     let server = if let Some(port) = quic_interface_port {
@@ -129,16 +129,16 @@ pub async fn start(
             )
             .unwrap();
 
-        // Keep track of the project name
+        // Keep track of the package name
         let name = manifest
-            .ember
+            .package
             .name
             .clone()
             .unwrap_or_else(|| "Ambient".into());
         server_world
             .add_components(
                 server_world.resource_entity(),
-                Entity::new().with(project_name(), name),
+                Entity::new().with(package_name(), name),
             )
             .unwrap();
 
@@ -147,7 +147,7 @@ pub async fn start(
             .with(is_synced_resources(), ())
             .with(dont_store(), ())
             .with(
-                ambient_ember_semantic_native::ember_name_to_url(),
+                ambient_package_semantic_native::package_name_to_url(),
                 Default::default(),
             )
             .spawn(&mut server_world);
@@ -161,17 +161,17 @@ pub async fn start(
             .await
             .unwrap();
 
-        let mut semantic = ambient_project_semantic::Semantic::new().await.unwrap();
-        let primary_ember_scope_id = match main_ember_path.to_file_path().unwrap() {
+        let mut semantic = ambient_package_semantic::Semantic::new().await.unwrap();
+        let primary_package_scope_id = match main_package_path.to_file_path().unwrap() {
             Some(local_path) => {
-                shared::ember::add(Some(&mut server_world), &mut semantic, &local_path)
+                shared::package::add(Some(&mut server_world), &mut semantic, &local_path)
                     .await
                     .unwrap()
             }
 
             None => {
                 let metadata = BuildMetadata::parse(
-                    &main_ember_path
+                    &main_package_path
                         .push(BuildMetadata::FILENAME)
                         .unwrap()
                         .download_string(&assets)
@@ -180,7 +180,7 @@ pub async fn start(
                 )
                 .unwrap();
 
-                shared::ember::add_parsed_manifest(&mut semantic, &manifest, metadata)
+                shared::package::add_parsed_manifest(&mut semantic, &manifest, metadata)
                     .await
                     .unwrap()
             }
@@ -188,23 +188,23 @@ pub async fn start(
 
         let mut queue = semantic
             .items
-            .scope_and_dependencies(primary_ember_scope_id);
+            .scope_and_dependencies(primary_package_scope_id);
         queue.reverse();
 
         server_world
             .add_component(
                 server_world.resource_entity(),
-                ambient_ember_semantic_native::semantic(),
+                ambient_package_semantic_native::semantic(),
                 Arc::new(Mutex::new(semantic)),
             )
             .unwrap();
 
-        while let Some(ember_id) = queue.pop() {
-            wasm::instantiate_ember(&mut server_world, ember_id).unwrap();
+        while let Some(package_id) = queue.pop() {
+            wasm::instantiate_package(&mut server_world, package_id).unwrap();
         }
 
         if let Some(asset_path) = view_asset_path {
-            let asset_path = main_ember_path
+            let asset_path = main_package_path
                 .push(asset_path.to_string_lossy())
                 .expect("FIXME")
                 .push("prefabs/main.json")

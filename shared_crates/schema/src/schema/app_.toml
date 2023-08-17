@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "app"
 name = "App"
 description = "High-level state relevant to the application (including the in-development Editor)."
@@ -65,11 +65,11 @@ name = "Description"
 description = "A human-friendly description for this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components.project_name]
+[components.package_name]
 type = "String"
-name = "Project Name"
+name = "Package Name"
 description = """
-The name of the project, from the manifest.
+The name of the package, from the manifest.
 Defaults to \"Ambient\"."""
 attributes = ["Debuggable", "Resource"]
 

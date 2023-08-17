@@ -1,6 +1,6 @@
 # Ambient deploy
 
-Implements functionality for deploying Ambient projects to Ambient services.
+Implements functionality for deploying Ambient packages to Ambient services.
 
 ## `proto`
 

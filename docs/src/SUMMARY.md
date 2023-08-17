@@ -19,7 +19,7 @@
 
 - [Getting content](reference/getting_content.md)
 - [Runtime](reference/runtime.md)
-- [Ember](reference/ember.md)
+- [Package](reference/package.md)
 - [ECS](reference/ecs.md)
 - [Models](reference/models.md)
 - [Hierarchies and transforms](reference/hierarchies.md)

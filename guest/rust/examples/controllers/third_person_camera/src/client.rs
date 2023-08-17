@@ -12,7 +12,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::ambient_example_third_person_camera::{
+use packages::ambient_example_third_person_camera::{
     components::{camera_follow_distance, player_camera_ref},
     messages::Input,
 };

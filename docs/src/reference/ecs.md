@@ -14,15 +14,15 @@ Entities are the objects that exist in the game world. They consist of a unique 
 
 ## Components
 
-Components are pieces of data that can be attached to entities. They store information like health, position, velocity, and more. Components are defined in the ember manifest, and are attached to entities at runtime.
+Components are pieces of data that can be attached to entities. They store information like health, position, velocity, and more. Components are defined in the package manifest, and are attached to entities at runtime.
 
-They are defined in the manifest (and not your codebase) so that other embers that depend on your ember can use them when interacting with the ECS. Additionally, this means that component definitions are not tied to a specific language, and can be used in any language that supports the runtime.
+They are defined in the manifest (and not your codebase) so that other packages that depend on your package can use them when interacting with the ECS. Additionally, this means that component definitions are not tied to a specific language, and can be used in any language that supports the runtime.
 
-For more detail on what components can be, see the [ember manifest reference](ember.md#components--components). Note that component types cannot be nested - you cannot have a component that is a `Vec` of `Vec`s.
+For more detail on what components can be, see the [package manifest reference](package.md#components--components). Note that component types cannot be nested - you cannot have a component that is a `Vec` of `Vec`s.
 
 ### Attributes
 
-Components can have attributes that modify their behavior. These attributes are defined in the ember manifest, and are used by the runtime to determine how to handle the component.
+Components can have attributes that modify their behavior. These attributes are defined in the package manifest, and are used by the runtime to determine how to handle the component.
 
 #### `Debuggable`
 
@@ -32,7 +32,7 @@ This component can have its debug value printed. This is most often used for ECS
 
 This component is networked to the client. This means that the component's value will be sent to the client when the component is created, and whenever the component's value changes.
 
-Note that a component that is `Networked` on the client will _not_ be networked to the server. Ambient's ECS networking is strictly server to client; to send data from the client to the server, you must use [messages](ember.md#messages--messages).
+Note that a component that is `Networked` on the client will _not_ be networked to the server. Ambient's ECS networking is strictly server to client; to send data from the client to the server, you must use [messages](package.md#messages--messages).
 
 #### `Resource`
 
@@ -112,7 +112,7 @@ In addition to specifying components in the query, you can also specify componen
 
 ## Concepts
 
-Concepts are defined in the ember manifest, and are used to define a collection of components that correspond to some concept in the game world. For example, a `Player` concept might be defined as a collection of components that describe the player's health, inventory, and position.
+Concepts are defined in the package manifest, and are used to define a collection of components that correspond to some concept in the game world. For example, a `Player` concept might be defined as a collection of components that describe the player's health, inventory, and position.
 
 Concepts have an ID (specified as the name of their TOML table), a name, a description, and a list of components with defaults. Additionally, they can extend other concepts, which will cause them to inherit the components and defaults of the concept they extend.
 

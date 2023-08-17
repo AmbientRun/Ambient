@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_counter"
 name = "Counter"
 version = "0.0.1"

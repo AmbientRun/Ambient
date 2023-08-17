@@ -1,33 +1,33 @@
 # Getting started
 
-Ambient projects are called _embers_. An ember is a collection of code, assets, and configuration that can be run in Ambient. They can be combined with other embers to create a game.
+Ambient projects are called _packages_. A package is a collection of code, assets, and configuration that can be run in Ambient. They can be combined with other packages to create a game.
 
-## Creating a ember
+## Creating a package
 
-To create a ember, run:
+To create a package, run:
 
 ```sh
-ambient new my-ember
+ambient new my-package
 ```
 
-This will generate a new ember with a simple Rust module and an Ambient ember manifest.
+This will generate a new package with a simple Rust module and an Ambient package manifest.
 
-## Running a ember
+## Running a package
 
-This ember can be run:
+This package can be run:
 
 ```sh
-cd my-ember
+cd my-package
 ambient run
 ```
 
-From here on, you can open up the ember in your favorite IDE and start editing the code. If you need a recommendation for an IDE, see [Setting up your IDE](./setting_up_ide.md). If using VS Code, the ember can be launched with the system-installed Ambient using the `F5`/Debug button, which is preconfigured to run the current ember.
+From here on, you can open up the package in your favorite IDE and start editing the code. If you need a recommendation for an IDE, see [Setting up your IDE](./setting_up_ide.md). If using VS Code, the package can be launched with the system-installed Ambient using the `F5`/Debug button, which is preconfigured to run the current package.
 
 For more details about the API, see [API](./api.md).
 
 ## Multiplayer
 
-Every Ambient ember is multiplayer by default. To start the ember in server-only mode, use the following command:
+Every Ambient package is multiplayer by default. To start the package in server-only mode, use the following command:
 
 ```sh
 ambient serve

@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "network"
 name = "Network"
 description = "Network_related state."

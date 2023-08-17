@@ -1,5 +1,0 @@
-[ember]
-id = "{{id}}"
-name = "{{name}}"
-version = "0.0.1"
-content = { type = "Playable" }

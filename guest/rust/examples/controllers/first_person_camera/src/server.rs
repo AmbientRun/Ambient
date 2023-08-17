@@ -23,7 +23,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use embers::ambient_example_first_person_camera::{
+use packages::ambient_example_first_person_camera::{
     components::{ball_ref, player_head_ref, player_movement_direction, player_pitch, player_yaw},
     messages::Input,
 };

@@ -223,13 +223,13 @@ jobs:
             guest/rust/examples/*/*/screenshot.png
             guest/rust/examples/*/*/fail_screenshot.png
 
-  test-new-project-works:
+  test-new-package-works:
     needs: build
     strategy:
       matrix:
         include:
           - os: macos-latest
-          # We run out of storage space when trying to build and run the project on Windows.
+          # We run out of storage space when trying to build and run the package on Windows.
           # It would be nice to fix this at some point.
           # - os: windows-latest
           - os: ubuntu-20.04
@@ -243,9 +243,9 @@ jobs:
         with:
           name: ambient-${{ matrix.os }}
       - run: chmod a+x ambient
-      - name: Check that new-project works
+      - name: Check that new-package works
         run: |
           mkdir tmp
-          ./ambient new --api-path $(pwd)/guest/rust/api /tmp/ci_test_project
-          cd /tmp/ci_test_project
+          ./ambient new --api-path $(pwd)/guest/rust/api /tmp/ci_test_package
+          cd /tmp/ci_test_package
           cargo check

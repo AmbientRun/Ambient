@@ -1,5 +1,5 @@
 use ambient_api::prelude::*;
-use embers::ambient_example_messaging::messages::Local;
+use packages::ambient_example_messaging::messages::Local;
 
 #[main]
 pub fn main() {

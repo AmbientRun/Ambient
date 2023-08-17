@@ -831,7 +831,7 @@
                 "args": [
                     "build",
                     "--example=parse_ambient_schema",
-                    "--package=ambient_project_semantic"
+                    "--package=ambient_package_semantic"
                 ],
                 "filter": {
                     "name": "parse_ambient_schema",

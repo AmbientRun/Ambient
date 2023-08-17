@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "physics"
 name = "Physics"
 description = "Physics functionality and state."

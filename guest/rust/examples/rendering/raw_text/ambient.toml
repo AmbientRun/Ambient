@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_raw_text"
 name = "Raw Text"
 version = "0.0.1"

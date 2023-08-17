@@ -198,11 +198,11 @@ pub mod ambient_core {
             pub fn description() -> Component<String> {
                 *DESCRIPTION
             }
-            static PROJECT_NAME: Lazy<Component<String>> =
-                Lazy::new(|| __internal_get_component("ambient_core::app::project_name"));
-            #[doc = "**Project Name**: The name of the project, from the manifest.\n\nDefaults to \"Ambient\".\n\n*Attributes*: Debuggable, Resource"]
-            pub fn project_name() -> Component<String> {
-                *PROJECT_NAME
+            static PACKAGE_NAME: Lazy<Component<String>> =
+                Lazy::new(|| __internal_get_component("ambient_core::app::package_name"));
+            #[doc = "**Package Name**: The name of the package, from the manifest.\n\nDefaults to \"Ambient\".\n\n*Attributes*: Debuggable, Resource"]
+            pub fn package_name() -> Component<String> {
+                *PACKAGE_NAME
             }
             static SELECTABLE: Lazy<Component<()>> =
                 Lazy::new(|| __internal_get_component("ambient_core::app::selectable"));

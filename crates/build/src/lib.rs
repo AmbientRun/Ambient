@@ -9,8 +9,8 @@ use std::{
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_native_std::{asset_url::AbsAssetUrl, AmbientVersion};
-use ambient_project::{BuildMetadata, Manifest as ProjectManifest, Version};
-use ambient_project_semantic::{ItemId, Scope, Semantic};
+use ambient_package::{BuildMetadata, Manifest as PackageManifest, Version};
+use ambient_package_semantic::{ItemId, Scope, Semantic};
 use ambient_std::path::path_to_unix_string;
 use anyhow::Context;
 use futures::FutureExt;
@@ -32,7 +32,7 @@ pub struct BuildConfiguration<'a> {
 
 pub async fn build(
     config: BuildConfiguration<'_>,
-    root_ember_id: ItemId<Scope>,
+    root_package_id: ItemId<Scope>,
 ) -> anyhow::Result<PathBuf> {
     let BuildConfiguration {
         build_path,
@@ -54,14 +54,14 @@ pub async fn build(
         }
     }
 
-    let mut queue = semantic.items.scope_and_dependencies(root_ember_id);
+    let mut queue = semantic.items.scope_and_dependencies(root_package_id);
     queue.reverse();
 
     let mut output_path = build_path.clone();
-    while let Some(ember_id) = queue.pop() {
-        let id = semantic.items.get(ember_id)?.original_id.clone();
+    while let Some(package_id) = queue.pop() {
+        let id = semantic.items.get(package_id)?.original_id.clone();
         let build_path = build_path.join(id.as_str());
-        build_ember(
+        build_package(
             BuildConfiguration {
                 build_path: build_path.clone(),
                 assets: assets.clone(),
@@ -70,11 +70,11 @@ pub async fn build(
                 clean_build,
                 build_wasm_only,
             },
-            ember_id,
+            package_id,
         )
         .await?;
 
-        if ember_id == root_ember_id {
+        if package_id == root_package_id {
             output_path = build_path;
         }
     }
@@ -82,16 +82,16 @@ pub async fn build(
     Ok(output_path)
 }
 
-/// This takes the path to an Ambient ember and builds it. An Ambient ember is expected to
+/// This takes the path to an Ambient package and builds it. An Ambient package is expected to
 /// have the following structure:
 ///
 /// assets/**  Here assets such as .glb files are stored. Any files found in this directory will be processed
 /// src/**  This is where you store Rust source files
 /// build  This is the output directory, and is created when building
-/// ambient.toml  This is a metadata file to describe the ember
-async fn build_ember(
+/// ambient.toml  This is a metadata file to describe the package
+async fn build_package(
     config: BuildConfiguration<'_>,
-    ember_id: ItemId<Scope>,
+    package_id: ItemId<Scope>,
 ) -> anyhow::Result<()> {
     let BuildConfiguration {
         build_path,
@@ -103,18 +103,18 @@ async fn build_ember(
     } = config;
 
     let (mut manifest, path) = {
-        let scope = semantic.items.get(ember_id)?;
+        let scope = semantic.items.get(package_id)?;
         (
             scope
                 .manifest
                 .clone()
-                .context("the ember has no manifest")?,
+                .context("the package has no manifest")?,
             scope
                 .manifest_path
                 .as_ref()
-                .context("the ember has no path")?
+                .context("the package has no path")?
                 .parent()
-                .context("the ember path has no parent")?
+                .context("the package path has no parent")?
                 .to_owned(),
         )
     };
@@ -134,23 +134,23 @@ async fn build_ember(
         .max();
 
     let name = manifest
-        .ember
+        .package
         .name
         .as_deref()
-        .unwrap_or_else(|| manifest.ember.id.as_str());
+        .unwrap_or_else(|| manifest.package.id.as_str());
 
     if last_build_time
         .zip(last_modified_time)
         .is_some_and(|(build, modified)| modified < build)
     {
         tracing::info!(
-            "Skipping unmodified project \"{name}\" ({})",
-            manifest.ember.id
+            "Skipping unmodified package \"{name}\" ({})",
+            manifest.package.id
         );
         return Ok(());
     }
 
-    tracing::info!("Building project \"{name}\" ({})", manifest.ember.id);
+    tracing::info!("Building package \"{name}\" ({})", manifest.package.id);
 
     let assets_path = path.join("assets");
     tokio::fs::create_dir_all(&build_path)
@@ -158,17 +158,17 @@ async fn build_ember(
         .context("Failed to create build directory")?;
 
     if !build_wasm_only {
-        build_assets(&assets, &assets_path, &build_path).await?;
+        build_assets(&assets, &assets_path, &build_path, false).await?;
     }
 
     build_rust_if_available(&path, &manifest, &build_path, optimize)
         .await
         .with_context(|| format!("Failed to build Rust {build_path:?}"))?;
 
-    // Bodge: for local builds, rewrite the dependencies to be relative to this ember,
+    // Bodge: for local builds, rewrite the dependencies to be relative to this package,
     // assuming that they are all in the same folder
     {
-        let scope = semantic.items.get(ember_id)?;
+        let scope = semantic.items.get(package_id)?;
         let orig_name_to_dep = scope
             .dependencies
             .iter()
@@ -177,7 +177,7 @@ async fn build_ember(
             .collect::<Result<HashMap<_, _>, _>>()?;
 
         for (orig_name, dep) in manifest.dependencies.iter_mut() {
-            let ambient_project::Dependency { path, .. } = dep;
+            let ambient_package::Dependency { path, .. } = dep;
 
             if let Some(orig_dep) = orig_name_to_dep.get(orig_name) {
                 let dep_scope = semantic.items.get(*orig_dep)?;
@@ -204,6 +204,7 @@ pub async fn build_assets(
     assets: &AssetCache,
     assets_path: &Path,
     build_path: &Path,
+    for_import_only: bool,
 ) -> anyhow::Result<()> {
     let files = get_asset_files(assets_path).map(Into::into).collect_vec();
 
@@ -223,15 +224,19 @@ pub async fn build_assets(
             let build_path = build_path.to_owned();
             move |path, contents| {
                 let path = build_path.join("assets").join(path);
-                if let Some(ext) = path.extension() {
-                    if ext == "anim" {
-                        if !anim_files_clone.lock().contains(&path) {
-                            anim_files_clone.lock().push(path.clone());
-                        } else {
-                            println!("🤔 repeated importing; please check the pipeline.toml");
+
+                if for_import_only {
+                    if let Some(ext) = path.extension() {
+                        if ext == "anim" {
+                            if !anim_files_clone.lock().contains(&path) {
+                                anim_files_clone.lock().push(path.clone());
+                            } else {
+                                println!("🤔 repeated importing; please check the pipeline.toml");
+                            }
                         }
                     }
                 }
+
                 async move {
                     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
                     tokio::fs::write(&path, contents).await.unwrap();
@@ -259,6 +264,7 @@ pub async fn build_assets(
     pipelines::process_pipelines(&ctx)
         .await
         .with_context(|| format!("Failed to process pipelines for {assets_path:?}"))?;
+
     if !anim_files.lock().is_empty() {
         println!("🐆 Available animation files: {:?}", anim_files.lock());
         println!("🧂 You can use the animation files like this:");
@@ -281,12 +287,12 @@ pub async fn build_assets(
 }
 
 pub async fn build_rust_if_available(
-    project_path: &Path,
-    manifest: &ProjectManifest,
+    package_path: &Path,
+    manifest: &PackageManifest,
     build_path: &Path,
     optimize: bool,
 ) -> anyhow::Result<()> {
-    let cargo_toml_path = project_path.join("Cargo.toml");
+    let cargo_toml_path = package_path.join("Cargo.toml");
     if !cargo_toml_path.exists() {
         return Ok(());
     }
@@ -294,7 +300,7 @@ pub async fn build_rust_if_available(
     let rustc = ambient_rustc::Rust::get_system_installation().await?;
 
     for feature in &manifest.build.rust.feature_multibuild {
-        for (path, bytecode) in rustc.build(project_path, optimize, &[feature])? {
+        for (path, bytecode) in rustc.build(package_path, optimize, &[feature])? {
             let component_bytecode = ambient_wasm::shared::build::componentize(&bytecode)?;
 
             let output_path = build_path.join(feature);
@@ -321,7 +327,7 @@ fn get_component_paths(target: &str, build_path: &Path) -> Vec<String> {
         .unwrap_or_default()
 }
 
-async fn store_manifest(manifest: &ProjectManifest, build_path: &Path) -> anyhow::Result<()> {
+async fn store_manifest(manifest: &PackageManifest, build_path: &Path) -> anyhow::Result<()> {
     let manifest_path = build_path.join("ambient.toml");
     tokio::fs::write(&manifest_path, toml::to_string(&manifest)?).await?;
     Ok(())

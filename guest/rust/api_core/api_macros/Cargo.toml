@@ -15,8 +15,8 @@ proc-macro = true
 quote = "1.0"
 proc-macro2 = "1.0"
 
-ambient_project = { workspace = true }
-ambient_project_macro_common = { workspace = true }
+ambient_package = { workspace = true }
+ambient_package_macro_common = { workspace = true }
 ambient_schema = { workspace = true }
 
 anyhow = { workspace = true }

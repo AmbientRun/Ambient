@@ -1,5 +1,5 @@
 use ambient_api::prelude::*;
-use embers::ambient_example_messaging::messages::{HelloWithoutBody, Local};
+use packages::ambient_example_messaging::messages::{HelloWithoutBody, Local};
 
 #[main]
 pub fn main() {

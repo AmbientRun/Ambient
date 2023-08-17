@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "prefab"
 name = "Prefab"
 description = "Prefab-related state, including loading of prefabs."

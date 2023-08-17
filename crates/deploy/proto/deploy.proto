@@ -14,7 +14,7 @@ message AssetContent {
 }
 
 message DeployAssetRequest {
-  string emberId = 1;
+  string packageId = 1;
   repeated AssetContent contents = 2;
 }
 

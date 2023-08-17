@@ -15,13 +15,13 @@ pub async fn handle(
     host: &HostCli,
     view_asset_path: Option<PathBuf>,
     build_root_path: AbsAssetUrl,
-    main_ember_path: AbsAssetUrl,
+    main_package_path: AbsAssetUrl,
     assets: &AssetCache,
 ) -> anyhow::Result<ResolvedAddr> {
-    let manifest = retrieve_manifest(&main_ember_path, assets).await?;
+    let manifest = retrieve_manifest(&main_package_path, assets).await?;
     let crypto = get_crypto(host)?;
 
-    let working_directory = main_ember_path
+    let working_directory = main_package_path
         .to_file_path()?
         .clone()
         .unwrap_or(std::env::current_dir()?);
@@ -30,7 +30,7 @@ pub async fn handle(
         assets.clone(),
         host,
         build_root_path,
-        main_ember_path,
+        main_package_path,
         view_asset_path,
         working_directory,
         manifest,

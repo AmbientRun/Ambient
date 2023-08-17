@@ -135,7 +135,6 @@ dependencies = [
  "ambient_ecs",
  "ambient_editor_derive",
  "ambient_element",
- "ambient_ember_semantic_native",
  "ambient_gizmos",
  "ambient_gpu",
  "ambient_input",
@@ -145,11 +144,12 @@ dependencies = [
  "ambient_model_import",
  "ambient_native_std",
  "ambient_network",
+ "ambient_package",
+ "ambient_package_semantic",
+ "ambient_package_semantic_native",
  "ambient_physics",
  "ambient_prefab",
  "ambient_primitives",
- "ambient_project",
- "ambient_project_semantic",
  "ambient_renderer",
  "ambient_rpc",
  "ambient_shared_types",
@@ -220,7 +220,7 @@ name = "ambient_api_core"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_api_macros",
- "ambient_project_rt",
+ "ambient_package_rt",
  "ambient_shared_types",
  "anyhow",
  "byteorder",
@@ -241,8 +241,8 @@ dependencies = [
 name = "ambient_api_macros"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_project",
- "ambient_project_macro_common",
+ "ambient_package",
+ "ambient_package_macro_common",
  "ambient_schema",
  "anyhow",
  "proc-macro2 1.0.66",
@@ -383,10 +383,10 @@ dependencies = [
  "ambient_model",
  "ambient_model_import",
  "ambient_native_std",
+ "ambient_package",
+ "ambient_package_semantic",
  "ambient_physics",
  "ambient_pipeline_types",
- "ambient_project",
- "ambient_project_semantic",
  "ambient_renderer",
  "ambient_rustc",
  "ambient_std",
@@ -462,7 +462,7 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_asset_cache",
  "ambient_native_std",
- "ambient_project",
+ "ambient_package",
  "ambient_sys",
  "anyhow",
  "log",
@@ -564,7 +564,7 @@ dependencies = [
 name = "ambient_deploy"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_project",
+ "ambient_package",
  "ambient_sys",
  "anyhow",
  "flume",
@@ -582,8 +582,8 @@ name = "ambient_ecs"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_native_std",
- "ambient_project_macro_common",
- "ambient_project_rt",
+ "ambient_package_macro_common",
+ "ambient_package_rt",
  "ambient_shared_types",
  "ambient_sys",
  "anyhow",
@@ -739,17 +739,6 @@ dependencies = [
  "proc-macro2 1.0.66",
  "quote 1.0.32",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "ambient_ember_semantic_native"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_ecs",
- "ambient_native_std",
- "ambient_network",
- "ambient_project_semantic",
- "anyhow",
 ]
 
 [[package]]
@@ -1138,6 +1127,87 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_package"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_shared_types",
+ "anyhow",
+ "convert_case 0.6.0",
+ "indexmap 2.0.0",
+ "once_cell",
+ "paste",
+ "proc-macro2 1.0.66",
+ "quote 1.0.32",
+ "serde",
+ "serde_json",
+ "syn 1.0.109",
+ "thiserror",
+ "toml 0.7.4",
+ "url",
+]
+
+[[package]]
+name = "ambient_package_macro_common"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_package",
+ "ambient_package_semantic",
+ "ambient_shared_types",
+ "anyhow",
+ "indoc",
+ "proc-macro2 1.0.66",
+ "quote 1.0.32",
+ "serde",
+ "syn 1.0.109",
+ "thiserror",
+ "tokio",
+ "toml 0.7.4",
+]
+
+[[package]]
+name = "ambient_package_rt"
+version = "0.3.0-dev"
+dependencies = [
+ "byteorder",
+ "glam 0.24.0",
+ "thiserror",
+]
+
+[[package]]
+name = "ambient_package_semantic"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_package",
+ "ambient_schema",
+ "ambient_shared_types",
+ "ambient_std",
+ "anyhow",
+ "async-recursion",
+ "async-trait",
+ "data-encoding",
+ "glam 0.24.0",
+ "indexmap 2.0.0",
+ "paste",
+ "reqwest",
+ "thiserror",
+ "tokio",
+ "toml 0.7.4",
+ "ulid",
+ "url",
+]
+
+[[package]]
+name = "ambient_package_semantic_native"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_ecs",
+ "ambient_native_std",
+ "ambient_network",
+ "ambient_package_semantic",
+ "anyhow",
+]
+
+[[package]]
 name = "ambient_physics"
 version = "0.3.0-dev"
 dependencies = [
@@ -1234,76 +1304,6 @@ dependencies = [
  "tracing",
  "ulid",
  "wgpu 0.16.1",
-]
-
-[[package]]
-name = "ambient_project"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_shared_types",
- "anyhow",
- "convert_case 0.6.0",
- "indexmap 2.0.0",
- "once_cell",
- "paste",
- "proc-macro2 1.0.66",
- "quote 1.0.32",
- "serde",
- "serde_json",
- "syn 1.0.109",
- "thiserror",
- "toml 0.7.4",
- "url",
-]
-
-[[package]]
-name = "ambient_project_macro_common"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_project",
- "ambient_project_semantic",
- "ambient_shared_types",
- "anyhow",
- "indoc",
- "proc-macro2 1.0.66",
- "quote 1.0.32",
- "serde",
- "syn 1.0.109",
- "thiserror",
- "tokio",
- "toml 0.7.4",
-]
-
-[[package]]
-name = "ambient_project_rt"
-version = "0.3.0-dev"
-dependencies = [
- "byteorder",
- "glam 0.24.0",
- "thiserror",
-]
-
-[[package]]
-name = "ambient_project_semantic"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_project",
- "ambient_schema",
- "ambient_shared_types",
- "ambient_std",
- "anyhow",
- "async-recursion",
- "async-trait",
- "data-encoding",
- "glam 0.24.0",
- "indexmap 2.0.0",
- "paste",
- "reqwest",
- "thiserror",
- "tokio",
- "toml 0.7.4",
- "ulid",
- "url",
 ]
 
 [[package]]
@@ -1649,17 +1649,17 @@ dependencies = [
  "ambient_app",
  "ambient_core",
  "ambient_ecs",
- "ambient_ember_semantic_native",
  "ambient_gpu",
  "ambient_input",
  "ambient_model",
  "ambient_native_std",
  "ambient_network",
+ "ambient_package",
+ "ambient_package_macro_common",
+ "ambient_package_semantic_native",
  "ambient_physics",
  "ambient_prefab",
  "ambient_procedurals",
- "ambient_project",
- "ambient_project_macro_common",
  "ambient_renderer",
  "ambient_shared_types",
  "ambient_std",

@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use anyhow::Context;
 use clap::{Args, Subcommand};
 
-use super::ProjectPath;
+use super::PackagePath;
 
 #[derive(Subcommand, Clone, Debug)]
 pub enum AssetCommand {
@@ -38,7 +38,7 @@ pub struct ImportOptions {
 pub async fn handle(command: &AssetCommand, assets: &crate::AssetCache) -> anyhow::Result<()> {
     match command {
         AssetCommand::MigratePipelinesToml(opt) => {
-            let path = ProjectPath::new_local(opt.path.clone())?;
+            let path = PackagePath::new_local(opt.path.clone())?;
             ambient_build::migrate::toml::process(path.fs_path.unwrap())
                 .await
                 .context("Failed to migrate pipelines")?;
@@ -63,6 +63,7 @@ pub async fn handle(command: &AssetCommand, assets: &crate::AssetCache) -> anyho
                     assets,
                     &PathBuf::from("assets"),
                     &PathBuf::from("build"),
+                    true,
                 )
                 .await?;
             }

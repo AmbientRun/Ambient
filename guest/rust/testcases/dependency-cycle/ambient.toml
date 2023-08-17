@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "dependency_cycle"
 name = "dependency-cycle"
 version = "0.0.1"

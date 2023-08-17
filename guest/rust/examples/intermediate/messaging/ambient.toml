@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_messaging"
 name = "Messaging"
 description = "This shows how to Ambient message passing system works."

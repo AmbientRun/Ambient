@@ -15,7 +15,7 @@ use ambient_api::{
 
 mod constants;
 use constants::*;
-use embers::ambient_example_arkanoid::{
+use packages::ambient_example_arkanoid::{
     assets,
     components::{player_movement_direction, track_audio_url},
     messages::{Input, Ping},

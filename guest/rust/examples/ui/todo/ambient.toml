@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_todo"
 name = "todo"
 version = "0.0.1"

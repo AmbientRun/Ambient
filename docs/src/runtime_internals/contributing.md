@@ -132,12 +132,12 @@ To do so, you will need to update the following files:
 
 ### Code generation
 
-- `shared_crates/project_semantic/src/value.rs`: Specify how to parse TOML for a value of the type.
-- `shared_crates/project_macro_common/src/concepts.rs`: Specify how to generate Rust code for a value of the type.
+- `shared_crates/package_semantic/src/value.rs`: Specify how to parse TOML for a value of the type.
+- `shared_crates/package_macro_common/src/concepts.rs`: Specify how to generate Rust code for a value of the type.
 
 ### Runtime support
 
-- `shared_crates/project_rt/src/message_serde.rs`: Specify how to serialize and deserialize the type to a binary stream.
+- `shared_crates/package_rt/src/message_serde.rs`: Specify how to serialize and deserialize the type to a binary stream.
 
 ### Utilities
 
@@ -147,7 +147,7 @@ To do so, you will need to update the following files:
 ### Documentation
 
 - `CHANGELOG.md`: Document the addition of the new supported type.
-- `docs/src/reference/ember.md`: Document the new type in the components section.
+- `docs/src/reference/package.md`: Document the new type in the components section.
 
 ## Golden image tests
 
@@ -183,7 +183,7 @@ There are known situations where a test might fail seemingly randomly, even if t
 1. Run `cargo campfire release update-version new_version_here` to update the Ambient version across the crates and documentation.
 2. Run `cargo campfire doc runtime` to update the documentation from the codebase.
 3. If a new system dependency was added, ensure it is added to `docs/src/installing.md` and `Dockerfile`.
-4. Run `cargo campfire example check-all` and ensure all guest projects build without errors.
+4. Run `cargo campfire example check-all` and ensure all guest packages build without errors.
 5. Run `cargo campfire example run-all` and visually verify that they work as expected.
 6. Use `cargo campfire release check` to check that the release is ready.
 7. Update the `CHANGELOG.md` at the root of the repository. Copy the unreleased block, set the version and date on the copy, and then empty out the unreleased block for the next release.

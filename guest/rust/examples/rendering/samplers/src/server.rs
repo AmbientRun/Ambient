@@ -13,7 +13,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use embers::ambient_example_samplers::assets;
+use packages::ambient_example_samplers::assets;
 
 #[main]
 pub fn main() {
