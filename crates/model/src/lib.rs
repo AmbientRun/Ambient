@@ -103,11 +103,7 @@ async fn internal_spawn_models_from_defs(
         .with(gpu_primitives_mesh(), Default::default())
         .with(gpu_primitives_lod(), Default::default())
         .with(color(), vec4(0.0, 0.5, 1.0, 1.0))
-        .with(main_scene(), ())
-        .with(local_to_world(), Default::default())
-        .with(mesh_to_world(), Default::default())
-        .with(local_to_world(), Default::default())
-        .with(inv_local_to_world(), Default::default());
+        .with(main_scene(), ());
 
     let mut ids = entities_with_models
         .values()
@@ -122,7 +118,15 @@ async fn internal_spawn_models_from_defs(
         for id in ids {
             remove_model(world, id);
             tracing::debug!("Spawning cube model for {id}");
-            log_result!(world.add_components(id, cube.clone()))
+            log_result!(world.add_components(id, cube.clone()));
+
+            // these should only be added if they do not already exist, as otherwise they will replace the existing values
+            // TODO: consider backing up color, too
+            for component in [local_to_world(), mesh_to_world()] {
+                if !world.has_component(id, component) {
+                    let _ = world.add_component(id, component, Default::default());
+                }
+            }
         }
     });
 
