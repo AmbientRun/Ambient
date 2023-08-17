@@ -14,7 +14,7 @@ pub enum ManifestParseError {
     #[error("manifest was not valid TOML")]
     TomlError(#[from] toml::de::Error),
     #[error("manifest contains a project section; projects have been renamed to packages")]
-    ProjectRenamedToEmberError,
+    ProjectRenamedToPackageError,
 }
 
 #[derive(Deserialize, Clone, Debug, Default, PartialEq, Serialize)]
@@ -42,7 +42,7 @@ impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, ManifestParseError> {
         let raw = toml::from_str::<toml::Table>(manifest)?;
         if raw.contains_key("project") {
-            return Err(ManifestParseError::ProjectRenamedToEmberError);
+            return Err(ManifestParseError::ProjectRenamedToPackageError);
         }
 
         Ok(toml::from_str(manifest)?)
@@ -197,7 +197,7 @@ mod tests {
 
         assert_eq!(
             Manifest::parse(TOML),
-            Err(ManifestParseError::ProjectRenamedToEmberError)
+            Err(ManifestParseError::ProjectRenamedToPackageError)
         )
     }
 

@@ -280,7 +280,7 @@ async fn process_file_requests(
                     .to_vec();
                 log::debug!("Sending MD5 for {:?} = {}", path, hex(&md5_digest));
                 tx.send_async(DeployAssetRequest {
-                    ember_id: package_id.clone(),
+                    package_id: package_id.clone(),
                     contents: vec![AssetContent {
                         path,
                         total_size: content.len() as u64,
@@ -339,7 +339,7 @@ async fn asset_requests_from_file_path(
     // handle empty file
     if content.is_empty() {
         return Ok(vec![DeployAssetRequest {
-            ember_id: package_id.as_ref().into(),
+            package_id: package_id.as_ref().into(),
             contents: vec![AssetContent {
                 path: asset_path.as_ref().into(),
                 total_size,
@@ -352,7 +352,7 @@ async fn asset_requests_from_file_path(
     Ok(content
         .chunks(CHUNK_SIZE)
         .map(|chunk| DeployAssetRequest {
-            ember_id: package_id.as_ref().into(),
+            package_id: package_id.as_ref().into(),
             contents: vec![AssetContent {
                 path: asset_path.as_ref().into(),
                 total_size,
