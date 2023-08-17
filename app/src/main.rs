@@ -66,7 +66,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     if let Commands::Assets { command } = &cli.command {
-        return rt.block_on(assets_cmd(command));
+        return assets_cmd(&rt, command);
     }
 
     // Build the project if required. Note that this only runs if the project is local.
@@ -78,7 +78,7 @@ fn main() -> anyhow::Result<()> {
         .filter(|p| !p.no_build)
         .zip(project_path.fs_path.as_deref())
     {
-        rt.block_on(build_project(project, project_path, &assets))?
+        build_project(&rt, project, project_path, &assets)?
     } else {
         (project_path.clone(), None)
     };
@@ -98,16 +98,42 @@ fn main() -> anyhow::Result<()> {
         ..
     } = &cli.command
     {
-        return rt.block_on(deploy_cli(
-            &project_path,
-            &assets,
-            build_path.as_ref(),
-            token,
-            api_server,
-            *force_upload,
-            *ensure_running,
-            context,
-        ));
+        // TODO: use the build path instead of the project path for deploys
+        let (project_path, manifest, _build_path) =
+            retrieve_project_path_and_manifest(&rt, project_path, &assets, build_path)?;
+
+        return rt.block_on(async {
+            let Some(project_fs_path) = &project_path.fs_path else {
+                anyhow::bail!("Can only deploy a local project");
+            };
+            let deployment_id = ambient_deploy::deploy(
+                runtime,
+                api_server,
+                token,
+                project_fs_path,
+                &manifest,
+                *force_upload,
+            )
+            .await?;
+            log::info!(
+                "Assets deployed successfully. Deployment id: {}. Deploy url: https://assets.ambient.run/{}",
+                deployment_id,
+                deployment_id,
+            );
+            if *ensure_running {
+                let spec = ambient_cloud_client::ServerSpec::new_with_deployment(deployment_id)
+                    .with_context(context.clone());
+                let server = ambient_cloud_client::ensure_server_running(
+                    &assets,
+                    api_server,
+                    token.into(),
+                    spec,
+                )
+                .await?;
+                log::info!("Deployed ember is running at {}", server.host);
+            }
+            Ok(())
+        });
     }
 
     // Otherwise, either connect to a server or host one
@@ -137,19 +163,19 @@ fn main() -> anyhow::Result<()> {
             ResolvedAddr::localhost_with_port(QUIC_INTERFACE_PORT)
         }
     } else if let Some(host) = &cli.host() {
-        let (project_path, manifest, build_path) = rt.block_on(
-            retrieve_project_path_and_manifest(&project_path, &assets, build_path.as_ref()),
-        )?;
+        let (project_path, manifest, build_path) =
+            retrieve_project_path_and_manifest(&rt, project_path, &assets, build_path)?;
 
-        rt.block_on(server_run_cmd(
+        server_run_cmd(
             host,
             project_path,
+            &rt,
             runtime,
             &assets,
             &cli,
             build_path,
             manifest,
-        ))?
+        )?
     } else {
         unreachable!()
     };
@@ -168,54 +194,18 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn deploy_cli(
-    project_path: &ProjectPath,
+fn retrieve_project_path_and_manifest(
+    rt: &tokio::runtime::Runtime,
+    project_path: ProjectPath,
     assets: &AssetCache,
-    build_path: Option<&AbsAssetUrl>,
-    token: &str,
-    api_server: &str,
-    force_upload: bool,
-    ensure_running: bool,
-    context: &str,
-) -> Result<(), anyhow::Error> {
-    let (project_path, manifest, _build_path) =
-        retrieve_project_path_and_manifest(project_path, assets, build_path).await?;
-
-    let Some(project_fs_path) = &project_path.fs_path else {
-            anyhow::bail!("Can only deploy a local project");
-        };
-
-    let deployment_id =
-        ambient_deploy::deploy(api_server, token, project_fs_path, &manifest, force_upload).await?;
-
-    log::info!(
-        "Assets deployed successfully. Deployment id: {}. Deploy url: https://assets.ambient.run/{}",
-        deployment_id,
-        deployment_id,
-    );
-
-    if ensure_running {
-        let spec = ambient_cloud_client::ServerSpec::new_with_deployment(deployment_id)
-            .with_context(context.to_string());
-        let server =
-            ambient_cloud_client::ensure_server_running(assets, api_server, token.into(), spec)
-                .await?;
-        log::info!("Deployed ember is running at {}", server.host);
-    }
-    Ok(())
-}
-
-async fn retrieve_project_path_and_manifest(
-    project_path: &ProjectPath,
-    assets: &AssetCache,
-    build_path: Option<&AbsAssetUrl>,
+    build_path: Option<AbsAssetUrl>,
 ) -> anyhow::Result<(ProjectPath, ambient_project::Manifest, AbsAssetUrl)> {
     // Read the project manifest from the project path (which may have been updated by the build step)
     // We attempt both the root and build/ as `ambient.toml` is in the former for local builds,
     // and in the latter for deployed builds. This will likely be improved if/when deployments
     // no longer have their own build directory.
     async fn get_new_project_path_and_manifest(
-        project_path: &ProjectPath,
+        project_path: ProjectPath,
         assets: &AssetCache,
     ) -> anyhow::Result<(ProjectPath, ambient_project::Manifest)> {
         let paths = [project_path.url.clone(), project_path.push("build")];
@@ -231,63 +221,65 @@ async fn retrieve_project_path_and_manifest(
 
         anyhow::bail!("Failed to find ambient.toml in project");
     }
-
-    let (project_path, manifest) = get_new_project_path_and_manifest(project_path, assets).await?;
-    let build_path = build_path
-        .cloned()
-        .unwrap_or_else(|| project_path.url.push("build").unwrap());
+    let (project_path, manifest) =
+        rt.block_on(get_new_project_path_and_manifest(project_path, assets))?;
+    let build_path = build_path.unwrap_or_else(|| project_path.url.push("build").unwrap());
     Ok((project_path, manifest, build_path))
 }
 
-async fn build_project(
+fn build_project(
+    rt: &tokio::runtime::Runtime,
     project: &ProjectCli,
     project_path: &Path,
     assets: &AssetCache,
 ) -> anyhow::Result<(ProjectPath, Option<AbsAssetUrl>)> {
-    let build_path = project_path.join("build");
-    // The build step uses its own semantic to ensure that there is
-    // no contamination, so that the built project can use its own
-    // semantic based on the flat hierarchy.
-    let mut semantic = ambient_project_semantic::Semantic::new().await?;
-    let primary_ember_scope_id = shared::ember::add(None, &mut semantic, project_path).await?;
+    rt.block_on(async {
+        let build_path = project_path.join("build");
+        // The build step uses its own semantic to ensure that there is
+        // no contamination, so that the built project can use its own
+        // semantic based on the flat hierarchy.
+        let mut semantic = ambient_project_semantic::Semantic::new().await?;
+        let primary_ember_scope_id = shared::ember::add(None, &mut semantic, project_path).await?;
 
-    let manifest = semantic
-        .items
-        .get(primary_ember_scope_id)?
-        .manifest
-        .clone()
-        .context("no manifest for scope")?;
+        let manifest = semantic
+            .items
+            .get(primary_ember_scope_id)?
+            .manifest
+            .clone()
+            .context("no manifest for scope")?;
 
-    let build_config = ambient_build::BuildConfiguration {
-        build_path: build_path.clone(),
-        assets: assets.clone(),
-        semantic: &mut semantic,
-        optimize: project.release,
-        clean_build: project.clean_build,
-        build_wasm_only: project.build_wasm_only,
-    };
+        let build_config = ambient_build::BuildConfiguration {
+            build_path: build_path.clone(),
+            assets: assets.clone(),
+            semantic: &mut semantic,
+            optimize: project.release,
+            clean_build: project.clean_build,
+            build_wasm_only: project.build_wasm_only,
+        };
 
-    let project_name = manifest
-        .ember
-        .name
-        .as_deref()
-        .unwrap_or_else(|| manifest.ember.id.as_str());
+        let project_name = manifest
+            .ember
+            .name
+            .as_deref()
+            .unwrap_or_else(|| manifest.ember.id.as_str());
 
-    tracing::info!("Building project {:?}", project_name);
+        tracing::info!("Building project {:?}", project_name);
 
-    let output_path = ambient_build::build(build_config, primary_ember_scope_id)
-        .await
-        .context("Failed to build project")?;
+        let output_path = ambient_build::build(build_config, primary_ember_scope_id)
+            .await
+            .context("Failed to build project")?;
 
-    anyhow::Ok((
-        ProjectPath::new_local(output_path)?,
-        Some(AbsAssetUrl::from_file_path(build_path)),
-    ))
+        anyhow::Ok((
+            ProjectPath::new_local(output_path)?,
+            Some(AbsAssetUrl::from_file_path(build_path)),
+        ))
+    })
 }
 
-async fn server_run_cmd(
+fn server_run_cmd(
     host: &cli::HostCli,
     project_path: ProjectPath,
+    rt: &tokio::runtime::Runtime,
     runtime: &tokio::runtime::Handle,
     assets: &AssetCache,
     cli: &Cli,
@@ -332,13 +324,11 @@ async fn server_run_cmd(
             }
         }
     };
-
     let working_directory = project_path
         .fs_path
         .clone()
         .unwrap_or(std::env::current_dir()?);
-
-    let addr = server::start(
+    let addr = rt.block_on(server::start(
         runtime,
         assets.clone(),
         cli.clone(),
@@ -347,9 +337,7 @@ async fn server_run_cmd(
         build_path,
         manifest,
         crypto,
-    )
-    .await;
-
+    ));
     Ok(ResolvedAddr::localhost_with_port(addr.port()))
 }
 
@@ -413,36 +401,41 @@ fn new_project_cmd(
     Ok(())
 }
 
-async fn assets_cmd(command: &AssetCommand) -> anyhow::Result<()> {
-    match command {
-        AssetCommand::MigratePipelinesToml(opt) => {
-            let path = ProjectPath::new_local(opt.path.clone())?;
-            ambient_build::migrate::toml::process(path.fs_path.unwrap())
-                .await
-                .context("Failed to migrate pipelines")?;
-        }
-        AssetCommand::Import(opt) => match opt.path.extension() {
-            Some(ext) => {
-                if ext == "wav" || ext == "mp3" || ext == "ogg" {
-                    let convert = opt.convert_audio;
-                    ambient_build::pipelines::import_audio(opt.path.clone(), convert)
-                        .context("failed to import audio")?;
-                } else if ext == "fbx" || ext == "glb" || ext == "gltf" || ext == "obj" {
-                    let collider_from_model = opt.collider_from_model;
-                    ambient_build::pipelines::import_model(opt.path.clone(), collider_from_model)
-                        .context("failed to import models")?;
-                } else if ext == "jpg" || ext == "png" || ext == "gif" || ext == "webp" {
-                    // TODO: import textures API may change, so this is just a placeholder
-                    todo!();
-                } else {
-                    bail!("Unsupported file type");
-                }
+fn assets_cmd(rt: &tokio::runtime::Runtime, command: &AssetCommand) -> anyhow::Result<()> {
+    rt.block_on(async {
+        match command {
+            AssetCommand::MigratePipelinesToml(opt) => {
+                let path = ProjectPath::new_local(opt.path.clone())?;
+                ambient_build::migrate::toml::process(path.fs_path.unwrap())
+                    .await
+                    .context("Failed to migrate pipelines")?;
             }
-            None => bail!("Unknown file type"),
-        },
-    }
+            AssetCommand::Import(opt) => match opt.path.extension() {
+                Some(ext) => {
+                    if ext == "wav" || ext == "mp3" || ext == "ogg" {
+                        let convert = opt.convert_audio;
+                        ambient_build::pipelines::import_audio(opt.path.clone(), convert)
+                            .context("failed to import audio")?;
+                    } else if ext == "fbx" || ext == "glb" || ext == "gltf" || ext == "obj" {
+                        let collider_from_model = opt.collider_from_model;
+                        ambient_build::pipelines::import_model(
+                            opt.path.clone(),
+                            collider_from_model,
+                        )
+                        .context("failed to import models")?;
+                    } else if ext == "jpg" || ext == "png" || ext == "gif" || ext == "webp" {
+                        // TODO: import textures API may change, so this is just a placeholder
+                        todo!();
+                    } else {
+                        bail!("Unsupported file type");
+                    }
+                }
+                None => bail!("Unknown file type"),
+            },
+        }
 
-    Ok(())
+        Ok(())
+    })
 }
 
 fn setup_logging() -> anyhow::Result<()> {

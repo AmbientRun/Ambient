@@ -33,6 +33,7 @@ const REQUIRED_FILES: &[&str] = &["ambient.toml"];
 /// This takes the path to an Ambient ember and deploys it. An Ambient ember is expected to
 /// be already built.
 pub async fn deploy(
+    runtime: &tokio::runtime::Handle,
     api_server: &str,
     auth_token: &str,
     path: impl AsRef<Path>,
@@ -73,7 +74,7 @@ pub async fn deploy(
     let (file_request_tx, file_request_rx) = flume::unbounded::<FileRequest>();
     let (deploy_asset_request_tx, deploy_asset_request_rx) =
         flume::bounded::<DeployAssetRequest>(16);
-    let handle = tokio::task::spawn(process_file_requests(
+    let handle = runtime.spawn(process_file_requests(
         file_request_rx,
         deploy_asset_request_tx,
         ember_id.clone(),
