@@ -170,8 +170,8 @@ impl Default for AmbientVersion {
     fn default() -> Self {
         Self {
             version: env!("CARGO_PKG_VERSION").to_string(),
-            revision: git_revision().unwrap_or_default(),
-            revision_full: git_revision_full().unwrap_or_default(),
+            revision: git_revision().unwrap_or("unknown".to_string()),
+            revision_full: git_revision_full().unwrap_or("unknown".to_string()),
         }
     }
 }
