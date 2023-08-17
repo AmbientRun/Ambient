@@ -14,7 +14,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::{afps_fpsmodel::assets, afps_schema::components};
+use packages::{afps_fpsmodel::assets, afps_schema::components};
 
 #[main]
 pub fn main() {

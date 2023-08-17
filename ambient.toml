@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "afps"
 name = "afps"
 version = "0.0.1"
@@ -15,7 +15,7 @@ fpsrule = { path = "core/fpsrule" }
 fpsui = { path = "core/fpsui" }
 
 console = { path = "tools/console" }
-ember_manager = { path = "tools/ember_manager" }
+package_manager = { path = "tools/package_manager" }
 
 scene = { path = "mods/scene" }
 spraypaint = { path = "mods/spraypaint" }

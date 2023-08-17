@@ -3,7 +3,9 @@ use ambient_api::prelude::*;
 mod shared;
 
 mod client;
-use client::{ember_load::EmberLoad, ember_manager::EmberManager, wasm_manager::WasmManager};
+use client::{
+    package_load::PackageLoad, package_manager::PackageManager, wasm_manager::WasmManager,
+};
 
 #[main]
 pub fn main() {
@@ -12,5 +14,5 @@ pub fn main() {
 
 #[element_component]
 pub fn App(_hooks: &mut Hooks) -> Element {
-    Group::el([EmberLoad::el(), WasmManager::el(), EmberManager::el()])
+    Group::el([PackageLoad::el(), WasmManager::el(), PackageManager::el()])
 }

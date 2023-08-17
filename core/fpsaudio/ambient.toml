@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "afps_fpsaudio"
 name = "AFPS Audio"
 

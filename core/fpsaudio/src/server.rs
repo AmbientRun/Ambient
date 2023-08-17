@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 
-use embers::afps_schema::{components, messages::*};
+use packages::afps_schema::{components, messages::*};
 
 #[main]
 pub fn main() {

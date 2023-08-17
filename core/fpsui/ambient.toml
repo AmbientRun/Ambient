@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "afps_fpsui"
 name = "AFPS UI"
 

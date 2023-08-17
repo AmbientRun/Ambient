@@ -1,25 +1,25 @@
 use ambient_api::{anyhow, core::wasm::components::bytecode_from_url, prelude::*};
 use serde::{de::DeserializeOwned, Deserialize};
 
-use crate::embers::ember_manager::messages::{
-    EmberLoad, EmberLoadSuccess, ErrorMessage, WasmReplaceBytecodeUrl,
+use crate::packages::package_manager::messages::{
+    ErrorMessage, PackageLoad, PackageLoadSuccess, WasmReplaceBytecodeUrl,
 };
 
 pub fn main() {
-    EmberLoad::subscribe(|source, msg| {
+    PackageLoad::subscribe(|source, msg| {
         let Some(user_id) = source.client_user_id() else { return; };
         let url = msg.url.strip_suffix('/').unwrap_or(&msg.url).to_owned();
         run_async(async move {
             match get_manifest_and_metadata(&url).await {
                 Ok((manifest, metadata)) => {
-                    let ember = &manifest.ember;
+                    let package = &manifest.package;
                     let make_url = |suffix: String| format!("{}/build/{}", url, suffix);
 
-                    EmberLoadSuccess {
-                        id: ember.id.to_string(),
-                        name: ember.name.clone(),
-                        authors: ember.authors.clone(),
-                        version: ember
+                    PackageLoadSuccess {
+                        id: package.id.to_string(),
+                        name: package.name.clone(),
+                        authors: package.authors.clone(),
+                        version: package
                             .version
                             .as_ref()
                             .map(|v| v.to_string())
@@ -51,7 +51,7 @@ pub fn main() {
 
 async fn get_manifest_and_metadata(
     url: &str,
-) -> anyhow::Result<(ambient_project::Manifest, Metadata)> {
+) -> anyhow::Result<(ambient_package::Manifest, Metadata)> {
     let manifest = get_toml(&format!("{url}/build/ambient.toml")).await?;
     let metadata = get_toml(&format!("{url}/build/metadata.toml")).await?;
 

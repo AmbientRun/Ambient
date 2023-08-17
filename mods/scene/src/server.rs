@@ -16,7 +16,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::afps_schema::components::player_team;
+use packages::afps_schema::components::player_team;
 
 #[main]
 pub async fn main() {

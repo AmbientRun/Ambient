@@ -18,7 +18,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::afps_zombie::{assets, components};
+use packages::afps_zombie::{assets, components};
 
 #[main]
 pub async fn main() {

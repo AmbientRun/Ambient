@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "console"
 name = "Console"
 

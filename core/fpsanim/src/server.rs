@@ -7,7 +7,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use embers::{
+use packages::{
     afps_fpsanim::{assets, components},
     afps_schema::components::{
         player_direction, player_health, player_jumping, player_model_ref, player_running,

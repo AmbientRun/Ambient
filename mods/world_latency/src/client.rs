@@ -2,7 +2,7 @@ use ambient_api::{message::Target, prelude::*};
 
 const TARGET: Target = Target::ServerUnreliable;
 
-use embers::{
+use packages::{
     afps_schema::components::player_last_frame,
     afps_world_latency::{components::server_frame, messages::FrameSeen},
 };

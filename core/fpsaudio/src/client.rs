@@ -2,7 +2,7 @@ use ambient_api::{
     core::transform::components::{rotation, translation},
     prelude::*,
 };
-use embers::{afps_fpsaudio::assets, afps_schema::messages};
+use packages::{afps_fpsaudio::assets, afps_schema::messages};
 
 #[main]
 pub fn main() {

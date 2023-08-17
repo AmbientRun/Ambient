@@ -7,6 +7,6 @@ use server::*;
 
 #[main]
 pub async fn main() {
-    ember_load::main();
+    package_load::main();
     wasm_manager::main();
 }

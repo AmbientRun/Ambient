@@ -8,39 +8,43 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::embers::ember_manager::messages;
+use crate::packages::package_manager::messages;
 
 use super::{use_hotkey_toggle, use_input_request, Window};
 
 #[element_component]
-pub fn EmberLoad(_hooks: &mut Hooks) -> Element {
-    FocusRoot::el([EmberLoadDialog::el(), EmberView::el(), ErrorMessage::el()])
+pub fn PackageLoad(_hooks: &mut Hooks) -> Element {
+    FocusRoot::el([
+        PackageLoadDialog::el(),
+        PackageView::el(),
+        ErrorMessage::el(),
+    ])
 }
 
 #[element_component]
-fn EmberLoadDialog(hooks: &mut Hooks) -> Element {
+fn PackageLoadDialog(hooks: &mut Hooks) -> Element {
     let (visible, set_visible) = use_hotkey_toggle(hooks, VirtualKeyCode::F2);
     let close = cb(move || set_visible(false));
     Window::el(
-        "Ember load".to_string(),
+        "Package load".to_string(),
         visible,
         Some(close.clone()),
-        EmberLoadDialogInner::el(close),
+        PackageLoadDialogInner::el(close),
     )
 }
 
 #[element_component]
-fn EmberLoadDialogInner(hooks: &mut Hooks, close: Cb<dyn Fn() + Sync + Send>) -> Element {
+fn PackageLoadDialogInner(hooks: &mut Hooks, close: Cb<dyn Fn() + Sync + Send>) -> Element {
     use_input_request(hooks);
     let (url, set_url) = hooks.use_state_with(|_| String::new());
 
     FlowColumn::el([
-        Text::el("Enter ember URL:").with_margin_even(STREET),
+        Text::el("Enter package URL:").with_margin_even(STREET),
         TextEditor::new(url, set_url.clone())
             .auto_focus()
             .placeholder(Some("URL"))
             .on_submit(move |url| {
-                messages::EmberLoad { url }.send_server_reliable();
+                messages::PackageLoad { url }.send_server_reliable();
                 set_url(String::new());
                 close();
             })
@@ -55,9 +59,9 @@ fn EmberLoadDialogInner(hooks: &mut Hooks, close: Cb<dyn Fn() + Sync + Send>) ->
 }
 
 #[element_component]
-fn EmberView(hooks: &mut Hooks) -> Element {
+fn PackageView(hooks: &mut Hooks) -> Element {
     let (msg, set_msg) = hooks.use_state(None);
-    hooks.use_module_message::<messages::EmberLoadSuccess>({
+    hooks.use_module_message::<messages::PackageLoadSuccess>({
         let set_msg = set_msg.clone();
         move |_, source, msg| {
             if !source.server() {
@@ -67,15 +71,15 @@ fn EmberView(hooks: &mut Hooks) -> Element {
         }
     });
     Window::el(
-        "Ember info".to_string(),
+        "Package info".to_string(),
         msg.is_some(),
         Some(cb(move || set_msg(None))),
-        EmberViewInner::el(msg),
+        PackageViewInner::el(msg),
     )
 }
 
 #[element_component]
-fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) -> Element {
+fn PackageViewInner(hooks: &mut Hooks, msg: Option<messages::PackageLoadSuccess>) -> Element {
     use_input_request(hooks);
     let modules_by_name: HashMap<_, _> = hooks
         .use_query((module_name(), bytecode_from_url()))
@@ -191,7 +195,7 @@ fn ErrorMessage(hooks: &mut Hooks) -> Element {
     });
     let close = cb(move || set_reason(None));
     Window::el(
-        "Ember load fail".to_string(),
+        "Package load fail".to_string(),
         reason.is_some(),
         Some(close.clone()),
         ErrorMessageInner::el(reason.unwrap_or_default(), close),

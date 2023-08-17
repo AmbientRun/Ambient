@@ -3,7 +3,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::{afps_schema::components::player_cam_ref, afps_spraypaint::messages::Spraypaint};
+use packages::{afps_schema::components::player_cam_ref, afps_spraypaint::messages::Spraypaint};
 
 #[main]
 pub async fn main() {

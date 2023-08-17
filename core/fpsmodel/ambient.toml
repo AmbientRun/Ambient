@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "afps_fpsmodel"
 name = "AFPS Model"
 

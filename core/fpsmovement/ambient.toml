@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "afps_fpsmovement"
 name = "AFPS Movmement"
 

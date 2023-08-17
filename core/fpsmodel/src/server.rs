@@ -19,7 +19,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::{
+use packages::{
     afps_fpsmodel::assets,
     afps_schema::components::{player_cam_ref, player_model_ref, player_name, player_zoomed},
 };

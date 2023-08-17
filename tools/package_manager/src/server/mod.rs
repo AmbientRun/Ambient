@@ -1,2 +1,2 @@
-pub mod ember_load;
+pub mod package_load;
 pub mod wasm_manager;

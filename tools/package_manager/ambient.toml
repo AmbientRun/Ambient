@@ -1,11 +1,11 @@
-[ember]
-id = "ember_manager"
-name = "Ember Manager"
+[package]
+id = "package_manager"
+name = "Package Manager"
 
-[messages.EmberLoad.fields]
+[messages.PackageLoad.fields]
 url = "String"
 
-[messages.EmberLoadSuccess.fields]
+[messages.PackageLoadSuccess.fields]
 id = "String"
 name = { container_type = "Option", element_type = "String" }
 version = "String"

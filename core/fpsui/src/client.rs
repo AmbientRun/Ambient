@@ -7,7 +7,7 @@ use ambient_api::{
     ui::ImageFromUrl,
 };
 
-use embers::{
+use packages::{
     afps_fpsui::assets,
     afps_schema::{
         components::player_name,
@@ -66,7 +66,7 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
             Text::el("hold [Tab] to toggle the scoreboard."),
             Text::el("modding:").section_style(),
             Text::el("use [F1] to toggle the console."),
-            Text::el("use [F2] to open the Ember Loader."),
+            Text::el("use [F2] to open the Package Loader."),
             Text::el("use [F3] to open the WASM Manager."),
         ])
         .with(space_between_items(), STREET)])
