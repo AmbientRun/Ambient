@@ -193,12 +193,12 @@ The `concepts` section contains custom concepts defined by the ember. Concepts a
 
 This is a TOML table, where the keys are the concept IDs (`SnakeCaseIdentifier`), and the values are the concept definitions.
 
-| Property      | Type                 | Description                                                                         |
-| ------------- | -------------------- | ----------------------------------------------------------------------------------- |
-| `name`        | `String`             | _Optional_. A human-readable name for the concept.                                  |
-| `description` | `String`             | _Optional_. A human-readable description of the concept.                            |
-| `extends`     | `String[]`           | _Optional_. An array of concepts to extend. Must be defined in this ember manifest. |
-| `components`  | `Map<ItemPath, any>` | _Required_. An object containing the components and their default values.           |
+| Property      | Type                 | Description                                                                                                                                                                          |
+| ------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`        | `String`             | _Optional_. A human-readable name for the concept.                                                                                                                                   |
+| `description` | `String`             | _Optional_. A human-readable description of the concept.                                                                                                                             |
+| `extends`     | `String[]`           | _Optional_. An array of concepts to extend. Must be defined in this ember manifest.                                                                                                  |
+| `components`  | `Map<ItemPath, any>` | _Required_. An object containing the components and their default values. `Mat4` and `Quat` support `Identity` as a value, which will use the relevant identity value for that type. |
 
 The `components` is an object where the keys are `ItemPath`s of components defined in the ember manifest, and the values are the default values for those components in the concept.
 
