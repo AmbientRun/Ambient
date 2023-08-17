@@ -2338,11 +2338,10 @@ pub mod ambient_core {
         };
         #[derive(Clone, Debug)]
         #[doc = "**Frame**: Sent to all modules every frame."]
-        pub struct Frame {}
+        pub struct Frame;
         impl Frame {
-            #[allow(clippy::too_many_arguments)]
             pub fn new() -> Self {
-                Self {}
+                Self
             }
         }
         impl Message for Frame {
@@ -2419,11 +2418,10 @@ pub mod ambient_core {
         impl RuntimeMessage for ColliderLoads {}
         #[derive(Clone, Debug)]
         #[doc = "**ModuleLoad**: Sent to a module when it loads."]
-        pub struct ModuleLoad {}
+        pub struct ModuleLoad;
         impl ModuleLoad {
-            #[allow(clippy::too_many_arguments)]
             pub fn new() -> Self {
-                Self {}
+                Self
             }
         }
         impl Message for ModuleLoad {
@@ -2446,11 +2444,10 @@ pub mod ambient_core {
         }
         #[derive(Clone, Debug)]
         #[doc = "**ModuleUnload**: Sent to a module when it unloads."]
-        pub struct ModuleUnload {}
+        pub struct ModuleUnload;
         impl ModuleUnload {
-            #[allow(clippy::too_many_arguments)]
             pub fn new() -> Self {
-                Self {}
+                Self
             }
         }
         impl Message for ModuleUnload {
@@ -2502,11 +2499,10 @@ pub mod ambient_core {
         impl RuntimeMessage for WindowFocusChange {}
         #[derive(Clone, Debug)]
         #[doc = "**WindowClose**: Sent when the window is closed."]
-        pub struct WindowClose {}
+        pub struct WindowClose;
         impl WindowClose {
-            #[allow(clippy::too_many_arguments)]
             pub fn new() -> Self {
-                Self {}
+                Self
             }
         }
         impl Message for WindowClose {

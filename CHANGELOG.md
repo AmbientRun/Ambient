@@ -137,6 +137,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **API**: The `ambient_ui` prelude (and the `ambient_api` prelude, by extension) no longer glob-imports components into the global namespace. This means that you will need to import components explicitly.
 - **Input**: `CursorLockGuard` no longer takes an initial argument for its lock state. Instead, it will automatically lock and unlock on focus change.
 - **API**: Removed `Entity::with_default` due to its confusing behaviour (Rust defaults are not necessarily the same as component or concept defaults). You will now have to explicitly specify a value for each component.
+- **Messaging**: Messages without empty fields now generate a unit struct, instead of a struct with no fields. That is, they generate `struct MyMessage;` instead of `struct MyMessage {}`.
 
 #### Non-breaking
 

@@ -96,20 +96,33 @@ pub fn generate(
                 quote! { ModuleMessage }
             };
 
-            Ok(quote! {
-                #[derive(Clone, Debug)]
-                #[doc = #doc_comment]
-                pub struct #struct_name {
-                    #(#fields,)*
+            let struct_definition = if message.fields.is_empty() {
+                quote! {
+                    pub struct #struct_name;
+                    impl #struct_name {
+                        pub fn new() -> Self { Self }
+                    }
                 }
-                impl #struct_name {
-                    #[allow(clippy::too_many_arguments)]
-                    pub fn new(#(#new_parameters,)*) -> Self {
-                        Self {
-                            #(#new_fields,)*
+            } else {
+                quote! {
+                    pub struct #struct_name {
+                        #(#fields,)*
+                    }
+                    impl #struct_name {
+                        #[allow(clippy::too_many_arguments)]
+                        pub fn new(#(#new_parameters,)*) -> Self {
+                            Self {
+                                #(#new_fields,)*
+                            }
                         }
                     }
                 }
+            };
+
+            Ok(quote! {
+                #[derive(Clone, Debug)]
+                #[doc = #doc_comment]
+                #struct_definition
                 impl Message for #struct_name {
                     fn id() -> &'static str {
                         #id
