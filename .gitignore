@@ -4,6 +4,7 @@ target
 .DS_Store
 /example_assets
 /rust
+**/book
 
 # WASM
 web/pkg/

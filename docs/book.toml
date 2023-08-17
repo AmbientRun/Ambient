@@ -4,3 +4,8 @@ language = "en"
 multilingual = false
 src = "src"
 title = "Ambient Documentation"
+
+[output.html]
+additional-css = ["style.min.css"] # adapt from rhai book
+git-repository-url = "https://github.com/AmbientRun/Ambient"
+curly-quotes = true
