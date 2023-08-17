@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-anyhow = { workspace = true }
+anyhow = { version = "1.0", features = [] }
 clap = { workspace = true, features = ["derive"] }
 log = { workspace = true }
 serde = { workspace = true }

@@ -90,30 +90,29 @@ The `ember` section contains metadata about the ember itself, such as its name a
 | `name`        | `String`              | _Optional_. A human-readable name for the ember.                                            |
 | `description` | `String`              | _Optional_. A human-readable description of the ember.                                      |
 | `version`     | `String`              | _Optional_. The ember's version, in `(major, minor, patch)` format. Semantically versioned. |
-| `categories`  | `Vec<Category>`       | _Optional_. A list of categories for this Ember.                                            |
+| `content`     | `EmberContent`        | _Optional_. A description of the content of this Ember. See below.                          |
 
-#### Category
+#### `EmberContent`
 
-These are the valid categories for the ember catgories field:
+These are the valid configurations for ember content:
 
+```toml
+# A Playable is anything that can be run as an application; i.e. games, examples, applications etc.
+content = { type = "Playable" }
+content = { type = "Playable", example = true } # example defaults to false
+
+# Assets are things you can use as a dependency in your project
+content = { type = "Asset", models = true, textures = false, audio = false, fonts = false, code = false } # models etc. default to false
+content = { type = "Asset", models = true } # Shorthand of above
+
+# Tools are things you can use to develop your project
+content = { type = "Tool" }
+
+# Mods are extension to Playables
+content = { type = "Mod", for_playables: ["i3terk32jw"] }
 ```
-game/example
-game/fps
-game/survival
-game/simulation
-game/strategy
-game/sports
-game/racing
-game/other
 
-asset/model
-asset/texture
-asset/audio
-asset/font
-asset/code
-asset/tool
-asset/mod
-```
+The default is `content = { type = "Playable" }`
 
 #### Example
 
@@ -132,6 +131,7 @@ description = "A sample ember that's the coolest thing ever."
 # Other formats are not accepted. This requirement may be relaxed later.
 # Optional, but required for deployments.
 version = "0.0.1"
+content = { type = "Asset", code = true }
 ```
 
 ### Build / `[build]`
@@ -193,12 +193,12 @@ The `concepts` section contains custom concepts defined by the ember. Concepts a
 
 This is a TOML table, where the keys are the concept IDs (`SnakeCaseIdentifier`), and the values are the concept definitions.
 
-| Property      | Type                 | Description                                                                         |
-| ------------- | -------------------- | ----------------------------------------------------------------------------------- |
-| `name`        | `String`             | _Optional_. A human-readable name for the concept.                                  |
-| `description` | `String`             | _Optional_. A human-readable description of the concept.                            |
-| `extends`     | `String[]`           | _Optional_. An array of concepts to extend. Must be defined in this ember manifest. |
-| `components`  | `Map<ItemPath, any>` | _Required_. An object containing the components and their default values.           |
+| Property      | Type                 | Description                                                                                                                                                                          |
+| ------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`        | `String`             | _Optional_. A human-readable name for the concept.                                                                                                                                   |
+| `description` | `String`             | _Optional_. A human-readable description of the concept.                                                                                                                             |
+| `extends`     | `String[]`           | _Optional_. An array of concepts to extend. Must be defined in this ember manifest.                                                                                                  |
+| `components`  | `Map<ItemPath, any>` | _Required_. An object containing the components and their default values. `Mat4` and `Quat` support `Identity` as a value, which will use the relevant identity value for that type. |
 
 The `components` is an object where the keys are `ItemPath`s of components defined in the ember manifest, and the values are the default values for those components in the concept.
 

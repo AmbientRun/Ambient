@@ -118,12 +118,16 @@ impl ScalarValue {
             }
             PrimitiveType::F32 => Self::F32(as_float(v)? as f32),
             PrimitiveType::F64 => Self::F64(as_float(v)?),
-            PrimitiveType::Mat4 => Self::Mat4(Mat4::from_cols_array(&as_array(v, |v| {
-                Ok(as_float(v)? as f32)
-            })?)),
-            PrimitiveType::Quat => {
-                Self::Quat(Quat::from_array(as_array(v, |v| Ok(as_float(v)? as f32))?))
-            }
+            PrimitiveType::Mat4 => Self::Mat4({
+                match v {
+                    toml::Value::String(s) if s.as_str() == "Identity" => Mat4::IDENTITY,
+                    _ => Mat4::from_cols_array(&as_array(v, |v| Ok(as_float(v)? as f32))?),
+                }
+            }),
+            PrimitiveType::Quat => match v {
+                toml::Value::String(s) if s.as_str() == "Identity" => Self::Quat(Quat::IDENTITY),
+                _ => Self::Quat(Quat::from_array(as_array(v, |v| Ok(as_float(v)? as f32))?)),
+            },
             PrimitiveType::String => Self::String(as_str(v)?.to_string()),
             PrimitiveType::U8 => Self::U8(as_integer(v)? as u8),
             PrimitiveType::U16 => Self::U16(as_integer(v)? as u16),
@@ -282,5 +286,132 @@ impl Value {
                 Self::Enum(ty_id, variant.0.clone())
             }
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{value::EntityId, PrimitiveType, ScalarValue};
+
+    #[test]
+    fn test_scalar_value_from_toml() -> anyhow::Result<()> {
+        {
+            let value = toml::Value::Array(vec![]);
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::Empty)?;
+            assert_eq!(scalar_value, ScalarValue::Empty(()));
+        }
+
+        {
+            let value = toml::Value::from(true);
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::Bool)?;
+            assert_eq!(scalar_value, ScalarValue::Bool(true));
+        }
+
+        {
+            let value = toml::Value::String("MTIzNDU2NzhBQkNERUZHSA==".to_string());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::EntityId)?;
+            assert_eq!(
+                scalar_value,
+                ScalarValue::EntityId(EntityId::from_le_bytes(*b"12345678ABCDEFGH"))
+            )
+        };
+
+        {
+            let value = toml::Value::from(3.14);
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::F32)?;
+            assert_eq!(scalar_value, ScalarValue::F32(3.14));
+        }
+
+        {
+            let value = toml::Value::from(3.14);
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::F64)?;
+            assert_eq!(scalar_value, ScalarValue::F64(3.14));
+        }
+
+        {
+            const MAT4_TEST: [f32; 16] = [
+                1.0, 2.0, 3.0, 4.0, 1.0, 2.0, 3.0, 4.0, 1.0, 2.0, 3.0, 4.0, 1.0, 2.0, 3.0, 4.0,
+            ];
+            let value = toml::Value::from(MAT4_TEST.to_vec());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::Mat4)?;
+            assert_eq!(
+                scalar_value,
+                ScalarValue::Mat4(glam::Mat4::from_cols_array(&MAT4_TEST))
+            );
+
+            let value = toml::Value::from("Identity".to_string());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::Mat4)?;
+            assert_eq!(scalar_value, ScalarValue::Mat4(glam::Mat4::IDENTITY));
+        };
+
+        {
+            const QUAT_TEST: [f32; 4] = [1.0, 2.0, 3.0, 4.0];
+            let value = toml::Value::from(QUAT_TEST.to_vec());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::Quat)?;
+            assert_eq!(
+                scalar_value,
+                ScalarValue::Quat(glam::Quat::from_array(QUAT_TEST))
+            );
+
+            let value = toml::Value::from("Identity".to_string());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::Quat)?;
+            assert_eq!(scalar_value, ScalarValue::Quat(glam::Quat::IDENTITY));
+        };
+
+        {
+            let value = toml::Value::from("hello");
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::String)?;
+            assert_eq!(scalar_value, ScalarValue::String("hello".to_string()));
+        }
+
+        {
+            let value = toml::Value::from(42);
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::U8)?;
+            assert_eq!(scalar_value, ScalarValue::U8(42));
+        }
+
+        {
+            let value = toml::Value::from(42);
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::U16)?;
+            assert_eq!(scalar_value, ScalarValue::U16(42));
+        }
+
+        {
+            let value = toml::Value::from(42);
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::U32)?;
+            assert_eq!(scalar_value, ScalarValue::U32(42));
+        }
+
+        {
+            let value = toml::Value::from(42);
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::U64)?;
+            assert_eq!(scalar_value, ScalarValue::U64(42));
+        }
+
+        {
+            let value = toml::Value::from(-42);
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::I8)?;
+            assert_eq!(scalar_value, ScalarValue::I8(-42));
+        }
+
+        {
+            let value = toml::Value::from(-42);
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::I16)?;
+            assert_eq!(scalar_value, ScalarValue::I16(-42));
+        }
+
+        {
+            let value = toml::Value::from(-42);
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::I32)?;
+            assert_eq!(scalar_value, ScalarValue::I32(-42));
+        }
+
+        {
+            let value = toml::Value::from(-42);
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::I64)?;
+            assert_eq!(scalar_value, ScalarValue::I64(-42));
+        }
+
+        Ok(())
     }
 }

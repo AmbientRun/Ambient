@@ -132,11 +132,11 @@ extends = ["transform::transformable"]
 
 [concepts.camera.components]
 near = 0.1
-projection = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-projection_view = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+projection = "Identity"
+projection_view = "Identity"
 active_camera = 0.0
-"transform::local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-"transform::inv_local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+"transform::local_to_world" = "Identity"
+"transform::inv_local_to_world" = "Identity"
 
 [concepts.perspective_common_camera]
 name = "Perspective Common Camera"

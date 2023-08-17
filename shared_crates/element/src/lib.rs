@@ -384,11 +384,9 @@ pub fn render_parented_with_component(
                 world.add_component(id, children(), vec![root]).unwrap();
             }
         }
-        if !world.has_component(id, local_to_world()) {
-            world
-                .add_component(id, local_to_world(), Default::default())
-                .unwrap();
-        }
+        world
+            .add_component_if_required(id, local_to_world(), Default::default())
+            .unwrap();
     }
 }
 

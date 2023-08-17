@@ -4,7 +4,7 @@ name = "Tic Tac Toe"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/tictactoe"
 type = "Game"
-categories = ["game/example"]
+content = { type = "Playable", example = true }
 
 [components]
 cells = { type = { type = "Vec", element_type = "EntityId" }, name = "Cells", description = "The cells in the game", attributes = [

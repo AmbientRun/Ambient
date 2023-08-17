@@ -1,6 +1,9 @@
 use ambient_core::project_name;
 use ambient_ecs::{ComponentRegistry, ExternalComponentDesc};
 use ambient_native_std::asset_url::AbsAssetUrl;
+use itertools::Itertools;
+
+use crate::serialization::FailableDeserialization;
 
 pub mod client;
 pub mod server;
@@ -34,6 +37,7 @@ pub fn get_version_with_revision() -> String {
 }
 
 /// Miscellaneous information about the server that needs to be sent to the client during the handshake.
+/// Note: This has to deserialize correctly between versions of the server and client for us to be able to show a nice error message.
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct ServerInfo {
     /// The name of the project. Used by the client to figure out what to title its window. Defaults to "Ambient".
@@ -46,7 +50,7 @@ pub struct ServerInfo {
     /// Defaults to the version of the crate.
     /// TODO: use semver
     pub version: String,
-    pub external_components: Vec<ExternalComponentDesc>,
+    pub external_components: FailableDeserialization<Vec<ExternalComponentDesc>>,
 }
 
 impl ServerInfo {
@@ -59,7 +63,8 @@ impl ServerInfo {
         let external_components = ComponentRegistry::get()
             .all_external()
             .map(|x| x.0)
-            .collect();
+            .collect_vec()
+            .into();
 
         Self {
             project_name: world.resource(project_name()).clone(),

@@ -12,6 +12,7 @@ use ambient_ecs::{
     WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_native_std::{
+    ambient_version,
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
 };
@@ -309,7 +310,12 @@ fn create_resources(assets: AssetCache) -> Entity {
 pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
 fn start_http_interface(build_path: Option<&Path>, http_interface_port: u16) {
-    let mut router = Router::new().route("/ping", get(|| async move { "ok" }));
+    let mut router = Router::new()
+        .route("/ping", get(|| async move { "ok" }))
+        .route(
+            "/info",
+            get(|| async move { axum::Json(ambient_version()) }),
+        );
 
     if let Some(build_path) = build_path {
         router = router.nest_service(

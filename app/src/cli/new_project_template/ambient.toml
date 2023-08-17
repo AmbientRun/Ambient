@@ -2,4 +2,4 @@
 id = "{{id}}"
 name = "{{name}}"
 version = "0.0.1"
-categories = ["game/other"]
+content = { type = "Playable" }
