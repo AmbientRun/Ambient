@@ -39,8 +39,8 @@ pub fn main() {
                     )
                     .with(scale(), Vec3::ONE * 0.3)
                     .with(color(), vec4(1.0, 1.0, 0.0, 1.0))
-                    .with_default(local_to_parent())
-                    .with_default(reset_scale())
+                    .with(local_to_parent(), Default::default())
+                    .with(reset_scale(), ())
                     .spawn();
 
                 entity::add_child(hand, gun);
