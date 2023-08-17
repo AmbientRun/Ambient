@@ -14,7 +14,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use embers::ambient_example_messaging::messages::{Hello, Local};
+use embers::ambient_example_messaging::messages::{Hello, HelloWithoutBody, Local};
 
 #[main]
 pub fn main() {
@@ -89,6 +89,7 @@ pub fn main() {
         while !handled.load(Ordering::SeqCst) {
             sleep(1.0).await;
             Local::new("Hello!").send_local_broadcast(true);
+            HelloWithoutBody.send_local_broadcast(false);
         }
     });
 }

@@ -1,5 +1,5 @@
 use ambient_api::prelude::*;
-use embers::ambient_example_messaging::messages::Local;
+use embers::ambient_example_messaging::messages::{HelloWithoutBody, Local};
 
 #[main]
 pub fn main() {
@@ -9,5 +9,9 @@ pub fn main() {
         if let Some(id) = source.local() {
             Local::new("Hi, back!").send_local(id);
         }
+    });
+
+    HelloWithoutBody::subscribe(move |source, _| {
+        println!("HelloWithoutBody: {source:?}");
     });
 }

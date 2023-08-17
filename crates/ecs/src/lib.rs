@@ -537,7 +537,7 @@ impl World {
         }
         self.map_entity(entity_id, |ed| ed.append(data))
     }
-    // will also replace the existing component of the same type if it exists
+    /// will also replace the existing component of the same type if it exists
     pub fn add_component<T: ComponentValue>(
         &mut self,
         entity_id: EntityId,
@@ -545,6 +545,20 @@ impl World {
         value: T,
     ) -> Result<(), ECSError> {
         self.add_components(entity_id, Entity::new().with(component, value))
+    }
+
+    /// Adds the component to the entity if it does not already have that component. Otherwise, does nothing.
+    pub fn add_component_if_required<T: ComponentValue>(
+        &mut self,
+        entity_id: EntityId,
+        component: Component<T>,
+        value: T,
+    ) -> Result<(), ECSError> {
+        if self.has_component(entity_id, component) {
+            return Ok(()); // Already has the component
+        }
+
+        self.add_component(entity_id, component, value)
     }
 
     pub fn add_resource<T: ComponentValue>(&mut self, component: Component<T>, value: T) {

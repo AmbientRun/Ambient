@@ -12,6 +12,10 @@ name = "Hello"
 description = "Sent when a client joins the server, then sent back from the server"
 fields = { text = "String", source_reliable = "Bool" }
 
+[messages.HelloWithoutBody]
+description = "Sent just to say hi"
+fields = {}
+
 [messages.Local]
 description = "Sent until it's acknowledged"
 fields = { text = "String" }

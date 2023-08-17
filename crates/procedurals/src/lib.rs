@@ -53,13 +53,16 @@ pub fn client_systems() -> SystemGroup {
                                 .with(gpu_primitives_mesh(), Default::default())
                                 .with(gpu_primitives_lod(), Default::default())
                                 .with(primitives(), Default::default())
-                                .with(local_to_world(), Default::default())
-                                .with(mesh_to_world(), Default::default())
                                 .with(local_bounding_aabb(), mesh_aabb)
                                 .with(world_bounding_aabb(), mesh_aabb)
                                 .with(world_bounding_sphere(), mesh_aabb.to_sphere()),
                         )
                         .unwrap();
+
+                    let _ =
+                        world.add_component_if_required(id, local_to_world(), Default::default());
+                    let _ =
+                        world.add_component_if_required(id, mesh_to_world(), Default::default());
                 }
             }),
             query(procedural_material().changed()).to_system(|query, world, query_state, _| {
