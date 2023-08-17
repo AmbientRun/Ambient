@@ -1,6 +1,12 @@
-use crate::{ItemId, ItemMap, TypeInner};
+use std::{
+    f64::consts::{FRAC_PI_2, PI},
+    fmt,
+    time::Duration,
+};
 
 use super::{PrimitiveType, Type};
+use crate::{ItemId, ItemMap, TypeInner};
+
 use ambient_project::PascalCaseIdentifier;
 use ambient_shared_types::{
     primitive_component_definitions, ProceduralMaterialHandle, ProceduralMeshHandle,
@@ -8,7 +14,6 @@ use ambient_shared_types::{
 };
 use anyhow::Context as AnyhowContext;
 use glam::{IVec2, IVec3, IVec4, Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
-use std::{fmt, time::Duration};
 
 pub type EntityId = u128;
 
@@ -98,8 +103,15 @@ impl ScalarValue {
         }
 
         fn as_float(v: &toml::Value) -> anyhow::Result<f64> {
-            v.as_float()
-                .with_context(|| format!("Expected float, got {:?}", v))
+            Ok(match v {
+                toml::Value::String(s) if s.as_str() == "PI" => PI,
+                toml::Value::String(s) if s.as_str() == "-PI" => -PI,
+                toml::Value::String(s) if s.as_str() == "-FRAC_PI_2" => -FRAC_PI_2,
+                toml::Value::String(s) if s.as_str() == "FRAC_PI_2" => FRAC_PI_2,
+                _ => v
+                    .as_float()
+                    .with_context(|| format!("Expected float, got {:?}", v))?,
+            })
         }
 
         let v = value;
@@ -116,6 +128,7 @@ impl ScalarValue {
                 })?;
                 Self::EntityId(EntityId::from_le_bytes(bytes))
             }
+
             PrimitiveType::F32 => Self::F32(as_float(v)? as f32),
             PrimitiveType::F64 => Self::F64(as_float(v)?),
             PrimitiveType::Mat4 => Self::Mat4({
@@ -124,10 +137,10 @@ impl ScalarValue {
                     _ => Mat4::from_cols_array(&as_array(v, |v| Ok(as_float(v)? as f32))?),
                 }
             }),
-            PrimitiveType::Quat => match v {
-                toml::Value::String(s) if s.as_str() == "Identity" => Self::Quat(Quat::IDENTITY),
-                _ => Self::Quat(Quat::from_array(as_array(v, |v| Ok(as_float(v)? as f32))?)),
-            },
+            PrimitiveType::Quat => Self::Quat(match v {
+                toml::Value::String(s) if s.as_str() == "Identity" => Quat::IDENTITY,
+                _ => Quat::from_array(as_array(v, |v| Ok(as_float(v)? as f32))?),
+            }),
             PrimitiveType::String => Self::String(as_str(v)?.to_string()),
             PrimitiveType::U8 => Self::U8(as_integer(v)? as u8),
             PrimitiveType::U16 => Self::U16(as_integer(v)? as u16),
@@ -291,7 +304,7 @@ impl Value {
 
 #[cfg(test)]
 mod tests {
-    use crate::{value::EntityId, PrimitiveType, ScalarValue};
+    use super::*;
 
     #[test]
     #[allow(clippy::approx_constant)]
@@ -321,12 +334,44 @@ mod tests {
             let value = toml::Value::from(3.14);
             let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::F32)?;
             assert_eq!(scalar_value, ScalarValue::F32(3.14));
+
+            let value = toml::Value::from("PI".to_string());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::F32)?;
+            assert_eq!(scalar_value, ScalarValue::F32(PI as f32));
+
+            let value = toml::Value::from("FRAC_PI_2".to_string());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::F32)?;
+            assert_eq!(scalar_value, ScalarValue::F32(FRAC_PI_2 as f32));
+
+            let value = toml::Value::from("-PI".to_string());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::F32)?;
+            assert_eq!(scalar_value, ScalarValue::F32(-PI as f32));
+
+            let value = toml::Value::from("-FRAC_PI_2".to_string());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::F32)?;
+            assert_eq!(scalar_value, ScalarValue::F32(-FRAC_PI_2 as f32));
         }
 
         {
             let value = toml::Value::from(3.14);
             let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::F64)?;
             assert_eq!(scalar_value, ScalarValue::F64(3.14));
+
+            let value = toml::Value::from("PI".to_string());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::F64)?;
+            assert_eq!(scalar_value, ScalarValue::F64(PI));
+
+            let value = toml::Value::from("FRAC_PI_2".to_string());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::F64)?;
+            assert_eq!(scalar_value, ScalarValue::F64(FRAC_PI_2));
+
+            let value = toml::Value::from("-PI".to_string());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::F64)?;
+            assert_eq!(scalar_value, ScalarValue::F64(-PI));
+
+            let value = toml::Value::from("-FRAC_PI_2".to_string());
+            let scalar_value = ScalarValue::from_toml(&value, PrimitiveType::F64)?;
+            assert_eq!(scalar_value, ScalarValue::F64(-FRAC_PI_2));
         }
 
         {

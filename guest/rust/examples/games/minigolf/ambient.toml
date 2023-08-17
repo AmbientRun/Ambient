@@ -50,7 +50,7 @@ description = "A player's camera state"
 player_camera_pivot = [0.0, 0.0, 8.0]
 player_camera_position = [0.0, 0.0, 0.0]
 player_camera_radius = 15.0
-player_camera_rotation = [3.141592, 0.610865]
+player_camera_rotation = ["PI", 0.610865]
 
 [messages.Input]
 description = "Player input"
