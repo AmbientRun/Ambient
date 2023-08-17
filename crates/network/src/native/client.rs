@@ -7,7 +7,7 @@ use crate::{
         ClientRequest,
     },
     server::RpcArgs,
-    stream::{FramedRecvStream, FramedSendStream},
+    stream::{FramedRecvStream, FramedSendStream, RawFramedRecvStream},
     NetworkError,
 };
 use ambient_app::{window_title, world_instance_resources, AppResources};
@@ -296,7 +296,7 @@ async fn handle_connection(
 
     // Create the game client
 
-    let mut diff_stream = FramedRecvStream::new(conn.accept_uni().await?);
+    let mut diff_stream = RawFramedRecvStream::new(conn.accept_uni().await?);
 
     let (shared_client_state, cleanup) = on_loaded(assets, &user_id)?;
 

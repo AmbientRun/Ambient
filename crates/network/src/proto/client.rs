@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-use ambient_ecs::{
-    generated::network::components::is_remote_entity, ComponentRegistry, Entity, WorldDiff,
-};
+use ambient_ecs::{generated::network::components::is_remote_entity, ComponentRegistry, Entity};
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::ContentBaseUrlKey,
@@ -20,6 +18,7 @@ use crate::{
         PlatformSendStream,
     },
     client_game_state::ClientGameState,
+    diff_serialization::DiffSerializer,
     log_task_result,
     proto::*,
 };
@@ -27,8 +26,10 @@ use crate::{
 /// The client logic handler in a connected state
 ///
 /// Entered after the client has sent a connect request and received a `ServerInfo` message from the server
-#[derive(Debug)]
-pub(crate) struct ConnectedClient {}
+#[derive(Debug, Default)]
+pub(crate) struct ConnectedClient {
+    diff_serializer: DiffSerializer,
+}
 
 #[derive(Debug)]
 pub(crate) enum ClientProtoState {
@@ -74,7 +75,7 @@ impl ClientProtoState {
                     }
                 }
 
-                *self = Self::Connected(ConnectedClient {});
+                *self = Self::Connected(Default::default());
 
                 Ok(())
             }
@@ -124,8 +125,9 @@ impl ConnectedClient {
     pub fn process_diff(
         &mut self,
         state: &SharedClientGameState,
-        diff: WorldDiff,
+        diff: Bytes,
     ) -> anyhow::Result<()> {
+        let diff = self.diff_serializer.deserialize(diff)?;
         let mut gs = state.lock();
         tracing::debug!(diff=?diff.len(), "Applying diff");
         diff.apply(&mut gs.world, Entity::new().with(is_remote_entity(), ()));

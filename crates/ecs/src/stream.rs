@@ -183,6 +183,14 @@ pub struct WorldDiffView<'a> {
     pub changes: Vec<Cow<'a, WorldChange>>,
 }
 
+impl<'a> From<&'a WorldDiff> for WorldDiffView<'a> {
+    fn from(value: &'a WorldDiff) -> Self {
+        WorldDiffView {
+            changes: value.changes.iter().map(Cow::Borrowed).collect(),
+        }
+    }
+}
+
 /// Immutable version of WorldDiff, cheap to clone
 #[derive(Serialize, Clone, Debug)]
 pub struct FrozenWorldDiff {
