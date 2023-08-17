@@ -1,7 +1,4 @@
-use std::{
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use std::{path::PathBuf, str::FromStr};
 
 use ambient_audio::AudioStream;
 use ambient_core::window::ExitStatus;
@@ -20,7 +17,7 @@ mod shared;
 
 use ambient_physics::physx::PhysicsKey;
 use anyhow::{bail, Context};
-use cli::{AssetCommand, Cli, Commands, ProjectCli};
+use cli::{AssetCommand, Cli, Commands};
 use log::LevelFilter;
 use server::QUIC_INTERFACE_PORT;
 
@@ -62,11 +59,53 @@ fn main() -> anyhow::Result<()> {
 
     // If new: create project, immediately exit
     if let Commands::New { name, api_path, .. } = &cli.command {
-        return new_project_cmd(&project_path, name, api_path);
+        if let Some(path) = &project_path.fs_path {
+            if let Err(err) =
+                cli::new_project::new_project(path, name.as_deref(), api_path.as_deref())
+            {
+                eprintln!("Failed to create project: {err:?}");
+            }
+        } else {
+            eprintln!("Cannot create project in a remote directory.");
+        }
+        return Ok(());
     }
 
     if let Commands::Assets { command } = &cli.command {
-        return assets_cmd(&rt, command);
+        return rt.block_on(async {
+            match command {
+                AssetCommand::MigratePipelinesToml(opt) => {
+                    let path = ProjectPath::new_local(opt.path.clone())?;
+                    ambient_build::migrate::toml::process(path.fs_path.unwrap())
+                        .await
+                        .context("Failed to migrate pipelines")?;
+                }
+                AssetCommand::Import(opt) => match opt.path.extension() {
+                    Some(ext) => {
+                        if ext == "wav" || ext == "mp3" || ext == "ogg" {
+                            let convert = opt.convert_audio;
+                            ambient_build::pipelines::import_audio(opt.path.clone(), convert)
+                                .context("failed to import audio")?;
+                        } else if ext == "fbx" || ext == "glb" || ext == "gltf" || ext == "obj" {
+                            let collider_from_model = opt.collider_from_model;
+                            ambient_build::pipelines::import_model(
+                                opt.path.clone(),
+                                collider_from_model,
+                            )
+                            .context("failed to import models")?;
+                        } else if ext == "jpg" || ext == "png" || ext == "gif" || ext == "webp" {
+                            // TODO: import textures API may change, so this is just a placeholder
+                            todo!();
+                        } else {
+                            bail!("Unsupported file type");
+                        }
+                    }
+                    None => bail!("Unknown file type"),
+                },
+            }
+
+            Ok(())
+        });
     }
 
     // Build the project if required. Note that this only runs if the project is local.
@@ -78,7 +117,48 @@ fn main() -> anyhow::Result<()> {
         .filter(|p| !p.no_build)
         .zip(project_path.fs_path.as_deref())
     {
-        build_project(&rt, project, project_path, &assets)?
+        rt.block_on(async {
+            let build_path = project_path.join("build");
+            // The build step uses its own semantic to ensure that there is
+            // no contamination, so that the built project can use its own
+            // semantic based on the flat hierarchy.
+            let mut semantic = ambient_project_semantic::Semantic::new().await?;
+            let primary_ember_scope_id =
+                shared::ember::add(None, &mut semantic, project_path).await?;
+
+            let manifest = semantic
+                .items
+                .get(primary_ember_scope_id)?
+                .manifest
+                .clone()
+                .context("no manifest for scope")?;
+
+            let build_config = ambient_build::BuildConfiguration {
+                build_path: build_path.clone(),
+                assets: assets.clone(),
+                semantic: &mut semantic,
+                optimize: project.release,
+                clean_build: project.clean_build,
+                build_wasm_only: project.build_wasm_only,
+            };
+
+            let project_name = manifest
+                .ember
+                .name
+                .as_deref()
+                .unwrap_or_else(|| manifest.ember.id.as_str());
+
+            tracing::info!("Building project {:?}", project_name);
+
+            let output_path = ambient_build::build(build_config, primary_ember_scope_id)
+                .await
+                .context("Failed to build project")?;
+
+            anyhow::Ok((
+                ProjectPath::new_local(output_path)?,
+                Some(AbsAssetUrl::from_file_path(build_path)),
+            ))
+        })?
     } else {
         (project_path.clone(), None)
     };
@@ -87,6 +167,32 @@ fn main() -> anyhow::Result<()> {
     if matches!(&cli.command, Commands::Build { .. }) {
         return Ok(());
     }
+
+    // Read the project manifest from the project path (which may have been updated by the build step)
+    // We attempt both the root and build/ as `ambient.toml` is in the former for local builds,
+    // and in the latter for deployed builds. This will likely be improved if/when deployments
+    // no longer have their own build directory.
+    async fn get_new_project_path_and_manifest(
+        project_path: ProjectPath,
+        assets: &AssetCache,
+    ) -> anyhow::Result<(ProjectPath, ambient_project::Manifest)> {
+        let paths = [project_path.url.clone(), project_path.push("build")];
+
+        for path in &paths {
+            if let Ok(toml) = path.push("ambient.toml")?.download_string(assets).await {
+                return Ok((
+                    Some(path.to_string()).try_into()?,
+                    ambient_project::Manifest::parse(&toml)?,
+                ));
+            }
+        }
+
+        anyhow::bail!("Failed to find ambient.toml in project");
+    }
+
+    let (project_path, manifest) =
+        rt.block_on(get_new_project_path_and_manifest(project_path, &assets))?;
+    let build_path = build_path.unwrap_or_else(|| project_path.url.push("build").unwrap());
 
     // If this is just a deploy then deploy and exit
     if let Commands::Deploy {
@@ -98,10 +204,6 @@ fn main() -> anyhow::Result<()> {
         ..
     } = &cli.command
     {
-        // TODO: use the build path instead of the project path for deploys
-        let (project_path, manifest, _build_path) =
-            retrieve_project_path_and_manifest(&rt, project_path, &assets, build_path)?;
-
         return rt.block_on(async {
             let Some(project_fs_path) = &project_path.fs_path else {
                 anyhow::bail!("Can only deploy a local project");
@@ -163,26 +265,101 @@ fn main() -> anyhow::Result<()> {
             ResolvedAddr::localhost_with_port(QUIC_INTERFACE_PORT)
         }
     } else if let Some(host) = &cli.host() {
-        let (project_path, manifest, build_path) =
-            retrieve_project_path_and_manifest(&rt, project_path, &assets, build_path)?;
+        let crypto = if let (Some(cert_file), Some(key_file)) = (&host.cert, &host.key) {
+            let raw_cert = std::fs::read(cert_file).context("Failed to read certificate file")?;
+            let cert_chain = if raw_cert.starts_with(b"-----BEGIN CERTIFICATE-----") {
+                rustls_pemfile::certs(&mut raw_cert.as_slice())
+                    .context("Failed to parse certificate file")?
+            } else {
+                vec![raw_cert]
+            };
+            let raw_key = std::fs::read(key_file).context("Failed to read certificate key")?;
+            let key = if raw_key.starts_with(b"-----BEGIN ") {
+                rustls_pemfile::read_all(&mut raw_key.as_slice())
+                    .context("Failed to parse certificate key")?
+                    .into_iter()
+                    .find_map(|item| match item {
+                        rustls_pemfile::Item::RSAKey(key) => Some(key),
+                        rustls_pemfile::Item::PKCS8Key(key) => Some(key),
+                        rustls_pemfile::Item::ECKey(key) => Some(key),
+                        _ => None,
+                    })
+                    .ok_or_else(|| anyhow::anyhow!("No private key found"))?
+            } else {
+                raw_key
+            };
+            ambient_network::native::server::Crypto { cert_chain, key }
+        } else {
+            #[cfg(feature = "no_bundled_certs")]
+            {
+                anyhow::bail!("--cert and --key are required without bundled certs.");
+            }
+            #[cfg(not(feature = "no_bundled_certs"))]
+            {
+                tracing::info!("Using bundled certificate and key");
+                ambient_network::native::server::Crypto {
+                    cert_chain: vec![CERT.to_vec()],
+                    key: CERT_KEY.to_vec(),
+                }
+            }
+        };
 
-        server_run_cmd(
-            host,
-            project_path,
-            &rt,
+        let working_directory = project_path
+            .fs_path
+            .clone()
+            .unwrap_or(std::env::current_dir()?);
+
+        let addr = rt.block_on(server::start(
             runtime,
-            &assets,
-            &cli,
+            assets.clone(),
+            cli.clone(),
+            working_directory,
+            project_path.url.clone(),
             build_path,
             manifest,
-        )?
+            crypto,
+        ));
+
+        ResolvedAddr::localhost_with_port(addr.port())
     } else {
         unreachable!()
     };
 
     // Time to join!
     if let Some(run) = cli.run() {
-        client_run_cmd(run, &rt, assets, server_addr, original_project_path)?;
+        // Hey! listen, it is time to setup audio
+
+        let audio_stream = if !run.mute_audio {
+            log::info!("Creating audio stream");
+            match AudioStream::new().context("Failed to initialize audio stream") {
+                Ok(v) => Some(v),
+                Err(err) => {
+                    log::error!("Failed to initialize audio stream: {err}");
+                    None
+                }
+            }
+        } else {
+            log::info!("Audio is disabled");
+            None
+        };
+
+        let mixer = if run.mute_audio {
+            None
+        } else {
+            audio_stream.as_ref().map(|v| v.mixer().clone())
+        };
+
+        // If we have run parameters, start a client and join a server
+        let exit_status = rt.block_on(client::run(
+            assets,
+            server_addr,
+            run,
+            original_project_path.fs_path,
+            mixer,
+        ));
+        if exit_status == ExitStatus::FAILURE {
+            bail!("client::run failed with {exit_status:?}");
+        }
     } else {
         // Otherwise, wait for the Ctrl+C signal
         match rt.block_on(tokio::signal::ctrl_c()) {
@@ -192,250 +369,6 @@ fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
-}
-
-fn retrieve_project_path_and_manifest(
-    rt: &tokio::runtime::Runtime,
-    project_path: ProjectPath,
-    assets: &AssetCache,
-    build_path: Option<AbsAssetUrl>,
-) -> anyhow::Result<(ProjectPath, ambient_project::Manifest, AbsAssetUrl)> {
-    // Read the project manifest from the project path (which may have been updated by the build step)
-    // We attempt both the root and build/ as `ambient.toml` is in the former for local builds,
-    // and in the latter for deployed builds. This will likely be improved if/when deployments
-    // no longer have their own build directory.
-    async fn get_new_project_path_and_manifest(
-        project_path: ProjectPath,
-        assets: &AssetCache,
-    ) -> anyhow::Result<(ProjectPath, ambient_project::Manifest)> {
-        let paths = [project_path.url.clone(), project_path.push("build")];
-
-        for path in &paths {
-            if let Ok(toml) = path.push("ambient.toml")?.download_string(assets).await {
-                return Ok((
-                    Some(path.to_string()).try_into()?,
-                    ambient_project::Manifest::parse(&toml)?,
-                ));
-            }
-        }
-
-        anyhow::bail!("Failed to find ambient.toml in project");
-    }
-    let (project_path, manifest) =
-        rt.block_on(get_new_project_path_and_manifest(project_path, assets))?;
-    let build_path = build_path.unwrap_or_else(|| project_path.url.push("build").unwrap());
-    Ok((project_path, manifest, build_path))
-}
-
-fn build_project(
-    rt: &tokio::runtime::Runtime,
-    project: &ProjectCli,
-    project_path: &Path,
-    assets: &AssetCache,
-) -> anyhow::Result<(ProjectPath, Option<AbsAssetUrl>)> {
-    rt.block_on(async {
-        let build_path = project_path.join("build");
-        // The build step uses its own semantic to ensure that there is
-        // no contamination, so that the built project can use its own
-        // semantic based on the flat hierarchy.
-        let mut semantic = ambient_project_semantic::Semantic::new().await?;
-        let primary_ember_scope_id = shared::ember::add(None, &mut semantic, project_path).await?;
-
-        let manifest = semantic
-            .items
-            .get(primary_ember_scope_id)?
-            .manifest
-            .clone()
-            .context("no manifest for scope")?;
-
-        let build_config = ambient_build::BuildConfiguration {
-            build_path: build_path.clone(),
-            assets: assets.clone(),
-            semantic: &mut semantic,
-            optimize: project.release,
-            clean_build: project.clean_build,
-            build_wasm_only: project.build_wasm_only,
-        };
-
-        let project_name = manifest
-            .ember
-            .name
-            .as_deref()
-            .unwrap_or_else(|| manifest.ember.id.as_str());
-
-        tracing::info!("Building project {:?}", project_name);
-
-        let output_path = ambient_build::build(build_config, primary_ember_scope_id)
-            .await
-            .context("Failed to build project")?;
-
-        anyhow::Ok((
-            ProjectPath::new_local(output_path)?,
-            Some(AbsAssetUrl::from_file_path(build_path)),
-        ))
-    })
-}
-
-fn server_run_cmd(
-    host: &cli::HostCli,
-    project_path: ProjectPath,
-    rt: &tokio::runtime::Runtime,
-    runtime: &tokio::runtime::Handle,
-    assets: &AssetCache,
-    cli: &Cli,
-    build_path: AbsAssetUrl,
-    manifest: ambient_project::Manifest,
-) -> anyhow::Result<ResolvedAddr> {
-    let crypto = if let (Some(cert_file), Some(key_file)) = (&host.cert, &host.key) {
-        let raw_cert = std::fs::read(cert_file).context("Failed to read certificate file")?;
-        let cert_chain = if raw_cert.starts_with(b"-----BEGIN CERTIFICATE-----") {
-            rustls_pemfile::certs(&mut raw_cert.as_slice())
-                .context("Failed to parse certificate file")?
-        } else {
-            vec![raw_cert]
-        };
-        let raw_key = std::fs::read(key_file).context("Failed to read certificate key")?;
-        let key = if raw_key.starts_with(b"-----BEGIN ") {
-            rustls_pemfile::read_all(&mut raw_key.as_slice())
-                .context("Failed to parse certificate key")?
-                .into_iter()
-                .find_map(|item| match item {
-                    rustls_pemfile::Item::RSAKey(key) => Some(key),
-                    rustls_pemfile::Item::PKCS8Key(key) => Some(key),
-                    rustls_pemfile::Item::ECKey(key) => Some(key),
-                    _ => None,
-                })
-                .ok_or_else(|| anyhow::anyhow!("No private key found"))?
-        } else {
-            raw_key
-        };
-        ambient_network::native::server::Crypto { cert_chain, key }
-    } else {
-        #[cfg(feature = "no_bundled_certs")]
-        {
-            anyhow::bail!("--cert and --key are required without bundled certs.");
-        }
-        #[cfg(not(feature = "no_bundled_certs"))]
-        {
-            tracing::info!("Using bundled certificate and key");
-            ambient_network::native::server::Crypto {
-                cert_chain: vec![CERT.to_vec()],
-                key: CERT_KEY.to_vec(),
-            }
-        }
-    };
-    let working_directory = project_path
-        .fs_path
-        .clone()
-        .unwrap_or(std::env::current_dir()?);
-    let addr = rt.block_on(server::start(
-        runtime,
-        assets.clone(),
-        cli.clone(),
-        working_directory,
-        project_path.url.clone(),
-        build_path,
-        manifest,
-        crypto,
-    ));
-    Ok(ResolvedAddr::localhost_with_port(addr.port()))
-}
-
-fn client_run_cmd(
-    run: &cli::RunCli,
-    rt: &tokio::runtime::Runtime,
-    assets: AssetCache,
-    server_addr: ResolvedAddr,
-    original_project_path: ProjectPath,
-) -> anyhow::Result<()> {
-    // Hey! listen, it is time to setup audio
-    let audio_stream = if !run.mute_audio {
-        log::info!("Creating audio stream");
-        match AudioStream::new().context("Failed to initialize audio stream") {
-            Ok(v) => Some(v),
-            Err(err) => {
-                log::error!("Failed to initialize audio stream: {err}");
-                None
-            }
-        }
-    } else {
-        log::info!("Audio is disabled");
-        None
-    };
-
-    let mixer = if run.mute_audio {
-        None
-    } else {
-        audio_stream.as_ref().map(|v| v.mixer().clone())
-    };
-
-    // If we have run parameters, start a client and join a server
-    let exit_status = rt.block_on(client::run(
-        assets,
-        server_addr,
-        run,
-        original_project_path.fs_path,
-        mixer,
-    ));
-
-    if exit_status == ExitStatus::FAILURE {
-        bail!("client::run failed with {exit_status:?}");
-    }
-
-    Ok(())
-}
-
-fn new_project_cmd(
-    project_path: &ProjectPath,
-    name: &Option<String>,
-    api_path: &Option<String>,
-) -> anyhow::Result<()> {
-    if let Some(path) = &project_path.fs_path {
-        if let Err(err) = cli::new_project::new_project(path, name.as_deref(), api_path.as_deref())
-        {
-            eprintln!("Failed to create project: {err:?}");
-        }
-    } else {
-        eprintln!("Cannot create project in a remote directory.");
-    }
-    Ok(())
-}
-
-fn assets_cmd(rt: &tokio::runtime::Runtime, command: &AssetCommand) -> anyhow::Result<()> {
-    rt.block_on(async {
-        match command {
-            AssetCommand::MigratePipelinesToml(opt) => {
-                let path = ProjectPath::new_local(opt.path.clone())?;
-                ambient_build::migrate::toml::process(path.fs_path.unwrap())
-                    .await
-                    .context("Failed to migrate pipelines")?;
-            }
-            AssetCommand::Import(opt) => match opt.path.extension() {
-                Some(ext) => {
-                    if ext == "wav" || ext == "mp3" || ext == "ogg" {
-                        let convert = opt.convert_audio;
-                        ambient_build::pipelines::import_audio(opt.path.clone(), convert)
-                            .context("failed to import audio")?;
-                    } else if ext == "fbx" || ext == "glb" || ext == "gltf" || ext == "obj" {
-                        let collider_from_model = opt.collider_from_model;
-                        ambient_build::pipelines::import_model(
-                            opt.path.clone(),
-                            collider_from_model,
-                        )
-                        .context("failed to import models")?;
-                    } else if ext == "jpg" || ext == "png" || ext == "gif" || ext == "webp" {
-                        // TODO: import textures API may change, so this is just a placeholder
-                        todo!();
-                    } else {
-                        bail!("Unsupported file type");
-                    }
-                }
-                None => bail!("Unknown file type"),
-            },
-        }
-
-        Ok(())
-    })
 }
 
 fn setup_logging() -> anyhow::Result<()> {
