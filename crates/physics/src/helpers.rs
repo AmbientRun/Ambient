@@ -111,9 +111,9 @@ pub fn update_physics_controlled(world: &mut World, actor: PxRigidActorRef) {
         if let Ok(entity_shape) = world.get_ref(entity, physics_shape()) {
             if entity_shape == &shape {
                 if is_physics_controlled {
-                    if !world.has_component(entity, physics_controlled()) {
-                        world.add_component(entity, physics_controlled(), ()).ok();
-                    }
+                    world
+                        .add_component_if_required(entity, physics_controlled(), ())
+                        .ok();
                 } else if world.has_component(entity, physics_controlled()) {
                     world.remove_component(entity, physics_controlled()).ok();
                 }

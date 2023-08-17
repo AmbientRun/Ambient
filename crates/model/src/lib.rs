@@ -7,7 +7,7 @@ use ambient_core::{
     gpu,
     hierarchy::{children, despawn_recursive},
     main_scene, runtime,
-    transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world},
+    transform::{get_world_position, local_to_world, mesh_to_world},
 };
 use ambient_ecs::{
     components, query, ComponentDesc, Debuggable, Entity, EntityId, MaybeResource, Networked,
@@ -123,9 +123,7 @@ async fn internal_spawn_models_from_defs(
             // these should only be added if they do not already exist, as otherwise they will replace the existing values
             // TODO: consider backing up color, too
             for component in [local_to_world(), mesh_to_world()] {
-                if !world.has_component(id, component) {
-                    let _ = world.add_component(id, component, Default::default());
-                }
+                let _ = world.add_component_if_required(id, component, Default::default());
             }
         }
     });
