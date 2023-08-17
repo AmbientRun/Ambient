@@ -173,7 +173,7 @@ pub struct ProjectCli {
 
     /// Build all the assets with full optimization; this will make them faster and smaller but more difficult to debug (default for `deploy` and `serve`)
     #[arg(short, long)]
-    release: bool,
+    pub release: bool,
 
     /// Avoid building the project
     #[arg(long)]
