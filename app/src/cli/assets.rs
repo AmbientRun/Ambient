@@ -63,6 +63,7 @@ pub async fn handle(command: &AssetCommand, assets: &crate::AssetCache) -> anyho
                     assets,
                     &PathBuf::from("assets"),
                     &PathBuf::from("build"),
+                    true,
                 )
                 .await?;
             }

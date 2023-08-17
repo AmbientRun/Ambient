@@ -158,7 +158,7 @@ async fn build_ember(
         .context("Failed to create build directory")?;
 
     if !build_wasm_only {
-        build_assets(&assets, &assets_path, &build_path).await?;
+        build_assets(&assets, &assets_path, &build_path, false).await?;
     }
 
     build_rust_if_available(&path, &manifest, &build_path, optimize)
@@ -204,6 +204,7 @@ pub async fn build_assets(
     assets: &AssetCache,
     assets_path: &Path,
     build_path: &Path,
+    for_import_only: bool,
 ) -> anyhow::Result<()> {
     let files = get_asset_files(assets_path).map(Into::into).collect_vec();
 
@@ -223,15 +224,19 @@ pub async fn build_assets(
             let build_path = build_path.to_owned();
             move |path, contents| {
                 let path = build_path.join("assets").join(path);
-                if let Some(ext) = path.extension() {
-                    if ext == "anim" {
-                        if !anim_files_clone.lock().contains(&path) {
-                            anim_files_clone.lock().push(path.clone());
-                        } else {
-                            println!("🤔 repeated importing; please check the pipeline.toml");
+
+                if for_import_only {
+                    if let Some(ext) = path.extension() {
+                        if ext == "anim" {
+                            if !anim_files_clone.lock().contains(&path) {
+                                anim_files_clone.lock().push(path.clone());
+                            } else {
+                                println!("🤔 repeated importing; please check the pipeline.toml");
+                            }
                         }
                     }
                 }
+
                 async move {
                     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
                     tokio::fs::write(&path, contents).await.unwrap();
@@ -259,6 +264,7 @@ pub async fn build_assets(
     pipelines::process_pipelines(&ctx)
         .await
         .with_context(|| format!("Failed to process pipelines for {assets_path:?}"))?;
+
     if !anim_files.lock().is_empty() {
         println!("🐆 Available animation files: {:?}", anim_files.lock());
         println!("🧂 You can use the animation files like this:");
