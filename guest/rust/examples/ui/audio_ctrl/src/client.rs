@@ -5,7 +5,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use embers::ambient_example_audio_ctrl::assets;
+use packages::ambient_example_audio_ctrl::assets;
 
 #[element_component]
 fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {

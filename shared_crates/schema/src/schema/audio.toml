@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "audio"
 name = "Audio"
 description = "Audio functionality and state."

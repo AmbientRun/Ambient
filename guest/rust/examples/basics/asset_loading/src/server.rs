@@ -20,7 +20,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::ambient_example_asset_loading::{assets, components::is_the_best};
+use packages::ambient_example_asset_loading::{assets, components::is_the_best};
 
 #[main]
 pub async fn main() {

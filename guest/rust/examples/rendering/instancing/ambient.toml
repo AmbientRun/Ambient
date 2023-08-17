@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_instancing"
 name = "Instancing"
 description = "This show how to render many objects with a single draw call."

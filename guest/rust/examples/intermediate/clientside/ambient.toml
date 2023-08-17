@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_clientside"
 name = "Clientside"
 description = "How to use client side code."

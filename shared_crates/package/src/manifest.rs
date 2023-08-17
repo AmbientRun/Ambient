@@ -13,14 +13,14 @@ use crate::{
 pub enum ManifestParseError {
     #[error("manifest was not valid TOML")]
     TomlError(#[from] toml::de::Error),
-    #[error("manifest contains a project section; projects have been renamed to embers")]
+    #[error("manifest contains a project section; projects have been renamed to packages")]
     ProjectRenamedToEmberError,
 }
 
 #[derive(Deserialize, Clone, Debug, Default, PartialEq, Serialize)]
 pub struct Manifest {
     #[serde(default)]
-    pub ember: Ember,
+    pub package: Package,
     #[serde(default)]
     pub build: Build,
     #[serde(default)]
@@ -54,7 +54,7 @@ impl Manifest {
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
-pub struct Ember {
+pub struct Package {
     pub id: SnakeCaseIdentifier,
     pub name: Option<String>,
     pub version: Option<Version>,
@@ -63,21 +63,21 @@ pub struct Ember {
     #[serde(default)]
     pub authors: Vec<String>,
     #[serde(default)]
-    pub content: EmberContent,
+    pub content: PackageContent,
     #[serde(default)]
     pub includes: Vec<PathBuf>,
 }
 
-// ----- NOTE: Update docs/reference/ember.md when changing this ----
+// ----- NOTE: Update docs/reference/package.md when changing this ----
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
-pub enum EmberContent {
+pub enum PackageContent {
     Playable {
         #[serde(default)]
         example: bool,
     },
-    /// Assets are something that you can use as a dependency in your ember
+    /// Assets are something that you can use as a dependency in your package
     Asset {
         #[serde(default)]
         models: bool,
@@ -92,12 +92,12 @@ pub enum EmberContent {
     },
     Tool,
     Mod {
-        /// List of ember ids that this mod is applicable to
+        /// List of package ids that this mod is applicable to
         #[serde(default)]
         for_playables: Vec<String>,
     },
 }
-impl Default for EmberContent {
+impl Default for PackageContent {
     fn default() -> Self {
         Self::Playable { example: false }
     }
@@ -142,8 +142,8 @@ mod tests {
     use indexmap::IndexMap;
 
     use crate::{
-        Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Ember,
-        Enum, Identifier, ItemPathBuf, Manifest, ManifestParseError, PascalCaseIdentifier,
+        Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Enum,
+        Identifier, ItemPathBuf, Manifest, ManifestParseError, Package, PascalCaseIdentifier,
         SnakeCaseIdentifier, Version, VersionSuffix,
     };
 
@@ -166,7 +166,7 @@ mod tests {
     #[test]
     fn can_parse_minimal_toml() {
         const TOML: &str = r#"
-        [ember]
+        [package]
         id = "test"
         name = "Test"
         version = "0.0.1"
@@ -175,7 +175,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                ember: Ember {
+                package: Package {
                     id: SnakeCaseIdentifier::new("test").unwrap(),
                     name: Some("Test".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
@@ -204,7 +204,7 @@ mod tests {
     #[test]
     fn can_parse_tictactoe_toml() {
         const TOML: &str = r#"
-        [ember]
+        [package]
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
@@ -222,7 +222,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                ember: Ember {
+                package: Package {
                     id: sci("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
@@ -262,7 +262,7 @@ mod tests {
     #[test]
     fn can_parse_rust_build_settings() {
         const TOML: &str = r#"
-        [ember]
+        [package]
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
@@ -274,7 +274,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                ember: Ember {
+                package: Package {
                     id: sci("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
@@ -295,9 +295,9 @@ mod tests {
         use toml::Value;
 
         const TOML: &str = r#"
-        [ember]
-        id = "my_ember"
-        name = "My Ember"
+        [package]
+        id = "my_package"
+        name = "My Package"
         version = "0.0.1"
 
         [components]
@@ -321,9 +321,9 @@ mod tests {
         assert_eq!(
             manifest,
             Manifest {
-                ember: Ember {
-                    id: sci("my_ember"),
-                    name: Some("My Ember".to_string()),
+                package: Package {
+                    id: sci("my_package"),
+                    name: Some("My Package".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
                 },
@@ -435,7 +435,7 @@ mod tests {
     #[test]
     fn can_parse_enums() {
         const TOML: &str = r#"
-        [ember]
+        [package]
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
@@ -450,7 +450,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                ember: Ember {
+                package: Package {
                     id: sci("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
@@ -478,7 +478,7 @@ mod tests {
     #[test]
     fn can_parse_container_types() {
         const TOML: &str = r#"
-        [ember]
+        [package]
         id = "test"
         name = "Test"
         version = "0.0.1"
@@ -493,7 +493,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                ember: Ember {
+                package: Package {
                     id: sci("test"),
                     name: Some("Test".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
@@ -553,7 +553,7 @@ mod tests {
     #[test]
     fn can_parse_dependencies() {
         const TOML: &str = r#"
-        [ember]
+        [package]
         id = "dependencies"
         name = "dependencies"
         version = "0.0.1"
@@ -568,7 +568,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                ember: Ember {
+                package: Package {
                     id: sci("dependencies"),
                     name: Some("dependencies".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),

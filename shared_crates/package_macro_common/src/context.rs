@@ -77,7 +77,7 @@ impl Context {
             }
 
             (Context::GuestUser, ItemSource::Ambient) => quote! { ambient_api::core:: },
-            (Context::GuestUser, ItemSource::User) => quote! { crate::embers:: },
+            (Context::GuestUser, ItemSource::User) => quote! { crate::packages:: },
         }
     }
 

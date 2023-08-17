@@ -19,7 +19,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use embers::ambient_example_skinmesh::assets;
+use packages::ambient_example_skinmesh::assets;
 
 #[main]
 pub async fn main() {

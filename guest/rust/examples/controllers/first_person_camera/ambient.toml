@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_first_person_camera"
 name = "First person camera"
 description = "A simple FPS camera and input example."

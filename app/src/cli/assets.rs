@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use anyhow::Context;
 use clap::{Args, Subcommand};
 
-use super::EmberPath;
+use super::PackagePath;
 
 #[derive(Subcommand, Clone, Debug)]
 pub enum AssetCommand {
@@ -38,7 +38,7 @@ pub struct ImportOptions {
 pub async fn handle(command: &AssetCommand, assets: &crate::AssetCache) -> anyhow::Result<()> {
     match command {
         AssetCommand::MigratePipelinesToml(opt) => {
-            let path = EmberPath::new_local(opt.path.clone())?;
+            let path = PackagePath::new_local(opt.path.clone())?;
             ambient_build::migrate::toml::process(path.fs_path.unwrap())
                 .await
                 .context("Failed to migrate pipelines")?;

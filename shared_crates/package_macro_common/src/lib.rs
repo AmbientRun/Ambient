@@ -18,7 +18,7 @@ mod messages;
 pub use context::Context;
 
 pub enum ManifestSource<'a> {
-    Path { ember_path: &'a Path },
+    Path { package_path: &'a Path },
     Array(&'a [(&'a str, &'a str)]),
 }
 
@@ -31,7 +31,7 @@ pub async fn generate_code(
 
     if let Some(manifest) = manifest {
         match manifest {
-            ManifestSource::Path { ember_path } => semantic.add_ember(ember_path).await,
+            ManifestSource::Path { package_path } => semantic.add_package(package_path).await,
             ManifestSource::Array(files) => {
                 semantic
                     .add_file(
@@ -95,10 +95,10 @@ pub async fn generate_code(
     };
 
     let output = if context == Context::GuestUser {
-        // In guest code, we wrap all generated output in an `embers` module to avoid polluting their
+        // In guest code, we wrap all generated output in an `packages` module to avoid polluting their
         // global scope.
         quote! {
-            pub mod embers {
+            pub mod packages {
                 #output
             }
         }

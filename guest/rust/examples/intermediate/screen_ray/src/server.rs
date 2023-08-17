@@ -6,7 +6,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use embers::ambient_example_screen_ray::messages::{Input, WorldPosition};
+use packages::ambient_example_screen_ray::messages::{Input, WorldPosition};
 
 #[main]
 pub fn main() {

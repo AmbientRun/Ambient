@@ -94,26 +94,26 @@ impl Semantic {
         .await
     }
 
-    pub async fn add_ember(&mut self, ember_path: &Path) -> anyhow::Result<ItemId<Scope>> {
+    pub async fn add_package(&mut self, package_path: &Path) -> anyhow::Result<ItemId<Scope>> {
         self.add_file(
             Path::new("ambient.toml"),
-            &DiskFileProvider(ember_path.to_owned()),
+            &DiskFileProvider(package_path.to_owned()),
             ItemSource::User,
             None,
         )
         .await
     }
 
-    /// HACK! This is used to allow the use of no-dependency embers for now.
+    /// HACK! This is used to allow the use of no-dependency packages for now.
     /// Will be removed once we figure this out.
-    pub async fn add_ember_manifest(
+    pub async fn add_package_manifest(
         &mut self,
-        ember_manifest: &Manifest,
+        package_manifest: &Manifest,
     ) -> anyhow::Result<ItemId<Scope>> {
         self.add_file(
             Path::new("ambient.toml"),
             &ArrayFileProvider {
-                files: &[("ambient.toml", &toml::to_string(ember_manifest)?)],
+                files: &[("ambient.toml", &toml::to_string(package_manifest)?)],
             },
             ItemSource::User,
             None,
@@ -207,7 +207,7 @@ impl Semantic {
         let root_id = self.root_scope_id;
 
         // Check that this scope hasn't already been created for this scope
-        let scope_name = scope_name.unwrap_or_else(|| manifest.ember.id.clone());
+        let scope_name = scope_name.unwrap_or_else(|| manifest.package.id.clone());
         if let Some(existing_scope_id) = self.items.get(root_id)?.scopes.get(&scope_name) {
             let existing_path = self.items.get(*existing_scope_id)?.manifest_path.clone();
             if existing_path == Some(file_provider.full_path(filename)) {
@@ -257,7 +257,7 @@ impl Semantic {
         })?)
         .with_context(|| format!("failed to parse toml for {filename:?}"))?;
 
-        let id = manifest.ember.id.clone();
+        let id = manifest.package.id.clone();
         self.add_scope_from_manifest(
             Some(parent_scope),
             file_provider,
@@ -291,7 +291,7 @@ impl Semantic {
                 id: id.into(),
                 source,
             },
-            manifest.ember.id.clone(),
+            manifest.package.id.clone(),
             Some(manifest_path.clone()),
             Some(manifest.clone()),
             enabled,
@@ -304,7 +304,7 @@ impl Semantic {
             anyhow::bail!("circular dependency detected at {manifest_path:?}; previously visited files: {visited_files:?}");
         }
 
-        for include in &manifest.ember.includes {
+        for include in &manifest.package.includes {
             let child_scope_id = self
                 .add_file_at_non_toplevel(
                     scope_id,
@@ -368,7 +368,7 @@ impl Semantic {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Component::from_ember(make_item_data(item), component));
+            let value = items.add(Component::from_package(make_item_data(item), component));
             items
                 .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
                 .components
@@ -379,7 +379,7 @@ impl Semantic {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Concept::from_ember(make_item_data(item), concept));
+            let value = items.add(Concept::from_package(make_item_data(item), concept));
             items
                 .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
                 .concepts
@@ -390,7 +390,7 @@ impl Semantic {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Message::from_ember(make_item_data(item), message));
+            let value = items.add(Message::from_package(make_item_data(item), message));
             items
                 .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
                 .messages
@@ -398,7 +398,7 @@ impl Semantic {
         }
 
         for (segment, enum_ty) in manifest.enums.iter() {
-            let enum_id = items.add(Type::from_ember_enum(
+            let enum_id = items.add(Type::from_package_enum(
                 make_item_data(&Identifier::from(segment.clone())),
                 enum_ty,
             ));

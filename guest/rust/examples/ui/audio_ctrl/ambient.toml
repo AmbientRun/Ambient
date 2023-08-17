@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_audio_ctrl"
 name = "Audio control"
 version = "0.0.1"

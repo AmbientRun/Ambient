@@ -2,7 +2,7 @@ use ambient_api::{
     core::{messages::Frame, physics::components::linear_velocity},
     prelude::*,
 };
-use embers::ambient_example_minigolf::{
+use packages::ambient_example_minigolf::{
     assets,
     messages::{Bonk, Hit, Input},
 };

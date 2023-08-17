@@ -428,7 +428,7 @@ const BANNED_IDENTIFIERS: &[(&str, &str)] = &[
     //
     // Ambient
     //
-    ("ember", "Ember"),
+    ("package", "Package"),
     //
     // Rust
     //

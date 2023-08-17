@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "camera"
 name = "Camera"
 description = "Camera matrices, types, parameters, and more."

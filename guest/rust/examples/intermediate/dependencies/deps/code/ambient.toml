@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_deps_code"
 name = "Dependencies (Code)"
 version = "0.0.1"

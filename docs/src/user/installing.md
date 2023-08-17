@@ -28,13 +28,13 @@ cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 --loc
 
 Ambient is actively developed on the `main` branch of the repository. This branch contains in-development changes, including new features, bug fixes and breaking changes. This method can be used if you would like to try out these changes.
 
-**Note**: The `main` branch is subject to frequent breaking changes, including potential new bugs and decreased stability, and is not a stable development target for embers. Using the `main` branch is not recommended if you are unable to actively update your ember to accommodate breaking changes.
+**Note**: The `main` branch is subject to frequent breaking changes, including potential new bugs and decreased stability, and is not a stable development target for packages. Using the `main` branch is not recommended if you are unable to actively update your package to accommodate breaking changes.
 
 ```sh
 cargo install --git https://github.com/AmbientRun/Ambient.git --locked --force ambient
 ```
 
-**Note**: If you are running an ember outside of the `guest/rust` workspace, it is likely that the published version of the API will be incompatible with `main`, and you will need to specify the dependency manually.
+**Note**: If you are running a package outside of the `guest/rust` workspace, it is likely that the published version of the API will be incompatible with `main`, and you will need to specify the dependency manually.
 
 Additionally, the `--locked` flag is recommended to ensure that the correct packages are installed and that the build is reproducible between machines.
 

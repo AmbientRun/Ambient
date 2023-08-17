@@ -1,7 +1,7 @@
 [package]
 name = "ambient_package_semantic"
 edition = "2021"
-description = "Semantic analysis for the Ambient ember manifests"
+description = "Semantic analysis for the Ambient package manifests"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/AmbientRun/Ambient"
 rust-version = { workspace = true }

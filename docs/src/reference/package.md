@@ -1,6 +1,6 @@
-# Ember
+# Package
 
-All Ambient embers must have an `ambient.toml` manifest that describes their functionality. This format is in flux, but is inspired by Rust's `Cargo.toml`.
+All Ambient packages must have an `ambient.toml` manifest that describes their functionality. This format is in flux, but is inspired by Rust's `Cargo.toml`.
 
 ## WebAssembly
 
@@ -8,34 +8,34 @@ All `.wasm` components in the `build/{client, server}` directory will be loaded 
 
 This means any `.wasm` that implements the Ambient [WIT interface](https://github.com/AmbientRun/Ambient/tree/main/crates/wasm/wit) and targets WASI snapshot 2 (or uses an adapter that targets WASI snapshot 2) should run within Ambient.
 
-As a convenience for Rust users, Ambient will automatically build a `Cargo.toml` at the root of your ember, if present, as `wasm32-wasi` for the features specified in `build.rust.feature-multibuild` in `ambient.toml` (defaults to `client` and `server`).
+As a convenience for Rust users, Ambient will automatically build a `Cargo.toml` at the root of your package, if present, as `wasm32-wasi` for the features specified in `build.rust.feature-multibuild` in `ambient.toml` (defaults to `client` and `server`).
 
-The default new ember template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both. The resulting WASM bytecode files are then converted to components and placed in `build/{client, server}`.
+The default new package template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both. The resulting WASM bytecode files are then converted to components and placed in `build/{client, server}`.
 
 The process it takes is equivalent to these commands:
 
 ```sh
-cd your_ember
+cd your_package
 cargo build --target wasm32-wasi --features client
-wasm-tools component new target/wasm32-wasi/debug/your_ember_client.wasm -o build/client/your_ember.wasm --adapt wasi_snapshot_preview1.wasm
+wasm-tools component new target/wasm32-wasi/debug/your_package_client.wasm -o build/client/your_package.wasm --adapt wasi_snapshot_preview1.wasm
 cargo build --target wasm32-wasi --features server
-wasm-tools component new target/wasm32-wasi/debug/your_ember_server.wasm -o build/server/your_ember.wasm --adapt wasi_snapshot_preview1.wasm
+wasm-tools component new target/wasm32-wasi/debug/your_package_server.wasm -o build/server/your_package.wasm --adapt wasi_snapshot_preview1.wasm
 ```
 
 using [wasm-tools](https://github.com/bytecodealliance/wasm-tools) and a bundled version of the [preview2-prototyping WASI adapter](https://github.com/bytecodealliance/preview2-prototyping).
 
 ## Rust
 
-Rust is a first-class language for Ambient embers. The default new ember template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both.
+Rust is a first-class language for Ambient packages. The default new package template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both.
 
-The API provides a `#[main]` attribute macro that generates code to allow you to access the data and functionality of the embers known to your ember. All embers, including your own, will be in the `embers` module.
+The API provides a `#[main]` attribute macro that generates code to allow you to access the data and functionality of the packages known to your package. All packages, including your own, will be in the `packages` module.
 
 ## Reference
 
 - `SnakeCaseIdentifier`s are snake-case ASCII identifiers (as a string)
 - `PascalCaseIdentifier`s are PascalCase ASCII identifiers (as a string)
 - `Identifiers` are either a `SnakeCaseIdentifier` or a `PascalCaseIdentifier` based on context
-- `ItemPath`s are a double-colon-separated list of `SnakeCaseIdentifier`s followed by a single `Identifier`. For example, `my_ember` is an `Identifier`, and `my_ember::my_component` is an `ItemPath`.
+- `ItemPath`s are a double-colon-separated list of `SnakeCaseIdentifier`s followed by a single `Identifier`. For example, `my_package` is an `Identifier`, and `my_package::my_component` is an `ItemPath`.
 
 ### `ValueType`
 
@@ -76,36 +76,36 @@ A `ValueType` is either:
 
   - Note that `Vec` and `Option` are the only supported container types, and `element_type` must be a primitive `ValueType` (that is, you cannot have nested contained types).
 
-- a string that refers to an `enum` defined by an ember; see [Enums](#enums--enums).
+- a string that refers to an `enum` defined by a package; see [Enums](#enums--enums).
 
-Note that `ValueType`s are not themselves values, but rather types of values. For example, `Vec2` is a `ValueType`, but `Vec2(1.0, 2.0)` is a value of type `Vec2`. Additionally, `ValueType`s from other embers can be referred to using `ItemPath`s: `my_ember::my_component::MyType`.
+Note that `ValueType`s are not themselves values, but rather types of values. For example, `Vec2` is a `ValueType`, but `Vec2(1.0, 2.0)` is a value of type `Vec2`. Additionally, `ValueType`s from other packages can be referred to using `ItemPath`s: `my_package::my_component::MyType`.
 
-### Ember / `[ember]`
+### Package / `[package]`
 
-The `ember` section contains metadata about the ember itself, such as its name and version.
+The `package` section contains metadata about the package itself, such as its name and version.
 
-| Property      | Type                  | Description                                                                                 |
-| ------------- | --------------------- | ------------------------------------------------------------------------------------------- |
-| `id`          | `SnakeCaseIdentifier` | _Required_. The ember's snake-cased ID.                                                     |
-| `name`        | `String`              | _Optional_. A human-readable name for the ember.                                            |
-| `description` | `String`              | _Optional_. A human-readable description of the ember.                                      |
-| `version`     | `String`              | _Optional_. The ember's version, in `(major, minor, patch)` format. Semantically versioned. |
-| `content`     | `EmberContent`        | _Optional_. A description of the content of this Ember. See below.                          |
+| Property      | Type                  | Description                                                                                   |
+| ------------- | --------------------- | --------------------------------------------------------------------------------------------- |
+| `id`          | `SnakeCaseIdentifier` | _Required_. The package's snake-cased ID.                                                     |
+| `name`        | `String`              | _Optional_. A human-readable name for the package.                                            |
+| `description` | `String`              | _Optional_. A human-readable description of the package.                                      |
+| `version`     | `String`              | _Optional_. The package's version, in `(major, minor, patch)` format. Semantically versioned. |
+| `content`     | `PackageContent`      | _Optional_. A description of the content of this Package. See below.                          |
 
-#### `EmberContent`
+#### `PackageContent`
 
-These are the valid configurations for ember content:
+These are the valid configurations for package content:
 
 ```toml
 # A Playable is anything that can be run as an application; i.e. games, examples, applications etc.
 content = { type = "Playable" }
 content = { type = "Playable", example = true } # example defaults to false
 
-# Assets are things you can use as a dependency in your ember
+# Assets are things you can use as a dependency in your package
 content = { type = "Asset", models = true, textures = false, audio = false, fonts = false, code = false } # models etc. default to false
 content = { type = "Asset", models = true } # Shorthand of above
 
-# Tools are things you can use to develop your ember
+# Tools are things you can use to develop your package
 content = { type = "Tool" }
 
 # Mods are extension to Playables
@@ -118,16 +118,16 @@ The default is `content = { type = "Playable" }`
 
 ```toml
 #
-# The ember section describes all ember metadata.
+# The package section describes all package metadata.
 #
-[ember]
+[package]
 # This must be a snake-cased name.
-id = "my_cool_ember"
+id = "my_cool_package"
 # This name is human-readable and can contain anything. Optional.
-name = "My Cool Ember"
+name = "My Cool Package"
 # This description is human-readable and can contain anything. Optional.
-description = "A sample ember that's the coolest thing ever."
-# Embers are expected to use (major, minor, patch) semantic versioning.
+description = "A sample package that's the coolest thing ever."
+# Packages are expected to use (major, minor, patch) semantic versioning.
 # Other formats are not accepted. This requirement may be relaxed later.
 # Optional, but required for deployments.
 version = "0.0.1"
@@ -136,13 +136,13 @@ content = { type = "Asset", code = true }
 
 ### Build / `[build]`
 
-The build section contains settings related to building the ember.
+The build section contains settings related to building the package.
 
 #### Rust Settings / `[build.rust]`
 
-| Property             | Type       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| -------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `feature-multibuild` | `String[]` | _Optional_. An array of strings defining the Rust features to be used when building the ember. This is used to build the same code for both client and server.<br /><br />`cargo build` will be run with each of these features to produce a separate WASM binary, which is then componentized and copied into a folder of the corresponding name in `build/`.<br /><br />Client and server are built by default (e.g. `["client", "server"]`); this is exposed so that you can disable building one side entirely if required. |
+| Property             | Type       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| -------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feature-multibuild` | `String[]` | _Optional_. An array of strings defining the Rust features to be used when building the package. This is used to build the same code for both client and server.<br /><br />`cargo build` will be run with each of these features to produce a separate WASM binary, which is then componentized and copied into a folder of the corresponding name in `build/`.<br /><br />Client and server are built by default (e.g. `["client", "server"]`); this is exposed so that you can disable building one side entirely if required. |
 
 #### Example
 
@@ -153,7 +153,7 @@ feature-multibuild = ["client", "server"]
 
 ### Components / `[components]`
 
-The `components` section contains custom components defined by the ember. Components are used to store data on entities.
+The `components` section contains custom components defined by the package. Components are used to store data on entities.
 
 This is a TOML table, where the keys are the component IDs (`SnakeCaseIdentifier`), and the values are the component definitions.
 
@@ -189,7 +189,7 @@ attributes = ["Debuggable"]
 
 ### Concepts / `[concepts]`
 
-The `concepts` section contains custom concepts defined by the ember. Concepts are used to define a set of components that can be attached to an entity.
+The `concepts` section contains custom concepts defined by the package. Concepts are used to define a set of components that can be attached to an entity.
 
 This is a TOML table, where the keys are the concept IDs (`SnakeCaseIdentifier`), and the values are the concept definitions.
 
@@ -197,10 +197,10 @@ This is a TOML table, where the keys are the concept IDs (`SnakeCaseIdentifier`)
 | ------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`        | `String`             | _Optional_. A human-readable name for the concept.                                                                                                                                                                                                                                                                                                                                    |
 | `description` | `String`             | _Optional_. A human-readable description of the concept.                                                                                                                                                                                                                                                                                                                              |
-| `extends`     | `String[]`           | _Optional_. An array of concepts to extend. Must be defined in this ember manifest.                                                                                                                                                                                                                                                                                                   |
+| `extends`     | `String[]`           | _Optional_. An array of concepts to extend. Must be defined in this package manifest.                                                                                                                                                                                                                                                                                                 |
 | `components`  | `Map<ItemPath, any>` | _Required_. An object containing the components and their default values.<br /><br />`Mat4` and `Quat` support `Identity` as a string, which will use the relevant identity value for that type.<br /><br />`F32` and `F64` support `PI`, `FRAC_PI_2`, `-PI`, and `-FRAC_PI_2` as string values, which correspond to pi (~3.14), half-pi (~1.57), and negative versions respectively. |
 
-The `components` is an object where the keys are `ItemPath`s of components defined in the ember manifest, and the values are the default values for those components in the concept.
+The `components` is an object where the keys are `ItemPath`s of components defined in the package manifest, and the values are the default values for those components in the concept.
 
 #### Example
 
@@ -219,7 +219,7 @@ components = { cool_component2 = 1 }
 
 ### Messages / `[messages]`
 
-The `messages` section contains custom messages defined by the ember. Messages are used to communicate between client and server.
+The `messages` section contains custom messages defined by the package. Messages are used to communicate between client and server.
 
 For an example of how to use messages, see the [messaging example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/intermediate/messaging).
 
@@ -243,9 +243,9 @@ mouse_delta_x = "F32"
 
 ### Enums / `[enums]`
 
-The `enums` section contains custom enums defined by the ember. Enums are used to define a closed set of values.
+The `enums` section contains custom enums defined by the package. Enums are used to define a closed set of values.
 
-This is a TOML table, where the keys are the ember IDs (`PascalCaseIdentifier`), and the values are the ember definitions.
+This is a TOML table, where the keys are the package IDs (`PascalCaseIdentifier`), and the values are the package definitions.
 
 | Property      | Type                                | Description                                                                                        |
 | ------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------- |
@@ -268,20 +268,20 @@ Done = "Done"
 
 ### Dependencies / `[dependencies]`
 
-The `dependencies` section contains a list of ember IDs that this ember depends on.
+The `dependencies` section contains a list of package IDs that this package depends on.
 
-Depending on another ember gives you access to its items, including its components, concepts, messages, and enums. It can also provide access to any assets that the ember has.
+Depending on another package gives you access to its items, including its components, concepts, messages, and enums. It can also provide access to any assets that the package has.
 
-This is a TOML table, where the keys are the name that you want to access this ember by (`SnakeCaseIdentifier`), and the location of the ember is the value.
+This is a TOML table, where the keys are the name that you want to access this package by (`SnakeCaseIdentifier`), and the location of the package is the value.
 
-To access an item from an ember, use the following syntax: `import_name::item_id`. For example, if you have an ember imported with the name `the_basics` and an enum with ID `BasicEnum`, you can access it with `the_basics::BasicEnum`.
+To access an item from a package, use the following syntax: `import_name::item_id`. For example, if you have a package imported with the name `the_basics` and an enum with ID `BasicEnum`, you can access it with `the_basics::BasicEnum`.
 
 At the time of writing, only path dependencies are supported. This is likely to change in future.
 
-| Property  | Type     | Description                                                                                                        |
-| --------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
-| `path`    | `String` | _Required_. A relative path to the ember to depend on.                                                             |
-| `enabled` | `bool`   | _Optional_. Control whether or not logic associated with this ember should be enabled on load. Enabled by default. |
+| Property  | Type     | Description                                                                                                          |
+| --------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
+| `path`    | `String` | _Required_. A relative path to the package to depend on.                                                             |
+| `enabled` | `bool`   | _Optional_. Control whether or not logic associated with this package should be enabled on load. Enabled by default. |
 
 For an example of how to use dependencies, see the [dependencies example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/intermediate/dependencies).
 

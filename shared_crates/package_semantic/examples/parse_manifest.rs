@@ -15,7 +15,7 @@ async fn main() -> anyhow::Result<()> {
         }
     };
     for path in paths {
-        semantic.add_ember(&path).await?;
+        semantic.add_package(&path).await?;
     }
 
     let mut printer = Printer::new();

@@ -1,6 +1,6 @@
 [package]
 name = "ambient_package_semantic_native"
-description = "Glues together the ember semantic system and other native code, like asset loading."
+description = "Glues together the package semantic system and other native code, like asset loading."
 edition = "2021"
 version.workspace = true
 rust-version.workspace = true

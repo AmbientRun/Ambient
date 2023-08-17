@@ -13,7 +13,7 @@ mod shared;
 
 use ambient_physics::physx::PhysicsKey;
 use anyhow::Context;
-use cli::{build::BuildDirectories, Cli, Commands, EmberPath};
+use cli::{build::BuildDirectories, Cli, Commands, PackagePath};
 use log::LevelFilter;
 use server::QUIC_INTERFACE_PORT;
 
@@ -31,27 +31,27 @@ fn main() -> anyhow::Result<()> {
 
     let cli = Cli::parse();
 
-    let ember = cli.ember();
+    let package = cli.package();
 
-    if let Some(ember) = ember {
-        if ember.project {
+    if let Some(package) = package {
+        if package.project {
             log::warn!("`-p`/`--project` has no semantic meaning.");
             log::warn!("You do not need to use `-p`/`--project` - `ambient run project` is the same as `ambient run -p project`.");
         }
     }
 
-    let ember_path: EmberPath = ember.and_then(|p| p.path.clone()).try_into()?;
-    let golden_image_output_dir = ember_path.fs_path.clone();
+    let package_path: PackagePath = package.and_then(|p| p.path.clone()).try_into()?;
+    let golden_image_output_dir = package_path.fs_path.clone();
 
-    if ember_path.is_remote() {
-        // ember path is a URL, so let's use it as the content base URL
-        ContentBaseUrlKey.insert(&assets, ember_path.url.clone());
+    if package_path.is_remote() {
+        // package path is a URL, so let's use it as the content base URL
+        ContentBaseUrlKey.insert(&assets, package_path.url.clone());
     }
 
-    // If new: create ember, immediately exit
+    // If new: create package, immediately exit
     if let Commands::New { name, api_path, .. } = &cli.command {
-        return cli::new_ember::handle(&ember_path, name.as_deref(), api_path.as_deref())
-            .context("Failed to create ember");
+        return cli::new_package::handle(&package_path, name.as_deref(), api_path.as_deref())
+            .context("Failed to create package");
     }
 
     if let Commands::Assets { command } = &cli.command {
@@ -60,16 +60,19 @@ fn main() -> anyhow::Result<()> {
 
     // Store a flag that we are using local debug assets
     // Used for emitting warnings when local debug assets are sent to remote clients
-    UsingLocalDebugAssetsKey.insert(&assets, !ember_path.is_remote() && !cli.use_release_build());
+    UsingLocalDebugAssetsKey.insert(
+        &assets,
+        !package_path.is_remote() && !cli.use_release_build(),
+    );
 
-    // Build the ember if required. Note that this only runs if the ember is local,
+    // Build the package if required. Note that this only runs if the package is local,
     // and if a build has actually been requested.
     let BuildDirectories {
         build_root_path,
-        main_ember_path,
+        main_package_path,
     } = rt.block_on(cli::build::build(
-        ember,
-        ember_path,
+        package,
+        package_path,
         &assets,
         cli.use_release_build(),
     ))?;
@@ -93,7 +96,7 @@ fn main() -> anyhow::Result<()> {
             log::warn!("Deploying a debug build which might involve uploading large files. Remove `--debug` to deploy a release build.");
         }
         return rt.block_on(cli::deploy::handle(
-            &main_ember_path,
+            &main_package_path,
             &assets,
             token,
             api_server,
@@ -138,7 +141,7 @@ fn main() -> anyhow::Result<()> {
                 None
             },
             build_root_path,
-            main_ember_path,
+            main_package_path,
             &assets,
         ))?
     } else {
@@ -159,19 +162,19 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-// Read the ember manifest from the ember path (which may have been updated by the build step)
+// Read the package manifest from the package path (which may have been updated by the build step)
 async fn retrieve_manifest(
-    built_ember_path: &AbsAssetUrl,
+    built_package_path: &AbsAssetUrl,
     assets: &AssetCache,
 ) -> anyhow::Result<ambient_package::Manifest> {
-    match built_ember_path
+    match built_package_path
         .push("ambient.toml")?
         .download_string(assets)
         .await
     {
         Ok(toml) => Ok(ambient_package::Manifest::parse(&toml)?),
         Err(_) => {
-            anyhow::bail!("Failed to find ambient.toml in ember");
+            anyhow::bail!("Failed to find ambient.toml in package");
         }
     }
 }

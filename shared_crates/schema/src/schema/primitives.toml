@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "primitives"
 name = "Primitives"
 description = "Components that create primitive (in the geometric sense) objects from their attached entities."

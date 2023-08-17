@@ -9,7 +9,7 @@ pub fn main(item: TokenStream, ambient_toml: ManifestSource) -> TokenStream {
     let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
 
-    let ember_boilerplate = tokio::runtime::Builder::new_current_thread()
+    let boilerplate = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
         .map_err(anyhow::Error::new)
@@ -22,7 +22,7 @@ pub fn main(item: TokenStream, ambient_toml: ManifestSource) -> TokenStream {
         })
         .unwrap_or_else(|e| {
             let msg = format!(
-                "Error while running Ambient ember macro: {e}{}",
+                "Error while running Ambient package macro: {e}{}",
                 e.source()
                     .map(|e| format!("\nCaused by: {e}"))
                     .unwrap_or_default()
@@ -47,7 +47,7 @@ pub fn main(item: TokenStream, ambient_toml: ManifestSource) -> TokenStream {
     quote! {
         #item
 
-        #ember_boilerplate
+        #boilerplate
 
         #[no_mangle]
         #[doc(hidden)]

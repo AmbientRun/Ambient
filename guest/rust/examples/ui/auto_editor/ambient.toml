@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_auto_editor"
 name = "Auto editor"
 version = "0.0.1"

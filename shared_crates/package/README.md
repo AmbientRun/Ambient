@@ -1,3 +1,3 @@
 # ambient_package
 
-Definition of the Ambient ember manifest format.
+Definition of the Ambient package manifest format.

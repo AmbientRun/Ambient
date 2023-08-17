@@ -71,7 +71,7 @@ impl Resolve for Message {
 }
 
 impl Message {
-    pub(crate) fn from_ember(data: ItemData, value: &ambient_package::Message) -> Self {
+    pub(crate) fn from_package(data: ItemData, value: &ambient_package::Message) -> Self {
         Message {
             data,
             description: value.description.clone(),

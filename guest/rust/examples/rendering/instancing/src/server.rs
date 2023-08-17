@@ -19,7 +19,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::ambient_example_instancing::{assets, components::instance_index};
+use packages::ambient_example_instancing::{assets, components::instance_index};
 
 #[main]
 pub async fn main() {

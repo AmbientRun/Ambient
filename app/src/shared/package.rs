@@ -16,18 +16,18 @@ pub async fn add(
     semantic: &mut Semantic,
     path: &Path,
 ) -> anyhow::Result<ItemId<Scope>> {
-    let id = semantic.add_ember(path).await?;
+    let id = semantic.add_package(path).await?;
     // HACK: think about how this could be supplied in the right place
     if let Some(world) = world {
-        let ember_name_to_url = world
-            .synced_resource_mut(ambient_package_semantic_native::ember_name_to_url())
+        let package_name_to_url = world
+            .synced_resource_mut(ambient_package_semantic_native::package_name_to_url())
             .unwrap();
 
         for id in semantic.items.scope_and_dependencies(id) {
             let item = semantic.items.get(id)?;
             let original_id = item.original_id.to_string();
 
-            ember_name_to_url.insert(
+            package_name_to_url.insert(
                 original_id.clone(),
                 AbsAssetUrl::from_asset_key(original_id)?.0.to_string(),
             );
@@ -37,13 +37,13 @@ pub async fn add(
     finish_add(semantic, id)
 }
 
-/// HACK! Temporary to enable remote single-ember deployments.
+/// HACK! Temporary to enable remote single-package deployments.
 pub async fn add_parsed_manifest(
     semantic: &mut Semantic,
     manifest: &Manifest,
     build_metadata: BuildMetadata,
 ) -> anyhow::Result<ItemId<Scope>> {
-    let id = semantic.add_ember_manifest(manifest).await?;
+    let id = semantic.add_package_manifest(manifest).await?;
     semantic.items.get_mut(id)?.build_metadata = Some(build_metadata);
     finish_add(semantic, id)
 }

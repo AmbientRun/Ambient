@@ -19,7 +19,7 @@ use ambient_api::{
 mod constants;
 use constants::*;
 
-use embers::ambient_example_tictactoe::{
+use packages::ambient_example_tictactoe::{
     components::{cell, cells, owned_by},
     messages::Input,
 };
