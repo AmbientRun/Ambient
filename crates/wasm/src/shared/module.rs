@@ -4,9 +4,11 @@ use super::{bindings::BindingsBound, conversion::IntoBindgen};
 use super::{engine::EngineKey, Source};
 use ambient_ecs::{EntityId, World};
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_sys::task::PlatformBoxFuture;
 use anyhow::Context;
 use data_encoding::BASE64;
 use flume::{SendError, TrySendError};
+use futures::future::BoxFuture;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::io;
@@ -137,7 +139,7 @@ pub struct ModuleState {
 }
 
 impl ModuleState {
-    fn new<Bindings: BindingsBound + 'static>(
+    async fn new<Bindings: BindingsBound + 'static>(
         assets: &AssetCache,
         args: ModuleStateArgs<'_>,
         bindings: fn(EntityId) -> Bindings,
@@ -152,9 +154,16 @@ impl ModuleState {
     pub fn create_state_maker<Bindings: BindingsBound + 'static>(
         assets: &AssetCache,
         bindings: fn(EntityId) -> Bindings,
-    ) -> Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Send + Sync> {
+    ) -> Arc<
+        dyn Fn(ModuleStateArgs<'_>) -> PlatformBoxFuture<anyhow::Result<ModuleState>> + Send + Sync,
+    > {
         let assets = assets.clone();
-        Arc::new(move |args: ModuleStateArgs<'_>| Self::new(&assets, args, bindings))
+        Arc::new(move |args: ModuleStateArgs<'_>| {
+            // Generic over send or not send, depending on the target platform.
+            //
+            // I know, it is hacky... but it works and is sound
+            PlatformBoxFuture::new(Self::new(&assets, args, bindings))
+        })
     }
 }
 

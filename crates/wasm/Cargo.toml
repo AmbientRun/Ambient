@@ -53,8 +53,7 @@ wgpu = { workspace = true }
 ulid = { workspace = true }
 tracing = { workspace = true }
 wit-component = { workspace = true }
-pollster = { workspace = true }
-
+futures = { workspace = true }
 
 wasm-bridge = { git = "https://github.com/AmbientRun/wasm-bridge", version = "0.2", features = [
     "component-model",
