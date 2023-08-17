@@ -103,7 +103,7 @@ impl Resolve for Concept {
     }
 }
 impl Concept {
-    pub(crate) fn from_project(data: ItemData, value: &ambient_ember::Concept) -> Self {
+    pub(crate) fn from_ember(data: ItemData, value: &ambient_ember::Concept) -> Self {
         Concept {
             data,
             name: value.name.clone(),

@@ -39,7 +39,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 #### Headline features
 
 - **Client**: The client can now **run on the web**.
-- **Deploy**: The `ambient deploy` command can now be used to deploy a project to Ambient runtime services.
+- **Deploy**: The `ambient deploy` command can now be used to deploy an ember to Ambient runtime services.
 - **Audio**: Spatial audio is now supported for 3D sounds. See the [physics example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/physics/src/client.rs) and [first_person_camera example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/first_person_camera/src/client.rs)
 - **Networking**: The networking protocol now supports WebTransport for the web client.
 - **Rendering**: Procedural meshes, textures, samplers and materials are now supported on the client. See the [procedural generation example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/procedural_generation).
@@ -67,7 +67,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 #### Breaking
 
-- **Ember**: Projects are now renamed to _embers_.
+- **Project**: Projects have been renamed to Embers; see the [ember documentation](https://ambientrun.github.io/Ambient/reference/ember.html) for details.
 - **Ember**: As mentioned above, a new ember semantic system has been added. This comes with several breaking changes:
 
   - In your Rust code:
@@ -131,7 +131,6 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Animation**: The animation system has been reworked. See the [animation documentation](https://ambientrun.github.io/Ambient/reference/animations.html) for details. Thanks to [@devjobe](https://github.com/devjobe) for laying the foundation for this!
 - **Physics**: Renamed `box_collider` to `cube_collider`.
 - **API**: The `time` function has been split into `game_time` and `epoch_time`. The `dtime` component has been renamed to `delta_time`. The `frametime` function has been renamed to `delta_time`.
-- **Project**: Projects have been renamed to Embers; see the [ember documentation](https://ambientrun.github.io/Ambient/reference/ember.html) for details.
 - **Assets**: Asset pipelines now use TOML instead of JSON. Use the `ambient assets migrate-pipelines-toml` command to migrate. (Note that this command will be removed in the next release.)
 - **Rendering**: Removing the `outline_recursive` component from a entity will now remove the outline from its children as well.
 - **API**: The `ambient_ui` prelude (and the `ambient_api` prelude, by extension) no longer glob-imports components into the global namespace. This means that you will need to import components explicitly.

@@ -368,7 +368,7 @@ impl Semantic {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Component::from_project(make_item_data(item), component));
+            let value = items.add(Component::from_ember(make_item_data(item), component));
             items
                 .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
                 .components
@@ -379,7 +379,7 @@ impl Semantic {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Concept::from_project(make_item_data(item), concept));
+            let value = items.add(Concept::from_ember(make_item_data(item), concept));
             items
                 .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
                 .concepts
@@ -390,7 +390,7 @@ impl Semantic {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Message::from_project(make_item_data(item), message));
+            let value = items.add(Message::from_ember(make_item_data(item), message));
             items
                 .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
                 .messages
@@ -398,7 +398,7 @@ impl Semantic {
         }
 
         for (segment, enum_ty) in manifest.enums.iter() {
-            let enum_id = items.add(Type::from_project_enum(
+            let enum_id = items.add(Type::from_ember_enum(
                 make_item_data(&Identifier::from(segment.clone())),
                 enum_ty,
             ));

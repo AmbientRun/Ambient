@@ -28,7 +28,7 @@ pub mod message;
 /// Player-specific functionality.
 pub mod player;
 
-/// Helpful imports that almost all Ambient projects will use.
+/// Helpful imports that almost all Ambient embers will use.
 pub mod prelude;
 
 /// Animation functions

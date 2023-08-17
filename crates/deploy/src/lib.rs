@@ -27,7 +27,7 @@ use deploy_proto::{
 };
 
 const CHUNK_SIZE: usize = 1024 * 1024 * 3; // 3MB
-const EXTRA_FILES_FROM_PROJECT_ROOT: &[&str] = &["screenshot.png", "README.md"];
+const EXTRA_FILES_FROM_EMBER_ROOT: &[&str] = &["screenshot.png", "README.md"];
 const REQUIRED_FILES: &[&str] = &["ambient.toml"];
 
 /// This takes the path to an Ambient ember and deploys it. An Ambient ember is expected to
@@ -143,7 +143,7 @@ pub async fn deploy(
     deployment.ok_or_else(|| anyhow::anyhow!("No deployment id returned from deploy"))
 }
 
-// Get all files from "build" and EXTRA_FILES_FROM_PROJECT_ROOT
+// Get all files from "build" and EXTRA_FILES_FROM_EMBER_ROOT
 fn collect_files_to_deploy(base_path: PathBuf) -> anyhow::Result<HashMap<String, PathBuf>> {
     // collect all files to deploy (everything in the build directory)
     let asset_path_to_file_path: Option<HashMap<String, PathBuf>> = WalkDir::new(base_path.clone())
@@ -176,8 +176,8 @@ fn collect_files_to_deploy(base_path: PathBuf) -> anyhow::Result<HashMap<String,
         anyhow::bail!("Can only deploy files with UTF-8 paths that don't have newline characters");
     };
 
-    // check for a few special files in the project root
-    for file_name in EXTRA_FILES_FROM_PROJECT_ROOT {
+    // check for a few special files in the ember root
+    for file_name in EXTRA_FILES_FROM_EMBER_ROOT {
         let file_path = base_path.join(file_name);
         if file_path.exists() && file_path.is_file() {
             asset_path_to_file_path.insert(file_name.to_string(), file_path);

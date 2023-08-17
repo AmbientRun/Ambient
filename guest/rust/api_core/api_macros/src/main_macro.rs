@@ -9,7 +9,7 @@ pub fn main(item: TokenStream, ambient_toml: ManifestSource) -> TokenStream {
     let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
 
-    let project_boilerplate = tokio::runtime::Builder::new_current_thread()
+    let ember_boilerplate = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
         .map_err(anyhow::Error::new)
@@ -47,7 +47,7 @@ pub fn main(item: TokenStream, ambient_toml: ManifestSource) -> TokenStream {
     quote! {
         #item
 
-        #project_boilerplate
+        #ember_boilerplate
 
         #[no_mangle]
         #[doc(hidden)]

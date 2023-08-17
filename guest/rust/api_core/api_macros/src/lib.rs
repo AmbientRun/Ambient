@@ -7,7 +7,8 @@ use proc_macro::TokenStream;
 
 mod main_macro;
 
-/// Makes your `main()` function accessible to the WASM host, and generates `components` and `concept` modules for your project.
+/// Makes your `main()` function accessible to the WASM host, and generates a
+/// `embers` module that contain all embers visible to your module.
 ///
 /// If you do not add this attribute to your `main()` function, your module will not run.
 #[proc_macro_attribute]

@@ -3,7 +3,7 @@ name = "ambient_deploy"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
-description = "Functionality for deploying Ambient projects."
+description = "Functionality for deploying Ambient embers."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/AmbientRun/Ambient"
 

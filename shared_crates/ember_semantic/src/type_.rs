@@ -52,7 +52,7 @@ impl Type {
         Self { data, inner }
     }
 
-    pub(crate) fn from_project_enum(data: ItemData, value: &ambient_ember::Enum) -> Self {
+    pub(crate) fn from_ember_enum(data: ItemData, value: &ambient_ember::Enum) -> Self {
         Self::new(
             data,
             TypeInner::Enum(Enum {

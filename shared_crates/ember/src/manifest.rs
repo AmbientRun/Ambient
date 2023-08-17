@@ -77,7 +77,7 @@ pub enum EmberContent {
         #[serde(default)]
         example: bool,
     },
-    /// Assets are something that you can use as a dependency in your project
+    /// Assets are something that you can use as a dependency in your ember
     Asset {
         #[serde(default)]
         models: bool,
@@ -296,8 +296,8 @@ mod tests {
 
         const TOML: &str = r#"
         [ember]
-        id = "my_project"
-        name = "My Project"
+        id = "my_ember"
+        name = "My Ember"
         version = "0.0.1"
 
         [components]
@@ -322,8 +322,8 @@ mod tests {
             manifest,
             Manifest {
                 ember: Ember {
-                    id: sci("my_project"),
-                    name: Some("My Project".to_string()),
+                    id: sci("my_ember"),
+                    name: Some("My Ember".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
                 },

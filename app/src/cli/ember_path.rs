@@ -3,12 +3,12 @@ use anyhow::Context;
 use std::{path::PathBuf, str::FromStr};
 
 #[derive(Debug, Clone)]
-pub struct ProjectPath {
+pub struct EmberPath {
     pub url: AbsAssetUrl,
     pub fs_path: Option<std::path::PathBuf>,
 }
 
-impl ProjectPath {
+impl EmberPath {
     pub fn new_local(path: impl Into<PathBuf>) -> anyhow::Result<Self> {
         let path = path.into();
         let current_dir = std::env::current_dir().context("Error getting current directory")?;
@@ -19,7 +19,7 @@ impl ProjectPath {
         };
 
         if path.exists() && !path.is_dir() {
-            anyhow::bail!("Project path {path:?} exists and is not a directory.");
+            anyhow::bail!("Ember path {path:?} exists and is not a directory.");
         }
         let url = AbsAssetUrl::from_directory_path(path);
         let fs_path = url.to_file_path().ok().flatten();
@@ -32,19 +32,19 @@ impl ProjectPath {
     }
 }
 
-impl TryFrom<Option<String>> for ProjectPath {
+impl TryFrom<Option<String>> for EmberPath {
     type Error = anyhow::Error;
 
-    fn try_from(project_path: Option<String>) -> anyhow::Result<Self> {
-        match project_path {
-            Some(project_path)
-                if project_path.starts_with("http://")
-                    || project_path.starts_with("https://")
-                    || project_path.starts_with("file:/") =>
+    fn try_from(ember_path: Option<String>) -> anyhow::Result<Self> {
+        match ember_path {
+            Some(ember_path)
+                if ember_path.starts_with("http://")
+                    || ember_path.starts_with("https://")
+                    || ember_path.starts_with("file:/") =>
             {
-                let url = AbsAssetUrl::from_str(&project_path)?;
+                let url = AbsAssetUrl::from_str(&ember_path)?;
                 if url.extension().is_some() {
-                    anyhow::bail!("Project path must be a directory");
+                    anyhow::bail!("Ember path must be a directory");
                 }
 
                 let url = url.as_directory();
@@ -54,7 +54,7 @@ impl TryFrom<Option<String>> for ProjectPath {
                     Ok(Self { url, fs_path: None })
                 }
             }
-            Some(project_path) => Self::new_local(project_path),
+            Some(ember_path) => Self::new_local(ember_path),
             None => {
                 let url = AbsAssetUrl::from_directory_path(std::env::current_dir()?);
                 let fs_path = url.to_file_path().ok().flatten();

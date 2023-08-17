@@ -95,7 +95,7 @@ impl Resolve for Component {
     }
 }
 impl Component {
-    pub(crate) fn from_project(data: ItemData, value: &ambient_ember::Component) -> Self {
+    pub(crate) fn from_ember(data: ItemData, value: &ambient_ember::Component) -> Self {
         Self {
             data,
             name: value.name.clone(),

@@ -28,7 +28,7 @@ using [wasm-tools](https://github.com/bytecodealliance/wasm-tools) and a bundled
 
 Rust is a first-class language for Ambient embers. The default new ember template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both.
 
-The API provides a `#[main]` attribute macro that generates code ("projects") for the ember hierarchy of your ember. This allows you to access the functionality of other embers in your ember's code. All embers, including your own, will be in the `embers` module.
+The API provides a `#[main]` attribute macro that generates code to allow you to access the data and functionality of the embers known to your ember. All embers, including your own, will be in the `embers` module.
 
 ## Reference
 
@@ -101,11 +101,11 @@ These are the valid configurations for ember content:
 content = { type = "Playable" }
 content = { type = "Playable", example = true } # example defaults to false
 
-# Assets are things you can use as a dependency in your project
+# Assets are things you can use as a dependency in your ember
 content = { type = "Asset", models = true, textures = false, audio = false, fonts = false, code = false } # models etc. default to false
 content = { type = "Asset", models = true } # Shorthand of above
 
-# Tools are things you can use to develop your project
+# Tools are things you can use to develop your ember
 content = { type = "Tool" }
 
 # Mods are extension to Playables

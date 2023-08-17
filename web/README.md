@@ -4,7 +4,7 @@ This crate provides a workspace for the web client for Ambient.
 
 The client is compiled using the `wasm32-unknown-unknown` toolchain into a `.wasm` file, which is then imported as an ECMAScript module.
 
-Note: you need to serve a project using `ambient` for the web client to connect to.
+Note: you need to serve an ember using `ambient` for the web client to connect to.
 
 ## Build Prerequisites
 
@@ -28,7 +28,6 @@ Whenever a file changes the client will automatically rebuild and the changes wi
 **Note**: Skip this section if you are connecting to a hosted Ember.
 
 If using self-signed certificates, you need to toll Chrome to trust it.
-
 
 ```sh
 cargo run -p campfire --features openssl -- web open-browser

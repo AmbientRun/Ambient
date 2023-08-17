@@ -4,7 +4,7 @@ use crate::retrieve_manifest;
 
 #[allow(clippy::too_many_arguments)]
 pub async fn handle(
-    built_project_path: &AbsAssetUrl,
+    built_ember_path: &AbsAssetUrl,
     assets: &AssetCache,
     token: &str,
     api_server: &str,
@@ -12,14 +12,14 @@ pub async fn handle(
     ensure_running: bool,
     context: &str,
 ) -> Result<(), anyhow::Error> {
-    let manifest = retrieve_manifest(built_project_path, assets).await?;
+    let manifest = retrieve_manifest(built_ember_path, assets).await?;
 
-    let Some(project_fs_path) = built_project_path.to_file_path()? else {
-        anyhow::bail!("Can only deploy a local project");
+    let Some(ember_fs_path) = built_ember_path.to_file_path()? else {
+        anyhow::bail!("Can only deploy a local ember");
     };
 
     let deployment_id =
-        ambient_deploy::deploy(api_server, token, project_fs_path, &manifest, force_upload).await?;
+        ambient_deploy::deploy(api_server, token, ember_fs_path, &manifest, force_upload).await?;
 
     log::info!(
         "Assets deployed successfully. Deployment id: {}. Deploy url: https://assets.ambient.run/{}",

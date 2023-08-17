@@ -2,9 +2,9 @@
 
 Ambient projects are called _embers_. An ember is a collection of code, assets, and configuration that can be run in Ambient. They can be combined with other embers to create a game.
 
-## Creating a ember
+## Creating an ember
 
-To create a ember, run:
+To create an ember, run:
 
 ```sh
 ambient new my-ember
@@ -12,7 +12,7 @@ ambient new my-ember
 
 This will generate a new ember with a simple Rust module and an Ambient ember manifest.
 
-## Running a ember
+## Running an ember
 
 This ember can be run:
 

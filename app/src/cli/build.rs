@@ -3,7 +3,7 @@ use anyhow::Context;
 
 use crate::shared;
 
-use super::{ProjectCli, ProjectPath};
+use super::{EmberCli, EmberPath};
 
 pub struct BuildDirectories {
     /// The location where all built embers are stored. Used for the HTTP host.
@@ -21,31 +21,31 @@ impl BuildDirectories {
 }
 
 pub async fn build(
-    project: Option<&ProjectCli>,
-    project_path: ProjectPath,
+    ember_cli: Option<&EmberCli>,
+    ember_path: EmberPath,
     assets: &AssetCache,
     release_build: bool,
 ) -> anyhow::Result<BuildDirectories> {
-    let Some(project) = project else {
-        return Ok(BuildDirectories::new_with_same_paths(project_path.url.clone()));
+    let Some(ember) = ember_cli else {
+        return Ok(BuildDirectories::new_with_same_paths(ember_path.url.clone()));
     };
 
-    if project.no_build {
+    if ember.no_build {
         return Ok(BuildDirectories::new_with_same_paths(
-            project_path.url.clone(),
+            ember_path.url.clone(),
         ));
     }
 
-    let Some(project_path) = project_path.fs_path else {
-        return Ok(BuildDirectories::new_with_same_paths(project_path.url.clone()));
+    let Some(ember_path) = ember_path.fs_path else {
+        return Ok(BuildDirectories::new_with_same_paths(ember_path.url.clone()));
     };
 
-    let build_path = project_path.join("build");
+    let build_path = ember_path.join("build");
     // The build step uses its own semantic to ensure that there is
-    // no contamination, so that the built project can use its own
+    // no contamination, so that the built ember can use its own
     // semantic based on the flat hierarchy.
     let mut semantic = ambient_ember_semantic::Semantic::new().await?;
-    let primary_ember_scope_id = shared::ember::add(None, &mut semantic, &project_path).await?;
+    let primary_ember_scope_id = shared::ember::add(None, &mut semantic, &ember_path).await?;
 
     let manifest = semantic
         .items
@@ -59,21 +59,21 @@ pub async fn build(
         assets: assets.clone(),
         semantic: &mut semantic,
         optimize: release_build,
-        clean_build: project.clean_build,
-        build_wasm_only: project.build_wasm_only,
+        clean_build: ember.clean_build,
+        build_wasm_only: ember.build_wasm_only,
     };
 
-    let project_name = manifest
+    let ember_name = manifest
         .ember
         .name
         .as_deref()
         .unwrap_or_else(|| manifest.ember.id.as_str());
 
-    tracing::info!("Building project {:?}", project_name);
+    tracing::info!("Building ember {:?}", ember_name);
 
     let output_path = ambient_build::build(build_config, primary_ember_scope_id)
         .await
-        .context("Failed to build project")?;
+        .context("Failed to build ember")?;
 
     anyhow::Ok(BuildDirectories {
         build_root_path: AbsAssetUrl::from_file_path(build_path),

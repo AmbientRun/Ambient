@@ -2,7 +2,7 @@ use std::{net::IpAddr, path::PathBuf};
 
 use clap::{Args, Parser, Subcommand};
 
-pub mod new_project;
+pub mod new_ember;
 
 pub mod assets;
 pub mod build;
@@ -10,8 +10,8 @@ pub mod client;
 pub mod deploy;
 pub mod server;
 
-mod project_path;
-pub use project_path::*;
+mod ember_path;
+pub use ember_path::*;
 
 use self::assets::AssetCommand;
 
@@ -25,33 +25,33 @@ pub struct Cli {
 
 #[derive(Parser, Clone, Debug)]
 pub enum Commands {
-    /// Create a new Ambient project
+    /// Create a new Ambient ember
     New {
         #[command(flatten)]
-        project_args: ProjectCli,
+        ember_args: EmberCli,
         #[arg(short, long)]
         name: Option<String>,
         #[arg(long)]
         api_path: Option<String>,
     },
-    /// Builds and runs the project locally
+    /// Builds and runs the ember locally
     Run {
         #[command(flatten)]
-        project_args: ProjectCli,
+        ember_args: EmberCli,
         #[command(flatten)]
         host_args: HostCli,
         #[command(flatten)]
         run_args: RunCli,
     },
-    /// Builds the project
+    /// Builds the ember
     Build {
         #[command(flatten)]
-        project_args: ProjectCli,
+        ember_args: EmberCli,
     },
-    /// Deploys the project
+    /// Deploys the ember
     Deploy {
         #[command(flatten)]
-        project_args: ProjectCli,
+        ember_args: EmberCli,
         /// API server endpoint
         #[arg(long, default_value = "https://api.ambient.run")]
         api_server: String,
@@ -61,25 +61,25 @@ pub enum Commands {
         /// Don't use differential upload and upload all assets
         #[arg(long)]
         force_upload: bool,
-        /// Ensure the project is running after deploying
+        /// Ensure the ember is running after deploying
         #[arg(long)]
         ensure_running: bool,
-        /// Context to run the project in
+        /// Context to run the ember in
         #[arg(long, requires("ensure_running"), default_value = "")]
         context: String,
     },
-    /// Builds and runs the project in server-only mode
+    /// Builds and runs the ember in server-only mode
     Serve {
         #[command(flatten)]
-        project_args: ProjectCli,
+        ember_args: EmberCli,
         #[command(flatten)]
         host_args: HostCli,
     },
     /// View an asset
     View {
         #[command(flatten)]
-        project_args: ProjectCli,
-        /// Relative to the project path
+        ember_args: EmberCli,
+        /// Relative to the ember path
         asset_path: PathBuf,
     },
     /// Join a multiplayer session
@@ -114,7 +114,8 @@ pub enum GoldenImageCommand {
 
 #[derive(Args, Clone, Debug)]
 pub struct RunCli {
-    /// If set, show a debugger that can be used to investigate the state of the project. Can also be accessed through the `AMBIENT_DEBUGGER` environment variable
+    /// If set, show a debugger that can be used to investigate the state of the ember.
+    /// Can also be accessed through the `AMBIENT_DEBUGGER` environment variable
     #[arg(short, long)]
     pub debugger: bool,
 
@@ -140,12 +141,12 @@ pub struct RunCli {
 }
 
 #[derive(Args, Clone, Debug)]
-pub struct ProjectCli {
+pub struct EmberCli {
     /// Dummy flag to catch Rust users using muscle memory and warn them
     #[arg(long, short, hide = true)]
     pub project: bool,
 
-    /// The path or URL of the project to run; if not specified, this will default to the current directory
+    /// The path or URL of the ember to run; if not specified, this will default to the current directory
     pub path: Option<String>,
 
     /// Build all the assets with debug information; this will make them less performant and larger but easier to debug (default for all commands apart from `deploy` and `serve`)
@@ -156,7 +157,7 @@ pub struct ProjectCli {
     #[arg(short, long)]
     release: bool,
 
-    /// Avoid building the project
+    /// Avoid building the ember
     #[arg(long)]
     pub no_build: bool,
 
@@ -220,15 +221,15 @@ impl Cli {
             Commands::Assets { .. } => None,
         }
     }
-    /// Extract project-relevant state only
-    pub fn project(&self) -> Option<&ProjectCli> {
+    /// Extract ember-relevant state only
+    pub fn ember(&self) -> Option<&EmberCli> {
         match &self.command {
-            Commands::New { project_args, .. } => Some(project_args),
-            Commands::Run { project_args, .. } => Some(project_args),
-            Commands::Build { project_args, .. } => Some(project_args),
-            Commands::Deploy { project_args, .. } => Some(project_args),
-            Commands::Serve { project_args, .. } => Some(project_args),
-            Commands::View { project_args, .. } => Some(project_args),
+            Commands::New { ember_args, .. } => Some(ember_args),
+            Commands::Run { ember_args, .. } => Some(ember_args),
+            Commands::Build { ember_args, .. } => Some(ember_args),
+            Commands::Deploy { ember_args, .. } => Some(ember_args),
+            Commands::Serve { ember_args, .. } => Some(ember_args),
+            Commands::View { ember_args, .. } => Some(ember_args),
             Commands::Join { .. } => None,
             Commands::Assets { .. } => None,
         }
@@ -248,18 +249,18 @@ impl Cli {
     }
     pub fn use_release_build(&self) -> bool {
         match &self.command {
-            Commands::Deploy { project_args, .. } | Commands::Serve { project_args, .. } => {
-                project_args.is_release().unwrap_or(true)
+            Commands::Deploy { ember_args, .. } | Commands::Serve { ember_args, .. } => {
+                ember_args.is_release().unwrap_or(true)
             }
-            Commands::Run { project_args, .. }
-            | Commands::Build { project_args, .. }
-            | Commands::View { project_args, .. } => project_args.is_release().unwrap_or(false),
+            Commands::Run { ember_args, .. }
+            | Commands::Build { ember_args, .. }
+            | Commands::View { ember_args, .. } => ember_args.is_release().unwrap_or(false),
             Commands::New { .. } | Commands::Join { .. } | Commands::Assets { .. } => false,
         }
     }
 }
 
-impl ProjectCli {
+impl EmberCli {
     pub fn is_release(&self) -> Option<bool> {
         match (self.debug, self.release) {
             (true, false) => Some(false),

@@ -78,7 +78,7 @@ pub fn run(args: &Run) -> anyhow::Result<()> {
         "Running example {} (Ambient built with release: {release}, extra args {args:?})...",
         example_path.display()
     );
-    run_project(&example_path, *release, args)
+    run_ember(&example_path, *release, args)
 }
 
 fn run_all(release: bool, args: &[String]) -> anyhow::Result<()> {
@@ -87,7 +87,7 @@ fn run_all(release: bool, args: &[String]) -> anyhow::Result<()> {
             "Running example {} (Ambient built with release: {release}, extra args {args:?})...",
             example_path.display()
         );
-        run_project(&example_path, release, args)?;
+        run_ember(&example_path, release, args)?;
     }
 
     Ok(())
@@ -122,10 +122,14 @@ fn check_all() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn run_project(project: &Path, ambient_release: bool, extra_args: &[String]) -> anyhow::Result<()> {
+fn run_ember(
+    ember_path: &Path,
+    ambient_release: bool,
+    extra_args: &[String],
+) -> anyhow::Result<()> {
     let mut args = vec!["run"];
-    let project = project.to_string_lossy();
-    args.push(&project);
+    let ember_path = ember_path.to_string_lossy();
+    args.push(&ember_path);
     if !extra_args.is_empty() {
         args.extend(extra_args.iter().map(|s| s.as_str()));
     }
