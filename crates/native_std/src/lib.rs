@@ -163,13 +163,15 @@ pub fn git_revision_full() -> Option<String> {
 pub struct AmbientVersion {
     pub version: String,
     pub revision: String,
+    pub revision_full: String,
 }
 
 impl Default for AmbientVersion {
     fn default() -> Self {
         Self {
             version: env!("CARGO_PKG_VERSION").to_string(),
-            revision: git_revision_full().unwrap_or_default(),
+            revision: git_revision().unwrap_or_default(),
+            revision_full: git_revision_full().unwrap_or_default(),
         }
     }
 }
