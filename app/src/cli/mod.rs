@@ -14,9 +14,9 @@ mod project_path;
 pub use project_path::*;
 
 use self::assets::AssetCommand;
-
+use ambient_native_std::{ambient_version, git_revision};
 #[derive(Parser, Clone)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version = {format!("{} (rev {})", ambient_version().version, git_revision().unwrap_or("unknown".to_string()))}, about, long_about = None)]
 #[command(propagate_version = true)]
 pub struct Cli {
     #[command(subcommand)]
