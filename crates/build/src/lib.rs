@@ -8,9 +8,9 @@ use std::{
 };
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
-use ambient_ember::{BuildMetadata, Manifest as EmberManifest, Version};
-use ambient_ember_semantic::{ItemId, Scope, Semantic};
 use ambient_native_std::{asset_url::AbsAssetUrl, AmbientVersion};
+use ambient_package::{BuildMetadata, Manifest as EmberManifest, Version};
+use ambient_package_semantic::{ItemId, Scope, Semantic};
 use ambient_std::path::path_to_unix_string;
 use anyhow::Context;
 use futures::FutureExt;
@@ -177,7 +177,7 @@ async fn build_ember(
             .collect::<Result<HashMap<_, _>, _>>()?;
 
         for (orig_name, dep) in manifest.dependencies.iter_mut() {
-            let ambient_ember::Dependency { path, .. } = dep;
+            let ambient_package::Dependency { path, .. } = dep;
 
             if let Some(orig_dep) = orig_name_to_dep.get(orig_name) {
                 let dep_scope = semantic.items.get(*orig_dep)?;

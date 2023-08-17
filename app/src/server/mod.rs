@@ -11,7 +11,6 @@ use ambient_ecs::{
     dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World,
     WorldEventsSystem, WorldStreamCompEvent,
 };
-use ambient_ember::BuildMetadata;
 use ambient_native_std::{
     ambient_version,
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
@@ -22,6 +21,7 @@ use ambient_network::{
     native::server::{Crypto, GameServer},
     server::{ForkingEvent, ProxySettings, ShutdownEvent},
 };
+use ambient_package::BuildMetadata;
 use ambient_prefab::PrefabFromUrl;
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
@@ -45,7 +45,7 @@ pub async fn start(
     main_ember_path: AbsAssetUrl,
     view_asset_path: Option<PathBuf>,
     working_directory: PathBuf,
-    manifest: ambient_ember::Manifest,
+    manifest: ambient_package::Manifest,
     crypto: Crypto,
 ) -> SocketAddr {
     let quic_interface_port = host_cli.quic_interface_port;
@@ -147,7 +147,7 @@ pub async fn start(
             .with(is_synced_resources(), ())
             .with(dont_store(), ())
             .with(
-                ambient_ember_semantic_native::ember_name_to_url(),
+                ambient_package_semantic_native::ember_name_to_url(),
                 Default::default(),
             )
             .spawn(&mut server_world);
@@ -161,7 +161,7 @@ pub async fn start(
             .await
             .unwrap();
 
-        let mut semantic = ambient_ember_semantic::Semantic::new().await.unwrap();
+        let mut semantic = ambient_package_semantic::Semantic::new().await.unwrap();
         let primary_ember_scope_id = match main_ember_path.to_file_path().unwrap() {
             Some(local_path) => {
                 shared::ember::add(Some(&mut server_world), &mut semantic, &local_path)
@@ -194,7 +194,7 @@ pub async fn start(
         server_world
             .add_component(
                 server_world.resource_entity(),
-                ambient_ember_semantic_native::semantic(),
+                ambient_package_semantic_native::semantic(),
                 Arc::new(Mutex::new(semantic)),
             )
             .unwrap();

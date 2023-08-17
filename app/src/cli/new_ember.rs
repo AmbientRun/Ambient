@@ -1,7 +1,7 @@
 use std::path::Path;
 
-use ambient_ember::SnakeCaseIdentifier;
 use ambient_native_std::git_revision;
+use ambient_package::SnakeCaseIdentifier;
 use anyhow::Context;
 use convert_case::Casing;
 

@@ -14,7 +14,7 @@ pub(crate) fn url(
 ) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
     let assets = world.resource(asset_cache()).clone();
 
-    let asset_url = ambient_ember_semantic_native::file_path(
+    let asset_url = ambient_package_semantic_native::file_path(
         world,
         &ember_id,
         &Path::new("assets").join(path),

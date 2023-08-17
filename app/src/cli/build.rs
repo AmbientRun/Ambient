@@ -44,7 +44,7 @@ pub async fn build(
     // The build step uses its own semantic to ensure that there is
     // no contamination, so that the built ember can use its own
     // semantic based on the flat hierarchy.
-    let mut semantic = ambient_ember_semantic::Semantic::new().await?;
+    let mut semantic = ambient_package_semantic::Semantic::new().await?;
     let primary_ember_scope_id = shared::ember::add(None, &mut semantic, &ember_path).await?;
 
     let manifest = semantic

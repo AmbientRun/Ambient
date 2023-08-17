@@ -5,7 +5,7 @@ use std::{
 };
 
 use ambient_ecs::{EntityId, SystemGroup, World};
-use ambient_ember_semantic::{ItemId, Scope};
+use ambient_package_semantic::{ItemId, Scope};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{module_name, remote_paired_id, spawn_module, MessageType};
 use anyhow::Context;
@@ -43,7 +43,7 @@ pub fn instantiate_ember(world: &mut World, ember_id: ItemId<Scope>) -> anyhow::
     let mut modules_to_entity_ids = HashMap::new();
     for target in ["client", "server"] {
         let (ember_name, ember_enabled, build_metadata) = {
-            let semantic = ambient_ember_semantic_native::world_semantic(world);
+            let semantic = ambient_package_semantic_native::world_semantic(world);
             let semantic = semantic.lock().unwrap();
             let scope = semantic.items.get(ember_id)?;
 
@@ -66,7 +66,8 @@ pub fn instantiate_ember(world: &mut World, ember_id: ItemId<Scope>) -> anyhow::
                 .context("no file stem for {path:?}")?
                 .to_string_lossy();
 
-            let bytecode_url = ambient_ember_semantic_native::file_path(world, &ember_name, path)?;
+            let bytecode_url =
+                ambient_package_semantic_native::file_path(world, &ember_name, path)?;
             let id = spawn_module(world, bytecode_url, ember_enabled, target == "server");
             modules_to_entity_ids.insert(
                 (

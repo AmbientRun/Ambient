@@ -4,10 +4,12 @@ use ambient_ecs::{
     ComponentRegistry, ExternalComponentAttributes, ExternalComponentDesc, PrimitiveComponentType,
     World,
 };
-use ambient_ember::{BuildMetadata, Manifest};
-use ambient_ember_semantic::{Item, ItemId, ItemSource, PrimitiveType, Scope, Semantic, TypeInner};
 use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::ServerWorldExt;
+use ambient_package::{BuildMetadata, Manifest};
+use ambient_package_semantic::{
+    Item, ItemId, ItemSource, PrimitiveType, Scope, Semantic, TypeInner,
+};
 
 pub async fn add(
     world: Option<&mut World>,
@@ -18,7 +20,7 @@ pub async fn add(
     // HACK: think about how this could be supplied in the right place
     if let Some(world) = world {
         let ember_name_to_url = world
-            .synced_resource_mut(ambient_ember_semantic_native::ember_name_to_url())
+            .synced_resource_mut(ambient_package_semantic_native::ember_name_to_url())
             .unwrap();
 
         for id in semantic.items.scope_and_dependencies(id) {
