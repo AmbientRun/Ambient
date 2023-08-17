@@ -18,7 +18,7 @@ targets = ["wasm32-wasi"]
 [dependencies]
 ambient_api_macros = { workspace = true }
 ambient_shared_types = { workspace = true }
-ambient_project_rt = { workspace = true }
+ambient_ember_rt = { workspace = true }
 
 anyhow = { workspace = true }
 byteorder = { workspace = true }

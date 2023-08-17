@@ -1,4 +1,4 @@
-use ambient_project_macro_common::{Context, ManifestSource};
+use ambient_ember_macro_common::{Context, ManifestSource};
 use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use quote::{quote, ToTokens};
 
@@ -9,12 +9,12 @@ pub fn main(item: TokenStream, ambient_toml: ManifestSource) -> TokenStream {
     let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
 
-    let project_boilerplate = tokio::runtime::Builder::new_current_thread()
+    let ember_boilerplate = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
         .map_err(anyhow::Error::new)
         .and_then(|rt| {
-            rt.block_on(ambient_project_macro_common::generate_code(
+            rt.block_on(ambient_ember_macro_common::generate_code(
                 Some(ambient_toml),
                 Context::GuestUser,
                 None,
@@ -47,7 +47,7 @@ pub fn main(item: TokenStream, ambient_toml: ManifestSource) -> TokenStream {
     quote! {
         #item
 
-        #project_boilerplate
+        #ember_boilerplate
 
         #[no_mangle]
         #[doc(hidden)]

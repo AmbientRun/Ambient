@@ -63,7 +63,7 @@ fn main() {
     {
         // HACK: Build wit files ahead of time so that we don't need to use a macro in the guest code.
         //
-        // Additionally, generate the API project Rust code ahead of time.
+        // Additionally, generate the API schema Rust code ahead of time.
         if guest_path.file_name().unwrap_or_default() == "rust" {
             use wit_bindgen_core::{wit_parser::Resolve, Files};
 
@@ -87,12 +87,12 @@ fn main() {
                 .unwrap();
             }
 
-            // Generate the API project Rust code.
+            // Generate the API schema Rust code.
             let api_generated_code = ambient_sys::task::make_native_multithreaded_runtime()
                 .unwrap()
-                .block_on(ambient_project_macro_common::generate_code(
+                .block_on(ambient_ember_macro_common::generate_code(
                     None,
-                    ambient_project_macro_common::Context::GuestApi,
+                    ambient_ember_macro_common::Context::GuestApi,
                     None,
                 ))
                 .unwrap();

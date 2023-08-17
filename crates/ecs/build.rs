@@ -9,7 +9,7 @@ fn main() {
     #![allow(unused)]
     use std::io::Read;
 
-    use ambient_project_rt::message_serde::{MessageSerde, MessageSerdeError};
+    use ambient_ember_rt::message_serde::{MessageSerde, MessageSerdeError};
     use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
     impl MessageSerde for crate::EntityId {
@@ -33,9 +33,9 @@ fn main() {
 
     let api_generated_code = ambient_sys::task::make_native_multithreaded_runtime()
         .unwrap()
-        .block_on(ambient_project_macro_common::generate_code(
+        .block_on(ambient_ember_macro_common::generate_code(
             None,
-            ambient_project_macro_common::Context::Host,
+            ambient_ember_macro_common::Context::Host,
             Some("ambient_core"),
         ))
         .unwrap();

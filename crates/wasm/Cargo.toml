@@ -21,7 +21,7 @@ ambient_renderer = { path = "../renderer" }
 ambient_procedurals = { path = "../procedurals" }
 ambient_ember_semantic_native = { path = "../ember_semantic_native" }
 
-ambient_project = { path = "../../shared_crates/project" }
+ambient_ember = { path = "../../shared_crates/ember" }
 ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
     "native",
 ] }
@@ -72,7 +72,7 @@ tracing = { workspace = true }
 dunce = "1.0"
 
 [build-dependencies]
-ambient_project_macro_common = { path = "../../shared_crates/project_macro_common" }
+ambient_ember_macro_common = { path = "../../shared_crates/ember_macro_common" }
 ambient_sys = { path = "../sys" }
 ambient_std = { path = "../../shared_crates/std" }
 wit-bindgen-core = { workspace = true }

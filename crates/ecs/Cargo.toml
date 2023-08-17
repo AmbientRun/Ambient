@@ -14,7 +14,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 ambient_sys = { path = "../sys", version = "0.3.0-dev" }
 ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
 ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.3.0-dev" }
-ambient_project_rt = { path = "../../shared_crates/project_rt" , version = "0.3.0-dev" }
+ambient_ember_rt = { path = "../../shared_crates/ember_rt" , version = "0.3.0-dev" }
 
 itertools = { workspace = true }
 serde = { workspace = true }
@@ -45,7 +45,7 @@ byteorder = { workspace = true }
 erased-serde = "0.3"
 
 [build-dependencies]
-ambient_project_macro_common = { path = "../../shared_crates/project_macro_common" , version = "0.3.0-dev" }
+ambient_ember_macro_common = { path = "../../shared_crates/ember_macro_common" , version = "0.3.0-dev" }
 ambient_sys = { path = "../sys", version = "0.3.0-dev" }
 
 [dev-dependencies]

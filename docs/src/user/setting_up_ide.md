@@ -34,4 +34,4 @@ Furthermore, you can add a `.dir-locals.el` file to your Ambient ember directory
 
 ## Other IDEs
 
-To get rust-analyzer to work, you need to make sure it's building with the `server` and `client` feature flags enabled. See [.vscode/settings.json](https://github.com/AmbientRun/Ambient/blob/main/app/src/cli/new_project_template/.vscode/settings.json) for an example.
+To get rust-analyzer to work, you need to make sure it's building with the `server` and `client` feature flags enabled. See [.vscode/settings.json](https://github.com/AmbientRun/Ambient/blob/main/app/src/cli/new_ember_template/.vscode/settings.json) for an example.

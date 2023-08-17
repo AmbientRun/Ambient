@@ -8,9 +8,9 @@ use std::{
 };
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_ember::{BuildMetadata, Manifest as EmberManifest, Version};
+use ambient_ember_semantic::{ItemId, Scope, Semantic};
 use ambient_native_std::{asset_url::AbsAssetUrl, AmbientVersion};
-use ambient_project::{BuildMetadata, Manifest as ProjectManifest, Version};
-use ambient_project_semantic::{ItemId, Scope, Semantic};
 use ambient_std::path::path_to_unix_string;
 use anyhow::Context;
 use futures::FutureExt;
@@ -144,13 +144,13 @@ async fn build_ember(
         .is_some_and(|(build, modified)| modified < build)
     {
         tracing::info!(
-            "Skipping unmodified project \"{name}\" ({})",
+            "Skipping unmodified ember \"{name}\" ({})",
             manifest.ember.id
         );
         return Ok(());
     }
 
-    tracing::info!("Building project \"{name}\" ({})", manifest.ember.id);
+    tracing::info!("Building ember \"{name}\" ({})", manifest.ember.id);
 
     let assets_path = path.join("assets");
     tokio::fs::create_dir_all(&build_path)
@@ -177,7 +177,7 @@ async fn build_ember(
             .collect::<Result<HashMap<_, _>, _>>()?;
 
         for (orig_name, dep) in manifest.dependencies.iter_mut() {
-            let ambient_project::Dependency { path, .. } = dep;
+            let ambient_ember::Dependency { path, .. } = dep;
 
             if let Some(orig_dep) = orig_name_to_dep.get(orig_name) {
                 let dep_scope = semantic.items.get(*orig_dep)?;
@@ -287,12 +287,12 @@ pub async fn build_assets(
 }
 
 pub async fn build_rust_if_available(
-    project_path: &Path,
-    manifest: &ProjectManifest,
+    ember_path: &Path,
+    manifest: &EmberManifest,
     build_path: &Path,
     optimize: bool,
 ) -> anyhow::Result<()> {
-    let cargo_toml_path = project_path.join("Cargo.toml");
+    let cargo_toml_path = ember_path.join("Cargo.toml");
     if !cargo_toml_path.exists() {
         return Ok(());
     }
@@ -300,7 +300,7 @@ pub async fn build_rust_if_available(
     let rustc = ambient_rustc::Rust::get_system_installation().await?;
 
     for feature in &manifest.build.rust.feature_multibuild {
-        for (path, bytecode) in rustc.build(project_path, optimize, &[feature])? {
+        for (path, bytecode) in rustc.build(ember_path, optimize, &[feature])? {
             let component_bytecode = ambient_wasm::shared::build::componentize(&bytecode)?;
 
             let output_path = build_path.join(feature);
@@ -327,7 +327,7 @@ fn get_component_paths(target: &str, build_path: &Path) -> Vec<String> {
         .unwrap_or_default()
 }
 
-async fn store_manifest(manifest: &ProjectManifest, build_path: &Path) -> anyhow::Result<()> {
+async fn store_manifest(manifest: &EmberManifest, build_path: &Path) -> anyhow::Result<()> {
     let manifest_path = build_path.join("ambient.toml");
     tokio::fs::write(&manifest_path, toml::to_string(&manifest)?).await?;
     Ok(())

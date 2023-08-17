@@ -139,7 +139,7 @@ impl ElementComponent for ClientView {
             });
         }
 
-        // Set the window title to the project name
+        // Set the window title to the ember name
         let (window_title_state, _set_window_title) = hooks.use_state("Ambient".to_string());
         *hooks.world.resource_mut(window_title()) = window_title_state;
 

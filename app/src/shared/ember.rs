@@ -4,12 +4,10 @@ use ambient_ecs::{
     ComponentRegistry, ExternalComponentAttributes, ExternalComponentDesc, PrimitiveComponentType,
     World,
 };
+use ambient_ember::{BuildMetadata, Manifest};
+use ambient_ember_semantic::{Item, ItemId, ItemSource, PrimitiveType, Scope, Semantic, TypeInner};
 use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::ServerWorldExt;
-use ambient_project::{BuildMetadata, Manifest};
-use ambient_project_semantic::{
-    Item, ItemId, ItemSource, PrimitiveType, Scope, Semantic, TypeInner,
-};
 
 pub async fn add(
     world: Option<&mut World>,

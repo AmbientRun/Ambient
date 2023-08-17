@@ -6,11 +6,12 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use ambient_core::{asset_cache, name, no_sync, project_name, FIXED_SERVER_TICK_TIME};
+use ambient_core::{asset_cache, ember_name, name, no_sync, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
     dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World,
     WorldEventsSystem, WorldStreamCompEvent,
 };
+use ambient_ember::BuildMetadata;
 use ambient_native_std::{
     ambient_version,
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
@@ -22,7 +23,6 @@ use ambient_network::{
     server::{ForkingEvent, ProxySettings, ShutdownEvent},
 };
 use ambient_prefab::PrefabFromUrl;
-use ambient_project::BuildMetadata;
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
 use axum::{
@@ -45,7 +45,7 @@ pub async fn start(
     main_ember_path: AbsAssetUrl,
     view_asset_path: Option<PathBuf>,
     working_directory: PathBuf,
-    manifest: ambient_project::Manifest,
+    manifest: ambient_ember::Manifest,
     crypto: Crypto,
 ) -> SocketAddr {
     let quic_interface_port = host_cli.quic_interface_port;
@@ -129,7 +129,7 @@ pub async fn start(
             )
             .unwrap();
 
-        // Keep track of the project name
+        // Keep track of the ember name
         let name = manifest
             .ember
             .name
@@ -138,7 +138,7 @@ pub async fn start(
         server_world
             .add_components(
                 server_world.resource_entity(),
-                Entity::new().with(project_name(), name),
+                Entity::new().with(ember_name(), name),
             )
             .unwrap();
 
@@ -161,7 +161,7 @@ pub async fn start(
             .await
             .unwrap();
 
-        let mut semantic = ambient_project_semantic::Semantic::new().await.unwrap();
+        let mut semantic = ambient_ember_semantic::Semantic::new().await.unwrap();
         let primary_ember_scope_id = match main_ember_path.to_file_path().unwrap() {
             Some(local_path) => {
                 shared::ember::add(Some(&mut server_world), &mut semantic, &local_path)

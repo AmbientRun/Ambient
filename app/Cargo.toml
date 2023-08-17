@@ -43,8 +43,8 @@ ambient_ember_semantic_native = { path = "../crates/ember_semantic_native" }
 
 ambient_editor_derive = { path = "../shared_crates/editor_derive" }
 ambient_element = { path = "../shared_crates/element" }
-ambient_project = { path = "../shared_crates/project" }
-ambient_project_semantic = { path = "../shared_crates/project_semantic" }
+ambient_ember = { path = "../shared_crates/ember" }
+ambient_ember_semantic = { path = "../shared_crates/ember_semantic" }
 ambient_std = { path = "../shared_crates/std" }
 ambient_shared_types = { path = "../shared_crates/shared_types", features = [
     "native",

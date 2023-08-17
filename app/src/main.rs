@@ -13,7 +13,7 @@ mod shared;
 
 use ambient_physics::physx::PhysicsKey;
 use anyhow::Context;
-use cli::{build::BuildDirectories, Cli, Commands, ProjectPath};
+use cli::{build::BuildDirectories, Cli, Commands, EmberPath};
 use log::LevelFilter;
 use server::QUIC_INTERFACE_PORT;
 
@@ -31,27 +31,27 @@ fn main() -> anyhow::Result<()> {
 
     let cli = Cli::parse();
 
-    let project = cli.project();
+    let ember = cli.ember();
 
-    if let Some(project) = project {
-        if project.project {
-            log::warn!("`-p`/`--project` has no semantic meaning - the path is always treated as a project path.");
+    if let Some(ember) = ember {
+        if ember.project {
+            log::warn!("`-p`/`--project` has no semantic meaning.");
             log::warn!("You do not need to use `-p`/`--project` - `ambient run project` is the same as `ambient run -p project`.");
         }
     }
 
-    let project_path: ProjectPath = project.and_then(|p| p.path.clone()).try_into()?;
-    let golden_image_output_dir = project_path.fs_path.clone();
+    let ember_path: EmberPath = ember.and_then(|p| p.path.clone()).try_into()?;
+    let golden_image_output_dir = ember_path.fs_path.clone();
 
-    if project_path.is_remote() {
-        // project path is a URL, so let's use it as the content base URL
-        ContentBaseUrlKey.insert(&assets, project_path.url.clone());
+    if ember_path.is_remote() {
+        // ember path is a URL, so let's use it as the content base URL
+        ContentBaseUrlKey.insert(&assets, ember_path.url.clone());
     }
 
-    // If new: create project, immediately exit
+    // If new: create ember, immediately exit
     if let Commands::New { name, api_path, .. } = &cli.command {
-        return cli::new_project::handle(&project_path, name.as_deref(), api_path.as_deref())
-            .context("Failed to create project");
+        return cli::new_ember::handle(&ember_path, name.as_deref(), api_path.as_deref())
+            .context("Failed to create ember");
     }
 
     if let Commands::Assets { command } = &cli.command {
@@ -60,19 +60,16 @@ fn main() -> anyhow::Result<()> {
 
     // Store a flag that we are using local debug assets
     // Used for emitting warnings when local debug assets are sent to remote clients
-    UsingLocalDebugAssetsKey.insert(
-        &assets,
-        !project_path.is_remote() && !cli.use_release_build(),
-    );
+    UsingLocalDebugAssetsKey.insert(&assets, !ember_path.is_remote() && !cli.use_release_build());
 
-    // Build the project if required. Note that this only runs if the project is local,
+    // Build the ember if required. Note that this only runs if the ember is local,
     // and if a build has actually been requested.
     let BuildDirectories {
         build_root_path,
         main_ember_path,
     } = rt.block_on(cli::build::build(
-        project,
-        project_path,
+        ember,
+        ember_path,
         &assets,
         cli.use_release_build(),
     ))?;
@@ -162,19 +159,19 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-// Read the project manifest from the project path (which may have been updated by the build step)
+// Read the ember manifest from the ember path (which may have been updated by the build step)
 async fn retrieve_manifest(
-    built_project_path: &AbsAssetUrl,
+    built_ember_path: &AbsAssetUrl,
     assets: &AssetCache,
-) -> anyhow::Result<ambient_project::Manifest> {
-    match built_project_path
+) -> anyhow::Result<ambient_ember::Manifest> {
+    match built_ember_path
         .push("ambient.toml")?
         .download_string(assets)
         .await
     {
-        Ok(toml) => Ok(ambient_project::Manifest::parse(&toml)?),
+        Ok(toml) => Ok(ambient_ember::Manifest::parse(&toml)?),
         Err(_) => {
-            anyhow::bail!("Failed to find ambient.toml in project");
+            anyhow::bail!("Failed to find ambient.toml in ember");
         }
     }
 }

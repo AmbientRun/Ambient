@@ -65,11 +65,11 @@ name = "Description"
 description = "A human-friendly description for this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components.project_name]
+[components.ember_name]
 type = "String"
-name = "Project Name"
+name = "Ember Name"
 description = """
-The name of the project, from the manifest.
+The name of the ember, from the manifest.
 Defaults to \"Ambient\"."""
 attributes = ["Debuggable", "Resource"]
 

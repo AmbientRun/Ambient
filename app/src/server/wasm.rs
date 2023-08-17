@@ -5,7 +5,7 @@ use std::{
 };
 
 use ambient_ecs::{EntityId, SystemGroup, World};
-use ambient_project_semantic::{ItemId, Scope};
+use ambient_ember_semantic::{ItemId, Scope};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{module_name, remote_paired_id, spawn_module, MessageType};
 use anyhow::Context;
