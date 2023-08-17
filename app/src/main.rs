@@ -166,13 +166,13 @@ fn main() -> anyhow::Result<()> {
 async fn retrieve_manifest(
     built_project_path: &AbsAssetUrl,
     assets: &AssetCache,
-) -> anyhow::Result<ambient_project::Manifest> {
+) -> anyhow::Result<ambient_ember::Manifest> {
     match built_project_path
         .push("ambient.toml")?
         .download_string(assets)
         .await
     {
-        Ok(toml) => Ok(ambient_project::Manifest::parse(&toml)?),
+        Ok(toml) => Ok(ambient_ember::Manifest::parse(&toml)?),
         Err(_) => {
             anyhow::bail!("Failed to find ambient.toml in project");
         }

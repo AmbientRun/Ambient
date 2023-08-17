@@ -1,4 +1,4 @@
-use ambient_project::{ItemPathBuf, SnakeCaseIdentifier};
+use ambient_ember::{ItemPathBuf, SnakeCaseIdentifier};
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
@@ -71,7 +71,7 @@ impl Resolve for Message {
 }
 
 impl Message {
-    pub(crate) fn from_project(data: ItemData, value: &ambient_project::Message) -> Self {
+    pub(crate) fn from_project(data: ItemData, value: &ambient_ember::Message) -> Self {
         Message {
             data,
             description: value.description.clone(),

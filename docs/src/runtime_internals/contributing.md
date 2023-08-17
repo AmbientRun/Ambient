@@ -132,12 +132,12 @@ To do so, you will need to update the following files:
 
 ### Code generation
 
-- `shared_crates/project_semantic/src/value.rs`: Specify how to parse TOML for a value of the type.
-- `shared_crates/project_macro_common/src/concepts.rs`: Specify how to generate Rust code for a value of the type.
+- `shared_crates/ember_semantic/src/value.rs`: Specify how to parse TOML for a value of the type.
+- `shared_crates/ember_macro_common/src/concepts.rs`: Specify how to generate Rust code for a value of the type.
 
 ### Runtime support
 
-- `shared_crates/project_rt/src/message_serde.rs`: Specify how to serialize and deserialize the type to a binary stream.
+- `shared_crates/ember_rt/src/message_serde.rs`: Specify how to serialize and deserialize the type to a binary stream.
 
 ### Utilities
 

@@ -1,4 +1,4 @@
-use ambient_project::ItemPathBuf;
+use ambient_ember::ItemPathBuf;
 use anyhow::Context as AnyhowContext;
 
 use crate::{
@@ -95,7 +95,7 @@ impl Resolve for Component {
     }
 }
 impl Component {
-    pub(crate) fn from_project(data: ItemData, value: &ambient_project::Component) -> Self {
+    pub(crate) fn from_project(data: ItemData, value: &ambient_ember::Component) -> Self {
         Self {
             data,
             name: value.name.clone(),

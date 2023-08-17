@@ -6,9 +6,9 @@ use std::{
 };
 
 use ambient_ecs::{components, Networked, Resource, World};
+use ambient_ember_semantic::Semantic;
 use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::ServerWorldExt;
-use ambient_project_semantic::Semantic;
 
 components!("semantic", {
     @[Resource]

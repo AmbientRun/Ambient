@@ -10,7 +10,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_project = { path = "../../shared_crates/project" , version = "0.3.0-dev" }
+ambient_ember = { path = "../../shared_crates/ember" , version = "0.3.0-dev" }
 ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
 
 anyhow = { workspace = true }

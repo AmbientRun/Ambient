@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use ambient_project::{
+use ambient_ember::{
     BuildMetadata, Dependency, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
 };
 use ambient_shared_types::primitive_component_definitions;

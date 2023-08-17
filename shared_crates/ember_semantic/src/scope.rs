@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use ambient_project::{
+use ambient_ember::{
     BuildMetadata, ComponentType, ItemPath, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
 };
 use anyhow::Context as AnyhowContext;
@@ -40,8 +40,8 @@ impl Context {
                 } => {
                     if let Ok(id) = get_type_id(items, scope_id, element_type.as_path()) {
                         return Some(match type_ {
-                            ambient_project::ContainerType::Vec => items.get_vec_id(id),
-                            ambient_project::ContainerType::Option => items.get_option_id(id),
+                            ambient_ember::ContainerType::Vec => items.get_vec_id(id),
+                            ambient_ember::ContainerType::Option => items.get_option_id(id),
                         });
                     }
                 }

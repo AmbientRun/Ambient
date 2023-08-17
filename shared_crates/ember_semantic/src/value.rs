@@ -1,7 +1,7 @@
 use crate::{ItemId, ItemMap, TypeInner};
 
 use super::{PrimitiveType, Type};
-use ambient_project::PascalCaseIdentifier;
+use ambient_ember::PascalCaseIdentifier;
 use ambient_shared_types::{
     primitive_component_definitions, ProceduralMaterialHandle, ProceduralMeshHandle,
     ProceduralSamplerHandle, ProceduralTextureHandle,

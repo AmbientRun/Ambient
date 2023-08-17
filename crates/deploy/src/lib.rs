@@ -9,7 +9,7 @@ use std::{
     str::FromStr,
 };
 
-use ambient_project::Manifest;
+use ambient_ember::Manifest;
 use md5::Digest;
 use tokio_stream::StreamExt;
 use tonic::{

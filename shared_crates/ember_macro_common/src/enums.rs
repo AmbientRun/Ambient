@@ -1,4 +1,4 @@
-use ambient_project_semantic::{Item, ItemMap, Scope};
+use ambient_ember_semantic::{Item, ItemMap, Scope};
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -140,7 +140,7 @@ pub fn generate(context: Context, items: &ItemMap, scope: &Scope) -> anyhow::Res
     let includes = context
         .guest_api_path()
         .map(|s| quote! { use #s::{global::serde, message::*}; })
-        .unwrap_or(quote! { use serde; use ambient_project_rt::message_serde::*; });
+        .unwrap_or(quote! { use serde; use ambient_ember_rt::message_serde::*; });
 
     Ok(quote! {
         /// Auto-generated type definitions.

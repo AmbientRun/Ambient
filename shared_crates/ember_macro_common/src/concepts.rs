@@ -1,4 +1,4 @@
-use ambient_project_semantic::{Concept, Item, ItemId, ItemMap, ScalarValue, Scope, Value};
+use ambient_ember_semantic::{Concept, Item, ItemId, ItemMap, ScalarValue, Scope, Value};
 use proc_macro2::TokenStream;
 use quote::quote;
 

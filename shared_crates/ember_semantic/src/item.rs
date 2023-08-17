@@ -1,4 +1,4 @@
-use ambient_project::{Identifier, PascalCaseIdentifier, SnakeCaseIdentifier};
+use ambient_ember::{Identifier, PascalCaseIdentifier, SnakeCaseIdentifier};
 use ambient_std::topological_sort::{topological_sort, TopologicalSortable};
 use ulid::Ulid;
 

@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use ambient_project_semantic::{Printer, Semantic};
+use ambient_ember_semantic::{Printer, Semantic};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

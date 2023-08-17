@@ -41,7 +41,7 @@ mod primitive_component;
 mod query;
 mod serialization;
 mod stream;
-pub use ambient_project_rt::message_serde::*;
+pub use ambient_ember_rt::message_serde::*;
 pub use archetype::*;
 pub use attributes::*;
 pub use component::{Component, ComponentDesc, ComponentValue, ComponentValueBase, EnumComponent};

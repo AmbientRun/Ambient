@@ -3,7 +3,7 @@
 #![allow(unused)]
 use std::io::Read;
 
-use ambient_project_rt::message_serde::{MessageSerde, MessageSerdeError};
+use ambient_ember_rt::message_serde::{MessageSerde, MessageSerdeError};
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
 impl MessageSerde for crate::EntityId {
@@ -360,7 +360,7 @@ pub mod layout {
     }
     #[doc = r" Auto-generated type definitions."]
     pub mod types {
-        use ambient_project_rt::message_serde::*;
+        use ambient_ember_rt::message_serde::*;
         use serde;
         #[derive(
             Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
@@ -952,7 +952,7 @@ pub mod text {
     }
     #[doc = r" Auto-generated type definitions."]
     pub mod types {
-        use ambient_project_rt::message_serde::*;
+        use ambient_ember_rt::message_serde::*;
         use serde;
         #[derive(
             Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
@@ -1130,7 +1130,7 @@ pub mod wasm {
 #[doc = r" and with other modules."]
 pub mod messages {
     use crate::{Entity, EntityId};
-    use ambient_project_rt::message_serde::{
+    use ambient_ember_rt::message_serde::{
         Message, MessageSerde, MessageSerdeError, RuntimeMessage,
     };
     use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};

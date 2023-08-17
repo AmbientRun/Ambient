@@ -2,7 +2,7 @@ extern crate proc_macro;
 
 use std::path::Path;
 
-use ambient_project_macro_common::ManifestSource;
+use ambient_ember_macro_common::ManifestSource;
 use proc_macro::TokenStream;
 
 mod main_macro;

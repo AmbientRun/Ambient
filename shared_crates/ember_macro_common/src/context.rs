@@ -1,6 +1,6 @@
 use std::cell::Ref;
 
-use ambient_project_semantic::{Item, ItemData, ItemId, ItemMap, ItemSource, ItemType, Scope};
+use ambient_ember_semantic::{Item, ItemData, ItemId, ItemMap, ItemSource, ItemType, Scope};
 use proc_macro2::TokenStream;
 use quote::quote;
 

@@ -1,4 +1,4 @@
-use ambient_project_macro_common::{Context, ManifestSource};
+use ambient_ember_macro_common::{Context, ManifestSource};
 use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use quote::{quote, ToTokens};
 
@@ -14,7 +14,7 @@ pub fn main(item: TokenStream, ambient_toml: ManifestSource) -> TokenStream {
         .build()
         .map_err(anyhow::Error::new)
         .and_then(|rt| {
-            rt.block_on(ambient_project_macro_common::generate_code(
+            rt.block_on(ambient_ember_macro_common::generate_code(
                 Some(ambient_toml),
                 Context::GuestUser,
                 None,

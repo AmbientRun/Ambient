@@ -1,4 +1,4 @@
-use ambient_project_semantic::{Item, ItemId, ItemMap, ItemSource, Scope};
+use ambient_ember_semantic::{Item, ItemId, ItemMap, ItemSource, Scope};
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -150,7 +150,7 @@ pub fn generate(
 
     let inner = match context {
         Context::Host => quote! {
-            use ambient_project_rt::message_serde::{Message, MessageSerde, MessageSerdeError, RuntimeMessage};
+            use ambient_ember_rt::message_serde::{Message, MessageSerde, MessageSerdeError, RuntimeMessage};
             use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
             use crate::{EntityId, Entity};
             #(#messages)*

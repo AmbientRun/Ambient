@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
-use ambient_project::ItemPathBuf;
-use ambient_project_semantic::{
+use ambient_ember::ItemPathBuf;
+use ambient_ember_semantic::{
     ArrayFileProvider, Item, ItemId, ItemMap, ItemSource, Scope, Semantic, Type, TypeInner,
 };
 use proc_macro2::TokenStream;

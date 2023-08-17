@@ -1,4 +1,4 @@
-use ambient_project::ItemPathBuf;
+use ambient_ember::ItemPathBuf;
 
 use crate::{
     Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Resolve, StandardDefinitions,

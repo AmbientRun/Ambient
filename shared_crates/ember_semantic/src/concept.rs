@@ -1,4 +1,4 @@
-use ambient_project::ItemPathBuf;
+use ambient_ember::ItemPathBuf;
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
@@ -103,7 +103,7 @@ impl Resolve for Concept {
     }
 }
 impl Concept {
-    pub(crate) fn from_project(data: ItemData, value: &ambient_project::Concept) -> Self {
+    pub(crate) fn from_project(data: ItemData, value: &ambient_ember::Concept) -> Self {
         Concept {
             data,
             name: value.name.clone(),

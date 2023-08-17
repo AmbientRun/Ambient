@@ -1,4 +1,4 @@
-use ambient_project::{ComponentType, PascalCaseIdentifier};
+use ambient_ember::{ComponentType, PascalCaseIdentifier};
 use indexmap::IndexMap;
 
 use crate::{
@@ -52,7 +52,7 @@ impl Type {
         Self { data, inner }
     }
 
-    pub(crate) fn from_project_enum(data: ItemData, value: &ambient_project::Enum) -> Self {
+    pub(crate) fn from_project_enum(data: ItemData, value: &ambient_ember::Enum) -> Self {
         Self::new(
             data,
             TypeInner::Enum(Enum {

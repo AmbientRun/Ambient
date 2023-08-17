@@ -1,5 +1,5 @@
 [package]
-name = "ambient_project"
+name = "ambient_ember"
 edition = "2021"
 description = "Definition of the Ambient project manifest format."
 license = "MIT OR Apache-2.0"
