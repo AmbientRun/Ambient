@@ -3,14 +3,14 @@ name = "ambient_deploy"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
-description = "Functionality for deploying Ambient embers."
+description = "Functionality for deploying Ambient packages."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ember = { path = "../../shared_crates/ember" , version = "0.3.0-dev" }
+ambient_package = { path = "../../shared_crates/package" , version = "0.3.0-dev" }
 ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
 
 anyhow = { workspace = true }

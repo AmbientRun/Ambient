@@ -11,7 +11,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use embers::ambient_example_pong::{
+use packages::ambient_example_pong::{
     assets,
     components::{player_movement_direction, track_audio_url},
     messages::{Input, Ping},

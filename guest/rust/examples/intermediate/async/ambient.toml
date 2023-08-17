@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_async"
 name = "Async"
 description = "An example of using async/await in Ambient."

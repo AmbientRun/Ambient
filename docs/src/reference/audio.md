@@ -10,7 +10,7 @@ To use audio, you need to put the audio files into the `assets` folder, and then
 
 Check the `assets` folder in the [physics example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics) to see how this is done.
 
-Audio should be loaded and played in clientside WASM/`client.rs` (the API is not supported on the server). [Messages](ember.md#messages--messages) can be used by the server to tell the client to play a sound effect.
+Audio should be loaded and played in clientside WASM/`client.rs` (the API is not supported on the server). [Messages](package.md#messages--messages) can be used by the server to tell the client to play a sound effect.
 
 # Examples with audio
 

@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_screens"
 name = "Screens"
 version = "0.0.1"

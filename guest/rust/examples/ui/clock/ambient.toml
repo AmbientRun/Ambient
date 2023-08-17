@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_clock"
 name = "clock"
 version = "0.0.1"

@@ -198,11 +198,11 @@ pub mod ambient_core {
             pub fn description() -> Component<String> {
                 *DESCRIPTION
             }
-            static EMBER_NAME: Lazy<Component<String>> =
-                Lazy::new(|| __internal_get_component("ambient_core::app::ember_name"));
-            #[doc = "**Ember Name**: The name of the ember, from the manifest.\n\nDefaults to \"Ambient\".\n\n*Attributes*: Debuggable, Resource"]
-            pub fn ember_name() -> Component<String> {
-                *EMBER_NAME
+            static PACKAGE_NAME: Lazy<Component<String>> =
+                Lazy::new(|| __internal_get_component("ambient_core::app::package_name"));
+            #[doc = "**Package Name**: The name of the package, from the manifest.\n\nDefaults to \"Ambient\".\n\n*Attributes*: Debuggable, Resource"]
+            pub fn package_name() -> Component<String> {
+                *PACKAGE_NAME
             }
             static SELECTABLE: Lazy<Component<()>> =
                 Lazy::new(|| __internal_get_component("ambient_core::app::selectable"));

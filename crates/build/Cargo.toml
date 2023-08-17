@@ -22,8 +22,8 @@ ambient_decals = { path = "../decals" }
 ambient_wasm = { path = "../wasm" }
 ambient_pipeline_types = { path = "../pipeline_types" }
 
-ambient_ember = { path = "../../shared_crates/ember" }
-ambient_ember_semantic = { path = "../../shared_crates/ember_semantic" }
+ambient_package = { path = "../../shared_crates/package" }
+ambient_package_semantic = { path = "../../shared_crates/package_semantic" }
 ambient_std = { path = "../../shared_crates/std" }
 
 ambient_unity_parser = { path = "../../libs/unity_parser" }

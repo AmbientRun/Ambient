@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "wasm"
 name = "WASM"
 description = "State related to WASM functionality."

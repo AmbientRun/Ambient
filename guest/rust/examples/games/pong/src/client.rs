@@ -15,7 +15,7 @@ use ambient_api::{
 mod constants;
 use constants::*;
 
-use embers::ambient_example_pong::{components::track_audio_url, messages::Input};
+use packages::ambient_example_pong::{components::track_audio_url, messages::Input};
 
 #[main]
 async fn main() {

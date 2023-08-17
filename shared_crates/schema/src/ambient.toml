@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_core"
 description = "Contains all core components for the Ambient runtime."
 name = "Core Components"

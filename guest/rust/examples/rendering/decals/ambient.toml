@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ambient_example_decals"
 name = "Decals"
 description = "This shows how to render decals."

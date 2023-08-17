@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "procedurals"
 name = "Procedurals"
 description = "Procedural asset functionality and related."

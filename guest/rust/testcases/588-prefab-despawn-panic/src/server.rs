@@ -8,7 +8,7 @@ pub fn main() {
             let model = Entity::new()
                 .with(
                     prefab_from_url(),
-                    embers::ambient_testcase_i588::assets::url("Teapot.glb"),
+                    packages::ambient_testcase_i588::assets::url("Teapot.glb"),
                 )
                 .spawn();
 

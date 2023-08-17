@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "ecs"
 name = "Entity Component System"
 description = "Core components for the ECS and entities."

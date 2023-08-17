@@ -426,7 +426,7 @@ async fn start_proxy_connection(
     let builder = ambient_proxy::client::builder()
         .endpoint(endpoint.clone())
         .proxy_server(settings.endpoint.clone())
-        .project_id(settings.primary_ember_id.clone())
+        .project_id(settings.primary_package_id.clone())
         .user_agent(APP_USER_AGENT.to_string());
 
     let assets_path = settings.build_path;

@@ -207,9 +207,9 @@ impl wit::player::Host for Bindings {
 impl wit::asset::Host for Bindings {
     async fn url(
         &mut self,
-        ember_id: String,
+        package_id: String,
         path: String,
     ) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
-        shared::implementation::asset::url(self.world(), ember_id, path, false)
+        shared::implementation::asset::url(self.world(), package_id, path, false)
     }
 }

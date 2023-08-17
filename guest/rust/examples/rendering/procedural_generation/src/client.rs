@@ -19,7 +19,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use embers::ambient_example_procedural_generation::components::rotating_sun;
+use packages::ambient_example_procedural_generation::components::rotating_sun;
 use noise::{utils::*, Fbm, Perlin};
 use palette::IntoColor;
 

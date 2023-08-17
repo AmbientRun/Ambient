@@ -9,8 +9,8 @@ use ambient_sys::task::wasm_nonsend;
 pub enum DeploySource {
     /// Deploy directly from an URL
     Url { deploy_url: String },
-    /// Deploy the latest deployment of an Ember
-    Ember { ember_id: String },
+    /// Deploy the latest deployment of a package
+    Package { package_id: String },
     /// Deploy from a specific deployment
     Deployment { deployment_id: String },
 }

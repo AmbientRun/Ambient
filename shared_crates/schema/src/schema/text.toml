@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "text"
 name = "Text"
 description = "Text rendering."

@@ -1,4 +1,4 @@
-[ember]
+[package]
 id = "rect"
 name = "Rect"
 description = "Rounded corners rectangle rendering components, with an optional border."

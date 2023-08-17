@@ -25,7 +25,7 @@ pub mod asset_content {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeployAssetRequest {
     #[prost(string, tag = "1")]
-    pub ember_id: ::prost::alloc::string::String,
+    pub package_id: ::prost::alloc::string::String,
     #[prost(message, repeated, tag = "2")]
     pub contents: ::prost::alloc::vec::Vec<AssetContent>,
 }

@@ -90,9 +90,9 @@ fn main() {
             // Generate the API schema Rust code.
             let api_generated_code = ambient_sys::task::make_native_multithreaded_runtime()
                 .unwrap()
-                .block_on(ambient_ember_macro_common::generate_code(
+                .block_on(ambient_package_macro_common::generate_code(
                     None,
-                    ambient_ember_macro_common::Context::GuestApi,
+                    ambient_package_macro_common::Context::GuestApi,
                     None,
                 ))
                 .unwrap();

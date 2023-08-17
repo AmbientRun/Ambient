@@ -288,8 +288,8 @@ name = "ambient_ecs"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_native_std",
- "ambient_ember_macro_common",
- "ambient_ember_rt",
+ "ambient_package_macro_common",
+ "ambient_package_rt",
  "ambient_shared_types",
  "ambient_sys",
  "anyhow",
@@ -384,13 +384,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_ember_semantic_native"
+name = "ambient_package_semantic_native"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_native_std",
  "ambient_network",
- "ambient_ember_semantic",
+ "ambient_package_semantic",
  "anyhow",
 ]
 
@@ -703,7 +703,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_ember"
+name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
  "anyhow",
@@ -719,11 +719,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_ember_macro_common"
+name = "ambient_package_macro_common"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_ember",
- "ambient_ember_semantic",
+ "ambient_package",
+ "ambient_package_semantic",
  "ambient_shared_types",
  "anyhow",
  "proc-macro2",
@@ -736,7 +736,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_ember_rt"
+name = "ambient_package_rt"
 version = "0.3.0-dev"
 dependencies = [
  "byteorder",
@@ -745,10 +745,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_ember_semantic"
+name = "ambient_package_semantic"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_ember",
+ "ambient_package",
  "ambient_schema",
  "ambient_shared_types",
  "ambient_std",
@@ -1003,15 +1003,15 @@ dependencies = [
  "ambient_app",
  "ambient_core",
  "ambient_ecs",
- "ambient_ember_semantic_native",
+ "ambient_package_semantic_native",
  "ambient_gpu",
  "ambient_input",
  "ambient_model",
  "ambient_native_std",
  "ambient_network",
  "ambient_procedurals",
- "ambient_ember",
- "ambient_ember_macro_common",
+ "ambient_package",
+ "ambient_package_macro_common",
  "ambient_renderer",
  "ambient_shared_types",
  "ambient_std",

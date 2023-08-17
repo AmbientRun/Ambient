@@ -21,7 +21,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::ambient_example_physics::{assets, messages::Bonk};
+use packages::ambient_example_physics::{assets, messages::Bonk};
 
 #[main]
 pub async fn main() {

@@ -44,7 +44,7 @@ name = "ambient_api_core"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_api_macros",
- "ambient_ember_rt",
+ "ambient_package_rt",
  "ambient_shared_types",
  "anyhow",
  "byteorder",
@@ -65,8 +65,8 @@ dependencies = [
 name = "ambient_api_macros"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_ember",
- "ambient_ember_macro_common",
+ "ambient_package",
+ "ambient_package_macro_common",
  "ambient_schema",
  "anyhow",
  "indoc",
@@ -131,68 +131,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "ambient_ember"
-version = "0.3.0-dev"
-dependencies = [
- "anyhow",
- "convert_case",
- "indexmap",
- "once_cell",
- "proc-macro2",
- "quote",
- "serde",
- "syn 1.0.109",
- "thiserror",
- "toml 0.7.5",
-]
-
-[[package]]
-name = "ambient_ember_macro_common"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_ember",
- "ambient_ember_semantic",
- "ambient_shared_types",
- "anyhow",
- "proc-macro2",
- "quote",
- "serde",
- "syn 1.0.109",
- "thiserror",
- "tokio",
- "toml 0.7.5",
-]
-
-[[package]]
-name = "ambient_ember_rt"
-version = "0.3.0-dev"
-dependencies = [
- "byteorder",
- "glam",
- "thiserror",
-]
-
-[[package]]
-name = "ambient_ember_semantic"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_ember",
- "ambient_schema",
- "ambient_shared_types",
- "ambient_std",
- "anyhow",
- "async-recursion",
- "async-trait",
- "data-encoding",
- "glam",
- "indexmap",
- "paste",
- "thiserror",
- "toml 0.7.5",
- "ulid",
 ]
 
 [[package]]
@@ -513,6 +451,68 @@ dependencies = [
  "glam",
  "rand 0.8.5",
  "serde",
+]
+
+[[package]]
+name = "ambient_package"
+version = "0.3.0-dev"
+dependencies = [
+ "anyhow",
+ "convert_case",
+ "indexmap",
+ "once_cell",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn 1.0.109",
+ "thiserror",
+ "toml 0.7.5",
+]
+
+[[package]]
+name = "ambient_package_macro_common"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_package",
+ "ambient_package_semantic",
+ "ambient_shared_types",
+ "anyhow",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn 1.0.109",
+ "thiserror",
+ "tokio",
+ "toml 0.7.5",
+]
+
+[[package]]
+name = "ambient_package_rt"
+version = "0.3.0-dev"
+dependencies = [
+ "byteorder",
+ "glam",
+ "thiserror",
+]
+
+[[package]]
+name = "ambient_package_semantic"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_package",
+ "ambient_schema",
+ "ambient_shared_types",
+ "ambient_std",
+ "anyhow",
+ "async-recursion",
+ "async-trait",
+ "data-encoding",
+ "glam",
+ "indexmap",
+ "paste",
+ "thiserror",
+ "toml 0.7.5",
+ "ulid",
 ]
 
 [[package]]
