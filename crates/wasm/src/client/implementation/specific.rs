@@ -34,7 +34,9 @@ use crate::shared::{
 
 use ambient_core::camera::{clip_position_to_world_ray, world_to_clip_space};
 
-#[async_trait::async_trait]
+use wasm_bridge::async_trait;
+
+#[async_trait]
 impl wit::client_message::Host for Bindings {
     async fn send(
         &mut self,
@@ -78,7 +80,7 @@ impl wit::client_message::Host for Bindings {
         }
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_player::Host for Bindings {
     async fn get_local(&mut self) -> anyhow::Result<wit::types::EntityId> {
         crate::shared::implementation::player::get_by_user_id(
@@ -89,7 +91,7 @@ impl wit::client_player::Host for Bindings {
         .unwrap()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_input::Host for Bindings {
     async fn get(&mut self) -> anyhow::Result<wit::client_input::Input> {
         Ok(self
@@ -142,7 +144,7 @@ impl wit::client_input::Host for Bindings {
             .send(ambient_core::window::WindowCtl::GrabCursor(grab_mode))?)
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_camera::Host for Bindings {
     async fn clip_position_to_world_ray(
         &mut self,
@@ -193,17 +195,21 @@ impl wit::client_camera::Host for Bindings {
         Ok(ambient_core::window::clip_to_screen_space(self.world(), clip_pos).into_bindgen())
     }
 }
-#[async_trait::async_trait]
+
+#[async_trait]
 impl wit::client_clipboard::Host for Bindings {
     async fn get(&mut self) -> anyhow::Result<Option<String>> {
-        Ok(ambient_sys::clipboard::get().await)
+        // Ok(ambient_sys::clipboard::get().await)
+        todo!()
     }
 
     async fn set(&mut self, text: String) -> anyhow::Result<()> {
-        ambient_sys::clipboard::set(&text).await
+        // ambient_sys::clipboard::set(&text).await
+        todo!()
     }
 }
-#[async_trait::async_trait]
+
+#[async_trait]
 impl wit::client_window::Host for Bindings {
     async fn set_fullscreen(&mut self, fullscreen: bool) -> anyhow::Result<()> {
         self.world_mut()
@@ -212,7 +218,8 @@ impl wit::client_window::Host for Bindings {
         Ok(())
     }
 }
-#[async_trait::async_trait]
+
+#[async_trait]
 impl wit::client_mesh::Host for Bindings {
     async fn create(
         &mut self,
@@ -252,7 +259,7 @@ impl wit::client_mesh::Host for Bindings {
         Ok(())
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_texture::Host for Bindings {
     async fn create2d(
         &mut self,
@@ -292,7 +299,7 @@ impl wit::client_texture::Host for Bindings {
         Ok(())
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_sampler::Host for Bindings {
     async fn create(
         &mut self,
@@ -322,7 +329,7 @@ impl wit::client_sampler::Host for Bindings {
         Ok(())
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_material::Host for Bindings {
     async fn create(
         &mut self,

@@ -143,7 +143,9 @@ impl ModuleState {
         bindings: fn(EntityId) -> Bindings,
     ) -> anyhow::Result<Self> {
         Ok(Self {
-            inner: Arc::new(RwLock::new(InstanceState::new(assets, args, bindings)?)),
+            inner: Arc::new(RwLock::new(
+                InstanceState::new(assets, args, bindings).await?,
+            )),
         })
     }
 

@@ -30,7 +30,10 @@ impl SyncAssetKey<Result<Engine, Arc<anyhow::Error>>> for EngineKey {
         _assets: ambient_native_std::asset_cache::AssetCache,
     ) -> Result<Engine, Arc<anyhow::Error>> {
         let mut config = wasm_bridge::Config::new();
+        #[cfg(not(target_os = "unknown"))]
         config.debug_info(true);
+
+        // config.async_support(true).wasm_component_model(true);
 
         Ok(Engine {
             engine: wasm_bridge::Engine::new(&config)

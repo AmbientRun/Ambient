@@ -2,14 +2,15 @@
 
 use super::Bindings;
 use crate::shared::{implementation::unsupported, wit};
+use wasm_bridge::async_trait;
 
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::server_asset::Host for Bindings {
     async fn build_wasm(&mut self) -> anyhow::Result<()> {
         unsupported()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::server_physics::Host for Bindings {
     async fn add_force(
         &mut self,
@@ -139,7 +140,7 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::server_message::Host for Bindings {
     async fn send(
         &mut self,
@@ -150,7 +151,7 @@ impl wit::server_message::Host for Bindings {
         unimplemented!()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::server_http::Host for Bindings {
     async fn get(&mut self, _: String) -> anyhow::Result<()> {
         unimplemented!()
