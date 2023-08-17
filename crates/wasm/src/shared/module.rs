@@ -4,10 +4,14 @@ use super::{bindings::BindingsBound, conversion::IntoBindgen};
 use super::{engine::EngineKey, Source};
 use ambient_ecs::{EntityId, World};
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use anyhow::Context;
 use data_encoding::BASE64;
+use flume::{SendError, TrySendError};
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
+use std::io;
 use std::{any::Any, collections::HashSet, sync::Arc};
+use wasm_bridge::Store;
 
 // use wasi_cap_std_sync::Dir;
 // use wasmtime_wasi::preview2 as wasi_preview2;
@@ -75,31 +79,32 @@ pub struct ModuleErrors(pub Vec<String>);
 /// Binding and linking table generic over the host and guest bindings
 struct BindingContext<Bindings: BindingsBound> {
     bindings: Bindings,
-    #[cfg(not(target_os = "unknown"))]
-    wasi: wasmtime_wasi::preview2::WasiCtx,
-    #[cfg(not(target_os = "unknown"))]
-    table: wasmtime_wasi::preview2::Table,
+    wasi: WasiCtx,
+    table: Table,
 }
+#[cfg(target_os = "unknown")]
+use wasm_bridge_js::wasi::preview2;
 #[cfg(not(target_os = "unknown"))]
-impl<B: BindingsBound> wasmtime_wasi::preview2::WasiView for BindingContext<B> {
-    fn table(&self) -> &wasmtime_wasi::preview2::Table {
+use wasmtime_wasi::preview2;
+impl<B: BindingsBound> preview2::WasiView for BindingContext<B> {
+    fn table(&self) -> &preview2::Table {
         &self.table
     }
 
-    fn table_mut(&mut self) -> &mut wasmtime_wasi::preview2::Table {
+    fn table_mut(&mut self) -> &mut preview2::Table {
         &mut self.table
     }
 
-    fn ctx(&self) -> &wasmtime_wasi::preview2::WasiCtx {
+    fn ctx(&self) -> &preview2::WasiCtx {
         &self.wasi
     }
 
-    fn ctx_mut(&mut self) -> &mut wasmtime_wasi::preview2::WasiCtx {
+    fn ctx_mut(&mut self) -> &mut preview2::WasiCtx {
         &mut self.wasi
     }
 }
 
-pub trait ModuleStateBehavior: Sync + Send {
+pub trait ModuleStateBehavior: Send + Sync {
     fn run(
         &mut self,
         world: &mut World,
@@ -179,16 +184,21 @@ impl ModuleStateBehavior for ModuleState {
 
 #[cfg(target_os = "unknown")]
 use wasm_bridge_js::{
+    component::{self, Instance},
     wasi::preview2::{wasi::command::add_to_linker, Table, WasiCtx, WasiCtxBuilder},
-    Instance,
 };
+
 #[cfg(not(target_os = "unknown"))]
-use wasmtime::{component::Instance, wasi::preview2::Table, WasiCtxBuilder};
+use wasmtime::{
+    component::{self, Instance},
+    wasi::preview2::Table,
+    Store, WasiCtxBuilder,
+};
 
 /// Stores the execution context and store
 struct InstanceState<Bindings: BindingsBound> {
     /// Stores the context and loaded instances
-    store: wasmtime::Store<BindingContext<Bindings>>,
+    store: Store<BindingContext<Bindings>>,
 
     guest_bindings: shared::wit::Bindings,
     _guest_instance: Instance,
@@ -230,7 +240,7 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
         };
 
         let wasi = wasi.build(&mut table)?;
-        let mut store = wasm_bridge::Store::new(
+        let mut store = Store::new(
             engine.inner(),
             BindingContext {
                 wasi,
@@ -248,14 +258,15 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
         //     },
         // );
 
-        let mut linker = wasm_bridge::Linker::<BindingContext<Bindings>>::new(engine.inner());
+        let mut linker =
+            wasm_bridge::component::Linker::<BindingContext<Bindings>>::new(engine.inner());
         // let mut linker = wasmtime::component::Linker::<ExecutionContext<Bindings>>::new(engine);
 
         add_to_linker(&mut linker)?;
+
         shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 
-        let component =
-            wasmtime::component::Component::from_binary(engine.inner(), args.component_bytecode)?;
+        let component = component::Component::new(engine.inner(), args.component_bytecode)?;
 
         let (guest_bindings, guest_instance) = async {
             let (guest_bindings, guest_instance) =
@@ -269,7 +280,8 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
                 .await?;
 
             anyhow::Ok((guest_bindings, guest_instance))
-        }?;
+        }
+        .await?;
 
         Ok(Self {
             store,
@@ -282,7 +294,38 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
     }
 }
 
-#[cfg(feature = "wit")]
+#[cfg(target_os = "unknown")]
+mod miri_is_going_to_scream {
+
+    use crate::shared::bindings::BindingsBound;
+
+    use super::InstanceState;
+
+    /// # Safety
+    ///
+    /// InstanceState contains an Instance, which is either a re-export of [`wasmtime::Instance`]`,
+    /// or an implementation inside of [`wasm_bridge_js`]. On native, these are `Send` and `Sync`
+    /// rightfully. However, on `wasm32` the `wasm_bridge_js` version uses `JsValue` which is
+    /// inherently not `Send` nor `Sync`, as well `Rc`, `RefCell` etc because it is not thread-safe
+    /// to begin with, so might as well use the `thread-local` specific containers.
+    ///
+    /// However, as much as I would like to adhere to soundness, this causes immense problems when
+    /// we need to store an ignited ember inside the ECS world, as the world requires Send, and is
+    /// in fact both sent and synced between threads on native due to tokio tasks and channels.
+    ///
+    /// On `wasm32-unknown-unknown` threading is more difficult, and as such is not used pervasively
+    /// throughout programs such as async executors, and instead uses a single-threaded executor.
+    /// Currently, we do not actually *use* the world on multiple threads, despite the APIs and
+    /// trait objects requiring as such. This is because a `Box<dyn Trait + Send + Sync>` can not
+    /// be parameterized over its bounds.
+    ///
+    /// This implementation is *only* sound iff the world or or any of its contained components,
+    /// `Command`, `Entity`, `ComponentEntry` or callback et.al is *never* used in a multithreaded
+    /// context.
+    unsafe impl<Bindings> Send for InstanceState<Bindings> where Bindings: BindingsBound + Send + Sync {}
+    unsafe impl<Bindings> Sync for InstanceState<Bindings> where Bindings: BindingsBound + Send + Sync {}
+}
+
 impl<Bindings: BindingsBound> ModuleStateBehavior for InstanceState<Bindings> {
     fn run(
         &mut self,
@@ -354,9 +397,35 @@ impl WasiOutputStream {
     }
 }
 
-#[async_trait::async_trait]
+#[cfg(target_os = "unknown")]
+impl wasm_bridge_js::wasi::preview2::OutputStream for WasiOutputStream {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn writable(&self) -> anyhow::Result<()> {
+        Ok(())
+    }
+
+    fn write(&mut self, buf: &[u8]) -> wasm_bridge::Result<u64> {
+        let msg =
+            std::str::from_utf8(buf).context("Non UTF-8 output is not currently supported")?;
+
+        match self.0.try_send(msg.into()) {
+            Ok(()) => Ok(msg.len() as u64),
+            Err(TrySendError::Disconnected(_)) => {
+                Err(io::Error::new(io::ErrorKind::BrokenPipe, "stdio disconnected").into())
+            }
+            Err(TrySendError::Full(_)) => {
+                Err(io::Error::new(io::ErrorKind::WouldBlock, "stdio is full").into())
+            }
+        }
+    }
+}
+
 #[cfg(not(target_os = "unknown"))]
-impl wasi_preview2::OutputStream for WasiOutputStream {
+#[async_trait::async_trait]
+impl wasmtime_wasi::preview2::OutputStream for WasiOutputStream {
     fn as_any(&self) -> &dyn Any {
         self
     }
@@ -365,7 +434,7 @@ impl wasi_preview2::OutputStream for WasiOutputStream {
         Ok(())
     }
 
-    async fn write(&mut self, buf: &[u8]) -> Result<u64, anyhow::Error> {
+    async fn write(&mut self, buf: &[u8]) -> wasm_bridge::Result<u64> {
         let msg = std::str::from_utf8(buf)?;
         self.0.send(msg.to_string())?;
 

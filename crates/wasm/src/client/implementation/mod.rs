@@ -10,6 +10,7 @@ mod specific;
 mod unused;
 
 impl wit::types::Host for Bindings {}
+
 #[async_trait::async_trait]
 impl wit::entity::Host for Bindings {
     async fn spawn(

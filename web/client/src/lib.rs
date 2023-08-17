@@ -13,8 +13,8 @@ use wasm_bindgen::prelude::*;
 mod app;
 mod wasm;
 
-#[wasm_bindgen]
 /// Initialize ambient
+#[wasm_bindgen]
 pub fn init_ambient(logging: bool, panic: bool) {
     if logging {
         let fmt_layer = tracing_subscriber::fmt::layer()
