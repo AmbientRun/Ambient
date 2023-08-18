@@ -2,11 +2,11 @@ extern crate proc_macro;
 
 use ambient_package::ItemPathBuf;
 use ambient_package_semantic::{
-    ArrayFileProvider, Item, ItemId, ItemMap, ItemSource, Scope, Semantic, Type, TypeInner,
+    Item, ItemId, ItemMap, RetrievableFile, Scope, Semantic, Type, TypeInner,
 };
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use std::{collections::HashMap, path::Path};
+use std::collections::HashMap;
 
 mod assets;
 mod components;
@@ -17,32 +17,15 @@ mod messages;
 
 pub use context::Context;
 
-pub enum ManifestSource<'a> {
-    Path { package_path: &'a Path },
-    Array(&'a [(&'a str, &'a str)]),
-}
-
 pub async fn generate_code(
-    manifest: Option<ManifestSource<'_>>,
+    manifest: Option<RetrievableFile>,
     context: context::Context,
     generate_from_scope_path: Option<&str>,
 ) -> anyhow::Result<TokenStream> {
     let mut semantic = Semantic::new().await?;
 
     if let Some(manifest) = manifest {
-        match manifest {
-            ManifestSource::Path { package_path } => semantic.add_package(package_path).await,
-            ManifestSource::Array(files) => {
-                semantic
-                    .add_file(
-                        Path::new("ambient.toml"),
-                        &ArrayFileProvider { files },
-                        ItemSource::User,
-                        None,
-                    )
-                    .await
-            }
-        }?;
+        semantic.add_package(manifest).await?;
     }
 
     semantic.resolve()?;
@@ -63,19 +46,20 @@ pub async fn generate_code(
         TypePrinter(map)
     };
 
-    let generate_from_scope_id = generate_from_scope_path
-        .map(|id| ItemPathBuf::new(id).expect("invalid generate_from_scope_path"))
-        .map(|id| {
-            items
+    let generate_from_scope_id =
+        generate_from_scope_path
+            .map(|id| ItemPathBuf::new(id).expect("invalid generate_from_scope_path"))
+            .map(|id| {
+                items
                 .get_scope_id(
                     semantic.root_scope_id,
                     id.as_path().scope_iter().expect(
                         "invalid generate_from_scope_path: the last element must be a scope",
-                    ),
+                    ).cloned().collect::<Vec<_>>().as_slice(),
                 )
                 .unwrap()
-        })
-        .unwrap_or(semantic.root_scope_id);
+            })
+            .unwrap_or(semantic.root_scope_id);
     let generate_from_scope = &*items.get(generate_from_scope_id)?;
 
     let generated_output = generate(

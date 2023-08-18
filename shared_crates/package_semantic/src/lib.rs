@@ -327,7 +327,9 @@ pub struct StandardAttributes {
     pub enum_: ItemId<Attribute>,
 }
 
-fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<(ItemId<Scope>, StandardDefinitions)> {
+pub fn create_root_scope(
+    items: &mut ItemMap,
+) -> anyhow::Result<(ItemId<Scope>, StandardDefinitions)> {
     let root_scope = items.add(Scope::new(ItemData {
         parent_id: None,
         id: SnakeCaseIdentifier::default().into(),

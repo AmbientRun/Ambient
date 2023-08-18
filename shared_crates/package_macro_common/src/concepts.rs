@@ -240,8 +240,7 @@ pub fn generate_component_list_doc_comment(
         let padding = " ".repeat(level * 2);
         for (id, value) in &concept.components {
             let component = &*items.get(id.as_resolved().unwrap())?;
-            let component_path =
-                items.fully_qualified_display_path(component, false, None, None)?;
+            let component_path = items.fully_qualified_display_path(component, None, None)?;
 
             writeln!(
                 output,
@@ -264,7 +263,7 @@ pub fn generate_component_list_doc_comment(
         for concept_id in &concept.extends {
             let concept_id = concept_id.as_resolved().unwrap();
             let concept = &*items.get(concept_id)?;
-            let concept_path = items.fully_qualified_display_path(concept, false, None, None)?;
+            let concept_path = items.fully_qualified_display_path(concept, None, None)?;
 
             writeln!(output, "{padding}\"{concept_path}\": {{ // Concept.")?;
             write_level(
