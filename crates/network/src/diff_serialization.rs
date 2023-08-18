@@ -697,9 +697,17 @@ mod tests {
         counter: usize,
     });
 
-    fn assert_same_diff(a: &WorldDiff, b: &WorldDiff) {
-        assert_eq!(a.changes.len(), b.changes.len());
-        for (a, b) in a.changes.iter().zip(b.changes.iter()) {
+    fn assert_same_diffs<'a, 'b, A, B>(a: A, b: B)
+    where
+        A: IntoIterator<Item = &'a WorldChange>,
+        A::IntoIter: ExactSizeIterator,
+        B: IntoIterator<Item = &'b WorldChange>,
+        B::IntoIter: ExactSizeIterator,
+    {
+        let a = a.into_iter();
+        let b = b.into_iter();
+        assert_eq!(a.len(), b.len());
+        for (a, b) in std::iter::zip(a, b) {
             assert_eq!(format!("{:?}", a), format!("{:?}", b));
         }
     }
@@ -710,7 +718,58 @@ mod tests {
         let bytes = DiffSerializer::default().serialize(&view).unwrap();
         let received_diff = DiffSerializer::default().deserialize(bytes).unwrap();
 
-        assert_same_diff(&diff, &received_diff);
+        assert_same_diffs(&diff, &received_diff);
+    }
+
+    #[test]
+    fn deduplicator_doesnt_change_non_set_component_changes() {
+        // Arrange
+        init_components();
+        let id = EntityId::new();
+        let entity = Entity::new()
+            .with(text(), "foo".to_string())
+            .with(float(), 1234.567)
+            .with(counter(), 42);
+        let diff = WorldDiff {
+            changes: vec![
+                WorldChange::Spawn(id, entity.clone()),
+                WorldChange::Despawn(id),
+                WorldChange::AddComponents(id, entity.clone()),
+                WorldChange::RemoveComponents(id, entity.components()),
+            ],
+        };
+        let mut deduplicator = WorldDiffDeduplicator::default();
+
+        // Act
+        let first = deduplicator.deduplicate(WorldDiffView::from(&diff));
+        let second = deduplicator.deduplicate(WorldDiffView::from(&diff));
+
+        // Assert
+        assert_same_diffs(&diff, &first);
+        assert_same_diffs(&diff, &second);
+    }
+
+    #[test]
+    fn deduplicator_deduplicates_set_component_changes() {
+        // Arrange
+        init_components();
+        let id = EntityId::new();
+        let entity = Entity::new()
+            .with(text(), "foo".to_string())
+            .with(float(), 1234.567)
+            .with(counter(), 42);
+        let diff = WorldDiff {
+            changes: vec![WorldChange::SetComponents(id, entity.clone())],
+        };
+        let mut deduplicator = WorldDiffDeduplicator::default();
+
+        // Act
+        let first = deduplicator.deduplicate(WorldDiffView::from(&diff));
+        let second = deduplicator.deduplicate(WorldDiffView::from(&diff));
+
+        // Assert
+        assert_same_diffs(&diff, &first);
+        assert!(second.changes.is_empty());
     }
 
     #[test]
@@ -745,6 +804,51 @@ mod tests {
                 WorldChange::RemoveComponents(id, entity.components()),
             ],
         });
+    }
+
+    #[test]
+    fn component_paths_are_passed_once() {
+        // Arrange
+        init_components();
+        let id = EntityId::new();
+        let entity = Entity::new().with(text(), "foo".to_string());
+        let diff = WorldDiff {
+            changes: vec![WorldChange::SetComponents(id, entity.clone())],
+        };
+        let view = WorldDiffView::from(&diff);
+        let mut serializer = DiffSerializer::default();
+
+        // Act
+        let first_message = serializer.serialize(&view).unwrap();
+        let second_message = serializer.serialize(&view).unwrap();
+
+        // Assert
+        // first message should be bigger than the second one by at least the size of the component path
+        assert!(first_message.len() >= second_message.len() + text().desc().path().len());
+    }
+
+    #[test]
+    fn sequential_diffs_containing_same_components_deserialize_correctly() {
+        // Arrange
+        init_components();
+        let id = EntityId::new();
+        let entity = Entity::new().with(text(), "foo".to_string());
+        let diff = WorldDiff {
+            changes: vec![WorldChange::SetComponents(id, entity.clone())],
+        };
+        let view = WorldDiffView::from(&diff);
+        let mut serializer = DiffSerializer::default();
+        let mut deserializer = DiffSerializer::default();
+
+        // Act
+        let first_message = serializer.serialize(&view).unwrap();
+        let second_message = serializer.serialize(&view).unwrap();
+
+        // Assert
+        let first_diff = deserializer.deserialize(first_message).unwrap();
+        assert_same_diffs(&diff, &first_diff);
+        let second_diff = deserializer.deserialize(second_message).unwrap();
+        assert_same_diffs(&diff, &second_diff);
     }
 
     #[test]
