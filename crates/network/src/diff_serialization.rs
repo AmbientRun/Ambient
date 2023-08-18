@@ -1,3 +1,4 @@
+//! Utilities for `WorldDiff` serialization like `WorldDiffDeduplicator` or `DiffSerializer`.
 use std::collections::HashMap;
 
 use ambient_ecs::{
@@ -18,11 +19,17 @@ pub fn bincode_options() -> impl Options {
         .allow_trailing_bytes()
 }
 
+/// `WorldDiffDeduplicator` filters out duplicated `WorldChange::SetComponents` changes.
+///
+/// It keeps track of serialized values of all `WorldChange::SetComponents` passed to it in the previous call to
+/// `deduplicate`. During deduplication it looks into all changes in the diff, shape changes (spawn, despawn, add
+/// components, remove components) are not affected but `WorldChange::SetComponents` are inspected. When it's
+/// discovered that a value serializes to the same bytes as previously stored value for that entity and component then
+/// it's discarded.
 #[derive(Clone, Debug, Default)]
 pub struct WorldDiffDeduplicator {
     last_diff: HashMap<(EntityId, u32), Bytes>,
 }
-
 impl WorldDiffDeduplicator {
     pub fn deduplicate<'a>(&mut self, mut diff: WorldDiffView<'a>) -> WorldDiffView<'a> {
         let mut new_diff = HashMap::new();
@@ -86,7 +93,6 @@ enum WorldChangeTag {
     RemoveComponents = 3,
     SetComponents = 4,
 }
-
 impl TryFrom<u8> for WorldChangeTag {
     type Error = ();
 
@@ -101,7 +107,6 @@ impl TryFrom<u8> for WorldChangeTag {
         }
     }
 }
-
 impl From<&WorldChange> for WorldChangeTag {
     fn from(change: &WorldChange) -> Self {
         match change {
@@ -113,7 +118,6 @@ impl From<&WorldChange> for WorldChangeTag {
         }
     }
 }
-
 impl<'a> From<&NetworkedWorldChange<'a>> for WorldChangeTag {
     fn from(change: &NetworkedWorldChange<'a>) -> Self {
         match change {
@@ -125,7 +129,6 @@ impl<'a> From<&NetworkedWorldChange<'a>> for WorldChangeTag {
         }
     }
 }
-
 impl serde::Serialize for WorldChangeTag {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -136,7 +139,6 @@ impl serde::Serialize for WorldChangeTag {
 }
 
 struct WorldChangeTagVisitor;
-
 impl<'de> serde::de::Visitor<'de> for WorldChangeTagVisitor {
     type Value = WorldChangeTag;
 
@@ -152,7 +154,6 @@ impl<'de> serde::de::Visitor<'de> for WorldChangeTagVisitor {
             .map_err(|_| serde::de::Error::custom(format!("Unknown WorldChange tag: {:?}", v)))
     }
 }
-
 impl<'de> serde::de::DeserializeSeed<'de> for WorldChangeTagVisitor {
     type Value = WorldChangeTag;
 
@@ -163,7 +164,6 @@ impl<'de> serde::de::DeserializeSeed<'de> for WorldChangeTagVisitor {
         deserializer.deserialize_u8(self)
     }
 }
-
 impl<'de> serde::Deserialize<'de> for WorldChangeTag {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -173,22 +173,94 @@ impl<'de> serde::Deserialize<'de> for WorldChangeTag {
     }
 }
 
-/// WorldDiff serializer that performs a few optimisations compared to directly serializing with bincode and our text serialization:
-/// - indexes component paths and includes the index in the serialized format (path length + 8 bytes -> 4 bytes + extra index when a new component path is encountered)
-/// - serializes Entity Ids as u128 instead of base64 encoded strings (29 bytes -> 16 bytes)
-/// - uses variable length int encoding to save space on collection lengths (8 bytes -> usually 1 byte)
+/// `DiffSerializer` is optimized for serializing `WorldDiff` for transfer over network.
+///
+/// Compared to the regular text serialization of components it makes a few optimisations like:
+/// - serializing EntityId in binary
+/// - using variable length integer encoding
+/// - indexing of Component paths to avoid duplicating the path string in the serialized format
+///
+/// It's supposed to be used on both sides of serialization, that is a diff serialized with `DiffSerializer` has to be
+/// deserialized with another `DiffSerializer` instance. On top of that it assumes that it can keep its internal stat
+/// and that it's presented all serialized diffs in order. It's always safe to use a fresh `DiffSerializer` for
+/// serialization but deserialization might rely on information passed previously in the stream.
+///
+/// `DiffSerializer` creates an index of Component paths seen in the stream and includes it in the serialized data.
+/// The above assumption allows it to include only partial index in each payload, that is it only includes the mappings
+/// for Component paths it hasn't serialized before.
+///
+/// # Internal binary format
+///
+/// `DiffSerializer` relies on bincode for most of the serialization with some modifications in how `WorldDiff` would
+/// normally be serialized.
+///
+/// See `bincode_options()` function for exact bincode options used in serialization.
+///
+/// On the top level each diff consist of 2 parts:
+/// 1. Component path index - mapping of internal component index (`u32`) to component path (`String`) serialized
+///     directly with bincode.
+/// 2. Collection of `WorldChange` elements with custom serialization.
+///
+/// Each `WorldChange` is serialized as a 3-tuple:
+/// 1. `WorldChange` tag (`u8`) - see `WorldChangeTag` for details (1 byte)
+/// 2. `EntityId` (`u128`) - serialized as binary (17 bytes = 1 byte for varint mark + 16 bytes for `u128`)
+/// 3. Change specific data:
+///     - `Entity` (for `Spawn`, `AddComponents`, `SetComponents`)
+///     - collection of `ComponentDesc` (for `RemoveComponents`)
+///     - `0` byte filler (for `Despawn`)
+///
+/// `Entity` is serialized as a collection of `ComponentEntry`.
+///
+/// `ComponentEntry` and `ComponentDesc` are serialized differently compared to the textual representation. Instead of
+/// serializing the full component path, `DiffSerializer` serializes only the internal component index (`u32`).
+///
+/// ## Example
+///
+/// ```
+/// use ambient_ecs::{components, Entity, EntityId, Serializable, WorldChange, WorldDiff, WorldDiffView};
+/// use ambient_network::diff_serialization::DiffSerializer;
+///
+/// components!("test", {
+///     @[Serializable]
+///     text: String,
+/// });
+///
+/// init_components();
+/// let id = EntityId(0xdeadbeefdeadbeef);
+/// let entity = Entity::new().with(text(), "foo".to_string());
+/// let mut serializer = DiffSerializer::default();
+///
+/// let diff = WorldDiff { changes: vec![WorldChange::SetComponents(id, entity)] };
+/// let serialized = serializer.serialize(&WorldDiffView::from(&diff)).unwrap();
+///
+/// assert_eq!(serialized.as_ref(), b"\x01\0\x18ambient_core::test::text\x01\x04\xfd\xef\xbe\xad\xde\xef\xbe\xad\xde\x01\0\x03foo");
+///
+/// // note that when the same component is seen again, it won't be included in the index
+/// let new_entity = Entity::new().with(text(), "bar".to_string());
+/// let new_diff = WorldDiff { changes: vec![WorldChange::SetComponents(id, new_entity)] };
+/// let new_serialized = serializer.serialize(&WorldDiffView::from(&new_diff)).unwrap();
+///
+/// assert_eq!(new_serialized.as_ref(), b"\0\x01\x04\xfd\xef\xbe\xad\xde\xef\xbe\xad\xde\x01\0\x03bar");
+///
+/// // that's why it's crucial for deserializer to see all payloads
+/// let mut deserializer = DiffSerializer::default();
+/// assert!(deserializer.deserialize(new_serialized).is_err());
+/// ```
 #[derive(Clone, Debug, Default)]
 pub struct DiffSerializer {
     known_component_paths: HashMap<u32, String>,
 }
-
 impl DiffSerializer {
     pub fn serialize(&mut self, diff: &WorldDiffView) -> Result<Bytes, bincode::Error> {
+        // get all component that we haven't seen before
         let unknown_components =
             self.collect_unknown_components(diff.changes.iter().map(AsRef::as_ref));
+        // serialize them so that deserialize can map idx to component path
         let mut buffer = bincode_options().serialize(&unknown_components)?;
+        // keep them
         self.known_component_paths
             .extend(unknown_components.into_iter());
+        // serialize the actual change
         buffer.extend_from_slice(&bincode_options().serialize(&NetworkedWorldDiff(diff))?);
         Ok(buffer.into())
     }
@@ -227,21 +299,26 @@ impl DiffSerializer {
     pub fn deserialize(&mut self, message: Bytes) -> Result<WorldDiff, bincode::Error> {
         let mut deserializer =
             bincode::Deserializer::with_reader(message.as_ref(), bincode_options());
+        // deserialize component paths we should know about
         let unknown_components = HashMap::<u32, String>::deserialize(&mut deserializer)?;
         self.known_component_paths
             .extend(unknown_components.into_iter());
-
-        deserializer.deserialize_seq(NetworkedChangesVisitor {
-            known_component_paths: &self.known_component_paths,
-        })
-        // bincode_options().deserialize(&message)
+        // deserialize the actual changes
+        deserializer.deserialize_seq(NetworkedChangesVisitor::from(&*self))
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 struct NetworkedChangesVisitor<'a> {
     known_component_paths: &'a HashMap<u32, String>,
 }
-
+impl<'a> From<&'a DiffSerializer> for NetworkedChangesVisitor<'a> {
+    fn from(value: &'a DiffSerializer) -> Self {
+        Self {
+            known_component_paths: &value.known_component_paths,
+        }
+    }
+}
 impl<'a, 'de> serde::de::Visitor<'de> for NetworkedChangesVisitor<'a> {
     type Value = WorldDiff;
 
@@ -258,19 +335,17 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedChangesVisitor<'a> {
         } else {
             Vec::new()
         };
-        while let Some(change) = seq.next_element_seed(NetworkedChangeVisitor {
-            known_component_paths: self.known_component_paths,
-        })? {
+        while let Some(change) = seq.next_element_seed(NetworkedChangeVisitor::from(self))? {
             changes.push(change)
         }
         Ok(WorldDiff { changes })
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 struct NetworkedChangeVisitor<'a> {
     known_component_paths: &'a HashMap<u32, String>,
 }
-
 impl<'a, 'de> serde::de::Visitor<'de> for NetworkedChangeVisitor<'a> {
     type Value = WorldChange;
 
@@ -297,9 +372,7 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedChangeVisitor<'a> {
         Ok(match tag {
             WorldChangeTag::Spawn => {
                 let entity = seq
-                    .next_element_seed(NetworkedEntityVisitor {
-                        known_component_paths: self.known_component_paths,
-                    })?
+                    .next_element_seed(NetworkedEntityVisitor::from(self))?
                     .ok_or_else(|| serde::de::Error::invalid_length(2, &self))?;
                 WorldChange::Spawn(id, entity)
             }
@@ -312,32 +385,25 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedChangeVisitor<'a> {
             }
             WorldChangeTag::AddComponents => {
                 let entity = seq
-                    .next_element_seed(NetworkedEntityVisitor {
-                        known_component_paths: self.known_component_paths,
-                    })?
+                    .next_element_seed(NetworkedEntityVisitor::from(self))?
                     .ok_or_else(|| serde::de::Error::invalid_length(2, &self))?;
                 WorldChange::AddComponents(id, entity)
             }
             WorldChangeTag::RemoveComponents => {
                 let components = seq
-                    .next_element_seed(NetworkedComponentDescsVisitor {
-                        known_component_paths: self.known_component_paths,
-                    })?
+                    .next_element_seed(NetworkedComponentDescsVisitor::from(self))?
                     .ok_or_else(|| serde::de::Error::invalid_length(2, &self))?;
                 WorldChange::RemoveComponents(id, components)
             }
             WorldChangeTag::SetComponents => {
                 let entity = seq
-                    .next_element_seed(NetworkedEntityVisitor {
-                        known_component_paths: self.known_component_paths,
-                    })?
+                    .next_element_seed(NetworkedEntityVisitor::from(self))?
                     .ok_or_else(|| serde::de::Error::invalid_length(2, &self))?;
                 WorldChange::SetComponents(id, entity)
             }
         })
     }
 }
-
 impl<'a, 'de> serde::de::DeserializeSeed<'de> for NetworkedChangeVisitor<'a> {
     type Value = WorldChange;
 
@@ -354,7 +420,6 @@ impl<'a, 'de> serde::de::DeserializeSeed<'de> for NetworkedChangeVisitor<'a> {
 }
 
 struct NetworkedEntityIdVisitor;
-
 impl<'de> serde::de::Visitor<'de> for NetworkedEntityIdVisitor {
     type Value = EntityId;
 
@@ -369,7 +434,6 @@ impl<'de> serde::de::Visitor<'de> for NetworkedEntityIdVisitor {
         Ok(EntityId(v))
     }
 }
-
 impl<'de> serde::de::DeserializeSeed<'de> for NetworkedEntityIdVisitor {
     type Value = EntityId;
 
@@ -381,10 +445,10 @@ impl<'de> serde::de::DeserializeSeed<'de> for NetworkedEntityIdVisitor {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 struct NetworkedEntityVisitor<'a> {
     known_component_paths: &'a HashMap<u32, String>,
 }
-
 impl<'a, 'de> serde::de::Visitor<'de> for NetworkedEntityVisitor<'a> {
     type Value = Entity;
 
@@ -397,9 +461,7 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedEntityVisitor<'a> {
         A: serde::de::SeqAccess<'de>,
     {
         let mut entity = Entity::new();
-        while let Some(entry) = seq.next_element_seed(NetworkedComponentEntryVisitor {
-            known_component_paths: self.known_component_paths,
-        })? {
+        while let Some(entry) = seq.next_element_seed(NetworkedComponentEntryVisitor::from(self))? {
             entity.set_entry(entry);
         }
         Ok(entity)
@@ -410,9 +472,7 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedEntityVisitor<'a> {
         A: serde::de::MapAccess<'de>,
     {
         let mut entity = Entity::new();
-        while let Some(desc) = map.next_key_seed(NetworkedComponentDescVisitor {
-            known_component_paths: self.known_component_paths,
-        })? {
+        while let Some(desc) = map.next_key_seed(NetworkedComponentDescVisitor::from(self))? {
             let Some(ser) = desc.attribute::<Serializable>() else {
                 return Err(serde::de::Error::custom(format!("tried to deserialize non-serializable component {:?}", desc)));
             };
@@ -422,7 +482,6 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedEntityVisitor<'a> {
         Ok(entity)
     }
 }
-
 impl<'a, 'de> serde::de::DeserializeSeed<'de> for NetworkedEntityVisitor<'a> {
     type Value = Entity;
 
@@ -434,10 +493,10 @@ impl<'a, 'de> serde::de::DeserializeSeed<'de> for NetworkedEntityVisitor<'a> {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 struct NetworkedComponentDescsVisitor<'a> {
     known_component_paths: &'a HashMap<u32, String>,
 }
-
 impl<'a, 'de> serde::de::Visitor<'de> for NetworkedComponentDescsVisitor<'a> {
     type Value = Vec<ComponentDesc>;
 
@@ -450,15 +509,12 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedComponentDescsVisitor<'a> {
         A: serde::de::SeqAccess<'de>,
     {
         let mut components = Vec::with_capacity(seq.size_hint().unwrap_or_default());
-        while let Some(desc) = seq.next_element_seed(NetworkedComponentDescVisitor {
-            known_component_paths: self.known_component_paths,
-        })? {
+        while let Some(desc) = seq.next_element_seed(NetworkedComponentDescVisitor::from(self))? {
             components.push(desc);
         }
         Ok(components)
     }
 }
-
 impl<'a, 'de> serde::de::DeserializeSeed<'de> for NetworkedComponentDescsVisitor<'a> {
     type Value = Vec<ComponentDesc>;
 
@@ -470,10 +526,10 @@ impl<'a, 'de> serde::de::DeserializeSeed<'de> for NetworkedComponentDescsVisitor
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 struct NetworkedComponentDescVisitor<'a> {
     known_component_paths: &'a HashMap<u32, String>,
 }
-
 impl<'a, 'de> serde::de::Visitor<'de> for NetworkedComponentDescVisitor<'a> {
     type Value = ComponentDesc;
 
@@ -500,7 +556,6 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedComponentDescVisitor<'a> {
         }
     }
 }
-
 impl<'a, 'de> serde::de::DeserializeSeed<'de> for NetworkedComponentDescVisitor<'a> {
     type Value = ComponentDesc;
 
@@ -512,10 +567,10 @@ impl<'a, 'de> serde::de::DeserializeSeed<'de> for NetworkedComponentDescVisitor<
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 struct NetworkedComponentEntryVisitor<'a> {
     known_component_paths: &'a HashMap<u32, String>,
 }
-
 impl<'a, 'de> serde::de::Visitor<'de> for NetworkedComponentEntryVisitor<'a> {
     type Value = ComponentEntry;
 
@@ -528,9 +583,7 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedComponentEntryVisitor<'a> {
         A: serde::de::SeqAccess<'de>,
     {
         let desc = seq
-            .next_element_seed(NetworkedComponentDescVisitor {
-                known_component_paths: self.known_component_paths,
-            })?
+            .next_element_seed(NetworkedComponentDescVisitor::from(self))?
             .ok_or_else(|| serde::de::Error::invalid_length(0, &self))?;
         let Some(ser) = desc.attribute::<Serializable>() else {
             return Err(serde::de::Error::custom(format!("tried to deserialize non-serializable component {:?}", desc)));
@@ -541,7 +594,6 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedComponentEntryVisitor<'a> {
         Ok(entry)
     }
 }
-
 impl<'a, 'de> serde::de::DeserializeSeed<'de> for NetworkedComponentEntryVisitor<'a> {
     type Value = ComponentEntry;
 
@@ -553,8 +605,8 @@ impl<'a, 'de> serde::de::DeserializeSeed<'de> for NetworkedComponentEntryVisitor
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 struct NetworkedWorldDiff<'a>(&'a WorldDiffView<'a>);
-
 impl<'a> serde::Serialize for NetworkedWorldDiff<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -576,7 +628,6 @@ enum NetworkedWorldChange<'a> {
     RemoveComponents(u128, Vec<NetworkedComponentDesc>),
     SetComponents(u128, NetworkedEntity<'a>),
 }
-
 impl<'a> NetworkedWorldChange<'a> {
     fn id(&self) -> u128 {
         match self {
@@ -597,7 +648,6 @@ impl<'a> NetworkedWorldChange<'a> {
         }
     }
 }
-
 impl<'a> From<&'a WorldChange> for NetworkedWorldChange<'a> {
     fn from(value: &'a WorldChange) -> Self {
         match value {
@@ -619,7 +669,6 @@ impl<'a> From<&'a WorldChange> for NetworkedWorldChange<'a> {
         }
     }
 }
-
 impl<'a> serde::Serialize for NetworkedWorldChange<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -647,7 +696,6 @@ impl<'a> serde::Serialize for NetworkedWorldChange<'a> {
 
 #[derive(Clone, Copy, Debug)]
 struct NetworkedEntity<'a>(&'a Entity);
-
 impl<'a> serde::Serialize for NetworkedEntity<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -663,7 +711,6 @@ impl<'a> serde::Serialize for NetworkedEntity<'a> {
 
 #[derive(Clone, Copy, Debug)]
 struct NetworkedComponentEntry<'a>(&'a ComponentEntry);
-
 impl<'a> serde::Serialize for NetworkedComponentEntry<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -681,6 +728,40 @@ impl<'a> serde::Serialize for NetworkedComponentEntry<'a> {
 
 #[derive(Clone, Copy, Debug, serde::Serialize)]
 struct NetworkedComponentDesc(u32);
+
+macro_rules! impl_from_kcp {
+    ($source:ty, $target:ty) => {
+        impl<'a> From<$source> for $target {
+            fn from(value: $source) -> Self {
+                Self {
+                    known_component_paths: value.known_component_paths,
+                }
+            }
+        }
+    };
+}
+impl_from_kcp!(NetworkedChangesVisitor<'a>, NetworkedChangeVisitor<'a>);
+impl_from_kcp!(NetworkedChangeVisitor<'a>, NetworkedEntityVisitor<'a>);
+impl_from_kcp!(
+    NetworkedChangeVisitor<'a>,
+    NetworkedComponentDescsVisitor<'a>
+);
+impl_from_kcp!(
+    NetworkedEntityVisitor<'a>,
+    NetworkedComponentEntryVisitor<'a>
+);
+impl_from_kcp!(
+    NetworkedEntityVisitor<'a>,
+    NetworkedComponentDescVisitor<'a>
+);
+impl_from_kcp!(
+    NetworkedComponentDescsVisitor<'a>,
+    NetworkedComponentDescVisitor<'a>
+);
+impl_from_kcp!(
+    NetworkedComponentEntryVisitor<'a>,
+    NetworkedComponentDescVisitor<'a>
+);
 
 #[cfg(test)]
 mod tests {
