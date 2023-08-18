@@ -236,12 +236,7 @@ impl Value {
         Ok(match &ty.inner {
             TypeInner::Primitive(pt) => Self::Scalar(ScalarValue::from_toml(value, *pt)?),
             TypeInner::Vec(v) => {
-                let ty = &*items.get(*v)?;
-                let inner_ty_id = ty
-                    .inner
-                    .as_vec()
-                    .with_context(|| format!("Expected vector type, got {:?}", ty))?;
-                let inner_ty = &*items.get(inner_ty_id)?;
+                let inner_ty = &*items.get(*v)?;
                 let inner_ty = inner_ty.inner.as_primitive().with_context(|| {
                     format!("Expected primitive type, got {:?}", inner_ty.inner)
                 })?;
@@ -257,12 +252,7 @@ impl Value {
                 )
             }
             TypeInner::Option(o) => {
-                let ty = &*items.get(*o)?;
-                let inner_ty = ty
-                    .inner
-                    .as_option()
-                    .with_context(|| format!("Expected option type, got {:?}", ty))?;
-                let inner_ty = &*items.get(inner_ty)?;
+                let inner_ty = &*items.get(*o)?;
                 let inner_ty = inner_ty.inner.as_primitive().with_context(|| {
                     format!("Expected primitive type, got {:?}", inner_ty.inner)
                 })?;

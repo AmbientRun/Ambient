@@ -429,15 +429,9 @@ pub struct StandardAttributes {
     pub enum_: ItemId<Attribute>,
 }
 
-fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<(ItemId<Scope>, StandardDefinitions)> {
-    macro_rules! define_primitive_types {
-        ($(($value:ident, $_type:ty)),*) => {
-            [
-                $((stringify!($value), PrimitiveType::$value)),*
-            ]
-        };
-    }
-
+pub fn create_root_scope(
+    items: &mut ItemMap,
+) -> anyhow::Result<(ItemId<Scope>, StandardDefinitions)> {
     let root_scope = items.add(Scope::new(
         ItemData {
             parent_id: None,
@@ -449,6 +443,14 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<(ItemId<Scope>, Stan
         None,
         true,
     ));
+
+    macro_rules! define_primitive_types {
+        ($(($value:ident, $_type:ty)),*) => {
+            [
+                $((stringify!($value), PrimitiveType::$value)),*
+            ]
+        };
+    }
 
     for (id, pt) in primitive_component_definitions!(define_primitive_types) {
         let id = PascalCaseIdentifier::new(id)
