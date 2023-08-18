@@ -372,7 +372,7 @@ fn scalar_value_to_token_stream(v: &ScalarValue) -> TokenStream {
             let arr = v.to_array();
             quote! { Quat::from_xyzw(#(#arr,)*) }
         }
-        ScalarValue::String(v) => quote! { #v },
+        ScalarValue::String(v) => quote! { #v.to_string() },
         ScalarValue::U8(v) => quote! { #v },
         ScalarValue::U16(v) => quote! { #v },
         ScalarValue::U32(v) => quote! { #v },
@@ -471,7 +471,10 @@ mod tests {
         );
 
         let v = ScalarValue::String("hello".to_string());
-        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "\"hello\"");
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "\"hello\" . to_string ()"
+        );
 
         let v = ScalarValue::U8(42);
         assert_eq!(scalar_value_to_token_stream(&v).to_string(), "42u8");
@@ -595,7 +598,7 @@ mod tests {
         let value = Value::Option(Some(ScalarValue::String("hello".to_string())));
         assert_eq!(
             value_to_token_stream(&items, &value).unwrap().to_string(),
-            "Some (\"hello\")"
+            "Some (\"hello\" . to_string ())"
         );
 
         let value = Value::Option(None);
