@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use ambient_package_semantic::{PackageSource, Printer, Semantic};
+use ambient_package_semantic::{Printer, RetrievableFile, Semantic};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -15,7 +15,10 @@ async fn main() -> anyhow::Result<()> {
         }
     };
     for path in paths {
-        semantic.add_package(PackageSource::Path(path)).await?;
+        anyhow::ensure!(path.is_absolute(), "{path:?} must be absolute");
+        semantic
+            .add_package(RetrievableFile::Path(path.join("ambient.toml")))
+            .await?;
     }
 
     let mut printer = Printer::new();
@@ -29,10 +32,11 @@ async fn main() -> anyhow::Result<()> {
 fn all_examples() -> anyhow::Result<Vec<PathBuf>> {
     let mut examples = Vec::new();
 
+    let wd = std::env::current_dir()?;
     for guest in all_directories_in(Path::new("guest"))? {
         for category_path in all_directories_in(&guest.join("examples"))? {
             for example_path in all_directories_in(&category_path)? {
-                examples.push(example_path);
+                examples.push(wd.join(example_path));
             }
         }
     }

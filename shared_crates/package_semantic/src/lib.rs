@@ -1,7 +1,7 @@
 use std::{
     cell::Ref,
-    collections::{HashMap, HashSet},
-    path::PathBuf,
+    collections::HashMap,
+    path::{Path, PathBuf},
 };
 
 use anyhow::Context as AnyhowContext;
@@ -16,7 +16,7 @@ mod scope;
 pub use scope::{Context, Scope};
 
 mod package;
-pub use package::{Dependency, Package, PackageLocator, PackageSource};
+pub use package::{Dependency, Package, PackageLocator, RetrievableFile};
 
 mod item;
 pub use item::{
@@ -43,8 +43,6 @@ mod message;
 pub use message::Message;
 
 mod value;
-use url::Url;
-use util::read_file;
 pub use value::{ResolvableValue, ScalarValue, Value};
 
 mod printer;
@@ -76,46 +74,41 @@ impl Semantic {
         };
 
         semantic
-            .add_package(PackageSource::Ambient(PathBuf::default()))
+            .add_package(RetrievableFile::Ambient(PathBuf::from("ambient.toml")))
             .await?;
 
         Ok(semantic)
     }
 
     #[async_recursion]
-    pub async fn add_package(&mut self, source: PackageSource) -> anyhow::Result<ItemId<Package>> {
-        let (manifest, manifest_url) = source.get_manifest(&self.schema).await?;
+    pub async fn add_package(
+        &mut self,
+        retrievable_manifest: RetrievableFile,
+    ) -> anyhow::Result<ItemId<Package>> {
+        let manifest = Manifest::parse(&retrievable_manifest.get(&self.schema).await?)?;
 
-        let locator = PackageLocator::from_manifest(&manifest, source.clone());
+        let locator = PackageLocator::from_manifest(&manifest, retrievable_manifest.clone());
         if let Some(id) = self.packages.get(&locator) {
             return Ok(*id);
         }
 
-        let build_metadata = if let Some(url) = manifest_url.as_ref() {
-            Some(BuildMetadata::parse(
-                &read_file(&url.join(BuildMetadata::FILENAME)?).await?,
-            )?)
-        } else {
-            None
-        };
+        let build_metadata = retrievable_manifest
+            .parent_join(Path::new(BuildMetadata::FILENAME))?
+            .get(&self.schema)
+            .await
+            .ok()
+            .map(|s| BuildMetadata::parse(&s))
+            .transpose()?;
 
         let mut dependencies = HashMap::new();
         for (dependency_name, dependency) in &manifest.dependencies {
-            let Some(manifest_url) = manifest_url.as_ref() else {
-                anyhow::bail!("the manifest URL is empty; are you trying to add dependencies to the Ambient schema?");
-            };
-
             // path takes precedence over url
             let source = match (&dependency.path, &dependency.url) {
                 (None, None) => {
                     anyhow::bail!("dependency {dependency_name} has no sources specified")
                 }
-                (Some(path), _) => PackageSource::Url(if path.is_relative() {
-                    manifest_url.join(&path.to_string_lossy())?
-                } else {
-                    Url::from_file_path(path).unwrap()
-                }),
-                (_, Some(url)) => PackageSource::Url(url.clone()),
+                (Some(path), _) => retrievable_manifest.parent_join(&path.join("ambient.toml"))?,
+                (_, Some(url)) => RetrievableFile::Url(url.join("ambient.toml")?),
             };
 
             let dependency_id = self.add_package(source).await?;
@@ -130,33 +123,38 @@ impl Semantic {
         }
 
         let scope_id = self
-            .add_scope_from_manifest_with_includes(None, &manifest, source.clone())
+            .add_scope_from_manifest_with_includes(None, &manifest, retrievable_manifest.clone())
             .await?;
 
         let package = Package {
             data: ItemData {
                 parent_id: None,
                 id: locator.id.clone().into(),
-                source: match source {
-                    PackageSource::Ambient(_) => ItemSource::Ambient,
-                    PackageSource::Path(_) | PackageSource::Url(_) => ItemSource::User,
+                source: match retrievable_manifest {
+                    RetrievableFile::Ambient(_) => ItemSource::Ambient,
+                    RetrievableFile::Path(_) | RetrievableFile::Url(_) => ItemSource::User,
                 },
             },
-            source,
+            source: retrievable_manifest,
             manifest,
             build_metadata,
             dependencies,
             scope_id,
         };
 
-        Ok(self.items.add(package))
+        let id = self.items.add(package);
+        self.packages.insert(locator, id);
+        Ok(id)
     }
 
     pub fn resolve(&mut self) -> anyhow::Result<()> {
-        let mut ids = HashSet::new();
+        let mut seen_locators = HashMap::new();
         for locator in self.packages.keys() {
-            if !ids.insert(locator.id.clone()) {
-                anyhow::bail!("duplicate package found with ID: {} (the system does not currently support having an package with multiple different versions)", locator.id);
+            if let Some(present) = seen_locators.insert(locator.id.clone(), locator.clone()) {
+                anyhow::bail!(
+                    "duplicate package found: present {present:?} attempted {locator:?} ({})",
+                    "the system does not currently support having an package with multiple different versions"
+                );
             }
         }
 
@@ -192,7 +190,7 @@ impl Semantic {
         &mut self,
         parent_id: Option<ItemId<Scope>>,
         manifest: &Manifest,
-        source: PackageSource,
+        source: RetrievableFile,
     ) -> anyhow::Result<ItemId<Scope>> {
         let includes = manifest.package.includes.clone();
         let scope_id =
@@ -205,8 +203,8 @@ impl Semantic {
                 include.display()
             );
 
-            let include_source = source.join(include.parent().context("include has no parent")?)?;
-            let include_manifest = include_source.get_manifest(&self.schema).await?.0;
+            let include_source = source.parent_join(include)?;
+            let include_manifest = Manifest::parse(&include_source.get(&self.schema).await?)?;
             let include_scope_id = self
                 .add_scope_from_manifest_with_includes(
                     Some(scope_id),
@@ -229,10 +227,10 @@ impl Semantic {
         &mut self,
         parent_id: Option<ItemId<Scope>>,
         manifest: &Manifest,
-        source: PackageSource,
+        source: RetrievableFile,
     ) -> anyhow::Result<ItemId<Scope>> {
         let item_source = match source {
-            PackageSource::Ambient(_) => ItemSource::Ambient,
+            RetrievableFile::Ambient(_) => ItemSource::Ambient,
             _ => ItemSource::User,
         };
         let scope_id = self.items.add(Scope::new(ItemData {
