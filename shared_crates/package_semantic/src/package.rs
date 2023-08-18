@@ -5,10 +5,13 @@ use std::{
 
 use ambient_package::{BuildMetadata, Manifest, SnakeCaseIdentifier, Version};
 use ambient_std::path;
-use anyhow::Context;
+use anyhow::Context as AnyhowContext;
 use url::Url;
 
-use crate::{util::read_file, Item, ItemData, ItemId, ItemType, ItemValue, Schema, Scope};
+use crate::{
+    item::ResolveClone, util::read_file, Context, Item, ItemData, ItemId, ItemMap, ItemType,
+    ItemValue, Schema, Scope, StandardDefinitions,
+};
 
 #[derive(Clone, PartialEq, Debug, Eq, Hash)]
 pub struct PackageLocator {
@@ -105,6 +108,18 @@ impl Item for Package {
 
     fn data(&self) -> &ItemData {
         &self.data
+    }
+}
+impl ResolveClone for Package {
+    fn resolve_clone(
+        self,
+        items: &mut ItemMap,
+        context: &Context,
+        definitions: &StandardDefinitions,
+        _self_id: ItemId<Self>,
+    ) -> anyhow::Result<Self> {
+        items.resolve_clone(context, definitions, self.scope_id)?;
+        Ok(self)
     }
 }
 

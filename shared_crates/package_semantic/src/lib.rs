@@ -158,21 +158,14 @@ impl Semantic {
             }
         }
 
-        let root_scopes = self
-            .items
-            .get(self.root_scope_id)?
-            .scopes
-            .values()
-            .copied()
-            .collect::<Vec<_>>();
-
-        for scope_id in root_scopes {
+        for package_id in self.packages.values().copied() {
             self.items.resolve_clone(
-                &Context::new(self.root_scope_id),
+                &Context::new(package_id, self.root_scope_id),
                 &self.standard_definitions,
-                scope_id,
+                package_id,
             )?;
         }
+
         Ok(())
     }
 
