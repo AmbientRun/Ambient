@@ -58,6 +58,7 @@ pub struct Semantic {
     pub items: ItemMap,
     pub root_scope_id: ItemId<Scope>,
     pub packages: HashMap<PackageLocator, ItemId<Package>>,
+    pub ambient_package_id: ItemId<Package>,
     pub standard_definitions: StandardDefinitions,
 }
 impl Semantic {
@@ -70,10 +71,11 @@ impl Semantic {
             items,
             root_scope_id,
             packages: HashMap::new(),
+            ambient_package_id: ItemId::empty_you_should_really_initialize_this(),
             standard_definitions,
         };
 
-        semantic
+        semantic.ambient_package_id = semantic
             .add_package(RetrievableFile::Ambient(PathBuf::from("ambient.toml")))
             .await?;
 
@@ -126,6 +128,27 @@ impl Semantic {
             .add_scope_from_manifest_with_includes(None, &manifest, retrievable_manifest.clone())
             .await?;
 
+        {
+            let mut scope = self.items.get_mut(scope_id)?;
+
+            // If this is not the Ambient package, import the Ambient package
+            if !matches!(retrievable_manifest, RetrievableFile::Ambient(_)) {
+                scope.imports.insert(
+                    self.items
+                        .get(self.ambient_package_id)?
+                        .data()
+                        .id
+                        .as_snake()?
+                        .clone(),
+                    self.ambient_package_id,
+                );
+            }
+
+            for (name, dependency) in &dependencies {
+                scope.imports.insert(name.clone(), dependency.id);
+            }
+        }
+
         let package = Package {
             data: ItemData {
                 parent_id: None,
@@ -160,7 +183,7 @@ impl Semantic {
 
         for package_id in self.packages.values().copied() {
             self.items.resolve_clone(
-                &Context::new(package_id, self.root_scope_id),
+                &Context::new(self.root_scope_id),
                 &self.standard_definitions,
                 package_id,
             )?;

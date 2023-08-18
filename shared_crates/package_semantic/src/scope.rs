@@ -4,92 +4,14 @@ use indexmap::IndexMap;
 
 use crate::{
     Attribute, Component, Concept, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Message,
-    Resolve, ResolveClone, StandardDefinitions, Type,
+    Package, Resolve, ResolveClone, StandardDefinitions, Type,
 };
-
-#[derive(Clone, PartialEq, Debug)]
-pub struct Context(Vec<ItemId<Scope>>);
-impl Context {
-    pub(crate) fn new(root_scope: ItemId<Scope>) -> Self {
-        Self(vec![root_scope])
-    }
-
-    fn push(&mut self, scope: ItemId<Scope>) {
-        self.0.push(scope);
-    }
-
-    pub(crate) fn get_type_id(
-        &self,
-        items: &ItemMap,
-        component_type: &ComponentType,
-    ) -> Option<ItemId<Type>> {
-        for &scope_id in self.0.iter().rev() {
-            match component_type {
-                ComponentType::Item(id) => {
-                    if let Ok(id) = get_type_id(items, scope_id, id.as_path()) {
-                        return Some(id);
-                    }
-                }
-                ComponentType::Contained {
-                    type_,
-                    element_type,
-                } => {
-                    if let Ok(id) = get_type_id(items, scope_id, element_type.as_path()) {
-                        return Some(match type_ {
-                            ambient_package::ContainerType::Vec => items.get_vec_id(id),
-                            ambient_package::ContainerType::Option => items.get_option_id(id),
-                        });
-                    }
-                }
-            }
-        }
-        None
-    }
-
-    pub(crate) fn get_attribute_id(
-        &self,
-        items: &ItemMap,
-        path: ItemPath,
-    ) -> anyhow::Result<ItemId<Attribute>> {
-        for &scope_id in self.0.iter().rev() {
-            if let Ok(id) = get_attribute_id(items, scope_id, path) {
-                return Ok(id);
-            }
-        }
-        anyhow::bail!("failed to find attribute {:?}", path);
-    }
-
-    pub(crate) fn get_concept_id(
-        &self,
-        items: &ItemMap,
-        path: ItemPath,
-    ) -> anyhow::Result<ItemId<Concept>> {
-        for &scope_id in self.0.iter().rev() {
-            if let Ok(id) = get_concept_id(items, scope_id, path) {
-                return Ok(id);
-            }
-        }
-        anyhow::bail!("failed to find concept {:?}", path);
-    }
-
-    pub(crate) fn get_component_id(
-        &self,
-        items: &ItemMap,
-        path: ItemPath,
-    ) -> anyhow::Result<ItemId<Component>> {
-        for &scope_id in self.0.iter().rev() {
-            if let Ok(id) = get_component_id(items, scope_id, path) {
-                return Ok(id);
-            }
-        }
-        anyhow::bail!("failed to find component {:?}", path);
-    }
-}
 
 #[derive(Clone, PartialEq)]
 pub struct Scope {
     pub data: ItemData,
 
+    pub imports: IndexMap<SnakeCaseIdentifier, ItemId<Package>>,
     pub scopes: IndexMap<SnakeCaseIdentifier, ItemId<Scope>>,
     pub components: IndexMap<SnakeCaseIdentifier, ItemId<Component>>,
     pub concepts: IndexMap<SnakeCaseIdentifier, ItemId<Concept>>,
@@ -194,6 +116,7 @@ impl Scope {
     pub fn new(data: ItemData) -> Self {
         Self {
             data,
+            imports: Default::default(),
             scopes: Default::default(),
             components: Default::default(),
             concepts: Default::default(),
@@ -223,6 +146,85 @@ impl Scope {
         }
 
         visit_recursive_inner(self, items, &mut visitor)
+    }
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct Context(Vec<ItemId<Scope>>);
+impl Context {
+    pub(crate) fn new(root_scope: ItemId<Scope>) -> Self {
+        Self(vec![root_scope])
+    }
+
+    fn push(&mut self, scope: ItemId<Scope>) {
+        self.0.push(scope);
+    }
+
+    pub(crate) fn get_type_id(
+        &self,
+        items: &ItemMap,
+        component_type: &ComponentType,
+    ) -> Option<ItemId<Type>> {
+        for &scope_id in self.0.iter().rev() {
+            match component_type {
+                ComponentType::Item(id) => {
+                    if let Ok(id) = get_type_id(items, scope_id, id.as_path()) {
+                        return Some(id);
+                    }
+                }
+                ComponentType::Contained {
+                    type_,
+                    element_type,
+                } => {
+                    if let Ok(id) = get_type_id(items, scope_id, element_type.as_path()) {
+                        return Some(match type_ {
+                            ambient_package::ContainerType::Vec => items.get_vec_id(id),
+                            ambient_package::ContainerType::Option => items.get_option_id(id),
+                        });
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    pub(crate) fn get_attribute_id(
+        &self,
+        items: &ItemMap,
+        path: ItemPath,
+    ) -> anyhow::Result<ItemId<Attribute>> {
+        for &scope_id in self.0.iter().rev() {
+            if let Ok(id) = get_attribute_id(items, scope_id, path) {
+                return Ok(id);
+            }
+        }
+        anyhow::bail!("failed to find attribute {:?}", path);
+    }
+
+    pub(crate) fn get_concept_id(
+        &self,
+        items: &ItemMap,
+        path: ItemPath,
+    ) -> anyhow::Result<ItemId<Concept>> {
+        for &scope_id in self.0.iter().rev() {
+            if let Ok(id) = get_concept_id(items, scope_id, path) {
+                return Ok(id);
+            }
+        }
+        anyhow::bail!("failed to find concept {:?}", path);
+    }
+
+    pub(crate) fn get_component_id(
+        &self,
+        items: &ItemMap,
+        path: ItemPath,
+    ) -> anyhow::Result<ItemId<Component>> {
+        for &scope_id in self.0.iter().rev() {
+            if let Ok(id) = get_component_id(items, scope_id, path) {
+                return Ok(id);
+            }
+        }
+        anyhow::bail!("failed to find component {:?}", path);
     }
 }
 

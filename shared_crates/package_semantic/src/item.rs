@@ -372,6 +372,11 @@ impl<T: Item> PartialEq for ItemId<T> {
     }
 }
 impl<T: Item> Eq for ItemId<T> {}
+impl<T: Item> ItemId<T> {
+    pub(crate) fn empty_you_should_really_initialize_this() -> Self {
+        Self(Ulid::default(), PhantomData)
+    }
+}
 
 #[derive(Clone)]
 pub enum ResolvableItemId<T: Item> {

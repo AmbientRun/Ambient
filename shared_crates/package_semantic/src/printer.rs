@@ -76,6 +76,20 @@ impl Printer {
         );
 
         self.with_indent(|p| {
+            p.print_indent();
+            println!("imports: ");
+            p.with_indent(|p| {
+                for (import_name, package_id) in &scope.imports {
+                    let package_path = fully_qualified_display_path_ambient_style(
+                        items,
+                        &*items.get(*package_id)?,
+                    )?;
+                    p.print_indent();
+                    println!("{import_name} => {package_path}");
+                }
+                Ok(())
+            })?;
+
             for id in scope.components.values() {
                 p.print_component(items, &*items.get(*id)?)?;
             }
