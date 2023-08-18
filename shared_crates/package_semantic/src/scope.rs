@@ -236,7 +236,7 @@ fn get_type_id(
     let (scope, item) = path.scope_and_item();
     let item = item.as_pascal().context("type name must be PascalCase")?;
     items
-        .get_scope(self_scope_id, scope.iter())?
+        .get_scope(self_scope_id, scope)?
         .types
         .get(item)
         .copied()
@@ -253,7 +253,7 @@ fn get_attribute_id(
         .as_pascal()
         .context("attribute name must be PascalCase")?;
     items
-        .get_scope(self_scope_id, scope.iter())?
+        .get_scope(self_scope_id, scope)?
         .attributes
         .get(item)
         .copied()
@@ -268,7 +268,7 @@ fn get_concept_id(
     let (scope, item) = path.scope_and_item();
     let item = item.as_snake().context("concept name must be snake_case")?;
     items
-        .get_scope(self_scope_id, scope.iter())?
+        .get_scope(self_scope_id, scope)?
         .concepts
         .get(item)
         .copied()
@@ -283,7 +283,7 @@ fn get_component_id(
     let (scope, item) = path.scope_and_item();
     let item = item.as_snake().context("concept name must be snake_case")?;
     items
-        .get_scope(self_scope_id, scope.iter())?
+        .get_scope(self_scope_id, scope)?
         .components
         .get(item)
         .copied()

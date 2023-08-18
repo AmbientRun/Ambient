@@ -131,9 +131,18 @@ impl ItemMap {
     pub fn get_scope_id<'a>(
         &self,
         start_scope_id: ItemId<Scope>,
-        path: impl Iterator<Item = &'a SnakeCaseIdentifier>,
+        mut path: &[SnakeCaseIdentifier],
     ) -> anyhow::Result<ItemId<Scope>> {
         let mut scope_id = start_scope_id;
+
+        // If the first segment corresponds to an import, use that instead
+        if let Some(first_segment) = path.first() {
+            if let Some(package_id) = self.get(scope_id)?.imports.get(first_segment) {
+                scope_id = self.get(*package_id)?.scope_id;
+                path = &path[1..];
+            }
+        }
+
         for segment in path {
             let scope = self.get(scope_id)?;
             scope_id = scope
@@ -148,7 +157,7 @@ impl ItemMap {
     pub fn get_scope<'a>(
         &self,
         start_scope_id: ItemId<Scope>,
-        path: impl Iterator<Item = &'a SnakeCaseIdentifier>,
+        path: &[SnakeCaseIdentifier],
     ) -> anyhow::Result<Ref<Scope>> {
         self.get(self.get_scope_id(start_scope_id, path)?)
     }
