@@ -314,6 +314,12 @@ pub struct StandardAttributes {
 }
 
 fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<(ItemId<Scope>, StandardDefinitions)> {
+    let root_scope = items.add(Scope::new(ItemData {
+        parent_id: None,
+        id: SnakeCaseIdentifier::default().into(),
+        source: ItemSource::System,
+    }));
+
     macro_rules! define_primitive_types {
         ($(($value:ident, $_type:ty)),*) => {
             [
@@ -321,12 +327,6 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<(ItemId<Scope>, Stan
             ]
         };
     }
-
-    let root_scope = items.add(Scope::new(ItemData {
-        parent_id: None,
-        id: SnakeCaseIdentifier::default().into(),
-        source: ItemSource::System,
-    }));
 
     for (id, pt) in primitive_component_definitions!(define_primitive_types) {
         let id = PascalCaseIdentifier::new(id)

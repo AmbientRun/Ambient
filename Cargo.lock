@@ -1154,6 +1154,7 @@ dependencies = [
  "ambient_package_semantic",
  "ambient_shared_types",
  "anyhow",
+ "glam 0.24.0",
  "indoc",
  "proc-macro2 1.0.66",
  "quote 1.0.32",
