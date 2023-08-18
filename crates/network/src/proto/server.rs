@@ -13,7 +13,7 @@ use uuid::Uuid;
 use crate::{
     bytes_ext::BufExt,
     client::NetworkTransport,
-    diff_serialization::WorldDiffDeduplicator,
+    diff_serialization::{DiffSerializer, WorldDiffDeduplicator},
     log_network_result, log_task_result,
     proto::ServerPush,
     server::{
@@ -363,6 +363,9 @@ pub async fn handle_diffs<S>(
     S: Unpin + AsyncWrite,
 {
     let mut deduplicator = WorldDiffDeduplicator::default();
+    let mut serializer = DiffSerializer::default();
+    #[cfg(debug_assertions)]
+    let mut deserializer = DiffSerializer::default();
     while let Ok(diff) = diffs_rx.recv_async().await {
         let msg = {
             let _span = tracing::debug_span!("handle_diffs prep").entered();
@@ -372,21 +375,26 @@ pub async fn handle_diffs<S>(
             diffs.push(diff);
             diffs.extend(diffs_rx.drain());
 
-            // merge them together
+            // merge them together, deduplicate and serialize
             let merged_diff = FrozenWorldDiff::merge(&diffs);
             let merged_diffs_count = merged_diff.changes.len();
             let final_diff = deduplicator.deduplicate(merged_diff);
-            let msg: Bytes = bincode::serialize(&final_diff).unwrap().into();
+            let msg = serializer.serialize(&final_diff).unwrap();
             tracing::trace!(
                 diffs_count = diffs.len(),
                 merged_diffs_count,
                 final_diffs_count = final_diff.changes.len(),
                 bytes = msg.len(),
             );
-            debug_assert!(
-                bincode::deserialize::<WorldDiff>(msg.as_ref()).is_ok(),
-                "Merged diff should deserialize as WorldDiff correctly"
-            );
+            #[cfg(debug_assertions)]
+            {
+                let deserialized = deserializer.deserialize(msg.clone());
+                debug_assert!(
+                    deserialized.is_ok(),
+                    "Diff should deserialize as WorldDiff correctly: {:?}",
+                    deserialized,
+                );
+            }
             msg
         };
 

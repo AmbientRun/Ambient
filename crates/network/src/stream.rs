@@ -1,6 +1,6 @@
 use std::{any::type_name, marker::PhantomData, pin::Pin, task::Poll};
 
-use bytes::Bytes;
+use bytes::{Bytes, BytesMut};
 use futures::{ready, Sink, SinkExt, Stream};
 use pin_project::pin_project;
 use thiserror::Error;
@@ -10,6 +10,38 @@ use tokio_util::codec::{FramedRead, FramedWrite, LengthDelimitedCodec};
 use crate::{NetworkError, MAX_FRAME_SIZE};
 
 /// Transport agnostic framed reader
+#[pin_project]
+pub struct RawFramedRecvStream<S>(#[pin] FramedRead<S, LengthDelimitedCodec>);
+
+impl<S> RawFramedRecvStream<S>
+where
+    S: AsyncRead,
+{
+    pub fn new(stream: S) -> Self {
+        let mut codec = LengthDelimitedCodec::new();
+        codec.set_max_frame_length(MAX_FRAME_SIZE);
+        Self(FramedRead::new(stream, codec))
+    }
+}
+
+impl<S> Stream for RawFramedRecvStream<S>
+where
+    S: AsyncRead,
+{
+    type Item = Result<Bytes, NetworkError>;
+
+    fn poll_next(
+        self: Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> Poll<Option<Self::Item>> {
+        let p = self.project();
+
+        let ready_result = ready!(p.0.poll_next(cx));
+        Poll::Ready(ready_result.map(|result| result.map(BytesMut::freeze).map_err(Into::into)))
+    }
+}
+
+/// Typed transport agnostic framed reader
 #[pin_project]
 pub struct FramedRecvStream<T, S> {
     #[pin]

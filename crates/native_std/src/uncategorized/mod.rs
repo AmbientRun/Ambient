@@ -11,6 +11,7 @@ pub mod fps_counter;
 pub mod mesh;
 pub mod ordered_glam;
 pub mod shapes;
+pub mod size_histogram;
 pub mod sparse_vec;
 pub mod time;
 

@@ -177,10 +177,54 @@ impl Display for WorldDiff {
         Ok(())
     }
 }
+impl<'a> IntoIterator for &'a WorldDiff {
+    type Item = &'a WorldChange;
+
+    type IntoIter = core::slice::Iter<'a, WorldChange>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.changes.iter()
+    }
+}
 
 #[derive(Serialize, Clone, Debug)]
 pub struct WorldDiffView<'a> {
     pub changes: Vec<Cow<'a, WorldChange>>,
+}
+
+impl<'a> From<&'a WorldDiff> for WorldDiffView<'a> {
+    fn from(value: &'a WorldDiff) -> Self {
+        WorldDiffView {
+            changes: value.changes.iter().map(Cow::Borrowed).collect(),
+        }
+    }
+}
+
+impl<'a> IntoIterator for &'a WorldDiffView<'a> {
+    type Item = &'a WorldChange;
+
+    type IntoIter = WorldDiffViewIter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        WorldDiffViewIter {
+            inner: self.changes.iter(),
+        }
+    }
+}
+pub struct WorldDiffViewIter<'a> {
+    inner: core::slice::Iter<'a, Cow<'a, WorldChange>>,
+}
+impl<'a> Iterator for WorldDiffViewIter<'a> {
+    type Item = &'a WorldChange;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().map(AsRef::as_ref)
+    }
+}
+impl<'a> ExactSizeIterator for WorldDiffViewIter<'a> {
+    fn len(&self) -> usize {
+        self.inner.len()
+    }
 }
 
 /// Immutable version of WorldDiff, cheap to clone
