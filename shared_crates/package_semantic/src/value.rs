@@ -294,6 +294,8 @@ impl Value {
 
 #[cfg(test)]
 mod tests {
+    use crate::{create_root_scope, Enum, ItemData, ItemSource};
+
     use super::*;
 
     #[test]
@@ -449,5 +451,88 @@ mod tests {
         }
 
         Ok(())
+    }
+
+    #[test]
+    fn test_value_from_toml() {
+        let mut items = ItemMap::default();
+        let (root_scope, _) = create_root_scope(&mut items).unwrap();
+
+        let enum_type = items.add(Type::new(
+            ItemData {
+                parent_id: None,
+                id: PascalCaseIdentifier::new("MyEnum").unwrap().into(),
+                source: ItemSource::User,
+            },
+            TypeInner::Enum(Enum {
+                description: None,
+                members: ["A", "B", "C"]
+                    .into_iter()
+                    .map(|s| (PascalCaseIdentifier::new(s).unwrap(), "".to_string()))
+                    .collect(),
+            }),
+        ));
+
+        let root_scope = items.get(root_scope).unwrap();
+
+        let bool_type = *root_scope
+            .types
+            .get(&PascalCaseIdentifier::new("Bool").unwrap())
+            .unwrap();
+
+        let u32_type = *root_scope
+            .types
+            .get(&PascalCaseIdentifier::new("U32").unwrap())
+            .unwrap();
+        let vec_u32_type = items.get_vec_id(u32_type);
+
+        let string_type = *root_scope
+            .types
+            .get(&PascalCaseIdentifier::new("String").unwrap())
+            .unwrap();
+        let opt_string_type = items.get_option_id(string_type);
+
+        assert_eq!(
+            Value::from_toml(&toml::Value::Boolean(true), &items, bool_type).unwrap(),
+            Value::Scalar(ScalarValue::Bool(true))
+        );
+
+        assert_eq!(
+            Value::from_toml(
+                &toml::Value::Array(vec![
+                    toml::Value::Integer(1),
+                    toml::Value::Integer(2),
+                    toml::Value::Integer(3)
+                ]),
+                &items,
+                vec_u32_type
+            )
+            .unwrap(),
+            Value::Vec(vec![
+                ScalarValue::U32(1),
+                ScalarValue::U32(2),
+                ScalarValue::U32(3)
+            ])
+        );
+
+        assert_eq!(
+            Value::from_toml(
+                &toml::Value::Array(vec![toml::Value::String("hello".to_string())]),
+                &items,
+                opt_string_type
+            )
+            .unwrap(),
+            Value::Option(Some(ScalarValue::String("hello".to_string())))
+        );
+
+        assert_eq!(
+            Value::from_toml(&toml::Value::Array(vec![]), &items, opt_string_type).unwrap(),
+            Value::Option(None)
+        );
+
+        assert_eq!(
+            Value::from_toml(&toml::Value::String("B".to_string()), &items, enum_type).unwrap(),
+            Value::Enum(enum_type, PascalCaseIdentifier::new("B").unwrap()),
+        );
     }
 }

@@ -428,3 +428,200 @@ fn scalar_value_to_token_stream(v: &ScalarValue) -> TokenStream {
         ScalarValue::ProceduralMaterialHandle(_v) => quote! { unsupported!() },
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use ambient_package::PascalCaseIdentifier;
+    use ambient_package_semantic::{
+        create_root_scope, Enum, ItemData, ItemSource, Type, TypeInner,
+    };
+
+    use super::*;
+
+    #[test]
+    fn test_scalar_value_to_token_stream() {
+        let v = ScalarValue::Empty(());
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "()");
+
+        let v = ScalarValue::Bool(true);
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "true");
+
+        let v = ScalarValue::EntityId(42);
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "EntityId (42u128)"
+        );
+
+        let v = ScalarValue::F32(42.345);
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "42.345f32");
+
+        let v = ScalarValue::F64(42.345);
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "42.345f64");
+
+        let v = ScalarValue::Mat4(glam::Mat4::IDENTITY);
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "Mat4 :: from_cols_array (& [1f32 , 0f32 , 0f32 , 0f32 , 0f32 , 1f32 , 0f32 , 0f32 , 0f32 , 0f32 , 1f32 , 0f32 , 0f32 , 0f32 , 0f32 , 1f32 ,])"
+        );
+
+        let v = ScalarValue::Quat(glam::Quat::IDENTITY);
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "Quat :: from_xyzw (0f32 , 0f32 , 0f32 , 1f32 ,)"
+        );
+
+        let v = ScalarValue::String("hello".to_string());
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "\"hello\"");
+
+        let v = ScalarValue::U8(42);
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "42u8");
+
+        let v = ScalarValue::U16(42);
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "42u16");
+
+        let v = ScalarValue::U32(42);
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "42u32");
+
+        let v = ScalarValue::U64(42);
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "42u64");
+
+        let v = ScalarValue::I8(-42);
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "- 42i8");
+
+        let v = ScalarValue::I16(-42);
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "- 42i16");
+
+        let v = ScalarValue::I32(-42);
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "- 42i32");
+
+        let v = ScalarValue::I64(-42);
+        assert_eq!(scalar_value_to_token_stream(&v).to_string(), "- 42i64");
+
+        let v = ScalarValue::Vec2(glam::Vec2::new(1f32, 2f32));
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "Vec2 :: new (1f32 , 2f32 ,)"
+        );
+
+        let v = ScalarValue::Vec3(glam::Vec3::new(1f32, 2f32, 3f32));
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "Vec3 :: new (1f32 , 2f32 , 3f32 ,)"
+        );
+
+        let v = ScalarValue::Vec4(glam::Vec4::new(1f32, 2f32, 3f32, 4f32));
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "Vec4 :: new (1f32 , 2f32 , 3f32 , 4f32 ,)"
+        );
+
+        let v = ScalarValue::Uvec2(glam::UVec2::new(1, 2));
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "UVec2 :: new (1u32 , 2u32 ,)"
+        );
+
+        let v = ScalarValue::Uvec3(glam::UVec3::new(1, 2, 3));
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "UVec3 :: new (1u32 , 2u32 , 3u32 ,)"
+        );
+
+        let v = ScalarValue::Uvec4(glam::UVec4::new(1, 2, 3, 4));
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "UVec4 :: new (1u32 , 2u32 , 3u32 , 4u32 ,)"
+        );
+
+        let v = ScalarValue::Ivec2(glam::IVec2::new(-1, -2));
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "IVec2 :: new (- 1i32 , - 2i32 ,)"
+        );
+
+        let v = ScalarValue::Ivec3(glam::IVec3::new(-1, -2, -3));
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "IVec3 :: new (- 1i32 , - 2i32 , - 3i32 ,)"
+        );
+
+        let v = ScalarValue::Ivec4(glam::IVec4::new(-1, -2, -3, -4));
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "IVec4 :: new (- 1i32 , - 2i32 , - 3i32 , - 4i32 ,)"
+        );
+
+        let v = ScalarValue::Duration(std::time::Duration::new(42, 345));
+        assert_eq!(
+            scalar_value_to_token_stream(&v).to_string(),
+            "Duration :: new (42u64 , 345u32)"
+        );
+
+        fn unsupported_test<T: Default>(constructor: impl Fn(T) -> ScalarValue) {
+            let v = constructor(Default::default());
+            assert_eq!(
+                scalar_value_to_token_stream(&v).to_string(),
+                "unsupported ! ()"
+            );
+        }
+
+        unsupported_test(ScalarValue::ProceduralMeshHandle);
+        unsupported_test(ScalarValue::ProceduralTextureHandle);
+        unsupported_test(ScalarValue::ProceduralSamplerHandle);
+        unsupported_test(ScalarValue::ProceduralMaterialHandle);
+    }
+
+    #[test]
+    fn test_value_to_token_stream() {
+        let mut items = ItemMap::default();
+        let _ = create_root_scope(&mut items).unwrap();
+
+        let value = Value::Scalar(ScalarValue::Bool(true));
+        assert_eq!(
+            value_to_token_stream(&items, &value).unwrap().to_string(),
+            "true"
+        );
+
+        let value = Value::Vec(vec![
+            ScalarValue::U32(1),
+            ScalarValue::U32(2),
+            ScalarValue::U32(3),
+        ]);
+        assert_eq!(
+            value_to_token_stream(&items, &value).unwrap().to_string(),
+            "vec ! [1u32 , 2u32 , 3u32 ,]"
+        );
+
+        let value = Value::Option(Some(ScalarValue::String("hello".to_string())));
+        assert_eq!(
+            value_to_token_stream(&items, &value).unwrap().to_string(),
+            "Some (\"hello\")"
+        );
+
+        let value = Value::Option(None);
+        assert_eq!(
+            value_to_token_stream(&items, &value).unwrap().to_string(),
+            "None"
+        );
+
+        let id = items.add(Type::new(
+            ItemData {
+                parent_id: None,
+                id: PascalCaseIdentifier::new("MyEnum").unwrap().into(),
+                source: ItemSource::User,
+            },
+            TypeInner::Enum(Enum {
+                description: None,
+                members: ["A", "B", "C"]
+                    .into_iter()
+                    .map(|s| (PascalCaseIdentifier::new(s).unwrap(), "".to_string()))
+                    .collect(),
+            }),
+        ));
+        let value = Value::Enum(id, PascalCaseIdentifier::new("B").unwrap());
+        assert_eq!(
+            value_to_token_stream(&items, &value).unwrap().to_string(),
+            "1usize"
+        );
+    }
+}
