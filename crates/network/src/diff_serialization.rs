@@ -87,6 +87,21 @@ enum WorldChangeTag {
     SetComponents = 4,
 }
 
+impl TryFrom<u8> for WorldChangeTag {
+    type Error = ();
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(Self::Spawn),
+            1 => Ok(Self::Despawn),
+            2 => Ok(Self::AddComponents),
+            3 => Ok(Self::RemoveComponents),
+            4 => Ok(Self::SetComponents),
+            _ => Err(()),
+        }
+    }
+}
+
 impl From<&WorldChange> for WorldChangeTag {
     fn from(change: &WorldChange) -> Self {
         match change {
@@ -107,21 +122,6 @@ impl<'a> From<&NetworkedWorldChange<'a>> for WorldChangeTag {
             NetworkedWorldChange::AddComponents(_, _) => WorldChangeTag::AddComponents,
             NetworkedWorldChange::RemoveComponents(_, _) => WorldChangeTag::RemoveComponents,
             NetworkedWorldChange::SetComponents(_, _) => WorldChangeTag::SetComponents,
-        }
-    }
-}
-
-impl TryFrom<u8> for WorldChangeTag {
-    type Error = ();
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        match value {
-            0 => Ok(Self::Spawn),
-            1 => Ok(Self::Despawn),
-            2 => Ok(Self::AddComponents),
-            3 => Ok(Self::RemoveComponents),
-            4 => Ok(Self::SetComponents),
-            _ => Err(()),
         }
     }
 }
@@ -745,5 +745,18 @@ mod tests {
                 WorldChange::RemoveComponents(id, entity.components()),
             ],
         });
+    }
+
+    #[test]
+    fn world_change_tag_to_and_from_u8_matches() {
+        for tag in [
+            WorldChangeTag::Spawn,
+            WorldChangeTag::Despawn,
+            WorldChangeTag::AddComponents,
+            WorldChangeTag::RemoveComponents,
+            WorldChangeTag::SetComponents,
+        ] {
+            assert_eq!(WorldChangeTag::try_from(tag as u8).unwrap(), tag);
+        }
     }
 }
