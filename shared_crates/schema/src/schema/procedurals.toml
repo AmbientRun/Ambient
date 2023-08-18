@@ -2,6 +2,7 @@
 id = "procedurals"
 name = "Procedurals"
 description = "Procedural asset functionality and related."
+version = "0.3.0-dev"
 
 [components.procedural_mesh]
 type = "ProceduralMeshHandle"

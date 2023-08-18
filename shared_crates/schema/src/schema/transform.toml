@@ -2,6 +2,7 @@
 id = "transform"
 name = "Transform"
 description = "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity."
+version = "0.3.0-dev"
 
 [components.cylindrical_billboard_z]
 type = "Empty"
