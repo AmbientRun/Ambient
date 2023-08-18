@@ -5,15 +5,16 @@ use ambient_package_semantic::{Printer, RetrievableFile, Semantic};
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let mut semantic = Semantic::new().await?;
+    let args: Vec<_> = std::env::args().collect();
+    let target = args.get(1).expect("path or 'all' as first arg");
+    let should_resolve = !args.get(2).is_some_and(|s| s == "--no-resolve");
 
-    let paths = {
-        let arg = std::env::args().nth(1).expect("path or 'all' as first arg");
-        if arg == "all" {
-            all_examples()?
-        } else {
-            vec![PathBuf::from(arg)]
-        }
+    let paths = if target == "all" {
+        all_examples()?
+    } else {
+        vec![PathBuf::from(target)]
     };
+
     for path in paths {
         anyhow::ensure!(path.is_absolute(), "{path:?} must be absolute");
         semantic
@@ -22,7 +23,9 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let mut printer = Printer::new();
-    semantic.resolve()?;
+    if should_resolve {
+        semantic.resolve()?;
+    }
     printer.print(&semantic)?;
 
     Ok(())
