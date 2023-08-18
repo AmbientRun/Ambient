@@ -4,6 +4,7 @@ use std::{
 };
 
 use ambient_package::{BuildMetadata, Manifest, SnakeCaseIdentifier, Version};
+use ambient_std::path;
 use anyhow::Context;
 use url::Url;
 
@@ -55,20 +56,21 @@ impl RetrievableFile {
 
     /// Takes the parent of this path and joins it with the given path
     pub fn parent_join(&self, suffix: &Path) -> anyhow::Result<Self> {
+        fn parent_join(path: &PathBuf, suffix: &Path) -> Result<PathBuf, anyhow::Error> {
+            Ok(path::normalize(
+                &path.parent().context("no parent")?.join(suffix),
+            ))
+        }
+
         Ok(match self {
-            RetrievableFile::Ambient(path) => {
-                RetrievableFile::Ambient(path.parent().context("no parent")?.join(suffix))
-            }
-            RetrievableFile::Path(path) => {
-                RetrievableFile::Path(path.parent().context("no parent")?.join(suffix))
-            }
+            RetrievableFile::Ambient(path) => RetrievableFile::Ambient(parent_join(path, suffix)?),
+            RetrievableFile::Path(path) => RetrievableFile::Path(parent_join(path, suffix)?),
             RetrievableFile::Url(url) => {
                 RetrievableFile::Url(url.join(suffix.to_string_lossy().as_ref())?)
             }
         })
     }
 }
-
 #[derive(Clone, PartialEq, Debug)]
 pub struct Package {
     pub data: ItemData,
