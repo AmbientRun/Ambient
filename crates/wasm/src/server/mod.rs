@@ -116,6 +116,7 @@ struct Bindings {
     world_ref: shared::bindings::WorldRef,
     id: EntityId,
 }
+
 impl Bindings {
     pub fn world(&self) -> &World {
         unsafe { self.world_ref.world() }

@@ -91,6 +91,9 @@ import("ambient_web")
       return;
     }
 
-    ambient.start(target, "https://api.ambient.run/servers/ensure-running?ember_id=ambient_example_asset_loading");
+    const urlParams = new URLSearchParams(window.location.search);
+    const url = urlParams.get('url') || "https://127.0.0.1:9000";
+    
+    ambient.start(target, url);
     // setupAudio();
   });

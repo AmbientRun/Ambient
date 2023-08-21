@@ -65,7 +65,7 @@ fn systems() -> SystemGroup {
             // Box::new(ambient_sky::systems()),
             // Box::new(ambient_water::systems()),
             // Box::new(ambient_physics::client_systems()),
-            // Box::new(wasm::systems()),
+            Box::new(wasm::systems()),
             Box::new(player::systems_final()),
         ],
     )

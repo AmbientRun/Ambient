@@ -1,9 +1,11 @@
 //! Used to stub out all the unused host functions on the serverside.
+use wasm_bridge::async_trait;
+
 use crate::shared::{implementation::unsupported, wit};
 
 use super::Bindings;
 
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_message::Host for Bindings {
     async fn send(
         &mut self,
@@ -14,13 +16,13 @@ impl wit::client_message::Host for Bindings {
         unsupported()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_player::Host for Bindings {
     async fn get_local(&mut self) -> anyhow::Result<wit::types::EntityId> {
         unsupported()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_input::Host for Bindings {
     async fn get(&mut self) -> anyhow::Result<wit::client_input::Input> {
         unsupported()
@@ -38,7 +40,7 @@ impl wit::client_input::Host for Bindings {
         unsupported()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_camera::Host for Bindings {
     async fn clip_position_to_world_ray(
         &mut self,
@@ -70,7 +72,7 @@ impl wit::client_camera::Host for Bindings {
         unsupported()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_clipboard::Host for Bindings {
     async fn get(&mut self) -> anyhow::Result<Option<String>> {
         unsupported()
@@ -80,13 +82,13 @@ impl wit::client_clipboard::Host for Bindings {
         unsupported()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_window::Host for Bindings {
     async fn set_fullscreen(&mut self, _fullscreen: bool) -> anyhow::Result<()> {
         unsupported()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_mesh::Host for Bindings {
     async fn create(
         &mut self,
@@ -98,7 +100,7 @@ impl wit::client_mesh::Host for Bindings {
         unsupported()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_texture::Host for Bindings {
     async fn create2d(
         &mut self,
@@ -110,7 +112,7 @@ impl wit::client_texture::Host for Bindings {
         unsupported()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_sampler::Host for Bindings {
     async fn create(
         &mut self,
@@ -122,7 +124,7 @@ impl wit::client_sampler::Host for Bindings {
         unsupported()
     }
 }
-#[async_trait::async_trait]
+#[async_trait]
 impl wit::client_material::Host for Bindings {
     async fn create(
         &mut self,

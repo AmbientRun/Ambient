@@ -10,6 +10,7 @@ impl wit::server_asset::Host for Bindings {
         unsupported()
     }
 }
+
 #[async_trait]
 impl wit::server_physics::Host for Bindings {
     async fn add_force(

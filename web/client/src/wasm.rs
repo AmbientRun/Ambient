@@ -6,6 +6,7 @@ use tracing::Level;
 
 use std::sync::Arc;
 
+/// Initiates the wasm client systems
 pub fn systems() -> SystemGroup {
     ambient_wasm::client::systems()
 }

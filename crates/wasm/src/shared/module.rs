@@ -13,7 +13,10 @@ use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::io;
 use std::{collections::HashSet, sync::Arc};
-use wasm_bridge::Store;
+use wasm_bridge::{
+    wasi::preview2::{self, Table, WasiCtx, WasiCtxBuilder},
+    Store,
+};
 
 // use wasi_cap_std_sync::Dir;
 // use wasmtime_wasi::preview2 as wasi_preview2;
@@ -84,10 +87,7 @@ struct BindingContext<Bindings: BindingsBound> {
     wasi: WasiCtx,
     table: Table,
 }
-#[cfg(target_os = "unknown")]
-use wasm_bridge_js::wasi::preview2;
-#[cfg(not(target_os = "unknown"))]
-use wasmtime_wasi::preview2;
+
 impl<B: BindingsBound> preview2::WasiView for BindingContext<B> {
     fn table(&self) -> &preview2::Table {
         &self.table
@@ -195,15 +195,13 @@ impl ModuleStateBehavior for ModuleState {
 #[cfg(target_os = "unknown")]
 use wasm_bridge_js::{
     component::{self, Instance},
-    wasi::preview2::{wasi::command::add_to_linker, Table, WasiCtx, WasiCtxBuilder},
+    wasi::preview2::wasi::command::add_to_linker,
 };
 
 #[cfg(not(target_os = "unknown"))]
-use wasmtime::{
-    component::{self, Instance},
-    wasi::preview2::Table,
-    Store, WasiCtxBuilder,
-};
+use preview2::wasi::command::add_to_linker;
+#[cfg(not(target_os = "unknown"))]
+use wasmtime::component::{self, Instance};
 
 /// Stores the execution context and store
 struct InstanceState<Bindings: BindingsBound> {
@@ -434,7 +432,7 @@ impl wasm_bridge_js::wasi::preview2::OutputStream for WasiOutputStream {
 #[cfg(not(target_os = "unknown"))]
 #[async_trait::async_trait]
 impl wasmtime_wasi::preview2::OutputStream for WasiOutputStream {
-    fn as_any(&self) -> &dyn Any {
+    fn as_any(&self) -> &dyn std::any::Any {
         self
     }
 
