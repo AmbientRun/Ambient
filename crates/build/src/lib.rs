@@ -182,7 +182,12 @@ async fn build_package(
             let ambient_package::Dependency { path, .. } = dependency;
 
             if let Some(original_dependency_name) = alias_to_dependency.get(alias) {
-                *path = Some(Path::new("..").join(original_dependency_name.as_str()));
+                let new_path = Path::new("..").join(original_dependency_name.as_str());
+                if ambient_std::path::normalize(&build_path.join(&new_path)).exists() {
+                    // Only update the path if the directory actually exists. This prevents us from
+                    // accidentally setting the path to a dependency that doesn't exist locally.
+                    *path = Some(new_path);
+                }
             }
         }
     }
