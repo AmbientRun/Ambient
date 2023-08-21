@@ -59,7 +59,7 @@ pub async fn build(
 
     let mut output_path = build_path.clone();
     while let Some(package_id) = queue.pop() {
-        let id = semantic.items.get(package_id)?.data.id.clone();
+        let id = semantic.items.get(package_id).data.id.clone();
         let build_path = build_path.join(id.as_str());
         build_package(
             BuildConfiguration {
@@ -103,7 +103,7 @@ async fn build_package(
     } = config;
 
     let (mut manifest, path) = {
-        let package = semantic.items.get(package_id)?;
+        let package = semantic.items.get(package_id);
         (
             package.manifest.clone(),
             package
@@ -165,11 +165,11 @@ async fn build_package(
     // Bodge: for local builds, rewrite the dependencies to be relative to this package,
     // assuming that they are all in the same folder
     {
-        let package = semantic.items.get(package_id)?;
+        let package = semantic.items.get(package_id);
         let alias_to_dependency = package
             .dependencies
             .iter()
-            .map(|(id, dep)| anyhow::Ok((id.clone(), semantic.items.get(dep.id)?.data.id.clone())))
+            .map(|(id, dep)| anyhow::Ok((id.clone(), semantic.items.get(dep.id).data.id.clone())))
             .collect::<Result<HashMap<_, _>, _>>()?;
 
         for (alias, dependency) in manifest.dependencies.iter_mut() {

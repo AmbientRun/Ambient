@@ -55,7 +55,7 @@ pub async fn build(
 
     let manifest = semantic
         .items
-        .get(primary_package_scope_id)?
+        .get(primary_package_scope_id)
         .manifest
         .clone();
 

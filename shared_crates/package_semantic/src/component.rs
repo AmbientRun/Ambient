@@ -82,7 +82,7 @@ impl Resolve for Component {
         }
 
         // If this is an enum, emit the `Enum` attribute
-        if items.get(type_id)?.inner.as_enum().is_some() {
+        if items.get(type_id).inner.as_enum().is_some() {
             attributes.push(ResolvableItemId::Resolved(definitions.attributes.enum_));
         }
         self.attributes = attributes;

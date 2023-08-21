@@ -59,7 +59,7 @@ impl RetrievableFile {
 
     /// Takes the parent of this path and joins it with the given path
     pub fn parent_join(&self, suffix: &Path) -> anyhow::Result<Self> {
-        fn parent_join(path: &PathBuf, suffix: &Path) -> Result<PathBuf, anyhow::Error> {
+        fn parent_join(path: &Path, suffix: &Path) -> Result<PathBuf, anyhow::Error> {
             Ok(path::normalize(
                 &path.parent().context("no parent")?.join(suffix),
             ))

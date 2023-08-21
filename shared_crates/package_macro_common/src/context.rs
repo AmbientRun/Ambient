@@ -30,7 +30,7 @@ impl Context {
         items: &'a ItemMap,
         id: ItemId<T>,
     ) -> Option<Ref<'a, T>> {
-        let item = items.get(id).unwrap();
+        let item = items.get(id);
         if *self == Context::GuestUser && item.data().source != ItemSource::User {
             return None;
         }
@@ -43,7 +43,7 @@ impl Context {
         prefix: Option<&str>,
         id: ItemId<T>,
     ) -> anyhow::Result<TokenStream> {
-        let item = items.get(id).unwrap();
+        let item = items.get(id);
         let path_prefix = self.path_prefix_impl(item.data());
         let type_namespace = match T::TYPE {
             ItemType::Component => "components::",

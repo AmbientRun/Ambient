@@ -34,7 +34,7 @@ pub async fn generate_code(
     let type_printer = {
         let mut map = HashMap::new();
         for type_id in root_scope.types.values() {
-            let type_ = items.get(*type_id).expect("type id not in items");
+            let type_ = items.get(*type_id);
             if let TypeInner::Primitive(pt) = type_.inner {
                 let ty_tokens = syn::parse_str::<syn::Type>(&pt.to_string())?.to_token_stream();
                 map.insert(*type_id, ty_tokens.clone());
@@ -49,8 +49,8 @@ pub async fn generate_code(
         .packages
         .values()
         .map(|&package_id| {
-            let package = items.get(package_id)?;
-            let generate_from_scope = &*items.get(package.scope_id)?;
+            let package = items.get(package_id);
+            let generate_from_scope = &*items.get(package.scope_id);
 
             let generated_output = generate(context, items, &type_printer, generate_from_scope)?;
             let components_init = components::generate_init(context, items, generate_from_scope)?;
@@ -66,11 +66,11 @@ pub async fn generate_code(
         .collect::<Result<Vec<_>, _>>()?;
 
     let imports = if let Some(package_id) = package_id {
-        let package = items.get(package_id)?;
+        let package = items.get(package_id);
 
         let dependencies = std::iter::once(anyhow::Ok(("this", package.data.id.to_string())))
             .chain(package.dependencies.iter().map(|(alias, dependency)| {
-                let dependency = items.get(dependency.id)?;
+                let dependency = items.get(dependency.id);
                 anyhow::Ok((alias.as_str(), dependency.data.id.to_string()))
             }))
             .collect::<Result<Vec<_>, _>>()?;
@@ -123,7 +123,7 @@ fn generate(
         .scopes
         .values()
         .map(|s| {
-            let scope = items.get(*s)?;
+            let scope = items.get(*s);
             if !context.should_generate(scope.data()) {
                 return Ok(quote! {});
             }

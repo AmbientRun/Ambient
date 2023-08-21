@@ -232,11 +232,11 @@ impl Value {
         items: &ItemMap,
         ty_id: ItemId<Type>,
     ) -> anyhow::Result<Self> {
-        let ty = &*items.get(ty_id)?;
+        let ty = &*items.get(ty_id);
         Ok(match &ty.inner {
             TypeInner::Primitive(pt) => Self::Scalar(ScalarValue::from_toml(value, *pt)?),
             TypeInner::Vec(v) => {
-                let inner_ty = &*items.get(*v)?;
+                let inner_ty = &*items.get(*v);
                 let inner_ty = inner_ty.inner.as_primitive().with_context(|| {
                     format!("Expected primitive type, got {:?}", inner_ty.inner)
                 })?;
@@ -252,7 +252,7 @@ impl Value {
                 )
             }
             TypeInner::Option(o) => {
-                let inner_ty = &*items.get(*o)?;
+                let inner_ty = &*items.get(*o);
                 let inner_ty = inner_ty.inner.as_primitive().with_context(|| {
                     format!("Expected primitive type, got {:?}", inner_ty.inner)
                 })?;
@@ -473,7 +473,7 @@ mod tests {
             }),
         ));
 
-        let root_scope = items.get(root_scope).unwrap();
+        let root_scope = items.get(root_scope);
 
         let bool_type = *root_scope
             .types

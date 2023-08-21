@@ -183,7 +183,7 @@ pub async fn start(
             .map(|&id| (id, true))
             .collect::<HashMap<_, _>>();
         for &package_id in &queue {
-            let package = semantic.items.get(package_id).unwrap();
+            let package = semantic.items.get(package_id);
 
             for dependency in package.dependencies.values() {
                 package_id_to_enabled.insert(dependency.id, dependency.enabled);

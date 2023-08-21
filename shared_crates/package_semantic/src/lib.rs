@@ -129,13 +129,13 @@ impl Semantic {
             .await?;
 
         {
-            let mut scope = self.items.get_mut(scope_id)?;
+            let mut scope = self.items.get_mut(scope_id);
 
             // If this is not the Ambient package, import the Ambient package
             if !matches!(retrievable_manifest, RetrievableFile::Ambient(_)) {
                 scope.imports.insert(
                     self.items
-                        .get(self.ambient_package_id)?
+                        .get(self.ambient_package_id)
                         .data()
                         .id
                         .as_snake()?
@@ -182,8 +182,6 @@ impl Semantic {
         }
 
         for package_id in self.packages.values().copied() {
-            println!("resolving {}", self.items.get(package_id)?.data().id);
-
             self.items.resolve_clone(
                 &Context::new(self.root_scope_id),
                 &self.standard_definitions,
@@ -195,7 +193,7 @@ impl Semantic {
     }
 
     pub fn root_scope(&self) -> Ref<'_, Scope> {
-        self.items.get(self.root_scope_id).unwrap()
+        self.items.get(self.root_scope_id)
     }
 
     pub fn get_scope_id_by_name(&self, name: &SnakeCaseIdentifier) -> Option<ItemId<Scope>> {
@@ -230,10 +228,10 @@ impl Semantic {
                     include_source,
                 )
                 .await?;
-            let id = self.items.get(include_scope_id)?.data().id.clone();
+            let id = self.items.get(include_scope_id).data().id.clone();
 
             self.items
-                .get_mut(scope_id)?
+                .get_mut(scope_id)
                 .scopes
                 .insert(id.as_snake()?.clone(), include_scope_id);
         }
@@ -272,7 +270,7 @@ impl Semantic {
 
             let value = items.add(Component::from_package(make_item_data(item), component));
             items
-                .get_or_create_scope_mut(scope_id, scope_path)?
+                .get_or_create_scope_mut(scope_id, scope_path)
                 .components
                 .insert(item.as_snake()?.clone(), value);
         }
@@ -283,7 +281,7 @@ impl Semantic {
 
             let value = items.add(Concept::from_package(make_item_data(item), concept));
             items
-                .get_or_create_scope_mut(scope_id, scope_path)?
+                .get_or_create_scope_mut(scope_id, scope_path)
                 .concepts
                 .insert(item.as_snake()?.clone(), value);
         }
@@ -294,7 +292,7 @@ impl Semantic {
 
             let value = items.add(Message::from_package(make_item_data(item), message));
             items
-                .get_or_create_scope_mut(scope_id, scope_path)?
+                .get_or_create_scope_mut(scope_id, scope_path)
                 .messages
                 .insert(item.as_pascal()?.clone(), value);
         }
@@ -305,7 +303,7 @@ impl Semantic {
                 enum_ty,
             ));
             items
-                .get_mut(scope_id)?
+                .get_mut(scope_id)
                 .types
                 .insert(segment.clone(), enum_id);
         }
@@ -360,7 +358,7 @@ pub fn create_root_scope(
             TypeInner::Primitive(pt),
         );
         let item_id = items.add(ty);
-        items.get_mut(root_scope)?.types.insert(id, item_id);
+        items.get_mut(root_scope).types.insert(id, item_id);
     }
 
     fn make_attribute(
@@ -378,7 +376,7 @@ pub fn create_root_scope(
                 source: ItemSource::System,
             },
         });
-        items.get_mut(root_scope)?.attributes.insert(id, item_id);
+        items.get_mut(root_scope).attributes.insert(id, item_id);
         Ok(item_id)
     }
 

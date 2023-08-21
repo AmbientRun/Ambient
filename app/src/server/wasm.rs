@@ -50,7 +50,7 @@ pub fn instantiate_package(
         let (package_name, package_enabled, build_metadata) = {
             let semantic = ambient_package_semantic_native::world_semantic(world);
             let semantic = semantic.lock().unwrap();
-            let scope = semantic.items.get(package_id)?;
+            let scope = semantic.items.get(package_id);
 
             (
                 scope.data.id.to_string(),

@@ -26,7 +26,7 @@ pub async fn add(
             .unwrap();
 
         for id in semantic.items.scope_and_dependencies(id) {
-            let item = semantic.items.get(id)?;
+            let item = semantic.items.get(id);
             let package_id = item.data.id.to_string();
 
             package_name_to_url.insert(
@@ -51,7 +51,7 @@ fn all_defined_components(semantic: &Semantic) -> anyhow::Result<Vec<ExternalCom
 
         // First pass: add all root-level primitive types
         for type_id in root_scope.types.values() {
-            let type_ = items.get(*type_id).expect("type id not in items");
+            let type_ = items.get(*type_id);
             if let TypeInner::Primitive(pt) = type_.inner {
                 let ty = primitive_type_to_primitive_component_type(pt);
                 type_map.insert(*type_id, ty);
@@ -62,11 +62,11 @@ fn all_defined_components(semantic: &Semantic) -> anyhow::Result<Vec<ExternalCom
 
         // Second pass: traverse the type graph and add all enums
         for package_id in semantic.packages.values() {
-            let package = items.get(*package_id)?;
-            let scope = items.get(package.scope_id)?;
+            let package = items.get(*package_id);
+            let scope = items.get(package.scope_id);
             scope.visit_recursive(items, |scope| {
                 for type_id in scope.types.values() {
-                    let type_ = items.get(*type_id).expect("type id not in items");
+                    let type_ = items.get(*type_id);
                     if let TypeInner::Enum { .. } = type_.inner {
                         type_map.insert(*type_id, PrimitiveComponentType::U32);
                     }
@@ -80,11 +80,11 @@ fn all_defined_components(semantic: &Semantic) -> anyhow::Result<Vec<ExternalCom
 
     let mut components = vec![];
     for package_id in semantic.packages.values() {
-        let package = items.get(*package_id)?;
-        let scope = items.get(package.scope_id)?;
+        let package = items.get(*package_id);
+        let scope = items.get(package.scope_id);
         scope.visit_recursive(items, |scope| {
             for id in scope.components.values().copied() {
-                let component = items.get(id)?;
+                let component = items.get(id);
 
                 if component.data.source != ItemSource::User {
                     continue;
@@ -99,7 +99,7 @@ fn all_defined_components(semantic: &Semantic) -> anyhow::Result<Vec<ExternalCom
                                 "attribute id {:?} not resolved in component {:?}",
                                 id, component
                             )
-                        }))?;
+                        }));
                         Ok(attr.data().id.to_string())
                     })
                     .collect::<anyhow::Result<_>>()?;

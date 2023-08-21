@@ -186,7 +186,7 @@ fn generate_concept(
         .components
         .iter()
         .map(|(id, _)| {
-            let component = &*items.get(id.as_resolved().unwrap())?;
+            let component = &*items.get(id.as_resolved().unwrap());
             type_printer.get(context, items, None, component.type_.as_resolved().unwrap())
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
@@ -221,7 +221,7 @@ pub fn generate_component_list_doc_comment(
 
         let padding = " ".repeat(level * 2);
         for (id, value) in &concept.components {
-            let component = &*items.get(id.as_resolved().unwrap())?;
+            let component = &*items.get(id.as_resolved().unwrap());
             let component_path = items.fully_qualified_display_path(component, None, None)?;
 
             writeln!(
@@ -238,7 +238,7 @@ pub fn generate_component_list_doc_comment(
         }
         for concept_id in &concept.extends {
             let concept_id = concept_id.as_resolved().unwrap();
-            let concept = &*items.get(concept_id)?;
+            let concept = &*items.get(concept_id);
             let concept_path = items.fully_qualified_display_path(concept, None, None)?;
 
             writeln!(output, "{padding}\"{concept_path}\": {{ // Concept.")?;
@@ -302,7 +302,7 @@ fn value_to_token_stream(items: &ItemMap, value: &Value) -> anyhow::Result<Token
             None => quote! { None },
         },
         Value::Enum(id, member) => {
-            let item = &*items.get(*id)?;
+            let item = &*items.get(*id);
             let index = item
                 .inner
                 .as_enum()

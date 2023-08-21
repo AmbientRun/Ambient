@@ -53,7 +53,7 @@ pub fn generate(
                 .attributes
                 .iter()
                 .filter_map(|id| id.as_resolved())
-                .map(|id| items.get(id).unwrap().data.id.clone())
+                .map(|id| items.get(id).data.id.clone())
                 .collect();
 
             let name = component

@@ -67,27 +67,19 @@ impl ItemMap {
     /// Returns a reference to the item with the given id.
     ///
     /// Does not resolve the item.
-    pub fn get<T: Item>(&self, id: ItemId<T>) -> anyhow::Result<Ref<T>> {
-        let value = self
-            .items
-            .get(&id.0)
-            .with_context(|| format!("Item not found: {id}"))?;
-
-        Ok(Ref::map(value.borrow(), |r| T::from_item_value(r).unwrap()))
+    pub fn get<T: Item>(&self, id: ItemId<T>) -> Ref<T> {
+        Ref::map(self.items.get(&id.0).unwrap().borrow(), |r| {
+            T::from_item_value(r).unwrap()
+        })
     }
 
     /// Returns a mutable reference to the item with the given id.
     ///
     /// Does not resolve the item.
-    pub fn get_mut<T: Item>(&self, id: ItemId<T>) -> anyhow::Result<RefMut<T>> {
-        let value = self
-            .items
-            .get(&id.0)
-            .with_context(|| format!("Item not found: {id}"))?;
-
-        Ok(RefMut::map(value.borrow_mut(), |r| {
+    pub fn get_mut<T: Item>(&self, id: ItemId<T>) -> RefMut<T> {
+        RefMut::map(self.items.get(&id.0).unwrap().borrow_mut(), |r| {
             T::from_item_value_mut(r).unwrap()
-        }))
+        })
     }
 
     pub fn insert<T: Item>(&mut self, id: ItemId<T>, item: T) {
@@ -102,7 +94,7 @@ impl ItemMap {
         definitions: &StandardDefinitions,
         id: ItemId<T>,
     ) -> anyhow::Result<RefMut<T>> {
-        let mut item = self.get_mut(id)?;
+        let mut item = self.get_mut(id);
         item.resolve(self, context, definitions, id)?;
         Ok(item)
     }
@@ -114,7 +106,7 @@ impl ItemMap {
         definitions: &StandardDefinitions,
         id: ItemId<T>,
     ) -> anyhow::Result<()> {
-        let item = self.get(id)?.clone();
+        let item = self.get(id).clone();
         let new_item = item.resolve_clone(self, context, definitions, id)?;
         self.insert(id, new_item);
         Ok(())
@@ -128,7 +120,7 @@ impl ItemMap {
         self.option_items.get(&id).copied().unwrap()
     }
 
-    pub fn get_scope_id<'a>(
+    pub fn get_scope_id(
         &self,
         start_scope_id: ItemId<Scope>,
         mut path: &[SnakeCaseIdentifier],
@@ -137,14 +129,14 @@ impl ItemMap {
 
         // If the first segment corresponds to an import, use that instead
         if let Some(first_segment) = path.first() {
-            if let Some(package_id) = self.get(scope_id)?.imports.get(first_segment) {
-                scope_id = self.get(*package_id)?.scope_id;
+            if let Some(package_id) = self.get(scope_id).imports.get(first_segment) {
+                scope_id = self.get(*package_id).scope_id;
                 path = &path[1..];
             }
         }
 
         for segment in path {
-            let scope = self.get(scope_id)?;
+            let scope = self.get(scope_id);
             scope_id = scope
                 .scopes
                 .get(segment)
@@ -154,32 +146,32 @@ impl ItemMap {
         Ok(scope_id)
     }
 
-    pub fn get_scope<'a>(
+    pub fn get_scope(
         &self,
         start_scope_id: ItemId<Scope>,
         path: &[SnakeCaseIdentifier],
     ) -> anyhow::Result<Ref<Scope>> {
-        self.get(self.get_scope_id(start_scope_id, path)?)
+        Ok(self.get(self.get_scope_id(start_scope_id, path)?))
     }
 
     pub(crate) fn get_or_create_scope_mut(
         &mut self,
         start_scope_id: ItemId<Scope>,
         path: &[SnakeCaseIdentifier],
-    ) -> anyhow::Result<RefMut<Scope>> {
+    ) -> RefMut<Scope> {
         let mut scope_id = start_scope_id;
         for segment in path.iter() {
-            let existing_id = self.get(scope_id)?.scopes.get(segment).copied();
+            let existing_id = self.get(scope_id).scopes.get(segment).copied();
             scope_id = match existing_id {
                 Some(id) => id,
                 None => {
-                    let parent_scope_data = self.get(scope_id)?.data().clone();
+                    let parent_scope_data = self.get(scope_id).data().clone();
                     let new_id = self.add(Scope::new(ItemData {
                         parent_id: Some(scope_id),
                         id: segment.clone().into(),
                         ..parent_scope_data
                     }));
-                    self.get_mut(scope_id)?
+                    self.get_mut(scope_id)
                         .scopes
                         .insert(segment.clone(), new_id);
                     new_id
@@ -213,7 +205,7 @@ impl ItemMap {
                 }
             }
 
-            let parent = self.get(this_parent_id)?;
+            let parent = self.get(this_parent_id);
             let id = parent.data().id.to_string();
             if !id.is_empty() {
                 path.push(id);
@@ -252,17 +244,12 @@ impl ItemMap {
     pub fn scope_and_dependencies(&self, id: ItemId<Package>) -> Vec<ItemId<Package>> {
         impl TopologicalSortable<ItemMap> for ItemId<Package> {
             fn dependencies(&self, items: &ItemMap) -> Vec<Self> {
-                items
-                    .get(*self)
-                    .unwrap()
-                    .dependencies
-                    .values()
-                    .map(|d| d.id)
-                    .collect()
+                let item = items.get(*self);
+                item.dependencies.values().map(|d| d.id).collect()
             }
 
             fn id(&self, items: &ItemMap) -> String {
-                items.get(*self).unwrap().data.id.to_string()
+                items.get(*self).data.id.to_string()
             }
         }
 
