@@ -171,13 +171,13 @@ impl RuntimeHandle {
 }
 
 #[must_use = "Futures do nothing if not polled"]
-pub struct PlatformBoxFuture<T>(platform::task::PlatformBoxFutureImpl<T>);
+pub struct PlatformBoxFuture<'a, T>(platform::task::PlatformBoxFutureImpl<'a, T>);
 
-impl<T> PlatformBoxFuture<T> {
+impl<'a, T> PlatformBoxFuture<'a, T> {
     #[cfg(target_os = "unknown")]
     pub fn new<F>(future: F) -> Self
     where
-        F: 'static + Future<Output = T>,
+        F: 'a + Future<Output = T>,
     {
         Self(platform::task::PlatformBoxFutureImpl::from_boxed(Box::pin(
             future,
@@ -187,7 +187,7 @@ impl<T> PlatformBoxFuture<T> {
     #[cfg(not(target_os = "unknown"))]
     pub fn new<F>(future: F) -> Self
     where
-        F: 'static + Future<Output = T> + Send,
+        F: 'a + Future<Output = T> + Send,
     {
         Self(platform::task::PlatformBoxFutureImpl::from_boxed(Box::pin(
             future,
@@ -197,18 +197,18 @@ impl<T> PlatformBoxFuture<T> {
     #[cfg(target_os = "unknown")]
     /// Convert this into a thread local future for [`wasm_bindgen_futures::spawn_local`] or
     /// [`tokio::LocalSet`].
-    pub fn into_local(self) -> futures::future::LocalBoxFuture<'static, T> {
+    pub fn into_local(self) -> futures::future::LocalBoxFuture<'a, T> {
         self.0.into_local()
     }
 
     #[cfg(not(target_os = "unknown"))]
     /// Convert into a sendable future, sutable for [`tokio::spawn`].
-    pub fn into_shared(self) -> futures::future::BoxFuture<'static, T> {
+    pub fn into_shared(self) -> futures::future::BoxFuture<'a, T> {
         self.0.into_shared()
     }
 }
 
-impl<T> Future for PlatformBoxFuture<T> {
+impl<'a, T> Future for PlatformBoxFuture<'a, T> {
     type Output = T;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Self::Output> {

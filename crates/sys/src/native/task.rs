@@ -148,20 +148,20 @@ impl From<tokio::runtime::Handle> for crate::task::RuntimeHandle {
     }
 }
 
-pub(crate) struct PlatformBoxFutureImpl<T>(Pin<Box<dyn Future<Output = T> + Send>>);
+pub(crate) struct PlatformBoxFutureImpl<'a, T>(Pin<Box<dyn Future<Output = T> + Send + 'a>>);
 
-impl<T> PlatformBoxFutureImpl<T> {
-    pub fn from_boxed(fut: Pin<Box<dyn Future<Output = T> + Send>>) -> Self {
+impl<'a, T> PlatformBoxFutureImpl<'a, T> {
+    pub fn from_boxed(fut: Pin<Box<dyn Future<Output = T> + Send + 'a>>) -> Self {
         Self(fut)
     }
 
     #[inline]
-    pub fn into_shared(self) -> Pin<Box<dyn Future<Output = T> + Send>> {
+    pub fn into_shared(self) -> Pin<Box<dyn Future<Output = T> + Send + 'a>> {
         self.0
     }
 }
 
-impl<T> Future for PlatformBoxFutureImpl<T> {
+impl<'a, T> Future for PlatformBoxFutureImpl<'a, T> {
     type Output = T;
 
     #[inline]

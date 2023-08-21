@@ -48,12 +48,20 @@ pub type PlatformSendStream = crate::webtransport::SendStream;
 pub type PlatformRecvStream = crate::webtransport::RecvStream;
 
 type BiStreamHandler = Arc<
-    dyn Fn(&mut World, AssetCache, PlatformSendStream, PlatformRecvStream) -> PlatformBoxFuture<()>
+    dyn Fn(
+            &mut World,
+            AssetCache,
+            PlatformSendStream,
+            PlatformRecvStream,
+        ) -> PlatformBoxFuture<'static, ()>
         + Sync
         + Send,
 >;
-type UniStreamHandler =
-    Arc<dyn Fn(&mut World, AssetCache, PlatformRecvStream) -> PlatformBoxFuture<()> + Sync + Send>;
+type UniStreamHandler = Arc<
+    dyn Fn(&mut World, AssetCache, PlatformRecvStream) -> PlatformBoxFuture<'static, ()>
+        + Sync
+        + Send,
+>;
 type DatagramHandler = Arc<dyn Fn(&mut World, AssetCache, Bytes) + Sync + Send>;
 
 pub type BiStreamHandlers = HashMap<u32, (&'static str, BiStreamHandler)>;

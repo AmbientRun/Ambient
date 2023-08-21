@@ -44,7 +44,7 @@ fn on_bistream(
     _asset_cache: AssetCache,
     _send_stream: PlatformSendStream,
     _recv_stream: PlatformRecvStream,
-) -> PlatformBoxFuture<()> {
+) -> PlatformBoxFuture<'static, ()> {
     unimplemented!("Bistreams are not supported");
 }
 
@@ -52,7 +52,7 @@ fn on_unistream(
     world: &mut World,
     _asset_cache: AssetCache,
     mut recv_stream: PlatformRecvStream,
-) -> PlatformBoxFuture<()> {
+) -> PlatformBoxFuture<'static, ()> {
     // Reads an incoming unistream and dispatches to WASM
     let async_run = world.resource(async_run()).clone();
     PlatformBoxFuture::new(async move {
