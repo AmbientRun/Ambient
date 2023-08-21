@@ -18,7 +18,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use packages::afps_zombie::{assets, components};
+use packages::this::{assets, components};
 
 #[main]
 pub async fn main() {

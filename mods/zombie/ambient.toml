@@ -1,6 +1,7 @@
 [package]
 id = "afps_zombie"
 name = "AFPS Zombie"
+version = "0.0.1"
 
 [components]
 is_zombie = { type = "Empty", attributes = ["Networked", "Debuggable"] }

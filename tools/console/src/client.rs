@@ -11,8 +11,8 @@ use ambient_api::{
 use shared::*;
 
 use packages::{
-    console::messages::{ConsoleServerInput, ConsoleServerOutput},
     input_schema::messages::{ReleaseInput, RequestInput},
+    this::messages::{ConsoleServerInput, ConsoleServerOutput},
 };
 
 mod shared;

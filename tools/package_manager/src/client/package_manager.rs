@@ -11,8 +11,8 @@ use ambient_api::{
     ui::ImageFromUrl,
 };
 
-use crate::packages::package_manager::{
-    self,
+use crate::packages::this::{
+    assets,
     messages::{WasmReload, WasmSetEnabled},
 };
 
@@ -105,7 +105,7 @@ fn PackageManagerInner(hooks: &mut Hooks) -> Element {
 
         FlowRow::el([
             ImageFromUrl {
-                url: package_manager::assets::url("construction.png"),
+                url: assets::url("construction.png"),
             }
             .el()
             .with(width(), 48.0)

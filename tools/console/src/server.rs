@@ -3,7 +3,7 @@ use ambient_api::prelude::*;
 use shared::*;
 mod shared;
 
-use packages::console::messages::{ConsoleServerInput, ConsoleServerOutput};
+use packages::this::messages::{ConsoleServerInput, ConsoleServerOutput};
 
 #[main]
 pub async fn main() {

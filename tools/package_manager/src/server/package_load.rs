@@ -1,7 +1,7 @@
 use ambient_api::{anyhow, core::wasm::components::bytecode_from_url, prelude::*};
 use serde::{de::DeserializeOwned, Deserialize};
 
-use crate::packages::package_manager::messages::{
+use crate::packages::this::messages::{
     ErrorMessage, PackageLoad, PackageLoadSuccess, WasmReplaceBytecodeUrl,
 };
 
@@ -19,11 +19,7 @@ pub fn main() {
                         id: package.id.to_string(),
                         name: package.name.clone(),
                         authors: package.authors.clone(),
-                        version: package
-                            .version
-                            .as_ref()
-                            .map(|v| v.to_string())
-                            .unwrap_or_default(),
+                        version: package.version.to_string(),
                         client_wasms: metadata
                             .client_component_paths
                             .into_iter()

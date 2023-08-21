@@ -8,10 +8,10 @@ use ambient_api::{
     prelude::*,
 };
 use packages::{
-    afps_fpsanim::{assets, components},
     afps_schema::components::{
         player_direction, player_health, player_jumping, player_model_ref, player_running,
     },
+    this::{assets, components},
 };
 
 fn calculate_blend_from_weight(weights: &[f32]) -> Vec<f32> {

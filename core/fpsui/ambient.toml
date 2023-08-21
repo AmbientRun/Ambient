@@ -1,6 +1,7 @@
 [package]
 id = "afps_fpsui"
 name = "AFPS UI"
+version = "0.0.1"
 
 [dependencies]
 input_schema = { path = "../../schema/input" }

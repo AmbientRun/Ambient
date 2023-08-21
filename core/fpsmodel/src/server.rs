@@ -20,8 +20,8 @@ use ambient_api::{
 };
 
 use packages::{
-    afps_fpsmodel::assets,
     afps_schema::components::{player_cam_ref, player_model_ref, player_name, player_zoomed},
+    this::assets,
 };
 
 #[main]
