@@ -61,7 +61,7 @@ pub async fn build(
     while let Some(package_id) = queue.pop() {
         let id = {
             let package = semantic.items.get(package_id);
-            if package.source.is_remote() {
+            if package.source.as_remote_url().is_some() {
                 continue;
             }
             package.data.id.clone()

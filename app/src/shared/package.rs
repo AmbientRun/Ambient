@@ -25,13 +25,19 @@ pub async fn add(
             .unwrap();
 
         for id in semantic.items.scope_and_dependencies(id) {
-            let item = semantic.items.get(id);
-            let package_id = item.data.id.to_string();
+            let package = semantic.items.get(id);
+            let package_id = package.data.id.to_string();
 
-            package_name_to_url.insert(
-                package_id.clone(),
-                AbsAssetUrl::from_asset_key(package_id)?.0.to_string(),
-            );
+            // HACK: assume that any local urls are in the build directory.
+            // I think this should generally be true, but something to watch out for.
+            let asset_url = if let Some(url) = package.source.as_remote_url() {
+                // Remove the manifest from the URL
+                url.join("./")?
+            } else {
+                AbsAssetUrl::from_asset_key(&package_id)?.0
+            };
+
+            package_name_to_url.insert(package_id.clone(), asset_url.to_string());
         }
     }
 
