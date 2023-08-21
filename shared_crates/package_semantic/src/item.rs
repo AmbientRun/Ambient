@@ -189,7 +189,7 @@ impl ItemMap {
         (type_prefix, source_suffix): (bool, bool),
         relative_to: Option<ItemId<Scope>>,
         item_prefix: Option<&str>,
-    ) -> anyhow::Result<String> {
+    ) -> String {
         let data = item.data();
 
         let mut path = vec![format!(
@@ -219,7 +219,7 @@ impl ItemMap {
         } else {
             "".to_string()
         };
-        Ok(format!(
+        format!(
             "{}{}{}",
             prefix,
             path.join(separator),
@@ -228,7 +228,7 @@ impl ItemMap {
             } else {
                 "".to_string()
             }
-        ))
+        )
     }
 
     pub fn fully_qualified_display_path<T: Item>(
@@ -236,7 +236,7 @@ impl ItemMap {
         item: &T,
         relative_to: Option<ItemId<Scope>>,
         item_prefix: Option<&str>,
-    ) -> anyhow::Result<String> {
+    ) -> String {
         self.fully_qualified_display_path_impl(item, "::", (false, false), relative_to, item_prefix)
     }
 

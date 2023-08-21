@@ -15,7 +15,7 @@ pub fn generate_init(
             root_scope.visit_recursive(items, |scope| {
                 if !scope.components.is_empty() {
                     namespaces.push(syn::parse_str::<syn::Path>(
-                        &items.fully_qualified_display_path(scope, None, None)?,
+                        &items.fully_qualified_display_path(scope, None, None),
                     )?);
                 }
                 Ok(())
@@ -96,8 +96,7 @@ pub fn generate(
                     })
                 }
                 Context::GuestApi | Context::GuestUser => {
-                    let component_id =
-                        items.fully_qualified_display_path(&*component, None, None)?;
+                    let component_id = items.fully_qualified_display_path(&*component, None, None);
                     let ident = make_path(id.as_str());
                     let uppercase_ident = make_path(&id.as_str().to_uppercase());
 
@@ -123,7 +122,7 @@ pub fn generate(
     }
     let inner = match context {
         Context::Host => {
-            let namespace_path = items.fully_qualified_display_path(scope, None, None)?;
+            let namespace_path = items.fully_qualified_display_path(scope, None, None);
             // lazy hack to get ambient_core components to work
             let namespace_path = namespace_path.strip_prefix("ambient_core::").unwrap();
             quote! {

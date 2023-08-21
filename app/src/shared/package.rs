@@ -105,7 +105,7 @@ fn all_defined_components(semantic: &Semantic) -> anyhow::Result<Vec<ExternalCom
                     .collect::<anyhow::Result<_>>()?;
 
                 components.push(ExternalComponentDesc {
-                    path: items.fully_qualified_display_path(&*component, None, None)?,
+                    path: items.fully_qualified_display_path(&*component, None, None),
                     ty: type_map[&component.type_.as_resolved().unwrap_or_else(|| {
                         panic!(
                             "type id {:?} not resolved in component {:?}",

@@ -56,7 +56,7 @@ impl Context {
         };
         let prefix = format!("{type_namespace}{}", prefix.unwrap_or_default());
         let path =
-            make_path(&items.fully_qualified_display_path(&*item, None, Some(prefix.as_str()))?);
+            make_path(&items.fully_qualified_display_path(&*item, None, Some(prefix.as_str())));
 
         Ok(quote! { #path_prefix #path })
     }

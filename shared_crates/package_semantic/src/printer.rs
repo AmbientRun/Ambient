@@ -34,7 +34,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, package)?
+            fully_qualified_display_path_ambient_style(items, package)
         );
 
         self.with_indent(|p| {
@@ -53,7 +53,7 @@ impl Printer {
                         fully_qualified_display_path_ambient_style(
                             items,
                             &*items.get(dependency.id)
-                        )?,
+                        ),
                         dependency.enabled
                     );
                 }
@@ -72,7 +72,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, scope)?
+            fully_qualified_display_path_ambient_style(items, scope)
         );
 
         self.with_indent(|p| {
@@ -80,10 +80,8 @@ impl Printer {
             println!("imports: ");
             p.with_indent(|p| {
                 for (import_name, package_id) in &scope.imports {
-                    let package_path = fully_qualified_display_path_ambient_style(
-                        items,
-                        &*items.get(*package_id),
-                    )?;
+                    let package_path =
+                        fully_qualified_display_path_ambient_style(items, &*items.get(*package_id));
                     p.print_indent();
                     println!("{import_name} => {package_path}");
                 }
@@ -124,7 +122,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, component)?
+            fully_qualified_display_path_ambient_style(items, component)
         );
 
         self.with_indent(|p| {
@@ -161,7 +159,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, concept)?
+            fully_qualified_display_path_ambient_style(items, concept)
         );
 
         self.with_indent(|p| {
@@ -199,7 +197,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, message)?
+            fully_qualified_display_path_ambient_style(items, message)
         );
 
         self.with_indent(|p| {
@@ -227,7 +225,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, type_)?,
+            fully_qualified_display_path_ambient_style(items, type_),
         );
         if let TypeInner::Enum(e) = &type_.inner {
             self.with_indent(|p| {
@@ -260,7 +258,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, attribute)?
+            fully_qualified_display_path_ambient_style(items, attribute)
         );
         Ok(())
     }
@@ -289,14 +287,11 @@ fn write_resolvable_id<T: Item>(
     Ok(match r {
         ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
         ResolvableItemId::Resolved(resolved) => {
-            fully_qualified_display_path_ambient_style(items, &*items.get(*resolved))?
+            fully_qualified_display_path_ambient_style(items, &*items.get(*resolved))
         }
     })
 }
 
-pub fn fully_qualified_display_path_ambient_style<T: Item>(
-    items: &ItemMap,
-    item: &T,
-) -> anyhow::Result<String> {
+pub fn fully_qualified_display_path_ambient_style<T: Item>(items: &ItemMap, item: &T) -> String {
     items.fully_qualified_display_path_impl(item, "::", (true, true), None, None)
 }
