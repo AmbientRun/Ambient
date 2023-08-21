@@ -50,8 +50,16 @@ impl RetrievableFile {
                 .to_string(),
             RetrievableFile::Path(path) => {
                 anyhow::ensure!(path.is_absolute(), "path {path:?} must be absolute");
-                let url = Url::from_file_path(path).unwrap();
-                read_file(&url).await?
+                #[cfg(target_os = "unknown")]
+                {
+                    unimplemented!("file reading is not supported on web")
+                }
+
+                #[cfg(not(target_os = "unknown"))]
+                {
+                    let url = Url::from_file_path(path).unwrap();
+                    read_file(&url).await?
+                }
             }
             RetrievableFile::Url(url) => read_file(url).await?,
         })
@@ -77,9 +85,20 @@ impl RetrievableFile {
     pub fn as_path(&self) -> Option<PathBuf> {
         match self {
             Self::Path(v) => Some(v.to_owned()),
-            Self::Url(url) => (url.scheme() == "file")
-                .then(|| url.to_file_path().ok())
-                .flatten(),
+            Self::Url(url) => {
+                #[cfg(target_os = "unknown")]
+                {
+                    let _url = url;
+                    unimplemented!("getting the path of an url is not supported on web")
+                }
+
+                #[cfg(not(target_os = "unknown"))]
+                {
+                    (url.scheme() == "file")
+                        .then(|| url.to_file_path().ok())
+                        .flatten()
+                }
+            }
 
             _ => None,
         }

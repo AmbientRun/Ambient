@@ -82,7 +82,8 @@ impl Semantic {
         Ok(semantic)
     }
 
-    #[async_recursion]
+    #[cfg_attr(not(target_os = "unknown"), async_recursion)]
+    #[cfg_attr(target_os = "unknown", async_recursion(?Send))]
     pub async fn add_package(
         &mut self,
         retrievable_manifest: RetrievableFile,
@@ -202,7 +203,8 @@ impl Semantic {
     }
 }
 impl Semantic {
-    #[async_recursion]
+    #[cfg_attr(not(target_os = "unknown"), async_recursion)]
+    #[cfg_attr(target_os = "unknown", async_recursion(?Send))]
     async fn add_scope_from_manifest_with_includes(
         &mut self,
         parent_id: Option<ItemId<Scope>>,
@@ -216,7 +218,7 @@ impl Semantic {
         for include in &includes {
             anyhow::ensure!(
                 include.extension().is_some(),
-                "include {} must have a path",
+                "include {} must have an extension",
                 include.display()
             );
 
