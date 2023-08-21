@@ -86,6 +86,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 
   - In your `ambient.toml`:
 
+    - Specifying a version is now mandatory.
     - Messages now have PascalCase IDs:
       - `messages.set_controller` -> `messages.SetController`
     - Enums are now supported; they are defined as follows, and can be used anywhere a primitive type can be used, including components and messages.

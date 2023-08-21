@@ -111,7 +111,14 @@ impl Semantic {
                     anyhow::bail!("dependency {dependency_name} has no sources specified")
                 }
                 (Some(path), _) => retrievable_manifest.parent_join(&path.join("ambient.toml"))?,
-                (_, Some(url)) => RetrievableFile::Url(url.join("ambient.toml")?),
+                (_, Some(url)) => {
+                    // ensure it is a directory
+                    let mut url = url.clone();
+                    if !url.path().ends_with('/') {
+                        url.set_path(&format!("{}/", url.path()));
+                    }
+                    RetrievableFile::Url(url.join("ambient.toml")?)
+                }
             };
 
             let dependency_id = self.add_package(source).await?;
