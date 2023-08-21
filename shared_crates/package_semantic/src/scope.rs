@@ -157,7 +157,7 @@ pub enum ContextGetError<'a> {
     NotFound { path: ItemPath<'a>, type_: ItemType },
 }
 impl ContextGetError<'_> {
-    pub fn to_owned(self) -> ContextGetOwnedError {
+    pub fn into_owned(self) -> ContextGetOwnedError {
         self.into()
     }
 }
