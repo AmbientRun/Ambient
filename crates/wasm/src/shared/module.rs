@@ -160,7 +160,8 @@ impl ModuleState {
             // Generic over send or not send, depending on the target platform.
             //
             // I know, it is hacky... but it works and is sound
-            PlatformBoxFuture::new(Self::new(&assets, args, bindings))
+            let assets = assets.clone();
+            PlatformBoxFuture::new(async move { Self::new(&assets, args, bindings).await })
         })
     }
 }
@@ -317,7 +318,7 @@ mod miri_is_going_to_scream {
     /// to begin with, so might as well use the `thread-local` specific containers.
     ///
     /// However, as much as I would like to adhere to soundness, this causes immense problems when
-    /// we need to store an ignited ember inside the ECS world, as the world requires Send, and is
+    /// we need to store an running module inside the ECS world, as the world requires Send, and is
     /// in fact both sent and synced between threads on native due to tokio tasks and channels.
     ///
     /// On `wasm32-unknown-unknown` threading is more difficult, and as such is not used pervasively
