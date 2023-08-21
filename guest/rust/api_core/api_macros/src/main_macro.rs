@@ -1,8 +1,8 @@
-use ambient_package_macro_common::{Context, ManifestSource};
+use ambient_package_macro_common::{Context, RetrievableFile};
 use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use quote::{quote, ToTokens};
 
-pub fn main(item: TokenStream, ambient_toml: ManifestSource) -> TokenStream {
+pub fn main(item: TokenStream, ambient_toml: RetrievableFile) -> TokenStream {
     let (item, parsed) = parse_function(item);
 
     let spans = Span::call_site();
@@ -17,7 +17,6 @@ pub fn main(item: TokenStream, ambient_toml: ManifestSource) -> TokenStream {
             rt.block_on(ambient_package_macro_common::generate_code(
                 Some(ambient_toml),
                 Context::GuestUser,
-                None,
             ))
         })
         .unwrap_or_else(|e| {

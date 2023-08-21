@@ -1,6 +1,6 @@
 use std::cell::Ref;
 
-use ambient_package_semantic::{Item, ItemData, ItemId, ItemMap, ItemSource, ItemType, Scope};
+use ambient_package_semantic::{Item, ItemData, ItemId, ItemMap, ItemSource, ItemType};
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -41,7 +41,6 @@ impl Context {
         &self,
         items: &ItemMap,
         prefix: Option<&str>,
-        root_scope_id: ItemId<Scope>,
         id: ItemId<T>,
     ) -> anyhow::Result<TokenStream> {
         let item = items.get(id).unwrap();
@@ -56,11 +55,8 @@ impl Context {
             ItemType::Package => "packages::",
         };
         let prefix = format!("{type_namespace}{}", prefix.unwrap_or_default());
-        let path = make_path(&items.fully_qualified_display_path(
-            &*item,
-            Some(root_scope_id),
-            Some(prefix.as_str()),
-        )?);
+        let path =
+            make_path(&items.fully_qualified_display_path(&*item, None, Some(prefix.as_str()))?);
 
         Ok(quote! { #path_prefix #path })
     }
@@ -69,7 +65,7 @@ impl Context {
         match (self, data.source) {
             (_, ItemSource::System) => quote! {},
 
-            (Context::Host, ItemSource::Ambient) => quote! { crate::generated:: },
+            (Context::Host, ItemSource::Ambient) => quote! { crate::generated::raw:: },
             (Context::GuestApi, ItemSource::Ambient) => quote! { crate:: },
 
             (Context::GuestApi | Context::Host, ItemSource::User) => {
@@ -77,7 +73,7 @@ impl Context {
             }
 
             (Context::GuestUser, ItemSource::Ambient) => quote! { ambient_api::core:: },
-            (Context::GuestUser, ItemSource::User) => quote! { crate::packages:: },
+            (Context::GuestUser, ItemSource::User) => quote! { crate::packages::raw:: },
         }
     }
 

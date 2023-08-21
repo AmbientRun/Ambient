@@ -1,9 +1,7 @@
 extern crate proc_macro;
 
-use ambient_package::ItemPathBuf;
-use ambient_package_semantic::{
-    Item, ItemId, ItemMap, RetrievableFile, Scope, Semantic, Type, TypeInner,
-};
+pub use ambient_package_semantic::RetrievableFile;
+use ambient_package_semantic::{Item, ItemId, ItemMap, Scope, Semantic, Type, TypeInner};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use std::collections::HashMap;
@@ -20,13 +18,14 @@ pub use context::Context;
 pub async fn generate_code(
     manifest: Option<RetrievableFile>,
     context: context::Context,
-    generate_from_scope_path: Option<&str>,
 ) -> anyhow::Result<TokenStream> {
     let mut semantic = Semantic::new().await?;
 
-    if let Some(manifest) = manifest {
-        semantic.add_package(manifest).await?;
-    }
+    let package_id = if let Some(manifest) = manifest {
+        Some(semantic.add_package(manifest).await?)
+    } else {
+        None
+    };
 
     semantic.resolve()?;
 
@@ -46,36 +45,57 @@ pub async fn generate_code(
         TypePrinter(map)
     };
 
-    let generate_from_scope_id =
-        generate_from_scope_path
-            .map(|id| ItemPathBuf::new(id).expect("invalid generate_from_scope_path"))
-            .map(|id| {
-                items
-                .get_scope_id(
-                    semantic.root_scope_id,
-                    id.as_path().scope_iter().expect(
-                        "invalid generate_from_scope_path: the last element must be a scope",
-                    ).cloned().collect::<Vec<_>>().as_slice(),
-                )
-                .unwrap()
+    let outputs = semantic
+        .packages
+        .values()
+        .map(|&package_id| {
+            let package = items.get(package_id)?;
+            let generate_from_scope = &*items.get(package.scope_id)?;
+
+            let generated_output = generate(context, items, &type_printer, generate_from_scope)?;
+            let components_init = components::generate_init(context, items, generate_from_scope)?;
+
+            let id = make_path(package.data.id.as_str());
+            anyhow::Ok(quote! {
+                pub mod #id {
+                    #generated_output
+                    #components_init
+                }
             })
-            .unwrap_or(semantic.root_scope_id);
-    let generate_from_scope = &*items.get(generate_from_scope_id)?;
+        })
+        .collect::<Result<Vec<_>, _>>()?;
 
-    let generated_output = generate(
-        context,
-        items,
-        &type_printer,
-        generate_from_scope_id,
-        generate_from_scope,
-    )?;
+    let imports = if let Some(package_id) = package_id {
+        let package = items.get(package_id)?;
 
-    let components_init =
-        components::generate_init(context, items, generate_from_scope_id, generate_from_scope)?;
+        let dependencies = std::iter::once(anyhow::Ok(("this", package.data.id.to_string())))
+            .chain(package.dependencies.iter().map(|(alias, dependency)| {
+                let dependency = items.get(dependency.id)?;
+                anyhow::Ok((alias.as_str(), dependency.data.id.to_string()))
+            }))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let dependencies = dependencies.into_iter().map(|(alias, raw)| {
+            let alias = make_path(alias);
+            let raw = make_path(&raw);
+            quote! {
+                pub use raw::#raw as #alias;
+            }
+        });
+
+        Some(quote! {
+            #(#dependencies)*
+        })
+    } else {
+        None
+    };
 
     let output = quote! {
-        #generated_output
-        #components_init
+        mod raw {
+            #(#outputs)*
+        }
+
+        #imports
     };
 
     let output = if context == Context::GuestUser {
@@ -97,7 +117,6 @@ fn generate(
     context: context::Context,
     items: &ItemMap,
     type_printer: &TypePrinter,
-    root_scope_id: ItemId<Scope>,
     scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
     let scopes = scope
@@ -110,7 +129,7 @@ fn generate(
             }
 
             let id = make_path(scope.data.id.as_str());
-            let inner = generate(context, items, type_printer, root_scope_id, &scope)?;
+            let inner = generate(context, items, type_printer, &scope)?;
             if inner.is_empty() {
                 return Ok(quote! {});
             }
@@ -124,9 +143,9 @@ fn generate(
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
-    let components = components::generate(context, items, type_printer, root_scope_id, scope)?;
-    let concepts = concepts::generate(context, items, type_printer, root_scope_id, scope)?;
-    let messages = messages::generate(context, items, type_printer, root_scope_id, scope)?;
+    let components = components::generate(context, items, type_printer, scope)?;
+    let concepts = concepts::generate(context, items, type_printer, scope)?;
+    let messages = messages::generate(context, items, type_printer, scope)?;
     let types = enums::generate(context, items, scope)?;
     let assets = assets::generate(context, items, scope)?;
 
@@ -152,12 +171,11 @@ impl TypePrinter {
         context: context::Context,
         items: &ItemMap,
         prefix: Option<&str>,
-        root_scope_id: ItemId<Scope>,
         id: ItemId<Type>,
     ) -> anyhow::Result<TokenStream> {
         match self.0.get(&id) {
             Some(ts) => Ok(ts.clone()),
-            None => context.get_path(items, prefix, root_scope_id, id),
+            None => context.get_path(items, prefix, id),
         }
     }
 }
