@@ -59,7 +59,13 @@ pub async fn build(
 
     let mut output_path = build_path.clone();
     while let Some(package_id) = queue.pop() {
-        let id = semantic.items.get(package_id).data.id.clone();
+        let id = {
+            let package = semantic.items.get(package_id);
+            if package.source.is_remote() {
+                continue;
+            }
+            package.data.id.clone()
+        };
         let build_path = build_path.join(id.as_str());
         build_package(
             BuildConfiguration {

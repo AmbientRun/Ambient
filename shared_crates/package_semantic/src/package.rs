@@ -103,6 +103,14 @@ impl RetrievableFile {
             _ => None,
         }
     }
+
+    pub fn is_remote(&self) -> bool {
+        match self {
+            Self::Ambient(_) => false,
+            Self::Path(_) => false,
+            Self::Url(url) => url.scheme() != "file",
+        }
+    }
 }
 #[derive(Clone, PartialEq, Debug)]
 pub struct Package {
