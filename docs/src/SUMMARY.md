@@ -40,3 +40,4 @@
 - [ECS](runtime_internals/ecs.md)
 - [Renderer](runtime_internals/renderer.md)
 - [Asset cache](runtime_internals/asset_cache.md)
+- [Guidelines](runtime_internals/guidelines.md)
