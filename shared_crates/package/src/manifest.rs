@@ -132,6 +132,11 @@ pub struct Dependency {
     #[serde(default = "return_true")]
     pub enabled: bool,
 }
+impl Dependency {
+    pub fn has_remote_dependency(&self) -> bool {
+        self.url.is_some()
+    }
+}
 
 fn return_true() -> bool {
     true
