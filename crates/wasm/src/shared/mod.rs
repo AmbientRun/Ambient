@@ -314,7 +314,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
 
     // Spawn the module on another thread to ensure that it does not block the main thread during compilation.
     // TODO: offload to thread
-    rt.spawn_local(async move {
+    let task = async move {
         // let result = run_and_catch_panics(|| {
         log::info!("Loading module: {}", name);
         let res = module_state_maker(module::ModuleStateArgs {
@@ -354,7 +354,12 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
                 Err(err) => update_errors(world, &[(id, format!("{err:?}"))]),
             }
         });
-    });
+    };
+
+    #[cfg(target_os = "unknown")]
+    rt.spawn_local(task);
+    #[cfg(not(target_os = "unknown"))]
+    rt.spawn(task);
 }
 
 fn update_errors(world: &mut World, errors: &[(EntityId, String)]) {

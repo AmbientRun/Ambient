@@ -273,7 +273,14 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
 
         shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 
-        let component = component::Component::new(engine.inner(), args.component_bytecode)?;
+        #[cfg(target_os = "unknown")]
+        // Browsers won't compile larger wasm modules synchronously to avoid locking up the browser
+        let component =
+            component::Component::new_async(engine.inner(), args.component_bytecode).await?;
+        #[cfg(not(target_os = "unknown"))]
+        let component = tokio::task::block_in_place(|| {
+            component::Component::new(engine.inner(), args.component_bytecode)?;
+        });
 
         let (guest_bindings, guest_instance) = async {
             let (guest_bindings, guest_instance) =
