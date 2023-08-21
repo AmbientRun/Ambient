@@ -42,7 +42,7 @@ pub fn init_ambient(logging: bool, panic: bool) {
 #[wasm_bindgen]
 /// Starts execution of the ambient client and connects to the specified URL
 ///
-/// TODO: The MainApp setup will move to an ember and this will only load the runtime
+/// TODO: The `MainApp` setup will move to an ember and this will only load the runtime
 pub async fn start(target: Option<web_sys::HtmlElement>, server_url: String) {
     if let Err(err) = run(target, server_url).await {
         tracing::error!("{err:?}")

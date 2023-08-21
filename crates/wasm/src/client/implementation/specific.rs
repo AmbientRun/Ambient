@@ -34,11 +34,8 @@ use crate::shared::{
 
 use ambient_core::camera::{clip_position_to_world_ray, world_to_clip_space};
 
-use wasm_bridge::async_trait;
-
-#[async_trait]
 impl wit::client_message::Host for Bindings {
-    async fn send(
+    fn send(
         &mut self,
         target: wit::client_message::Target,
         name: String,
@@ -80,9 +77,8 @@ impl wit::client_message::Host for Bindings {
         }
     }
 }
-#[async_trait]
 impl wit::client_player::Host for Bindings {
-    async fn get_local(&mut self) -> anyhow::Result<wit::types::EntityId> {
+    fn get_local(&mut self) -> anyhow::Result<wit::types::EntityId> {
         crate::shared::implementation::player::get_by_user_id(
             self.world(),
             self.world().resource(local_user_id()).clone(),
@@ -91,9 +87,8 @@ impl wit::client_player::Host for Bindings {
         .unwrap()
     }
 }
-#[async_trait]
 impl wit::client_input::Host for Bindings {
-    async fn get(&mut self) -> anyhow::Result<wit::client_input::Input> {
+    fn get(&mut self) -> anyhow::Result<wit::client_input::Input> {
         Ok(self
             .world()
             .resource(player_raw_input())
@@ -101,7 +96,7 @@ impl wit::client_input::Host for Bindings {
             .into_bindgen())
     }
 
-    async fn get_previous(&mut self) -> anyhow::Result<wit::client_input::Input> {
+    fn get_previous(&mut self) -> anyhow::Result<wit::client_input::Input> {
         Ok(self
             .world()
             .resource(player_prev_raw_input())
@@ -109,7 +104,7 @@ impl wit::client_input::Host for Bindings {
             .into_bindgen())
     }
 
-    async fn set_cursor(&mut self, icon: wit::client_input::CursorIcon) -> anyhow::Result<()> {
+    fn set_cursor(&mut self, icon: wit::client_input::CursorIcon) -> anyhow::Result<()> {
         Ok(self
             .world()
             .resource(ambient_core::window::window_ctl())
@@ -118,14 +113,14 @@ impl wit::client_input::Host for Bindings {
             ))?)
     }
 
-    async fn set_cursor_visible(&mut self, visible: bool) -> anyhow::Result<()> {
+    fn set_cursor_visible(&mut self, visible: bool) -> anyhow::Result<()> {
         Ok(self
             .world()
             .resource(ambient_core::window::window_ctl())
             .send(ambient_core::window::WindowCtl::ShowCursor(visible))?)
     }
 
-    async fn set_cursor_lock(&mut self, lock: bool) -> anyhow::Result<()> {
+    fn set_cursor_lock(&mut self, lock: bool) -> anyhow::Result<()> {
         let grab_mode = if lock {
             if cfg!(target_os = "windows") || cfg!(target_os = "linux") {
                 CursorGrabMode::Confined
@@ -144,9 +139,8 @@ impl wit::client_input::Host for Bindings {
             .send(ambient_core::window::WindowCtl::GrabCursor(grab_mode))?)
     }
 }
-#[async_trait]
 impl wit::client_camera::Host for Bindings {
-    async fn clip_position_to_world_ray(
+    fn clip_position_to_world_ray(
         &mut self,
         camera: wit::types::EntityId,
         clip_space_pos: wit::types::Vec2,
@@ -160,7 +154,7 @@ impl wit::client_camera::Host for Bindings {
         Ok(ray.into_bindgen())
     }
 
-    async fn screen_to_clip_space(
+    fn screen_to_clip_space(
         &mut self,
         screen_pos: wit::types::Vec2,
     ) -> anyhow::Result<wit::types::Vec2> {
@@ -170,7 +164,7 @@ impl wit::client_camera::Host for Bindings {
         )
     }
 
-    async fn screen_position_to_world_ray(
+    fn screen_position_to_world_ray(
         &mut self,
         camera: wit::types::EntityId,
         screen_pos: wit::types::Vec2,
@@ -182,7 +176,7 @@ impl wit::client_camera::Host for Bindings {
         Ok(ray.into_bindgen())
     }
 
-    async fn world_to_screen(
+    fn world_to_screen(
         &mut self,
         camera: wit::types::EntityId,
         world_pos: wit::types::Vec3,
@@ -196,22 +190,20 @@ impl wit::client_camera::Host for Bindings {
     }
 }
 
-#[async_trait]
 impl wit::client_clipboard::Host for Bindings {
-    async fn get(&mut self) -> anyhow::Result<Option<String>> {
+    fn get(&mut self) -> anyhow::Result<Option<String>> {
         // Ok(ambient_sys::clipboard::get().await)
         todo!()
     }
 
-    async fn set(&mut self, text: String) -> anyhow::Result<()> {
+    fn set(&mut self, text: String) -> anyhow::Result<()> {
         // ambient_sys::clipboard::set(&text).await
         todo!()
     }
 }
 
-#[async_trait]
 impl wit::client_window::Host for Bindings {
-    async fn set_fullscreen(&mut self, fullscreen: bool) -> anyhow::Result<()> {
+    fn set_fullscreen(&mut self, fullscreen: bool) -> anyhow::Result<()> {
         self.world_mut()
             .resource(window_ctl())
             .send(WindowCtl::SetFullscreen(fullscreen))?;
@@ -219,9 +211,8 @@ impl wit::client_window::Host for Bindings {
     }
 }
 
-#[async_trait]
 impl wit::client_mesh::Host for Bindings {
-    async fn create(
+    fn create(
         &mut self,
         desc: wit::client_mesh::Descriptor,
     ) -> anyhow::Result<wit::client_mesh::Handle> {
@@ -252,16 +243,15 @@ impl wit::client_mesh::Host for Bindings {
         storage.meshes.insert(mesh_handle, mesh);
         Ok(mesh_handle.into_bindgen())
     }
-    async fn destroy(&mut self, handle: wit::client_mesh::Handle) -> anyhow::Result<()> {
+    fn destroy(&mut self, handle: wit::client_mesh::Handle) -> anyhow::Result<()> {
         let world = self.world_mut();
         let storage = world.resource_mut(procedural_storage());
         storage.meshes.remove(handle.from_bindgen());
         Ok(())
     }
 }
-#[async_trait]
 impl wit::client_texture::Host for Bindings {
-    async fn create2d(
+    fn create2d(
         &mut self,
         desc: wit::client_texture::Descriptor2d,
     ) -> anyhow::Result<wit::client_texture::Handle> {
@@ -292,16 +282,15 @@ impl wit::client_texture::Host for Bindings {
         storage.textures.insert(texture_handle, texture_view);
         Ok(texture_handle.into_bindgen())
     }
-    async fn destroy(&mut self, handle: wit::client_texture::Handle) -> anyhow::Result<()> {
+    fn destroy(&mut self, handle: wit::client_texture::Handle) -> anyhow::Result<()> {
         let world = self.world_mut();
         let storage = world.resource_mut(procedural_storage());
         storage.textures.remove(handle.from_bindgen());
         Ok(())
     }
 }
-#[async_trait]
 impl wit::client_sampler::Host for Bindings {
-    async fn create(
+    fn create(
         &mut self,
         desc: wit::client_sampler::Descriptor,
     ) -> anyhow::Result<wit::client_sampler::Handle> {
@@ -322,16 +311,15 @@ impl wit::client_sampler::Host for Bindings {
         storage.samplers.insert(sampler_handle, sampler);
         Ok(sampler_handle.into_bindgen())
     }
-    async fn destroy(&mut self, handle: wit::client_sampler::Handle) -> anyhow::Result<()> {
+    fn destroy(&mut self, handle: wit::client_sampler::Handle) -> anyhow::Result<()> {
         let world = self.world_mut();
         let storage = world.resource_mut(procedural_storage());
         storage.samplers.remove(handle.from_bindgen());
         Ok(())
     }
 }
-#[async_trait]
 impl wit::client_material::Host for Bindings {
-    async fn create(
+    fn create(
         &mut self,
         desc: wit::client_material::Descriptor,
     ) -> anyhow::Result<wit::client_material::Handle> {
@@ -364,7 +352,7 @@ impl wit::client_material::Host for Bindings {
         storage.materials.insert(material_handle, material);
         Ok(material_handle.into_bindgen())
     }
-    async fn destroy(&mut self, handle: wit::client_material::Handle) -> anyhow::Result<()> {
+    fn destroy(&mut self, handle: wit::client_material::Handle) -> anyhow::Result<()> {
         let world = self.world_mut();
         let storage = world.resource_mut(procedural_storage());
         storage.materials.remove(handle.from_bindgen());
