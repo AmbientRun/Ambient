@@ -1,22 +1,24 @@
-use std::{collections::HashMap, path::Path};
+use std::collections::HashMap;
 
 use ambient_ecs::{
     ComponentRegistry, ExternalComponentAttributes, ExternalComponentDesc, PrimitiveComponentType,
     World,
 };
-use ambient_native_std::asset_url::AbsAssetUrl;
+use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use ambient_network::ServerWorldExt;
-use ambient_package::{BuildMetadata, Manifest};
 use ambient_package_semantic::{
-    Item, ItemId, ItemSource, PrimitiveType, Scope, Semantic, TypeInner,
+    Item, ItemId, ItemSource, Package, PrimitiveType, RetrievableFile, Semantic, TypeInner,
 };
 
 pub async fn add(
     world: Option<&mut World>,
+    assets: &AssetCache,
     semantic: &mut Semantic,
-    path: &Path,
-) -> anyhow::Result<ItemId<Scope>> {
-    let id = semantic.add_package(path).await?;
+    url: &AbsAssetUrl,
+) -> anyhow::Result<ItemId<Package>> {
+    let id = semantic
+        .add_package(RetrievableFile::Url(url.0.clone()))
+        .await?;
     // HACK: think about how this could be supplied in the right place
     if let Some(world) = world {
         let package_name_to_url = world
@@ -25,30 +27,15 @@ pub async fn add(
 
         for id in semantic.items.scope_and_dependencies(id) {
             let item = semantic.items.get(id)?;
-            let original_id = item.original_id.to_string();
+            let package_id = item.data.id.to_string();
 
             package_name_to_url.insert(
-                original_id.clone(),
-                AbsAssetUrl::from_asset_key(original_id)?.0.to_string(),
+                package_id.clone(),
+                AbsAssetUrl::from_asset_key(package_id)?.0.to_string(),
             );
         }
     }
 
-    finish_add(semantic, id)
-}
-
-/// HACK! Temporary to enable remote single-package deployments.
-pub async fn add_parsed_manifest(
-    semantic: &mut Semantic,
-    manifest: &Manifest,
-    build_metadata: BuildMetadata,
-) -> anyhow::Result<ItemId<Scope>> {
-    let id = semantic.add_package_manifest(manifest).await?;
-    semantic.items.get_mut(id)?.build_metadata = Some(build_metadata);
-    finish_add(semantic, id)
-}
-
-fn finish_add(semantic: &mut Semantic, id: ItemId<Scope>) -> anyhow::Result<ItemId<Scope>> {
     semantic.resolve()?;
     ComponentRegistry::get_mut().add_external(all_defined_components(semantic)?);
 
@@ -57,7 +44,7 @@ fn finish_add(semantic: &mut Semantic, id: ItemId<Scope>) -> anyhow::Result<Item
 
 fn all_defined_components(semantic: &Semantic) -> anyhow::Result<Vec<ExternalComponentDesc>> {
     let items = &semantic.items;
-    let root_scope = &semantic.root_scope();
+    let root_scope = semantic.root_scope();
 
     let type_map = {
         let mut type_map = HashMap::new();
@@ -74,59 +61,67 @@ fn all_defined_components(semantic: &Semantic) -> anyhow::Result<Vec<ExternalCom
         }
 
         // Second pass: traverse the type graph and add all enums
-        root_scope.visit_recursive(items, |scope| {
-            for type_id in scope.types.values() {
-                let type_ = items.get(*type_id).expect("type id not in items");
-                if let TypeInner::Enum { .. } = type_.inner {
-                    type_map.insert(*type_id, PrimitiveComponentType::U32);
+        for package_id in semantic.packages.values() {
+            let package = items.get(*package_id)?;
+            let scope = items.get(package.scope_id)?;
+            scope.visit_recursive(items, |scope| {
+                for type_id in scope.types.values() {
+                    let type_ = items.get(*type_id).expect("type id not in items");
+                    if let TypeInner::Enum { .. } = type_.inner {
+                        type_map.insert(*type_id, PrimitiveComponentType::U32);
+                    }
                 }
-            }
-            Ok(())
-        })?;
+                Ok(())
+            })?;
+        }
 
         type_map
     };
 
     let mut components = vec![];
-    root_scope.visit_recursive(items, |scope| {
-        for id in scope.components.values().copied() {
-            let component = items.get(id)?;
+    for package_id in semantic.packages.values() {
+        let package = items.get(*package_id)?;
+        let scope = items.get(package.scope_id)?;
+        scope.visit_recursive(items, |scope| {
+            for id in scope.components.values().copied() {
+                let component = items.get(id)?;
 
-            if component.data.source != ItemSource::User {
-                continue;
-            }
+                if component.data.source != ItemSource::User {
+                    continue;
+                }
 
-            let attributes: Vec<_> = component
-                .attributes
-                .iter()
-                .map(|id| {
-                    let attr = items.get(id.as_resolved().unwrap_or_else(|| {
+                let attributes: Vec<_> = component
+                    .attributes
+                    .iter()
+                    .map(|id| {
+                        let attr = items.get(id.as_resolved().unwrap_or_else(|| {
+                            panic!(
+                                "attribute id {:?} not resolved in component {:?}",
+                                id, component
+                            )
+                        }))?;
+                        Ok(attr.data().id.to_string())
+                    })
+                    .collect::<anyhow::Result<_>>()?;
+
+                components.push(ExternalComponentDesc {
+                    path: items.fully_qualified_display_path(&*component, None, None)?,
+                    ty: type_map[&component.type_.as_resolved().unwrap_or_else(|| {
                         panic!(
-                            "attribute id {:?} not resolved in component {:?}",
-                            id, component
+                            "type id {:?} not resolved in component {:?}",
+                            component.type_, component
                         )
-                    }))?;
-                    Ok(attr.data().id.to_string())
-                })
-                .collect::<anyhow::Result<_>>()?;
-
-            components.push(ExternalComponentDesc {
-                path: items.fully_qualified_display_path(&*component, true, None, None)?,
-                ty: type_map[&component.type_.as_resolved().unwrap_or_else(|| {
-                    panic!(
-                        "type id {:?} not resolved in component {:?}",
-                        component.type_, component
-                    )
-                })],
-                name: component.name.clone(),
-                description: component.description.clone(),
-                attributes: ExternalComponentAttributes::from_iter(
-                    attributes.iter().map(|s| s.as_str()),
-                ),
-            });
-        }
-        Ok(())
-    })?;
+                    })],
+                    name: component.name.clone(),
+                    description: component.description.clone(),
+                    attributes: ExternalComponentAttributes::from_iter(
+                        attributes.iter().map(|s| s.as_str()),
+                    ),
+                });
+            }
+            Ok(())
+        })?;
+    }
     Ok(components)
 }
 

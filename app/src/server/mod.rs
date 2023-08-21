@@ -21,7 +21,6 @@ use ambient_network::{
     native::server::{Crypto, GameServer},
     server::{ForkingEvent, ProxySettings, ShutdownEvent},
 };
-use ambient_package::BuildMetadata;
 use ambient_prefab::PrefabFromUrl;
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
@@ -162,34 +161,34 @@ pub async fn start(
             .unwrap();
 
         let mut semantic = ambient_package_semantic::Semantic::new().await.unwrap();
-        let primary_package_scope_id = match main_package_path.to_file_path().unwrap() {
-            Some(local_path) => {
-                shared::package::add(Some(&mut server_world), &mut semantic, &local_path)
-                    .await
-                    .unwrap()
-            }
-
-            None => {
-                let metadata = BuildMetadata::parse(
-                    &main_package_path
-                        .push(BuildMetadata::FILENAME)
-                        .unwrap()
-                        .download_string(&assets)
-                        .await
-                        .unwrap(),
-                )
-                .unwrap();
-
-                shared::package::add_parsed_manifest(&mut semantic, &manifest, metadata)
-                    .await
-                    .unwrap()
-            }
-        };
+        let primary_package_scope_id = shared::package::add(
+            Some(&mut server_world),
+            &assets,
+            &mut semantic,
+            &main_package_path.push("ambient.toml").unwrap(),
+        )
+        .await
+        .unwrap();
 
         let mut queue = semantic
             .items
             .scope_and_dependencies(primary_package_scope_id);
         queue.reverse();
+
+        // Use the topologically sorted queue to construct a dict of which packages should be on by default.
+        // Assume all are on by default, and then update their state based on what packages "closer to the root"
+        // state. The last element should be the root.
+        let mut package_id_to_enabled = queue
+            .iter()
+            .map(|&id| (id, true))
+            .collect::<HashMap<_, _>>();
+        for &package_id in &queue {
+            let package = semantic.items.get(package_id).unwrap();
+
+            for dependency in package.dependencies.values() {
+                package_id_to_enabled.insert(dependency.id, dependency.enabled);
+            }
+        }
 
         server_world
             .add_component(
@@ -200,7 +199,15 @@ pub async fn start(
             .unwrap();
 
         while let Some(package_id) = queue.pop() {
-            wasm::instantiate_package(&mut server_world, package_id).unwrap();
+            wasm::instantiate_package(
+                &mut server_world,
+                package_id,
+                package_id_to_enabled
+                    .get(&package_id)
+                    .copied()
+                    .unwrap_or(true),
+            )
+            .unwrap();
         }
 
         if let Some(asset_path) = view_asset_path {

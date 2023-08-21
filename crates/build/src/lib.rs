@@ -10,7 +10,7 @@ use std::{
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_native_std::{asset_url::AbsAssetUrl, AmbientVersion};
 use ambient_package::{BuildMetadata, Manifest as PackageManifest, Version};
-use ambient_package_semantic::{ItemId, Scope, Semantic};
+use ambient_package_semantic::{ItemId, Package, Semantic};
 use ambient_std::path::path_to_unix_string;
 use anyhow::Context;
 use futures::FutureExt;
@@ -32,7 +32,7 @@ pub struct BuildConfiguration<'a> {
 
 pub async fn build(
     config: BuildConfiguration<'_>,
-    root_package_id: ItemId<Scope>,
+    root_package_id: ItemId<Package>,
 ) -> anyhow::Result<PathBuf> {
     let BuildConfiguration {
         build_path,
@@ -59,7 +59,7 @@ pub async fn build(
 
     let mut output_path = build_path.clone();
     while let Some(package_id) = queue.pop() {
-        let id = semantic.items.get(package_id)?.original_id.clone();
+        let id = semantic.items.get(package_id)?.data.id.clone();
         let build_path = build_path.join(id.as_str());
         build_package(
             BuildConfiguration {
@@ -91,7 +91,7 @@ pub async fn build(
 /// ambient.toml  This is a metadata file to describe the package
 async fn build_package(
     config: BuildConfiguration<'_>,
-    package_id: ItemId<Scope>,
+    package_id: ItemId<Package>,
 ) -> anyhow::Result<()> {
     let BuildConfiguration {
         build_path,
@@ -103,16 +103,13 @@ async fn build_package(
     } = config;
 
     let (mut manifest, path) = {
-        let scope = semantic.items.get(package_id)?;
+        let package = semantic.items.get(package_id)?;
         (
-            scope
-                .manifest
-                .clone()
-                .context("the package has no manifest")?,
-            scope
-                .manifest_path
-                .as_ref()
-                .context("the package has no path")?
+            package.manifest.clone(),
+            package
+                .source
+                .as_path()
+                .context("the package has no local path")?
                 .parent()
                 .context("the package path has no parent")?
                 .to_owned(),
@@ -168,20 +165,18 @@ async fn build_package(
     // Bodge: for local builds, rewrite the dependencies to be relative to this package,
     // assuming that they are all in the same folder
     {
-        let scope = semantic.items.get(package_id)?;
-        let orig_name_to_dep = scope
+        let package = semantic.items.get(package_id)?;
+        let alias_to_dependency = package
             .dependencies
             .iter()
-            .copied()
-            .map(|d| anyhow::Ok((semantic.items.get(d)?.data.id.as_snake()?.to_owned(), d)))
+            .map(|(id, dep)| anyhow::Ok((id.clone(), semantic.items.get(dep.id)?.data.id.clone())))
             .collect::<Result<HashMap<_, _>, _>>()?;
 
-        for (orig_name, dep) in manifest.dependencies.iter_mut() {
-            let ambient_package::Dependency { path, .. } = dep;
+        for (alias, dependency) in manifest.dependencies.iter_mut() {
+            let ambient_package::Dependency { path, .. } = dependency;
 
-            if let Some(orig_dep) = orig_name_to_dep.get(orig_name) {
-                let dep_scope = semantic.items.get(*orig_dep)?;
-                *path = Path::new("..").join(dep_scope.original_id.as_str());
+            if let Some(original_dependency_name) = alias_to_dependency.get(alias) {
+                *path = Some(Path::new("..").join(original_dependency_name.as_str()));
             }
         }
     }

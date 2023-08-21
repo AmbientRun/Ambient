@@ -182,6 +182,8 @@ impl Semantic {
         }
 
         for package_id in self.packages.values().copied() {
+            println!("resolving {}", self.items.get(package_id)?.data().id);
+
             self.items.resolve_clone(
                 &Context::new(self.root_scope_id),
                 &self.standard_definitions,

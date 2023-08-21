@@ -185,6 +185,8 @@ impl AbsAssetUrl {
         Ok(AbsAssetUrl(self.as_directory().0.join(path.as_ref())?))
     }
     /// This joins the current url with a relative path. See <https://docs.rs/url/latest/url/struct.Url.html#method.join> for details on how it works
+    ///
+    /// Note that if this url does *not* end in a slash, the last segment of this path will be replaced! That is, url(a/b/c).join("lol.png") will become url(a/b/lol.png).
     pub fn join(&self, path: impl AsRef<str>) -> Result<Self, ParseError> {
         Ok(AbsAssetUrl(self.0.join(path.as_ref())?))
     }

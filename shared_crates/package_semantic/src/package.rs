@@ -73,6 +73,17 @@ impl RetrievableFile {
             }
         })
     }
+
+    pub fn as_path(&self) -> Option<PathBuf> {
+        match self {
+            Self::Path(v) => Some(v.to_owned()),
+            Self::Url(url) => (url.scheme() == "file")
+                .then(|| url.to_file_path().ok())
+                .flatten(),
+
+            _ => None,
+        }
+    }
 }
 #[derive(Clone, PartialEq, Debug)]
 pub struct Package {
