@@ -2,7 +2,7 @@ use ambient_api::{
     core::{messages::Frame, physics::components::linear_velocity},
     prelude::*,
 };
-use packages::ambient_example_minigolf::{
+use packages::this::{
     assets,
     messages::{Bonk, Hit, Input},
 };

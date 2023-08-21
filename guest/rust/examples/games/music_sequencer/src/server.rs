@@ -6,7 +6,7 @@ use ambient_api::{
     entity::{resources, synchronized_resources},
     prelude::*,
 };
-use packages::ambient_example_music_sequencer::{
+use packages::this::{
     assets,
     components::{bpm, next_player_hue, player_hue, track, track_audio_url, track_note_selection},
     messages::{Click, SetBpm},

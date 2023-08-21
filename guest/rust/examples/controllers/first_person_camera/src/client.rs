@@ -2,7 +2,7 @@ use ambient_api::{
     core::{layout::components::space_between_items, messages::Frame},
     prelude::*,
 };
-use packages::ambient_example_first_person_camera::{
+use packages::this::{
     assets,
     components::{ball_ref, player_head_ref},
     messages::Input,

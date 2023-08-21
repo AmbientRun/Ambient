@@ -27,7 +27,7 @@ use ambient_api::{
     entity::resources,
     prelude::*,
 };
-use packages::ambient_example_minigolf::{
+use packages::this::{
     assets,
     components::{
         is_ball, next_player_hue, origin, player_ball, player_camera_state, player_color,

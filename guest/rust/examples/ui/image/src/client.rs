@@ -9,7 +9,7 @@ use ambient_api::{
     prelude::*,
     ui::ImageFromUrl,
 };
-use packages::ambient_example_image::assets;
+use packages::this::assets;
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
