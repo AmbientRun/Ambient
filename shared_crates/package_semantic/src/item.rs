@@ -1,18 +1,31 @@
-use ambient_package::{Identifier, PascalCaseIdentifier, SnakeCaseIdentifier};
-use ambient_std::topological_sort::{topological_sort, TopologicalSortable};
-use ulid::Ulid;
-
-use crate::{
-    Attribute, Component, Concept, Context, Message, Package, Scope, StandardDefinitions, Type,
-    TypeInner,
-};
-use anyhow::Context as AnyhowContext;
 use std::{
     cell::{Ref, RefCell, RefMut},
     collections::HashMap,
     fmt::{self, Debug, Display},
     marker::PhantomData,
 };
+
+use ambient_package::{Identifier, PascalCaseIdentifier, SnakeCaseIdentifier};
+use ambient_std::topological_sort::{topological_sort, TopologicalSortable};
+use thiserror::Error;
+use ulid::Ulid;
+
+use crate::{
+    Attribute, Component, Concept, Context, Message, Package, Scope, StandardDefinitions, Type,
+    TypeInner,
+};
+
+#[derive(Error, Debug)]
+pub enum GetScopeError {
+    #[error(
+        "failed to find scope `{segment}` in scope `{scope_path}` while searching for `{path:?}`"
+    )]
+    NotFound {
+        segment: SnakeCaseIdentifier,
+        scope_path: String,
+        path: Vec<SnakeCaseIdentifier>,
+    },
+}
 
 #[derive(Clone, PartialEq, Debug, Default)]
 pub struct ItemMap {
@@ -124,7 +137,7 @@ impl ItemMap {
         &self,
         start_scope_id: ItemId<Scope>,
         mut path: &[SnakeCaseIdentifier],
-    ) -> anyhow::Result<ItemId<Scope>> {
+    ) -> Result<ItemId<Scope>, GetScopeError> {
         let mut scope_id = start_scope_id;
 
         // If the first segment corresponds to an import, use that instead
@@ -137,11 +150,16 @@ impl ItemMap {
 
         for segment in path {
             let scope = self.get(scope_id);
-            scope_id = scope
-                .scopes
-                .get(segment)
-                .copied()
-                .with_context(|| format!("failed to find scope {segment} in {scope_id}"))?
+            scope_id =
+                scope
+                    .scopes
+                    .get(segment)
+                    .copied()
+                    .ok_or_else(|| GetScopeError::NotFound {
+                        segment: segment.clone(),
+                        scope_path: self.fully_qualified_display_path(&*scope, None, None),
+                        path: path.to_vec(),
+                    })?;
         }
         Ok(scope_id)
     }

@@ -163,7 +163,6 @@ pub async fn start(
         let mut semantic = ambient_package_semantic::Semantic::new().await.unwrap();
         let primary_package_scope_id = shared::package::add(
             Some(&mut server_world),
-            &assets,
             &mut semantic,
             &main_package_path.push("ambient.toml").unwrap(),
         )

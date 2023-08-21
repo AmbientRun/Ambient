@@ -457,7 +457,6 @@ dependencies = [
 name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
- "anyhow",
  "convert_case",
  "indexmap 2.0.0",
  "once_cell",

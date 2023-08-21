@@ -8,6 +8,7 @@ use once_cell::sync::Lazy;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, TokenStreamExt};
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// A path to an item (non-owning). Always non-empty.
@@ -107,6 +108,27 @@ impl<'a> ItemPath<'a> {
     }
 }
 
+#[derive(Error, Debug, PartialEq, Eq)]
+pub enum ItemPathBufConstructionError {
+    #[error("an identifier path must not be empty")]
+    Empty,
+    #[error("the item identifier {identifier} is not snake_case or PascalCase")]
+    ItemNotSnakeOrPascalCase { identifier: String },
+    #[error("one of the identifiers in the scope was not snake_case: {reason}")]
+    ScopeNotSnakeCase { reason: String },
+}
+impl From<IdentifierConstructionError<'_>> for ItemPathBufConstructionError {
+    fn from(e: IdentifierConstructionError<'_>) -> Self {
+        match e {
+            IdentifierConstructionError::NotSnakeOrPascalCase { identifier } => {
+                Self::ItemNotSnakeOrPascalCase {
+                    identifier: identifier.to_string(),
+                }
+            }
+        }
+    }
+}
+
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// A path to an item (owning). Always non-empty.
 pub struct ItemPathBuf {
@@ -158,14 +180,14 @@ impl From<Identifier> for ItemPathBuf {
     }
 }
 impl ItemPathBuf {
-    pub fn new(path: impl Into<String>) -> Result<Self, &'static str> {
+    pub fn new(path: impl Into<String>) -> Result<Self, ItemPathBufConstructionError> {
         Self::new_impl(path.into())
     }
 
-    fn new_impl(path: String) -> Result<Self, &'static str> {
+    fn new_impl(path: String) -> Result<Self, ItemPathBufConstructionError> {
         let segments: Vec<_> = path.split("::").filter(|s| !s.is_empty()).collect();
         if segments.is_empty() {
-            return Err("an identifier path must not be empty");
+            return Err(ItemPathBufConstructionError::Empty);
         }
 
         let scope = segments
@@ -173,7 +195,10 @@ impl ItemPathBuf {
             .copied()
             .take(segments.len() - 1)
             .map(SnakeCaseIdentifier::new)
-            .collect::<Result<_, _>>()?;
+            .collect::<Result<_, _>>()
+            .map_err(|e| ItemPathBufConstructionError::ScopeNotSnakeCase {
+                reason: e.to_string(),
+            })?;
         let item = Identifier::new(segments.last().unwrap())?;
 
         Ok(Self { scope, item })
@@ -183,6 +208,44 @@ impl ItemPathBuf {
         ItemPath {
             scope: &self.scope,
             item: &self.item,
+        }
+    }
+}
+
+#[derive(Error, Debug)]
+pub enum IdentifierConstructionError<'a> {
+    #[error("the identifier {identifier} is not snake_case or PascalCase")]
+    NotSnakeOrPascalCase { identifier: &'a str },
+}
+
+#[derive(Error, Debug)]
+pub enum IdentifierCaseError<'a> {
+    #[error("the identifier {identifier} is not snake_case")]
+    NotSnakeCase { identifier: &'a Identifier },
+    #[error("the identifier {identifier} is not PascalCase")]
+    NotPascalCase { identifier: &'a Identifier },
+}
+impl IdentifierCaseError<'_> {
+    pub fn to_owned(self) -> IdentifierCaseOwnedError {
+        self.into()
+    }
+}
+#[derive(Error, Debug)]
+pub enum IdentifierCaseOwnedError {
+    #[error("the identifier {identifier} is not snake_case")]
+    NotSnakeCase { identifier: Identifier },
+    #[error("the identifier {identifier} is not PascalCase")]
+    NotPascalCase { identifier: Identifier },
+}
+impl From<IdentifierCaseError<'_>> for IdentifierCaseOwnedError {
+    fn from(value: IdentifierCaseError<'_>) -> Self {
+        match value {
+            IdentifierCaseError::NotSnakeCase { identifier } => Self::NotSnakeCase {
+                identifier: identifier.to_owned(),
+            },
+            IdentifierCaseError::NotPascalCase { identifier } => Self::NotPascalCase {
+                identifier: identifier.to_owned(),
+            },
         }
     }
 }
@@ -203,14 +266,14 @@ impl From<PascalCaseIdentifier> for Identifier {
     }
 }
 impl Identifier {
-    pub fn new(id: &str) -> Result<Self, &'static str> {
+    pub fn new(id: &str) -> Result<Self, IdentifierConstructionError> {
         if let Ok(id) = SnakeCaseIdentifier::new(id) {
             return Ok(Self::Snake(id));
         }
         if let Ok(id) = PascalCaseIdentifier::new(id) {
             return Ok(Self::Pascal(id));
         }
-        Err("identifier must be snake-case or PascalCase ASCII")
+        Err(IdentifierConstructionError::NotSnakeOrPascalCase { identifier: id })
     }
 
     pub fn as_str(&self) -> &str {
@@ -220,17 +283,17 @@ impl Identifier {
         }
     }
 
-    pub fn as_snake(&self) -> anyhow::Result<&SnakeCaseIdentifier> {
+    pub fn as_snake(&self) -> Result<&SnakeCaseIdentifier, IdentifierCaseError> {
         match self {
             Self::Snake(v) => Ok(v),
-            _ => anyhow::bail!("the identifier {} is not snake_case", self),
+            _ => Err(IdentifierCaseError::NotSnakeCase { identifier: self }),
         }
     }
 
-    pub fn as_pascal(&self) -> anyhow::Result<&PascalCaseIdentifier> {
+    pub fn as_pascal(&self) -> Result<&PascalCaseIdentifier, IdentifierCaseError> {
         match self {
             Self::Pascal(v) => Ok(v),
-            _ => anyhow::bail!("the identifier {} is not PascalCase", self),
+            _ => Err(IdentifierCaseError::NotPascalCase { identifier: self }),
         }
     }
 }
@@ -278,32 +341,44 @@ impl ToTokens for Identifier {
     }
 }
 
+#[derive(Error, Debug, PartialEq, Eq)]
+pub enum SnakeCaseIdentifierConstructionError<'a> {
+    #[error("identifier {identifier} must not be empty")]
+    Empty { identifier: &'a str },
+    #[error("identifier {identifier} must start with a lowercase ASCII character")]
+    NotLowercaseAscii { identifier: &'a str },
+    #[error("identifier {identifier} must be snake-case ASCII")]
+    NotSnakeCaseAscii { identifier: &'a str },
+    #[error("identifier {identifier} is banned")]
+    Banned { identifier: &'a str },
+}
+
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct SnakeCaseIdentifier(pub(super) String);
 impl SnakeCaseIdentifier {
-    pub fn new(id: &str) -> Result<Self, &'static str> {
+    pub fn new(id: &str) -> Result<Self, SnakeCaseIdentifierConstructionError> {
         Self::validate(id)?;
         Ok(Self(id.to_string()))
     }
 
-    pub fn validate(id: &str) -> Result<&str, &'static str> {
+    pub fn validate(id: &str) -> Result<&str, SnakeCaseIdentifierConstructionError> {
         if id.is_empty() {
-            return Err("identifier must not be empty");
+            return Err(SnakeCaseIdentifierConstructionError::Empty { identifier: id });
         }
 
         if !id.starts_with(|c: char| c.is_ascii_lowercase()) {
-            return Err("identifier must start with a lowercase ASCII character");
+            return Err(SnakeCaseIdentifierConstructionError::NotLowercaseAscii { identifier: id });
         }
 
         if !id
             .chars()
             .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
         {
-            return Err("identifier must be snake-case ASCII");
+            return Err(SnakeCaseIdentifierConstructionError::NotSnakeCaseAscii { identifier: id });
         }
 
         if BANNED_SNAKE_CASE_IDENTIFIERS.contains(id) {
-            return Err("identifier is banned");
+            return Err(SnakeCaseIdentifierConstructionError::Banned { identifier: id });
         }
 
         Ok(id)
@@ -490,32 +565,44 @@ static BANNED_PASCAL_CASE_IDENTIFIERS: Lazy<HashSet<&'static str>> =
 
 #[cfg(test)]
 mod tests {
-    use crate::{ItemPathBuf, PascalCaseIdentifier, SnakeCaseIdentifier};
+    use crate::{
+        ItemPathBuf, ItemPathBufConstructionError, PascalCaseIdentifier, SnakeCaseIdentifier,
+        SnakeCaseIdentifierConstructionError,
+    };
 
     #[test]
     fn can_validate_snake_case_identifiers() {
         use SnakeCaseIdentifier as I;
 
-        assert_eq!(I::new(""), Err("identifier must not be empty"));
+        assert_eq!(
+            I::new(""),
+            Err(SnakeCaseIdentifierConstructionError::Empty { identifier: "" })
+        );
         assert_eq!(
             I::new("5asd"),
-            Err("identifier must start with a lowercase ASCII character")
+            Err(SnakeCaseIdentifierConstructionError::NotLowercaseAscii { identifier: "5asd" })
         );
         assert_eq!(
             I::new("_asd"),
-            Err("identifier must start with a lowercase ASCII character")
+            Err(SnakeCaseIdentifierConstructionError::NotLowercaseAscii { identifier: "_asd" })
         );
         assert_eq!(
             I::new("CoolComponent"),
-            Err("identifier must start with a lowercase ASCII character")
+            Err(SnakeCaseIdentifierConstructionError::NotLowercaseAscii {
+                identifier: "CoolComponent"
+            })
         );
         assert_eq!(
             I::new("mY-COOL-COMPONENT"),
-            Err("identifier must be snake-case ASCII")
+            Err(SnakeCaseIdentifierConstructionError::NotSnakeCaseAscii {
+                identifier: "mY-COOL-COMPONENT"
+            })
         );
         assert_eq!(
             I::new("cool_component!"),
-            Err("identifier must be snake-case ASCII")
+            Err(SnakeCaseIdentifierConstructionError::NotSnakeCaseAscii {
+                identifier: "cool_component!"
+            })
         );
         assert_eq!(
             I::new("cool_component"),
@@ -528,11 +615,15 @@ mod tests {
 
         assert_eq!(
             I::new("cool-component"),
-            Err("identifier must be snake-case ASCII")
+            Err(SnakeCaseIdentifierConstructionError::NotSnakeCaseAscii {
+                identifier: "cool-component"
+            })
         );
         assert_eq!(
             I::new("cool-component-c00"),
-            Err("identifier must be snake-case ASCII")
+            Err(SnakeCaseIdentifierConstructionError::NotSnakeCaseAscii {
+                identifier: "cool-component-c00"
+            })
         );
     }
 
@@ -582,7 +673,7 @@ mod tests {
         use PascalCaseIdentifier as PCI;
         use SnakeCaseIdentifier as SCI;
 
-        assert_eq!(IP::new(""), Err("an identifier path must not be empty"));
+        assert_eq!(IP::new(""), Err(ItemPathBufConstructionError::Empty));
 
         assert_eq!(
             IP::new("my"),
@@ -594,12 +685,16 @@ mod tests {
 
         assert_eq!(
             IP::new("My Invalid Path"),
-            Err("identifier must be snake-case or PascalCase ASCII")
+            Err(ItemPathBufConstructionError::ItemNotSnakeOrPascalCase {
+                identifier: "My Invalid Path".to_string()
+            })
         );
 
         assert_eq!(
             IP::new("MyInvalidPath!"),
-            Err("identifier must be snake-case or PascalCase ASCII")
+            Err(ItemPathBufConstructionError::ItemNotSnakeOrPascalCase {
+                identifier: "MyInvalidPath!".to_string()
+            })
         );
 
         assert_eq!(
@@ -620,7 +715,10 @@ mod tests {
 
         assert_eq!(
             IP::new("my::CoolComponent00::lol"),
-            Err("identifier must start with a lowercase ASCII character")
+            Err(ItemPathBufConstructionError::ScopeNotSnakeCase {
+                reason: "identifier CoolComponent00 must start with a lowercase ASCII character"
+                    .to_string()
+            })
         );
 
         assert_eq!(

@@ -1,6 +1,8 @@
-use ambient_package::{ComponentType, ItemPath, PascalCaseIdentifier, SnakeCaseIdentifier};
-use anyhow::Context as AnyhowContext;
+use ambient_package::{
+    ComponentType, ItemPath, ItemPathBuf, PascalCaseIdentifier, SnakeCaseIdentifier,
+};
 use indexmap::IndexMap;
+use thiserror::Error;
 
 use crate::{
     Attribute, Component, Concept, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Message,
@@ -149,6 +151,32 @@ impl Scope {
     }
 }
 
+#[derive(Error, Debug)]
+pub enum ContextGetError<'a> {
+    #[error("failed to find {path} ({type_})")]
+    NotFound { path: ItemPath<'a>, type_: ItemType },
+}
+impl ContextGetError<'_> {
+    pub fn to_owned(self) -> ContextGetOwnedError {
+        self.into()
+    }
+}
+#[derive(Error, Debug)]
+pub enum ContextGetOwnedError {
+    #[error("failed to find {path} ({type_})")]
+    NotFound { path: ItemPathBuf, type_: ItemType },
+}
+impl From<ContextGetError<'_>> for ContextGetOwnedError {
+    fn from(error: ContextGetError) -> Self {
+        match error {
+            ContextGetError::NotFound { path, type_ } => Self::NotFound {
+                path: path.to_owned(),
+                type_,
+            },
+        }
+    }
+}
+
 #[derive(Clone, PartialEq, Debug)]
 pub struct Context(Vec<ItemId<Scope>>);
 impl Context {
@@ -168,7 +196,7 @@ impl Context {
         for &scope_id in self.0.iter().rev() {
             match component_type {
                 ComponentType::Item(id) => {
-                    if let Ok(id) = get_type_id(items, scope_id, id.as_path()) {
+                    if let Some(id) = get_type_id(items, scope_id, id.as_path()) {
                         return Some(id);
                     }
                 }
@@ -176,7 +204,7 @@ impl Context {
                     type_,
                     element_type,
                 } => {
-                    if let Ok(id) = get_type_id(items, scope_id, element_type.as_path()) {
+                    if let Some(id) = get_type_id(items, scope_id, element_type.as_path()) {
                         return Some(match type_ {
                             ambient_package::ContainerType::Vec => items.get_vec_id(id),
                             ambient_package::ContainerType::Option => items.get_option_id(id),
@@ -188,43 +216,52 @@ impl Context {
         None
     }
 
-    pub(crate) fn get_attribute_id(
+    pub(crate) fn get_attribute_id<'a>(
         &self,
         items: &ItemMap,
-        path: ItemPath,
-    ) -> anyhow::Result<ItemId<Attribute>> {
+        path: ItemPath<'a>,
+    ) -> Result<ItemId<Attribute>, ContextGetError<'a>> {
         for &scope_id in self.0.iter().rev() {
-            if let Ok(id) = get_attribute_id(items, scope_id, path) {
+            if let Some(id) = get_attribute_id(items, scope_id, path) {
                 return Ok(id);
             }
         }
-        anyhow::bail!("failed to find attribute {:?}", path);
+        Err(ContextGetError::NotFound {
+            path,
+            type_: ItemType::Attribute,
+        })
     }
 
-    pub(crate) fn get_concept_id(
+    pub(crate) fn get_concept_id<'a>(
         &self,
         items: &ItemMap,
-        path: ItemPath,
-    ) -> anyhow::Result<ItemId<Concept>> {
+        path: ItemPath<'a>,
+    ) -> Result<ItemId<Concept>, ContextGetError<'a>> {
         for &scope_id in self.0.iter().rev() {
-            if let Ok(id) = get_concept_id(items, scope_id, path) {
+            if let Some(id) = get_concept_id(items, scope_id, path) {
                 return Ok(id);
             }
         }
-        anyhow::bail!("failed to find concept {:?}", path);
+        Err(ContextGetError::NotFound {
+            path,
+            type_: ItemType::Concept,
+        })
     }
 
-    pub(crate) fn get_component_id(
+    pub(crate) fn get_component_id<'a>(
         &self,
         items: &ItemMap,
-        path: ItemPath,
-    ) -> anyhow::Result<ItemId<Component>> {
+        path: ItemPath<'a>,
+    ) -> Result<ItemId<Component>, ContextGetError<'a>> {
         for &scope_id in self.0.iter().rev() {
-            if let Ok(id) = get_component_id(items, scope_id, path) {
+            if let Some(id) = get_component_id(items, scope_id, path) {
                 return Ok(id);
             }
         }
-        anyhow::bail!("failed to find component {:?}", path);
+        Err(ContextGetError::NotFound {
+            path,
+            type_: ItemType::Component,
+        })
     }
 }
 
@@ -232,60 +269,54 @@ fn get_type_id(
     items: &ItemMap,
     self_scope_id: ItemId<Scope>,
     path: ItemPath,
-) -> anyhow::Result<ItemId<Type>> {
+) -> Option<ItemId<Type>> {
     let (scope, item) = path.scope_and_item();
-    let item = item.as_pascal().context("type name must be PascalCase")?;
     items
-        .get_scope(self_scope_id, scope)?
+        .get_scope(self_scope_id, scope)
+        .ok()?
         .types
-        .get(item)
+        .get(item.as_pascal().ok()?)
         .copied()
-        .with_context(|| format!("failed to find type {item} in {scope:?}"))
 }
 
 fn get_attribute_id(
     items: &ItemMap,
     self_scope_id: ItemId<Scope>,
     path: ItemPath,
-) -> anyhow::Result<ItemId<Attribute>> {
+) -> Option<ItemId<Attribute>> {
     let (scope, item) = path.scope_and_item();
-    let item = item
-        .as_pascal()
-        .context("attribute name must be PascalCase")?;
     items
-        .get_scope(self_scope_id, scope)?
+        .get_scope(self_scope_id, scope)
+        .ok()?
         .attributes
-        .get(item)
+        .get(item.as_pascal().ok()?)
         .copied()
-        .with_context(|| format!("failed to find attribute {item} in {scope:?}",))
 }
 
 fn get_concept_id(
     items: &ItemMap,
     self_scope_id: ItemId<Scope>,
     path: ItemPath,
-) -> anyhow::Result<ItemId<Concept>> {
+) -> Option<ItemId<Concept>> {
     let (scope, item) = path.scope_and_item();
-    let item = item.as_snake().context("concept name must be snake_case")?;
     items
-        .get_scope(self_scope_id, scope)?
+        .get_scope(self_scope_id, scope)
+        .ok()?
         .concepts
-        .get(item)
+        .get(item.as_snake().ok()?)
         .copied()
-        .with_context(|| format!("failed to find concept {item} in {scope:?}",))
 }
 
 fn get_component_id(
     items: &ItemMap,
     self_scope_id: ItemId<Scope>,
     path: ItemPath,
-) -> anyhow::Result<ItemId<Component>> {
+) -> Option<ItemId<Component>> {
     let (scope, item) = path.scope_and_item();
-    let item = item.as_snake().context("concept name must be snake_case")?;
     items
-        .get_scope(self_scope_id, scope)?
+        .get_scope(self_scope_id, scope)
+        .ok()?
         .components
-        .get(item)
+        .get(item.as_snake().ok()?)
         .copied()
-        .with_context(|| format!("failed to find component {item} in {scope:?}",))
 }

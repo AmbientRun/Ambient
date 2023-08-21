@@ -4,7 +4,7 @@ use ambient_ecs::{
     ComponentRegistry, ExternalComponentAttributes, ExternalComponentDesc, PrimitiveComponentType,
     World,
 };
-use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
+use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::ServerWorldExt;
 use ambient_package_semantic::{
     Item, ItemId, ItemSource, Package, PrimitiveType, RetrievableFile, Semantic, TypeInner,
@@ -12,7 +12,6 @@ use ambient_package_semantic::{
 
 pub async fn add(
     world: Option<&mut World>,
-    assets: &AssetCache,
     semantic: &mut Semantic,
     url: &AbsAssetUrl,
 ) -> anyhow::Result<ItemId<Package>> {

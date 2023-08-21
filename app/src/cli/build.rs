@@ -45,13 +45,8 @@ pub async fn build(
     // no contamination, so that the built package can use its own
     // semantic based on the flat hierarchy.
     let mut semantic = ambient_package_semantic::Semantic::new().await?;
-    let primary_package_scope_id = shared::package::add(
-        None,
-        assets,
-        &mut semantic,
-        &package_path.url.join("ambient.toml")?,
-    )
-    .await?;
+    let primary_package_scope_id =
+        shared::package::add(None, &mut semantic, &package_path.url.join("ambient.toml")?).await?;
 
     let manifest = semantic
         .items

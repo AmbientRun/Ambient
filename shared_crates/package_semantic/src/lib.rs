@@ -133,12 +133,13 @@ impl Semantic {
 
             // If this is not the Ambient package, import the Ambient package
             if !matches!(retrievable_manifest, RetrievableFile::Ambient(_)) {
+                let ambient_package = self.items.get(self.ambient_package_id);
                 scope.imports.insert(
-                    self.items
-                        .get(self.ambient_package_id)
+                    ambient_package
                         .data()
                         .id
-                        .as_snake()?
+                        .as_snake()
+                        .map_err(|e| e.to_owned())?
                         .clone(),
                     self.ambient_package_id,
                 );
@@ -230,10 +231,10 @@ impl Semantic {
                 .await?;
             let id = self.items.get(include_scope_id).data().id.clone();
 
-            self.items
-                .get_mut(scope_id)
-                .scopes
-                .insert(id.as_snake()?.clone(), include_scope_id);
+            self.items.get_mut(scope_id).scopes.insert(
+                id.as_snake().map_err(|e| e.to_owned())?.clone(),
+                include_scope_id,
+            );
         }
 
         Ok(scope_id)
@@ -272,7 +273,7 @@ impl Semantic {
             items
                 .get_or_create_scope_mut(scope_id, scope_path)
                 .components
-                .insert(item.as_snake()?.clone(), value);
+                .insert(item.as_snake().map_err(|e| e.to_owned())?.clone(), value);
         }
 
         for (path, concept) in manifest.concepts.iter() {
@@ -283,7 +284,7 @@ impl Semantic {
             items
                 .get_or_create_scope_mut(scope_id, scope_path)
                 .concepts
-                .insert(item.as_snake()?.clone(), value);
+                .insert(item.as_snake().map_err(|e| e.to_owned())?.clone(), value);
         }
 
         for (path, message) in manifest.messages.iter() {
@@ -294,7 +295,7 @@ impl Semantic {
             items
                 .get_or_create_scope_mut(scope_id, scope_path)
                 .messages
-                .insert(item.as_pascal()?.clone(), value);
+                .insert(item.as_pascal().map_err(|e| e.to_owned())?.clone(), value);
         }
 
         for (segment, enum_ty) in manifest.enums.iter() {

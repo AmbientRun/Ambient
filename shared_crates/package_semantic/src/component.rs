@@ -69,6 +69,7 @@ impl Resolve for Component {
                 ResolvableItemId::Unresolved(path) => {
                     let id = context
                         .get_attribute_id(items, path.as_path())
+                        .map_err(|e| e.to_owned())
                         .with_context(|| {
                             format!(
                                 "Failed to resolve attribute `{path}` for component `{}`",
