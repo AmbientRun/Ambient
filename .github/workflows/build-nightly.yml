@@ -76,4 +76,4 @@ jobs:
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: target/release/ambient-${{ env.date_suffix }}*
-          destination: "ambient-nightly-build/ambient-${{ env.date_suffix }}"
+          destination: "ambient-artifacts/ambient-nightly-build/"
