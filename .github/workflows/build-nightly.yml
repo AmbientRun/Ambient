@@ -69,6 +69,4 @@ jobs:
         with:
           name: ambient-${{ matrix.os }}
           path: target/release/ambient
-          destination: "ambient-artifacts/ambient-nightly-build/$date_suffix/${{ matrix.os }}"
-        env:
-          date_suffix: ${{ env.date_suffix }}
+          destination: "ambient-artifacts/ambient-nightly-build/${{ env.date_suffix }}/${{ matrix.os }}"
