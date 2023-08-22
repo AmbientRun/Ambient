@@ -1,6 +1,7 @@
 [package]
 id = "package_manager"
 name = "Package Manager"
+version = "0.0.1"
 
 [messages.PackageLoad.fields]
 url = "String"

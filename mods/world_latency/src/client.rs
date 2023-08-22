@@ -4,7 +4,7 @@ const TARGET: Target = Target::ServerUnreliable;
 
 use packages::{
     afps_schema::components::player_last_frame,
-    afps_world_latency::{components::server_frame, messages::FrameSeen},
+    this::{components::server_frame, messages::FrameSeen},
 };
 
 #[main]

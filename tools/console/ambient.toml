@@ -1,6 +1,7 @@
 [package]
 id = "console"
 name = "Console"
+version = "0.0.1"
 
 [messages.ConsoleServerInput.fields]
 input = "String"

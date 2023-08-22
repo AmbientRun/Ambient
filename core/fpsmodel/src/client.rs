@@ -14,7 +14,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use packages::{afps_fpsmodel::assets, afps_schema::components};
+use packages::{afps_schema::components, this::assets};
 
 #[main]
 pub fn main() {

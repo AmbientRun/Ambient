@@ -8,7 +8,6 @@ use ambient_api::{
 };
 
 use packages::{
-    afps_fpsui::assets,
     afps_schema::{
         components::player_name,
         components::{
@@ -17,6 +16,7 @@ use packages::{
         messages::StartGame,
     },
     input_schema::messages::{ReleaseInput, RequestInput},
+    this::assets,
 };
 
 #[main]

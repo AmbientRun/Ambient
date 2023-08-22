@@ -8,7 +8,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::packages::package_manager::messages;
+use crate::packages::this::messages;
 
 use super::{use_hotkey_toggle, use_input_request, Window};
 

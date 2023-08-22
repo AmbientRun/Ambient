@@ -1,6 +1,7 @@
 [package]
 id = "afps_fpsanim"
 name = "AFPS Animation"
+version = "0.0.1"
 
 [components]
 walk_fd = { type = { type = "Vec", element_type = "EntityId" }, attributes = [

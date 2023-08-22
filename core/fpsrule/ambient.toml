@@ -1,6 +1,7 @@
 [package]
 id = "afps_fpsrule"
 name = "AFPS Rule"
+version = "0.0.1"
 
 [dependencies]
 afps_schema = { path = "../../schema/afps" }

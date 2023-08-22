@@ -2,6 +2,7 @@
 id = "input_schema"
 name = "Input Schema"
 description = "Probably something to standardize"
+version = "0.0.1"
 
 [messages.RequestInput]
 fields = {}
