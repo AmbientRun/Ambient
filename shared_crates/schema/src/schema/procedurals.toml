@@ -2,6 +2,7 @@
 id = "procedurals"
 name = "Procedurals"
 description = "Procedural asset functionality and related."
+content = { type = "Asset", schema = true }
 
 [components.procedural_mesh]
 type = "ProceduralMeshHandle"

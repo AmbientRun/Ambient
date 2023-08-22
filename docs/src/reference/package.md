@@ -90,7 +90,7 @@ The `package` section contains metadata about the package itself, such as its na
 | `name`        | `String`              | _Optional_. A human-readable name for the package.                                            |
 | `description` | `String`              | _Optional_. A human-readable description of the package.                                      |
 | `version`     | `String`              | _Optional_. The package's version, in `(major, minor, patch)` format. Semantically versioned. |
-| `content`     | `PackageContent`      | _Optional_. A description of the content of this Package. See below.                          |
+| `content`     | `PackageContent`      | A description of the content of this Package. See below.                                      |
 
 #### `PackageContent`
 
@@ -102,8 +102,19 @@ content = { type = "Playable" }
 content = { type = "Playable", example = true } # example defaults to false
 
 # Assets are things you can use as a dependency in your package
-content = { type = "Asset", models = true, textures = false, audio = false, fonts = false, code = false } # models etc. default to false
-content = { type = "Asset", models = true } # Shorthand of above
+content = { type = "Asset", models = true, textures = true } # Contains models and textures
+# These are the valid asset types:
+#
+#   models
+#   animations
+#   textures
+#   materials
+#   audio
+#   fonts
+#   code
+#   schema
+#
+# You can use any combination of them
 
 # Tools are things you can use to develop your package
 content = { type = "Tool" }
@@ -111,8 +122,6 @@ content = { type = "Tool" }
 # Mods are extension to Playables
 content = { type = "Mod", for_playables: ["i3terk32jw"] }
 ```
-
-The default is `content = { type = "Playable" }`
 
 #### Example
 

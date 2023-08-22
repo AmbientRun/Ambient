@@ -2,6 +2,7 @@
 id = "rendering"
 name = "Rendering"
 description = "Rendering-related state, including global rendering parameters and per-entity state."
+content = { type = "Asset", schema = true }
 
 [components.cast_shadows]
 type = "Empty"

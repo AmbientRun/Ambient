@@ -2,6 +2,7 @@
 id = "physics"
 name = "Physics"
 description = "Physics functionality and state."
+content = { type = "Asset", schema = true }
 
 [components.angular_velocity]
 type = "Vec3"

@@ -2,6 +2,7 @@
 id = "animation"
 name = "Animation"
 description = "Components relating to animations."
+content = { type = "Asset", schema = true }
 
 [components.is_animation_player]
 type = "Empty"

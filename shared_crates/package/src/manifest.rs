@@ -62,7 +62,6 @@ pub struct Package {
     pub repository: Option<String>,
     #[serde(default)]
     pub authors: Vec<String>,
-    #[serde(default)]
     pub content: PackageContent,
     #[serde(default)]
     pub includes: Vec<PathBuf>,
@@ -82,13 +81,19 @@ pub enum PackageContent {
         #[serde(default)]
         models: bool,
         #[serde(default)]
+        animations: bool,
+        #[serde(default)]
         textures: bool,
+        #[serde(default)]
+        materials: bool,
         #[serde(default)]
         audio: bool,
         #[serde(default)]
         fonts: bool,
         #[serde(default)]
         code: bool,
+        #[serde(default)]
+        schema: bool,
     },
     Tool,
     Mod {

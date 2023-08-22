@@ -2,6 +2,7 @@
 id = "layout"
 name = "Layout"
 description = "Layout components such as flow, margins etc."
+content = { type = "Asset", schema = true }
 
 [components.align_horizontal]
 type = "Align"

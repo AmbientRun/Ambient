@@ -2,6 +2,7 @@
 id = "primitives"
 name = "Primitives"
 description = "Components that create primitive (in the geometric sense) objects from their attached entities."
+content = { type = "Asset", schema = true }
 
 [components.cube]
 type = "Empty"
