@@ -23,7 +23,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::ambient_example_first_person_camera::{
+use packages::this::{
     components::{ball_ref, player_head_ref, player_movement_direction, player_pitch, player_yaw},
     messages::Input,
 };

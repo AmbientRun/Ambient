@@ -2,6 +2,7 @@
 id = "wasm"
 name = "WASM"
 description = "State related to WASM functionality."
+version = "0.3.0-dev"
 
 [components.is_module]
 name = "is module"

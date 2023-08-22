@@ -10,7 +10,7 @@ use ambient_api::{
     global::game_time,
     prelude::*,
 };
-use packages::ambient_example_music_sequencer::{
+use packages::this::{
     components::{bpm, track, track_audio_url, track_note_selection},
     messages::{Click, SetBpm},
 };

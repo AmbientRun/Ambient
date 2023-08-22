@@ -14,7 +14,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::ambient_example_messaging::messages::{Hello, HelloWithoutBody, Local};
+use packages::this::messages::{Hello, HelloWithoutBody, Local};
 
 #[main]
 pub fn main() {

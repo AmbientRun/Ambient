@@ -19,7 +19,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use packages::ambient_example_instancing::{assets, components::instance_index};
+use packages::this::{assets, components::instance_index};
 
 #[main]
 pub async fn main() {

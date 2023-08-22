@@ -2,6 +2,7 @@
 id = "layout"
 name = "Layout"
 description = "Layout components such as flow, margins etc."
+version = "0.3.0-dev"
 
 [components.align_horizontal]
 type = "Align"

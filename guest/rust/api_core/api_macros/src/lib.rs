@@ -2,7 +2,7 @@ extern crate proc_macro;
 
 use std::path::Path;
 
-use ambient_package_macro_common::ManifestSource;
+use ambient_package_macro_common::RetrievableFile;
 use proc_macro::TokenStream;
 
 mod main_macro;
@@ -15,9 +15,10 @@ mod main_macro;
 pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     main_macro::main(
         item.clone().into(),
-        ManifestSource::Path {
-            package_path: Path::new(&std::env::var("CARGO_MANIFEST_DIR").expect("no manifest dir")),
-        },
+        RetrievableFile::Path(
+            Path::new(&std::env::var("CARGO_MANIFEST_DIR").expect("no manifest dir"))
+                .join("ambient.toml"),
+        ),
     )
     .into()
 }

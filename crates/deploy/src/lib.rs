@@ -51,8 +51,10 @@ pub async fn deploy(
     );
     let base_path = path.as_ref().to_owned();
 
-    if !manifest.dependencies.is_empty() {
-        anyhow::bail!("Deploying packages with dependencies is not supported yet");
+    for (dependency_id, dependency) in &manifest.dependencies {
+        if !dependency.has_remote_dependency() {
+            anyhow::bail!("The dependency `{dependency_id}` is not a remote dependency. You can only deploy packages with remote dependencies.");
+        }
     }
 
     // create a client and open channel to the server

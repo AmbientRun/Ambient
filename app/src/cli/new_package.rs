@@ -33,7 +33,7 @@ pub(crate) fn handle(
     }
 
     let id = name.to_case(convert_case::Case::Snake);
-    let id = SnakeCaseIdentifier::new(&id).map_err(anyhow::Error::msg)?;
+    let id = SnakeCaseIdentifier::new(&id).map_err(|e| anyhow::Error::msg(e.to_string()))?;
 
     // Create the folders.
     let dot_cargo_path = package_path.join(".cargo");

@@ -10,7 +10,7 @@ use ambient_api::{
 };
 use packages::{
     ambient_example_deps_assets::{assets, components::spin_speed, types::SpinDirection},
-    ambient_example_deps_code::{
+    this::{
         components::{spawned_by_us, spin_direction},
         messages::Spawn,
     },

@@ -19,7 +19,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::ambient_example_skinmesh::assets;
+use packages::this::assets;
 
 #[main]
 pub async fn main() {

@@ -15,7 +15,7 @@ use ambient_api::{
 mod constants;
 use constants::*;
 
-use packages::ambient_example_arkanoid::{
+use packages::this::{
     components::track_audio_url,
     messages::{Input, Ping},
 };

@@ -5,7 +5,7 @@ use std::{
 };
 
 use ambient_ecs::{EntityId, SystemGroup, World};
-use ambient_package_semantic::{ItemId, Scope};
+use ambient_package_semantic::{ItemId, Package};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{module_name, remote_paired_id, spawn_module, MessageType};
 use anyhow::Context;
@@ -39,17 +39,22 @@ pub async fn initialize(world: &mut World, data_path: PathBuf) -> anyhow::Result
     Ok(())
 }
 
-pub fn instantiate_package(world: &mut World, package_id: ItemId<Scope>) -> anyhow::Result<()> {
+/// `enabled` is passed here as we need knowledge of the other packages to determine if this package should be enabled or not
+pub fn instantiate_package(
+    world: &mut World,
+    package_id: ItemId<Package>,
+    enabled: bool,
+) -> anyhow::Result<()> {
     let mut modules_to_entity_ids = HashMap::new();
     for target in ["client", "server"] {
         let (package_name, package_enabled, build_metadata) = {
             let semantic = ambient_package_semantic_native::world_semantic(world);
             let semantic = semantic.lock().unwrap();
-            let scope = semantic.items.get(package_id)?;
+            let scope = semantic.items.get(package_id);
 
             (
-                scope.original_id.to_string(),
-                scope.enabled_by_default,
+                scope.data.id.to_string(),
+                enabled,
                 scope
                     .build_metadata
                     .as_ref()

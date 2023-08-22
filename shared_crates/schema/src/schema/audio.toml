@@ -2,6 +2,7 @@
 id = "audio"
 name = "Audio"
 description = "Audio functionality and state."
+version = "0.3.0-dev"
 
 [components.is_audio_player]
 type = "Empty"

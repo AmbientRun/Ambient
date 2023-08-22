@@ -6,7 +6,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::ambient_example_clientside::components::{grid_position, grid_side_length};
+use packages::this::components::{grid_position, grid_side_length};
 
 #[main]
 pub fn main() {

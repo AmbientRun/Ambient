@@ -20,7 +20,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use packages::ambient_example_asset_loading::{assets, components::is_the_best};
+use packages::this::{assets, components::is_the_best};
 
 #[main]
 pub async fn main() {

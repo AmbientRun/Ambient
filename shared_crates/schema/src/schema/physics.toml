@@ -2,6 +2,7 @@
 id = "physics"
 name = "Physics"
 description = "Physics functionality and state."
+version = "0.3.0-dev"
 
 [components.angular_velocity]
 type = "Vec3"

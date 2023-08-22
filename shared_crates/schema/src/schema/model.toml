@@ -2,6 +2,7 @@
 id = "model"
 name = "Model"
 description = "Information about models attached to entities."
+version = "0.3.0-dev"
 
 [components.model_animatable]
 type = "Bool"

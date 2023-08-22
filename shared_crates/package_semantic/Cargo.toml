@@ -23,6 +23,8 @@ data-encoding = { workspace = true }
 indexmap = { workspace = true }
 async-trait = { workspace = true }
 async-recursion = { workspace = true }
+url = { workspace = true }
+reqwest = { workspace = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }

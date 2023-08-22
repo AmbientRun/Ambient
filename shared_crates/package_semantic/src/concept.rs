@@ -56,6 +56,7 @@ impl Resolve for Concept {
                 ResolvableItemId::Unresolved(path) => {
                     let id = context
                         .get_concept_id(items, path.as_path())
+                        .map_err(|e| e.into_owned())
                         .with_context(|| {
                             format!(
                                 "Failed to resolve concept `{}` for concept `{}",
@@ -74,6 +75,7 @@ impl Resolve for Concept {
             let component_id = match resolvable_component {
                 ResolvableItemId::Unresolved(path) => context
                     .get_component_id(items, path.as_path())
+                    .map_err(|e| e.into_owned())
                     .with_context(|| {
                         format!(
                             "Failed to get component `{}` for concept `{}",

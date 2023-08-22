@@ -2,6 +2,7 @@
 id = "network"
 name = "Network"
 description = "Network_related state."
+version = "0.3.0-dev"
 
 [components.is_remote_entity]
 type = "Empty"
