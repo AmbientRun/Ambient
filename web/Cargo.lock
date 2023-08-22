@@ -384,17 +384,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_package_semantic_native"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_ecs",
- "ambient_native_std",
- "ambient_network",
- "ambient_package_semantic",
- "anyhow",
-]
-
-[[package]]
 name = "ambient_friendly_id"
 version = "0.3.0-dev"
 dependencies = [
@@ -672,37 +661,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_primitives"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_core",
- "ambient_ecs",
- "ambient_element",
- "ambient_gpu",
- "ambient_meshes",
- "ambient_native_std",
- "ambient_renderer",
- "glam",
-]
-
-[[package]]
-name = "ambient_procedurals"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_core",
- "ambient_ecs",
- "ambient_gpu",
- "ambient_native_std",
- "ambient_renderer",
- "ambient_shared_types",
- "parking_lot",
- "paste",
- "tracing",
- "ulid",
- "wgpu",
-]
-
-[[package]]
 name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
@@ -726,6 +684,7 @@ dependencies = [
  "ambient_package_semantic",
  "ambient_shared_types",
  "anyhow",
+ "glam",
  "proc-macro2",
  "quote",
  "serde",
@@ -762,6 +721,48 @@ dependencies = [
  "thiserror",
  "toml",
  "ulid",
+]
+
+[[package]]
+name = "ambient_package_semantic_native"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_ecs",
+ "ambient_native_std",
+ "ambient_network",
+ "ambient_package_semantic",
+ "anyhow",
+]
+
+[[package]]
+name = "ambient_primitives"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_gpu",
+ "ambient_meshes",
+ "ambient_native_std",
+ "ambient_renderer",
+ "glam",
+]
+
+[[package]]
+name = "ambient_procedurals"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_native_std",
+ "ambient_renderer",
+ "ambient_shared_types",
+ "parking_lot",
+ "paste",
+ "tracing",
+ "ulid",
+ "wgpu",
 ]
 
 [[package]]
@@ -1003,15 +1004,15 @@ dependencies = [
  "ambient_app",
  "ambient_core",
  "ambient_ecs",
- "ambient_package_semantic_native",
  "ambient_gpu",
  "ambient_input",
  "ambient_model",
  "ambient_native_std",
  "ambient_network",
- "ambient_procedurals",
  "ambient_package",
  "ambient_package_macro_common",
+ "ambient_package_semantic_native",
+ "ambient_procedurals",
  "ambient_renderer",
  "ambient_shared_types",
  "ambient_std",
