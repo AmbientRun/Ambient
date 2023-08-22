@@ -199,7 +199,7 @@ use wasm_bridge_js::{
 };
 
 #[cfg(not(target_os = "unknown"))]
-use preview2::wasi::command::add_to_linker;
+use preview2::command::add_to_linker;
 #[cfg(not(target_os = "unknown"))]
 use wasmtime::component::{self, Instance};
 
@@ -279,8 +279,8 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
             component::Component::new_async(engine.inner(), args.component_bytecode).await?;
         #[cfg(not(target_os = "unknown"))]
         let component = tokio::task::block_in_place(|| {
-            component::Component::new(engine.inner(), args.component_bytecode)?;
-        });
+            component::Component::new(engine.inner(), args.component_bytecode)
+        })?;
 
         let (guest_bindings, guest_instance) = async {
             let (guest_bindings, guest_instance) =
@@ -438,7 +438,7 @@ impl wasm_bridge_js::wasi::preview2::OutputStream for WasiOutputStream {
 
 #[cfg(not(target_os = "unknown"))]
 #[async_trait::async_trait]
-impl wasmtime_wasi::preview2::OutputStream for WasiOutputStream {
+impl wasmtime_wasi::preview2::HostOutputStream for WasiOutputStream {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }

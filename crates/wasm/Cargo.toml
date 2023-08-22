@@ -55,9 +55,8 @@ tracing = { workspace = true }
 wit-component = { workspace = true }
 futures = { workspace = true }
 
-wasm-bridge = { git = "https://github.com/AmbientRun/wasm-bridge", version = "0.2", features = [
+wasm-bridge = { git = "https://github.com/AmbientRun/wasm-bridge", branch  = "wasmtime-13.0.0", version = "0.2", features = [
     "component-model",
-    "async",
     "wasi",
 ] }
 
@@ -74,13 +73,13 @@ ambient_prefab = { path = "../prefab" }
 [target.'cfg(target_os = "unknown")'.dependencies]
 wasm-bridge-js = { git = "https://github.com/AmbientRun/wasm-bridge", version = "0.2", features = [
     "component-model",
-    "async",
     "wasi",
 ] }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
-wasmtime = { workspace = true }
-wasmtime-wasi = { workspace = true }
+# NOTE: accessible through `wasm-bridge`. This is used to enforce specific features on the `wasmtime` crate
+wasmtime = { workspace = true  }
+wasmtime-wasi = { workspace = true, features = [ "sync" ] }
 wasi-common = { workspace = true }
 wasi-cap-std-sync = { workspace = true }
 

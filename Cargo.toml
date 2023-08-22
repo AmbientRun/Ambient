@@ -195,19 +195,21 @@ http = { version = "0.2.9" }
 #
 # WASM
 #
-wasmtime = { version = "11.0.1", features = ["component-model"] }
-wasmtime-wasi = "11.0.1"
-wasi-cap-std-sync = "11.0.1"
-wasi-common = "11.0.1"
+wasmtime = { version = "13.0.0", git = "https://github.com/bytecodealliance/wasmtime", features = ["component-model"] }
+wasmtime-wasi = {version = "13.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
+wasi-cap-std-sync = { version = "13.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
+wasi-common = { version = "13.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
 wit-bindgen-core = "0.9.0"
 wit-bindgen-rust = "0.9.0"
 wit-component = "0.11.0"
 
 # Required since the webtransport stuff is yet on crates.io
 # TODO: use crates.io dependencies
-# [patch.crates-io]
+[patch.crates-io]
 # web-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 # wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 # js-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 # wasm-bindgen-futures = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 # wasm-bindgen-shared = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+wasmtime = { git = "https://github.com/bytecodealliance/wasmtime" }
+wasmtime-wasi = { git = "https://github.com/bytecodealliance/wasmtime" }
