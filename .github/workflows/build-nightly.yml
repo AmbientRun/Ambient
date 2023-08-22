@@ -51,14 +51,14 @@ jobs:
       - name: Set date suffix
         run: echo "date_suffix=$(date +\"%Y-%m-%d\")" >> $GITHUB_ENV
       - name: Rename artifact with date
-          run: |
-            if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-              mv target/release/ambient.exe target/release/ambient-$date_suffix.exe
-            else
-              mv target/release/ambient target/release/ambient-$date_suffix
-            fi
-          env:
-            date_suffix: ${{ env.date_suffix }}
+        run: |
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            mv target/release/ambient.exe target/release/ambient-$date_suffix.exe
+          else
+            mv target/release/ambient target/release/ambient-$date_suffix
+          fi
+        env:
+          date_suffix: ${{ env.date_suffix }}
 
       - name: Upload ambient executable artifact
         uses: actions/upload-artifact@v3
@@ -66,8 +66,8 @@ jobs:
           name: ambient-${{ matrix.os }}-$date_suffix*
           path: |
             target/release/ambient-$date_suffix*
-          env:
-            date_suffix: ${{ env.date_suffix }}
+        env:
+          date_suffix: ${{ env.date_suffix }}
       - id: auth
         name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v0
@@ -82,5 +82,5 @@ jobs:
         with:
           path: target/release/ambient-$date_suffix*
           destination: "ambient-artifacts/ambient-nightly-build/"
-          env:
-            date_suffix: ${{ env.date_suffix }}
+        env:
+          date_suffix: ${{ env.date_suffix }}
