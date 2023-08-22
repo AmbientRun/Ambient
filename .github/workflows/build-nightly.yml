@@ -45,7 +45,7 @@ jobs:
           CARGO_INCREMENTAL: 0
           RUSTFLAGS: "-C debuginfo=0"
       - name: Set date suffix
-        run: echo "date_suffix=$(date +\"%Y-%m-%d\")" >> $GITHUB_ENV
+        run: echo "date_suffix=$(date +%Y-%m-%d)" >> $GITHUB_ENV
 
       - name: Upload ambient executable artifact
         uses: actions/upload-artifact@v3
