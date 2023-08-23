@@ -2,6 +2,7 @@
 id = "dependency_cycle"
 name = "dependency-cycle"
 version = "0.0.1"
+content = { type = "Playable", example = true }
 
 [dependencies]
 child = { path = "child" }
