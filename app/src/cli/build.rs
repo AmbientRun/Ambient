@@ -36,23 +36,23 @@ pub async fn build(
         ));
     }
 
-    let Some(package_path) = package_path.fs_path else {
+    let Some(package_fs_path) = package_path.fs_path else {
         return Ok(BuildDirectories::new_with_same_paths(package_path.url.clone()));
     };
 
-    let build_path = package_path.join("build");
+    let build_path = package_fs_path.join("build");
     // The build step uses its own semantic to ensure that there is
     // no contamination, so that the built package can use its own
     // semantic based on the flat hierarchy.
     let mut semantic = ambient_package_semantic::Semantic::new().await?;
-    let primary_package_scope_id = shared::package::add(None, &mut semantic, &package_path).await?;
+    let primary_package_scope_id =
+        shared::package::add(None, &mut semantic, &package_path.url.join("ambient.toml")?).await?;
 
     let manifest = semantic
         .items
-        .get(primary_package_scope_id)?
+        .get(primary_package_scope_id)
         .manifest
-        .clone()
-        .context("no manifest for scope")?;
+        .clone();
 
     let build_config = ambient_build::BuildConfiguration {
         build_path: build_path.clone(),

@@ -9,7 +9,7 @@ pub fn generate(context: Context, _items: &ItemMap, scope: &Scope) -> anyhow::Re
         .then_some(())
         .and_then(|_| context.guest_api_path()) else { return Ok(quote!{}) };
 
-    let package_id = scope.original_id.to_string();
+    let package_id = scope.data.id.to_string();
     if package_id.is_empty() {
         return Ok(quote! {});
     }

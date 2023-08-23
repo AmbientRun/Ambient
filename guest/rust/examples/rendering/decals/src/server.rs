@@ -43,7 +43,7 @@ pub fn main() {
     // Decal projection volume.
     let decal_scale = vec3(1.0, 1.0, 1.0);
     let decal_rotation = Quat::from_rotation_z(PI / 4.0);
-    let decal_url = packages::ambient_example_decals::assets::url("pipeline.toml/0/mat.json");
+    let decal_url = packages::this::assets::url("pipeline.toml/0/mat.json");
     Entity::new()
         .with(rotation(), decal_rotation)
         .with(scale(), decal_scale)

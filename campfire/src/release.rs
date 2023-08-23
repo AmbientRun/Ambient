@@ -76,6 +76,7 @@ pub fn main(args: &Release) -> anyhow::Result<()> {
 
 const DOCKERFILE: &str = "Dockerfile";
 const AMBIENT_MANIFEST: &str = "shared_crates/schema/src/ambient.toml";
+const AMBIENT_MANIFEST_INCLUDES: &str = "shared_crates/schema/src/schema";
 const ROOT_CARGO: &str = "Cargo.toml";
 const WEB_CARGO: &str = "web/Cargo.toml";
 const GUEST_RUST_CARGO: &str = "guest/rust/Cargo.toml";
@@ -134,8 +135,17 @@ fn update_version(new_version: &str) -> anyhow::Result<()> {
 
     let all_publishable_crates = get_all_publishable_crates()?;
     edit_toml(AMBIENT_MANIFEST, |toml| {
-        toml["project"]["version"] = toml_edit::value(new_version);
+        toml["package"]["version"] = toml_edit::value(new_version);
     })?;
+
+    for path in std::fs::read_dir(AMBIENT_MANIFEST_INCLUDES)?
+        .filter_map(Result::ok)
+        .map(|e| e.path())
+    {
+        edit_toml(path, |toml| {
+            toml["package"]["version"] = toml_edit::value(new_version);
+        })?;
+    }
 
     edit_toml(ROOT_CARGO, |toml| {
         toml["workspace"]["package"]["version"] = toml_edit::value(new_version);

@@ -19,8 +19,8 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::ambient_example_procedural_generation::components::rotating_sun;
 use noise::{utils::*, Fbm, Perlin};
+use packages::this::components::rotating_sun;
 use palette::IntoColor;
 
 const TAU: f32 = std::f32::consts::TAU;

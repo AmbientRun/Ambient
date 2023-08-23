@@ -1,5 +1,5 @@
 use ambient_api::prelude::*;
-use packages::ambient_example_todo::{
+use packages::this::{
     components::{todo_item, todo_time},
     messages::{DeleteItem, NewItem},
 };

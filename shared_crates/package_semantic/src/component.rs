@@ -69,6 +69,7 @@ impl Resolve for Component {
                 ResolvableItemId::Unresolved(path) => {
                     let id = context
                         .get_attribute_id(items, path.as_path())
+                        .map_err(|e| e.into_owned())
                         .with_context(|| {
                             format!(
                                 "Failed to resolve attribute `{path}` for component `{}`",
@@ -82,7 +83,7 @@ impl Resolve for Component {
         }
 
         // If this is an enum, emit the `Enum` attribute
-        if items.get(type_id)?.inner.as_enum().is_some() {
+        if items.get(type_id).inner.as_enum().is_some() {
             attributes.push(ResolvableItemId::Resolved(definitions.attributes.enum_));
         }
         self.attributes = attributes;

@@ -2,7 +2,7 @@ use std::f32::consts::TAU;
 
 use ambient_api::prelude::*;
 
-use crate::packages::ambient_example_minigolf::components::{
+use crate::packages::this::components::{
     player_camera_pivot, player_camera_position, player_camera_radius, player_camera_rotation,
 };
 

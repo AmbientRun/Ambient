@@ -18,7 +18,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::ambient_example_third_person_camera::{
+use packages::this::{
     components::{
         camera_follow_distance, player_mouse_delta_x, player_movement_direction, player_scroll,
     },

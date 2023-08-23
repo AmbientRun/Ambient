@@ -1,25 +1,31 @@
 use std::path::{Path, PathBuf};
 
-use ambient_package_semantic::{Printer, Semantic};
+use ambient_package_semantic::{Printer, RetrievableFile, Semantic};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let mut semantic = Semantic::new().await?;
+    let args: Vec<_> = std::env::args().collect();
+    let target = args.get(1).expect("path or 'all' as first arg");
+    let should_resolve = !args.get(2).is_some_and(|s| s == "--no-resolve");
 
-    let paths = {
-        let arg = std::env::args().nth(1).expect("path or 'all' as first arg");
-        if arg == "all" {
-            all_examples()?
-        } else {
-            vec![PathBuf::from(arg)]
-        }
+    let paths = if target == "all" {
+        all_examples()?
+    } else {
+        vec![PathBuf::from(target)]
     };
+
     for path in paths {
-        semantic.add_package(&path).await?;
+        anyhow::ensure!(path.is_absolute(), "{path:?} must be absolute");
+        semantic
+            .add_package(RetrievableFile::Path(path.join("ambient.toml")))
+            .await?;
     }
 
     let mut printer = Printer::new();
-    semantic.resolve()?;
+    if should_resolve {
+        semantic.resolve()?;
+    }
     printer.print(&semantic)?;
 
     Ok(())
@@ -29,10 +35,11 @@ async fn main() -> anyhow::Result<()> {
 fn all_examples() -> anyhow::Result<Vec<PathBuf>> {
     let mut examples = Vec::new();
 
+    let wd = std::env::current_dir()?;
     for guest in all_directories_in(Path::new("guest"))? {
         for category_path in all_directories_in(&guest.join("examples"))? {
             for example_path in all_directories_in(&category_path)? {
-                examples.push(example_path);
+                examples.push(wd.join(example_path));
             }
         }
     }

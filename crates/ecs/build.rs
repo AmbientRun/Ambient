@@ -29,6 +29,8 @@ fn main() {
         }
     }
 
+    pub use raw::ambient_core::*;
+
     "#;
 
     let api_generated_code = ambient_sys::task::make_native_multithreaded_runtime()
@@ -36,7 +38,6 @@ fn main() {
         .block_on(ambient_package_macro_common::generate_code(
             None,
             ambient_package_macro_common::Context::Host,
-            Some("ambient_core"),
         ))
         .unwrap();
 

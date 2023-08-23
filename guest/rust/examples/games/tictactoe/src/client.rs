@@ -8,7 +8,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::ambient_example_tictactoe::{
+use packages::this::{
     components::{cell, cells, owned_by},
     messages::Input,
 };

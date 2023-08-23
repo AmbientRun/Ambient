@@ -1,7 +1,13 @@
-use anyhow::Context;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 use crate::Version;
+
+#[derive(Error, Debug, PartialEq, Eq)]
+pub enum BuildMetadataError {
+    #[error("failed to parse build metadata")]
+    ParseError(#[from] toml::de::Error),
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct BuildMetadata {
@@ -24,7 +30,7 @@ impl BuildMetadata {
         }
     }
 
-    pub fn parse(contents: &str) -> anyhow::Result<Self> {
-        toml::from_str(contents).context("failed to parse build metadata")
+    pub fn parse(contents: &str) -> Result<Self, BuildMetadataError> {
+        Ok(toml::from_str(contents)?)
     }
 }

@@ -664,7 +664,6 @@ dependencies = [
 name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
- "anyhow",
  "convert_case 0.6.0",
  "indexmap 2.0.0",
  "once_cell",
@@ -674,6 +673,7 @@ dependencies = [
  "syn 1.0.109",
  "thiserror",
  "toml",
+ "url",
 ]
 
 [[package]]
@@ -718,9 +718,53 @@ dependencies = [
  "glam",
  "indexmap 2.0.0",
  "paste",
+ "reqwest",
  "thiserror",
  "toml",
  "ulid",
+ "url",
+]
+
+[[package]]
+name = "ambient_package_semantic_native"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_ecs",
+ "ambient_native_std",
+ "ambient_network",
+ "ambient_package_semantic",
+ "anyhow",
+]
+
+[[package]]
+name = "ambient_primitives"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_gpu",
+ "ambient_meshes",
+ "ambient_native_std",
+ "ambient_renderer",
+ "glam",
+]
+
+[[package]]
+name = "ambient_procedurals"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_native_std",
+ "ambient_renderer",
+ "ambient_shared_types",
+ "parking_lot",
+ "paste",
+ "tracing",
+ "ulid",
+ "wgpu",
 ]
 
 [[package]]

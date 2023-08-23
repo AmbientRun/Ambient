@@ -11,7 +11,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::ambient_example_screen_ray::messages::{Input, WorldPosition};
+use packages::this::messages::{Input, WorldPosition};
 
 #[main]
 pub fn main() {

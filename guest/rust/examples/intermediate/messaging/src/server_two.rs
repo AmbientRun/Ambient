@@ -1,5 +1,5 @@
 use ambient_api::prelude::*;
-use packages::ambient_example_messaging::messages::{HelloWithoutBody, Local};
+use packages::this::messages::{HelloWithoutBody, Local};
 
 #[main]
 pub fn main() {

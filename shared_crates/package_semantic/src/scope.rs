@@ -1,107 +1,19 @@
-use std::path::PathBuf;
-
 use ambient_package::{
-    BuildMetadata, ComponentType, ItemPath, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
+    ComponentType, ItemPath, ItemPathBuf, PascalCaseIdentifier, SnakeCaseIdentifier,
 };
-use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
+use thiserror::Error;
 
 use crate::{
     Attribute, Component, Concept, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Message,
-    Resolve, ResolveClone, StandardDefinitions, Type,
+    Package, Resolve, ResolveClone, StandardDefinitions, Type,
 };
-
-#[derive(Clone, PartialEq, Debug)]
-pub struct Context(Vec<ItemId<Scope>>);
-impl Context {
-    pub(crate) fn new(root_scope: ItemId<Scope>) -> Self {
-        Self(vec![root_scope])
-    }
-
-    fn push(&mut self, scope: ItemId<Scope>) {
-        self.0.push(scope);
-    }
-
-    pub(crate) fn get_type_id(
-        &self,
-        items: &ItemMap,
-        component_type: &ComponentType,
-    ) -> Option<ItemId<Type>> {
-        for &scope_id in self.0.iter().rev() {
-            match component_type {
-                ComponentType::Item(id) => {
-                    if let Ok(id) = get_type_id(items, scope_id, id.as_path()) {
-                        return Some(id);
-                    }
-                }
-                ComponentType::Contained {
-                    type_,
-                    element_type,
-                } => {
-                    if let Ok(id) = get_type_id(items, scope_id, element_type.as_path()) {
-                        return Some(match type_ {
-                            ambient_package::ContainerType::Vec => items.get_vec_id(id),
-                            ambient_package::ContainerType::Option => items.get_option_id(id),
-                        });
-                    }
-                }
-            }
-        }
-        None
-    }
-
-    pub(crate) fn get_attribute_id(
-        &self,
-        items: &ItemMap,
-        path: ItemPath,
-    ) -> anyhow::Result<ItemId<Attribute>> {
-        for &scope_id in self.0.iter().rev() {
-            if let Ok(id) = get_attribute_id(items, scope_id, path) {
-                return Ok(id);
-            }
-        }
-        anyhow::bail!("failed to find attribute {:?}", path);
-    }
-
-    pub(crate) fn get_concept_id(
-        &self,
-        items: &ItemMap,
-        path: ItemPath,
-    ) -> anyhow::Result<ItemId<Concept>> {
-        for &scope_id in self.0.iter().rev() {
-            if let Ok(id) = get_concept_id(items, scope_id, path) {
-                return Ok(id);
-            }
-        }
-        anyhow::bail!("failed to find concept {:?}", path);
-    }
-
-    pub(crate) fn get_component_id(
-        &self,
-        items: &ItemMap,
-        path: ItemPath,
-    ) -> anyhow::Result<ItemId<Component>> {
-        for &scope_id in self.0.iter().rev() {
-            if let Ok(id) = get_component_id(items, scope_id, path) {
-                return Ok(id);
-            }
-        }
-        anyhow::bail!("failed to find component {:?}", path);
-    }
-}
 
 #[derive(Clone, PartialEq)]
 pub struct Scope {
     pub data: ItemData,
-    pub original_id: SnakeCaseIdentifier,
-    pub manifest_path: Option<PathBuf>,
-    pub manifest: Option<Manifest>,
-    pub build_metadata: Option<BuildMetadata>,
 
-    pub dependencies: Vec<ItemId<Scope>>,
-
-    pub enabled_by_default: bool,
-
+    pub imports: IndexMap<SnakeCaseIdentifier, ItemId<Package>>,
     pub scopes: IndexMap<SnakeCaseIdentifier, ItemId<Scope>>,
     pub components: IndexMap<SnakeCaseIdentifier, ItemId<Component>>,
     pub concepts: IndexMap<SnakeCaseIdentifier, ItemId<Concept>>,
@@ -113,13 +25,6 @@ impl std::fmt::Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut ds = f.debug_struct("Scope");
         ds.field("data", &self.data);
-        ds.field("original_id", &self.original_id);
-        ds.field("path", &self.manifest_path);
-        ds.field("manifest", &self.manifest);
-
-        if !self.dependencies.is_empty() {
-            ds.field("dependencies", &self.dependencies);
-        }
 
         if !self.scopes.is_empty() {
             ds.field("scopes", &self.scopes);
@@ -210,24 +115,10 @@ impl ResolveClone for Scope {
 }
 impl Scope {
     /// Creates a new empty scope with the specified data.
-    pub fn new(
-        data: ItemData,
-        original_id: SnakeCaseIdentifier,
-        path: Option<PathBuf>,
-        manifest: Option<Manifest>,
-        enabled: bool,
-    ) -> Self {
+    pub fn new(data: ItemData) -> Self {
         Self {
             data,
-            original_id,
-            manifest_path: path,
-            manifest,
-            build_metadata: Default::default(),
-
-            dependencies: Default::default(),
-
-            enabled_by_default: enabled,
-
+            imports: Default::default(),
             scopes: Default::default(),
             components: Default::default(),
             concepts: Default::default(),
@@ -250,7 +141,7 @@ impl Scope {
             visitor(scope)?;
 
             for scope in scope.scopes.values().copied() {
-                visit_recursive_inner(&*items.get(scope)?, items, visitor)?;
+                visit_recursive_inner(&items.get(scope), items, visitor)?;
             }
 
             Ok(())
@@ -260,64 +151,172 @@ impl Scope {
     }
 }
 
+#[derive(Error, Debug)]
+pub enum ContextGetError<'a> {
+    #[error("failed to find {path} ({type_})")]
+    NotFound { path: ItemPath<'a>, type_: ItemType },
+}
+impl ContextGetError<'_> {
+    pub fn into_owned(self) -> ContextGetOwnedError {
+        self.into()
+    }
+}
+#[derive(Error, Debug)]
+pub enum ContextGetOwnedError {
+    #[error("failed to find {path} ({type_})")]
+    NotFound { path: ItemPathBuf, type_: ItemType },
+}
+impl From<ContextGetError<'_>> for ContextGetOwnedError {
+    fn from(error: ContextGetError) -> Self {
+        match error {
+            ContextGetError::NotFound { path, type_ } => Self::NotFound {
+                path: path.to_owned(),
+                type_,
+            },
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct Context(Vec<ItemId<Scope>>);
+impl Context {
+    pub(crate) fn new(root_scope: ItemId<Scope>) -> Self {
+        Self(vec![root_scope])
+    }
+
+    fn push(&mut self, scope: ItemId<Scope>) {
+        self.0.push(scope);
+    }
+
+    pub(crate) fn get_type_id(
+        &self,
+        items: &ItemMap,
+        component_type: &ComponentType,
+    ) -> Option<ItemId<Type>> {
+        for &scope_id in self.0.iter().rev() {
+            match component_type {
+                ComponentType::Item(id) => {
+                    if let Some(id) = get_type_id(items, scope_id, id.as_path()) {
+                        return Some(id);
+                    }
+                }
+                ComponentType::Contained {
+                    type_,
+                    element_type,
+                } => {
+                    if let Some(id) = get_type_id(items, scope_id, element_type.as_path()) {
+                        return Some(match type_ {
+                            ambient_package::ContainerType::Vec => items.get_vec_id(id),
+                            ambient_package::ContainerType::Option => items.get_option_id(id),
+                        });
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    pub(crate) fn get_attribute_id<'a>(
+        &self,
+        items: &ItemMap,
+        path: ItemPath<'a>,
+    ) -> Result<ItemId<Attribute>, ContextGetError<'a>> {
+        for &scope_id in self.0.iter().rev() {
+            if let Some(id) = get_attribute_id(items, scope_id, path) {
+                return Ok(id);
+            }
+        }
+        Err(ContextGetError::NotFound {
+            path,
+            type_: ItemType::Attribute,
+        })
+    }
+
+    pub(crate) fn get_concept_id<'a>(
+        &self,
+        items: &ItemMap,
+        path: ItemPath<'a>,
+    ) -> Result<ItemId<Concept>, ContextGetError<'a>> {
+        for &scope_id in self.0.iter().rev() {
+            if let Some(id) = get_concept_id(items, scope_id, path) {
+                return Ok(id);
+            }
+        }
+        Err(ContextGetError::NotFound {
+            path,
+            type_: ItemType::Concept,
+        })
+    }
+
+    pub(crate) fn get_component_id<'a>(
+        &self,
+        items: &ItemMap,
+        path: ItemPath<'a>,
+    ) -> Result<ItemId<Component>, ContextGetError<'a>> {
+        for &scope_id in self.0.iter().rev() {
+            if let Some(id) = get_component_id(items, scope_id, path) {
+                return Ok(id);
+            }
+        }
+        Err(ContextGetError::NotFound {
+            path,
+            type_: ItemType::Component,
+        })
+    }
+}
+
 fn get_type_id(
     items: &ItemMap,
     self_scope_id: ItemId<Scope>,
     path: ItemPath,
-) -> anyhow::Result<ItemId<Type>> {
+) -> Option<ItemId<Type>> {
     let (scope, item) = path.scope_and_item();
-    let item = item.as_pascal().context("type name must be PascalCase")?;
     items
-        .get_scope(self_scope_id, scope.iter())?
+        .get_scope(self_scope_id, scope)
+        .ok()?
         .types
-        .get(item)
+        .get(item.as_pascal().ok()?)
         .copied()
-        .with_context(|| format!("failed to find type {item} in {scope:?}"))
 }
 
 fn get_attribute_id(
     items: &ItemMap,
     self_scope_id: ItemId<Scope>,
     path: ItemPath,
-) -> anyhow::Result<ItemId<Attribute>> {
+) -> Option<ItemId<Attribute>> {
     let (scope, item) = path.scope_and_item();
-    let item = item
-        .as_pascal()
-        .context("attribute name must be PascalCase")?;
     items
-        .get_scope(self_scope_id, scope.iter())?
+        .get_scope(self_scope_id, scope)
+        .ok()?
         .attributes
-        .get(item)
+        .get(item.as_pascal().ok()?)
         .copied()
-        .with_context(|| format!("failed to find attribute {item} in {scope:?}",))
 }
 
 fn get_concept_id(
     items: &ItemMap,
     self_scope_id: ItemId<Scope>,
     path: ItemPath,
-) -> anyhow::Result<ItemId<Concept>> {
+) -> Option<ItemId<Concept>> {
     let (scope, item) = path.scope_and_item();
-    let item = item.as_snake().context("concept name must be snake_case")?;
     items
-        .get_scope(self_scope_id, scope.iter())?
+        .get_scope(self_scope_id, scope)
+        .ok()?
         .concepts
-        .get(item)
+        .get(item.as_snake().ok()?)
         .copied()
-        .with_context(|| format!("failed to find concept {item} in {scope:?}",))
 }
 
 fn get_component_id(
     items: &ItemMap,
     self_scope_id: ItemId<Scope>,
     path: ItemPath,
-) -> anyhow::Result<ItemId<Component>> {
+) -> Option<ItemId<Component>> {
     let (scope, item) = path.scope_and_item();
-    let item = item.as_snake().context("concept name must be snake_case")?;
     items
-        .get_scope(self_scope_id, scope.iter())?
+        .get_scope(self_scope_id, scope)
+        .ok()?
         .components
-        .get(item)
+        .get(item.as_snake().ok()?)
         .copied()
-        .with_context(|| format!("failed to find component {item} in {scope:?}",))
 }

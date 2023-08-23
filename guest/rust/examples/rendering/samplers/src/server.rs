@@ -13,7 +13,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::ambient_example_samplers::assets;
+use packages::this::assets;
 
 #[main]
 pub fn main() {

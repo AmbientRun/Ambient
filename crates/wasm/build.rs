@@ -93,11 +93,10 @@ fn main() {
                 .block_on(ambient_package_macro_common::generate_code(
                     None,
                     ambient_package_macro_common::Context::GuestApi,
-                    None,
                 ))
                 .unwrap();
 
-            let api_generated_code = format!("#![allow(missing_docs)]\n#![allow(dead_code)]\n#![allow(unused)]\n{api_generated_code}");
+            let api_generated_code = format!("#![allow(missing_docs)]\n#![allow(dead_code)]\n#![allow(unused)]\npub use raw::ambient_core;\n{api_generated_code}");
 
             let generated_path = guest_path
                 .join("api_core")

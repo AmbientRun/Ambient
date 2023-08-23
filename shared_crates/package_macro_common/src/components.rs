@@ -1,4 +1,4 @@
-use ambient_package_semantic::{ItemId, ItemMap, Scope};
+use ambient_package_semantic::{ItemMap, Scope};
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -7,7 +7,6 @@ use crate::{make_path, Context, TypePrinter};
 pub fn generate_init(
     context: Context,
     items: &ItemMap,
-    root_scope_id: ItemId<Scope>,
     root_scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
     Ok(match context {
@@ -16,21 +15,17 @@ pub fn generate_init(
             root_scope.visit_recursive(items, |scope| {
                 if !scope.components.is_empty() {
                     namespaces.push(syn::parse_str::<syn::Path>(
-                        &items.fully_qualified_display_path(
-                            scope,
-                            false,
-                            Some(root_scope_id),
-                            None,
-                        )?,
+                        &items.fully_qualified_display_path(scope, None, None),
                     )?);
                 }
                 Ok(())
             })?;
 
+            let prefix = context.path_prefix_impl(&root_scope.data);
             quote! {
                 pub fn init() {
                     #(
-                        #namespaces::components::init_components();
+                        #prefix #namespaces::components::init_components();
                     )*
                 }
             }
@@ -43,7 +38,6 @@ pub fn generate(
     context: Context,
     items: &ItemMap,
     type_printer: &TypePrinter,
-    root_scope_id: ItemId<Scope>,
     scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
     let components = scope
@@ -53,13 +47,13 @@ pub fn generate(
         .map(|component| {
             let id = &component.data.id;
             let type_id = component.type_.as_resolved().expect("type was unresolved");
-            let ty = type_printer.get(context, items, None, root_scope_id, type_id)?;
+            let ty = type_printer.get(context, items, None, type_id)?;
 
             let attributes: Vec<_> = component
                 .attributes
                 .iter()
                 .filter_map(|id| id.as_resolved())
-                .map(|id| items.get(id).unwrap().data.id.clone())
+                .map(|id| items.get(id).data.id.clone())
                 .collect();
 
             let name = component
@@ -102,8 +96,7 @@ pub fn generate(
                     })
                 }
                 Context::GuestApi | Context::GuestUser => {
-                    let component_id =
-                        items.fully_qualified_display_path(&*component, true, None, None)?;
+                    let component_id = items.fully_qualified_display_path(&*component, None, None);
                     let ident = make_path(id.as_str());
                     let uppercase_ident = make_path(&id.as_str().to_uppercase());
 
@@ -129,7 +122,7 @@ pub fn generate(
     }
     let inner = match context {
         Context::Host => {
-            let namespace_path = items.fully_qualified_display_path(scope, false, None, None)?;
+            let namespace_path = items.fully_qualified_display_path(scope, None, None);
             // lazy hack to get ambient_core components to work
             let namespace_path = namespace_path.strip_prefix("ambient_core::").unwrap();
             quote! {

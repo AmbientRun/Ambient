@@ -5,7 +5,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::ambient_example_audio_ctrl::assets;
+use packages::this::assets;
 
 #[element_component]
 fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {

@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use url::Url;
 
 use crate::{
     Component, Concept, Enum, ItemPathBuf, Message, PascalCaseIdentifier, SnakeCaseIdentifier,
@@ -57,7 +58,7 @@ impl Manifest {
 pub struct Package {
     pub id: SnakeCaseIdentifier,
     pub name: Option<String>,
-    pub version: Option<Version>,
+    pub version: Version,
     pub description: Option<String>,
     pub repository: Option<String>,
     #[serde(default)]
@@ -131,9 +132,15 @@ impl Default for BuildRust {
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Dependency {
-    pub path: PathBuf,
+    pub path: Option<PathBuf>,
+    pub url: Option<Url>,
     #[serde(default = "return_true")]
     pub enabled: bool,
+}
+impl Dependency {
+    pub fn has_remote_dependency(&self) -> bool {
+        self.url.is_some()
+    }
 }
 
 fn return_true() -> bool {
@@ -145,6 +152,7 @@ mod tests {
     use std::path::PathBuf;
 
     use indexmap::IndexMap;
+    use url::Url;
 
     use crate::{
         Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Enum,
@@ -183,7 +191,7 @@ mod tests {
                 package: Package {
                     id: SnakeCaseIdentifier::new("test").unwrap(),
                     name: Some("Test".to_string()),
-                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -230,7 +238,7 @@ mod tests {
                 package: Package {
                     id: sci("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
-                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
                 build: Build {
@@ -282,7 +290,7 @@ mod tests {
                 package: Package {
                     id: sci("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
-                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
                 build: Build {
@@ -329,7 +337,7 @@ mod tests {
                 package: Package {
                     id: sci("my_package"),
                     name: Some("My Package".to_string()),
-                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
                 build: Build {
@@ -458,7 +466,7 @@ mod tests {
                 package: Package {
                     id: sci("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
-                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
                 build: Build::default(),
@@ -501,7 +509,7 @@ mod tests {
                 package: Package {
                     id: sci("test"),
                     name: Some("Test".to_string()),
-                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
                 build: Build {
@@ -567,6 +575,7 @@ mod tests {
         deps_assets = { path = "deps/assets" }
         deps_code = { path = "deps/code" }
         deps_ignore_me = { path = "deps/ignore_me", enabled = false }
+        deps_remote = { url = "http://example.com" }
 
         "#;
 
@@ -576,7 +585,7 @@ mod tests {
                 package: Package {
                     id: sci("dependencies"),
                     name: Some("dependencies".to_string()),
-                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
                 build: Default::default(),
@@ -588,22 +597,33 @@ mod tests {
                     (
                         sci("deps_assets"),
                         Dependency {
-                            path: PathBuf::from("deps/assets"),
+                            path: Some(PathBuf::from("deps/assets")),
+                            url: None,
                             enabled: true,
                         }
                     ),
                     (
                         sci("deps_code"),
                         Dependency {
-                            path: PathBuf::from("deps/code"),
+                            path: Some(PathBuf::from("deps/code")),
+                            url: None,
                             enabled: true,
                         }
                     ),
                     (
                         sci("deps_ignore_me"),
                         Dependency {
-                            path: PathBuf::from("deps/ignore_me"),
+                            path: Some(PathBuf::from("deps/ignore_me")),
+                            url: None,
                             enabled: false,
+                        }
+                    ),
+                    (
+                        sci("deps_remote"),
+                        Dependency {
+                            path: None,
+                            url: Some(Url::parse("http://example.com").unwrap()),
+                            enabled: true,
                         }
                     )
                 ])
