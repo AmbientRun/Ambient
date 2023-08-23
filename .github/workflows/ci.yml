@@ -47,7 +47,7 @@ jobs:
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: clippy-web
+          key: clippy-web
           workspaces: |
             .
             web
@@ -76,9 +76,9 @@ jobs:
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev vulkan-validationlayers-dev mesa-vulkan-drivers libasound2-dev
 
-      - uses: Leafwing-Studios/cargo-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
-          cache-group: "test"
+          key: main
       - uses: taiki-e/install-action@cargo-nextest
       - name: Run tests
         uses: actions-rs/cargo@v1
@@ -155,9 +155,9 @@ jobs:
             libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev clang nodejs
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Leafwing-Studios/cargo-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
-          cache-group: "main"
+          key: main
       - name: Build
         run: cargo build --workspace --release
         env:
@@ -185,7 +185,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: guest-rust
+          key: guest-rust
           workspaces: guest/rust
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace
