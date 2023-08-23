@@ -159,17 +159,16 @@ jobs:
         with:
           key: main
       - name: Build
-        run: cargo build --workspace --release
+        run: cargo build --workspace
         env:
-          CARGO_INCREMENTAL: 0
           RUSTFLAGS: "-C debuginfo=0"
       - name: Upload ambient executable artifact
         uses: actions/upload-artifact@v3
         with:
           name: ambient-${{ matrix.os }}
           path: |
-            target/release/ambient
-            target/release/ambient.exe
+            target/debug/ambient
+            target/debug/ambient.exe
 
   build-guest-rust:
     strategy:
