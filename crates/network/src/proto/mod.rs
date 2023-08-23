@@ -1,4 +1,4 @@
-use ambient_core::package_name;
+use ambient_core::main_package_name;
 use ambient_ecs::{ComponentRegistry, ExternalComponentDesc};
 use ambient_native_std::{ambient_version, asset_url::AbsAssetUrl};
 use itertools::Itertools;
@@ -29,8 +29,8 @@ pub enum ServerPush {
 /// Note: This has to deserialize correctly between versions of the server and client for us to be able to show a nice error message.
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct ServerInfo {
-    /// The name of the package. Used by the client to figure out what to title its window. Defaults to "Ambient".
-    pub package_name: String,
+    /// The name of the main package. Used by the client to figure out what to title its window. Defaults to "Ambient".
+    pub main_package_name: String,
 
     // Base url of the content server.
     pub content_base_url: AbsAssetUrl,
@@ -56,7 +56,7 @@ impl ServerInfo {
             .into();
 
         Self {
-            package_name: world.resource(package_name()).clone(),
+            main_package_name: world.resource(main_package_name()).clone(),
             content_base_url,
             version: ambient_version().to_string(),
             external_components,

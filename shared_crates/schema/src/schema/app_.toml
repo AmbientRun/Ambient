@@ -67,11 +67,11 @@ name = "Description"
 description = "A human-friendly description for this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components.package_name]
+[components.main_package_name]
 type = "String"
-name = "Package Name"
+name = "Main Package Name"
 description = """
-The name of the package, from the manifest.
+The name of the main package being run.
 Defaults to \"Ambient\"."""
 attributes = ["Debuggable", "Resource"]
 

@@ -6,7 +6,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use ambient_core::{asset_cache, name, no_sync, package_name, FIXED_SERVER_TICK_TIME};
+use ambient_core::{asset_cache, main_package_name, name, no_sync, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
     dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World,
     WorldEventsSystem, WorldStreamCompEvent,
@@ -137,7 +137,7 @@ pub async fn start(
         server_world
             .add_components(
                 server_world.resource_entity(),
-                Entity::new().with(package_name(), name),
+                Entity::new().with(main_package_name(), name),
             )
             .unwrap();
 

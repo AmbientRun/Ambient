@@ -140,7 +140,7 @@ impl ElementComponent for ClientView {
         }
 
         // Set the window title to the package name
-        let (window_title_state, _set_window_title) = hooks.use_state("Ambient".to_string());
+        let (window_title_state, set_window_title) = hooks.use_state("Ambient".to_string());
         *hooks.world.resource_mut(window_title()) = window_title_state;
 
         let (err, set_error) = hooks.use_state(None);
@@ -157,7 +157,15 @@ impl ElementComponent for ClientView {
                     conn.clone(),
                     &assets,
                     user_id,
-                    move |assets, user_id| {
+                    move |args| {
+                        let OnConnectionState {
+                            assets,
+                            user_id,
+                            main_package_name,
+                        } = args;
+
+                        set_window_title(main_package_name.to_string());
+
                         let (systems, resources) = systems_and_resources();
                         let resources = local_resources
                             .clone()
@@ -254,11 +262,17 @@ impl ElementComponent for ClientView {
     }
 }
 
+struct OnConnectionState<'a> {
+    assets: &'a AssetCache,
+    user_id: &'a str,
+    main_package_name: &'a str,
+}
+
 async fn handle_connection(
     conn: quinn::Connection,
     assets: &AssetCache,
     user_id: String,
-    mut on_loaded: impl FnMut(&AssetCache, &str) -> anyhow::Result<(SharedClientGameState, CleanupFunc)>
+    mut on_loaded: impl FnMut(OnConnectionState) -> anyhow::Result<(SharedClientGameState, CleanupFunc)>
         + Send
         + Sync,
     control_rx: flume::Receiver<Control>,
@@ -287,10 +301,12 @@ async fn handle_connection(
 
     assert!(ContentBaseUrlKey.exists(assets));
 
-    if !client.is_connected() {
+    let main_package_name = if let ClientProtoState::Connected(connected) = &client {
+        connected.main_package_name.clone()
+    } else {
         tracing::warn!("Connection failed or was denied");
         return Ok(());
-    }
+    };
 
     tracing::info!("Connection successfully established");
 
@@ -298,7 +314,11 @@ async fn handle_connection(
 
     let mut diff_stream = RawFramedRecvStream::new(conn.accept_uni().await?);
 
-    let (shared_client_state, cleanup) = on_loaded(assets, &user_id)?;
+    let (shared_client_state, cleanup) = on_loaded(OnConnectionState {
+        assets,
+        user_id: &user_id,
+        main_package_name: &main_package_name,
+    })?;
 
     let on_disconnect = move || {
         tracing::debug!("Running connection cleanup");

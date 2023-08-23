@@ -26,9 +26,10 @@ use crate::{
 /// The client logic handler in a connected state
 ///
 /// Entered after the client has sent a connect request and received a `ServerInfo` message from the server
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(crate) struct ConnectedClient {
     diff_serializer: DiffSerializer,
+    pub main_package_name: String,
 }
 
 #[derive(Debug)]
@@ -75,7 +76,10 @@ impl ClientProtoState {
                     }
                 }
 
-                *self = Self::Connected(Default::default());
+                *self = Self::Connected(ConnectedClient {
+                    diff_serializer: Default::default(),
+                    main_package_name: server_info.main_package_name,
+                });
 
                 Ok(())
             }
@@ -115,6 +119,7 @@ impl ClientProtoState {
     ///
     /// [`Connected`]: ClientProtoState::Connected
     #[must_use]
+    #[allow(dead_code)]
     pub(crate) fn is_connected(&self) -> bool {
         matches!(self, Self::Connected(..))
     }

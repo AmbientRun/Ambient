@@ -204,11 +204,11 @@ mod raw {
                 pub fn description() -> Component<String> {
                     *DESCRIPTION
                 }
-                static PACKAGE_NAME: Lazy<Component<String>> =
-                    Lazy::new(|| __internal_get_component("ambient_core::app::package_name"));
-                #[doc = "**Package Name**: The name of the package, from the manifest.\n\nDefaults to \"Ambient\".\n\n*Attributes*: Debuggable, Resource"]
-                pub fn package_name() -> Component<String> {
-                    *PACKAGE_NAME
+                static MAIN_PACKAGE_NAME: Lazy<Component<String>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::app::main_package_name"));
+                #[doc = "**Main Package Name**: The name of the main package being run.\n\nDefaults to \"Ambient\".\n\n*Attributes*: Debuggable, Resource"]
+                pub fn main_package_name() -> Component<String> {
+                    *MAIN_PACKAGE_NAME
                 }
                 static SELECTABLE: Lazy<Component<()>> =
                     Lazy::new(|| __internal_get_component("ambient_core::app::selectable"));
