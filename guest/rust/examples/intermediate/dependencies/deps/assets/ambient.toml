@@ -2,6 +2,7 @@
 id = "ambient_example_deps_assets"
 name = "Dependencies (Assets)"
 version = "0.0.1"
+content = { type = "Asset", models = true }
 
 [components]
 spin_speed = { type = "F32", name = "Spin speed" }

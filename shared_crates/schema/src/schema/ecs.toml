@@ -2,6 +2,7 @@
 id = "ecs"
 name = "Entity Component System"
 description = "Core components for the ECS and entities."
+content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
 
 [components.children]

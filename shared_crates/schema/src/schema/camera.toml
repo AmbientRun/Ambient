@@ -2,6 +2,7 @@
 id = "camera"
 name = "Camera"
 description = "Camera matrices, types, parameters, and more."
+content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
 
 [components.active_camera]

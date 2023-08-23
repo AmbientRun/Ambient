@@ -63,7 +63,6 @@ pub struct Package {
     pub repository: Option<String>,
     #[serde(default)]
     pub authors: Vec<String>,
-    #[serde(default)]
     pub content: PackageContent,
     #[serde(default)]
     pub includes: Vec<PathBuf>,
@@ -83,13 +82,19 @@ pub enum PackageContent {
         #[serde(default)]
         models: bool,
         #[serde(default)]
+        animations: bool,
+        #[serde(default)]
         textures: bool,
+        #[serde(default)]
+        materials: bool,
         #[serde(default)]
         audio: bool,
         #[serde(default)]
         fonts: bool,
         #[serde(default)]
         code: bool,
+        #[serde(default)]
+        schema: bool,
     },
     Tool,
     Mod {
@@ -178,6 +183,7 @@ mod tests {
         id = "test"
         name = "Test"
         version = "0.0.1"
+        content = { type = "Playable" }
         "#;
 
         assert_eq!(
@@ -216,6 +222,7 @@ mod tests {
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
+        content = { type = "Playable" }
 
         [components]
         cell = { type = "i32", name = "Cell", description = "The ID of the cell this player is in", attributes = ["store"] }
@@ -274,6 +281,7 @@ mod tests {
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
+        content = { type = "Playable" }
 
         [build.rust]
         feature-multibuild = ["client"]
@@ -307,6 +315,7 @@ mod tests {
         id = "my_package"
         name = "My Package"
         version = "0.0.1"
+        content = { type = "Playable" }
 
         [components]
         "core::transform::rotation" = { type = "quat", name = "Rotation", description = "" }
@@ -447,6 +456,7 @@ mod tests {
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
+        content = { type = "Playable" }
 
         [enums.CellState]
         description = "The current cell state"
@@ -490,6 +500,7 @@ mod tests {
         id = "test"
         name = "Test"
         version = "0.0.1"
+        content = { type = "Playable" }
 
         [components]
         test = { type = "I32", name = "Test", description = "Test" }
@@ -565,6 +576,7 @@ mod tests {
         id = "dependencies"
         name = "dependencies"
         version = "0.0.1"
+        content = { type = "Playable" }
 
         [dependencies]
         deps_assets = { path = "deps/assets" }
