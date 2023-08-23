@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt::Display,
     path::{Path, PathBuf},
 };
 
@@ -26,6 +27,17 @@ impl PackageLocator {
             version: manifest.package.version.clone(),
             source,
         }
+    }
+}
+impl Display for PackageLocator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}@{}[", self.id, self.version)?;
+        match &self.source {
+            RetrievableFile::Ambient(p) => write!(f, "ambient:{}", p.display()),
+            RetrievableFile::Path(p) => write!(f, "path:{}", p.display()),
+            RetrievableFile::Url(u) => write!(f, "url:{}", u),
+        }?;
+        write!(f, "]")
     }
 }
 

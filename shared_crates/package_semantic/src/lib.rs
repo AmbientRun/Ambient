@@ -116,7 +116,9 @@ impl Semantic {
                 &dependency.url(),
             ) {
                 (None, None) => {
-                    anyhow::bail!("dependency {dependency_name} has no sources specified")
+                    anyhow::bail!(
+                        "{locator}: dependency `{dependency_name}` has no supported sources specified (are you trying to deploy a package with a local dependency?)"
+                    )
                 }
                 (Some(path), _) => retrievable_manifest.parent_join(&path.join("ambient.toml"))?,
                 (_, Some(url)) => {
