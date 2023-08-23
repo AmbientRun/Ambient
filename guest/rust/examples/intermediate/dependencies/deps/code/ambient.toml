@@ -2,6 +2,7 @@
 id = "ambient_example_deps_code"
 name = "Dependencies (Code)"
 version = "0.0.1"
+content = { type = "Asset", code = true }
 
 [dependencies]
 ambient_example_deps_assets = { path = "../assets" }
