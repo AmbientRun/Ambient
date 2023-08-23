@@ -269,7 +269,7 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
         let mut linker =
             wasm_bridge::component::Linker::<BindingContext<Bindings>>::new(engine.inner());
 
-        add_to_linker(&mut linker)?;
+        preview2::command::sync::add_to_linker(&mut linker)?;
 
         shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 

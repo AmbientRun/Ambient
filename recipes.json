@@ -16,7 +16,10 @@
     "components": {
       "dap": {
         "program": "./target/debug/ambient",
-        "args": ["run", "./guest/rust/examples/basics/primitives"],
+        "args": [
+          "run",
+          "./guest/rust/examples/basics/primitives"
+        ],
         "adapter": "rust",
         "env": {
           "RUST_LOG": "ambient_renderer=info,ambient_network=debug,info"
@@ -31,7 +34,13 @@
     }
   },
   "join": {
-    "cmd": ["cargo", "run", "join", "localhost:9000", "--debugger"],
+    "cmd": [
+      "cargo",
+      "run",
+      "join",
+      "localhost:9000",
+      "--debugger"
+    ],
     "env": {
       "RUST_LOG": "ambient_renderer=debug,ambient_gpu=debug,info"
     }
@@ -50,11 +59,21 @@
     }
   },
   "debug-join": {
-    "cmd": ["cargo", "build", "--message-format=json", "--features", "tracing"],
+    "cmd": [
+      "cargo",
+      "build",
+      "--message-format=json",
+      "--features",
+      "tracing"
+    ],
     "components": {
       "cargo-dap": {
         "adapter": "rust",
-        "args": ["join", "localhost:9000", "--debugger"],
+        "args": [
+          "join",
+          "localhost:9000",
+          "--debugger"
+        ],
         "env": {
           "RUST_LOG": "ambient_renderer=debug,ambient_gpu=debug,info"
         }
@@ -100,20 +119,38 @@
     }
   },
   "debug-physics": {
-    "cmd": ["cargo", "build", "--features", "tracing"],
+    "cmd": [
+      "cargo",
+      "build",
+      "--features",
+      "tracing"
+    ],
     "components": {
       "dap": {
         "program": "./target/debug/ambient",
         "adapter": "rust",
-        "args": ["run", "./guest/rust/examples/basics/physics/"]
+        "args": [
+          "run",
+          "--mute-audio",
+          "./guest/rust/examples/basics/physics/"
+        ]
       }
     }
   },
   "debug-samplers": {
-    "cmd": ["cargo", "build", "--message-format=json", "--features", "tracing"],
+    "cmd": [
+      "cargo",
+      "build",
+      "--message-format=json",
+      "--features",
+      "tracing"
+    ],
     "components": {
       "cargo-dap": {
-        "args": ["run", "./guest/rust/examples/basics/samplers/"]
+        "args": [
+          "run",
+          "./guest/rust/examples/basics/samplers/"
+        ]
       }
     },
     "env": {
@@ -142,7 +179,10 @@
         "program": "./target/debug/ambient",
         "adapter": "rust",
         "justMyCode": true,
-        "args": ["run", "./guest/rust/examples/controllers/third_person_camera"]
+        "args": [
+          "run",
+          "./guest/rust/examples/controllers/third_person_camera"
+        ]
       }
     }
   },
@@ -152,7 +192,10 @@
       "dap": {
         "program": "./target/debug/ambient",
         "adapter": "rust",
-        "args": ["run", "./guest/rust/examples/games/minigolf"]
+        "args": [
+          "run",
+          "./guest/rust/examples/games/minigolf"
+        ]
       }
     }
   },
@@ -223,7 +266,11 @@
     }
   },
   "serve-bundle": {
-    "depends_on": ["build-web", "serve-primitives", "serve"]
+    "depends_on": [
+      "build-web",
+      "serve-primitives",
+      "serve"
+    ]
   },
   "instancing": {
     "cmd": [
@@ -252,7 +299,12 @@
     ]
   },
   "golden-images": {
-    "cmd": ["cargo", "cf", "golden-images", "check"],
+    "cmd": [
+      "cargo",
+      "cf",
+      "golden-images",
+      "check"
+    ],
     "env": {
       "RUST_LOG": "ambient_network=debug,ambient=debug,info"
     }

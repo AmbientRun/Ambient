@@ -57,6 +57,7 @@ futures = { workspace = true }
 
 wasm-bridge = { git = "https://github.com/AmbientRun/wasm-bridge", branch  = "wasmtime-13", version = "0.2", features = [
     "component-model",
+    "sync",
     "wasi",
 ] }
 
