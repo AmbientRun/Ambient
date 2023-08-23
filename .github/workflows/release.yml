@@ -12,7 +12,7 @@ env:
 
 jobs:
   create-release:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       tag: ${{ steps.create-gh-release.outputs.computed-prefix }}${{ steps.create-gh-release.outputs.version }}
     steps:
@@ -25,7 +25,7 @@ jobs:
 
   upload-examples:
     needs: create-release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -40,7 +40,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             exe_name: ambient
           - os: macos-latest
@@ -56,7 +56,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install build dependencies
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
@@ -95,7 +95,7 @@ jobs:
 
   publish-api:
     needs: [create-release, build-app]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
     steps:
@@ -107,7 +107,7 @@ jobs:
 
   publish-release:
     needs: [create-release, build-app, publish-api]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:

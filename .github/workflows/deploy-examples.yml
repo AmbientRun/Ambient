@@ -12,7 +12,7 @@ env:
 
 jobs:
   build-ambient:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install build dependencies
         run: |
@@ -36,7 +36,7 @@ jobs:
           key: ${{ env.CACHE_KEY }}
 
   discover-examples:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       examples: ${{ steps.discover.outputs.examples }}
     steps:
@@ -57,7 +57,7 @@ jobs:
 
   deploy-example:
     needs: [build-ambient, discover-examples]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:

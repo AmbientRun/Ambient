@@ -768,48 +768,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_package_semantic_native"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_ecs",
- "ambient_native_std",
- "ambient_network",
- "ambient_package_semantic",
- "anyhow",
-]
-
-[[package]]
-name = "ambient_primitives"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_core",
- "ambient_ecs",
- "ambient_element",
- "ambient_gpu",
- "ambient_meshes",
- "ambient_native_std",
- "ambient_renderer",
- "glam",
-]
-
-[[package]]
-name = "ambient_procedurals"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_core",
- "ambient_ecs",
- "ambient_gpu",
- "ambient_native_std",
- "ambient_renderer",
- "ambient_shared_types",
- "parking_lot",
- "paste",
- "tracing",
- "ulid",
- "wgpu",
-]
-
-[[package]]
 name = "ambient_proxy"
 version = "0.3.3"
 source = "git+https://github.com/AmbientRun/AmbientProxy#b6f26f7fd8f0907224d97b46d4e8df838feedd19"
