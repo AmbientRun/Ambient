@@ -19,7 +19,7 @@ pub async fn generate_code(
     manifest: Option<RetrievableFile>,
     context: context::Context,
 ) -> anyhow::Result<TokenStream> {
-    let mut semantic = Semantic::new().await?;
+    let mut semantic = Semantic::new(false).await?;
 
     let package_id = if let Some(manifest) = manifest {
         Some(semantic.add_package(manifest).await?)

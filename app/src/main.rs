@@ -81,6 +81,14 @@ fn main() -> anyhow::Result<()> {
         package_path,
         &assets,
         cli.use_release_build(),
+        matches!(&cli.command, Commands::Deploy { .. })
+            || matches!(
+                &cli.command,
+                Commands::Build {
+                    for_deploy: true,
+                    ..
+                }
+            ),
     ))?;
 
     // If this is just a build, exit now

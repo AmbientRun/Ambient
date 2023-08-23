@@ -28,6 +28,10 @@ pub struct BuildConfiguration<'a> {
     pub optimize: bool,
     pub clean_build: bool,
     pub build_wasm_only: bool,
+    /// If true, the build will be optimized for deployment.
+    ///
+    /// At this moment, this is only removing the local path dependencies from the manifest.
+    pub building_for_deploy: bool,
 }
 
 pub async fn build(
@@ -41,6 +45,7 @@ pub async fn build(
         optimize,
         clean_build,
         build_wasm_only,
+        building_for_deploy,
     } = config;
 
     if clean_build {
@@ -75,6 +80,7 @@ pub async fn build(
                 optimize,
                 clean_build,
                 build_wasm_only,
+                building_for_deploy,
             },
             package_id,
         )
@@ -105,6 +111,7 @@ async fn build_package(
         semantic,
         optimize,
         build_wasm_only,
+        building_for_deploy,
         ..
     } = config;
 
@@ -188,6 +195,11 @@ async fn build_package(
                     // accidentally setting the path to a dependency that doesn't exist locally.
                     *path = Some(new_path);
                 }
+            }
+
+            // If we are building for deployment, remove all local path dependencies
+            if building_for_deploy {
+                *path = None;
             }
         }
     }

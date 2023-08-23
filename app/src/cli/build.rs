@@ -25,6 +25,7 @@ pub async fn build(
     package_path: PackagePath,
     assets: &AssetCache,
     release_build: bool,
+    building_for_deploy: bool,
 ) -> anyhow::Result<BuildDirectories> {
     let Some(package) = package_cli else {
         return Ok(BuildDirectories::new_with_same_paths(package_path.url.clone()));
@@ -44,7 +45,7 @@ pub async fn build(
     // The build step uses its own semantic to ensure that there is
     // no contamination, so that the built package can use its own
     // semantic based on the flat hierarchy.
-    let mut semantic = ambient_package_semantic::Semantic::new().await?;
+    let mut semantic = ambient_package_semantic::Semantic::new(building_for_deploy).await?;
     let primary_package_scope_id =
         shared::package::add(None, &mut semantic, &package_path.url.join("ambient.toml")?).await?;
 
@@ -61,6 +62,7 @@ pub async fn build(
         optimize: release_build,
         clean_build: package.clean_build,
         build_wasm_only: package.build_wasm_only,
+        building_for_deploy,
     };
 
     let package_name = manifest

@@ -4,7 +4,7 @@ use ambient_package_semantic::{Printer, RetrievableFile, Semantic};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let mut semantic = Semantic::new().await?;
+    let mut semantic = Semantic::new(false).await?;
     let args: Vec<_> = std::env::args().collect();
     let target = args.get(1).expect("path or 'all' as first arg");
     let should_resolve = !args.get(2).is_some_and(|s| s == "--no-resolve");

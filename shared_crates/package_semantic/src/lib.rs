@@ -60,9 +60,10 @@ pub struct Semantic {
     pub packages: HashMap<PackageLocator, ItemId<Package>>,
     pub ambient_package_id: ItemId<Package>,
     pub standard_definitions: StandardDefinitions,
+    ignore_local_dependencies: bool,
 }
 impl Semantic {
-    pub async fn new() -> anyhow::Result<Self> {
+    pub async fn new(ignore_local_dependencies: bool) -> anyhow::Result<Self> {
         let mut items = ItemMap::default();
         let (root_scope_id, standard_definitions) = create_root_scope(&mut items)?;
 
@@ -73,6 +74,7 @@ impl Semantic {
             packages: HashMap::new(),
             ambient_package_id: ItemId::empty_you_should_really_initialize_this(),
             standard_definitions,
+            ignore_local_dependencies,
         };
 
         semantic.ambient_package_id = semantic
@@ -106,7 +108,13 @@ impl Semantic {
         let mut dependencies = HashMap::new();
         for (dependency_name, dependency) in &manifest.dependencies {
             // path takes precedence over url
-            let source = match (&dependency.path, &dependency.url()) {
+            let source = match (
+                dependency
+                    .path
+                    .as_ref()
+                    .filter(|_| !self.ignore_local_dependencies),
+                &dependency.url(),
+            ) {
                 (None, None) => {
                     anyhow::bail!("dependency {dependency_name} has no sources specified")
                 }

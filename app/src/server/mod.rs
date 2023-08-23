@@ -160,7 +160,9 @@ pub async fn start(
             .await
             .unwrap();
 
-        let mut semantic = ambient_package_semantic::Semantic::new().await.unwrap();
+        let mut semantic = ambient_package_semantic::Semantic::new(false)
+            .await
+            .unwrap();
         let primary_package_scope_id = shared::package::add(
             Some(&mut server_world),
             &mut semantic,
