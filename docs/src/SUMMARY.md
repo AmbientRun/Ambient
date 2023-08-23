@@ -31,6 +31,7 @@
 - [Terminology](reference/terminology.md)
 - [Common pitfalls](reference/common_pitfalls.md)
 - [FAQ](reference/faq.md)
+- [The path to 1.0](reference/path_to_1.0.md)
 - [Changelog](reference/changelog.md)
 
 # Runtime internals
