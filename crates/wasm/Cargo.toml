@@ -55,7 +55,7 @@ tracing = { workspace = true }
 wit-component = { workspace = true }
 futures = { workspace = true }
 
-wasm-bridge = { git = "https://github.com/AmbientRun/wasm-bridge", branch  = "wasmtime-13.0.0", version = "0.2", features = [
+wasm-bridge = { git = "https://github.com/AmbientRun/wasm-bridge", branch  = "wasmtime-13", version = "0.2", features = [
     "component-model",
     "wasi",
 ] }

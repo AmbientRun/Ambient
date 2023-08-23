@@ -7,8 +7,10 @@ use ambient_ecs::{EntityId, World};
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_sys::task::PlatformBoxFuture;
 use anyhow::Context;
+use bytes::Bytes;
 use data_encoding::BASE64;
 use flume::TrySendError;
+use futures::SinkExt;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::io;
@@ -22,7 +24,7 @@ use wasm_bridge::{
 // use wasmtime_wasi::preview2 as wasi_preview2;
 
 #[cfg(not(target_os = "unknown"))]
-use wasmtime_wasi::preview2::{DirPerms, FilePerms};
+use wasmtime_wasi::preview2::{DirPerms, FilePerms, IsATTY};
 
 #[derive(Clone)]
 pub struct ModuleBytecode(pub Vec<u8>);
@@ -236,16 +238,14 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
         let (stdout_output, stdout_consumer) = WasiOutputStream::make(args.stdout_output);
         let (stderr_output, stderr_consumer) = WasiOutputStream::make(args.stderr_output);
         let mut table = Table::new();
-        let wasi = WasiCtxBuilder::new()
-            .set_stdout(stdout_output)
-            .set_stderr(stderr_output);
+        let mut wasi = WasiCtxBuilder::new();
+        wasi.stdout(stdout_output, IsATTY::Yes)
+            .stderr(stderr_output, IsATTY::Yes);
 
         #[cfg(not(target_os = "unknown"))]
-        let wasi = if let Some(dir) = args.preopened_dir {
-            wasi.push_preopened_dir(dir, DirPerms::all(), FilePerms::all(), "/")
-        } else {
-            wasi
-        };
+        if let Some(dir) = args.preopened_dir {
+            wasi.preopened_dir(dir, DirPerms::all(), FilePerms::all(), "/");
+        }
 
         let wasi = wasi.build(&mut table)?;
         let mut store = Store::new(
@@ -394,6 +394,7 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for InstanceState<Bindings> {
 }
 
 struct WasiOutputStream(flume::Sender<String>);
+
 impl WasiOutputStream {
     fn make(
         outputter: Box<dyn Fn(&World, &str) + Sync + Send>,
@@ -439,19 +440,20 @@ impl wasm_bridge_js::wasi::preview2::OutputStream for WasiOutputStream {
 #[cfg(not(target_os = "unknown"))]
 #[async_trait::async_trait]
 impl wasmtime_wasi::preview2::HostOutputStream for WasiOutputStream {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    async fn writable(&self) -> Result<(), anyhow::Error> {
+    async fn ready(&mut self) -> anyhow::Result<()> {
         Ok(())
     }
 
-    async fn write(&mut self, buf: &[u8]) -> wasm_bridge::Result<u64> {
-        let msg = std::str::from_utf8(buf)?;
-        self.0.send(msg.to_string())?;
+    fn write(&mut self, buf: Bytes) -> anyhow::Result<(usize, preview2::StreamState)> {
+        let msg = std::str::from_utf8(&buf)?;
 
-        Ok(buf.len().try_into()?)
+        match self.0.try_send(msg.into()) {
+            Ok(()) => Ok((msg.len(), preview2::StreamState::Open)),
+            Err(TrySendError::Disconnected(_)) => Ok((0, preview2::StreamState::Closed)),
+            Err(TrySendError::Full(_)) => {
+                Err(io::Error::new(io::ErrorKind::WouldBlock, "stdio is full").into())
+            }
+        }
     }
 }
 
