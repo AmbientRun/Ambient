@@ -29,7 +29,7 @@ fn add_native_roots(roots: &mut rustls::RootCertStore) {
 #[cfg(feature = "tls-webpki-roots")]
 fn add_webpki_roots(roots: &mut rustls::RootCertStore) {
     tracing::debug!("Loading webpki root certificates");
-    roots.add_server_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.0.iter().map(|ta| {
+    roots.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.0.iter().map(|ta| {
         rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
             ta.subject,
             ta.spki,
