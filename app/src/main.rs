@@ -15,7 +15,9 @@ use ambient_physics::physx::PhysicsKey;
 use anyhow::Context;
 use cli::{build::BuildDirectories, Cli, Commands, PackagePath};
 use log::LevelFilter;
+use serde::Deserialize;
 use server::QUIC_INTERFACE_PORT;
+use std::path::Path;
 
 fn main() -> anyhow::Result<()> {
     let rt = ambient_sys::task::make_native_multithreaded_runtime()?;
@@ -29,7 +31,11 @@ fn main() -> anyhow::Result<()> {
     PhysicsKey.get(&assets); // Load physics
     AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/AmbientRun/Ambient/issues/81
 
-    let cli = Cli::parse();
+    let cli = if let Some(launch_json) = LaunchJson::load()? {
+        Cli::parse_from(launch_json.args())
+    } else {
+        Cli::parse()
+    };
 
     let package = cli.package();
 
@@ -160,6 +166,43 @@ fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+#[derive(Deserialize)]
+struct LaunchJson {
+    args: Vec<String>,
+}
+impl LaunchJson {
+    fn load() -> anyhow::Result<Option<Self>> {
+        if std::env::args().len() > 1 {
+            return Ok(None);
+        }
+        let mut launch_file = Path::new("launch.json").to_path_buf();
+        if !launch_file.exists() {
+            launch_file = std::env::current_dir()?.join("launch.json");
+        }
+        if !launch_file.exists() {
+            if let Some(parent) = std::env::current_exe()?.parent() {
+                launch_file = parent.join("launch.json");
+            }
+        }
+        if !launch_file.exists() {
+            return Ok(None);
+        }
+        log::info!("Using launch.json for cli args: {}", launch_file.display());
+        let launch_json =
+            std::fs::read_to_string(launch_file).context("Failed to read launch.json")?;
+        let launch_json: Self =
+            serde_json::from_str(&launch_json).context("Failed to parse launch.json")?;
+        Ok(Some(launch_json))
+    }
+    fn args(&self) -> Vec<String> {
+        let mut args = std::env::args().collect::<Vec<_>>();
+        [args.pop().unwrap()]
+            .into_iter()
+            .chain(self.args.iter().cloned())
+            .collect()
+    }
 }
 
 // Read the package manifest from the package path (which may have been updated by the build step)
