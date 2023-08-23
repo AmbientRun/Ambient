@@ -28,6 +28,7 @@
 - [Animations](reference/animations.md)
 - [Audio](reference/audio.md)
 - [UI](reference/ui.md)
+- [Distributing](reference/distributing.md)
 - [Terminology](reference/terminology.md)
 - [Common pitfalls](reference/common_pitfalls.md)
 - [FAQ](reference/faq.md)
