@@ -183,6 +183,7 @@ mod tests {
         id = "test"
         name = "Test"
         version = "0.0.1"
+        content = { type = "Playable" }
         "#;
 
         assert_eq!(
@@ -221,6 +222,7 @@ mod tests {
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
+        content = { type = "Playable" }
 
         [components]
         cell = { type = "i32", name = "Cell", description = "The ID of the cell this player is in", attributes = ["store"] }
@@ -279,6 +281,7 @@ mod tests {
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
+        content = { type = "Playable" }
 
         [build.rust]
         feature-multibuild = ["client"]
@@ -312,6 +315,7 @@ mod tests {
         id = "my_package"
         name = "My Package"
         version = "0.0.1"
+        content = { type = "Playable" }
 
         [components]
         "core::transform::rotation" = { type = "quat", name = "Rotation", description = "" }
@@ -452,6 +456,7 @@ mod tests {
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
+        content = { type = "Playable" }
 
         [enums.CellState]
         description = "The current cell state"
@@ -495,6 +500,7 @@ mod tests {
         id = "test"
         name = "Test"
         version = "0.0.1"
+        content = { type = "Playable" }
 
         [components]
         test = { type = "I32", name = "Test", description = "Test" }
@@ -570,6 +576,7 @@ mod tests {
         id = "dependencies"
         name = "dependencies"
         version = "0.0.1"
+        content = { type = "Playable" }
 
         [dependencies]
         deps_assets = { path = "deps/assets" }
