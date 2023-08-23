@@ -1,4 +1,7 @@
-use std::borrow::Cow;
+use std::{
+    borrow::Cow,
+    fmt::{Display, Formatter},
+};
 
 #[cfg(feature = "uncategorized")]
 mod uncategorized;
@@ -159,7 +162,7 @@ pub fn git_revision_full() -> Option<String> {
     ))
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, PartialOrd, Eq, Ord)]
 pub struct AmbientVersion {
     pub version: String,
     pub revision: String,
@@ -168,9 +171,28 @@ pub struct AmbientVersion {
 impl Default for AmbientVersion {
     fn default() -> Self {
         Self {
-            version: env!("CARGO_PKG_VERSION").to_string(),
+            version: RUNTIME_VERSION.to_string(),
             revision: git_revision_full().unwrap_or_default(),
         }
+    }
+}
+
+/// The version of the Ambient runtime. Where full specificity is required,
+/// consider using [ambient_version] instead.
+pub const RUNTIME_VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// The user agent to use when making requests as the runtime.
+/// This is kept here to maintain one source of truth for the version.
+pub const RUNTIME_USER_AGENT: &str = concat!("Ambient/", env!("CARGO_PKG_VERSION"));
+
+impl Display for AmbientVersion {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.version)?;
+        if !self.revision.is_empty() {
+            write!(f, "-{}", self.revision)?;
+        }
+
+        Ok(())
     }
 }
 

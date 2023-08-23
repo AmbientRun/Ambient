@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use ambient_native_std::git_revision;
+use ambient_native_std::ambient_version;
 use ambient_package::SnakeCaseIdentifier;
 use anyhow::Context;
 use convert_case::Casing;
@@ -67,25 +67,27 @@ pub(crate) fn handle(
                     true,
                 )
             }
-            None => (
-                #[cfg(feature = "production")]
-                format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION")),
-                #[cfg(not(feature = "production"))]
-                {
-                    if let Some(api_path) = api_path {
-                        log::info!("Ambient path: {}", api_path);
-                        format!("ambient_api = {{ path = {:?} }}", api_path)
-                    } else if let Some(rev) = git_revision() {
-                        log::info!("Ambient revision: {}", rev);
-                        format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", rev)
-                    } else {
-                        let version = env!("CARGO_PKG_VERSION");
-                        log::info!("Ambient version: {}", version);
-                        format!("ambient_api = \"{}\"", version)
-                    }
-                },
-                false,
-            ),
+            None => {
+                let version = ambient_version();
+                (
+                    #[cfg(feature = "production")]
+                    format!("ambient_api = \"{}\"", version.version),
+                    #[cfg(not(feature = "production"))]
+                    {
+                        if let Some(api_path) = api_path {
+                            log::info!("Ambient path: {}", api_path);
+                            format!("ambient_api = {{ path = {:?} }}", api_path)
+                        } else if !version.revision.is_empty() {
+                            log::info!("Ambient revision: {}", version.revision);
+                            format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", version.revision)
+                        } else {
+                            log::info!("Ambient version: {}", version.version);
+                            format!("ambient_api = \"{}\"", version.version)
+                        }
+                    },
+                    false,
+                )
+            }
         };
 
         let template_cargo_toml = include_str!("new_package_template/Cargo.toml");

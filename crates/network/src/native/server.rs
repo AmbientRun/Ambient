@@ -15,7 +15,7 @@ use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ServerBaseUrlKey, UsingLocalDebugAssetsKey},
     fps_counter::FpsCounter,
-    log_result,
+    log_result, RUNTIME_USER_AGENT,
 };
 use ambient_proxy::client::AllocatedEndpoint;
 use ambient_sys::time::Instant;
@@ -421,13 +421,11 @@ async fn start_proxy_connection(
         )
     };
 
-    static APP_USER_AGENT: &str = concat!("Ambient/", env!("CARGO_PKG_VERSION"));
-
     let builder = ambient_proxy::client::builder()
         .endpoint(endpoint.clone())
         .proxy_server(settings.endpoint.clone())
         .project_id(settings.primary_package_id.clone())
-        .user_agent(APP_USER_AGENT.to_string());
+        .user_agent(RUNTIME_USER_AGENT.to_string());
 
     let assets_path = settings.build_path;
     let builder = if let Ok(Some(assets_file_path)) = assets_path.to_file_path() {

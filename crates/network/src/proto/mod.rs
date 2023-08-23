@@ -1,6 +1,6 @@
 use ambient_core::package_name;
 use ambient_ecs::{ComponentRegistry, ExternalComponentDesc};
-use ambient_native_std::asset_url::AbsAssetUrl;
+use ambient_native_std::{ambient_version, asset_url::AbsAssetUrl};
 use itertools::Itertools;
 
 use crate::serialization::FailableDeserialization;
@@ -23,17 +23,6 @@ pub enum ServerPush {
     ServerInfo(ServerInfo),
     /// Graceful disconnect
     Disconnect,
-}
-
-pub(crate) const VERSION: &str = env!("CARGO_PKG_VERSION");
-
-pub fn get_version_with_revision() -> String {
-    format!(
-        "{}-{}",
-        VERSION,
-        ambient_native_std::git_revision()
-            .expect("Failed to find git revision. Please open an issue with `git describe`")
-    )
 }
 
 /// Miscellaneous information about the server that needs to be sent to the client during the handshake.
@@ -69,7 +58,7 @@ impl ServerInfo {
         Self {
             package_name: world.resource(package_name()).clone(),
             content_base_url,
-            version: get_version_with_revision(),
+            version: ambient_version().to_string(),
             external_components,
         }
     }

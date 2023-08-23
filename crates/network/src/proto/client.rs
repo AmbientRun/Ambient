@@ -53,7 +53,7 @@ impl ClientProtoState {
     pub fn process_push(&mut self, assets: &AssetCache, frame: ServerPush) -> anyhow::Result<()> {
         match (frame, &self) {
             (ServerPush::ServerInfo(server_info), Self::Pending(_user_id)) => {
-                let current_version = get_version_with_revision();
+                let current_version = ambient_version().to_string();
 
                 if server_info.version != current_version {
                     tracing::error!(

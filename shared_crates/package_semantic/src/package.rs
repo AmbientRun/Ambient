@@ -106,7 +106,7 @@ impl RetrievableFile {
 
     pub fn as_remote_url(&self) -> Option<&Url> {
         match self {
-            Self::Url(url) if url.scheme() != "file" => Some(&url),
+            Self::Url(url) if url.scheme() != "file" => Some(url),
             _ => None,
         }
     }
