@@ -133,13 +133,24 @@ impl Default for BuildRust {
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Dependency {
     pub path: Option<PathBuf>,
-    pub url: Option<Url>,
+    url: Option<Url>,
+    deployment: Option<String>,
     #[serde(default = "return_true")]
     pub enabled: bool,
 }
 impl Dependency {
+    pub fn url(&self) -> Option<Url> {
+        if let Some(url) = self.url.clone() {
+            Some(url)
+        } else if let Some(deployment) = self.deployment.as_ref() {
+            Url::parse(&format!("https://assets.ambient.run/{deployment}")).ok()
+        } else {
+            None
+        }
+    }
+
     pub fn has_remote_dependency(&self) -> bool {
-        self.url.is_some()
+        self.url().is_some()
     }
 }
 
@@ -583,6 +594,7 @@ mod tests {
         deps_code = { path = "deps/code" }
         deps_ignore_me = { path = "deps/ignore_me", enabled = false }
         deps_remote = { url = "http://example.com" }
+        deps_remote_deployment = { deployment = "jhsdfu574S" }
 
         "#;
 
@@ -606,6 +618,7 @@ mod tests {
                         Dependency {
                             path: Some(PathBuf::from("deps/assets")),
                             url: None,
+                            deployment: None,
                             enabled: true,
                         }
                     ),
@@ -614,6 +627,7 @@ mod tests {
                         Dependency {
                             path: Some(PathBuf::from("deps/code")),
                             url: None,
+                            deployment: None,
                             enabled: true,
                         }
                     ),
@@ -622,6 +636,7 @@ mod tests {
                         Dependency {
                             path: Some(PathBuf::from("deps/ignore_me")),
                             url: None,
+                            deployment: None,
                             enabled: false,
                         }
                     ),
@@ -630,6 +645,16 @@ mod tests {
                         Dependency {
                             path: None,
                             url: Some(Url::parse("http://example.com").unwrap()),
+                            deployment: None,
+                            enabled: true,
+                        }
+                    ),
+                    (
+                        sci("deps_remote_deployment"),
+                        Dependency {
+                            path: None,
+                            url: None,
+                            deployment: Some("jhsdfu574S".to_owned()),
                             enabled: true,
                         }
                     )

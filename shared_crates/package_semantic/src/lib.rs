@@ -106,7 +106,7 @@ impl Semantic {
         let mut dependencies = HashMap::new();
         for (dependency_name, dependency) in &manifest.dependencies {
             // path takes precedence over url
-            let source = match (&dependency.path, &dependency.url) {
+            let source = match (&dependency.path, &dependency.url()) {
                 (None, None) => {
                     anyhow::bail!("dependency {dependency_name} has no sources specified")
                 }

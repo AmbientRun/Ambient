@@ -285,12 +285,14 @@ This is a TOML table, where the keys are the name that you want to access this p
 
 To access an item from a package, use the following syntax: `import_name::item_id`. For example, if you have a package imported with the name `the_basics` and an enum with ID `BasicEnum`, you can access it with `the_basics::BasicEnum`.
 
-At the time of writing, only path dependencies are supported. This is likely to change in future.
+At least one of `path`, `url` or `deployment` must be specified.
 
-| Property  | Type     | Description                                                                                                          |
-| --------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
-| `path`    | `String` | _Required_. A relative path to the package to depend on.                                                             |
-| `enabled` | `bool`   | _Optional_. Control whether or not logic associated with this package should be enabled on load. Enabled by default. |
+| Property     | Type     | Description                                                                                                          |
+| ------------ | -------- | -------------------------------------------------------------------------------------------------------------------- |
+| `path`       | `String` | A relative path to the package to depend on.                                                                         |
+| `url`        | `Url`    | A URL to a deployed package.                                                                                         |
+| `deployment` | `String` | The ID of a deployed package to depend on.                                                                           |
+| `enabled`    | `bool`   | _Optional_. Control whether or not logic associated with this package should be enabled on load. Enabled by default. |
 
 For an example of how to use dependencies, see the [dependencies example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/intermediate/dependencies).
 
