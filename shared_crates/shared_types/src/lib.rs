@@ -5,6 +5,9 @@ use paste::paste;
 macro_rules! primitive_component_definitions {
     ($macro_to_instantiate:ident) => {
         $macro_to_instantiate!(
+            // Empty types are at the moment no longer supported by the ABI as it is not handled well
+            // by languages such as C++.
+            // See: <https://github.com/WebAssembly/component-model/commit/e6d50af577a2fc28ed93c18afedef6d3729d98f4>
             (Empty, ()),
             (Bool, bool),
             (EntityId, EntityId),

@@ -82,3 +82,17 @@ impl FromBindgen for wit::types::EntityId {
         }
     }
 }
+
+impl FromBindgen for wit::types::Empty {
+    type Item = ();
+
+    fn from_bindgen(self) -> Self::Item {}
+}
+
+impl IntoBindgen for () {
+    type Item = wit::types::Empty;
+
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::Empty { dummy: 0 }
+    }
+}
