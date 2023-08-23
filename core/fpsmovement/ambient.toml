@@ -2,7 +2,8 @@
 id = "afps_fpsmovement"
 name = "AFPS Movmement"
 version = "0.0.1"
+content = { type = "Asset", code = true }
 
 [dependencies]
-afps_schema = { path = "../../schema/afps" }
+afps_schema = { path = "../../schema/afps", deployment = "16KS30F8ja7kcJnR73kmGe" }
 input_schema = { path = "../../schema/input" }

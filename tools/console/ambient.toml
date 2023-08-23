@@ -2,6 +2,7 @@
 id = "console"
 name = "Console"
 version = "0.0.1"
+content = { type = "Tool" }
 
 [messages.ConsoleServerInput.fields]
 input = "String"

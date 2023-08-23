@@ -2,6 +2,7 @@
 id = "afps_fpsaudio"
 name = "AFPS Audio"
 version = "0.0.1"
+content = { type = "Asset", audio = true, code = true }
 
 [dependencies]
-afps_schema = { path = "../../schema/afps" }
+afps_schema = { path = "../../schema/afps", deployment = "16KS30F8ja7kcJnR73kmGe" }

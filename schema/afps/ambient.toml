@@ -2,6 +2,7 @@
 id = "afps_schema"
 name = "AFPS Schema"
 version = "0.0.1"
+content = { type = "Asset", schema = true }
 
 [components]
 player_model_ref = { type = "EntityId", description = "The player's whole body model id.", attributes = [

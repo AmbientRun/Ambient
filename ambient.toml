@@ -2,9 +2,10 @@
 id = "afps"
 name = "afps"
 version = "0.0.1"
+content = { type = "Playable" }
 
 [dependencies]
-afps_schema = { path = "schema/afps" }
+afps_schema = { path = "schema/afps", deployment = "16KS30F8ja7kcJnR73kmGe" }
 input_schema = { path = "schema/input" }
 
 fpsanim = { path = "core/fpsanim" }
