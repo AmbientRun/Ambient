@@ -22,11 +22,9 @@ pub mod migrate;
 pub mod pipelines;
 
 pub struct BuildConfiguration<'a> {
-    pub build_path: PathBuf,
     pub assets: AssetCache,
-    pub semantic: &'a mut Semantic,
+    pub semantic: &'a Semantic,
     pub optimize: bool,
-    pub clean_build: bool,
     pub build_wasm_only: bool,
     /// If true, the build will be optimized for deployment.
     ///
@@ -34,79 +32,21 @@ pub struct BuildConfiguration<'a> {
     pub building_for_deploy: bool,
 }
 
-pub async fn build(
-    config: BuildConfiguration<'_>,
-    root_package_id: ItemId<Package>,
-) -> anyhow::Result<PathBuf> {
-    let BuildConfiguration {
-        build_path,
-        assets,
-        semantic,
-        optimize,
-        clean_build,
-        build_wasm_only,
-        building_for_deploy,
-    } = config;
-
-    if clean_build {
-        tracing::debug!("Removing build directory: {build_path:?}");
-        match tokio::fs::remove_dir_all(&build_path).await {
-            Ok(_) => {}
-            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
-            Err(err) => {
-                return Err(err).context("Failed to remove build directory");
-            }
-        }
-    }
-
-    let mut queue = semantic.items.scope_and_dependencies(root_package_id);
-    queue.reverse();
-
-    let mut output_path = build_path.clone();
-    while let Some(package_id) = queue.pop() {
-        let id = {
-            let package = semantic.items.get(package_id);
-            if package.source.as_remote_url().is_some() {
-                continue;
-            }
-            package.data.id.clone()
-        };
-        let build_path = build_path.join(id.as_str());
-        build_package(
-            BuildConfiguration {
-                build_path: build_path.clone(),
-                assets: assets.clone(),
-                semantic,
-                optimize,
-                clean_build,
-                build_wasm_only,
-                building_for_deploy,
-            },
-            package_id,
-        )
-        .await?;
-
-        if package_id == root_package_id {
-            output_path = build_path;
-        }
-    }
-
-    Ok(output_path)
-}
-
-/// This takes the path to an Ambient package and builds it. An Ambient package is expected to
-/// have the following structure:
+/// This takes the path to a single Ambient package and builds it.
+/// It assumes all of its dependencies are already built.
+///
+/// An Ambient package is expected to have the following structure:
 ///
 /// assets/**  Here assets such as .glb files are stored. Any files found in this directory will be processed
 /// src/**  This is where you store Rust source files
 /// build  This is the output directory, and is created when building
 /// ambient.toml  This is a metadata file to describe the package
-async fn build_package(
+pub async fn build_package(
     config: BuildConfiguration<'_>,
+    build_path: PathBuf,
     package_id: ItemId<Package>,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<PathBuf> {
     let BuildConfiguration {
-        build_path,
         assets,
         semantic,
         optimize,
@@ -166,7 +106,7 @@ async fn build_package(
             "Skipping unmodified package \"{name}\" ({})",
             manifest.package.id
         );
-        return Ok(());
+        return Ok(build_path);
     }
 
     tracing::info!("Building package \"{name}\" ({})", manifest.package.id);
@@ -216,7 +156,7 @@ async fn build_package(
     store_manifest(&manifest, &build_path).await?;
     store_metadata(&build_path).await?;
 
-    Ok(())
+    Ok(build_path)
 }
 
 fn get_files_in_path(path: &Path) -> impl Iterator<Item = PathBuf> {

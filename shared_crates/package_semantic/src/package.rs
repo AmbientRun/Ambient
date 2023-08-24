@@ -116,6 +116,14 @@ impl RetrievableFile {
         }
     }
 
+    pub fn to_local_url(&self) -> Option<Url> {
+        match self {
+            Self::Url(url) if url.scheme() == "file" => Some(url.clone()),
+            Self::Path(path) => Url::from_file_path(path).ok(),
+            _ => None,
+        }
+    }
+
     pub fn as_remote_url(&self) -> Option<&Url> {
         match self {
             Self::Url(url) if url.scheme() != "file" => Some(url),
