@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
+use ambient_native_std::asset_cache::AssetCache;
 use ambient_network::native::client::ResolvedAddr;
 use anyhow::Context;
 
@@ -9,15 +9,19 @@ use crate::{
     shared::certs::{CERT, CERT_KEY},
 };
 
-use super::HostCli;
+use super::{build::BuildDirectories, HostCli};
 
 pub async fn handle(
     host: &HostCli,
     view_asset_path: Option<PathBuf>,
-    build_root_path: AbsAssetUrl,
-    main_package_path: AbsAssetUrl,
+    directories: BuildDirectories,
     assets: &AssetCache,
 ) -> anyhow::Result<ResolvedAddr> {
+    let BuildDirectories {
+        build_root_path,
+        main_package_path,
+    } = directories;
+
     let manifest = retrieve_manifest(&main_package_path, assets).await?;
     let crypto = get_crypto(host)?;
 

@@ -28,7 +28,7 @@ pub enum Commands {
     /// Create a new Ambient package
     New {
         #[command(flatten)]
-        package_args: PackageCli,
+        package: PackageCli,
         #[arg(short, long)]
         name: Option<String>,
         #[arg(long)]
@@ -37,16 +37,27 @@ pub enum Commands {
     /// Builds and runs the package locally
     Run {
         #[command(flatten)]
-        package_args: PackageCli,
+        package: PackageCli,
         #[command(flatten)]
-        host_args: HostCli,
+        host: HostCli,
         #[command(flatten)]
-        run_args: RunCli,
+        run: RunCli,
+    },
+    /// View an asset
+    View {
+        #[command(flatten)]
+        package: PackageCli,
+        #[command(flatten)]
+        host: HostCli,
+        #[command(flatten)]
+        run: RunCli,
+        /// Relative to the package path
+        asset_path: PathBuf,
     },
     /// Builds the package
     Build {
         #[command(flatten)]
-        package_args: PackageCli,
+        package: PackageCli,
 
         /// Build for deployment; off by default, turned on for deploys
         #[arg(long)]
@@ -55,7 +66,7 @@ pub enum Commands {
     /// Deploys the package
     Deploy {
         #[command(flatten)]
-        package_args: PackageCli,
+        package: PackageCli,
         /// API server endpoint
         #[arg(long, default_value = "https://api.ambient.run")]
         api_server: String,
@@ -75,21 +86,14 @@ pub enum Commands {
     /// Builds and runs the package in server-only mode
     Serve {
         #[command(flatten)]
-        package_args: PackageCli,
+        package: PackageCli,
         #[command(flatten)]
-        host_args: HostCli,
-    },
-    /// View an asset
-    View {
-        #[command(flatten)]
-        package_args: PackageCli,
-        /// Relative to the package path
-        asset_path: PathBuf,
+        host: HostCli,
     },
     /// Join a multiplayer session
     Join {
         #[command(flatten)]
-        run_args: RunCli,
+        run: RunCli,
         /// The server to connect to; defaults to localhost
         host: Option<String>,
     },
@@ -173,6 +177,24 @@ pub struct PackageCli {
     /// Only build the WASM modules
     pub build_wasm_only: bool,
 }
+impl PackageCli {
+    pub fn is_release(&self) -> Option<bool> {
+        match (self.debug, self.release) {
+            (true, false) => Some(false),
+            (false, true) => Some(true),
+            (false, false) => None,
+            (true, true) => {
+                // clap's conflict_with should prevent this from happening
+                panic!("debug and release are mutually exclusive")
+            }
+        }
+    }
+
+    pub fn package_path(&self) -> anyhow::Result<PackagePath> {
+        self.path.clone().try_into()
+    }
+}
+
 #[derive(Args, Clone, Debug)]
 pub struct HostCli {
     #[arg(long, default_value = "0.0.0.0")]
@@ -212,68 +234,28 @@ pub struct HostCli {
 }
 
 impl Cli {
-    /// Extract run-relevant state only
-    pub fn run(&self) -> Option<&RunCli> {
-        match &self.command {
-            Commands::New { .. } => None,
-            Commands::Run { run_args, .. } => Some(run_args),
-            Commands::Build { .. } => None,
-            Commands::Deploy { .. } => None,
-            Commands::Serve { .. } => None,
-            Commands::View { .. } => None,
-            Commands::Join { run_args, .. } => Some(run_args),
-            Commands::Assets { .. } => None,
-        }
-    }
     /// Extract package-relevant state only
     pub fn package(&self) -> Option<&PackageCli> {
         match &self.command {
-            Commands::New { package_args, .. } => Some(package_args),
-            Commands::Run { package_args, .. } => Some(package_args),
-            Commands::Build { package_args, .. } => Some(package_args),
-            Commands::Deploy { package_args, .. } => Some(package_args),
-            Commands::Serve { package_args, .. } => Some(package_args),
-            Commands::View { package_args, .. } => Some(package_args),
-            Commands::Join { .. } => None,
-            Commands::Assets { .. } => None,
-        }
-    }
-    /// Extract host-relevant state only
-    pub fn host(&self) -> Option<&HostCli> {
-        match &self.command {
-            Commands::New { .. } => None,
-            Commands::Run { host_args, .. } => Some(host_args),
-            Commands::Build { .. } => None,
-            Commands::Deploy { .. } => None,
-            Commands::Serve { host_args, .. } => Some(host_args),
-            Commands::View { .. } => None,
+            Commands::New { package, .. } => Some(package),
+            Commands::Run { package, .. } => Some(package),
+            Commands::Build { package, .. } => Some(package),
+            Commands::Deploy { package, .. } => Some(package),
+            Commands::Serve { package, .. } => Some(package),
+            Commands::View { package, .. } => Some(package),
             Commands::Join { .. } => None,
             Commands::Assets { .. } => None,
         }
     }
     pub fn use_release_build(&self) -> bool {
-        match &self.command {
-            Commands::Deploy { package_args, .. } | Commands::Serve { package_args, .. } => {
-                package_args.is_release().unwrap_or(true)
-            }
-            Commands::Run { package_args, .. }
-            | Commands::Build { package_args, .. }
-            | Commands::View { package_args, .. } => package_args.is_release().unwrap_or(false),
-            Commands::New { .. } | Commands::Join { .. } | Commands::Assets { .. } => false,
-        }
-    }
-}
+        use Commands::*;
 
-impl PackageCli {
-    pub fn is_release(&self) -> Option<bool> {
-        match (self.debug, self.release) {
-            (true, false) => Some(false),
-            (false, true) => Some(true),
-            (false, false) => None,
-            (true, true) => {
-                // clap's conflict_with should prevent this from happening
-                panic!("debug and release are mutually exclusive")
+        match &self.command {
+            Deploy { package, .. } | Serve { package, .. } => package.is_release().unwrap_or(true),
+            Run { package, .. } | Build { package, .. } | View { package, .. } => {
+                package.is_release().unwrap_or(false)
             }
+            New { .. } | Join { .. } | Assets { .. } => false,
         }
     }
 }

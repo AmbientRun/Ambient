@@ -4,7 +4,7 @@ use anyhow::Context;
 
 use crate::shared::package;
 
-use super::{PackageCli, PackagePath};
+use super::PackageCli;
 
 pub struct BuildDirectories {
     /// The location where all built packages are stored. Used for the HTTP host.
@@ -22,17 +22,14 @@ impl BuildDirectories {
 }
 
 pub async fn build(
-    package_cli: Option<&PackageCli>,
-    package_path: PackagePath,
+    package_cli: &PackageCli,
     assets: &AssetCache,
     release_build: bool,
     building_for_deploy: bool,
 ) -> anyhow::Result<BuildDirectories> {
-    let Some(package) = package_cli else {
-        return Ok(BuildDirectories::new_with_same_paths(package_path.url.clone()));
-    };
+    let package_path = package_cli.package_path()?;
 
-    if package.no_build {
+    if package_cli.no_build {
         return Ok(BuildDirectories::new_with_same_paths(
             package_path.url.clone(),
         ));
@@ -45,7 +42,7 @@ pub async fn build(
     let root_build_path = package_fs_path.join("build");
     let main_manifest_url = package_path.url.join("ambient.toml")?;
 
-    if package.clean_build {
+    if package_cli.clean_build {
         tracing::debug!("Removing build directory: {root_build_path:?}");
         match tokio::fs::remove_dir_all(&root_build_path).await {
             Ok(_) => {}
@@ -96,7 +93,7 @@ pub async fn build(
                 assets: assets.clone(),
                 semantic: &semantic,
                 optimize: release_build,
-                build_wasm_only: package.build_wasm_only,
+                build_wasm_only: package_cli.build_wasm_only,
                 building_for_deploy,
             },
             root_build_path.join(package_id.as_str()),

@@ -13,11 +13,11 @@ mod shared;
 
 use ambient_physics::physx::PhysicsKey;
 use anyhow::Context;
-use cli::{build::BuildDirectories, Cli, Commands, PackagePath};
+use cli::{Cli, Commands};
 use log::LevelFilter;
 use serde::Deserialize;
 use server::QUIC_INTERFACE_PORT;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 fn main() -> anyhow::Result<()> {
     let rt = ambient_sys::task::make_native_multithreaded_runtime()?;
@@ -37,143 +37,167 @@ fn main() -> anyhow::Result<()> {
         Cli::parse()
     };
 
-    let package = cli.package();
-
-    if let Some(package) = package {
+    if let Some(package) = cli.package() {
         if package.project {
             log::warn!("`-p`/`--project` has no semantic meaning.");
             log::warn!("You do not need to use `-p`/`--project` - `ambient run project` is the same as `ambient run -p project`.");
         }
     }
 
-    let package_path: PackagePath = package.and_then(|p| p.path.clone()).try_into()?;
-    let golden_image_output_dir = package_path.fs_path.clone();
+    // Update some ~~global variables~~ asset keys with package-path derived state
+    if let Some(package_path) = cli.package().map(|p| p.package_path()).transpose()? {
+        if package_path.is_remote() {
+            // package path is a URL, so let's use it as the content base URL
+            ContentBaseUrlKey.insert(&assets, package_path.url.clone());
+        }
 
-    if package_path.is_remote() {
-        // package path is a URL, so let's use it as the content base URL
-        ContentBaseUrlKey.insert(&assets, package_path.url.clone());
+        // Store a flag that we are using local debug assets
+        // Used for emitting warnings when local debug assets are sent to remote clients
+        UsingLocalDebugAssetsKey.insert(
+            &assets,
+            !package_path.is_remote() && !cli.use_release_build(),
+        );
     }
 
-    // If new: create package, immediately exit
-    if let Commands::New { name, api_path, .. } = &cli.command {
-        return cli::new_package::handle(&package_path, name.as_deref(), api_path.as_deref())
-            .context("Failed to create package");
+    let release_build = cli.use_release_build();
+    match &cli.command {
+        // commands that immediately exit
+        Commands::New {
+            package,
+            name,
+            api_path,
+        } => {
+            let package_path = package.package_path()?;
+            cli::new_package::handle(&package_path, name.as_deref(), api_path.as_deref())
+                .context("Failed to create package")
+        }
+        Commands::Assets { command } => rt.block_on(cli::assets::handle(command, &assets)),
+        Commands::Build {
+            package,
+            for_deploy,
+        } => rt.block_on(async {
+            cli::build::build(package, &assets, release_build, *for_deploy)
+                .await
+                .map(|_| ())
+        }),
+        Commands::Deploy {
+            package,
+            api_server,
+            token,
+            force_upload,
+            ensure_running,
+            context,
+        } => rt.block_on(async {
+            let dirs = cli::build::build(package, &assets, release_build, true).await?;
+
+            if !release_build {
+                // Using string interpolation due to a rustfmt bug where it will break
+                // if any one line is too long
+                log::warn!(
+                    "{} {}",
+                    "Deploying a debug build which might involve uploading large files.",
+                    "Remove `--debug` to deploy a release build."
+                );
+            }
+
+            cli::deploy::handle(
+                &dirs.main_package_path,
+                &assets,
+                token,
+                api_server,
+                *force_upload,
+                *ensure_running,
+                context,
+            )
+            .await
+        }),
+
+        // client
+        Commands::Join { run, host } => {
+            let server_addr = rt.block_on(determine_join_addr(&assets, host.as_ref()))?;
+            cli::client::handle(run, &rt, assets, server_addr, None)
+        }
+
+        // server
+        Commands::Serve { package, host } => rt.block_on(async {
+            run_server(&assets, release_build, package, host, None).await?;
+
+            tokio::signal::ctrl_c()
+                .await
+                .context("Failed to listen for shutdown signal")
+        }),
+
+        // client+server
+        Commands::Run { package, host, run } => {
+            run_client_and_server(&rt, assets, release_build, package, host, run, None)
+        }
+        Commands::View {
+            package,
+            host,
+            run,
+            asset_path,
+        } => {
+            let path = Some(asset_path.clone());
+            run_client_and_server(&rt, assets, release_build, package, host, run, path)
+        }
     }
+}
 
-    if let Commands::Assets { command } = &cli.command {
-        return rt.block_on(cli::assets::handle(command, &assets));
-    }
+async fn determine_join_addr(
+    assets: &AssetCache,
+    host: Option<&String>,
+) -> anyhow::Result<ResolvedAddr> {
+    match host.cloned() {
+        Some(mut host) => {
+            if host.starts_with("http://") || host.starts_with("https://") {
+                tracing::info!("NOTE: Joining server by http url is still experimental and can be removed without warning.");
 
-    // Store a flag that we are using local debug assets
-    // Used for emitting warnings when local debug assets are sent to remote clients
-    UsingLocalDebugAssetsKey.insert(
-        &assets,
-        !package_path.is_remote() && !cli.use_release_build(),
-    );
+                let reqwest = &ReqwestClientKey.get(assets);
+                host = reqwest.get(host).send().await?.text().await?;
 
-    // Build the package if required. Note that this only runs if the package is local,
-    // and if a build has actually been requested.
-    let BuildDirectories {
-        build_root_path,
-        main_package_path,
-    } = rt.block_on(cli::build::build(
-        package,
-        package_path,
-        &assets,
-        cli.use_release_build(),
-        matches!(&cli.command, Commands::Deploy { .. })
-            || matches!(
-                &cli.command,
-                Commands::Build {
-                    for_deploy: true,
-                    ..
+                if host.is_empty() {
+                    anyhow::bail!("Failed to resolve host");
                 }
-            ),
+            }
+            if !host.contains(':') {
+                host = format!("{host}:{QUIC_INTERFACE_PORT}");
+            }
+            ResolvedAddr::lookup_host(&host).await
+        }
+        None => Ok(ResolvedAddr::localhost_with_port(QUIC_INTERFACE_PORT)),
+    }
+}
+
+async fn run_server(
+    assets: &AssetCache,
+    release_build: bool,
+    package: &cli::PackageCli,
+    host: &cli::HostCli,
+    view_asset_path: Option<PathBuf>,
+) -> anyhow::Result<ResolvedAddr> {
+    let dirs = cli::build::build(package, assets, release_build, false).await?;
+    cli::server::handle(host, view_asset_path, dirs, assets).await
+}
+
+fn run_client_and_server(
+    rt: &tokio::runtime::Runtime,
+    assets: AssetCache,
+    release_build: bool,
+    package: &cli::PackageCli,
+    host: &cli::HostCli,
+    run: &cli::RunCli,
+    view_asset_path: Option<PathBuf>,
+) -> Result<(), anyhow::Error> {
+    let server_addr = rt.block_on(run_server(
+        &assets,
+        release_build,
+        package,
+        host,
+        view_asset_path,
     ))?;
 
-    // If this is just a build, exit now
-    if matches!(&cli.command, Commands::Build { .. }) {
-        return Ok(());
-    }
-
-    // If this is just a deploy then deploy and exit
-    if let Commands::Deploy {
-        token,
-        api_server,
-        force_upload,
-        ensure_running,
-        context,
-        ..
-    } = &cli.command
-    {
-        if !cli.use_release_build() {
-            log::warn!("Deploying a debug build which might involve uploading large files. Remove `--debug` to deploy a release build.");
-        }
-        return rt.block_on(cli::deploy::handle(
-            &main_package_path,
-            &assets,
-            token,
-            api_server,
-            *force_upload,
-            *ensure_running,
-            context,
-        ));
-    }
-
-    // Otherwise, either connect to a server or host one
-    let server_addr = if let Commands::Join { host, .. } = &cli.command {
-        if let Some(mut host) = host.clone() {
-            rt.block_on(async {
-                if host.starts_with("http://") || host.starts_with("https://") {
-                    tracing::info!("NOTE: Joining server by http url is still experimental and can be removed without warning.");
-
-                    host = ReqwestClientKey
-                        .get(&assets)
-                        .get(host)
-                        .send()
-                        .await?
-                        .text()
-                        .await?;
-                    if host.is_empty() {
-                        anyhow::bail!("Failed to resolve host");
-                    }
-                }
-                if !host.contains(':') {
-                    host = format!("{host}:{QUIC_INTERFACE_PORT}");
-                }
-                ResolvedAddr::lookup_host(&host).await
-            })?
-        } else {
-            ResolvedAddr::localhost_with_port(QUIC_INTERFACE_PORT)
-        }
-    } else if let Some(host) = &cli.host() {
-        rt.block_on(cli::server::handle(
-            host,
-            if let cli::Commands::View { asset_path, .. } = &cli.command {
-                Some(asset_path.clone())
-            } else {
-                None
-            },
-            build_root_path,
-            main_package_path,
-            &assets,
-        ))?
-    } else {
-        unreachable!()
-    };
-
-    // Time to join!
-    if let Some(run) = cli.run() {
-        cli::client::handle(run, &rt, assets, server_addr, golden_image_output_dir)?;
-    } else {
-        // Otherwise, wait for the Ctrl+C signal
-        match rt.block_on(tokio::signal::ctrl_c()) {
-            Ok(()) => {}
-            Err(err) => log::error!("Unable to listen for shutdown signal: {}", err),
-        }
-    }
-
-    Ok(())
+    let package_path = package.package_path()?;
+    cli::client::handle(run, rt, assets, server_addr, package_path.fs_path)
 }
 
 #[derive(Deserialize)]
