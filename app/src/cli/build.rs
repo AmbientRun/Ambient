@@ -57,14 +57,6 @@ pub async fn build(
     // in non-deploy mode to gather the full graph of dependencies.
     // This is then used to walk the graph and build each package in
     // the correct order.
-    //
-    // Using a second semantic for this is quite excessive - it results in a lot of
-    // unnecessary data churn - but refactoring the semantic to be able to
-    // decouple the construction of the graph from the construction of the semantic
-    // will require additional engineering.
-    //
-    // TODO: Decouple this properly, so that there is an async gather phase that can be
-    // done independently from the rest of the semantic, which can be synchronous.
     let mut queue: Vec<_> = {
         let mut semantic = ambient_package_semantic::Semantic::new(false).await?;
         let primary_package_scope_id =
@@ -78,12 +70,12 @@ pub async fn build(
             .collect()
     };
 
-    // The build step starts with a fresh semantic, and adds to it as more builds are done.
-    // This allows for changes to be made to the packages between builds - most notably,
-    // the ability to insert deployments as dependencies.
+    // For each package, build the package using a fresh semantic.
+    // A fresh semantic is used to ensure that the package is being built with
+    // the correct dependencies after they have been deployed (if necessary).
     let mut output_path = root_build_path.clone();
-    let mut semantic = ambient_package_semantic::Semantic::new(building_for_deploy).await?;
     while let Some(package_url) = queue.pop() {
+        let mut semantic = ambient_package_semantic::Semantic::new(building_for_deploy).await?;
         let package_item_id =
             package::add(None, &mut semantic, &AbsAssetUrl(package_url.clone())).await?;
         let package_id = semantic.items.get(package_item_id).data.id.clone();
