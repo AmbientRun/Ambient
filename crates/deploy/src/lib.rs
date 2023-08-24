@@ -36,9 +36,11 @@ pub async fn deploy(
     api_server: &str,
     auth_token: &str,
     path: impl AsRef<Path>,
-    manifest: &Manifest,
     force_upload: bool,
 ) -> anyhow::Result<String> {
+    let manifest =
+        Manifest::parse(&tokio::fs::read_to_string(path.as_ref().join("ambient.toml")).await?)?;
+
     let package_id = manifest.package.id.to_string();
     log::info!(
         "Deploying package `{}` ({})",

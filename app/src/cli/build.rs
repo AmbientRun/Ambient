@@ -1,3 +1,6 @@
+use std::future::Future;
+use std::path::PathBuf;
+
 use ambient_build::BuildConfiguration;
 use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
@@ -21,28 +24,56 @@ impl BuildDirectories {
     }
 }
 
-pub async fn build(
+pub async fn handle(
     package_cli: &PackageCli,
     assets: &AssetCache,
     release_build: bool,
-    building_for_deploy: bool,
 ) -> anyhow::Result<BuildDirectories> {
-    let package_path = package_cli.package_path()?;
+    let main_package_path = package_cli.package_path()?;
 
     if package_cli.no_build {
         return Ok(BuildDirectories::new_with_same_paths(
-            package_path.url.clone(),
+            main_package_path.url.clone(),
         ));
     }
 
-    let Some(package_fs_path) = package_path.fs_path else {
-        return Ok(BuildDirectories::new_with_same_paths(package_path.url.clone()));
+    let Some(main_package_fs_path) = main_package_path.fs_path else {
+        return Ok(BuildDirectories::new_with_same_paths(main_package_path.url.clone()));
     };
 
-    let root_build_path = package_fs_path.join("build");
-    let main_manifest_url = package_path.url.join("ambient.toml")?;
+    let build_wasm_only = package_cli.build_wasm_only;
+    let clean_build = package_cli.clean_build;
 
-    if package_cli.clean_build {
+    build(
+        assets,
+        main_package_fs_path,
+        clean_build,
+        false,
+        release_build,
+        build_wasm_only,
+        |_| async { Ok(()) },
+        |_, _| async { Ok(()) },
+    )
+    .await
+}
+
+pub async fn build<
+    PrebuildRet: Future<Output = anyhow::Result<()>>,
+    PostbuildRet: Future<Output = anyhow::Result<()>>,
+>(
+    assets: &AssetCache,
+    main_package_fs_path: PathBuf,
+    clean_build: bool,
+    building_for_deploy: bool,
+    release_build: bool,
+    build_wasm_only: bool,
+    mut pre_build: impl FnMut(PathBuf) -> PrebuildRet,
+    mut post_build: impl FnMut(PathBuf, PathBuf) -> PostbuildRet,
+) -> anyhow::Result<BuildDirectories> {
+    let root_build_path = main_package_fs_path.join("build");
+    let main_manifest_url = AbsAssetUrl::from_file_path(main_package_fs_path.join("ambient.toml"));
+
+    if clean_build {
         tracing::debug!("Removing build directory: {root_build_path:?}");
         match tokio::fs::remove_dir_all(&root_build_path).await {
             Ok(_) => {}
@@ -65,7 +96,7 @@ pub async fn build(
             .items
             .scope_and_dependencies(primary_package_scope_id)
             .into_iter()
-            .flat_map(|id| semantic.items.get(id).source.to_local_url())
+            .flat_map(|id| semantic.items.get(id).source.as_path())
             .rev()
             .collect()
     };
@@ -74,7 +105,11 @@ pub async fn build(
     // A fresh semantic is used to ensure that the package is being built with
     // the correct dependencies after they have been deployed (if necessary).
     let mut output_path = root_build_path.clone();
-    while let Some(package_url) = queue.pop() {
+    while let Some(package_path) = queue.pop() {
+        pre_build(package_path.clone()).await?;
+
+        let package_url = AbsAssetUrl::from_file_path(&package_path).0;
+
         let mut semantic = ambient_package_semantic::Semantic::new(building_for_deploy).await?;
         let package_item_id =
             package::add(None, &mut semantic, &AbsAssetUrl(package_url.clone())).await?;
@@ -85,13 +120,15 @@ pub async fn build(
                 assets: assets.clone(),
                 semantic: &semantic,
                 optimize: release_build,
-                build_wasm_only: package_cli.build_wasm_only,
+                build_wasm_only,
                 building_for_deploy,
             },
             root_build_path.join(package_id.as_str()),
             package_item_id,
         )
         .await?;
+
+        post_build(package_path.clone(), build_path.clone()).await?;
 
         if package_url == main_manifest_url.0 {
             output_path = build_path;

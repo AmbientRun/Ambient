@@ -1,6 +1,6 @@
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, ContentBaseUrlKey, UsingLocalDebugAssetsKey},
+    asset_url::{ContentBaseUrlKey, UsingLocalDebugAssetsKey},
     download_asset::{AssetsCacheOnDisk, ReqwestClientKey},
 };
 use ambient_network::native::client::ResolvedAddr;
@@ -72,11 +72,8 @@ fn main() -> anyhow::Result<()> {
                 .context("Failed to create package")
         }
         Commands::Assets { command } => rt.block_on(cli::assets::handle(command, &assets)),
-        Commands::Build {
-            package,
-            for_deploy,
-        } => rt.block_on(async {
-            cli::build::build(package, &assets, release_build, *for_deploy)
+        Commands::Build { package } => rt.block_on(async {
+            cli::build::handle(package, &assets, release_build)
                 .await
                 .map(|_| ())
         }),
@@ -88,23 +85,12 @@ fn main() -> anyhow::Result<()> {
             ensure_running,
             context,
         } => rt.block_on(async {
-            let dirs = cli::build::build(package, &assets, release_build, true).await?;
-
-            if !release_build {
-                // Using string interpolation due to a rustfmt bug where it will break
-                // if any one line is too long
-                log::warn!(
-                    "{} {}",
-                    "Deploying a debug build which might involve uploading large files.",
-                    "Remove `--debug` to deploy a release build."
-                );
-            }
-
             cli::deploy::handle(
-                &dirs.main_package_path,
+                package,
                 &assets,
                 token,
                 api_server,
+                release_build,
                 *force_upload,
                 *ensure_running,
                 context,
@@ -175,7 +161,7 @@ async fn run_server(
     host: &cli::HostCli,
     view_asset_path: Option<PathBuf>,
 ) -> anyhow::Result<ResolvedAddr> {
-    let dirs = cli::build::build(package, assets, release_build, false).await?;
+    let dirs = cli::build::handle(package, assets, release_build).await?;
     cli::server::handle(host, view_asset_path, dirs, assets).await
 }
 
@@ -234,23 +220,6 @@ impl LaunchJson {
             .into_iter()
             .chain(self.args.iter().cloned())
             .collect()
-    }
-}
-
-// Read the package manifest from the package path (which may have been updated by the build step)
-async fn retrieve_manifest(
-    built_package_path: &AbsAssetUrl,
-    assets: &AssetCache,
-) -> anyhow::Result<ambient_package::Manifest> {
-    match built_package_path
-        .push("ambient.toml")?
-        .download_string(assets)
-        .await
-    {
-        Ok(toml) => Ok(ambient_package::Manifest::parse(&toml)?),
-        Err(_) => {
-            anyhow::bail!("Failed to find ambient.toml in package");
-        }
     }
 }
 

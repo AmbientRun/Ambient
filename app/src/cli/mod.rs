@@ -58,10 +58,6 @@ pub enum Commands {
     Build {
         #[command(flatten)]
         package: PackageCli,
-
-        /// Build for deployment; off by default, turned on for deploys
-        #[arg(long)]
-        for_deploy: bool,
     },
     /// Deploys the package
     Deploy {

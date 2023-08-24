@@ -5,7 +5,7 @@ use ambient_network::native::client::ResolvedAddr;
 use anyhow::Context;
 
 use crate::{
-    retrieve_manifest, server,
+    server,
     shared::certs::{CERT, CERT_KEY},
 };
 
@@ -22,7 +22,16 @@ pub async fn handle(
         main_package_path,
     } = directories;
 
-    let manifest = retrieve_manifest(&main_package_path, assets).await?;
+    let manifest = match main_package_path
+        .push("ambient.toml")?
+        .download_string(assets)
+        .await
+    {
+        Ok(toml) => ambient_package::Manifest::parse(&toml)?,
+        Err(_) => {
+            anyhow::bail!("Failed to find ambient.toml in package");
+        }
+    };
     let crypto = get_crypto(host)?;
 
     let working_directory = main_package_path
