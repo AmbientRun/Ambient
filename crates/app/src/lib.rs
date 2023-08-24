@@ -589,6 +589,7 @@ impl App {
                         control_flow,
                     );
                 } else if let Some(event) = event.to_static() {
+                    // assert!(tokio::runtime::Handle::try_current().is_err());
                     self.handle_static_event(&event, control_flow);
                 }
             });
