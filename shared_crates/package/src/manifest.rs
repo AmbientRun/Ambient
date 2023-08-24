@@ -132,8 +132,11 @@ impl Default for BuildRust {
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Dependency {
+    #[serde(default)]
     pub path: Option<PathBuf>,
+    #[serde(default)]
     url: Option<Url>,
+    #[serde(default)]
     deployment: Option<String>,
     #[serde(default = "return_true")]
     pub enabled: bool,
