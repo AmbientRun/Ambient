@@ -194,7 +194,7 @@ impl Semantic {
         for locator in self.packages.keys() {
             if let Some(present) = seen_locators.insert(locator.id.clone(), locator.clone()) {
                 anyhow::bail!(
-                    "duplicate package found: present {present:?} attempted {locator:?} ({})",
+                    "duplicate package found - {present} is already in the system, but {locator} was encountered ({})",
                     "the system does not currently support having an package with multiple different versions"
                 );
             }
