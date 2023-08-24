@@ -57,6 +57,7 @@ pub async fn handle(
     .await
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn build<
     PrebuildRet: Future<Output = anyhow::Result<()>>,
     PostbuildRet: Future<Output = anyhow::Result<()>>,
