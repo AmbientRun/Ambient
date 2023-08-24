@@ -41,8 +41,8 @@ pub fn normalize(path: &Path) -> PathBuf {
     ret
 }
 
-/// Convert a path to a string using `/` as a separator independent of the platform.
-pub fn path_to_unix_string(path: impl AsRef<Path>) -> String {
+/// Convert a path to a string using `/` as a separator independent of the platform, using lossy conversion if necessary.
+pub fn path_to_unix_string_lossy(path: impl AsRef<Path>) -> String {
     use std::borrow::Cow;
     use std::path::Component;
 
@@ -55,6 +55,25 @@ pub fn path_to_unix_string(path: impl AsRef<Path>) -> String {
             Component::Normal(c) => c.to_string_lossy(),
         }),
         Cow::Borrowed("/"),
+    )
+    .collect()
+}
+
+/// Convert a path to a string using `/` as a separator independent of the platform, returning `None` if any of the
+/// components are not valid Unicode.
+pub fn path_to_unix_string(path: impl AsRef<Path>) -> Option<String> {
+    use std::borrow::Cow;
+    use std::path::Component;
+
+    itertools::Itertools::intersperse(
+        path.as_ref().components().map(|c| match c {
+            Component::Prefix(..) => unreachable!(),
+            Component::RootDir => Some(Cow::Borrowed("")),
+            Component::CurDir => Some(Cow::Borrowed(".")),
+            Component::ParentDir => Some(Cow::Borrowed("..")),
+            Component::Normal(c) => c.to_str().map(Cow::Borrowed),
+        }),
+        Some(Cow::Borrowed("/")),
     )
     .collect()
 }

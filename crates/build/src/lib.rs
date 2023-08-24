@@ -11,7 +11,7 @@ use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_native_std::{asset_url::AbsAssetUrl, AmbientVersion};
 use ambient_package::{BuildMetadata, Manifest as PackageManifest, Version};
 use ambient_package_semantic::{ItemId, Package, Semantic};
-use ambient_std::path::path_to_unix_string;
+use ambient_std::path::path_to_unix_string_lossy;
 use anyhow::Context;
 use futures::FutureExt;
 use itertools::Itertools;
@@ -339,7 +339,7 @@ fn get_component_paths(target: &str, build_path: &Path) -> Vec<String> {
             rd.filter_map(Result::ok)
                 .map(|p| p.path())
                 .filter(|p| p.extension().unwrap_or_default() == "wasm")
-                .map(|p| path_to_unix_string(p.strip_prefix(build_path).unwrap()))
+                .map(|p| path_to_unix_string_lossy(p.strip_prefix(build_path).unwrap()))
                 .collect()
         })
         .unwrap_or_default()

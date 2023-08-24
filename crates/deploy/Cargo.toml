@@ -11,6 +11,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 ambient_package = { path = "../../shared_crates/package" , version = "0.3.0-dev" }
+ambient_std = { path = "../../shared_crates/std" , version = "0.3.0-dev" }
 ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
 
 anyhow = { workspace = true }

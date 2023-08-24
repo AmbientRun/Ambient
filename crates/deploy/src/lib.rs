@@ -154,10 +154,11 @@ fn collect_files_to_deploy(base_path: PathBuf) -> anyhow::Result<HashMap<String,
         .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
         .map(|x| {
             let file_path = x.into_path();
-            let path = file_path
-                .strip_prefix(&base_path)
-                .expect("file path should be in base path")
-                .to_str();
+            let path = ambient_std::path::path_to_unix_string(
+                file_path
+                    .strip_prefix(&base_path)
+                    .expect("file path should be in base path"),
+            );
             if let Some(path) = path {
                 if path.chars().any(|c| c == '\n' || c == '\r') {
                     log::error!(
@@ -166,7 +167,7 @@ fn collect_files_to_deploy(base_path: PathBuf) -> anyhow::Result<HashMap<String,
                     );
                     None
                 } else {
-                    Some((path.to_string(), file_path))
+                    Some((path, file_path))
                 }
             } else {
                 log::error!("Non-UTF-8 path: {:?}", file_path);

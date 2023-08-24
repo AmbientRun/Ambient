@@ -52,7 +52,7 @@ impl RetrievableFile {
     pub async fn get(&self, schema: &Schema) -> anyhow::Result<String> {
         Ok(match self {
             RetrievableFile::Ambient(path) => schema
-                .get(ambient_std::path::path_to_unix_string(path).as_str())
+                .get(ambient_std::path::path_to_unix_string_lossy(path).as_str())
                 .with_context(|| {
                     format!(
                         "failed to find path in Ambient schema: {}",
