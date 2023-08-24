@@ -115,7 +115,7 @@ async fn build_package(
         ..
     } = config;
 
-    let (mut manifest, path) = {
+    let (mut manifest, package_path) = {
         let package = semantic.items.get(package_id);
         (
             package.manifest.clone(),
@@ -138,7 +138,16 @@ async fn build_package(
         .transpose()?
         .map(|dt| dt.with_timezone(&chrono::Utc));
 
-    let last_modified_time = get_asset_files(&path)
+    // This is only used to filter out the build files that were produced by building
+    // this package individually, if they exist. This is to avoid marking this package
+    // as dirty in a whole-workspace build if it was merely built individually.
+    let package_individual_build_path = package_path.join("build");
+    // NOTE: This logic is not optimal. It *will* consider files that shouldn't be considered
+    // (like a top-level target folder, or the individual build folders of subdirectories)
+    // but it's good enough for now. In future, we may want to consider using `ignore`
+    // to filter out files that shouldn't be considered.
+    let last_modified_time = get_files_in_path(&package_path)
+        .filter(|p| !p.starts_with(&build_path) && !p.starts_with(&package_individual_build_path))
         .filter_map(|f| f.metadata().ok()?.modified().ok())
         .map(chrono::DateTime::<chrono::Utc>::from)
         .max();
@@ -162,7 +171,7 @@ async fn build_package(
 
     tracing::info!("Building package \"{name}\" ({})", manifest.package.id);
 
-    let assets_path = path.join("assets");
+    let assets_path = package_path.join("assets");
     tokio::fs::create_dir_all(&build_path)
         .await
         .context("Failed to create build directory")?;
@@ -171,7 +180,7 @@ async fn build_package(
         build_assets(&assets, &assets_path, &build_path, false).await?;
     }
 
-    build_rust_if_available(&path, &manifest, &build_path, optimize)
+    build_rust_if_available(&package_path, &manifest, &build_path, optimize)
         .await
         .with_context(|| format!("Failed to build Rust {build_path:?}"))?;
 
@@ -210,8 +219,8 @@ async fn build_package(
     Ok(())
 }
 
-fn get_asset_files(assets_path: &Path) -> impl Iterator<Item = PathBuf> {
-    WalkDir::new(assets_path)
+fn get_files_in_path(path: &Path) -> impl Iterator<Item = PathBuf> {
+    WalkDir::new(path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
@@ -224,7 +233,7 @@ pub async fn build_assets(
     build_path: &Path,
     for_import_only: bool,
 ) -> anyhow::Result<()> {
-    let files = get_asset_files(assets_path).map(Into::into).collect_vec();
+    let files = get_files_in_path(assets_path).map(Into::into).collect_vec();
 
     let has_errored = Arc::new(AtomicBool::new(false));
 

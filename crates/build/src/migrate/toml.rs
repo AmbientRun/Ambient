@@ -10,12 +10,12 @@ use anyhow::Context;
 use futures::{future::ready, stream, StreamExt, TryStreamExt};
 use itertools::Itertools;
 
-use crate::{get_asset_files, migrate::toml::json_pipeline::PipelineOneOrMany};
+use crate::{get_files_in_path, migrate::toml::json_pipeline::PipelineOneOrMany};
 
 pub async fn process(path: PathBuf) -> anyhow::Result<()> {
     let assets_path = path.join("assets");
 
-    stream::iter(get_asset_files(&assets_path))
+    stream::iter(get_files_in_path(&assets_path))
         .filter(|path| ready(path.ends_with("pipeline.json")))
         .then(|path: PathBuf| async move {
             migrate_pipeline(&path)
