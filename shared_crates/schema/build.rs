@@ -1,11 +1,12 @@
 use std::path::PathBuf;
 
 fn main() {
-    println!("cargo:rerun-if-changed=src");
+    const SCHEMA_LOCATION: &str = "../../schema";
+    println!("cargo:rerun-if-changed={SCHEMA_LOCATION}");
 
-    let files = std::iter::once(PathBuf::from("src/ambient.toml"))
+    let files = std::iter::once(PathBuf::from(format!("{SCHEMA_LOCATION}/ambient.toml")))
         .chain(
-            std::fs::read_dir("src/schema")
+            std::fs::read_dir(format!("{SCHEMA_LOCATION}/schema"))
                 .unwrap()
                 .filter_map(Result::ok)
                 .map(|de| de.path()),
@@ -13,7 +14,7 @@ fn main() {
         .filter(|path| path.extension().map(|ext| ext == "toml").unwrap_or(false))
         .map(|path| {
             (
-                path.strip_prefix("src")
+                path.strip_prefix(SCHEMA_LOCATION)
                     .unwrap()
                     .iter()
                     .map(|s| s.to_string_lossy())
