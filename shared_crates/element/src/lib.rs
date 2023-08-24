@@ -70,7 +70,7 @@ components!("app", {
     /// The element tree state for an entity.
     element_tree: ShareableElementTree,
 });
-pub use ambient_guest_bridge::components::app::{element, element_unmanaged_children};
+pub use ambient_guest_bridge::core::app::components::{element, element_unmanaged_children};
 
 #[clonable]
 /// A trait for types that can be converted to `Any` and can also be cloned.
@@ -153,14 +153,6 @@ impl Element {
         value: T,
     ) -> Self {
         self.config.components.set(component, value);
-        self
-    }
-    /// Adds the given `component` with the default value for the component's type to the element.
-    pub fn with_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(
-        mut self,
-        component: Component<T>,
-    ) -> Self {
-        self.config.components.set(component, T::default());
         self
     }
     /// Sets the given `component` to `value` on the element during initialization only.
@@ -310,10 +302,12 @@ impl Element {
     /// ```
     #[cfg(feature = "guest")]
     pub fn spawn_interactive(self) {
-        use ambient_guest_bridge::api::{message::RuntimeMessage, messages, prelude::OkEmpty};
+        use ambient_guest_bridge::api::{
+            core::messages::Frame, message::RuntimeMessage, prelude::OkEmpty,
+        };
 
         let mut tree = self.spawn_tree();
-        messages::Frame::subscribe(move |_| {
+        Frame::subscribe(move |_| {
             tree.update(&mut World);
             OkEmpty
         });
@@ -390,11 +384,9 @@ pub fn render_parented_with_component(
                 world.add_component(id, children(), vec![root]).unwrap();
             }
         }
-        if !world.has_component(id, local_to_world()) {
-            world
-                .add_component(id, local_to_world(), Default::default())
-                .unwrap();
-        }
+        world
+            .add_component_if_required(id, local_to_world(), Default::default())
+            .unwrap();
     }
 }
 

@@ -2,7 +2,18 @@ use std::{net::IpAddr, path::PathBuf};
 
 use clap::{Args, Parser, Subcommand};
 
-pub mod new_project;
+pub mod new_package;
+
+pub mod assets;
+pub mod build;
+pub mod client;
+pub mod deploy;
+pub mod server;
+
+mod package_path;
+pub use package_path::*;
+
+use self::assets::AssetCommand;
 
 #[derive(Parser, Clone)]
 #[command(author, version, about, long_about = None)]
@@ -14,33 +25,37 @@ pub struct Cli {
 
 #[derive(Parser, Clone, Debug)]
 pub enum Commands {
-    /// Create a new Ambient project
+    /// Create a new Ambient package
     New {
         #[command(flatten)]
-        project_args: ProjectCli,
+        package_args: PackageCli,
         #[arg(short, long)]
         name: Option<String>,
         #[arg(long)]
         api_path: Option<String>,
     },
-    /// Builds and runs the project locally
+    /// Builds and runs the package locally
     Run {
         #[command(flatten)]
-        project_args: ProjectCli,
+        package_args: PackageCli,
         #[command(flatten)]
         host_args: HostCli,
         #[command(flatten)]
         run_args: RunCli,
     },
-    /// Builds the project
+    /// Builds the package
     Build {
         #[command(flatten)]
-        project_args: ProjectCli,
+        package_args: PackageCli,
+
+        /// Build for deployment; off by default, turned on for deploys
+        #[arg(long)]
+        for_deploy: bool,
     },
-    /// Deploys the project
+    /// Deploys the package
     Deploy {
         #[command(flatten)]
-        project_args: ProjectCli,
+        package_args: PackageCli,
         /// API server endpoint
         #[arg(long, default_value = "https://api.ambient.run")]
         api_server: String,
@@ -50,25 +65,25 @@ pub enum Commands {
         /// Don't use differential upload and upload all assets
         #[arg(long)]
         force_upload: bool,
-        /// Ensure the project is running after deploying
+        /// Ensure the package is running after deploying
         #[arg(long)]
         ensure_running: bool,
-        /// Context to run the project in
+        /// Context to run the package in
         #[arg(long, requires("ensure_running"), default_value = "")]
         context: String,
     },
-    /// Builds and runs the project in server-only mode
+    /// Builds and runs the package in server-only mode
     Serve {
         #[command(flatten)]
-        project_args: ProjectCli,
+        package_args: PackageCli,
         #[command(flatten)]
         host_args: HostCli,
     },
     /// View an asset
     View {
         #[command(flatten)]
-        project_args: ProjectCli,
-        /// Relative to the project path
+        package_args: PackageCli,
+        /// Relative to the package path
         asset_path: PathBuf,
     },
     /// Join a multiplayer session
@@ -83,36 +98,6 @@ pub enum Commands {
         #[command(subcommand)]
         command: AssetCommand,
     },
-}
-
-#[derive(Args, Clone, Debug)]
-pub struct MigrateOptions {
-    #[arg(index = 1, default_value = "./assets")]
-    /// The path to the assets folder
-    pub path: PathBuf,
-}
-
-#[derive(Args, Clone, Debug)]
-pub struct ImportOptions {
-    #[arg(index = 1)]
-    /// The path to the assets you want to import
-    pub path: PathBuf,
-    #[arg(long)]
-    /// Whether to convert audio files to OGG
-    pub convert_audio: bool,
-    /// Whether to generate a collider from the model
-    #[arg(long)]
-    pub collider_from_model: bool,
-}
-
-#[derive(Subcommand, Clone, Debug)]
-pub enum AssetCommand {
-    /// Migrate json pipelines to toml
-    #[command(name = "migrate-pipelines-toml")]
-    MigratePipelinesToml(MigrateOptions),
-    /// Import new assets with interactive prompts
-    #[command(name = "import")]
-    Import(ImportOptions),
 }
 
 #[derive(Subcommand, Clone, Copy, Debug)]
@@ -133,7 +118,8 @@ pub enum GoldenImageCommand {
 
 #[derive(Args, Clone, Debug)]
 pub struct RunCli {
-    /// If set, show a debugger that can be used to investigate the state of the project. Can also be accessed through the `AMBIENT_DEBUGGER` environment variable
+    /// If set, show a debugger that can be used to investigate the state of the package.
+    /// Can also be accessed through the `AMBIENT_DEBUGGER` environment variable
     #[arg(short, long)]
     pub debugger: bool,
 
@@ -159,19 +145,23 @@ pub struct RunCli {
 }
 
 #[derive(Args, Clone, Debug)]
-pub struct ProjectCli {
+pub struct PackageCli {
     /// Dummy flag to catch Rust users using muscle memory and warn them
     #[arg(long, short, hide = true)]
     pub project: bool,
 
-    /// The path or URL of the project to run; if not specified, this will default to the current directory
+    /// The path or URL of the package to run; if not specified, this will default to the current directory
     pub path: Option<String>,
 
-    /// Build all the assets with full optimization; this will make debugging more difficult
-    #[arg(short, long)]
-    pub release: bool,
+    /// Build all the assets with debug information; this will make them less performant and larger but easier to debug (default for all commands apart from `deploy` and `serve`)
+    #[arg(long, conflicts_with = "release")]
+    debug: bool,
 
-    /// Avoid building the project
+    /// Build all the assets with full optimization; this will make them faster and smaller but more difficult to debug (default for `deploy` and `serve`)
+    #[arg(short, long)]
+    release: bool,
+
+    /// Avoid building the package
     #[arg(long)]
     pub no_build: bool,
 
@@ -235,15 +225,15 @@ impl Cli {
             Commands::Assets { .. } => None,
         }
     }
-    /// Extract project-relevant state only
-    pub fn project(&self) -> Option<&ProjectCli> {
+    /// Extract package-relevant state only
+    pub fn package(&self) -> Option<&PackageCli> {
         match &self.command {
-            Commands::New { project_args, .. } => Some(project_args),
-            Commands::Run { project_args, .. } => Some(project_args),
-            Commands::Build { project_args, .. } => Some(project_args),
-            Commands::Deploy { project_args, .. } => Some(project_args),
-            Commands::Serve { project_args, .. } => Some(project_args),
-            Commands::View { project_args, .. } => Some(project_args),
+            Commands::New { package_args, .. } => Some(package_args),
+            Commands::Run { package_args, .. } => Some(package_args),
+            Commands::Build { package_args, .. } => Some(package_args),
+            Commands::Deploy { package_args, .. } => Some(package_args),
+            Commands::Serve { package_args, .. } => Some(package_args),
+            Commands::View { package_args, .. } => Some(package_args),
             Commands::Join { .. } => None,
             Commands::Assets { .. } => None,
         }
@@ -259,6 +249,31 @@ impl Cli {
             Commands::View { .. } => None,
             Commands::Join { .. } => None,
             Commands::Assets { .. } => None,
+        }
+    }
+    pub fn use_release_build(&self) -> bool {
+        match &self.command {
+            Commands::Deploy { package_args, .. } | Commands::Serve { package_args, .. } => {
+                package_args.is_release().unwrap_or(true)
+            }
+            Commands::Run { package_args, .. }
+            | Commands::Build { package_args, .. }
+            | Commands::View { package_args, .. } => package_args.is_release().unwrap_or(false),
+            Commands::New { .. } | Commands::Join { .. } | Commands::Assets { .. } => false,
+        }
+    }
+}
+
+impl PackageCli {
+    pub fn is_release(&self) -> Option<bool> {
+        match (self.debug, self.release) {
+            (true, false) => Some(false),
+            (false, true) => Some(true),
+            (false, false) => None,
+            (true, true) => {
+                // clap's conflict_with should prevent this from happening
+                panic!("debug and release are mutually exclusive")
+            }
         }
     }
 }

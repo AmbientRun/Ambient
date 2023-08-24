@@ -15,7 +15,7 @@ lazy_static = { workspace = true }
 bincode = { workspace = true }
 futures = { workspace = true }
 thiserror = { workspace = true }
-ambient_sys = { path = "../sys" }
+ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
 
 [target.'cfg(not(target_os = "unknown"))'.dev-dependencies]
 tokio = { workspace = true }

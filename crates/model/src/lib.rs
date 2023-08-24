@@ -7,7 +7,7 @@ use ambient_core::{
     gpu,
     hierarchy::{children, despawn_recursive},
     main_scene, runtime,
-    transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world},
+    transform::{get_world_position, local_to_world, mesh_to_world},
 };
 use ambient_ecs::{
     components, query, ComponentDesc, Debuggable, Entity, EntityId, MaybeResource, Networked,
@@ -47,7 +47,7 @@ use anyhow::Context;
 
 pub mod loading_material;
 
-pub use ambient_ecs::generated::components::core::model::{
+pub use ambient_ecs::generated::model::components::{
     model_animatable, model_from_url, model_loaded,
 };
 
@@ -100,14 +100,10 @@ async fn internal_spawn_models_from_defs(
                 lod: 0,
             }],
         )
-        .with_default(gpu_primitives_mesh())
-        .with_default(gpu_primitives_lod())
+        .with(gpu_primitives_mesh(), Default::default())
+        .with(gpu_primitives_lod(), Default::default())
         .with(color(), vec4(0.0, 0.5, 1.0, 1.0))
-        .with(main_scene(), ())
-        .with_default(local_to_world())
-        .with_default(mesh_to_world())
-        .with_default(local_to_world())
-        .with_default(inv_local_to_world());
+        .with(main_scene(), ());
 
     let mut ids = entities_with_models
         .values()
@@ -122,7 +118,13 @@ async fn internal_spawn_models_from_defs(
         for id in ids {
             remove_model(world, id);
             tracing::debug!("Spawning cube model for {id}");
-            log_result!(world.add_components(id, cube.clone()))
+            log_result!(world.add_components(id, cube.clone()));
+
+            // these should only be added if they do not already exist, as otherwise they will replace the existing values
+            // TODO: consider backing up color, too
+            for component in [local_to_world(), mesh_to_world()] {
+                let _ = world.add_component_if_required(id, component, Default::default());
+            }
         }
     });
 

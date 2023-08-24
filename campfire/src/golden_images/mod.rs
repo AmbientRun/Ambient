@@ -189,6 +189,7 @@ fn update_tests(i: usize, ambient_path: &str, name: &str) -> (String, Vec<String
         quic_port,
         "--http-interface-port".to_string(),
         http_port,
+        "--mute-audio".to_string(),
         "golden-image-update".to_string(),
         // Todo: Ideally this waiting should be unnecessary, because
         // we only care about rendering the first frame of the test,
@@ -218,6 +219,7 @@ fn check_tests(i: usize, ambient_path: &str, name: &str) -> (String, Vec<String>
         quic_port,
         "--http-interface-port".to_string(),
         http_port,
+        "--mute-audio".to_string(),
         "golden-image-check".to_string(),
         // Todo: See notes on --wait-seconds from above.
         "--timeout-seconds".to_string(),

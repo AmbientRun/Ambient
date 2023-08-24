@@ -13,3 +13,5 @@ itertools = { workspace = true }
 log = { workspace = true }
 serde_json = { workspace = true }
 reqwest = { workspace = true }
+
+is-terminal = "0.4"

@@ -1,4 +1,4 @@
-use ambient_api::{components::core::prefab::prefab_from_url, prelude::*};
+use ambient_api::{core::prefab::components::prefab_from_url, prelude::*};
 
 #[main]
 pub fn main() {
@@ -6,7 +6,7 @@ pub fn main() {
     run_async(async move {
         loop {
             let model = Entity::new()
-                .with(prefab_from_url(), asset::url("assets/Teapot.glb").unwrap())
+                .with(prefab_from_url(), packages::this::assets::url("Teapot.glb"))
                 .spawn();
 
             sleep(0.01).await;

@@ -1,16 +1,16 @@
-[ember]
+[package]
 id = "ambient_example_music_sequencer"
 name = "Music sequencer"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/music_sequencer"
 type = "Game"
-categories = ["Example"]
+content = { type = "Playable", example = true }
 
-[messages.click]
+[messages.Click]
 description = "Select or deselect a note."
 fields = { track_id = "EntityId", index = "U32" }
 
-[messages.set_bpm]
+[messages.SetBpm]
 description = "Set the BPM."
 fields = { bpm = "U32" }
 
@@ -39,12 +39,12 @@ description = "Controls the hue (in degrees) to use for the next player's color.
 attributes = ["Debuggable", "Resource"]
 
 [components.player_hue]
-type = { type = "U32" }
+type = "U32"
 name = "Player Hue"
 attributes = ["Networked", "Debuggable"]
 
 [components.bpm]
-type = { type = "U32" }
+type = "U32"
 name = "BPM"
 description = "The number of beats per minute."
 attributes = ["Networked", "Debuggable"]

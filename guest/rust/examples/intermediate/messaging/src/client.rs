@@ -4,16 +4,22 @@ use std::sync::{
 };
 
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        primitives::cube,
-        rendering::color,
-        transform::{lookat_target, scale, translation},
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        primitives::components::cube,
+        rendering::components::color,
+        transform::{
+            components::{lookat_target, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
+use packages::this::messages::{Hello, Local};
 
 #[main]
 pub fn main() {
@@ -31,23 +37,23 @@ pub fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(translation(), Vec3::ONE * 5.)
         .with(lookat_target(), vec3(0., 0., 0.))
         .spawn();
 
     // 1
-    messages::Hello::new(false, "Hello, world from the client!").send_server_unreliable();
-    messages::Hello::new(true, "Hello, world from the client!").send_server_reliable();
+    Hello::new("Hello, world from the client!", false).send_server_unreliable();
+    Hello::new("Hello, world from the client!", true).send_server_reliable();
 
     // 2
-    messages::Hello::subscribe(|source, data| {
+    Hello::subscribe(|source, data| {
         println!("{source:?}: {:?}", data);
 
         let source_reliable = data.source_reliable;
         Entity::new()
             .with_merge(make_transformable())
-            .with_default(cube())
+            .with(cube(), ())
             .with(
                 translation(),
                 vec3(0., if source_reliable { -1. } else { 1. }, 0.),
@@ -66,7 +72,7 @@ pub fn main() {
 
     // 3
     let handled = Arc::new(AtomicBool::new(false));
-    messages::Local::subscribe({
+    Local::subscribe({
         let handled = handled.clone();
         move |source, data| {
             handled.store(true, Ordering::SeqCst);
@@ -78,7 +84,7 @@ pub fn main() {
     run_async(async move {
         while !handled.load(Ordering::SeqCst) {
             sleep(1.0).await;
-            messages::Local::new("Hello!").send_local_broadcast(false)
+            Local::new("Hello!").send_local_broadcast(false)
         }
     });
 }

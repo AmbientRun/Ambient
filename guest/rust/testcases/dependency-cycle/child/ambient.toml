@@ -1,0 +1,7 @@
+[package]
+id = "child"
+name = "child"
+version = "0.0.1"
+
+[dependencies]
+dependency_cycle = { path = "../" }

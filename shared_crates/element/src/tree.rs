@@ -16,11 +16,11 @@ use crate::{
 use ambient_core::hierarchy::{children, parent};
 use ambient_friendly_id::friendly_id;
 #[cfg(feature = "guest")]
-use ambient_guest_bridge::api::components::core::ecs::{children, parent};
+use ambient_guest_bridge::core::ecs::components::{children, parent};
 #[cfg(feature = "native")]
 use ambient_guest_bridge::ecs::{query, Component, SystemGroup};
 use ambient_guest_bridge::{
-    components::app::name,
+    core::app::components::name,
     ecs::{Entity, EntityId, World},
 };
 use itertools::Itertools;
@@ -314,8 +314,8 @@ impl ElementTree {
             let instance = self.instances.get(instance_id).unwrap();
             if instance.entity.is_null() {
                 let mut entity_data = Entity::new()
-                    .with_default(crate::element())
-                    .with_default(name());
+                    .with(crate::element(), String::new())
+                    .with(name(), String::new());
                 if let Some(parent_entity) = instance.parent_entity {
                     entity_data = entity_data.with(parent(), parent_entity);
                 }

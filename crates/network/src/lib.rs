@@ -10,8 +10,8 @@ use ambient_native_std::log_error;
 use ambient_rpc::RpcError;
 use thiserror::Error;
 
-pub use ambient_ecs::generated::components::core::network::{
-    is_remote_entity, persistent_resources, synced_resources,
+pub use ambient_ecs::generated::network::components::{
+    is_persistent_resources, is_remote_entity, is_synced_resources,
 };
 
 pub type AsyncMutex<T> = tokio::sync::Mutex<T>;
@@ -20,9 +20,11 @@ pub mod bytes_ext;
 pub mod client;
 pub mod client_game_state;
 pub mod codec;
+pub mod diff_serialization;
 pub mod hooks;
 pub mod proto;
 pub mod rpc;
+pub mod serialization;
 pub mod server;
 pub mod stream;
 
@@ -69,7 +71,7 @@ pub trait ServerWorldExt {
 impl ServerWorldExt for World {
     fn persisted_resource_entity(&self) -> Option<EntityId> {
         query(())
-            .incl(persistent_resources())
+            .incl(is_persistent_resources())
             .iter(self, None)
             .map(|(id, _)| id)
             .next()
@@ -90,7 +92,7 @@ impl ServerWorldExt for World {
 
     fn synced_resource_entity(&self) -> Option<EntityId> {
         query(())
-            .incl(synced_resources())
+            .incl(is_synced_resources())
             .iter(self, None)
             .map(|(id, _)| id)
             .next()

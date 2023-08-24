@@ -1,25 +1,35 @@
 use ambient_api::{
-    components::core::{
-        self,
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        primitives::cube,
-        rendering::color,
-        transform::{lookat_target, scale, translation},
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        player::components::is_player,
+        primitives::components::cube,
+        rendering::components::color,
+        transform::{
+            components::{lookat_target, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
 
 mod constants;
 use constants::*;
 
+use packages::this::{
+    components::{cell, cells, owned_by},
+    messages::Input,
+};
+
 #[main]
 pub fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), entity::resources())
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(translation(), vec3(SIZE as f32, SIZE as f32, SIZE as f32))
         .with(
             lookat_target(),
@@ -27,13 +37,13 @@ pub fn main() {
         )
         .spawn();
 
-    let cells = {
+    let cell_entities = {
         let mut cells = Vec::new();
         for y in 0..SIZE {
             for x in 0..SIZE {
                 let id = Entity::new()
                     .with_merge(make_transformable())
-                    .with_default(cube())
+                    .with(cube(), ())
                     .with(translation(), vec3(x as f32, y as f32, 0.))
                     .with(scale(), vec3(0.6, 0.6, 0.6))
                     .with(color(), DEFAULT_COLOR)
@@ -45,32 +55,31 @@ pub fn main() {
     };
     entity::add_component(
         entity::synchronized_resources(),
-        components::cells(),
-        cells.clone(),
+        cells(),
+        cell_entities.clone(),
     );
 
-    spawn_query(core::player::player()).bind(|ids| {
+    spawn_query(is_player()).bind(|ids| {
         for (id, _) in ids {
-            entity::add_component(id, components::cell(), 0);
+            entity::add_component(id, cell(), 0);
         }
     });
 
-    despawn_query(core::player::player()).bind(|ids| {
-        let cells =
-            entity::get_component(entity::synchronized_resources(), components::cells()).unwrap();
+    despawn_query(is_player()).bind(|ids| {
+        let cells = entity::get_component(entity::synchronized_resources(), cells()).unwrap();
 
         for (id, _) in ids {
             for cell in &cells {
-                if entity::get_component(*cell, components::owned_by()) == Some(id) {
-                    entity::remove_component(*cell, components::owned_by());
+                if entity::get_component(*cell, owned_by()) == Some(id) {
+                    entity::remove_component(*cell, owned_by());
                 }
             }
         }
     });
 
-    messages::Input::subscribe(move |source, msg| {
+    Input::subscribe(move |source, msg| {
         let Some(player_id) = source.client_entity_id() else { return; };
-        let Some(cell) = entity::get_component(player_id, components::cell()) else { return; };
+        let Some(cell) = entity::get_component(player_id, cell()) else { return; };
 
         let size = SIZE as i32;
 
@@ -91,14 +100,10 @@ pub fn main() {
         }
 
         let cell = y * size + x;
-        entity::set_component(player_id, components::cell(), cell);
+        entity::set_component(player_id, self::cell(), cell);
 
         if msg.capture {
-            entity::add_component_if_required(
-                cells[cell as usize],
-                components::owned_by(),
-                player_id,
-            );
+            entity::add_component_if_required(cell_entities[cell as usize], owned_by(), player_id);
         }
     });
 }

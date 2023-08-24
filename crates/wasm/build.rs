@@ -14,6 +14,7 @@ fn main() {
     let working_dir = dunce::simplified(&working_dir).to_owned();
 
     println!("cargo:rerun-if-changed=wit");
+    println!("cargo:rerun-if-changed=../../shared_crates/schema");
     let filenames_to_copy: Vec<_> = std::fs::read_dir("wit")
         .unwrap()
         .map(|r| r.map(|de| de.path()))
@@ -54,15 +55,15 @@ fn main() {
         files.extend(load_files(&working_dir, &filename).unwrap());
     }
 
-    println!("Assembling guest files");
     for guest_path in std::fs::read_dir("../../guest/")
         .unwrap()
         .filter_map(Result::ok)
         .map(|de| de.path())
         .filter(|de| de.is_dir())
     {
-        println!("Reading file in guest path: {guest_path:?}");
         // HACK: Build wit files ahead of time so that we don't need to use a macro in the guest code.
+        //
+        // Additionally, generate the API schema Rust code ahead of time.
         if guest_path.file_name().unwrap_or_default() == "rust" {
             use wit_bindgen_core::{wit_parser::Resolve, Files};
 
@@ -79,7 +80,6 @@ fn main() {
             generator.generate(&resolve, world, &mut files);
 
             for (filename, contents) in files.iter() {
-                eprintln!("Writing file: {filename:?}");
                 std::fs::write(
                     guest_path
                         .join("api_core")
@@ -90,6 +90,29 @@ fn main() {
                 )
                 .unwrap();
             }
+
+            // Generate the API schema Rust code.
+            let api_generated_code = ambient_sys::task::make_native_multithreaded_runtime()
+                .unwrap()
+                .block_on(ambient_package_macro_common::generate_code(
+                    None,
+                    ambient_package_macro_common::Context::GuestApi,
+                ))
+                .unwrap();
+
+            let api_generated_code = format!("#![allow(missing_docs)]\n#![allow(dead_code)]\n#![allow(unused)]\npub use raw::ambient_core;\n{api_generated_code}");
+
+            let generated_path = guest_path
+                .join("api_core")
+                .join("src")
+                .join("internal")
+                .join("generated.rs");
+
+            std::fs::write(&generated_path, api_generated_code).unwrap();
+            std::process::Command::new("rustfmt")
+                .arg(generated_path)
+                .status()
+                .unwrap();
         } else {
             copy_files(&guest_path, &files, &working_dir);
         }

@@ -1,38 +1,46 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        physics::{
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        messages::{Collision, Frame},
+        physics::components::{
             angular_velocity, cube_collider, dynamic, linear_velocity, physics_controlled,
             visualize_collider,
         },
-        prefab::prefab_from_url,
-        primitives::cube,
-        rendering::{cast_shadows, color},
-        transform::{lookat_target, rotation, scale, translation},
+        prefab::components::prefab_from_url,
+        primitives::components::cube,
+        rendering::components::{cast_shadows, color},
+        transform::{
+            components::{lookat_target, rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
+
+use packages::this::{assets, messages::Bonk};
 
 #[main]
 pub async fn main() {
     let camera = Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_target(), vec3(0., 0., 0.))
         .spawn();
 
     let cube = Entity::new()
         .with_merge(make_transformable())
-        .with_default(cube())
-        .with_default(visualize_collider())
-        .with_default(physics_controlled())
-        .with_default(cast_shadows())
-        .with_default(linear_velocity())
-        .with_default(angular_velocity())
+        .with(cube(), ())
+        .with(visualize_collider(), ())
+        .with(physics_controlled(), ())
+        .with(cast_shadows(), ())
+        .with(linear_velocity(), Vec3::ZERO)
+        .with(angular_velocity(), Vec3::ZERO)
         .with(cube_collider(), Vec3::ONE)
         .with(dynamic(), true)
         .with(translation(), vec3(0., 0., 5.))
@@ -43,15 +51,15 @@ pub async fn main() {
 
     Entity::new()
         .with_merge(make_transformable())
-        .with(prefab_from_url(), asset::url("assets/Shape.glb").unwrap())
+        .with(prefab_from_url(), assets::url("shape.glb"))
         .spawn();
 
-    ambient_api::messages::Collision::subscribe(move |msg| {
+    Collision::subscribe(move |msg| {
         println!("Bonk! {:?} collided", msg.ids);
-        messages::Bonk::new(cube, camera).send_client_broadcast_unreliable();
+        Bonk::new(cube, camera).send_client_broadcast_unreliable();
     });
 
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         for hit in physics::raycast(Vec3::Z * 20., -Vec3::Z) {
             if hit.entity == cube {
                 println!("The raycast hit the cube: {hit:?}");

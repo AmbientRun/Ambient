@@ -9,7 +9,7 @@ use ambient_ecs::{components, query, Debuggable, Entity, EntityId, MaybeResource
 use ambient_native_std::shapes::{RayIntersectable, AABB};
 use glam::Vec2;
 
-pub use ambient_ecs::generated::components::core::input::{
+pub use ambient_ecs::generated::input::components::{
     mouse_over, mouse_pickable_max, mouse_pickable_min,
 };
 
@@ -28,7 +28,7 @@ pub struct PickerIntersection {
 }
 
 pub fn resources() -> Entity {
-    Entity::new().with_default(picker_intersecting())
+    Entity::new().with(picker_intersecting(), Default::default())
 }
 
 pub fn frame_systems() -> SystemGroup {

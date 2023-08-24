@@ -19,8 +19,9 @@ ambient_native_std = { path = "../native_std" }
 ambient_gpu = { path = "../gpu" }
 ambient_renderer = { path = "../renderer" }
 ambient_procedurals = { path = "../procedurals" }
+ambient_package_semantic_native = { path = "../package_semantic_native" }
 
-ambient_project = { path = "../../shared_crates/project" }
+ambient_package = { path = "../../shared_crates/package" }
 ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
     "native",
 ] }
@@ -66,6 +67,8 @@ wasm-bridge = { git = "https://github.com/AmbientRun/wasm-bridge", branch  = "wa
 dunce = "1.0"
 
 [build-dependencies]
+ambient_package_macro_common = { path = "../../shared_crates/package_macro_common" }
+ambient_sys = { path = "../sys" }
 ambient_std = { path = "../../shared_crates/std" }
 wit-bindgen-core = { workspace = true }
 wit-bindgen-rust = { workspace = true }

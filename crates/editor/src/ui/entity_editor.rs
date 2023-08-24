@@ -5,7 +5,7 @@ use ambient_core::{
     transform::{scale, translation},
 };
 use ambient_ecs::{
-    generated::components::core::animation::animation_errors, with_component_registry, Component,
+    generated::animation::components::animation_errors, with_component_registry, Component,
     ComponentDesc, ComponentEntry, ComponentValue, Entity, EntityId, PrimitiveComponentType, World,
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};

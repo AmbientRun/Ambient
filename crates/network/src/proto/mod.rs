@@ -1,6 +1,9 @@
-use ambient_core::project_name;
+use ambient_core::main_package_name;
 use ambient_ecs::{ComponentRegistry, ExternalComponentDesc};
-use ambient_native_std::asset_url::AbsAssetUrl;
+use ambient_native_std::{ambient_version, asset_url::AbsAssetUrl};
+use itertools::Itertools;
+
+use crate::serialization::FailableDeserialization;
 
 pub mod client;
 pub mod server;
@@ -22,22 +25,12 @@ pub enum ServerPush {
     Disconnect,
 }
 
-pub(crate) const VERSION: &str = env!("CARGO_PKG_VERSION");
-
-pub fn get_version_with_revision() -> String {
-    format!(
-        "{}-{}",
-        VERSION,
-        ambient_native_std::git_revision()
-            .expect("Failed to find git revision. Please open an issue with `git describe`")
-    )
-}
-
 /// Miscellaneous information about the server that needs to be sent to the client during the handshake.
+/// Note: This has to deserialize correctly between versions of the server and client for us to be able to show a nice error message.
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct ServerInfo {
-    /// The name of the project. Used by the client to figure out what to title its window. Defaults to "Ambient".
-    pub project_name: String,
+    /// The name of the main package. Used by the client to figure out what to title its window. Defaults to "Ambient".
+    pub main_package_name: String,
 
     // Base url of the content server.
     pub content_base_url: AbsAssetUrl,
@@ -46,7 +39,7 @@ pub struct ServerInfo {
     /// Defaults to the version of the crate.
     /// TODO: use semver
     pub version: String,
-    pub external_components: Vec<ExternalComponentDesc>,
+    pub external_components: FailableDeserialization<Vec<ExternalComponentDesc>>,
 }
 
 impl ServerInfo {
@@ -59,12 +52,13 @@ impl ServerInfo {
         let external_components = ComponentRegistry::get()
             .all_external()
             .map(|x| x.0)
-            .collect();
+            .collect_vec()
+            .into();
 
         Self {
-            project_name: world.resource(project_name()).clone(),
+            main_package_name: world.resource(main_package_name()).clone(),
             content_base_url,
-            version: get_version_with_revision(),
+            version: ambient_version().to_string(),
             external_components,
         }
     }

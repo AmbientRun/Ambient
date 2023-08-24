@@ -9,7 +9,7 @@ use ambient_core::{
         mesh_to_local, rotation, scale, translation,
     },
 };
-use ambient_ecs::{generated::components::core::animation::bind_id, Entity, EntityId, World};
+use ambient_ecs::{generated::animation::components::bind_id, Entity, EntityId, World};
 use ambient_model::{model_skin_ix, pbr_renderer_primitives_from_url, PbrRenderPrimitiveFromUrl};
 use ambient_renderer::double_sided;
 use fbxcel::tree::v7400::NodeHandle;
@@ -144,7 +144,7 @@ impl FbxModel {
         let mut out_node = Entity::new()
             .with(name(), self.node_name.to_string())
             .with(bind_id(), bind_ids.get(self))
-            .with_default(children());
+            .with(children(), Default::default());
         if self.double_sided {
             out_node.set(double_sided(), true);
         }

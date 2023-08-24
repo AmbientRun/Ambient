@@ -11,6 +11,8 @@ repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
+ambient_gpu_ecs = { path = "../gpu_ecs" , version = "0.3.0-dev" }
+ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
 ambient_core = { path = "../core" , version = "0.3.0-dev" }
 ambient_input = { path = "../input" , version = "0.3.0-dev" }
 glam = { workspace = true }

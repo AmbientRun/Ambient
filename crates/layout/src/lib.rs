@@ -1,47 +1,29 @@
 use ambient_core::{
-    gpu_components,
-    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
     hierarchy::{children, parent},
     transform::{local_to_parent, local_to_world, mesh_to_local, translation},
 };
-use ambient_ecs::{
-    components, query, query_mut, Debuggable, Description, DynSystem, EntityId, Name, Networked,
-    Store, SystemGroup, World,
+use ambient_ecs::{query, query_mut, DynSystem, EntityId, SystemGroup, World};
+use ambient_gpu_ecs::{
+    gpu_components, ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent,
 };
 use ambient_input::picking::mouse_pickable;
 use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec4};
 use itertools::Itertools;
-use serde::{Deserialize, Serialize};
 
-pub mod guest_api;
-
-pub use ambient_ecs::generated::components::core::layout::{
-    fit_horizontal_parent, gpu_ui_size, height, is_book_file, margin, max_height, max_width,
-    mesh_to_local_from_size, min_height, min_width, padding, screen, space_between_items, width,
+pub use ambient_ecs::generated::layout::{
+    components::{
+        align_horizontal, align_vertical, docking, fit_horizontal, fit_vertical, gpu_ui_size,
+        height, is_book_file, is_screen, layout, margin, max_height, max_width,
+        mesh_to_local_from_size, min_height, min_width, orientation, padding, space_between_items,
+        width,
+    },
+    types::{Align, Docking, Fit, Layout, Orientation},
 };
+use ambient_gpu::gpu::Gpu;
+use std::sync::Arc;
 
-components!("layout", {
-    @[Debuggable, Networked, Store, Name["Layout"], Description["The layout to apply to this entity's children."]]
-    layout: Layout,
-    @[Debuggable]
-    fit_vertical: Fit,
-    @[Debuggable]
-    fit_horizontal: Fit,
-    @[Debuggable]
-    docking: Docking,
-    @[Debuggable]
-    orientation: Orientation,
-    @[Debuggable]
-    align_horizontal: Align,
-    @[Debuggable]
-    align_vertical: Align,
-});
 gpu_components! {
     gpu_ui_size() => ui_size: GpuComponentFormat::Vec4,
-}
-
-pub fn init_all_components() {
-    init_components();
 }
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -167,49 +149,10 @@ impl From<Vec4> for Borders {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum Align {
-    Begin,
-    Center,
-    End,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Fit {
-    None,
-    Parent,
-    Children,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Orientation {
-    Horizontal,
-    Vertical,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum Docking {
-    Top,
-    Bottom,
-    Left,
-    Right,
-    Fill,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub enum Layout {
-    Flow,
-    Dock,
-    Bookcase,
-    /// Just copy the width of this component to it's children. Used for the ScrollArea
-    WidthToChildren,
-}
-
 pub fn layout_systems() -> SystemGroup {
     SystemGroup::new(
         "layout",
         vec![
-            Box::new(guest_api::systems()),
             // For all "normal" components, i.e. non-layout components
             query((width().changed(),))
                 .excl(layout())
@@ -279,10 +222,11 @@ pub fn layout_systems() -> SystemGroup {
     )
 }
 
-pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
+pub fn gpu_world_systems(gpu: Arc<Gpu>) -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "layout/gpu_world",
         vec![Box::new(ComponentToGpuSystem::new(
+            gpu,
             GpuComponentFormat::Vec4,
             gpu_ui_size(),
             gpu_components::ui_size(),
@@ -736,7 +680,7 @@ fn screens_systems() -> SystemGroup {
     SystemGroup::new(
         "layout/screens",
         vec![query((local_to_world().changed(), children().changed()))
-            .incl(screen())
+            .incl(is_screen())
             .to_system(|q, world, qs, _| {
                 for (_, (ltw, children)) in q.collect_cloned(world, qs) {
                     let (_, _, pos) = ltw.to_scale_rotation_translation();

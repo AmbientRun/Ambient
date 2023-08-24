@@ -1,27 +1,32 @@
 use std::f64::consts::TAU;
 
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        prefab::prefab_from_url,
-        rendering::{cast_shadows, light_ambient, light_diffuse, sun},
-        transform::{lookat_target, rotation, scale, translation},
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        prefab::components::prefab_from_url,
+        rendering::components::{cast_shadows, light_ambient, light_diffuse, sun},
+        transform::{
+            components::{lookat_target, rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     entity::set_component,
     glam::EulerRot,
     prelude::*,
 };
 
-use crate::components::instance_index;
+use packages::this::{assets, components::instance_index};
 
 #[main]
 pub async fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(translation(), Vec3::ONE * 5.)
         .with(lookat_target(), vec3(0., 0., 0.))
         .spawn();
@@ -38,9 +43,9 @@ pub async fn main() {
                 let index = k * INSTANCES.z * j * INSTANCES.y * INSTANCES.y + i;
 
                 let model = if index % 2 == 0 {
-                    asset::url("assets/Teapot.glb").unwrap()
+                    assets::url("Teapot.glb")
                 } else {
-                    asset::url("assets/Monkey.glb").unwrap()
+                    assets::url("Monkey.glb")
                 };
 
                 Entity::new()
@@ -48,7 +53,7 @@ pub async fn main() {
                     .with(translation(), (vec3(x, y, z) - 0.5) * 7.0)
                     .with(instance_index(), uvec3(i, j, k))
                     .with(scale(), Vec3::ONE * 0.2)
-                    .with_default(cast_shadows())
+                    .with(cast_shadows(), ())
                     .with(prefab_from_url(), model)
                     .spawn();
             }
@@ -57,9 +62,9 @@ pub async fn main() {
 
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(sun())
+        .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-1.))
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(light_diffuse(), Vec3::ONE * 5.0)
         .with(light_ambient(), Vec3::ZERO)
         .spawn();

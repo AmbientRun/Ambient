@@ -14,15 +14,15 @@ Entities are the objects that exist in the game world. They consist of a unique 
 
 ## Components
 
-Components are pieces of data that can be attached to entities. They store information like health, position, velocity, and more. Components are defined in the ember manifest, and are attached to entities at runtime.
+Components are pieces of data that can be attached to entities. They store information like health, position, velocity, and more. Components are defined in the package manifest, and are attached to entities at runtime.
 
-They are defined in the manifest (and not your codebase) so that other embers that depend on your ember can use them when interacting with the ECS. Additionally, this means that component definitions are not tied to a specific language, and can be used in any language that supports the runtime.
+They are defined in the manifest (and not your codebase) so that other packages that depend on your package can use them when interacting with the ECS. Additionally, this means that component definitions are not tied to a specific language, and can be used in any language that supports the runtime.
 
-For more detail on what components can be, see the [ember manifest reference](ember.md#components--components). Note that component types cannot be nested - you cannot have a component that is a `Vec` of `Vec`s.
+For more detail on what components can be, see the [package manifest reference](package.md#components--components). Note that component types cannot be nested - you cannot have a component that is a `Vec` of `Vec`s.
 
 ### Attributes
 
-Components can have attributes that modify their behavior. These attributes are defined in the ember manifest, and are used by the runtime to determine how to handle the component.
+Components can have attributes that modify their behavior. These attributes are defined in the package manifest, and are used by the runtime to determine how to handle the component.
 
 #### `Debuggable`
 
@@ -32,7 +32,7 @@ This component can have its debug value printed. This is most often used for ECS
 
 This component is networked to the client. This means that the component's value will be sent to the client when the component is created, and whenever the component's value changes.
 
-Note that a component that is `Networked` on the client will _not_ be networked to the server. Ambient's ECS networking is strictly server to client; to send data from the client to the server, you must use [messages](ember.md#messages--messages).
+Note that a component that is `Networked` on the client will _not_ be networked to the server. Ambient's ECS networking is strictly server to client; to send data from the client to the server, you must use [messages](package.md#messages--messages).
 
 #### `Resource`
 
@@ -80,7 +80,7 @@ spawn_query(player()).bind(move |players| {
     for _ in players {
         Entity::new()
             .with_merge(make_transformable())
-            .with_default(cube())
+            .with(cube(), ())
             .with(translation(), rand::random())
             .with(color(), rand::random::<Vec3>().extend(1.0))
             .spawn();
@@ -112,7 +112,7 @@ In addition to specifying components in the query, you can also specify componen
 
 ## Concepts
 
-Concepts are defined in the ember manifest, and are used to define a collection of components that correspond to some concept in the game world. For example, a `Player` concept might be defined as a collection of components that describe the player's health, inventory, and position.
+Concepts are defined in the package manifest, and are used to define a collection of components that correspond to some concept in the game world. For example, a `Player` concept might be defined as a collection of components that describe the player's health, inventory, and position.
 
 Concepts have an ID (specified as the name of their TOML table), a name, a description, and a list of components with defaults. Additionally, they can extend other concepts, which will cause them to inherit the components and defaults of the concept they extend.
 
@@ -124,23 +124,22 @@ name = "Transformable"
 description = "Can be translated, rotated and scaled."
 
 [concepts.transformable.components]
-"core::transform::translation" = [0.0, 0.0, 0.0]
-"core::transform::scale" = [1.0, 1.0, 1.0]
-"core::transform::rotation" = [0.0, 0.0, 0.0, 1.0]
+translation = [0.0, 0.0, 0.0]
+scale = [1.0, 1.0, 1.0]
+rotation = [0.0, 0.0, 0.0, 1.0]
 
 [concepts.camera]
 name = "Camera"
 description = "Base components for a camera. You will need other components to make a fully-functioning camera."
-extends = ["transformable"]
+extends = ["transform::transformable"]
 
 [concepts.camera.components]
-"core::app::name" = "Camera"
-"core::camera::near" = 0.1
-"core::camera::projection" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-"core::camera::projection_view" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-"core::camera::active_camera" = 0.0
-"core::transform::local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-"core::transform::inv_local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+near = 0.1
+projection = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+projection_view = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+active_camera = 0.0
+"transform::local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+"transform::inv_local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 ```
 
 In this example, the "camera" concept contains all of the components from a transformable, as well as components of its own. This means that any entity that has the "camera" concept will also have the components from the "transformable" concept.
@@ -150,23 +149,3 @@ Concepts are exposed to your Rust code in three ways, using `camera` as an examp
 - `camera()`: returns a tuple of the components that are part of the `camera` concept. This can be used within queries to query for entities that have the `camera` concept.
 - `make_camera()`: makes a `Entity` with the components of the `camera` concept, which can then be spawned.
 - `is_camera(id)`: returns true if the entity with the given ID contains all of the components of the `camera` concept.
-
-## What is the `components!` macro in host code?
-
-This section is not relevant to those developing games using Ambient, and is only relevant to those who are developing Ambient itself.
-
-At the root of the repository, there is an `ambient.toml` that defines all of the guest-visible components for Ambient. This is what runtime developers will typically add to when they want to add new components to Ambient.
-
-However, there are some components that are not visible to guest code, but are still defined in host code. These components are defined using the `components!` macro. It is used like this:
-
-```rust
-components!("app", {
-    @[MakeDefault[default_title], Debuggable, MaybeResource]
-    window_title: String,
-    fps_stats: FpsSample,
-});
-```
-
-Unlike `ambient.toml`, components can be of any type that meet a set of requirements. Additionally, the components defined here will not be visible to guest code. The attributes available are a superset of those available to `ambient.toml`.
-
-These component definitions are primarily useful for internal data that needs to be attached to entities, but should not be or cannot be visible to guest code. For example, the `FpsSample` struct in the example above is a complex type and cannot be stored in a component in guest code, but it can be stored in a component in host code.

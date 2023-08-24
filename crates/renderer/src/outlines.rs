@@ -1,9 +1,5 @@
 use std::sync::Arc;
 
-use ambient_core::{
-    gpu_components,
-    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
-};
 use ambient_ecs::{copy_component_recursive, ArchetypeFilter, Component, SystemGroup, World};
 use ambient_gpu::{
     gpu::Gpu,
@@ -11,6 +7,9 @@ use ambient_gpu::{
     settings::SettingsKey,
     shader_module::{BindGroupDesc, GraphicsPipeline, GraphicsPipelineInfo, Shader},
     texture::Texture,
+};
+use ambient_gpu_ecs::{
+    gpu_components, ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent,
 };
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
@@ -24,7 +23,7 @@ use super::{
 };
 use crate::{bind_groups::BindGroups, PostSubmitFunc, RendererConfig};
 
-pub use ambient_ecs::generated::components::core::rendering::{outline, outline_recursive};
+pub use ambient_ecs::generated::rendering::components::{outline, outline_recursive};
 
 gpu_components! {
     outline() => outline: GpuComponentFormat::Vec4,
@@ -245,10 +244,11 @@ pub fn systems() -> SystemGroup {
     copy_component_recursive("outlines", outline_recursive(), outline())
 }
 
-pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
+pub fn gpu_world_systems(gpu: Arc<Gpu>) -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "outlines/gpu_world_update",
         vec![Box::new(ComponentToGpuSystem::new(
+            gpu,
             GpuComponentFormat::Vec4,
             outline(),
             gpu_components::outline(),

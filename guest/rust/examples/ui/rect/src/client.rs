@@ -1,7 +1,7 @@
 use ambient_api::{
-    components::core::{
-        layout::{height, space_between_items, width},
-        rect::{
+    core::{
+        layout::components::{height, space_between_items, width},
+        rect::components::{
             background_color, border_color, border_radius, border_thickness, line_from, line_to,
             line_width,
         },

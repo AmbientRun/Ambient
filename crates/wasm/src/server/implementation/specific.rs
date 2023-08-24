@@ -7,12 +7,13 @@ use std::str::FromStr;
 use ambient_core::{
     asset_cache,
     async_ecs::async_run,
-    player::{player, user_id},
+    player::{is_player, user_id},
     runtime,
 };
 use ambient_ecs::{generated::messages::HttpResponse, query, EntityId, Message, World};
 use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::server::player_transport;
+
 use anyhow::Context;
 use wasm_bridge::async_trait;
 
@@ -27,20 +28,10 @@ use crate::shared::{
 
 mod physics;
 
-impl shared::wit::server_asset::Host for Bindings {
-    fn build_wasm(&mut self) -> wasm_bridge::Result<()> {
-        let build_wasm = self
-            .world()
-            .resource_opt(crate::server::build_wasm())
-            .context("no build project call available (non-local project?)")?
-            .clone();
+#[async_trait::async_trait]
+impl shared::wit::server_asset::Host for Bindings {}
 
-        build_wasm(self.world_mut());
-
-        Ok(())
-    }
-}
-
+#[async_trait::async_trait]
 impl shared::wit::server_message::Host for Bindings {
     fn send(
         &mut self,
@@ -88,7 +79,7 @@ fn send_networked(
     reliable: bool,
 ) -> wasm_bridge::Result<()> {
     let connections: Vec<_> = query((user_id(), player_transport()))
-        .incl(player())
+        .incl(is_player())
         .iter(world, None)
         .filter(|(_, (uid, _))| {
             target_user_id
@@ -123,7 +114,7 @@ impl shared::wit::server_http::Host for Bindings {
         }
 
         let resolved_url = AbsAssetUrl::from_str(&url)?
-            .to_download_url(&assets)?
+            .to_download_url(assets)?
             .to_string();
 
         runtime.spawn(async move {

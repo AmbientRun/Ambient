@@ -1,8 +1,8 @@
-[ember]
+[package]
 id = "ambient_example_input"
 name = "Input"
 description = "This show how to handle user keyboard and mouse input."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/input"
 type = "Game"
-categories = ["Example"]
+content = { type = "Playable", example = true }

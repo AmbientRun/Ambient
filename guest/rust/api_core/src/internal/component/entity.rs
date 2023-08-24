@@ -50,12 +50,6 @@ impl Entity {
         self
     }
 
-    /// Sets the `component` in this to the default value for `T`, and returns `self` to allow for easy chaining.
-    pub fn with_default<T: SupportedValue + Default>(mut self, component: Component<T>) -> Self {
-        self.set_default(component);
-        self
-    }
-
     /// Merges in the `other` Entity and returns this; any fields that were present in both will be replaced by `other`'s.
     pub fn with_merge(mut self, other: Entity) -> Self {
         self.merge(other);

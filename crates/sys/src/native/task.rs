@@ -103,6 +103,18 @@ where
     func().await
 }
 
+/// This builds a Tokio multithreaded runtime for use in Ambient native contexts.
+///
+/// This function is *not* available in wasm-unknown contexts. Be careful in where and how you use it.
+///
+/// This function exists as a workaround to allow native users of this crate to be able to
+/// construct a runtime without having to depend on the `tokio` crate directly.
+pub fn make_native_multithreaded_runtime() -> std::io::Result<tokio::runtime::Runtime> {
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+}
+
 #[derive(Debug, Clone)]
 pub struct RuntimeHandle(tokio::runtime::Handle);
 

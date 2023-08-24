@@ -18,7 +18,7 @@ fn test_base(body: TokenStream) -> TokenStream {
             fn render(self: Box<Self>, hooks: &mut ambient_ui_native::element::Hooks) -> ambient_ui_native::element::Element {
                 use ambient_ui_native::element::{Element, ElementComponentExt};
                 use ambient_ui_native::ui::{editor::{Editor, EditorRow, EditorColumn, Slider, IntegerSlider}, select::{ListSelect, DropdownSelect}, layout::{FlowRow, FlowColumn}, text::Text};
-                use ambient_ui_native::layout::{margin, fit_horizontal_parent};
+                use ambient_ui_native::layout::{margin, fit_horizontal, Fit};
                 let Self { value, on_change, opts } = *self;
                 #body
             }

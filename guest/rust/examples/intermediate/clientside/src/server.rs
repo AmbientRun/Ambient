@@ -1,10 +1,12 @@
 use ambient_api::{
-    components::core::{primitives::cube, rendering::color, transform::translation},
-    concepts::make_transformable,
+    core::{
+        primitives::components::cube,
+        rendering::components::color,
+        transform::{components::translation, concepts::make_transformable},
+    },
     prelude::*,
 };
-
-use crate::components::{grid_position, grid_side_length};
+use packages::this::components::{grid_position, grid_side_length};
 
 #[main]
 pub fn main() {
@@ -19,7 +21,7 @@ pub fn main() {
         for x in 0..2 * side_length + 1 {
             Entity::new()
                 .with_merge(make_transformable())
-                .with_default(cube())
+                .with(cube(), ())
                 .with(grid_position(), IVec2::new(x, y))
                 .with(color(), Vec4::ONE)
                 .with(

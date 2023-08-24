@@ -1,23 +1,25 @@
-
-[components."core::player"]
+[package]
+id = "player"
 name = "Player"
 description = "Components that are attached to player entities."
+content = { type = "Asset", schema = true }
+version = "0.3.0-dev"
 
-[components."core::player::local_user_id"]
+[components.local_user_id]
 type = "String"
 name = "Local user ID"
 description = "The user ID of the local player."
 attributes = ["Debuggable", "Networked", "Resource", "Store"]
 
-[components."core::player::player"]
+[components.is_player]
 type = "Empty"
-name = "Player"
+name = "Is player"
 description = """
 This entity is a player.
 Note that this is a logical construct; a player's body may be separate from the player itself."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::player::user_id"]
+[components.user_id]
 type = "String"
 name = "User ID"
 description = """

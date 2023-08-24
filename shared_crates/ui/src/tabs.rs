@@ -3,7 +3,7 @@ use std::fmt::Debug;
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_guest_bridge::{components::layout::space_between_items, ecs::ComponentValue};
+use ambient_guest_bridge::{core::layout::components::space_between_items, ecs::ComponentValue};
 
 use crate::{
     button::Button,

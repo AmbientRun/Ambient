@@ -9,8 +9,7 @@ pub fn import_audio(path: PathBuf, convert: bool) -> anyhow::Result<()> {
     let current_dir = std::env::current_dir().context("Error getting current directory")?;
     let asset_folder_path = current_dir.join("assets");
     let tomlpath = current_dir.join("assets/pipeline.toml");
-    println!("Importing audio...");
-    println!("Read more about audio usage here: https://ambientrun.github.io/Ambient/reference/audio.html");
+
     if !Path::new(&asset_folder_path).exists() {
         std::fs::create_dir_all(&asset_folder_path)?;
     }
@@ -47,7 +46,13 @@ pub fn import_audio(path: PathBuf, convert: bool) -> anyhow::Result<()> {
             String::from("sources"),
             Value::Array(vec![Value::String(filename_with_ext)]),
         );
-
+        if pipelines.contains(&Value::Table(new_pipeline.clone())) {
+            println!("\n🚨 This audio file is already imported\n");
+            return Ok(());
+        }
+        println!("\n👉 Importing audio...");
+        println!("📘 Read more about audio import here:");
+        println!("🔗 https://ambientrun.github.io/Ambient/reference/audio.html\n");
         pipelines.push(Value::Table(new_pipeline));
     } else {
         panic!("Expected table at the root of the TOML document");
@@ -69,8 +74,7 @@ pub fn import_model(path: PathBuf, collider_from_model: bool) -> anyhow::Result<
     let current_dir = std::env::current_dir().context("Error getting current directory")?;
     let asset_folder_path = current_dir.join("assets");
     let tomlpath = current_dir.join("assets/pipeline.toml");
-    println!("Importing model...");
-    println!("Read more about model import here: https://ambientrun.github.io/Ambient/reference/asset_pipeline.html");
+
     if !Path::new(&asset_folder_path).exists() {
         std::fs::create_dir_all(&asset_folder_path)?;
     }
@@ -119,7 +123,13 @@ pub fn import_model(path: PathBuf, collider_from_model: bool) -> anyhow::Result<
             String::from("sources"),
             Value::Array(vec![Value::String(filename_with_ext)]),
         );
-
+        if pipelines.contains(&Value::Table(new_pipeline.clone())) {
+            println!("\n🚨 This model file is already imported\n");
+            return Ok(());
+        }
+        println!("\n👉 Importing model...");
+        println!("📘 Read more about model import here:");
+        println!("🔗 https://ambientrun.github.io/Ambient/reference/asset_pipeline.html\n");
         pipelines.push(Value::Table(new_pipeline));
     }
 

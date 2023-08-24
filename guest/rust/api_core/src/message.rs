@@ -367,7 +367,7 @@ pub trait RuntimeMessage: Message {
 }
 
 mod serde {
-    pub use ambient_project_rt::message_serde::*;
+    pub use ambient_package_rt::message_serde::*;
 
     use ambient_shared_types::procedural_storage_handle_definitions;
     use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
@@ -423,4 +423,4 @@ mod serde {
 
     procedural_storage_handle_definitions!(make_procedural_storage_handle_serializers);
 }
-pub use serde::*;
+pub use self::serde::*;

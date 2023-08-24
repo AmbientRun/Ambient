@@ -1,8 +1,12 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use ambient_ecs::{EntityId, SystemGroup, World};
-use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, Cb};
-use ambient_project::Identifier;
+use ambient_native_std::asset_cache::AssetCache;
+use ambient_package_semantic::{ItemId, Package};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{module_name, remote_paired_id, spawn_module, MessageType};
 use anyhow::Context;
@@ -14,9 +18,7 @@ pub fn systems() -> SystemGroup {
 pub async fn initialize(
     world: &mut World,
     assets: &AssetCache,
-    project_path: AbsAssetUrl,
-    build_metadata: &ambient_build::Metadata,
-    build_project: Option<Cb<dyn Fn(&mut World) + Send + Sync>>,
+    data_path: PathBuf,
 ) -> anyhow::Result<()> {
     let messenger = Arc::new(
         |world: &World, id: EntityId, type_: MessageType, message: &str| {
@@ -37,38 +39,52 @@ pub async fn initialize(
         },
     );
 
-    ambient_wasm::server::initialize(
-        world,
-        assets,
-        project_path.clone(),
-        messenger,
-        build_project,
-    )?;
+    ambient_wasm::server::initialize(world, assets, data_path, messenger)?;
 
-    let build_dir = project_path.push("build").unwrap();
+    Ok(())
+}
 
+/// `enabled` is passed here as we need knowledge of the other packages to determine if this package should be enabled or not
+pub fn instantiate_package(
+    world: &mut World,
+    package_id: ItemId<Package>,
+    enabled: bool,
+) -> anyhow::Result<()> {
     let mut modules_to_entity_ids = HashMap::new();
     for target in ["client", "server"] {
+        let (package_name, package_enabled, build_metadata) = {
+            let semantic = ambient_package_semantic_native::world_semantic(world);
+            let semantic = semantic.lock().unwrap();
+            let scope = semantic.items.get(package_id);
+
+            (
+                scope.data.id.to_string(),
+                enabled,
+                scope
+                    .build_metadata
+                    .as_ref()
+                    .context("no build metadata in package")?
+                    .clone(),
+            )
+        };
         let wasm_component_paths: &[String] = build_metadata.component_paths(target);
 
         for path in wasm_component_paths {
-            let component_url = build_dir.push(path).unwrap();
-            let name = Identifier::new(
-                component_url
-                    .file_stem()
-                    .context("no file stem for {path:?}")?,
-            )
-            .map_err(anyhow::Error::msg)?;
+            let path = Path::new(path);
+            let name = path
+                .file_stem()
+                .context("no file stem for {path:?}")?
+                .to_string_lossy();
 
-            let bytecode_url = AbsAssetUrl::from_asset_key(path)?;
-            let id = spawn_module(world, bytecode_url, true, target == "server");
+            let bytecode_url =
+                ambient_package_semantic_native::file_path(world, &package_name, path)?;
+            let id = spawn_module(world, bytecode_url, package_enabled, target == "server");
             modules_to_entity_ids.insert(
                 (
                     target,
                     // Support `client_module`, `module_client` and `module`
-                    name.as_ref()
-                        .strip_prefix(target)
-                        .or_else(|| name.as_ref().strip_suffix(target))
+                    name.strip_prefix(target)
+                        .or_else(|| name.strip_suffix(target))
                         .unwrap_or(name.as_ref())
                         .trim_matches('_')
                         .to_string(),

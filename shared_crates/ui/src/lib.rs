@@ -34,16 +34,18 @@ use ambient_element::{
     ElementComponent, ElementComponentExt, Hooks, Setter,
 };
 use ambient_guest_bridge::{
-    components::{
-        app::{ui_scene, window_logical_size, window_physical_size},
-        layout::{gpu_ui_size, height, margin, mesh_to_local_from_size, padding, width},
-        rect::{background_color, background_url, rect},
-        transform::{
+    core::{
+        app::components::{ui_scene, window_logical_size, window_physical_size},
+        layout::components::{
+            gpu_ui_size, height, margin, mesh_to_local_from_size, padding, width,
+        },
+        messages,
+        rect::components::{background_color, background_url, rect},
+        transform::components::{
             local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation,
         },
     },
     ecs::World,
-    messages,
 };
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
 use clickarea::ClickArea;
@@ -221,7 +223,7 @@ impl HooksExt for Hooks<'_> {
         func: impl Fn(&mut World, Option<VirtualKeyCode>, ModifiersState, bool) + Sync + Send + 'static,
     ) {
         self.use_runtime_message(
-            move |world, event: &ambient_guest_bridge::messages::WindowKeyboardInput| {
+            move |world, event: &ambient_guest_bridge::core::messages::WindowKeyboardInput| {
                 func(
                     world,
                     event

@@ -2,6 +2,8 @@ pub(crate) mod component;
 pub(crate) mod conversion;
 pub(crate) mod executor;
 pub(crate) mod generated;
+
+#[allow(missing_docs)]
 pub(crate) mod wit;
 
 use crate::internal::executor::EXECUTOR;

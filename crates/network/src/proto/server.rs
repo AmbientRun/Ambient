@@ -13,6 +13,7 @@ use uuid::Uuid;
 use crate::{
     bytes_ext::BufExt,
     client::NetworkTransport,
+    diff_serialization::{DiffSerializer, WorldDiffDeduplicator},
     log_network_result, log_task_result,
     proto::ServerPush,
     server::{
@@ -361,20 +362,41 @@ pub async fn handle_diffs<S>(
 ) where
     S: Unpin + AsyncWrite,
 {
+    let mut deduplicator = WorldDiffDeduplicator::default();
+    let mut serializer = DiffSerializer::default();
+    #[cfg(debug_assertions)]
+    let mut deserializer = DiffSerializer::default();
     while let Ok(diff) = diffs_rx.recv_async().await {
-        // get all diffs waiting in the channel to clear the queue
-        let mut diffs = Vec::with_capacity(diffs_rx.len() + 1);
-        diffs.push(diff);
-        diffs.extend(diffs_rx.drain());
-        tracing::trace!(diffs_count = diffs.len());
+        let msg = {
+            let _span = tracing::debug_span!("handle_diffs prep").entered();
 
-        // merge them together
-        let final_diff = FrozenWorldDiff::merge(&diffs);
-        let msg: Bytes = bincode::serialize(&final_diff).unwrap().into();
-        debug_assert!(
-            bincode::deserialize::<WorldDiff>(msg.as_ref()).is_ok(),
-            "Merged diff should deserialize as WorldDiff correctly"
-        );
+            // get all diffs waiting in the channel to clear the queue
+            let mut diffs = Vec::with_capacity(diffs_rx.len() + 1);
+            diffs.push(diff);
+            diffs.extend(diffs_rx.drain());
+
+            // merge them together, deduplicate and serialize
+            let merged_diff = FrozenWorldDiff::merge(&diffs);
+            let merged_diffs_count = merged_diff.changes.len();
+            let final_diff = deduplicator.deduplicate(merged_diff);
+            let msg = serializer.serialize(&final_diff).unwrap();
+            tracing::trace!(
+                diffs_count = diffs.len(),
+                merged_diffs_count,
+                final_diffs_count = final_diff.changes.len(),
+                bytes = msg.len(),
+            );
+            #[cfg(debug_assertions)]
+            {
+                let deserialized = deserializer.deserialize(msg.clone());
+                debug_assert!(
+                    deserialized.is_ok(),
+                    "Diff should deserialize as WorldDiff correctly: {:?}",
+                    deserialized,
+                );
+            }
+            msg
+        };
 
         let span = tracing::debug_span!("send_world_diff");
         tracing::trace!(diff=?msg);

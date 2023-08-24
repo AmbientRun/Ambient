@@ -3,11 +3,7 @@
 use super::Bindings;
 use crate::shared::{implementation::unsupported, wit};
 
-impl wit::server_asset::Host for Bindings {
-    fn build_wasm(&mut self) -> anyhow::Result<()> {
-        unsupported()
-    }
-}
+impl wit::server_asset::Host for Bindings {}
 
 impl wit::server_physics::Host for Bindings {
     fn add_force(

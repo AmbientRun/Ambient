@@ -16,7 +16,7 @@ env:
 
 jobs:
   clippy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -37,7 +37,7 @@ jobs:
           command: clippy
           args: --workspace --examples --tests
   clippy-web:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -47,7 +47,7 @@ jobs:
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: clippy-web
+          key: clippy-web
           workspaces: |
             .
             web
@@ -56,7 +56,7 @@ jobs:
         run: cargo clippy --workspace
 
   test-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Free up disk space
         run: |
@@ -73,13 +73,12 @@ jobs:
             libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev
       - name: Install run (headless) dependencies
         run: |
-          sudo add-apt-repository ppa:oibaf/graphics-drivers -y
           sudo apt-get update
-          sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
+          sudo apt install -y libxcb-xfixes0-dev vulkan-validationlayers-dev mesa-vulkan-drivers libasound2-dev
 
-      - uses: Leafwing-Studios/cargo-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
-          cache-group: "test"
+          key: main
       - uses: taiki-e/install-action@cargo-nextest
       - name: Run tests
         uses: actions-rs/cargo@v1
@@ -93,7 +92,7 @@ jobs:
         run: tree --du -h target
 
   build-api-and-doc:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -104,7 +103,7 @@ jobs:
         run: cargo run -p campfire --no-default-features example check-all
 
   build-web:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
 
@@ -137,40 +136,39 @@ jobs:
         include:
           - os: macos-latest
           - os: windows-latest
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
 
     runs-on: ${{ matrix.os }}
     steps:
       - name: Free up disk space
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Install build dependencies
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y tree libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-            libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev
+            libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev clang nodejs
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Leafwing-Studios/cargo-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
-          cache-group: "main"
+          key: main
       - name: Build
-        run: cargo build --workspace --release
+        run: cargo build --workspace
         env:
-          CARGO_INCREMENTAL: 0
           RUSTFLAGS: "-C debuginfo=0"
       - name: Upload ambient executable artifact
         uses: actions/upload-artifact@v3
         with:
           name: ambient-${{ matrix.os }}
           path: |
-            target/release/ambient
-            target/release/ambient.exe
+            target/debug/ambient
+            target/debug/ambient.exe
 
   build-guest-rust:
     strategy:
@@ -178,7 +176,7 @@ jobs:
         include:
           - os: macos-latest
           - os: windows-latest
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -186,16 +184,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: guest-rust
+          key: guest-rust
           workspaces: guest/rust
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace
 
   golden-image-tests:
     needs: build
-    # Note: we must use a newer Ubuntu for golden image tests, because older
-    # llvmpipe versions can randomly fail.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       RUST_LOG: ambient_gpu=info
     steps:
@@ -205,13 +201,12 @@ jobs:
       - name: Download ambient executable
         uses: actions/download-artifact@v3
         with:
-          name: ambient-ubuntu-20.04
+          name: ambient-ubuntu-22.04
       - run: chmod a+x ambient
       - name: Install run (headless) dependencies
         run: |
-          sudo add-apt-repository ppa:oibaf/graphics-drivers -y
           sudo apt-get update
-          sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
+          sudo apt install -y libxcb-xfixes0-dev vulkan-validationlayers-dev mesa-vulkan-drivers libasound2-dev
 
       - name: Run golden image tests
         run: cargo campfire-slim golden-images --ambient-path=./ambient check
@@ -223,16 +218,16 @@ jobs:
             guest/rust/examples/*/*/screenshot.png
             guest/rust/examples/*/*/fail_screenshot.png
 
-  test-new-project-works:
+  test-new-package-works:
     needs: build
     strategy:
       matrix:
         include:
           - os: macos-latest
-          # We run out of storage space when trying to build and run the project on Windows.
+          # We run out of storage space when trying to build and run the package on Windows.
           # It would be nice to fix this at some point.
           # - os: windows-latest
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -243,9 +238,9 @@ jobs:
         with:
           name: ambient-${{ matrix.os }}
       - run: chmod a+x ambient
-      - name: Check that new-project works
+      - name: Check that new-package works
         run: |
           mkdir tmp
-          ./ambient new --api-path $(pwd)/guest/rust/api /tmp/ci_test_project
-          cd /tmp/ci_test_project
+          ./ambient new --api-path $(pwd)/guest/rust/api /tmp/ci_test_package
+          cd /tmp/ci_test_package
           cargo check

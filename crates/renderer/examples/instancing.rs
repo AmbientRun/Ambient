@@ -21,7 +21,7 @@ async fn init(app: &mut App) {
                     )
                     .with(translation(), vec3(x as f32, y as f32, z as f32))
                     .with(scale(), Vec3::ONE * 0.4)
-                    .with_default(cast_shadows())
+                    .with(cast_shadows(), Default::default())
                     .spawn_static(world);
             }
         }

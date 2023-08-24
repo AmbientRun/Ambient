@@ -229,7 +229,7 @@ fn import_sync(
             .with(translation(), pos)
             .with(rotation(), rot)
             .with(scale(), scl)
-            .with_default(local_to_world());
+            .with(local_to_world(), Default::default());
         if !node.meshes.is_empty() {
             ed.set(
                 pbr_renderer_primitives_from_url(),

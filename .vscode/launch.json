@@ -826,6 +826,27 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Example 'parse_ambient_schema' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=parse_ambient_schema",
+                    "--package=ambient_package_semantic"
+                ],
+                "filter": {
+                    "name": "parse_ambient_schema",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Test elements",
             "cargo": {
                 "args": [

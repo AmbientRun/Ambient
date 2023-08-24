@@ -25,7 +25,7 @@ use wgpu::BindGroup;
 pub(crate) static OLD_CONTENT_SERVER_URL: &str =
     "https://fra1.digitaloceanspaces.com/dims-content/";
 
-pub use ambient_ecs::generated::components::core::rendering::water;
+pub use ambient_ecs::generated::rendering::components::water;
 
 components!("rendering", {
     water_normals: Arc<Texture>,

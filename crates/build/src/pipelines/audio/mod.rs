@@ -31,7 +31,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: AudioPipeline) -> Vec<OutAsset>
             let content_url = match file.extension().as_deref() {
                 Some("wav") => {
                     if config.convert {
-                        tracing::info!("Processing wav file");
+                        tracing::debug!("Processing wav file");
                         let contents = symphonia_convert("wav", contents).await?;
                         ctx.write_file(rel_path.with_extension("ogg"), contents)
                             .await
@@ -41,7 +41,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: AudioPipeline) -> Vec<OutAsset>
                 }
                 Some("ogg") => ctx.write_file(&rel_path, contents).await,
                 Some(ext @ "mp3") => {
-                    tracing::info!("Processing mp3 file");
+                    tracing::debug!("Processing mp3 file");
                     // Make sure to take the contents, to avoid having both the input and output in
                     // memory at once
                     let contents = symphonia_convert(ext, contents).await?;
@@ -100,7 +100,7 @@ fn save_audio_graph(root: AudioNode) -> anyhow::Result<Vec<u8>> {
         .into_bytes())
 }
 
-#[tracing::instrument(level = "info", skip(input))]
+#[tracing::instrument(level = "debug", skip(input))]
 async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>> {
     use std::num::{NonZeroU32, NonZeroU8};
 
@@ -222,12 +222,12 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
     // finish encoding
     let output = encoder.finish()?;
     let output_size = output.len();
-    tracing::info!("Encoded samples for {output_size} bytes");
+    tracing::debug!("Encoded samples for {output_size} bytes");
 
     // optimize generated file
     let mut optimized_output = Vec::with_capacity(output_size);
     optivorbis::OggToOgg::new_with_defaults().remux(Cursor::new(output), &mut optimized_output)?;
-    tracing::info!(
+    tracing::debug!(
         "Optimized samples from {output_size} bytes -> {} bytes",
         optimized_output.len()
     );

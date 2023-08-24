@@ -1,9 +1,9 @@
-use ambient_api::prelude::*;
+use ambient_api::{core::messages::Frame, prelude::*};
 
 #[main]
 pub fn main() {
     let mut cursor_lock = input::CursorLockGuard::new();
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         let (delta, input) = input::get_delta();
         if !cursor_lock.auto_unlock_on_escape(&input) {
             return;

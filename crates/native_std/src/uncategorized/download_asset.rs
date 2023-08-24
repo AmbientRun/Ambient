@@ -4,6 +4,7 @@ use crate::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     mesh::Mesh,
+    RUNTIME_USER_AGENT,
 };
 use ambient_sys::task::wasm_nonsend;
 use anyhow::{anyhow, Context};
@@ -67,10 +68,7 @@ impl SyncAssetKey<reqwest::Client> for ReqwestClientKey {
         let mut headers = reqwest::header::HeaderMap::new();
         headers.insert(
             "User-Agent",
-            reqwest::header::HeaderValue::from_static(concat!(
-                "Ambient/",
-                env!("CARGO_PKG_VERSION")
-            )),
+            reqwest::header::HeaderValue::from_static(RUNTIME_USER_AGENT),
         );
         reqwest::Client::builder()
             .default_headers(headers)

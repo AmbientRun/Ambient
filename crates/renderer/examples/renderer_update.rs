@@ -38,10 +38,10 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
                 lod: 0,
             }],
         )
-        .with_default(gpu_primitives_mesh())
-        .with_default(gpu_primitives_lod())
-        .with_default(local_to_world())
-        .with_default(mesh_to_world())
+        .with(gpu_primitives_mesh(), Default::default())
+        .with(gpu_primitives_lod(), Default::default())
+        .with(local_to_world(), Default::default())
+        .with(mesh_to_world(), Default::default())
         .with(translation(), vec3(-2.5, 0., 0.))
         .with(main_scene(), ())
         .spawn(world);
@@ -56,10 +56,10 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
                 lod: 0,
             }],
         )
-        .with_default(gpu_primitives_mesh())
-        .with_default(gpu_primitives_lod())
-        .with_default(local_to_world())
-        .with_default(mesh_to_world())
+        .with(gpu_primitives_mesh(), Default::default())
+        .with(gpu_primitives_lod(), Default::default())
+        .with(local_to_world(), Default::default())
+        .with(mesh_to_world(), Default::default())
         .with(translation(), vec3(2.5, 0., 0.))
         .with(main_scene(), ())
         .spawn(world);

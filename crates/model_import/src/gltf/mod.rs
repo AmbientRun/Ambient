@@ -7,7 +7,7 @@ use ambient_core::{
     name,
     transform::{local_to_parent, local_to_world, rotation, scale, translation},
 };
-use ambient_ecs::{generated::components::core::animation::bind_id, Entity, World};
+use ambient_ecs::{generated::animation::components::bind_id, Entity, World};
 use ambient_gpu::sampler::SamplerKey;
 use ambient_model::{
     model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin,
@@ -321,7 +321,7 @@ pub async fn import(
                 .with(translation(), Vec3::from_slice(&trans))
                 .with(rotation(), Quat::from_slice(&rot))
                 .with(scale(), Vec3::from_slice(&scal))
-                .with_default(local_to_world())
+                .with(local_to_world(), Default::default())
                 .with(bind_id(), bind_ids.get(&node));
 
             if let Some(node_name) = node.name() {

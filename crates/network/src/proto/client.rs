@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-use ambient_ecs::{
-    generated::components::core::network::is_remote_entity, ComponentRegistry, Entity, WorldDiff,
-};
+use ambient_ecs::{generated::network::components::is_remote_entity, ComponentRegistry, Entity};
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::ContentBaseUrlKey,
@@ -20,6 +18,7 @@ use crate::{
         PlatformSendStream,
     },
     client_game_state::ClientGameState,
+    diff_serialization::DiffSerializer,
     log_task_result,
     proto::*,
 };
@@ -28,7 +27,10 @@ use crate::{
 ///
 /// Entered after the client has sent a connect request and received a `ServerInfo` message from the server
 #[derive(Debug)]
-pub(crate) struct ConnectedClient {}
+pub(crate) struct ConnectedClient {
+    diff_serializer: DiffSerializer,
+    pub main_package_name: String,
+}
 
 #[derive(Debug)]
 pub(crate) enum ClientProtoState {
@@ -52,7 +54,7 @@ impl ClientProtoState {
     pub fn process_push(&mut self, assets: &AssetCache, frame: ServerPush) -> anyhow::Result<()> {
         match (frame, &self) {
             (ServerPush::ServerInfo(server_info), Self::Pending(_user_id)) => {
-                let current_version = get_version_with_revision();
+                let current_version = ambient_version().to_string();
 
                 if server_info.version != current_version {
                     tracing::error!(
@@ -64,10 +66,20 @@ impl ClientProtoState {
 
                 tracing::debug!(content_base_url=?server_info.content_base_url, "Inserting content base url");
                 ContentBaseUrlKey.insert(assets, server_info.content_base_url.clone());
-                tracing::debug!(?server_info.external_components, "Adding external components");
-                ComponentRegistry::get_mut().add_external(server_info.external_components);
+                match server_info.external_components.into_inner() {
+                    Ok(external_components) => {
+                        tracing::debug!(?external_components, "Adding external components");
+                        ComponentRegistry::get_mut().add_external(external_components);
+                    }
+                    Err(msg) => {
+                        anyhow::bail!("Failed to deserialize external components: {}", msg);
+                    }
+                }
 
-                *self = Self::Connected(ConnectedClient {});
+                *self = Self::Connected(ConnectedClient {
+                    diff_serializer: Default::default(),
+                    main_package_name: server_info.main_package_name,
+                });
 
                 Ok(())
             }
@@ -107,6 +119,7 @@ impl ClientProtoState {
     ///
     /// [`Connected`]: ClientProtoState::Connected
     #[must_use]
+    #[allow(dead_code)]
     pub(crate) fn is_connected(&self) -> bool {
         matches!(self, Self::Connected(..))
     }
@@ -117,15 +130,12 @@ impl ConnectedClient {
     pub fn process_diff(
         &mut self,
         state: &SharedClientGameState,
-        diff: WorldDiff,
+        diff: Bytes,
     ) -> anyhow::Result<()> {
+        let diff = self.diff_serializer.deserialize(diff)?;
         let mut gs = state.lock();
         tracing::debug!(diff=?diff.len(), "Applying diff");
-        diff.apply(
-            &mut gs.world,
-            Entity::new().with(is_remote_entity(), ()),
-            false,
-        );
+        diff.apply(&mut gs.world, Entity::new().with(is_remote_entity(), ()));
         Ok(())
     }
 

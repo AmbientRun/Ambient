@@ -1,143 +1,97 @@
-use ambient_project_macro_common::ManifestSource;
-use proc_macro2::{Span, TokenStream};
-use quote::quote;
+use ambient_package_macro_common::{Context, RetrievableFile};
+use proc_macro2::{Ident, Span, TokenStream, TokenTree};
+use quote::{quote, ToTokens};
 
-pub fn main_impl(item: TokenStream, ambient_toml: ManifestSource) -> anyhow::Result<TokenStream> {
-    let mut item: syn::ItemFn = syn::parse2(item)?;
-    let fn_name = quote::format_ident!("{}_impl", item.sig.ident);
-    item.sig.ident = fn_name.clone();
-
-    let is_async = item.sig.asyncness.is_some();
+pub fn main(item: TokenStream, ambient_toml: RetrievableFile) -> TokenStream {
+    let (item, parsed) = parse_function(item);
 
     let spans = Span::call_site();
     let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
 
-    let project_boilerplate = ambient_project_macro_common::generate_code(
-        ambient_toml,
-        ambient_project_macro_common::Context::Guest {
-            api_path: path.clone(),
-            fully_qualified_path: true,
-        },
-        false,
-        true,
-    )?;
+    let boilerplate = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .map_err(anyhow::Error::new)
+        .and_then(|rt| {
+            rt.block_on(ambient_package_macro_common::generate_code(
+                Some(ambient_toml),
+                Context::GuestUser,
+            ))
+        })
+        .unwrap_or_else(|e| {
+            let msg = format!(
+                "Error while running Ambient package macro: {e}{}",
+                e.source()
+                    .map(|e| format!("\nCaused by: {e}"))
+                    .unwrap_or_default()
+            );
+            quote::quote! {
+                compile_error!(#msg);
+            }
+        });
 
-    let call_expr = if is_async {
-        quote! { #fn_name() }
+    let call_stmt = if let Some(ParsedFunction { fn_name, is_async }) = parsed {
+        let call_expr = if is_async {
+            quote! { #fn_name() }
+        } else {
+            quote! { async { #fn_name() } }
+        };
+
+        quote! { #path::global::run_async(#call_expr) }
     } else {
-        quote! { async { #fn_name() } }
+        quote! {}
     };
 
-    Ok(quote! {
-        #project_boilerplate
-
+    quote! {
         #item
+
+        #boilerplate
 
         #[no_mangle]
         #[doc(hidden)]
         pub fn main() {
-            #path::global::run_async(#call_expr);
+            #call_stmt
         }
-    })
+    }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::main_impl;
-    use ambient_project_macro_common::ManifestSource;
-    use proc_macro2::TokenStream;
-    use quote::quote;
+struct ParsedFunction {
+    fn_name: syn::Ident,
+    is_async: bool,
+}
 
-    const AMBIENT_TOML: &str = r#"
-    [ember]
-    name = "Test Project"
-    id = "test_project"
-    version = "0.0.1"
-    "#;
+fn parse_function(item: TokenStream) -> (TokenStream, Option<ParsedFunction>) {
+    let mut item: syn::ItemFn = match syn::parse2(item.clone()) {
+        Ok(item) => item,
+        Err(_) => {
+            // Very questionable recovery strategy: find the first instance of `main`
+            // and replace it with `_main_impl` so that we can still compile with
+            // fewer warnings.
 
-    fn prelude() -> TokenStream {
-        quote! {
-            /// Auto-generated component definitions. These come from `ambient.toml` in the root of the project.
-            pub mod components {
-                use ::ambient_api::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-            }
-            /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
-            ///
-            /// They do not have any runtime representation outside of the components that compose them.
-            pub mod concepts {
-                use super::components;
-                use ::ambient_api::prelude::*;
-            }
-            /// Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,
-            /// and with other modules.
-            pub mod messages {
-                use ::ambient_api::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
-            }
+            let mut seen_main = false;
+            return (
+                item.into_iter()
+                    .map(|tt| match tt {
+                        TokenTree::Ident(ident) if ident == "main" && !seen_main => {
+                            seen_main = true;
+                            TokenTree::Ident(Ident::new("_main_impl", Span::call_site()))
+                        }
+                        tt => tt,
+                    })
+                    .collect(),
+                None,
+            );
         }
-    }
+    };
 
-    #[test]
-    fn can_generate_impl_for_async_fn() {
-        let body = quote! {
-            pub async fn main() -> ResultEmpty {
-                OkEmpty
-            }
-        };
+    let fn_name = quote::format_ident!("{}_impl", item.sig.ident);
+    item.sig.ident = fn_name.clone();
 
-        let prelude = prelude();
+    let is_async = item.sig.asyncness.is_some();
 
-        let output = quote! {
-            #prelude
-
-            pub async fn main_impl() -> ResultEmpty {
-                OkEmpty
-            }
-
-            #[no_mangle]
-            #[doc(hidden)]
-            pub fn main() {
-                ::ambient_api::global::run_async(main_impl());
-            }
-        };
-
-        assert_eq!(
-            main_impl(body, ManifestSource::String(AMBIENT_TOML.to_owned()))
-                .unwrap()
-                .to_string(),
-            output.to_string()
-        );
-    }
-
-    #[test]
-    fn can_generate_impl_for_sync_fn() {
-        let body = quote! {
-            pub fn main() -> ResultEmpty {
-                OkEmpty
-            }
-        };
-
-        let prelude = prelude();
-
-        let output = quote! {
-            #prelude
-
-            pub fn main_impl() -> ResultEmpty {
-                OkEmpty
-            }
-
-            #[no_mangle]
-            #[doc(hidden)]
-            pub fn main() {
-                ::ambient_api::global::run_async(async { main_impl() });
-            }
-        };
-
-        assert_eq!(
-            main_impl(body, ManifestSource::String(AMBIENT_TOML.to_owned()))
-                .unwrap()
-                .to_string(),
-            output.to_string()
-        );
-    }
+    (
+        item.into_token_stream(),
+        Some(ParsedFunction { fn_name, is_async }),
+    )
 }

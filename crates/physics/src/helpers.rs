@@ -35,8 +35,12 @@ pub fn convert_rigid_dynamic_to_static(world: &mut World, id: EntityId) {
 
 pub fn convert_rigid_static_dynamic(world: &mut World, id: EntityId, to_dynamic: bool) {
     let old_actor = {
-        if let Ok(shape) = world.get_ref(id, physics_shape()) {
-            shape.get_actor().unwrap()
+        if let Some(actor) = world
+            .get_ref(id, physics_shape())
+            .ok()
+            .and_then(|shape| shape.get_actor())
+        {
+            actor
         } else {
             return;
         }
@@ -107,9 +111,9 @@ pub fn update_physics_controlled(world: &mut World, actor: PxRigidActorRef) {
         if let Ok(entity_shape) = world.get_ref(entity, physics_shape()) {
             if entity_shape == &shape {
                 if is_physics_controlled {
-                    if !world.has_component(entity, physics_controlled()) {
-                        world.add_component(entity, physics_controlled(), ()).ok();
-                    }
+                    world
+                        .add_component_if_required(entity, physics_controlled(), ())
+                        .ok();
                 } else if world.has_component(entity, physics_controlled()) {
                     world.remove_component(entity, physics_controlled()).ok();
                 }

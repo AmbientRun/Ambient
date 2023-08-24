@@ -1,27 +1,25 @@
 use std::{
     collections::HashMap,
     net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
-    path::Path,
+    path::{Path, PathBuf},
     str::FromStr,
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
 
-use ambient_build::BuildConfiguration;
-use ambient_core::{asset_cache, name, no_sync, project_name, FIXED_SERVER_TICK_TIME};
+use ambient_core::{asset_cache, main_package_name, name, no_sync, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
-    dont_store, generated::messages, world_events, ComponentDesc, ComponentRegistry, Entity,
-    Networked, SystemGroup, World, WorldEventsExt, WorldEventsSystem, WorldStreamCompEvent,
+    dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World,
+    WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_native_std::{
+    ambient_version,
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
-    cb, Cb,
 };
 use ambient_network::{
+    is_persistent_resources, is_synced_resources,
     native::server::{Crypto, GameServer},
-    persistent_resources,
     server::{ForkingEvent, ProxySettings, ShutdownEvent},
-    synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_sys::task::RuntimeHandle;
@@ -34,36 +32,32 @@ use axum::{
 };
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
-use crate::{
-    cli::{Cli, Commands, HostCli},
-    shared,
-};
+use crate::{cli::HostCli, shared};
 
 pub mod wasm;
 
+#[allow(clippy::too_many_arguments)]
 pub async fn start(
-    runtime: &tokio::runtime::Handle,
     assets: AssetCache,
-    cli: Cli,
-    project_path: AbsAssetUrl,
-    manifest: &ambient_project::Manifest,
-    metadata: &ambient_build::Metadata,
+    host_cli: &HostCli,
+    build_root_path: AbsAssetUrl,
+    main_package_path: AbsAssetUrl,
+    view_asset_path: Option<PathBuf>,
+    working_directory: PathBuf,
+    manifest: ambient_package::Manifest,
     crypto: Crypto,
-    build_config: Option<BuildConfiguration>,
 ) -> SocketAddr {
-    let host_cli = cli.host().unwrap();
     let quic_interface_port = host_cli.quic_interface_port;
-    let proxy_settings = (!host_cli.no_proxy).then(|| {
-        ProxySettings {
-            // default to getting a proxy from the dims-web Google App Engine app
-            endpoint: host_cli
-                .proxy
-                .clone()
-                .unwrap_or("http://proxy.ambient.run/proxy".to_string()),
-            project_path: project_path.clone(),
-            pre_cache_assets: host_cli.proxy_pre_cache_assets,
-            project_id: manifest.ember.id.to_string(),
-        }
+
+    let proxy_settings = (!host_cli.no_proxy).then(|| ProxySettings {
+        // default to getting a proxy from the dims-web Google App Engine app
+        endpoint: host_cli
+            .proxy
+            .clone()
+            .unwrap_or("http://proxy.ambient.run/proxy".to_string()),
+        build_path: build_root_path.clone(),
+        pre_cache_assets: host_cli.proxy_pre_cache_assets,
+        primary_package_id: manifest.package.id.to_string(),
     });
 
     let server = if let Some(port) = quic_interface_port {
@@ -92,21 +86,11 @@ pub async fn start(
     let addr = server.local_addr();
 
     tracing::info!("Created server, running at {addr}");
-    let http_interface_port = cli
-        .host()
-        .unwrap()
-        .http_interface_port
-        .unwrap_or(HTTP_INTERFACE_PORT);
+    let http_interface_port = host_cli.http_interface_port.unwrap_or(HTTP_INTERFACE_PORT);
 
-    let public_host = match (cli.host().as_ref(), addr.ip()) {
+    let public_host = match (&host_cli.public_host, addr.ip()) {
         // use public_host if specified in cli
-        (
-            Some(&HostCli {
-                public_host: Some(host),
-                ..
-            }),
-            _,
-        ) => host.clone(),
+        (Some(host), _) => host.clone(),
 
         // if the bind address is not specified (0.0.0.0, ::0) then use localhost
         (_, IpAddr::V4(Ipv4Addr::UNSPECIFIED)) => IpAddr::V4(Ipv4Addr::LOCALHOST).to_string(),
@@ -117,28 +101,23 @@ pub async fn start(
     };
 
     // here the key is inserted into the asset cache
-    if let Ok(Some(project_path_fs)) = project_path.to_file_path() {
+    if let Ok(Some(build_path_fs)) = build_root_path.to_file_path() {
         let key = format!("http://{public_host}:{http_interface_port}/content/");
         let base_url = AbsAssetUrl::from_str(&key).unwrap();
         ServerBaseUrlKey.insert(&assets, base_url.clone());
         ContentBaseUrlKey.insert(&assets, base_url);
 
-        start_http_interface(runtime, Some(&project_path_fs), http_interface_port);
+        start_http_interface(Some(&build_path_fs), http_interface_port);
     } else {
-        let base_url = project_path.push("build/").unwrap();
+        let base_url = build_root_path.clone();
 
         ServerBaseUrlKey.insert(&assets, base_url.clone());
         ContentBaseUrlKey.insert(&assets, base_url);
 
-        start_http_interface(runtime, None, http_interface_port);
+        start_http_interface(None, http_interface_port);
     }
 
-    ComponentRegistry::get_mut()
-        .add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
-
-    let manifest = manifest.clone();
-    let metadata = metadata.clone();
-    runtime.spawn(async move {
+    tokio::task::spawn(async move {
         let mut server_world = World::new_with_config("server", true);
         server_world.init_shape_change_tracking();
 
@@ -149,72 +128,91 @@ pub async fn start(
             )
             .unwrap();
 
-        // Keep track of the project name
+        // Keep track of the package name
         let name = manifest
-            .ember
+            .package
             .name
             .clone()
             .unwrap_or_else(|| "Ambient".into());
         server_world
             .add_components(
                 server_world.resource_entity(),
-                Entity::new().with(project_name(), name),
+                Entity::new().with(main_package_name(), name),
             )
             .unwrap();
 
         Entity::new()
             .with(ambient_core::name(), "Synced resources".to_string())
-            .with(synced_resources(), ())
+            .with(is_synced_resources(), ())
             .with(dont_store(), ())
+            .with(
+                ambient_package_semantic_native::package_name_to_url(),
+                Default::default(),
+            )
             .spawn(&mut server_world);
         // Note: this should not be reset every time the server is created. Remove this when it becomes possible to load/save worlds.
         Entity::new()
             .with(ambient_core::name(), "Persistent resources".to_string())
-            .with(persistent_resources(), ())
+            .with(is_persistent_resources(), ())
             .spawn(&mut server_world);
 
-        wasm::initialize(
-            &mut server_world,
-            &assets,
-            project_path.clone(),
-            &metadata,
-            build_config.map(|config| {
-                // HACK: provide a callback to rebuild the project to WASM.
-                // this is not done directly within WASM due to circular dependencies.
-                cb(move |world: &mut World| {
-                    let runtime = world.resource(ambient_core::runtime()).clone();
-                    let async_run = world.resource(ambient_core::async_ecs::async_run()).clone();
-                    let (path, manifest, build_path, optimize) = (
-                        config.path.clone(),
-                        config.manifest.clone(),
-                        config.build_path(),
-                        config.optimize,
-                    );
-                    runtime.spawn(async move {
-                        let result = ambient_build::build_rust_if_available(
-                            &path,
-                            &manifest,
-                            &build_path,
-                            optimize,
-                        )
-                        .await;
+        wasm::initialize(&mut server_world, &assets, working_directory.join("data"))
+            .await
+            .unwrap();
 
-                        async_run.run(|world| {
-                            world.resource_mut(ambient_ecs::world_events()).add_message(
-                                messages::WasmRebuild::new(result.err().map(|err| err.to_string())),
-                            );
-                        });
-                    });
-                }) as Cb<dyn Fn(&mut World) + Send + Sync>
-            }),
+        let mut semantic = ambient_package_semantic::Semantic::new(false)
+            .await
+            .unwrap();
+        let primary_package_scope_id = shared::package::add(
+            Some(&mut server_world),
+            &mut semantic,
+            &main_package_path.push("ambient.toml").unwrap(),
         )
         .await
         .unwrap();
 
-        if let Commands::View { asset_path, .. } = cli.command.clone() {
-            let asset_path = project_path
-                .push("build")
-                .expect("pushing 'build' shouldn't fail")
+        let mut queue = semantic
+            .items
+            .scope_and_dependencies(primary_package_scope_id);
+        queue.reverse();
+
+        // Use the topologically sorted queue to construct a dict of which packages should be on by default.
+        // Assume all are on by default, and then update their state based on what packages "closer to the root"
+        // state. The last element should be the root.
+        let mut package_id_to_enabled = queue
+            .iter()
+            .map(|&id| (id, true))
+            .collect::<HashMap<_, _>>();
+        for &package_id in &queue {
+            let package = semantic.items.get(package_id);
+
+            for dependency in package.dependencies.values() {
+                package_id_to_enabled.insert(dependency.id, dependency.enabled);
+            }
+        }
+
+        server_world
+            .add_component(
+                server_world.resource_entity(),
+                ambient_package_semantic_native::semantic(),
+                Arc::new(Mutex::new(semantic)),
+            )
+            .unwrap();
+
+        while let Some(package_id) = queue.pop() {
+            wasm::instantiate_package(
+                &mut server_world,
+                package_id,
+                package_id_to_enabled
+                    .get(&package_id)
+                    .copied()
+                    .unwrap_or(true),
+            )
+            .unwrap();
+        }
+
+        if let Some(asset_path) = view_asset_path {
+            let asset_path = main_package_path
                 .push(asset_path.to_string_lossy())
                 .expect("FIXME")
                 .push("prefabs/main.json")
@@ -288,7 +286,7 @@ fn create_resources(assets: AssetCache) -> Entity {
         .with(name(), "Resources".to_string())
         .with(asset_cache(), assets.clone())
         .with(no_sync(), ())
-        .with_default(world_events());
+        .with(world_events(), Default::default());
     ambient_physics::create_server_resources(&assets, &mut server_resources);
     server_resources.merge(ambient_core::async_ecs::async_ecs_resources());
     server_resources.set(ambient_core::runtime(), RuntimeHandle::current());
@@ -319,17 +317,18 @@ fn create_resources(assets: AssetCache) -> Entity {
 
 pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
-fn start_http_interface(
-    runtime: &tokio::runtime::Handle,
-    project_path: Option<&Path>,
-    http_interface_port: u16,
-) {
-    let mut router = Router::new().route("/ping", get(|| async move { "ok" }));
+fn start_http_interface(build_path: Option<&Path>, http_interface_port: u16) {
+    let mut router = Router::new()
+        .route("/ping", get(|| async move { "ok" }))
+        .route(
+            "/info",
+            get(|| async move { axum::Json(ambient_version()) }),
+        );
 
-    if let Some(project_path) = project_path {
+    if let Some(build_path) = build_path {
         router = router.nest_service(
             "/content",
-            get_service(ServeDir::new(project_path.join("build"))).handle_error(handle_error),
+            get_service(ServeDir::new(build_path)).handle_error(handle_error),
         );
     };
 
@@ -348,12 +347,12 @@ fn start_http_interface(
         Ok::<_, anyhow::Error>(())
     };
 
-    let project_path = project_path.map(ToOwned::to_owned);
+    let build_path = build_path.map(ToOwned::to_owned);
 
-    runtime.spawn(async move {
+    tokio::task::spawn(async move {
         let addr = SocketAddr::from(([0, 0, 0, 0], http_interface_port));
 
-        tracing::debug!(?project_path, "Starting HTTP interface on: {addr}");
+        tracing::debug!(?build_path, "Starting HTTP interface on: {addr}");
 
         if let Err(err) = serve(addr)
             .await

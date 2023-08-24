@@ -1,21 +1,24 @@
-[ember]
+[package]
 id = "ambient_example_arkanoid"
 name = "Arkanoid"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/arkanoid"
 type = "Game"
-categories = ["Example"]
+content = { type = "Playable", example = true }
 
 [components]
 player_movement_direction = { type = "F32", name = "Player Movement Direction", description = "Direction of player movement" }
-track_audio_url = { type = "String", name = "Track Audio URL", description = "URL of the track audio", attributes = ["Networked", "Debuggable"]}
+track_audio_url = { type = "String", name = "Track Audio URL", description = "URL of the track audio", attributes = [
+    "Networked",
+    "Debuggable",
+] }
 
-[messages.input]
+[messages.Input]
 description = "Describes the input state of the player."
-[messages.input.fields]
-direction = { type = "F32", name = "Direction", description = "The movement direction of the player." }
-start = { type = "Bool", name = "Start", description = "If the ball should start." }
+[messages.Input.fields]
+direction = "F32"
+start = "Bool"
 
-[messages.ping]
+[messages.Ping]
 description = "Time to ping sound."
 fields = {}

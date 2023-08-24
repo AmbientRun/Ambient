@@ -11,7 +11,7 @@ This is to allows clients and servers of slightly different versions to still wo
   further information.
 - `WorldDiff`: reliable changes to the ECS world.
 - `ServerInfo`: structure containing information such as
-  server version and project name.
+  server version and package name.
 
 ## Initiation
 
@@ -31,7 +31,7 @@ The server receives this requests creates an entity in the `MAIN_INSTANCE_ID` wo
 
 The server responds by sending a `ServerInfo` on the push
 stream which contains information about the current ambient
-project, version, etc.
+package, version, etc.
 
 After a successful connection, the server initiates a
 unidirectional stream for sending `WorldDiffs`.

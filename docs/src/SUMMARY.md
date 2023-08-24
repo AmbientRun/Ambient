@@ -19,7 +19,7 @@
 
 - [Getting content](reference/getting_content.md)
 - [Runtime](reference/runtime.md)
-- [Ember](reference/ember.md)
+- [Package](reference/package.md)
 - [ECS](reference/ecs.md)
 - [Models](reference/models.md)
 - [Hierarchies and transforms](reference/hierarchies.md)
@@ -28,11 +28,17 @@
 - [Animations](reference/animations.md)
 - [Audio](reference/audio.md)
 - [UI](reference/ui.md)
+- [Distributing](reference/distributing.md)
 - [Terminology](reference/terminology.md)
 - [Common pitfalls](reference/common_pitfalls.md)
 - [FAQ](reference/faq.md)
+- [Changelog](reference/changelog.md)
 
-# Community
+# Runtime internals
 
-- [Contributing](community/contributing.md)
-- [Changelog](community/changelog.md)
+- [Overview](runtime_internals/overview.md)
+- [Contributing](runtime_internals/contributing.md)
+- [ECS](runtime_internals/ecs.md)
+- [Renderer](runtime_internals/renderer.md)
+- [Asset cache](runtime_internals/asset_cache.md)
+- [Guidelines](runtime_internals/guidelines.md)

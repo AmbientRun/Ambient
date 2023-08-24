@@ -13,7 +13,7 @@ use ambient_core::{
     },
 };
 use ambient_ecs::{
-    generated::components::core::animation::bind_id, query, ComponentDesc, Entity, EntityId, World,
+    generated::animation::components::bind_id, query, ComponentDesc, Entity, EntityId, World,
 };
 use ambient_gpu::gpu::Gpu;
 use ambient_native_std::{
@@ -141,7 +141,7 @@ impl Model {
             .root_components
             .clone()
             .with(main_scene(), ())
-            .with_default(model_loaded());
+            .with(model_loaded(), ());
         if let Some(aabb) = self.aabb() {
             root_components = root_components
                 .with(local_bounding_aabb(), aabb)
@@ -194,7 +194,7 @@ impl Model {
                     world.batch_spawn(
                         root_components
                             .with(children(), vec![])
-                            .with_default(local_to_world()),
+                            .with(local_to_world(), Default::default()),
                         count,
                     )
                 }
@@ -206,8 +206,8 @@ impl Model {
                         .with(parent(), EntityId::null())
                         .with(children(), vec![])
                         .with(local_to_parent(), transform)
-                        .with_default(local_to_world())
-                        .with_default(is_model_node()),
+                        .with(local_to_world(), Default::default())
+                        .with(is_model_node(), ()),
                     count,
                 );
                 for (transform, root) in transform_roots.iter().zip(roots.iter()) {
@@ -330,7 +330,7 @@ impl Model {
         let mut ed = self
             .create_entity_data(id, opts, None)
             .with(parent(), EntityId::null())
-            .with_default(is_model_node())
+            .with(is_model_node(), ())
             .with(local_to_parent(), Mat4::IDENTITY);
 
         if let Some(skin_ix) = ed.remove_self(model_skin_ix()) {
@@ -539,7 +539,7 @@ impl Model {
             .0
             .clone_entity(node)
             .unwrap()
-            .with_default(local_to_world());
+            .with(local_to_world(), Default::default());
         if let Some(mat) = single_mesh_transform {
             ed.set(
                 mesh_to_local(),

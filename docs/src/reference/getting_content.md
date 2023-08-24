@@ -22,6 +22,10 @@ For details on how to import the content, see [asset pipeline](./asset_pipeline.
 
 - [https://ambientcg.com/](https://ambientcg.com/): Many materials.
 
+## Audio
+
+- [https://freesound.org/](https://freesound.org/): Lots of sounds from recordings to synthesis ones.
+
 ## Collections
 
 - [awesome-cc0](https://github.com/madjin/awesome-cc0): A list of Creative Commons 0 (CC0) licensed assets. These assets can be used for any purpose, including commercially.

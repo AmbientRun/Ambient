@@ -1,7 +1,7 @@
 use ambient_api::{
-    components::core::{
-        layout::space_between_items,
-        rect::{
+    core::{
+        layout::components::space_between_items,
+        rect::components::{
             background_color, border_color, border_radius, border_thickness,
             size_from_background_image,
         },
@@ -9,15 +9,16 @@ use ambient_api::{
     prelude::*,
     ui::ImageFromUrl,
 };
+use packages::this::assets;
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
     Group::el([FlowColumn::el([
         ImageFromUrl {
-            url: asset::url("assets/squirrel.png").unwrap(),
+            url: assets::url("squirrel.png"),
         }
         .el()
-        .with_default(size_from_background_image()),
+        .with(size_from_background_image(), ()),
         FlowRow::el([
             ImageFromUrl {
                 url: "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Bucephala-albeola-010.jpg"

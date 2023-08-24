@@ -18,12 +18,6 @@ impl<T: ComponentValue + Serialize + DeserializeOwned + Clone + std::fmt::Debug>
 
 impl_downcast!(ComponentValueBase);
 
-impl<T: ComponentValue + Default> Component<T> {
-    pub fn with_default(&self) -> Entity {
-        Entity::new().with(*self, T::default())
-    }
-}
-
 impl<T: ComponentValue> Serialize for Component<T> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         self.desc().serialize(serializer)

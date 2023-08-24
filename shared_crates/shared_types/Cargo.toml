@@ -19,6 +19,7 @@ serde = { workspace = true }
 winit = { workspace = true, optional = true }
 ulid = { workspace = true }
 paste = { workspace = true }
+itertools = { workspace = true }
 
 [features]
 native = ["dep:winit"]

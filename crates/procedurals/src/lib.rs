@@ -8,7 +8,7 @@ use ambient_core::{
 };
 use ambient_ecs::{
     components,
-    generated::components::core::procedurals::{procedural_material, procedural_mesh},
+    generated::procedurals::components::{procedural_material, procedural_mesh},
     query, Entity, Resource, SystemGroup,
 };
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::TextureView};
@@ -49,17 +49,20 @@ pub fn client_systems() -> SystemGroup {
                             id,
                             Entity::new()
                                 .with(ambient_core::mesh(), gpu_mesh)
-                                .with_default(main_scene())
-                                .with_default(gpu_primitives_mesh())
-                                .with_default(gpu_primitives_lod())
-                                .with_default(primitives())
-                                .with_default(local_to_world())
-                                .with_default(mesh_to_world())
+                                .with(main_scene(), ())
+                                .with(gpu_primitives_mesh(), Default::default())
+                                .with(gpu_primitives_lod(), Default::default())
+                                .with(primitives(), Default::default())
                                 .with(local_bounding_aabb(), mesh_aabb)
                                 .with(world_bounding_aabb(), mesh_aabb)
                                 .with(world_bounding_sphere(), mesh_aabb.to_sphere()),
                         )
                         .unwrap();
+
+                    let _ =
+                        world.add_component_if_required(id, local_to_world(), Default::default());
+                    let _ =
+                        world.add_component_if_required(id, mesh_to_world(), Default::default());
                 }
             }),
             query(procedural_material().changed()).to_system(|query, world, query_state, _| {

@@ -1,16 +1,21 @@
 use ambient_api::{
-    components::core::{
-        app::{main_scene, window_logical_size},
-        camera::{orthographic_bottom, orthographic_left, orthographic_right, orthographic_top},
+    core::{
+        app::components::{main_scene, window_logical_size},
+        camera::{
+            components::{
+                orthographic_bottom, orthographic_left, orthographic_right, orthographic_top,
+            },
+            concepts::make_orthographic_camera,
+        },
+        messages::Frame,
     },
-    concepts::make_orthographic_camera,
     prelude::*,
 };
 
 mod constants;
 use constants::*;
 
-use components::track_audio_url;
+use packages::this::{components::track_audio_url, messages::Input};
 
 #[main]
 async fn main() {
@@ -25,11 +30,9 @@ async fn main() {
     bgm_player.set_amplitude(0.2);
     bgm_player.play(url_from_server);
 
-    let camera_id = make_orthographic_camera()
-        .with_default(main_scene())
-        .spawn();
+    let camera_id = make_orthographic_camera().with(main_scene(), ()).spawn();
 
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         let input = input::get();
         let mut direction = 0.0;
 
@@ -39,7 +42,7 @@ async fn main() {
         if input.keys.contains(&KeyCode::Down) {
             direction -= 1.0;
         }
-        messages::Input::new(direction).send_server_unreliable();
+        Input::new(direction).send_server_unreliable();
     });
 
     // Update camera so we have correct aspect ratio

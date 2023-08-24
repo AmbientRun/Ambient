@@ -3,7 +3,6 @@ use std::sync::Arc;
 use ambient_app::{gpu_world_sync_systems, world_instance_systems};
 use ambient_core::{
     camera::{get_active_camera, projection_view},
-    gpu_ecs::GpuWorldSyncEvent,
     main_scene,
     transform::local_to_world,
     ui_scene,
@@ -11,13 +10,19 @@ use ambient_core::{
 };
 use ambient_ecs::{components, query, Entity, FrameEvent, System, SystemGroup, World};
 use ambient_gizmos::render::GizmoRenderer;
-use ambient_gpu::gpu::Gpu;
-use ambient_native_std::{asset_cache::AssetCache, color::Color, math::interpolate, shapes::Ray};
+use ambient_gpu::gpu::{Gpu, GpuKey};
+use ambient_gpu_ecs::GpuWorldSyncEvent;
+use ambient_native_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    color::Color,
+    math::interpolate,
+    shapes::Ray,
+};
 use ambient_renderer::{RenderTarget, Renderer, RendererConfig, RendererTarget};
 use ambient_world_audio::systems::{audio_systems, setup_audio};
 use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 
-use ambient_core::player::{player, user_id};
+use ambient_core::player::{is_player, user_id};
 use tracing::debug_span;
 
 components!("rendering", {
@@ -94,7 +99,7 @@ impl ClientGameState {
             world: game_world,
             systems,
             temporary_systems: Default::default(),
-            gpu_world_sync_systems: gpu_world_sync_systems(),
+            gpu_world_sync_systems: gpu_world_sync_systems(GpuKey.get(&assets)),
             renderer,
             ui_renderer,
             assets,
@@ -200,7 +205,7 @@ impl ClientGameState {
     }
 
     pub fn is_master_client(&self) -> bool {
-        let first = query((user_id(), player()))
+        let first = query((user_id(), is_player()))
             .iter(&self.world, None)
             .map(|(_, (id, _))| id.clone())
             .min();

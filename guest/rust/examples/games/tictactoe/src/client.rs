@@ -1,8 +1,16 @@
 use std::collections::HashMap;
 
 use ambient_api::{
-    components::core::rendering::{color, outline},
+    core::{
+        messages::Frame,
+        player::components::is_player,
+        rendering::components::{color, outline},
+    },
     prelude::*,
+};
+use packages::this::{
+    components::{cell, cells, owned_by},
+    messages::Input,
 };
 use palette::FromColor;
 
@@ -10,11 +18,11 @@ mod constants;
 
 #[main]
 async fn main() {
-    let cells = entity::wait_for_component(entity::synchronized_resources(), components::cells())
+    let cells = entity::wait_for_component(entity::synchronized_resources(), cells())
         .await
         .unwrap();
 
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         process_input();
         process_colors(&cells);
     });
@@ -23,7 +31,7 @@ async fn main() {
 fn process_input() {
     let (delta, _) = input::get_delta();
     let keys = &delta.keys;
-    let msg = messages::Input {
+    let msg = Input {
         left: keys.contains(&KeyCode::Left) || keys.contains(&KeyCode::A),
         right: keys.contains(&KeyCode::Right) || keys.contains(&KeyCode::D),
         up: keys.contains(&KeyCode::Up) || keys.contains(&KeyCode::W),
@@ -44,7 +52,7 @@ fn process_colors(cells: &[EntityId]) {
         entity::remove_component(*cell, outline());
     }
 
-    let players = entity::get_all(ambient_api::components::core::player::player());
+    let players = entity::get_all(is_player());
     let n_players = players.len();
     let player_colors: HashMap<_, _> = players
         .iter()
@@ -61,12 +69,12 @@ fn process_colors(cells: &[EntityId]) {
         .collect();
 
     for (player, player_color) in player_colors.iter() {
-        let Some(cell) = entity::get_component(*player, components::cell()) else { continue; };
+        let Some(cell) = entity::get_component(*player, cell()) else { continue; };
         entity::add_component_if_required(cells[cell as usize], outline(), *player_color);
     }
 
     for cell in cells {
-        let cell_color = entity::get_component(*cell, components::owned_by())
+        let cell_color = entity::get_component(*cell, owned_by())
             .and_then(|id| player_colors.get(&id))
             .copied()
             .unwrap_or(constants::DEFAULT_COLOR);

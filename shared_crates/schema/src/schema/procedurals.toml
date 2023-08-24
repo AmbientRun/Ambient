@@ -1,15 +1,18 @@
-[components."core::procedurals"]
+[package]
+id = "procedurals"
 name = "Procedurals"
-description = "Procedural assets generation"
+description = "Procedural asset functionality and related."
+content = { type = "Asset", schema = true }
+version = "0.3.0-dev"
 
-[components."core::procedurals::procedural_mesh"]
+[components.procedural_mesh]
 type = "ProceduralMeshHandle"
 name = "Procedural mesh"
-description = "Attaches the procedural mesh into this entity"
+description = "Attaches a procedural mesh to this entity"
 attributes = ["Debuggable", "Store"]
 
-[components."core::procedurals::procedural_material"]
+[components.procedural_material]
 type = "ProceduralMaterialHandle"
 name = "Procedural material"
-description = "Attaches the procedural material to this entity"
+description = "Attaches a procedural material to this entity"
 attributes = ["Debuggable", "Store"]

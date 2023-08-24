@@ -1,7 +1,7 @@
-[ember]
+[package]
 id = "ambient_example_sun"
 name = "Sun"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/sun"
 type = "Game"
-categories = ["Example"]
+content = { type = "Playable", example = true }

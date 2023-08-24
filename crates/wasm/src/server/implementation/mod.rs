@@ -189,9 +189,14 @@ impl wit::player::Host for Bindings {
         shared::implementation::player::get_by_user_id(self.world(), user_id)
     }
 }
+
 #[async_trait::async_trait]
 impl wit::asset::Host for Bindings {
-    fn url(&mut self, path: String) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
-        shared::implementation::asset::url(self.world(), path, false)
+    fn url(
+        &mut self,
+        package_id: String,
+        path: String,
+    ) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
+        shared::implementation::asset::url(self.world(), package_id, path, false)
     }
 }

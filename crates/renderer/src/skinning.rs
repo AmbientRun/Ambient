@@ -4,8 +4,7 @@ use std::sync::{
 };
 
 use ambient_core::{
-    asset_cache, gpu, gpu_components,
-    gpu_ecs::{GpuComponentFormat, GpuWorldSyncEvent, MappedComponentToGpuSystem},
+    asset_cache, gpu,
     transform::{inv_local_to_world, local_to_world},
 };
 use ambient_ecs::{components, query, Commands, Networked, Store, SystemGroup};
@@ -13,12 +12,15 @@ use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     typed_buffer::TypedBuffer,
 };
+use ambient_gpu_ecs::{
+    gpu_components, GpuComponentFormat, GpuWorldSyncEvent, MappedComponentToGpuSystem,
+};
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use glam::{vec4, Mat4};
 use itertools::Itertools;
 use parking_lot::Mutex;
 
-pub use ambient_ecs::generated::components::core::rendering::{joint_matrices, joints};
+pub use ambient_ecs::generated::rendering::components::{joint_matrices, joints};
 
 components!("rendering", {
     @[Networked, Store]
@@ -119,10 +121,11 @@ pub fn skinning_systems() -> SystemGroup {
     )
 }
 
-pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
+pub fn gpu_world_systems(gpu: Arc<Gpu>) -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "skinning/gpu_world",
         vec![Box::new(MappedComponentToGpuSystem::new(
+            gpu,
             GpuComponentFormat::Vec4,
             skin(),
             gpu_components::skin(),

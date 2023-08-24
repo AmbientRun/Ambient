@@ -106,14 +106,12 @@ pub fn copy_component_recursive<T: ComponentValue + PartialEq + Clone + 'static>
                     add_component_recursive(world, id, component, val);
                 }
             }),
-            query((component_recursive, children()))
+            query(())
+                .incl(component_recursive)
                 .despawned()
                 .to_system(move |q, world, qs, _| {
-                    for (id, (_, childs)) in q.collect_cloned(world, qs) {
-                        world.remove_component(id, component).ok();
-                        for c in childs {
-                            remove_component_recursive(world, c, component);
-                        }
+                    for id in q.collect_ids(world, qs) {
+                        remove_component_recursive(world, id, component);
                     }
                 }),
         ],

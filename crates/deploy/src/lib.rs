@@ -9,7 +9,7 @@ use std::{
     str::FromStr,
 };
 
-use ambient_project::Manifest;
+use ambient_package::Manifest;
 use md5::Digest;
 use tokio_stream::StreamExt;
 use tonic::{
@@ -27,30 +27,35 @@ use deploy_proto::{
 };
 
 const CHUNK_SIZE: usize = 1024 * 1024 * 3; // 3MB
-const EXTRA_FILES_FROM_PROJECT_ROOT: &[&str] = &["screenshot.png", "README.md"];
-const REQUIRED_FILES: &[&str] = &["build/ambient.toml"];
+const EXTRA_FILES_FROM_PACKAGE_ROOT: &[&str] = &["screenshot.png", "README.md"];
+const REQUIRED_FILES: &[&str] = &["ambient.toml"];
 
-/// This takes the path to an Ambient ember and deploys it. An Ambient ember is expected to
+/// This takes the path to an Ambient package and deploys it. An Ambient package is expected to
 /// be already built.
 pub async fn deploy(
-    runtime: &tokio::runtime::Handle,
     api_server: &str,
     auth_token: &str,
     path: impl AsRef<Path>,
     manifest: &Manifest,
     force_upload: bool,
 ) -> anyhow::Result<String> {
-    let ember_id = manifest.ember.id.to_string();
+    let package_id = manifest.package.id.to_string();
     log::info!(
-        "Deploying ember `{}` ({})",
-        ember_id,
+        "Deploying package `{}` ({})",
+        package_id,
         manifest
-            .ember
+            .package
             .name
             .as_deref()
-            .unwrap_or_else(|| manifest.ember.id.as_ref())
+            .unwrap_or_else(|| manifest.package.id.as_str())
     );
     let base_path = path.as_ref().to_owned();
+
+    for (dependency_id, dependency) in &manifest.dependencies {
+        if !dependency.has_remote_dependency() {
+            anyhow::bail!("The dependency `{dependency_id}` is not a remote dependency. You can only deploy packages with remote dependencies.");
+        }
+    }
 
     // create a client and open channel to the server
     let mut client = create_client(api_server, auth_token).await?;
@@ -70,10 +75,10 @@ pub async fn deploy(
     let (file_request_tx, file_request_rx) = flume::unbounded::<FileRequest>();
     let (deploy_asset_request_tx, deploy_asset_request_rx) =
         flume::bounded::<DeployAssetRequest>(16);
-    let handle = runtime.spawn(process_file_requests(
+    let handle = tokio::task::spawn(process_file_requests(
         file_request_rx,
         deploy_asset_request_tx,
-        ember_id.clone(),
+        package_id.clone(),
         asset_path_to_file_path.clone(),
     ));
 
@@ -140,42 +145,42 @@ pub async fn deploy(
     deployment.ok_or_else(|| anyhow::anyhow!("No deployment id returned from deploy"))
 }
 
-// Get all files from "build" and EXTRA_FILES_FROM_PROJECT_ROOT
+// Get all files from "build" and EXTRA_FILES_FROM_PACKAGE_ROOT
 fn collect_files_to_deploy(base_path: PathBuf) -> anyhow::Result<HashMap<String, PathBuf>> {
     // collect all files to deploy (everything in the build directory)
-    let asset_path_to_file_path: Option<HashMap<String, PathBuf>> =
-        WalkDir::new(base_path.join("build"))
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
-            .map(|x| {
-                let file_path = x.into_path();
-                let path = file_path
+    let asset_path_to_file_path: Option<HashMap<String, PathBuf>> = WalkDir::new(base_path.clone())
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
+        .map(|x| {
+            let file_path = x.into_path();
+            let path = ambient_std::path::path_to_unix_string(
+                file_path
                     .strip_prefix(&base_path)
-                    .expect("file path should be in base path")
-                    .to_str();
-                if let Some(path) = path {
-                    if path.chars().any(|c| c == '\n' || c == '\r') {
-                        log::error!(
-                            "Path contains Line Feed or Carriage Return character: {:?}",
-                            file_path
-                        );
-                        None
-                    } else {
-                        Some((path.into(), file_path))
-                    }
-                } else {
-                    log::error!("Non-UTF-8 path: {:?}", file_path);
+                    .expect("file path should be in base path"),
+            );
+            if let Some(path) = path {
+                if path.chars().any(|c| c == '\n' || c == '\r') {
+                    log::error!(
+                        "Path contains Line Feed or Carriage Return character: {:?}",
+                        file_path
+                    );
                     None
+                } else {
+                    Some((path, file_path))
                 }
-            })
-            .collect();
+            } else {
+                log::error!("Non-UTF-8 path: {:?}", file_path);
+                None
+            }
+        })
+        .collect();
     let Some(mut asset_path_to_file_path) = asset_path_to_file_path else {
         anyhow::bail!("Can only deploy files with UTF-8 paths that don't have newline characters");
     };
 
-    // check for a few special files in the project root
-    for file_name in EXTRA_FILES_FROM_PROJECT_ROOT {
+    // check for a few special files in the package root
+    for file_name in EXTRA_FILES_FROM_PACKAGE_ROOT {
         let file_path = base_path.join(file_name);
         if file_path.exists() && file_path.is_file() {
             asset_path_to_file_path.insert(file_name.to_string(), file_path);
@@ -256,7 +261,7 @@ impl FileRequest {
 async fn process_file_requests(
     rx: flume::Receiver<FileRequest>,
     tx: flume::Sender<DeployAssetRequest>,
-    ember_id: String,
+    package_id: String,
     mut asset_path_to_file_path: HashMap<String, PathBuf>,
 ) -> anyhow::Result<()> {
     while let Ok(request) = rx.recv_async().await {
@@ -278,7 +283,7 @@ async fn process_file_requests(
                     .to_vec();
                 log::debug!("Sending MD5 for {:?} = {}", path, hex(&md5_digest));
                 tx.send_async(DeployAssetRequest {
-                    ember_id: ember_id.clone(),
+                    package_id: package_id.clone(),
                     contents: vec![AssetContent {
                         path,
                         total_size: content.len() as u64,
@@ -290,7 +295,7 @@ async fn process_file_requests(
             FileRequest::SendContents(path) => {
                 // send file contents
                 log::debug!("Sending contents for {:?}", path);
-                let requests = asset_requests_from_file_path(&ember_id, &path, file_path).await?;
+                let requests = asset_requests_from_file_path(&package_id, &path, file_path).await?;
                 let count = requests.len();
                 for (idx, request) in requests.into_iter().enumerate() {
                     let Some(content) = request.contents.first() else { unreachable!() };
@@ -327,7 +332,7 @@ async fn process_file_requests(
 }
 
 async fn asset_requests_from_file_path(
-    ember_id: impl AsRef<str>,
+    package_id: impl AsRef<str>,
     asset_path: impl AsRef<str>,
     file_path: impl AsRef<Path>,
 ) -> anyhow::Result<Vec<DeployAssetRequest>> {
@@ -337,7 +342,7 @@ async fn asset_requests_from_file_path(
     // handle empty file
     if content.is_empty() {
         return Ok(vec![DeployAssetRequest {
-            ember_id: ember_id.as_ref().into(),
+            package_id: package_id.as_ref().into(),
             contents: vec![AssetContent {
                 path: asset_path.as_ref().into(),
                 total_size,
@@ -350,7 +355,7 @@ async fn asset_requests_from_file_path(
     Ok(content
         .chunks(CHUNK_SIZE)
         .map(|chunk| DeployAssetRequest {
-            ember_id: ember_id.as_ref().into(),
+            package_id: package_id.as_ref().into(),
             contents: vec![AssetContent {
                 path: asset_path.as_ref().into(),
                 total_size,

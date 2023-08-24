@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use ambient_core::{
-    player::{player, user_id},
+    player::{is_player, user_id},
     runtime,
 };
 use ambient_ecs::{
@@ -12,8 +12,8 @@ use ambient_element::{Hooks, Setter};
 use ambient_native_std::{cb, Cb};
 
 use crate::{
-    client::ClientState, log_network_result, persistent_resources, rpc::rpc_world_diff,
-    synced_resources,
+    client::ClientState, is_persistent_resources, is_synced_resources, log_network_result,
+    rpc::rpc_world_diff,
 };
 
 pub fn use_remote_world_system<
@@ -200,7 +200,7 @@ pub fn use_remote_persisted_resource<T: ComponentValue + std::fmt::Debug>(
 ) -> Option<(Option<T>, Arc<dyn Fn(Option<T>) + Sync + Send>)> {
     use_remote_first_component(
         hooks,
-        ArchetypeFilter::new().incl(persistent_resources()),
+        ArchetypeFilter::new().incl(is_persistent_resources()),
         |_, _| true,
         component,
     )
@@ -214,7 +214,7 @@ pub fn use_remote_synced_resource<T: ComponentValue + std::fmt::Debug>(
 ) -> Option<(Option<T>, Arc<dyn Fn(Option<T>) + Sync + Send>)> {
     use_remote_first_component(
         hooks,
-        ArchetypeFilter::new().incl(synced_resources()),
+        ArchetypeFilter::new().incl(is_synced_resources()),
         |_, _| true,
         component,
     )
@@ -239,7 +239,7 @@ pub fn use_player_id(hooks: &mut Hooks) -> Option<EntityId> {
     let (ent, set_ent) = hooks.use_state(None);
     use_remote_world_system(
         hooks,
-        query(user_id().changed()).incl(player()),
+        query(user_id().changed()).incl(is_player()),
         move |q, world, qs, _| {
             for (id, pid) in q.iter(world, qs) {
                 if pid == &client_state.user_id {

@@ -206,7 +206,11 @@ impl wit::player::Host for Bindings {
 }
 
 impl wit::asset::Host for Bindings {
-    fn url(&mut self, path: String) -> wasm_bridge::Result<Result<String, wit::asset::UrlError>> {
-        shared::implementation::asset::url(self.world(), path, true)
+    fn url(
+        &mut self,
+        package_id: String,
+        path: String,
+    ) -> wasm_bridge::Result<Result<String, wit::asset::UrlError>> {
+        shared::implementation::asset::url(self.world(), package_id, path, true)
     }
 }

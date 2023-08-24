@@ -1,10 +1,10 @@
-[ember]
+[package]
 id = "ambient_example_minigolf"
 name = "Minigolf"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/minigolf"
 type = "Game"
-categories = ["Example"]
+content = { type = "Playable", example = true }
 
 [components]
 next_player_hue = { type = "F32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = [
@@ -12,7 +12,7 @@ next_player_hue = { type = "F32", name = "Next Player Hue", description = "Contr
     "Resource",
 ] }
 
-ball = { type = "Empty", name = "Ball", description = "Used to tag a ball" }
+is_ball = { type = "Empty", name = "Ball", description = "Used to tag a ball" }
 origin = { type = "Vec3", name = "Origin", description = "An object's origin in world space" }
 
 player_ball = { type = "EntityId", name = "Player Ball", description = "Used to tag a player's ball" }
@@ -50,19 +50,19 @@ description = "A player's camera state"
 player_camera_pivot = [0.0, 0.0, 8.0]
 player_camera_position = [0.0, 0.0, 0.0]
 player_camera_radius = 15.0
-player_camera_rotation = [3.141592, 0.610865]
+player_camera_rotation = ["PI", 0.610865]
 
-[messages.input]
+[messages.Input]
 description = "Player input"
-[messages.input.fields]
-camera_rotation = { type = "Vec2", name = "Camera Rotation", description = "The rotation (radians) to rotate the camera by" }
-camera_zoom = { type = "F32", name = "Camera Zoom", description = "The amount to zoom the camera by" }
-shoot = { type = "Bool", name = "Shoot", description = "Whether or not to shoot the ball" }
+[messages.Input.fields]
+camera_rotation = "Vec2"
+camera_zoom = "F32"
+shoot = "Bool"
 
-[messages.hit]
+[messages.Hit]
 description = "Hit."
 fields = { ball = "EntityId" }
 
-[messages.bonk]
+[messages.Bonk]
 description = "Collision between two objects."
 fields = { ball = "EntityId" }

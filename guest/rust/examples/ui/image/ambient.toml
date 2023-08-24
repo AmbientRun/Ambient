@@ -1,7 +1,7 @@
-[ember]
+[package]
 id = "ambient_example_image"
 name = "Image"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/image"
 type = "Game"
-categories = ["Example"]
+content = { type = "Playable", example = true }

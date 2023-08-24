@@ -1,112 +1,114 @@
-
-[components."core::animation"]
+[package]
+id = "animation"
 name = "Animation"
-description = "Components relating to animations"
+description = "Components relating to animations."
+content = { type = "Asset", schema = true }
+version = "0.3.0-dev"
 
-[components."core::animation::animation_player"]
+[components.is_animation_player]
 type = "Empty"
-name = "Animation player"
-description = "This entity is treated as an animation_player. Attach an animation node as a child for it to play."
+name = "Is animation player"
+description = "This entity is treated as an animation player. Attach an animation node as a child for it to play."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::animation_errors"]
+[components.animation_errors]
 type = { type = "Vec", element_type = "String" }
 name = "Animation errors"
 description = "A list of errors that were produced trying to play the animation."
 attributes = ["MaybeResource", "Debuggable"]
 
-[components."core::animation::apply_animation_player"]
+[components.apply_animation_player]
 type = "EntityId"
 name = "Apply animation player"
 description = "Apply the designated animation player to this entity and its sub-tree."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::play_clip_from_url"]
+[components.play_clip_from_url]
 type = "String"
-name = "Play clip from url"
-description = "Make this entity a 'play animation clip' node. The value is the url to the clip we'd like to play."
+name = "Play clip from URL"
+description = "Make this entity a 'play animation clip' node. The value is the URL to the clip we'd like to play."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::looping"]
+[components.looping]
 type = "Bool"
 name = "Looping"
 description = "When this is true, the animation clip will repeat infinitely."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::speed"]
+[components.speed]
 type = "F32"
 name = "Speed"
 description = "Animation playback speed. Default is 1, higher values speeds up the animation."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::start_time"]
+[components.start_time]
 type = "Duration"
 name = "Start time"
 description = "Start time of an animation node."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::freeze_at_percentage"]
+[components.freeze_at_percentage]
 type = "F32"
 name = "Freeze at percentage"
 description = "Sample the input animation at a certain percentage of the animation track length."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::freeze_at_time"]
+[components.freeze_at_time]
 type = "F32"
 name = "Freeze at time"
 description = "Sample the input animation at a certain time (in seconds)."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::clip_duration"]
+[components.clip_duration]
 type = "F32"
 name = "Clip duration"
 description = "The clip duration is loaded from the clip, and then applied to the entity."
 attributes = ["MaybeResource", "Debuggable"]
 
-[components."core::animation::blend"]
+[components.blend]
 type = "F32"
 name = "Blend"
 description = "Blend two animations together. The values is the blend weight. Use `children` to set the animations. Blend 0 means we only sample from the first animation, 1 means only the second one, and values in between blend between them."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::mask_bind_ids"]
+[components.mask_bind_ids]
 type = { type = "Vec", element_type = "String" }
 name = "Mask bind ids"
 description = "List of bind ids that will be masked."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::mask_weights"]
+[components.mask_weights]
 type = { type = "Vec", element_type = "F32" }
 name = "Mask weights"
 description = "Weights for each bind id in `mask_bind_ids`."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::retarget_model_from_url"]
+[components.retarget_model_from_url]
 type = "String"
 name = "Retarget Model from URL"
-description = "Retarget the animation using the model at the given url."
+description = "Retarget the animation using the model at the given URL."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::animation::retarget_animation_scaled"]
+[components.retarget_animation_scaled]
 type = "Bool"
 name = "Retarget animation scaled"
 description = "Retarget animation scaled. True means normalize hip."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::animation::apply_base_pose"]
+[components.apply_base_pose]
 type = "Empty"
 name = "Apply base pose"
 description = "Apply the base pose to this clip."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::animation::bind_id"]
+[components.bind_id]
 type = "String"
 name = "Bind id"
-description = "Animation bind id."
+description = "Animation bind ID."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::animation::bind_ids"]
+[components.bind_ids]
 type = { type = "Vec", element_type = "String" }
 name = "Bind ids"
-description = "Animation bind ids."
+description = "Animation bind IDs."
 attributes = ["Debuggable", "Store"]

@@ -6,7 +6,7 @@ use crate::{
 };
 use ambient_core::{
     app_start_time, name,
-    player::{get_by_user_id, player},
+    player::{get_by_user_id, is_player, user_id},
     FIXED_SERVER_TICK_TIME,
 };
 use ambient_ecs::{
@@ -77,18 +77,18 @@ impl RpcArgs {
 
 pub fn create_player_entity_data(
     transport: Arc<dyn NetworkTransport>,
-    user_id: String,
+    new_user_id: String,
     entities_tx: Sender<FrozenWorldDiff>,
     connection_id: Uuid,
 ) -> Entity {
     Entity::new()
-        .with(name(), format!("Player {}", user_id))
-        .with(ambient_core::player::player(), ())
-        .with(ambient_core::player::user_id(), user_id)
+        .with(name(), format!("Player {}", new_user_id))
+        .with(is_player(), ())
+        .with(user_id(), new_user_id)
         .with(player_transport(), transport)
         .with(player_entity_stream(), entities_tx)
         .with(player_connection_id(), connection_id)
-        .with_default(dont_store())
+        .with(dont_store(), ())
 }
 
 pub fn register_rpc_bi_stream_handler(
@@ -148,7 +148,7 @@ impl WorldInstance {
         }
     }
     pub fn player_count(&self) -> usize {
-        query((player(),)).iter(&self.world, None).count()
+        query((is_player(),)).iter(&self.world, None).count()
     }
     pub fn step(&mut self, frame_time: Instant, delta_time: Duration) {
         self.world
@@ -259,7 +259,7 @@ impl ServerState {
 #[derive(Debug, Clone)]
 pub struct ProxySettings {
     pub endpoint: String,
-    pub project_path: AbsAssetUrl,
+    pub build_path: AbsAssetUrl,
     pub pre_cache_assets: bool,
-    pub project_id: String,
+    pub primary_package_id: String,
 }

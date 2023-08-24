@@ -1,4 +1,4 @@
-use std::time::Duration;
+pub use std::time::Duration;
 
 use crate::platform;
 pub use platform::time::{schedule_wakeup, Instant, Interval, SystemTime};

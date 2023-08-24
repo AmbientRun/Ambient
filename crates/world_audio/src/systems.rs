@@ -10,9 +10,7 @@ use ambient_core::{
     runtime,
     transform::{rotation, translation},
 };
-use ambient_ecs::{
-    children, generated::components::core::audio::*, parent, query, SystemGroup, World,
-};
+use ambient_ecs::{children, generated::audio::components::*, parent, query, SystemGroup, World};
 use ambient_native_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
 use glam::{vec4, Mat4};
 use parking_lot::Mutex;
@@ -42,7 +40,7 @@ pub fn audio_systems() -> SystemGroup {
     SystemGroup::new(
         "audio",
         vec![
-            query((spatial_audio_player(), play_now())).to_system(|q, world, qs, _| {
+            query((is_spatial_audio_player(), play_now())).to_system(|q, world, qs, _| {
                 for (audio_player_enitty, _) in q.collect_cloned(world, qs) {
                     // check if mute_audio is set
                     let r = world.resource_entity();
@@ -171,8 +169,7 @@ pub fn audio_systems() -> SystemGroup {
                     }
                     world.remove_component(playing_entity, stop_now()).unwrap();
                     let p = world.get(playing_entity, parent());
-                    if !p.is_err() {
-                        let parent_entity = p.unwrap();
+                    if let Ok(parent_entity) = p {
                         let c = world.get_ref(parent_entity, children());
                         if c.is_err() {
                             log::error!("No children component on parent entity; cannot stop audio.");
@@ -228,7 +225,7 @@ pub fn audio_systems() -> SystemGroup {
                     *freq_arc.lock() = freq;
                 }
             }),
-            query((audio_player(), play_now(), audio_url())).to_system(|q, world, qs, _| {
+            query((is_audio_player(), play_now(), audio_url())).to_system(|q, world, qs, _| {
                 for (audio_player_enitty, (_, _, url)) in q.collect_cloned(world, qs) {
                     // check if mute_audio is set
                     let r = world.resource_entity();
@@ -312,8 +309,8 @@ pub fn audio_systems() -> SystemGroup {
 
                         let count = *count_arc_clone.lock();
                         let sr = *sr_arc_clone.lock();
-                        if count.is_some() && sr.is_some() {
-                            let dur = count.unwrap() as f32 / sr.unwrap() as f32 * 1.001;
+                        if let Some((count, sr)) = count.zip(sr) {
+                            let dur = count as f32 / sr as f32 * 1.001;
                             ambient_sys::time::sleep(std::time::Duration::from_secs_f32(dur)).await;
                             async_run.run(move |world| {
                                 world.despawn(id_arc_clone.lock().unwrap());

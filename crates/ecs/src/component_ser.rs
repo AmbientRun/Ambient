@@ -91,7 +91,7 @@ mod test {
         init();
         let source = ser_test().desc();
         let ser = serde_json::to_string(&source).unwrap();
-        assert_eq!(&ser, "\"core::test::ser_test\"");
+        assert_eq!(&ser, "\"ambient_core::test::ser_test\"");
         let deser: ComponentDesc = serde_json::from_str(&ser).unwrap();
         assert_eq!(source.index(), deser.index());
     }
@@ -101,7 +101,7 @@ mod test {
         init();
         let source = ComponentEntry::new(ser_test(), "hello".to_string());
         let ser = serde_json::to_string(&source).unwrap();
-        assert_eq!(&ser, "[\"core::test::ser_test\",\"hello\"]");
+        assert_eq!(&ser, "[\"ambient_core::test::ser_test\",\"hello\"]");
         let deser: ComponentEntry = serde_json::from_str(&ser).unwrap();
         assert_eq!(
             source.downcast_ref::<String>(),

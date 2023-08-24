@@ -279,7 +279,7 @@ fn errors_on_adding_a_resource_to_an_entity() {
     assert_eq!(
         world.add_component(entity_id, a_resource(), ()),
         Err(ECSError::AddedResourceToEntity {
-            component_path: "core::test::a_resource".to_string(),
+            component_path: "ambient_core::test::a_resource".to_string(),
             entity_id
         })
     );

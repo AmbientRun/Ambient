@@ -1,38 +1,18 @@
 use crate::shared::{self, message::RuntimeMessageExt};
-use ambient_ecs::{components, query, EntityId, FnSystem, Resource, SystemGroup, World};
-use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, Cb};
+use ambient_ecs::{generated::messages, query, EntityId, FnSystem, SystemGroup, World};
+use ambient_native_std::asset_cache::AssetCache;
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
 mod implementation;
 mod network;
 
-components!("wasm::server", {
-    @[Resource]
-    pub build_wasm: Cb<dyn Fn(&mut World) + Send + Sync>,
-});
-
 pub fn initialize(
     world: &mut World,
     assets: &AssetCache,
-    project_path: AbsAssetUrl,
+    data_path: PathBuf,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
-    build_project: Option<Cb<dyn Fn(&mut World) + Send + Sync>>,
 ) -> anyhow::Result<()> {
-    init_components();
-
-    let data_path = match project_path.to_file_path().ok().flatten() {
-        Some(path) => Some(path.join("data")),
-        None => {
-            log::warn!("No data path for project at {project_path:?} (invalid local filepath)");
-            None
-        }
-    };
-
-    if let Some(build_project) = build_project {
-        world.add_component(world.resource_entity(), self::build_wasm(), build_project)?;
-    }
-
     shared::initialize(
         world,
         assets,
@@ -42,7 +22,7 @@ pub fn initialize(
             world_ref: Default::default(),
             id,
         },
-        data_path.as_deref(),
+        Some(data_path.as_ref()),
     )?;
 
     network::initialize(world);
@@ -62,7 +42,7 @@ pub fn systems() -> SystemGroup {
                     None => return,
                 };
                 for (a, b) in collisions.into_iter() {
-                    ambient_ecs::generated::messages::Collision::new(vec![a, b])
+                    messages::Collision::new(vec![a, b])
                         .run(world, None)
                         .unwrap();
                 }
@@ -79,7 +59,7 @@ pub fn systems() -> SystemGroup {
                     return;
                 }
 
-                ambient_ecs::generated::messages::ColliderLoads::new(collider_loads)
+                messages::ColliderLoads::new(collider_loads)
                     .run(world, None)
                     .unwrap();
             })),
@@ -102,7 +82,7 @@ pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
     SystemGroup::new(
         "core/wasm/server/on_shutdown_systems",
         vec![Box::new(FnSystem::new(move |world, _| {
-            let modules = query(()).incl(shared::module()).collect_ids(world, None);
+            let modules = query(()).incl(shared::is_module()).collect_ids(world, None);
             for module_id in modules {
                 shared::unload(world, module_id, "shutting down");
             }

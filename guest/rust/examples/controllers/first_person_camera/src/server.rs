@@ -1,32 +1,43 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        ecs::{children, parent},
-        physics::{
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        ecs::components::{children, parent},
+        physics::components::{
             character_controller_height, character_controller_radius, physics_controlled,
             plane_collider, sphere_collider,
         },
-        player::{player, user_id},
-        primitives::{cube, quad},
-        rendering::color,
-        transform::{local_to_parent, rotation, scale, translation},
+        player::components::{is_player, user_id},
+        primitives::{
+            components::{cube, quad},
+            concepts::make_sphere,
+        },
+        rendering::components::color,
+        transform::{
+            components::{local_to_parent, rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     prelude::*,
 };
+use packages::this::{
+    components::{ball_ref, player_head_ref, player_movement_direction, player_pitch, player_yaw},
+    messages::Input,
+};
 
-use components::{ball_ref, player_head_ref, player_movement_direction, player_pitch, player_yaw};
 use std::f32::consts::{PI, TAU};
 
 #[main]
 pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(quad())
+        .with(quad(), ())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(1., 0., 0., 1.))
-        .with_default(plane_collider())
+        .with(plane_collider(), ())
         .spawn();
 
     let ball = Entity::new()
@@ -36,25 +47,25 @@ pub fn main() {
         .with(translation(), vec3(5., 5., 1.))
         .spawn();
 
-    spawn_query((player(), user_id())).bind(move |players| {
+    spawn_query((is_player(), user_id())).bind(move |players| {
         for (id, (_, uid)) in players {
             let head = Entity::new()
                 .with_merge(make_perspective_infinite_reverse_camera())
                 .with(aspect_ratio_from_window(), EntityId::resources())
-                .with_default(main_scene())
+                .with(main_scene(), ())
                 .with(user_id(), uid)
                 .with(translation(), Vec3::Z * 2.)
                 .with(parent(), id)
-                .with_default(local_to_parent())
+                .with(local_to_parent(), Default::default())
                 .with(rotation(), Quat::from_rotation_x(PI / 2.))
                 .spawn();
             entity::add_components(
                 id,
                 Entity::new()
                     .with_merge(make_transformable())
-                    .with_default(cube())
-                    .with_default(physics_controlled())
-                    .with_default(player_movement_direction())
+                    .with(cube(), ())
+                    .with(physics_controlled(), ())
+                    .with(player_movement_direction(), Vec2::default())
                     .with(color(), Vec4::ONE)
                     .with(character_controller_height(), 2.)
                     .with(character_controller_radius(), 0.5)
@@ -67,7 +78,7 @@ pub fn main() {
         }
     });
 
-    messages::Input::subscribe(move |source, msg| {
+    Input::subscribe(move |source, msg| {
         let Some(player_id) = source.client_entity_id() else { return; };
 
         entity::set_component(player_id, player_movement_direction(), msg.direction);
@@ -87,7 +98,7 @@ pub fn main() {
         }
     });
 
-    query((player(), player_movement_direction(), rotation())).each_frame(move |players| {
+    query((is_player(), player_movement_direction(), rotation())).each_frame(move |players| {
         for (player_id, (_, direction, rot)) in players {
             let speed = 0.1;
 

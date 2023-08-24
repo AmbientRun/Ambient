@@ -1,7 +1,7 @@
-[ember]
+[package]
 id = "ambient_example_audio_ctrl"
-name = "Audio ctrl"
+name = "Audio control"
 version = "0.0.1"
-repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/slider"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/audio_ctrl"
 type = "Game"
-categories = ["Example"]
+content = { type = "Playable", example = true }

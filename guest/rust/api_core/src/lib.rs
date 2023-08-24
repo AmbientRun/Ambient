@@ -28,7 +28,7 @@ pub mod message;
 /// Player-specific functionality.
 pub mod player;
 
-/// Helpful imports that almost all Ambient projects will use.
+/// Helpful imports that almost all Ambient packages will use.
 pub mod prelude;
 
 /// Animation functions
@@ -39,7 +39,8 @@ mod internal;
 
 pub use ambient_api_macros::main;
 
-pub use internal::generated::*;
+use internal::generated::ambient_core;
+pub use internal::generated::ambient_core as core;
 
 #[allow(clippy::single_component_path_imports)]
 use once_cell;

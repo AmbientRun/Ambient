@@ -1,28 +1,42 @@
-
-[components."core::text"]
+[package]
+id = "text"
 name = "Text"
 description = "Text rendering."
+content = { type = "Asset", schema = true }
+version = "0.3.0-dev"
 
-[components."core::text::font_family"]
+[components.font_family]
 type = "String"
 name = "Font family"
 description = "Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::text::font_size"]
+[components.font_size]
 type = "F32"
 name = "Font size"
 description = "Size of the font."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::text::font_style"]
-type = "String"
+[components.font_style]
+type = "FontStyle"
 name = "Font style"
-description = "One of Bold, BoldItalic, Medium, MediumItalic, Regular, Italic, Light or LightItalic."
+description = "Style of the font."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::text::text"]
+[components.text]
 type = "String"
 name = "Text"
 description = "Create a text mesh on this entity."
 attributes = ["Debuggable", "Networked", "Store"]
+
+[enums.FontStyle]
+description = "Style of the font."
+[enums.FontStyle.members]
+Bold = "Use bold for this text."
+BoldItalic = "Use bold italic for this text."
+Medium = "Use medium for this text."
+MediumItalic = "Use medium italic for this text."
+Regular = "Use regular for this text."
+Italic = "Use italic for this text."
+Light = "Use light for this text."
+LightItalic = "Use light italic for this text."

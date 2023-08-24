@@ -5,13 +5,13 @@ use ambient_core::{
     asset_cache,
     async_ecs::async_run,
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
-    gpu_ecs::ENTITIES_BIND_GROUP,
     main_scene, mesh, runtime,
     transform::{local_to_world, mesh_to_world},
 };
-use ambient_ecs::generated::components::core::rendering::decal_from_url;
+use ambient_ecs::generated::rendering::components::decal_from_url;
 use ambient_ecs::{components, query, Entity, MakeDefault, Networked, Store, SystemGroup};
 use ambient_gpu::shader_module::{Shader, ShaderModule};
+use ambient_gpu_ecs::ENTITIES_BIND_GROUP;
 use ambient_meshes::UnitCubeMeshKey;
 use ambient_native_std::{
     asset_url::{AbsAssetUrl, MaterialAssetType, TypedAssetUrl},
@@ -120,8 +120,8 @@ pub fn client_systems() -> SystemGroup {
                                 )
                                 .with(mesh(), UnitCubeMeshKey.get(&assets))
                                 .with(primitives(), vec![])
-                                .with_default(gpu_primitives_mesh())
-                                .with_default(gpu_primitives_lod())
+                                .with(gpu_primitives_mesh(), Default::default())
+                                .with(gpu_primitives_lod(), Default::default())
                                 .with(main_scene(), ())
                                 .with(local_bounding_aabb(), aabb)
                                 .with(world_bounding_sphere(), aabb.to_sphere())
@@ -174,8 +174,8 @@ pub fn client_systems() -> SystemGroup {
                                 )
                                 .with(mesh(), UnitCubeMeshKey.get(&assets))
                                 .with(primitives(), vec![])
-                                .with_default(gpu_primitives_mesh())
-                                .with_default(gpu_primitives_lod())
+                                .with(gpu_primitives_mesh(), Default::default())
+                                .with(gpu_primitives_lod(), Default::default())
                                 .with(main_scene(), ())
                                 .with(local_bounding_aabb(), aabb)
                                 .with(world_bounding_sphere(), aabb.to_sphere())

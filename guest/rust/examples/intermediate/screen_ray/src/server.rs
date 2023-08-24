@@ -1,31 +1,31 @@
 use ambient_api::{
-    components::core::{
-        physics::plane_collider,
-        primitives::{cube, quad},
-        transform::translation,
+    core::{
+        physics::components::plane_collider,
+        primitives::components::{cube, quad},
+        transform::{components::translation, concepts::make_transformable},
     },
-    concepts::make_transformable,
     prelude::*,
 };
+use packages::this::messages::{Input, WorldPosition};
 
 #[main]
 pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(quad())
-        .with_default(plane_collider())
+        .with(quad(), ())
+        .with(plane_collider(), ())
         .spawn();
 
     let cube_id = Entity::new()
         .with_merge(make_transformable())
-        .with_default(cube())
+        .with(cube(), ())
         .spawn();
 
-    messages::Input::subscribe(move |_source, msg| {
+    Input::subscribe(move |_source, msg| {
         if let Some(hit) = physics::raycast_first(msg.ray_origin, msg.ray_dir) {
             // Set position of cube to the raycast hit position
             entity::set_component(cube_id, translation(), hit.position);
-            messages::WorldPosition::new(hit.position).send_client_broadcast_unreliable();
+            WorldPosition::new(hit.position).send_client_broadcast_unreliable();
         }
     });
 }

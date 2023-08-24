@@ -3,7 +3,10 @@
 use ambient_cb::{cb, Cb};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
-    components::layout::{align_vertical_center, space_between_items},
+    core::layout::{
+        components::{align_vertical, space_between_items},
+        types::Align,
+    },
     ecs::World,
 };
 
@@ -121,8 +124,8 @@ pub fn Prompt(
                     Element::new()
                 },
             ])
-            .with(space_between_items(), STREET)
-            .with_default(align_vertical_center()),
+            .with(align_vertical(), Align::Center)
+            .with(space_between_items(), STREET),
         ])
         .with(space_between_items(), STREET),
     )
@@ -220,8 +223,8 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>
                 },
             ])
             .el()
-            .with(space_between_items(), STREET)
-            .with_default(align_vertical_center()),
+            .with(align_vertical(), Align::Center)
+            .with(space_between_items(), STREET),
         ])
         .with(space_between_items(), STREET),
     ))

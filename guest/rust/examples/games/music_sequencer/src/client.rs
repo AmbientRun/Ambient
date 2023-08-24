@@ -1,20 +1,21 @@
 use std::time::Duration;
 
 use ambient_api::{
-    components::core::{
-        app::name,
-        layout::{
-            fit_horizontal_children, fit_vertical_children, height, space_between_items, width,
-        },
+    core::{
+        app::components::name,
+        layout::components::{fit_horizontal, fit_vertical, height, space_between_items, width},
+        messages::Frame,
     },
     entity::synchronized_resources,
     global::game_time,
-    messages::Frame,
     prelude::*,
+};
+use packages::this::{
+    components::{bpm, track, track_audio_url, track_note_selection},
+    messages::{Click, SetBpm},
 };
 
 mod common;
-use components::bpm;
 
 #[main]
 pub fn main() {
@@ -41,7 +42,7 @@ pub fn main() {
 
 #[element_component]
 fn App(hooks: &mut Hooks, cursor: usize) -> Element {
-    let mut tracks = hooks.use_query((components::track(), components::track_note_selection()));
+    let mut tracks = hooks.use_query((track(), track_note_selection()));
     tracks.sort_by_key(|t| t.1 .0);
 
     FocusRoot::el([FlowColumn::el(
@@ -50,7 +51,7 @@ fn App(hooks: &mut Hooks, cursor: usize) -> Element {
                 value: entity::get_component(synchronized_resources(), bpm()).unwrap_or_default()
                     as i32,
                 on_change: Some(cb(|new_bpm| {
-                    messages::SetBpm::new(new_bpm as u32).send_server_reliable()
+                    SetBpm::new(new_bpm as u32).send_server_reliable()
                 })),
                 min: 30,
                 max: 300,
@@ -77,10 +78,8 @@ fn Track(
 ) -> Element {
     let track_name = entity::get_component(track_id, name()).unwrap_or_default();
 
-    let (sound, _) = hooks.use_state_with(|_| {
-        let url = entity::get_component(track_id, components::track_audio_url()).unwrap();
-        asset::url(url).unwrap()
-    });
+    let (sound, _) =
+        hooks.use_state_with(|_| entity::get_component(track_id, track_audio_url()).unwrap());
 
     let (audio_player, _) = hooks.use_state(audio::AudioPlayer::new());
 
@@ -101,15 +100,15 @@ fn Track(
                 .map(|(index, &selected_hue)| {
                     let is_on_cursor = cursor == index;
                     Button::new(Note::el(selected_hue, is_on_cursor), move |_| {
-                        messages::Click::new(index as u32, track_id).send_server_reliable();
+                        Click::new(track_id, index as u32).send_server_reliable();
                     })
                     .style(ButtonStyle::Card)
                     .el()
                 }),
         )
         .with_background(vec4(0.1, 0.1, 0.1, 1.))
-        .with_default(fit_vertical_children())
-        .with_default(fit_horizontal_children())
+        .with(fit_vertical(), Fit::Children)
+        .with(fit_horizontal(), Fit::Children)
         .with_padding_even(10.)
         .with(space_between_items(), 2.),
     ])

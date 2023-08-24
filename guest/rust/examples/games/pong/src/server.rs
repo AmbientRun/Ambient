@@ -1,28 +1,32 @@
 use std::f32::consts::PI;
 
 use ambient_api::{
-    components::core::{
-        physics::linear_velocity,
-        player::{player, user_id},
-        primitives::cube,
-        rendering,
-        transform::*,
+    core::{
+        messages::Frame,
+        physics::components::linear_velocity,
+        player::components::{is_player, user_id},
+        primitives::{components::cube, concepts::make_sphere},
+        rendering::components::color,
+        transform::{components::*, concepts::make_transformable},
     },
-    concepts::{make_sphere, make_transformable},
     prelude::*,
 };
-use components::{player_movement_direction, track_audio_url};
+use packages::this::{
+    assets,
+    components::{player_movement_direction, track_audio_url},
+    messages::{Input, Ping},
+};
 
 mod constants;
 use constants::*;
 
-fn spawn_paddle(left: bool, color: Vec3) -> EntityId {
+fn spawn_paddle(left: bool, paddle_color: Vec3) -> EntityId {
     let x = X_BOUNDARY + PADDLE_WIDTH / 2.;
     make_transformable()
-        .with_default(cube())
+        .with(cube(), ())
         .with(scale(), vec3(PADDLE_WIDTH, PADDLE_LENGTH, 1.))
         .with(translation(), vec3(if left { -x } else { x }, 0., 0.))
-        .with(rendering::color(), color.extend(1.))
+        .with(color(), paddle_color.extend(1.))
         .spawn()
 }
 
@@ -38,15 +42,15 @@ fn gen_ball_velocity() -> Vec3 {
 
 #[main]
 pub fn main() {
-    let bgm_url = asset::url("assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg").unwrap();
+    let bgm_url = assets::url("Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg");
 
     entity::add_component(entity::synchronized_resources(), track_audio_url(), bgm_url);
     // Spawn field, paddles and ball
     make_transformable()
-        .with_default(cube())
+        .with(cube(), ())
         .with(scale(), vec3(X_BOUNDARY * 2., Y_BOUNDARY * 2., 1.))
         .with(translation(), vec3(0., 0., 1.))
-        .with(rendering::color(), vec4(1., 1., 1., 1.))
+        .with(color(), vec4(1., 1., 1., 1.))
         .spawn();
     let paddles = [
         spawn_paddle(true, vec3(255., 0., 0.)),
@@ -56,11 +60,11 @@ pub fn main() {
         .with_merge(make_sphere())
         .with(scale(), vec3(BALL_RADIUS, BALL_RADIUS, 1.))
         .with(translation(), vec3(0., 0., -1.))
-        .with(rendering::color(), vec4(255., 255., 255., 1.))
+        .with(color(), vec4(255., 255., 255., 1.))
         .spawn();
 
     // When a player spawns, create a camera and other components for them
-    spawn_query(player()).bind(move |players| {
+    spawn_query(is_player()).bind(move |players| {
         for (player, _) in players {
             entity::add_component(player, player_movement_direction(), 0.0);
         }
@@ -68,7 +72,7 @@ pub fn main() {
 
     // When a player despawns, clean up their objects
     let player_objects_query = query(user_id()).build();
-    despawn_query(user_id()).requires(player()).bind({
+    despawn_query(user_id()).requires(is_player()).bind({
         move |players| {
             let player_objects = player_objects_query.evaluate();
             for (_, player_user_id) in &players {
@@ -89,21 +93,21 @@ pub fn main() {
             entity::set_component(id, translation(), new_position);
             if new_position.y.abs() > Y_BOUNDARY - BALL_RADIUS / 2. {
                 // bounce from top and bottom "walls"
-                messages::Ping::new().send_client_broadcast_reliable();
+                Ping::new().send_client_broadcast_reliable();
                 let new_velocity = vec3(velocity.x, -velocity.y, velocity.z);
                 entity::set_component(id, linear_velocity(), new_velocity);
             }
         }
     });
 
-    messages::Input::subscribe(|source, msg| {
+    Input::subscribe(|source, msg| {
         let Some(player_id) = source.client_entity_id() else { return; };
 
         entity::set_component(player_id, player_movement_direction(), msg.direction);
     });
 
-    ambient_api::messages::Frame::subscribe(move |_| {
-        let players = entity::get_all(player());
+    Frame::subscribe(move |_| {
+        let players = entity::get_all(is_player());
 
         // start the ball if we have 2 players and ball has no velocity
         if players.len() >= 2 && entity::get_component(ball, linear_velocity()).is_none() {
@@ -134,7 +138,7 @@ pub fn main() {
                         < PADDLE_LENGTH / 2. + BALL_RADIUS / 2.
                     {
                         // bounce from the paddle
-                        messages::Ping::new().send_client_broadcast_reliable();
+                        Ping::new().send_client_broadcast_reliable();
                         // accelerate a bit
                         let new_v_len = (velocity.x.powi(2) + velocity.y.powi(2)).sqrt()
                             * (1. + BALL_ACCELERATION);

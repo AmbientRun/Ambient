@@ -1,7 +1,9 @@
 use ambient_network::server;
 use ambient_rpc::RpcRegistry;
 
+pub mod certs;
 pub mod components;
+pub mod package;
 
 pub fn create_server_rpc_registry() -> RpcRegistry<server::RpcArgs> {
     let mut reg = RpcRegistry::new();

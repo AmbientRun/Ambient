@@ -1,5 +1,8 @@
-use ambient_api::{components::core::layout::space_between_items, prelude::*};
-use components::{todo_item, todo_time};
+use ambient_api::{core::layout::components::space_between_items, prelude::*};
+use packages::this::{
+    components::{todo_item, todo_time},
+    messages::{DeleteItem, NewItem},
+};
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
@@ -19,7 +22,7 @@ fn NewTodoItem(hooks: &mut Hooks) -> Element {
             .auto_focus()
             .el(),
         Button::new("Create", move |_| {
-            messages::NewItem::new(text.clone()).send_server_reliable();
+            NewItem::new(text.clone()).send_server_reliable();
             set_text(String::new());
         })
         .disabled(text_is_empty)
@@ -35,7 +38,7 @@ fn TodoItems(hooks: &mut Hooks) -> Element {
     FlowColumn::el(items.into_iter().map(|(id, (description, _))| {
         FlowRow::el([
             Button::new(COLLECTION_DELETE_ICON, move |_| {
-                messages::DeleteItem::new(id).send_server_reliable()
+                DeleteItem::new(id).send_server_reliable()
             })
             .style(ButtonStyle::Flat)
             .el(),

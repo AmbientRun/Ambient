@@ -1,10 +1,11 @@
 use ambient_api::{
-    components::core::{
-        audio::{amplitude, panning, stop_now},
-        layout::space_between_items,
+    core::{
+        audio::components::{amplitude, panning, stop_now},
+        layout::components::space_between_items,
     },
     prelude::*,
 };
+use packages::this::assets;
 
 #[element_component]
 fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
@@ -71,11 +72,11 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
         Button::new("play sound", {
             let set_sound = set_sound.clone();
             move |_| {
-                let id = audio_player.play(asset::url("assets/amen_break.wav").unwrap());
+                let id = audio_player.play(assets::url("amen_break.wav"));
                 // mono ogg
                 // let id = audio_player.play(
-                //     asset::url("assets/455516__ispeakwaves__the-plan-upbeat-loop-no-voice-edit-mono-track.ogg"
-                // ).unwrap());
+                //     assets::url("455516__ispeakwaves__the-plan-upbeat-loop-no-voice-edit-mono-track.ogg")
+                // );
                 set_sound(Some(id));
             }
         })

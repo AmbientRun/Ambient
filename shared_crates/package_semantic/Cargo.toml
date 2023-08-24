@@ -1,0 +1,30 @@
+[package]
+name = "ambient_package_semantic"
+edition = "2021"
+description = "Semantic analysis for the Ambient package manifests"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+ambient_package = { path = "../package" , version = "0.3.0-dev" }
+ambient_shared_types = { path = "../shared_types" , version = "0.3.0-dev" }
+ambient_schema = { path = "../schema" , version = "0.3.0-dev" }
+ambient_std = { path = "../std" , version = "0.3.0-dev" }
+
+anyhow = { workspace = true }
+ulid = { workspace = true }
+glam = { workspace = true }
+toml = { workspace = true }
+thiserror = { workspace = true }
+paste = { workspace = true }
+data-encoding = { workspace = true }
+indexmap = { workspace = true }
+async-trait = { workspace = true }
+async-recursion = { workspace = true }
+url = { workspace = true }
+reqwest = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }

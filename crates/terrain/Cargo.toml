@@ -13,6 +13,7 @@ ambient_app = { path = "../app" }
 ambient_native_std = { path = "../native_std" }
 ambient_ecs = { path = "../ecs" }
 ambient_gpu = { path = "../gpu" }
+ambient_gpu_ecs = { path = "../gpu_ecs" }
 ambient_core = { path = "../core" }
 ambient_meshes = { path = "../meshes" }
 ambient_element = { path = "../../shared_crates/element" }

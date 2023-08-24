@@ -1,33 +1,39 @@
 use ambient_api::{
     animation::{self, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
-    components::core::{
-        animation::apply_animation_player,
-        app::{main_scene, name},
-        camera::aspect_ratio_from_window,
-        layout::space_between_items,
-        model::model_loaded,
-        prefab::prefab_from_url,
-        primitives::quad,
-        rendering::color,
-        transform::{local_to_parent, lookat_target, reset_scale, scale, translation},
+    core::{
+        animation::components::apply_animation_player,
+        app::components::{main_scene, name},
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        layout::components::space_between_items,
+        model::components::model_loaded,
+        prefab::components::prefab_from_url,
+        primitives::{components::quad, concepts::make_sphere},
+        rendering::components::color,
+        transform::{
+            components::{local_to_parent, lookat_target, reset_scale, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     prelude::*,
 };
+use packages::this::assets;
 
 #[main]
 pub async fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(translation(), vec3(2., 2., 3.0))
         .with(lookat_target(), vec3(0., 0., 1.))
         .spawn();
 
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(quad())
+        .with(quad(), ())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(0.5, 0.5, 0.5, 1.))
         .with(name(), "Floor".to_string())
@@ -35,19 +41,14 @@ pub async fn main() {
 
     let unit_id = Entity::new()
         .with_merge(make_transformable())
-        .with(
-            prefab_from_url(),
-            asset::url("assets/Peasant Man.fbx").unwrap(),
-        )
+        .with(prefab_from_url(), assets::url("Peasant Man.fbx"))
         .with(name(), "Peasant".to_string())
         .spawn();
 
-    let capoeira = PlayClipFromUrlNode::new(
-        asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
-    );
-    let robot = PlayClipFromUrlNode::new(
-        asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
-    );
+    let capoeira = PlayClipFromUrlNode::new(assets::url("Capoeira.fbx/animations/mixamo.com.anim"));
+    let robot = PlayClipFromUrlNode::new(assets::url(
+        "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+    ));
     let blend = BlendNode::new(&capoeira, &robot, 0.);
     let anim_player = AnimationPlayer::new(&blend);
     entity::add_component(unit_id, apply_animation_player(), anim_player.0);
@@ -63,8 +64,8 @@ pub async fn main() {
         .with_merge(make_sphere())
         .with(scale(), vec3(0.3, 0.3, 0.3))
         .with(color(), vec4(0.0, 1.0, 0.0, 1.0))
-        .with_default(local_to_parent())
-        .with_default(reset_scale())
+        .with(local_to_parent(), Default::default())
+        .with(reset_scale(), ())
         .spawn();
     entity::add_child(left_foot, ball);
 
@@ -125,10 +126,9 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
         ]),
         FlowRow::el([
             Button::new("Play single animation", move |_| {
-                let robot = PlayClipFromUrlNode::new(
-                    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
-                        .unwrap(),
-                );
+                let robot = PlayClipFromUrlNode::new(assets::url(
+                    "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                ));
                 robot.looping(false);
                 anim_player.play(robot);
             })
@@ -138,10 +138,9 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
             })
             .el(),
             Button::new("Freeze animation", move |_| {
-                let robot = PlayClipFromUrlNode::new(
-                    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
-                        .unwrap(),
-                );
+                let robot = PlayClipFromUrlNode::new(assets::url(
+                    "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                ));
                 robot.looping(false);
                 robot.freeze_at_percentage(0.5);
                 anim_player.play(robot);

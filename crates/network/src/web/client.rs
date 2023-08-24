@@ -29,7 +29,7 @@ use crate::{
         ClientRequest,
     },
     server::RpcArgs,
-    stream::{FramedRecvStream, FramedSendStream},
+    stream::{FramedRecvStream, FramedSendStream, RawFramedRecvStream},
     web::WebTransportProxy,
     webtransport::Connection,
     NetworkError,
@@ -297,7 +297,7 @@ async fn handle_connection(
     }
 
     tracing::info!("Accepting diff stream");
-    let mut diff_stream = FramedRecvStream::new(
+    let mut diff_stream = RawFramedRecvStream::new(
         conn.accept_uni()
             .await
             .ok_or(NetworkError::ConnectionClosed)??,

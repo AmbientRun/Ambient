@@ -5,10 +5,13 @@ use ambient_color::Color;
 use ambient_element::{
     element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
 };
-use ambient_guest_bridge::{
-    components::layout::{
-        fit_horizontal_none, fit_horizontal_parent, fit_vertical_parent, height, margin, min_width,
-        padding, space_between_items, width,
+use ambient_guest_bridge::core::{
+    layout::{
+        components::{
+            fit_horizontal, fit_vertical, height, margin, min_width, padding, space_between_items,
+            width,
+        },
+        types::Fit,
     },
     messages,
 };
@@ -253,7 +256,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                     .collect(),
             )
             .el()
-            .with_default(fit_horizontal_parent()),
+            .with(fit_horizontal(), Fit::Parent),
             if let Some(on_change) = on_change {
                 if let Some(add_presets) = add_presets {
                     Dropdown {
@@ -286,7 +289,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                         )
                         .el()
                         .with_background(Color::rgba(0.05, 0.05, 0.05, 1.).into())
-                        .with_default(fit_horizontal_none())
+                        .with(fit_horizontal(), Fit::None)
                         .with(width(), 400.),
                         show: add_action,
                     }
@@ -355,7 +358,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
             UIBase
                 .el()
                 .with(width(), 5.)
-                .with_default(fit_vertical_parent())
+                .with(fit_vertical(), Fit::Parent)
                 .with_background(
                     if focused {
                         Color::rgba(0.0, 1., 0., 1.)
@@ -365,7 +368,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                     .into(),
                 )
                 .with(margin(), vec4(0., 5., 0., 0.)),
-            item_editor.0(value, on_change, item_opts).with_default(fit_horizontal_parent()),
+            item_editor.0(value, on_change, item_opts).with(fit_horizontal(), Fit::Parent),
         ])
         .el()
         .with_clickarea()
@@ -374,7 +377,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         })
         .el()
         .with(padding(), vec4(STREET, 0., STREET, 0.))
-        .with_default(fit_horizontal_parent())
+        .with(fit_horizontal(), Fit::Parent)
     }
 }
 

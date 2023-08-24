@@ -1,3 +1,5 @@
+use std::process::ExitCode;
+
 use campfire::{
     cli::Cli,
     doc, example, golden_images, install, release,
@@ -5,8 +7,7 @@ use campfire::{
 };
 use clap::Parser;
 
-#[tokio::main(flavor = "current_thread")]
-async fn main() -> anyhow::Result<()> {
+async fn run() -> anyhow::Result<()> {
     if !std::path::Path::new("shared_crates/schema/src/ambient.toml").exists() {
         anyhow::bail!("ambient.toml not found. Please run this from the root of the Ambient repository (preferably using `cargo campfire`).");
     }
@@ -25,5 +26,20 @@ async fn main() -> anyhow::Result<()> {
         Cli::Clean => example::clean(),
         Cli::Run(run) => example::run(&run),
         Cli::Web(command) => web::run(command).await,
+    }
+}
+
+fn main() -> ExitCode {
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+
+    match rt.block_on(run()) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(err) => {
+            log::error!("{:?}", err);
+            ExitCode::FAILURE
+        }
     }
 }

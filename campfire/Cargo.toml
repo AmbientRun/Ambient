@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-anyhow = { workspace = true }
+anyhow = { version = "1.0", features = [] }
 clap = { workspace = true, features = ["derive"] }
 log = { workspace = true }
 serde = { workspace = true }
@@ -43,5 +43,5 @@ nix = "0.26"
 openssl = { version = "0.10", optional = true }
 
 [features]
-default = ["openssl", "serve"]
+default = ["serve"]
 serve = ["dep:notify", "dep:flume", "walkdir", "notify-debouncer-full"]

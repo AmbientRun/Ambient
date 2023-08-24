@@ -15,12 +15,12 @@ See [asset pipeline](./asset_pipeline.md) for more details.
 
 ## Spawning a model
 
-The model can then be spawned using `prefab_from_url`, assuming that `output_prefabs` is enabled in your `assets/pipeline.toml` file (it is enabled by default).
+The model can then be spawned using `prefab_from_url`, assuming that `output_prefabs` is enabled in your `assets/pipeline.toml` file (it is enabled by default). Assuming your package is named `my_package`:
 
 ```rust
 Entity::new()
     .with_merge(make_transformable())
-    .with(prefab_from_url(), asset::url("assets/MyModel.fbx").unwrap())
+    .with(prefab_from_url(), packages::my_package::assets::url("MyModel.fbx"))
     .spawn();
 ```
 
@@ -45,7 +45,7 @@ You can get individual bones of a loaded model using the `animation::get_bone_by
 ```rust
 let unit_id = Entity::new()
     .with_merge(make_transformable())
-    .with(prefab_from_url(), asset::url("assets/MyModel.fbx").unwrap())
+    .with(prefab_from_url(), packages::my_package::assets::url("MyModel.fbx"))
     .spawn();
 let left_foot = animation::get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
 entity::set_component(left_foot, rotation(), Quat::from_rotation_x(0.3));

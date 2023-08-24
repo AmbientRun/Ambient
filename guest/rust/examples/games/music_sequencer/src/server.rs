@@ -1,9 +1,15 @@
-use ambient_api::{components::core::app::name, entity::synchronized_resources, prelude::*};
-use components::{bpm, next_player_hue, player_hue, track, track_audio_url, track_note_selection};
-
 use ambient_api::{
-    components::core::player::{player, user_id},
-    entity::resources,
+    core::{
+        app::components::name,
+        player::components::{is_player, user_id},
+    },
+    entity::{resources, synchronized_resources},
+    prelude::*,
+};
+use packages::this::{
+    assets,
+    components::{bpm, next_player_hue, player_hue, track, track_audio_url, track_note_selection},
+    messages::{Click, SetBpm},
 };
 
 mod common;
@@ -30,14 +36,14 @@ pub async fn main() {
         Entity::new()
             .with(name(), track_name.to_string())
             .with(track(), idx as u32)
-            .with(track_audio_url(), track_url.to_string())
+            .with(track_audio_url(), assets::url(track_url))
             .with(track_note_selection(), vec![0; common::NOTE_COUNT])
             .spawn();
     }
 
     // When a player spawns, give them a color.
     spawn_query(user_id())
-        .requires(player())
+        .requires(is_player())
         .bind(move |players| {
             for (player, _player_user_id) in players {
                 let mut h = entity::get_component(resources(), next_player_hue()).unwrap();
@@ -48,12 +54,12 @@ pub async fn main() {
         });
 
     // When a player requests a BPM change, update it.
-    messages::SetBpm::subscribe(|_source, data| {
+    SetBpm::subscribe(|_source, data| {
         entity::set_component(synchronized_resources(), bpm(), data.bpm);
     });
 
     // When a player clicks on a note, toggle it.
-    messages::Click::subscribe(move |source, data| {
+    Click::subscribe(move |source, data| {
         let id = source.client_entity_id().unwrap();
         let color_to_set = entity::get_component(id, player_hue()).unwrap();
 

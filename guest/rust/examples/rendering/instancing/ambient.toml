@@ -1,8 +1,9 @@
-[ember]
+[package]
 id = "ambient_example_instancing"
 name = "Instancing"
 description = "This show how to render many objects with a single draw call."
 version = "0.0.1"
+content = { type = "Playable", example = true }
 
 [components]
 instance_index = { type = "Uvec3", name = "Instance Index" }

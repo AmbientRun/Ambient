@@ -1,0 +1,9 @@
+[package]
+id = "ambient_example_dependencies"
+name = "dependencies"
+version = "0.0.1"
+content = { type = "Playable", example = true }
+
+[dependencies]
+deps_assets = { path = "deps/assets" }
+deps_code = { path = "deps/code" }
