@@ -187,7 +187,7 @@ fn run_client_and_server(
     host: &cli::HostCli,
     run: &cli::RunCli,
     view_asset_path: Option<PathBuf>,
-) -> Result<(), anyhow::Error> {
+) -> anyhow::Result<()> {
     let server_addr = rt.block_on(run_server(
         &assets,
         release_build,
