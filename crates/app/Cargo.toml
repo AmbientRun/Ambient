@@ -30,7 +30,6 @@ ambient_element = { path = "../../shared_crates/element" , version = "0.3.0-dev"
 winit = { workspace = true }
 flume = { workspace = true }
 glam = { workspace = true }
-tokio = { workspace = true }
 profiling = { workspace = true }
 anyhow = { workspace = true }
 wgpu = { workspace = true }

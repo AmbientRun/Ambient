@@ -27,7 +27,6 @@ derivative = { workspace = true }
 tracing = { workspace = true }
 profiling = { workspace = true }
 atomic_refcell = { workspace = true }
-futures = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }

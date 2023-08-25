@@ -29,14 +29,12 @@ rustls-native-certs = { workspace = true, optional = true }
 
 url = { workspace = true }
 itertools = { workspace = true }
-dashmap = { workspace = true }
 serde = { workspace = true }
 futures = { workspace = true }
 rand = { workspace = true }
 thiserror = { workspace = true }
 bincode = { workspace = true }
 glam = { workspace = true }
-winit = { workspace = true }
 profiling = { workspace = true }
 log = { workspace = true }
 bytes = { workspace = true }
@@ -44,12 +42,8 @@ parking_lot = { workspace = true }
 wgpu = { workspace = true }
 flume = { workspace = true }
 anyhow = { workspace = true }
-manual_future = { workspace = true }
 tracing = { workspace = true }
-once_cell = { workspace = true }
-byteorder = { workspace = true }
 colored = { workspace = true }
-enum_dispatch = { workspace = true }
 pin-project = { workspace = true }
 uuid = { workspace = true }
 scopeguard = { workspace = true }

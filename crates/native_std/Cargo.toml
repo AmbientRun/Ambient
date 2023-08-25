@@ -23,8 +23,6 @@ ulid = { workspace = true }
 mikktspace = { workspace = true }
 git-version = { workspace = true }
 
-wgpu = { workspace = true, optional = true }
-
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 serde_path_to_error = { workspace = true, optional = true }
@@ -33,25 +31,17 @@ glam = { workspace = true, optional = true }
 ordered-float = { workspace = true, optional = true }
 rand = { workspace = true, optional = true }
 tokio = { workspace = true, optional = true, features = ["sync"] }
-as-any = { workspace = true, optional = true }
 async-trait = { workspace = true, optional = true }
 futures = { workspace = true, optional = true }
-itertools = { workspace = true, optional = true }
 bytemuck = { workspace = true, optional = true }
 log = { workspace = true, optional = true }
 reqwest = { workspace = true, optional = true }
 thiserror = { workspace = true, optional = true }
-yaml-rust = { workspace = true, optional = true }
 sentry-anyhow = { workspace = true, optional = true }
-parking_lot = { workspace = true, optional = true }
-profiling = { workspace = true, optional = true }
 ring = { workspace = true, optional = true }
 data-encoding = { workspace = true, optional = true }
-chrono = { workspace = true, optional = true }
 bincode = { workspace = true, optional = true }
 convert_case = { workspace = true, optional = true }
-once_cell = { workspace = true, optional = true }
-pin-project = { workspace = true, optional = true }
 url = { workspace = true, optional = true }
 relative-path = { workspace = true, optional = true }
 toml = { workspace = true, optional = true }
@@ -65,7 +55,6 @@ default = ["all"]
 all = ["uncategorized"]
 uncategorized = [
     "dep:ambient_asset_cache",
-    "dep:wgpu",
     "dep:serde",
     "dep:serde_json",
     "dep:serde_path_to_error",
@@ -73,24 +62,17 @@ uncategorized = [
     "dep:ordered-float",
     "dep:rand",
     "dep:tokio",
-    "dep:as-any",
     "dep:async-trait",
     "dep:futures",
-    "dep:itertools",
     "dep:bytemuck",
     "dep:log",
     "dep:reqwest",
     "dep:thiserror",
     "dep:sentry-anyhow",
-    "dep:parking_lot",
-    "dep:profiling",
     "dep:ring",
     "dep:data-encoding",
-    "dep:chrono",
     "dep:bincode",
     "dep:convert_case",
-    "dep:once_cell",
-    "dep:pin-project",
     "dep:url",
     "dep:relative-path",
     "dep:toml",

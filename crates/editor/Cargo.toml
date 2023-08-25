@@ -8,7 +8,6 @@ edition = "2021"
 
 [dependencies]
 ambient_sys = { path = "../sys" }
-ambient_app = { path = "../app" }
 ambient_meshes = { path = "../meshes" }
 ambient_core = { path = "../core" }
 ambient_ui_native = { path = "../ui_native" }
@@ -17,15 +16,11 @@ ambient_network = { path = "../network" }
 ambient_native_std = { path = "../native_std" }
 ambient_gpu = { path = "../gpu" }
 ambient_renderer = { path = "../renderer" }
-ambient_input = { path = "../input" }
 ambient_rpc = { path = "../rpc" }
 ambient_intent = { path = "../intent" }
 ambient_ecs_editor = { path = "../ecs_editor" }
 ambient_physics = { path = "../physics" }
 ambient_primitives = { path = "../primitives" }
-ambient_model = { path = "../model" }
-ambient_animation = { path = "../animation" }
-ambient_cameras = { path = "../cameras" }
 ambient_prefab = { path = "../prefab" }
 ambient_decals = { path = "../decals" }
 ambient_world_audio = { path = "../world_audio" }
@@ -49,19 +44,11 @@ log = { workspace = true }
 profiling = { workspace = true }
 closure = { workspace = true }
 wgpu = { workspace = true }
-winit = { workspace = true }
 bytemuck = { workspace = true }
 image = { workspace = true }
 bitflags = { workspace = true }
 tracing = { workspace = true }
-futures = { workspace = true }
-open = { workspace = true }
-arboard = { workspace = true }
-which = { workspace = true }
 parking_lot = { workspace = true }
-chrono = { workspace = true }
-env_logger = { workspace = true }
-indexmap = { workspace = true }
 futures-signals = { workspace = true }
 derive_more = { workspace = true }
 

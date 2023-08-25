@@ -31,11 +31,9 @@ itertools = { workspace = true }
 futures = { workspace = true }
 parking_lot = { workspace = true }
 serde = { workspace = true }
-serde_json = { workspace = true }
 rand = { workspace = true }
 indexmap = { workspace = true }
 convert_case = { workspace = true }
-tracing = { workspace = true }
 
 [features]
 native = [

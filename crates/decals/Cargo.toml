@@ -11,7 +11,6 @@ repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 ambient_asset_cache = { path = "../asset_cache" , version = "0.3.0-dev" }
-ambient_ui_native = { path = "../ui_native" , version = "0.3.0-dev" }
 ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
 ambient_renderer = { path = "../renderer" , version = "0.3.0-dev" }
 ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
