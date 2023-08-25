@@ -101,7 +101,9 @@ pub fn main() {
     });
 
     Input::subscribe(|source, msg| {
-        let Some(player_id) = source.client_entity_id() else { return; };
+        let Some(player_id) = source.client_entity_id() else {
+            return;
+        };
 
         entity::set_component(player_id, player_movement_direction(), msg.direction);
     });
@@ -117,8 +119,12 @@ pub fn main() {
         // handle players' input
         for (i, player) in players.into_iter().enumerate() {
             let paddle = paddles[i % 2];
-            let Some(direction) = entity::get_component(player, player_movement_direction()) else { continue; };
-            let Some(mut paddle_position) = entity::get_component(paddle, translation()) else { continue; };
+            let Some(direction) = entity::get_component(player, player_movement_direction()) else {
+                continue;
+            };
+            let Some(mut paddle_position) = entity::get_component(paddle, translation()) else {
+                continue;
+            };
 
             paddle_position.y += direction * PADDLE_V_PER_FRAME;
             paddle_position.y = paddle_position.y.clamp(

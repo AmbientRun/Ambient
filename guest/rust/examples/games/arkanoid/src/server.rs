@@ -139,7 +139,9 @@ pub fn main() {
     });
 
     Input::subscribe(move |source, msg| {
-        let Some(player_id) = source.client_entity_id() else { return; };
+        let Some(player_id) = source.client_entity_id() else {
+            return;
+        };
 
         entity::set_component(player_id, player_movement_direction(), msg.direction);
 
@@ -156,8 +158,12 @@ pub fn main() {
 
         // handle players' input
         for (_i, player) in players.into_iter().enumerate() {
-            let Some(direction) = entity::get_component(player, player_movement_direction()) else { continue; };
-            let Some(mut paddle_position) = entity::get_component(paddle, translation()) else { continue; };
+            let Some(direction) = entity::get_component(player, player_movement_direction()) else {
+                continue;
+            };
+            let Some(mut paddle_position) = entity::get_component(paddle, translation()) else {
+                continue;
+            };
 
             paddle_position.x += direction * PADDLE_V_PER_FRAME;
             paddle_position.x = paddle_position
@@ -167,7 +173,9 @@ pub fn main() {
 
             if entity::get_component(ball, linear_velocity()).is_none() {
                 // move the ball with the paddle
-                let Some(mut ball_position) = entity::get_component(ball, translation()) else { continue; };
+                let Some(mut ball_position) = entity::get_component(ball, translation()) else {
+                    continue;
+                };
                 ball_position.x = paddle_position.x;
                 entity::set_component(ball, translation(), ball_position);
             }

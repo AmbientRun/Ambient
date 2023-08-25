@@ -298,8 +298,14 @@ async fn process_file_requests(
                 let requests = asset_requests_from_file_path(&package_id, &path, file_path).await?;
                 let count = requests.len();
                 for (idx, request) in requests.into_iter().enumerate() {
-                    let Some(content) = request.contents.first() else { unreachable!() };
-                    let Some(ContentDescription::Chunk(chunk)) = content.content_description.as_ref() else { unreachable!() };
+                    let Some(content) = request.contents.first() else {
+                        unreachable!()
+                    };
+                    let Some(ContentDescription::Chunk(chunk)) =
+                        content.content_description.as_ref()
+                    else {
+                        unreachable!()
+                    };
                     log::debug!(
                         "Deploying asset chunk {}/{} {} {}B/{}B",
                         idx + 1,

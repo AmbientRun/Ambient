@@ -7,7 +7,10 @@ use crate::Context;
 pub fn generate(context: Context, _items: &ItemMap, scope: &Scope) -> anyhow::Result<TokenStream> {
     let Some(api_path) = (context == Context::GuestUser)
         .then_some(())
-        .and_then(|_| context.guest_api_path()) else { return Ok(quote!{}) };
+        .and_then(|_| context.guest_api_path())
+    else {
+        return Ok(quote! {});
+    };
 
     let package_id = scope.data.id.to_string();
     if package_id.is_empty() {

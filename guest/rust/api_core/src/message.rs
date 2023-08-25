@@ -48,8 +48,12 @@ impl Source {
     #[cfg(feature = "server")]
     /// The entity ID of the player that sent this message, if any.
     pub fn client_entity_id(&self) -> Option<EntityId> {
-        let Some(user_id) = self.client_user_id() else { return None; };
-        let Some(player_id) = crate::player::get_by_user_id(&user_id) else { return None; };
+        let Some(user_id) = self.client_user_id() else {
+            return None;
+        };
+        let Some(player_id) = crate::player::get_by_user_id(&user_id) else {
+            return None;
+        };
         Some(player_id)
     }
 
