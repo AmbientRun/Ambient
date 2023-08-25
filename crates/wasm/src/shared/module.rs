@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 use std::io;
 use std::{collections::HashSet, sync::Arc};
 use wasm_bridge::{
-    wasi::preview2::{self, Table, WasiCtx, WasiCtxBuilder},
+    wasi::preview2::{self, IsATTY, Table, WasiCtx, WasiCtxBuilder},
     Store,
 };
 
@@ -24,7 +24,7 @@ use wasm_bridge::{
 // use wasmtime_wasi::preview2 as wasi_preview2;
 
 #[cfg(not(target_os = "unknown"))]
-use wasmtime_wasi::preview2::{DirPerms, FilePerms, IsATTY};
+use wasmtime_wasi::preview2::{DirPerms, FilePerms};
 
 #[derive(Clone)]
 pub struct ModuleBytecode(pub Vec<u8>);
@@ -239,6 +239,7 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
         let (stderr_output, stderr_consumer) = WasiOutputStream::make(args.stderr_output);
         let mut table = Table::new();
         let mut wasi = WasiCtxBuilder::new();
+
         wasi.stdout(stdout_output, IsATTY::Yes)
             .stderr(stderr_output, IsATTY::Yes);
 
@@ -269,6 +270,10 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
         let mut linker =
             wasm_bridge::component::Linker::<BindingContext<Bindings>>::new(engine.inner());
 
+        #[cfg(target_os = "unknown")]
+        preview2::wasi::command::add_to_linker(&mut linker)?;
+
+        #[cfg(not(target_os = "unknown"))]
         preview2::command::sync::add_to_linker(&mut linker)?;
 
         shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;

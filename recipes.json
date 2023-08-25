@@ -235,6 +235,9 @@
   "build-web": {
     "cmd": "cargo cf web build"
   },
+  "check-web": {
+    "cmd": "cargo cf web check"
+  },
   "run": {
     "cmd": "npm run dev",
     "cwd": "web/www",

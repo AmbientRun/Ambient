@@ -1714,7 +1714,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bridge",
- "wasm-bridge-js 0.2.2 (git+https://github.com/AmbientRun/wasm-bridge)",
+ "wasm-bridge-js",
  "wasmtime",
  "wasmtime-wasi",
  "wgpu 0.16.3",
@@ -8527,8 +8527,8 @@ version = "0.2.2"
 source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#5bd670d6e153dfdb9cafcefdca73fb5ee404f485"
 dependencies = [
  "async-trait",
- "wasm-bridge-js 0.2.2 (git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13)",
- "wasm-bridge-macros 0.2.2 (git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13)",
+ "wasm-bridge-js",
+ "wasm-bridge-macros",
  "wasmtime",
  "wasmtime-wasi",
 ]
@@ -8545,45 +8545,14 @@ dependencies = [
  "rand_core 0.6.4",
  "wasm-bindgen",
  "wasm-bindgen-futures",
- "wasm-bridge-macros 0.2.2 (git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13)",
+ "wasm-bridge-macros",
  "wat 1.0.70 (git+https://github.com/bytecodealliance/wasm-tools)",
-]
-
-[[package]]
-name = "wasm-bridge-js"
-version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge#67f0700efd04d66776c84d6fb48a6678bfc72726"
-dependencies = [
- "anyhow",
- "heck",
- "js-component-bindgen",
- "js-sys",
- "rand_core 0.6.4",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "wasm-bridge-macros 0.2.2 (git+https://github.com/AmbientRun/wasm-bridge)",
 ]
 
 [[package]]
 name = "wasm-bridge-macros"
 version = "0.2.2"
 source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#5bd670d6e153dfdb9cafcefdca73fb5ee404f485"
-dependencies = [
- "anyhow",
- "heck",
- "proc-macro2",
- "quote",
- "regex",
- "syn 1.0.109",
- "wasmtime-component-util 11.0.1",
- "wasmtime-wit-bindgen 11.0.1",
- "wit-parser 0.8.0",
-]
-
-[[package]]
-name = "wasm-bridge-macros"
-version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge#67f0700efd04d66776c84d6fb48a6678bfc72726"
 dependencies = [
  "anyhow",
  "heck",

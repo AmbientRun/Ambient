@@ -31,9 +31,11 @@ impl SyncAssetKey<Result<Engine, Arc<anyhow::Error>>> for EngineKey {
     ) -> Result<Engine, Arc<anyhow::Error>> {
         let mut config = wasm_bridge::Config::new();
         #[cfg(not(target_os = "unknown"))]
-        config.debug_info(true);
+        {
+            config.debug_info(true);
+            config.wasm_backtrace_details(wasmtime::WasmBacktraceDetails::Enable);
+        }
 
-        config.wasm_backtrace_details(wasmtime::WasmBacktraceDetails::Enable);
         config.wasm_component_model(true);
 
         // config.async_support(true).wasm_component_model(true);
