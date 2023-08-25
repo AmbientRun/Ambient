@@ -57,7 +57,7 @@ impl Manifest {
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
 pub struct Package {
     pub id: SnakeCaseIdentifier,
-    pub name: Option<String>,
+    pub name: String,
     pub version: Version,
     pub description: Option<String>,
     pub repository: Option<String>,
@@ -205,7 +205,7 @@ mod tests {
             Ok(Manifest {
                 package: Package {
                     id: SnakeCaseIdentifier::new("test").unwrap(),
-                    name: Some("Test".to_string()),
+                    name: "Test".to_string(),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
@@ -253,7 +253,7 @@ mod tests {
             Ok(Manifest {
                 package: Package {
                     id: sci("tictactoe"),
-                    name: Some("Tic Tac Toe".to_string()),
+                    name: "Tic Tac Toe".to_string(),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
@@ -306,7 +306,7 @@ mod tests {
             Ok(Manifest {
                 package: Package {
                     id: sci("tictactoe"),
-                    name: Some("Tic Tac Toe".to_string()),
+                    name: "Tic Tac Toe".to_string(),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
@@ -354,7 +354,7 @@ mod tests {
             Manifest {
                 package: Package {
                     id: sci("my_package"),
-                    name: Some("My Package".to_string()),
+                    name: "My Package".to_string(),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
@@ -484,7 +484,7 @@ mod tests {
             Ok(Manifest {
                 package: Package {
                     id: sci("tictactoe"),
-                    name: Some("Tic Tac Toe".to_string()),
+                    name: "Tic Tac Toe".to_string(),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
@@ -528,7 +528,7 @@ mod tests {
             Ok(Manifest {
                 package: Package {
                     id: sci("test"),
-                    name: Some("Test".to_string()),
+                    name: "Test".to_string(),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },
@@ -606,7 +606,7 @@ mod tests {
             Ok(Manifest {
                 package: Package {
                     id: sci("dependencies"),
-                    name: Some("dependencies".to_string()),
+                    name: "dependencies".to_string(),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
                     ..Default::default()
                 },

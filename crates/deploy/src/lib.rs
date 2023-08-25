@@ -45,11 +45,7 @@ pub async fn deploy(
     log::info!(
         "Deploying package `{}` ({})",
         package_id,
-        manifest
-            .package
-            .name
-            .as_deref()
-            .unwrap_or_else(|| manifest.package.id.as_str())
+        manifest.package.name
     );
     let base_path = path.as_ref().to_owned();
 
@@ -300,8 +296,14 @@ async fn process_file_requests(
                 let requests = asset_requests_from_file_path(&package_id, &path, file_path).await?;
                 let count = requests.len();
                 for (idx, request) in requests.into_iter().enumerate() {
-                    let Some(content) = request.contents.first() else { unreachable!() };
-                    let Some(ContentDescription::Chunk(chunk)) = content.content_description.as_ref() else { unreachable!() };
+                    let Some(content) = request.contents.first() else {
+                        unreachable!()
+                    };
+                    let Some(ContentDescription::Chunk(chunk)) =
+                        content.content_description.as_ref()
+                    else {
+                        unreachable!()
+                    };
                     log::debug!(
                         "Deploying asset chunk {}/{} {} {}B/{}B",
                         idx + 1,

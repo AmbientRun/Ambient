@@ -157,13 +157,7 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
         };
 
         let entity = Entity::new()
-            .with(
-                name(),
-                format!(
-                    "Package {}",
-                    package.manifest.package.name.as_deref().unwrap_or_default()
-                ),
-            )
+            .with(name(), format!("Package {}", package.manifest.package.name))
             .with(self::is_package(), ())
             .with(self::id(), package_id.clone())
             .with(self::asset_url(), base_asset_url.to_string())

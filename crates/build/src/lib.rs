@@ -92,11 +92,7 @@ pub async fn build_package(
         .map(chrono::DateTime::<chrono::Utc>::from)
         .max();
 
-    let name = manifest
-        .package
-        .name
-        .as_deref()
-        .unwrap_or_else(|| manifest.package.id.as_str());
+    let name = &manifest.package.name;
 
     if last_build_time
         .zip(last_modified_time)

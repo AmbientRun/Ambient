@@ -130,11 +130,7 @@ pub async fn start(
             .unwrap();
 
         // Keep track of the package name
-        let name = manifest
-            .package
-            .name
-            .clone()
-            .unwrap_or_else(|| "Ambient".into());
+        let name = manifest.package.name.clone();
         server_world
             .add_components(
                 server_world.resource_entity(),
