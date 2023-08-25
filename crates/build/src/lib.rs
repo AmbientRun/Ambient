@@ -10,7 +10,8 @@ use std::{
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_native_std::{asset_url::AbsAssetUrl, AmbientVersion};
 use ambient_package::{BuildMetadata, BuildSettings, Manifest as PackageManifest, Version};
-use ambient_package_semantic::{ItemId, Package, Semantic};
+use ambient_package_semantic::Semantic;
+use ambient_package_semantic_native::add_to_semantic_and_register_components;
 use ambient_std::path::path_to_unix_string_lossy;
 use anyhow::Context;
 use futures::FutureExt;
@@ -20,17 +21,6 @@ use walkdir::WalkDir;
 
 pub mod migrate;
 pub mod pipelines;
-
-pub struct BuildConfiguration<'a> {
-    pub assets: AssetCache,
-    pub semantic: &'a Semantic,
-    pub optimize: bool,
-    pub build_wasm_only: bool,
-    /// If true, the build will be optimized for deployment.
-    ///
-    /// At this moment, this is only removing the local path dependencies from the manifest.
-    pub building_for_deploy: bool,
-}
 
 /// This takes the path to a single Ambient package and builds it.
 /// It assumes all of its dependencies are already built.
@@ -42,21 +32,24 @@ pub struct BuildConfiguration<'a> {
 /// build  This is the output directory, and is created when building
 /// ambient.toml  This is a metadata file to describe the package
 pub async fn build_package(
-    config: BuildConfiguration<'_>,
-    build_path: PathBuf,
-    package_id: ItemId<Package>,
+    assets: &AssetCache,
+    settings: &BuildSettings,
+    package_path: &Path,
+    root_build_path: &Path,
 ) -> anyhow::Result<PathBuf> {
-    let BuildConfiguration {
-        assets,
-        semantic,
-        optimize,
-        build_wasm_only,
-        building_for_deploy,
-        ..
-    } = config;
+    let mut semantic = Semantic::new(settings.building_for_deploy).await?;
+
+    let package_item_id = add_to_semantic_and_register_components(
+        &mut semantic,
+        &AbsAssetUrl(AbsAssetUrl::from_file_path(&package_path).0),
+    )
+    .await?;
+
+    let package_id = semantic.items.get(package_item_id).data.id.clone();
+    let build_path = root_build_path.join(package_id.as_str());
 
     let (mut manifest, package_path) = {
-        let package = semantic.items.get(package_id);
+        let package = semantic.items.get(package_item_id);
         (
             package.manifest.clone(),
             package
@@ -67,12 +60,6 @@ pub async fn build_package(
                 .context("the package path has no parent")?
                 .to_owned(),
         )
-    };
-
-    let build_settings = BuildSettings {
-        optimize,
-        build_wasm_only,
-        building_for_deploy,
     };
 
     let build_metadata = tokio::fs::read_to_string(build_path.join(BuildMetadata::FILENAME))
@@ -111,7 +98,7 @@ pub async fn build_package(
     let last_modified_before_build = last_build_time
         .zip(last_modified_time)
         .is_some_and(|(build, modified)| modified < build);
-    if last_build_settings == Some(&build_settings) && last_modified_before_build {
+    if last_build_settings == Some(settings) && last_modified_before_build {
         tracing::info!(
             "Skipping unmodified package \"{name}\" ({})",
             manifest.package.id
@@ -126,18 +113,18 @@ pub async fn build_package(
         .await
         .context("Failed to create build directory")?;
 
-    if !build_wasm_only {
+    if !settings.build_wasm_only {
         build_assets(&assets, &assets_path, &build_path, false).await?;
     }
 
-    build_rust_if_available(&package_path, &manifest, &build_path, optimize)
+    build_rust_if_available(&package_path, &manifest, &build_path, settings.optimize)
         .await
         .with_context(|| format!("Failed to build Rust {build_path:?}"))?;
 
     // Bodge: for local builds, rewrite the dependencies to be relative to this package,
     // assuming that they are all in the same folder
     {
-        let package = semantic.items.get(package_id);
+        let package = semantic.items.get(package_item_id);
         let alias_to_dependency = package
             .dependencies
             .iter()
@@ -157,14 +144,14 @@ pub async fn build_package(
             }
 
             // If we are building for deployment, remove all local path dependencies
-            if building_for_deploy {
+            if settings.building_for_deploy {
                 *path = None;
             }
         }
     }
 
     store_manifest(&manifest, &build_path).await?;
-    store_metadata(&build_path, build_settings).await?;
+    store_metadata(&build_path, settings).await?;
 
     Ok(build_path)
 }
@@ -312,7 +299,7 @@ async fn store_manifest(manifest: &PackageManifest, build_path: &Path) -> anyhow
 
 async fn store_metadata(
     build_path: &Path,
-    settings: BuildSettings,
+    settings: &BuildSettings,
 ) -> anyhow::Result<BuildMetadata> {
     let AmbientVersion { version, revision } = AmbientVersion::default();
     let metadata = BuildMetadata {
@@ -321,7 +308,7 @@ async fn store_metadata(
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
         last_build_time: Some(chrono::Utc::now().to_rfc3339()),
-        settings,
+        settings: settings.clone(),
     };
     let metadata_path = build_path.join(BuildMetadata::FILENAME);
     tokio::fs::write(&metadata_path, toml::to_string(&metadata)?).await?;

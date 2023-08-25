@@ -386,6 +386,7 @@ dependencies = [
  "ambient_native_std",
  "ambient_package",
  "ambient_package_semantic",
+ "ambient_package_semantic_native",
  "ambient_physics",
  "ambient_pipeline_types",
  "ambient_renderer",

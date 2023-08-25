@@ -1,10 +1,9 @@
 use std::future::Future;
 use std::path::PathBuf;
 
-use ambient_build::BuildConfiguration;
 use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
+use ambient_package::BuildSettings;
 use ambient_package_semantic::RetrievableFile;
-use ambient_package_semantic_native::add_to_semantic_and_register_components;
 
 use anyhow::Context;
 
@@ -108,39 +107,26 @@ pub async fn build<
             .collect()
     };
 
+    let settings = BuildSettings {
+        optimize: release_build,
+        build_wasm_only,
+        building_for_deploy,
+    };
+
     // For each package, build the package using a fresh semantic.
     // A fresh semantic is used to ensure that the package is being built with
     // the correct dependencies after they have been deployed (if necessary).
     let mut output_path = root_build_path.clone();
-    while let Some(package_path) = queue.pop() {
-        pre_build(package_path.clone()).await?;
+    while let Some(manifest_path) = queue.pop() {
+        pre_build(manifest_path.clone()).await?;
 
-        let package_url = AbsAssetUrl::from_file_path(&package_path).0;
+        let build_path =
+            ambient_build::build_package(&assets, &settings, &manifest_path, &root_build_path)
+                .await?;
 
-        let mut semantic = ambient_package_semantic::Semantic::new(building_for_deploy).await?;
-        let package_item_id = add_to_semantic_and_register_components(
-            &mut semantic,
-            &AbsAssetUrl(package_url.clone()),
-        )
-        .await?;
-        let package_id = semantic.items.get(package_item_id).data.id.clone();
+        post_build(manifest_path.clone(), build_path.clone()).await?;
 
-        let build_path = ambient_build::build_package(
-            BuildConfiguration {
-                assets: assets.clone(),
-                semantic: &semantic,
-                optimize: release_build,
-                build_wasm_only,
-                building_for_deploy,
-            },
-            root_build_path.join(package_id.as_str()),
-            package_item_id,
-        )
-        .await?;
-
-        post_build(package_path.clone(), build_path.clone()).await?;
-
-        if package_url == main_manifest_url.0 {
+        if AbsAssetUrl::from_file_path(manifest_path) == main_manifest_url {
             output_path = build_path;
         }
     }
