@@ -53,7 +53,12 @@ fn detach_process(child: &mut Command) -> &mut Command {
 fn spawn(spki: &str, _url: &str) -> anyhow::Result<()> {
     let status = std::process::Command::new("open")
         // Feeding a url to chrome here makes `--args spki` not be fed to chrome
-        .args(["-a", "Google Chrome", "--args"])
+        .args([
+            "-a",
+            "Google Chrome",
+            "--args",
+            "--origin-to-force-quic-on=127.0.0.1:4433",
+        ])
         .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
         .spawn()
         .context("Failed to open Google Chrome")?
