@@ -32,12 +32,9 @@ use physxx::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    main_controller_manager, make_physics_static,
+    main_controller_manager,
     mesh::{PhysxGeometry, PhysxGeometryFromUrl},
-    physx::{
-        angular_velocity, character_controller, contact_offset, linear_velocity, physics,
-        physics_controlled, physics_shape, rest_offset, rigid_actor, Physics,
-    },
+    physx::{character_controller, physics, physics_shape, rigid_actor, Physics},
     wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey,
 };
 
@@ -99,7 +96,7 @@ fn changed_or_missing<'a, T: ComponentValueBase, R: ComponentQuery<'a> + Clone +
 
     updated
         .into_iter()
-        .chain(missing.into_iter())
+        .chain(missing)
         .sorted_by_key(|x| x.0)
         .dedup_by(|x, y| x.0 == y.0)
         .collect_vec()

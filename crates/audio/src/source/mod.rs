@@ -42,7 +42,7 @@ pub use slice::*;
 pub use spatial::*;
 pub use uniform::*;
 
-use self::{history::History, mix::Mix, oscilloscope::Oscilloscope, pad_to::PadTo};
+use self::{history::History, oscilloscope::Oscilloscope, pad_to::PadTo};
 use crate::{
     blt::*,
     hrtf::HrtfLib,

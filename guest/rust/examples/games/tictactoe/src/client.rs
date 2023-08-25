@@ -69,7 +69,9 @@ fn process_colors(cells: &[EntityId]) {
         .collect();
 
     for (player, player_color) in player_colors.iter() {
-        let Some(cell) = entity::get_component(*player, cell()) else { continue; };
+        let Some(cell) = entity::get_component(*player, cell()) else {
+            continue;
+        };
         entity::add_component_if_required(cells[cell as usize], outline(), *player_color);
     }
 

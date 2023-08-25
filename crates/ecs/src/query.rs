@@ -168,9 +168,7 @@ pub struct ChangedQuery<T: 'static> {
 
 impl<T> Clone for ChangedQuery<T> {
     fn clone(&self) -> Self {
-        Self {
-            component: self.component,
-        }
+        *self
     }
 }
 

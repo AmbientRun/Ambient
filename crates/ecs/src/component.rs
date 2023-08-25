@@ -106,10 +106,7 @@ impl<T: 'static> Component<T> {
 
 impl<T> Clone for Component<T> {
     fn clone(&self) -> Self {
-        Self {
-            desc: self.desc,
-            _marker: PhantomData,
-        }
+        *self
     }
 }
 

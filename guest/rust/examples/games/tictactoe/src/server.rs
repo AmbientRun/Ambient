@@ -78,8 +78,12 @@ pub fn main() {
     });
 
     Input::subscribe(move |source, msg| {
-        let Some(player_id) = source.client_entity_id() else { return; };
-        let Some(cell) = entity::get_component(player_id, cell()) else { return; };
+        let Some(player_id) = source.client_entity_id() else {
+            return;
+        };
+        let Some(cell) = entity::get_component(player_id, cell()) else {
+            return;
+        };
 
         let size = SIZE as i32;
 

@@ -1,5 +1,6 @@
+// https://github.com/rust-lang/rust-clippy/issues/10243 ?
+#![allow(clippy::diverging_sub_expression)]
 //! Used to stub out all the unused host functions on the clientside.
-
 use super::Bindings;
 use crate::shared::{implementation::unsupported, wit};
 

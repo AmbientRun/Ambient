@@ -29,7 +29,6 @@ mod image;
 pub use ambient_layout as layout;
 pub use ambient_rect as rect;
 pub use ambient_rect::{background_color, border_color, border_radius, border_thickness, Corners};
-use ambient_text as text;
 pub use ambient_text::*;
 pub use ambient_ui::clickarea::*;
 pub use ambient_ui::default_theme as style_constants;
@@ -54,7 +53,7 @@ use ambient_shared_types::MouseButton;
 
 pub fn init_all_components() {
     layout::init_gpu_components();
-    text::init_components();
+    ambient_text::init_components();
 }
 
 pub fn systems() -> SystemGroup {
@@ -62,7 +61,7 @@ pub fn systems() -> SystemGroup {
         "ui",
         vec![
             Box::new(rect::systems()),
-            Box::new(text::systems(true)),
+            Box::new(ambient_text::systems(true)),
             Box::new(layout::layout_systems()),
         ],
     )

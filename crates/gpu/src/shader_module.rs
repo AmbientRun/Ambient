@@ -144,7 +144,7 @@ impl ShaderModule {
         mut self,
         bindings: impl IntoIterator<Item = (CowStr, BindGroupLayoutEntry)>,
     ) -> Self {
-        self.bindings.extend(bindings.into_iter());
+        self.bindings.extend(bindings);
         self
     }
 

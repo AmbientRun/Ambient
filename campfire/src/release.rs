@@ -218,7 +218,9 @@ fn update_ambient_dependency_versions(
             continue;
         }
 
-        let Some(table) = value.as_table_like_mut() else { continue; };
+        let Some(table) = value.as_table_like_mut() else {
+            continue;
+        };
         if table.contains_key("workspace") {
             continue;
         }
@@ -421,7 +423,9 @@ fn check_docker_run() -> anyhow::Result<()> {
 fn check_crates_io_validity() -> anyhow::Result<()> {
     let crates = get_all_publishable_crates()?;
     for (path, manifest) in crates {
-        let Some(package) = manifest.package else { anyhow::bail!("no package for {}", path.display()) };
+        let Some(package) = manifest.package else {
+            anyhow::bail!("no package for {}", path.display())
+        };
 
         anyhow::ensure!(
             non_empty_inheritable_string(&package.license),

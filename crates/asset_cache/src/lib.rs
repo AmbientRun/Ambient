@@ -897,6 +897,24 @@ impl<F, K> PinnedDrop for AssetLoadFuture<F, K> {
     }
 }
 
+struct KeepaliveGuard {
+    key: AssetKey,
+    timeline: Arc<Mutex<AssetsTimeline>>,
+}
+
+impl KeepaliveGuard {
+    fn begin(key: AssetKey, timeline: Arc<Mutex<AssetsTimeline>>) -> Self {
+        timeline.lock().keepalive_start(&key);
+        Self { key, timeline }
+    }
+}
+
+impl Drop for KeepaliveGuard {
+    fn drop(&mut self) {
+        self.timeline.lock().keepalive_end(&self.key)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use tokio::{runtime, time::timeout};
@@ -939,7 +957,7 @@ mod test {
         assert!(matches!(state, Some(ContentState::Aborted)));
 
         let state = assets.content_state(&TestAssetKey { name: "bar".into() });
-        assert!(matches!(state, None));
+        assert!(state.is_none());
 
         let asset = TestAssetKey { name: "foo".into() }.get(&assets).await;
 
@@ -989,23 +1007,5 @@ mod test {
             let val = Key.get(&assets).await.unwrap_err();
             assert_eq!(val, 3);
         }
-    }
-}
-
-struct KeepaliveGuard {
-    key: AssetKey,
-    timeline: Arc<Mutex<AssetsTimeline>>,
-}
-
-impl KeepaliveGuard {
-    fn begin(key: AssetKey, timeline: Arc<Mutex<AssetsTimeline>>) -> Self {
-        timeline.lock().keepalive_start(&key);
-        Self { key, timeline }
-    }
-}
-
-impl Drop for KeepaliveGuard {
-    fn drop(&mut self) {
-        self.timeline.lock().keepalive_end(&self.key)
     }
 }
