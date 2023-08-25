@@ -9,7 +9,7 @@ use std::{
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_native_std::{asset_url::AbsAssetUrl, AmbientVersion};
-use ambient_package::{BuildMetadata, Manifest as PackageManifest, Version};
+use ambient_package::{BuildMetadata, BuildSettings, Manifest as PackageManifest, Version};
 use ambient_package_semantic::{ItemId, Package, Semantic};
 use ambient_std::path::path_to_unix_string_lossy;
 use anyhow::Context;
@@ -69,12 +69,26 @@ pub async fn build_package(
         )
     };
 
-    let last_build_time = tokio::fs::read_to_string(build_path.join(BuildMetadata::FILENAME))
+    let build_settings = BuildSettings {
+        optimize,
+        build_wasm_only,
+        building_for_deploy,
+    };
+
+    let build_metadata = tokio::fs::read_to_string(build_path.join(BuildMetadata::FILENAME))
         .await
         .ok()
         .map(|c| BuildMetadata::parse(&c))
-        .transpose()?
-        .and_then(|md| Some(chrono::DateTime::parse_from_rfc3339(&md.last_build_time?)))
+        .transpose()?;
+
+    let last_build_settings = build_metadata.as_ref().map(|md| &md.settings);
+    let last_build_time = build_metadata
+        .as_ref()
+        .and_then(|md| {
+            Some(chrono::DateTime::parse_from_rfc3339(
+                md.last_build_time.as_deref()?,
+            ))
+        })
         .transpose()?
         .map(|dt| dt.with_timezone(&chrono::Utc));
 
@@ -94,10 +108,10 @@ pub async fn build_package(
 
     let name = &manifest.package.name;
 
-    if last_build_time
+    let last_modified_before_build = last_build_time
         .zip(last_modified_time)
-        .is_some_and(|(build, modified)| modified < build)
-    {
+        .is_some_and(|(build, modified)| modified < build);
+    if last_build_settings == Some(&build_settings) && last_modified_before_build {
         tracing::info!(
             "Skipping unmodified package \"{name}\" ({})",
             manifest.package.id
@@ -150,7 +164,7 @@ pub async fn build_package(
     }
 
     store_manifest(&manifest, &build_path).await?;
-    store_metadata(&build_path).await?;
+    store_metadata(&build_path, build_settings).await?;
 
     Ok(build_path)
 }
@@ -296,7 +310,10 @@ async fn store_manifest(manifest: &PackageManifest, build_path: &Path) -> anyhow
     Ok(())
 }
 
-async fn store_metadata(build_path: &Path) -> anyhow::Result<BuildMetadata> {
+async fn store_metadata(
+    build_path: &Path,
+    settings: BuildSettings,
+) -> anyhow::Result<BuildMetadata> {
     let AmbientVersion { version, revision } = AmbientVersion::default();
     let metadata = BuildMetadata {
         ambient_version: Version::new_from_str(&version).expect("Failed to parse version"),
@@ -304,6 +321,7 @@ async fn store_metadata(build_path: &Path) -> anyhow::Result<BuildMetadata> {
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
         last_build_time: Some(chrono::Utc::now().to_rfc3339()),
+        settings,
     };
     let metadata_path = build_path.join(BuildMetadata::FILENAME);
     tokio::fs::write(&metadata_path, toml::to_string(&metadata)?).await?;
