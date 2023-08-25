@@ -15,7 +15,7 @@ use notify::{
 use notify_debouncer_full::{DebounceEventResult, Debouncer, FileIdMap};
 use tokio::select;
 
-use super::build::{self, BuildOptions};
+use super::build::BuildOptions;
 
 pub struct WatcherState<W: Watcher> {
     watcher: Debouncer<W, FileIdMap>,
@@ -93,7 +93,7 @@ impl Serve {
                 .context("Failed to run npm install")?;
         }
 
-        build::run(&self.build).await?;
+        self.build.build().await?;
 
         let watch = self.watch_and_build();
         let serve = self.serve();
@@ -191,8 +191,9 @@ impl Serve {
 
             if needs_rebuild {
                 log::debug!("Rebuilding...");
-                if let Err(err) = build::run(&self.build).await {
-                    log::error!("Failed to build: {err}")
+                if let Err(err) = self.build.build().await {
+                    log::error!("Failed to build: {err}");
+                    tokio::time::sleep(Duration::from_secs(2)).await;
                 }
 
                 log::debug!("Finished building the web client");
