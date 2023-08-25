@@ -37,7 +37,7 @@ pub async fn build_package(
     package_path: &Path,
     root_build_path: &Path,
 ) -> anyhow::Result<PathBuf> {
-    let mut semantic = Semantic::new(settings.building_for_deploy).await?;
+    let mut semantic = Semantic::new(settings.deploy).await?;
 
     let package_item_id = add_to_semantic_and_register_components(
         &mut semantic,
@@ -113,11 +113,11 @@ pub async fn build_package(
         .await
         .context("Failed to create build directory")?;
 
-    if !settings.build_wasm_only {
+    if !settings.wasm_only {
         build_assets(assets, &assets_path, &build_path, false).await?;
     }
 
-    build_rust_if_available(&package_path, &manifest, &build_path, settings.optimize)
+    build_rust_if_available(&package_path, &manifest, &build_path, settings.release)
         .await
         .with_context(|| format!("Failed to build Rust {build_path:?}"))?;
 
@@ -144,7 +144,7 @@ pub async fn build_package(
             }
 
             // If we are building for deployment, remove all local path dependencies
-            if settings.building_for_deploy {
+            if settings.deploy {
                 *path = None;
             }
         }

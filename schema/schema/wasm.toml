@@ -6,7 +6,7 @@ content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
 
 [components.is_module]
-name = "is module"
+name = "Is module"
 description = "A module."
 type = "Empty"
 attributes = ["Networked", "Store", "Debuggable"]

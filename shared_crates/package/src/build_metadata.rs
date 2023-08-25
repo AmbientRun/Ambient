@@ -39,7 +39,13 @@ impl BuildMetadata {
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Default)]
 pub struct BuildSettings {
-    pub optimize: bool,
-    pub build_wasm_only: bool,
-    pub building_for_deploy: bool,
+    #[serde(default)]
+    /// Build with optimizations.
+    pub release: bool,
+    #[serde(default)]
+    /// Build the WASM files only.
+    pub wasm_only: bool,
+    #[serde(default)]
+    /// Build with deployment in mind (i.e. ignore local dependencies).
+    pub deploy: bool,
 }

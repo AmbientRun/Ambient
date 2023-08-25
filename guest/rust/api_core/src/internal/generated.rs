@@ -2420,7 +2420,7 @@ mod raw {
                 };
                 static IS_MODULE: Lazy<Component<()>> =
                     Lazy::new(|| __internal_get_component("ambient_core::wasm::is_module"));
-                #[doc = "**is module**: A module.\n\n*Attributes*: Networked, Store, Debuggable"]
+                #[doc = "**Is module**: A module.\n\n*Attributes*: Networked, Store, Debuggable"]
                 pub fn is_module() -> Component<()> {
                     *IS_MODULE
                 }

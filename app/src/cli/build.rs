@@ -67,9 +67,9 @@ pub async fn build<
     assets: &AssetCache,
     main_package_fs_path: PathBuf,
     clean_build: bool,
-    building_for_deploy: bool,
-    release_build: bool,
-    build_wasm_only: bool,
+    deploy: bool,
+    release: bool,
+    wasm_only: bool,
     mut pre_build: impl FnMut(PathBuf) -> PrebuildRet,
     mut post_build: impl FnMut(PathBuf, PathBuf) -> PostbuildRet,
 ) -> anyhow::Result<BuildDirectories> {
@@ -108,9 +108,9 @@ pub async fn build<
     };
 
     let settings = BuildSettings {
-        optimize: release_build,
-        build_wasm_only,
-        building_for_deploy,
+        release,
+        wasm_only,
+        deploy,
     };
 
     // For each package, build the package using a fresh semantic.
