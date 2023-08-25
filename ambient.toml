@@ -5,20 +5,20 @@ version = "0.0.1"
 content = { type = "Playable" }
 
 [dependencies]
-afps_schema = { path = "schema/afps", deployment = "16KS30F8ja7kcJnR73kmGe" }
-input_schema = { path = "schema/input" }
+afps_schema = { path = "schema/afps", deployment = "Kecsne9ja7GJjfo9BoQYF" }
+input_schema = { path = "schema/input" , deployment = "31NJnnbDpcZfaxq4Z0FTpV" }
 
-fpsanim = { path = "core/fpsanim" }
-fpsaudio = { path = "core/fpsaudio" }
-fpsmodel = { path = "core/fpsmodel" }
-fpsmovement = { path = "core/fpsmovement" }
-fpsrule = { path = "core/fpsrule" }
-fpsui = { path = "core/fpsui" }
+fpsanim = { path = "core/fpsanim" , deployment = "6trbbv8BwBdkwxYU3bTH5e" }
+fpsaudio = { path = "core/fpsaudio" , deployment = "5ZWc1G7Jh6EEvWa5Y4Apwj" }
+fpsmodel = { path = "core/fpsmodel" , deployment = "4gXPNhZfC2dRLOVyEfo27x" }
+fpsmovement = { path = "core/fpsmovement" , deployment = "6RmIr6OKq1ZdPMQuelAHAl" }
+fpsrule = { path = "core/fpsrule" , deployment = "5VIbPVHpY0sdUESLlTplpg" }
+fpsui = { path = "core/fpsui" , deployment = "2FXHEh9s20s0ZntwxTdhxb" }
 
-console = { path = "tools/console" }
-package_manager = { path = "tools/package_manager" }
+console = { path = "tools/console" , deployment = "5SvYqBKDUfuMFp5MGOKc4w" }
+package_manager = { path = "tools/package_manager" , deployment = "3LrCHSnwZTAkADybcGcPCG" }
 
-scene = { path = "mods/scene" }
-spraypaint = { path = "mods/spraypaint" }
-zombie = { path = "mods/zombie" }
-world_latency = { path = "mods/world_latency" }
+scene = { path = "mods/scene" , deployment = "13Kwr4Xundsoc7AuXOQh0a" }
+spraypaint = { path = "mods/spraypaint" , deployment = "2Kn3PBdNkuSwzTXdDQjsop" }
+zombie = { path = "mods/zombie" , deployment = "6VsScuiFs4CbXoiDTXl9BR" }
+world_latency = { path = "mods/world_latency" , deployment = "1ygerOEVtrpWQKQOKsMBTm" }

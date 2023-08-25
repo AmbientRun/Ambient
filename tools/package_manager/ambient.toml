@@ -30,4 +30,4 @@ id = "EntityId"
 url = "String"
 
 [dependencies]
-input_schema = { path = "../../schema/input" }
+input_schema = { path = "../../schema/input" , deployment = "31NJnnbDpcZfaxq4Z0FTpV" }
