@@ -1,10 +1,9 @@
-use std::{
-    fs::DirEntry,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use anyhow::Context;
 use clap::Parser;
+
+use crate::util::{all_directories_in, run_ambient};
 
 #[derive(Parser, Clone)]
 #[clap(trailing_var_arg = true)]
@@ -136,18 +135,6 @@ fn run_package(
     run_ambient(&args, ambient_release)
 }
 
-fn run_ambient(args: &[&str], release: bool) -> anyhow::Result<()> {
-    // TODO: consider running other versions of Ambient
-    let mut command = std::process::Command::new("cargo");
-    command.arg("run");
-    if release {
-        command.arg("--release");
-    }
-    command.args(["-p", "ambient"]).args(args).spawn()?.wait()?;
-
-    Ok(())
-}
-
 pub(crate) fn all_examples(with_testcases: bool) -> anyhow::Result<Vec<(PathBuf, String)>> {
     let mut examples = Vec::new();
 
@@ -190,10 +177,4 @@ pub(crate) fn all_examples(with_testcases: bool) -> anyhow::Result<Vec<(PathBuf,
     examples.sort_by_key(|(path, _)| path.clone());
 
     Ok(examples)
-}
-
-fn all_directories_in(path: &Path) -> anyhow::Result<impl Iterator<Item = DirEntry>> {
-    Ok(std::fs::read_dir(path)?
-        .filter_map(Result::ok)
-        .filter(|p| p.path().is_dir()))
 }

@@ -1,10 +1,6 @@
 use std::process::ExitCode;
 
-use campfire::{
-    cli::Cli,
-    doc, example, golden_images, install, release,
-    web::{self},
-};
+use campfire::{cli::Cli, doc, example, golden_images, install, package, release, web};
 use clap::Parser;
 
 async fn run() -> anyhow::Result<()> {
@@ -19,6 +15,7 @@ async fn run() -> anyhow::Result<()> {
     match cli {
         Cli::Doc(doc) => doc::main(&doc),
         Cli::Example(ex) => example::main(&ex),
+        Cli::Package(p) => package::main(&p),
         Cli::GoldenImages(gi) => golden_images::main(&gi).await,
         Cli::Release(re) => release::main(&re),
         Cli::Install(install) => install::main(&install),

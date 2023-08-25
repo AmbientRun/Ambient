@@ -1,6 +1,6 @@
 use clap::Parser;
 
-use crate::{doc, example, golden_images, install, release, web};
+use crate::{doc, example, golden_images, install, package, release, web};
 
 #[derive(Parser, Clone)]
 #[command(author, version, about, long_about = None, propagate_version = true, trailing_var_arg = true)]
@@ -11,6 +11,9 @@ pub enum Cli {
     /// Example-related functionality
     #[command(subcommand)]
     Example(example::Example),
+    /// Package-related functionality
+    #[command(subcommand)]
+    Package(package::Package),
     /// Running golden image tests
     GoldenImages(golden_images::GoldenImages),
     /// Release-related functionality
