@@ -7,7 +7,7 @@ use std::{
 
 use ambient_cb::Cb;
 use ambient_ecs::{
-    components, generated::app::components::name, ComponentRegistry, Entity, EntityId,
+    components, generated::app::components::name as app_name, ComponentRegistry, Entity, EntityId,
     ExternalComponentAttributes, ExternalComponentDesc, Networked, PrimitiveComponentType,
     Resource, World,
 };
@@ -156,14 +156,24 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
             WasmSpawnResponse::default()
         };
 
-        let entity = Entity::new()
-            .with(name(), format!("Package {}", package.manifest.package.name))
+        let manifest = &package.manifest;
+        let mut entity = Entity::new()
+            .with(app_name(), format!("Package {}", manifest.package.name))
             .with(self::is_package(), ())
             .with(self::id(), package_id.clone())
+            .with(self::name(), manifest.package.name.clone())
+            .with(self::version(), manifest.package.version.to_string())
+            .with(self::authors(), manifest.package.authors.clone())
             .with(self::asset_url(), base_asset_url.to_string())
             .with(self::client_modules(), wasm.client_modules)
-            .with(self::server_modules(), wasm.server_modules)
-            .spawn(world);
+            .with(self::server_modules(), wasm.server_modules);
+        if let Some(description) = &manifest.package.description {
+            entity.set(self::description(), description.clone());
+        }
+        if let Some(repository) = &manifest.package.repository {
+            entity.set(self::repository(), repository.clone());
+        }
+        let entity = entity.spawn(world);
 
         world
             .synced_resource_mut(package_id_to_package_entity())

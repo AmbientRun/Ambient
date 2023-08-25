@@ -1346,9 +1346,39 @@ mod raw {
                 pub fn id() -> Component<String> {
                     *ID
                 }
+                static NAME: Lazy<Component<String>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::package::name"));
+                #[doc = "**Name**: The name of the package.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn name() -> Component<String> {
+                    *NAME
+                }
+                static VERSION: Lazy<Component<String>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::package::version"));
+                #[doc = "**Version**: The version of the package.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn version() -> Component<String> {
+                    *VERSION
+                }
+                static AUTHORS: Lazy<Component<Vec<String>>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::package::authors"));
+                #[doc = "**Authors**: The authors of the package.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn authors() -> Component<Vec<String>> {
+                    *AUTHORS
+                }
+                static DESCRIPTION: Lazy<Component<String>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::package::description"));
+                #[doc = "**Description**: The description of the package. If not attached, the package does not have a description.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn description() -> Component<String> {
+                    *DESCRIPTION
+                }
+                static REPOSITORY: Lazy<Component<String>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::package::repository"));
+                #[doc = "**Repository**: The repository of the package. If not attached, the package does not have a repository.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn repository() -> Component<String> {
+                    *REPOSITORY
+                }
                 static ASSET_URL: Lazy<Component<String>> =
                     Lazy::new(|| __internal_get_component("ambient_core::package::asset_url"));
-                #[doc = "**URL**: The asset URL of the package.\n\n*Attributes*: Debuggable, Networked"]
+                #[doc = "**Asset URL**: The asset URL (i.e. where the built assets are) of the package.\n\n*Attributes*: Debuggable, Networked"]
                 pub fn asset_url() -> Component<String> {
                     *ASSET_URL
                 }
