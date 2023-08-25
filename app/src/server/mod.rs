@@ -3,7 +3,7 @@ use std::{
     net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
     path::{Path, PathBuf},
     str::FromStr,
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 
 use ambient_core::{asset_cache, main_package_name, name, no_sync, FIXED_SERVER_TICK_TIME};
@@ -15,6 +15,7 @@ use ambient_native_std::{
     ambient_version,
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
+    cb,
 };
 use ambient_network::{
     is_persistent_resources, is_synced_resources,
@@ -129,11 +130,7 @@ pub async fn start(
             .unwrap();
 
         // Keep track of the package name
-        let name = manifest
-            .package
-            .name
-            .clone()
-            .unwrap_or_else(|| "Ambient".into());
+        let name = manifest.package.name.clone();
         server_world
             .add_components(
                 server_world.resource_entity(),
@@ -146,7 +143,7 @@ pub async fn start(
             .with(is_synced_resources(), ())
             .with(dont_store(), ())
             .with(
-                ambient_package_semantic_native::package_name_to_url(),
+                ambient_package_semantic_native::package_id_to_package_entity(),
                 Default::default(),
             )
             .spawn(&mut server_world);
@@ -160,56 +157,13 @@ pub async fn start(
             .await
             .unwrap();
 
-        let mut semantic = ambient_package_semantic::Semantic::new(false)
-            .await
-            .unwrap();
-        let primary_package_scope_id = shared::package::add(
-            Some(&mut server_world),
-            &mut semantic,
-            &main_package_path.push("ambient.toml").unwrap(),
+        ambient_package_semantic_native::initialize(
+            &mut server_world,
+            &main_package_path,
+            cb(wasm::spawn_package),
         )
         .await
         .unwrap();
-
-        let mut queue = semantic
-            .items
-            .scope_and_dependencies(primary_package_scope_id);
-        queue.reverse();
-
-        // Use the topologically sorted queue to construct a dict of which packages should be on by default.
-        // Assume all are on by default, and then update their state based on what packages "closer to the root"
-        // state. The last element should be the root.
-        let mut package_id_to_enabled = queue
-            .iter()
-            .map(|&id| (id, true))
-            .collect::<HashMap<_, _>>();
-        for &package_id in &queue {
-            let package = semantic.items.get(package_id);
-
-            for dependency in package.dependencies.values() {
-                package_id_to_enabled.insert(dependency.id, dependency.enabled);
-            }
-        }
-
-        server_world
-            .add_component(
-                server_world.resource_entity(),
-                ambient_package_semantic_native::semantic(),
-                Arc::new(Mutex::new(semantic)),
-            )
-            .unwrap();
-
-        while let Some(package_id) = queue.pop() {
-            wasm::instantiate_package(
-                &mut server_world,
-                package_id,
-                package_id_to_enabled
-                    .get(&package_id)
-                    .copied()
-                    .unwrap_or(true),
-            )
-            .unwrap();
-        }
 
         if let Some(asset_path) = view_asset_path {
             let asset_path = main_package_path

@@ -1,0 +1,37 @@
+[package]
+id = "package"
+name = "Package"
+description = "Package-related state and functionality."
+content = { type = "Asset", schema = true }
+version = "0.3.0-dev"
+
+[components]
+[components.is_package]
+type = "Empty"
+name = "Is Package"
+description = "Whether or not this entity is a package."
+attributes = ["Debuggable", "Networked"]
+
+[components.id]
+type = "String"
+name = "ID"
+description = "The ID of the package."
+attributes = ["Debuggable", "Networked"]
+
+[components.asset_url]
+type = "String"
+name = "URL"
+description = "The asset URL of the package."
+attributes = ["Debuggable", "Networked"]
+
+[components.client_modules]
+type = { container_type = "Vec", element_type = "EntityId" }
+name = "Client Modules"
+description = "The clientside WASM modules spawned by this package."
+attributes = ["Debuggable", "Networked"]
+
+[components.server_modules]
+type = { container_type = "Vec", element_type = "EntityId" }
+name = "Server Modules"
+description = "The serverside WASM modules spawned by this package."
+attributes = ["Debuggable", "Networked"]

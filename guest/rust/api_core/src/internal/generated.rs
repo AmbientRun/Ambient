@@ -1326,6 +1326,47 @@ mod raw {
             }
         }
         #[allow(unused)]
+        pub mod package {
+            #[doc = r" Auto-generated component definitions."]
+            pub mod components {
+                use crate::{
+                    ecs::{Component, __internal_get_component},
+                    once_cell::sync::Lazy,
+                    prelude::*,
+                };
+                static IS_PACKAGE: Lazy<Component<()>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::package::is_package"));
+                #[doc = "**Is Package**: Whether or not this entity is a package.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn is_package() -> Component<()> {
+                    *IS_PACKAGE
+                }
+                static ID: Lazy<Component<String>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::package::id"));
+                #[doc = "**ID**: The ID of the package.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn id() -> Component<String> {
+                    *ID
+                }
+                static ASSET_URL: Lazy<Component<String>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::package::asset_url"));
+                #[doc = "**URL**: The asset URL of the package.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn asset_url() -> Component<String> {
+                    *ASSET_URL
+                }
+                static CLIENT_MODULES: Lazy<Component<Vec<EntityId>>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::package::client_modules"));
+                #[doc = "**Client Modules**: The clientside WASM modules spawned by this package.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn client_modules() -> Component<Vec<EntityId>> {
+                    *CLIENT_MODULES
+                }
+                static SERVER_MODULES: Lazy<Component<Vec<EntityId>>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::package::server_modules"));
+                #[doc = "**Server Modules**: The serverside WASM modules spawned by this package.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn server_modules() -> Component<Vec<EntityId>> {
+                    *SERVER_MODULES
+                }
+            }
+        }
+        #[allow(unused)]
         pub mod physics {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {

@@ -68,7 +68,7 @@ impl std::fmt::Display for AbsAssetUrl {
     }
 }
 impl FromStr for AbsAssetUrl {
-    type Err = anyhow::Error;
+    type Err = ParseError;
 
     fn from_str(url: &str) -> Result<Self, Self::Err> {
         // This will also resolve relative local paths
@@ -79,7 +79,7 @@ impl FromStr for AbsAssetUrl {
                 std::env::current_dir().unwrap().to_str().unwrap(),
                 url
             ))?)),
-            Err(err) => Err(err.into()),
+            Err(err) => Err(err),
         }
     }
 }
@@ -147,6 +147,9 @@ impl AbsAssetUrl {
         Self(url)
     }
 
+    /// For a/ this returns None
+    /// For a/b this returns b
+    /// For a/b/c.png this returns c
     pub fn file_stem(&self) -> Option<&str> {
         let last = self
             .0

@@ -181,6 +181,7 @@ dependencies = [
  "serde_json",
  "time",
  "tokio",
+ "toml_edit",
  "tower-http",
  "tracing",
  "tracing-log",
@@ -385,6 +386,7 @@ dependencies = [
  "ambient_native_std",
  "ambient_package",
  "ambient_package_semantic",
+ "ambient_package_semantic_native",
  "ambient_physics",
  "ambient_pipeline_types",
  "ambient_renderer",
@@ -1201,11 +1203,16 @@ dependencies = [
 name = "ambient_package_semantic_native"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_cb",
  "ambient_ecs",
  "ambient_native_std",
  "ambient_network",
  "ambient_package_semantic",
+ "ambient_shared_types",
  "anyhow",
+ "thiserror",
+ "tokio",
+ "url",
 ]
 
 [[package]]

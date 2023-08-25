@@ -107,7 +107,7 @@ impl Installation {
         )
     }
 
-    fn get_version_for(&self, task: &str, cmd: &str) -> Result<Version, anyhow::Error> {
+    fn get_version_for(&self, task: &str, cmd: &str) -> anyhow::Result<Version> {
         Ok(Version(
             handle_command_failure(task, self.run(cmd, ["--version"], None))?
                 .split_whitespace()

@@ -501,10 +501,6 @@ impl ToTokens for PascalCaseIdentifier {
 
 const BANNED_IDENTIFIERS: &[(&str, &str)] = &[
     //
-    // Ambient
-    //
-    ("package", "Package"),
-    //
     // Rust
     //
     ("as", "As"),
