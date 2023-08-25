@@ -778,11 +778,16 @@ dependencies = [
 name = "ambient_package_semantic_native"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_cb",
  "ambient_ecs",
  "ambient_native_std",
  "ambient_network",
  "ambient_package_semantic",
+ "ambient_shared_types",
  "anyhow",
+ "thiserror",
+ "tokio",
+ "url",
 ]
 
 [[package]]
