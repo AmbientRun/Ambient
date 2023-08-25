@@ -1075,6 +1075,7 @@ dependencies = [
  "ambient_layout",
  "ambient_native_std",
  "ambient_network",
+ "ambient_package_semantic_native",
  "ambient_primitives",
  "ambient_renderer",
  "ambient_rpc",

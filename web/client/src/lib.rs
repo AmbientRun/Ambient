@@ -36,6 +36,7 @@ pub fn init_ambient(logging: bool, panic: bool) {
     ambient_world_audio::init_components();
     ambient_wasm::shared::init_all_components();
     ambient_primitives::init_components();
+    ambient_package_semantic_native::init_components();
 }
 
 #[wasm_bindgen]
