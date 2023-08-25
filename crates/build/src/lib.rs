@@ -24,6 +24,12 @@ use walkdir::WalkDir;
 pub mod migrate;
 pub mod pipelines;
 
+#[derive(Clone, Debug)]
+pub struct BuildResult {
+    pub build_path: PathBuf,
+    pub was_built: bool,
+}
+
 /// This takes the path to a single Ambient package and builds it.
 /// It assumes all of its dependencies are already built.
 ///
@@ -38,7 +44,7 @@ pub async fn build_package(
     settings: &BuildSettings,
     package_path: &Path,
     root_build_path: &Path,
-) -> anyhow::Result<PathBuf> {
+) -> anyhow::Result<BuildResult> {
     let mut semantic = Semantic::new(settings.deploy).await?;
 
     let package_item_id = add_to_semantic_and_register_components(
@@ -161,7 +167,10 @@ pub async fn build_package(
             "Skipping unmodified package \"{package_name}\" ({})",
             manifest.package.id
         );
-        return Ok(build_path);
+        return Ok(BuildResult {
+            build_path,
+            was_built: false,
+        });
     }
 
     tracing::info!(
@@ -186,7 +195,10 @@ pub async fn build_package(
 
     store_metadata(&build_path, settings).await?;
 
-    Ok(build_path)
+    Ok(BuildResult {
+        build_path,
+        was_built: true,
+    })
 }
 
 async fn get_build_metadata(
