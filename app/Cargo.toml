@@ -19,19 +19,12 @@ ambient_decals = { path = "../crates/decals" }
 ambient_deploy = { path = "../crates/deploy" }
 ambient_ecs = { path = "../crates/ecs" }
 ambient_gizmos = { path = "../crates/gizmos" }
-ambient_gpu = { path = "../crates/gpu" }
-ambient_input = { path = "../crates/input" }
-ambient_meshes = { path = "../crates/meshes" }
-ambient_model = { path = "../crates/model" }
 ambient_model_import = { path = "../crates/model_import" }
 ambient_network = { path = "../crates/network" }
 ambient_prefab = { path = "../crates/prefab" }
 ambient_physics = { path = "../crates/physics" }
 ambient_primitives = { path = "../crates/primitives" }
-ambient_renderer = { path = "../crates/renderer" }
 ambient_rpc = { path = "../crates/rpc" }
-ambient_layout = { path = "../crates/layout" }
-ambient_text = { path = "../crates/text" }
 ambient_wasm = { path = "../crates/wasm", features = ["native"]}
 ambient_native_std = { path = "../crates/native_std" }
 ambient_ui_native = { path = "../crates/ui_native" }
@@ -41,7 +34,6 @@ ambient_water = { path = "../crates/water" }
 ambient_client_shared = { path = "../crates/client_shared/" }
 ambient_package_semantic_native = { path = "../crates/package_semantic_native" }
 
-ambient_editor_derive = { path = "../shared_crates/editor_derive" }
 ambient_element = { path = "../shared_crates/element" }
 ambient_package = { path = "../shared_crates/package" }
 ambient_package_semantic = { path = "../shared_crates/package_semantic" }
@@ -56,13 +48,9 @@ tracing-subscriber = { workspace = true, optional = true }
 tracing-log = { workspace = true, optional = true }
 time = { workspace = true }
 anyhow = { workspace = true }
-bincode = { workspace = true }
-byteorder = { workspace = true }
 clap = { workspace = true }
 convert_case = { workspace = true }
 env_logger = { workspace = true }
-futures = { workspace = true }
-flume = { workspace = true }
 glam = { workspace = true }
 log = { workspace = true }
 parking_lot = { workspace = true }
@@ -71,7 +59,6 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
 tower-http = { workspace = true }
-walkdir = { workspace = true }
 image = { workspace = true }
 tracing = { workspace = true }
 image_hasher = { workspace = true }
