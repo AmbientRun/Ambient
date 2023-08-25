@@ -28,7 +28,8 @@ use crate::{
 mod wasm;
 
 /// Construct an app and enter the main client view
-pub async fn run(
+pub fn run(
+    rt: &tokio::runtime::Runtime,
     assets: AssetCache,
     server_addr: ResolvedAddr,
     run: &RunCli,
@@ -66,26 +67,32 @@ pub async fn run(
         }
     };
 
-    AppBuilder::new()
-        .ui_renderer(true)
-        .with_asset_cache(assets)
-        .headless(headless)
-        .update_title_with_fps_stats(false)
-        .run(move |app, _runtime| {
-            *app.world.resource_mut(window_title()) = "Ambient".to_string();
-            MainApp {
-                server_addr,
-                user_id,
-                show_debug: is_debug,
-                golden_image_cmd: run.golden_image,
-                golden_image_output_dir,
-                cert,
-                mixer,
-            }
-            .el()
-            .spawn_interactive(&mut app.world);
-        })
-        .await
+    let mut app = rt
+        .block_on(
+            AppBuilder::new()
+                .ui_renderer(true)
+                .with_asset_cache(assets)
+                .headless(headless)
+                .update_title_with_fps_stats(false)
+                .build(),
+        )
+        .expect("Failed to create app");
+
+    *app.world.resource_mut(window_title()) = "Ambient".to_string();
+
+    MainApp {
+        server_addr,
+        user_id,
+        show_debug: is_debug,
+        golden_image_cmd: run.golden_image,
+        golden_image_output_dir,
+        cert,
+        mixer,
+    }
+    .el()
+    .spawn_interactive(&mut app.world);
+
+    app.run_blocking()
 }
 
 #[element_component]
