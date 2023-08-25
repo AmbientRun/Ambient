@@ -210,3 +210,6 @@ wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 js-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 wasm-bindgen-futures = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 wasm-bindgen-shared = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+
+[profile.release]
+incremental = true
