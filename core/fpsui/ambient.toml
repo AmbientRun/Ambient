@@ -6,4 +6,4 @@ content = { type = "Asset", textures = true, code = true }
 
 [dependencies]
 input_schema = { deployment = "2MvnveXZBFzrDo9Q3dLwm3" }
-afps_schema = { path = "../../schema/afps", deployment = "3SeQt6RfOae5ysQjSsYXAz" }
+afps_schema = { path = "../../schema/afps", deployment = "WhGPQCuWdq1pWfgex1fVp" }
