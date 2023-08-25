@@ -1,7 +1,7 @@
 [package]
 id = "ambient_example_instancing"
 name = "Instancing"
-description = "This show how to render many objects with a single draw call."
+description = "Render lots of objects with a single draw call."
 version = "0.0.1"
 content = { type = "Playable", example = true }
 

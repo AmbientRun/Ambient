@@ -1,7 +1,7 @@
 [package]
 id = "network"
 name = "Network"
-description = "Network_related state."
+description = "Network-related state."
 content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
 

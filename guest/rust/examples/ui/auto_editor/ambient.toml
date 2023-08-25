@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_auto_editor"
 name = "Auto editor"
+description = "Automatically create edit UI for any structs, enums etc."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/auto_editor"
 type = "Game"

@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_third_person_camera"
 name = "Third person camera"
+description = "A simple third person camera controller."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/third_person_camera"
 type = "Game"

@@ -79,7 +79,7 @@ impl RetrievableFile {
 
     /// Takes the parent of this path and joins it with the given path
     pub fn parent_join(&self, suffix: &Path) -> anyhow::Result<Self> {
-        fn parent_join(path: &Path, suffix: &Path) -> Result<PathBuf, anyhow::Error> {
+        fn parent_join(path: &Path, suffix: &Path) -> anyhow::Result<PathBuf> {
             Ok(path::normalize(
                 &path.parent().context("no parent")?.join(suffix),
             ))
@@ -94,9 +94,10 @@ impl RetrievableFile {
         })
     }
 
-    pub fn as_path(&self) -> Option<PathBuf> {
+    pub fn as_local_or_remote(&self) -> Option<LocalOrRemote> {
         match self {
-            Self::Path(v) => Some(v.to_owned()),
+            Self::Ambient(_) => None,
+            Self::Path(v) => Some(LocalOrRemote::Local(v.to_owned())),
             Self::Url(url) => {
                 #[cfg(target_os = "unknown")]
                 {
@@ -106,23 +107,36 @@ impl RetrievableFile {
 
                 #[cfg(not(target_os = "unknown"))]
                 {
-                    (url.scheme() == "file")
-                        .then(|| url.to_file_path().ok())
-                        .flatten()
+                    if url.scheme() == "file" {
+                        Some(LocalOrRemote::Local(url.to_file_path().ok()?))
+                    } else {
+                        Some(LocalOrRemote::Remote(url.clone()))
+                    }
                 }
             }
-
-            _ => None,
         }
     }
 
-    pub fn as_remote_url(&self) -> Option<&Url> {
-        match self {
-            Self::Url(url) if url.scheme() != "file" => Some(url),
-            _ => None,
+    pub fn as_local_path(&self) -> Option<PathBuf> {
+        match self.as_local_or_remote()? {
+            LocalOrRemote::Local(v) => Some(v),
+            LocalOrRemote::Remote(_) => None,
+        }
+    }
+
+    pub fn as_remote_url(&self) -> Option<Url> {
+        match self.as_local_or_remote()? {
+            LocalOrRemote::Local(_) => None,
+            LocalOrRemote::Remote(v) => Some(v.clone()),
         }
     }
 }
+
+pub enum LocalOrRemote {
+    Local(PathBuf),
+    Remote(Url),
+}
+
 #[derive(Clone, PartialEq, Debug)]
 pub struct Package {
     pub data: ItemData,

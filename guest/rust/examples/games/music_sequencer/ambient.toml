@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_music_sequencer"
 name = "Music sequencer"
+description = "Make some sweet beats."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/music_sequencer"
 type = "Game"

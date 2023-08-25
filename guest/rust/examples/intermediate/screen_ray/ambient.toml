@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_screen_ray"
 name = "Screen Ray"
+description = "Intersect a ray from the screen with the world."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/screen_ray"
 type = "Game"

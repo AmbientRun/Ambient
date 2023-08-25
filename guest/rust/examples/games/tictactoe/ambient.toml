@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_tictactoe"
 name = "Tic Tac Toe"
+description = "Aka five-in-a-row."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/tictactoe"
 type = "Game"

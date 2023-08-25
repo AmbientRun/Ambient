@@ -9,8 +9,9 @@ use std::{
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_native_std::{asset_url::AbsAssetUrl, AmbientVersion};
-use ambient_package::{BuildMetadata, Manifest as PackageManifest, Version};
-use ambient_package_semantic::{ItemId, Package, Semantic};
+use ambient_package::{BuildMetadata, BuildSettings, Manifest as PackageManifest, Version};
+use ambient_package_semantic::Semantic;
+use ambient_package_semantic_native::add_to_semantic_and_register_components;
 use ambient_std::path::path_to_unix_string_lossy;
 use anyhow::Context;
 use futures::FutureExt;
@@ -21,107 +22,39 @@ use walkdir::WalkDir;
 pub mod migrate;
 pub mod pipelines;
 
-pub struct BuildConfiguration<'a> {
-    pub build_path: PathBuf,
-    pub assets: AssetCache,
-    pub semantic: &'a mut Semantic,
-    pub optimize: bool,
-    pub clean_build: bool,
-    pub build_wasm_only: bool,
-    /// If true, the build will be optimized for deployment.
-    ///
-    /// At this moment, this is only removing the local path dependencies from the manifest.
-    pub building_for_deploy: bool,
-}
-
-pub async fn build(
-    config: BuildConfiguration<'_>,
-    root_package_id: ItemId<Package>,
-) -> anyhow::Result<PathBuf> {
-    let BuildConfiguration {
-        build_path,
-        assets,
-        semantic,
-        optimize,
-        clean_build,
-        build_wasm_only,
-        building_for_deploy,
-    } = config;
-
-    if clean_build {
-        tracing::debug!("Removing build directory: {build_path:?}");
-        match tokio::fs::remove_dir_all(&build_path).await {
-            Ok(_) => {}
-            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
-            Err(err) => {
-                return Err(err).context("Failed to remove build directory");
-            }
-        }
-    }
-
-    let mut queue = semantic.items.scope_and_dependencies(root_package_id);
-    queue.reverse();
-
-    let mut output_path = build_path.clone();
-    while let Some(package_id) = queue.pop() {
-        let id = {
-            let package = semantic.items.get(package_id);
-            if package.source.as_remote_url().is_some() {
-                continue;
-            }
-            package.data.id.clone()
-        };
-        let build_path = build_path.join(id.as_str());
-        build_package(
-            BuildConfiguration {
-                build_path: build_path.clone(),
-                assets: assets.clone(),
-                semantic,
-                optimize,
-                clean_build,
-                build_wasm_only,
-                building_for_deploy,
-            },
-            package_id,
-        )
-        .await?;
-
-        if package_id == root_package_id {
-            output_path = build_path;
-        }
-    }
-
-    Ok(output_path)
-}
-
-/// This takes the path to an Ambient package and builds it. An Ambient package is expected to
-/// have the following structure:
+/// This takes the path to a single Ambient package and builds it.
+/// It assumes all of its dependencies are already built.
+///
+/// An Ambient package is expected to have the following structure:
 ///
 /// assets/**  Here assets such as .glb files are stored. Any files found in this directory will be processed
 /// src/**  This is where you store Rust source files
 /// build  This is the output directory, and is created when building
 /// ambient.toml  This is a metadata file to describe the package
-async fn build_package(
-    config: BuildConfiguration<'_>,
-    package_id: ItemId<Package>,
-) -> anyhow::Result<()> {
-    let BuildConfiguration {
-        build_path,
-        assets,
-        semantic,
-        optimize,
-        build_wasm_only,
-        building_for_deploy,
-        ..
-    } = config;
+pub async fn build_package(
+    assets: &AssetCache,
+    settings: &BuildSettings,
+    package_path: &Path,
+    root_build_path: &Path,
+) -> anyhow::Result<PathBuf> {
+    let mut semantic = Semantic::new(settings.building_for_deploy).await?;
 
-    let (mut manifest, path) = {
-        let package = semantic.items.get(package_id);
+    let package_item_id = add_to_semantic_and_register_components(
+        &mut semantic,
+        &AbsAssetUrl(AbsAssetUrl::from_file_path(package_path).0),
+    )
+    .await?;
+
+    let package_id = semantic.items.get(package_item_id).data.id.clone();
+    let build_path = root_build_path.join(package_id.as_str());
+
+    let (mut manifest, package_path) = {
+        let package = semantic.items.get(package_item_id);
         (
             package.manifest.clone(),
             package
                 .source
-                .as_path()
+                .as_local_path()
                 .context("the package has no local path")?
                 .parent()
                 .context("the package path has no parent")?
@@ -129,56 +62,69 @@ async fn build_package(
         )
     };
 
-    let last_build_time = tokio::fs::read_to_string(build_path.join(BuildMetadata::FILENAME))
+    let build_metadata = tokio::fs::read_to_string(build_path.join(BuildMetadata::FILENAME))
         .await
         .ok()
         .map(|c| BuildMetadata::parse(&c))
-        .transpose()?
-        .and_then(|md| Some(chrono::DateTime::parse_from_rfc3339(&md.last_build_time?)))
+        .transpose()?;
+
+    let last_build_settings = build_metadata.as_ref().map(|md| &md.settings);
+    let last_build_time = build_metadata
+        .as_ref()
+        .and_then(|md| {
+            Some(chrono::DateTime::parse_from_rfc3339(
+                md.last_build_time.as_deref()?,
+            ))
+        })
         .transpose()?
         .map(|dt| dt.with_timezone(&chrono::Utc));
 
-    let last_modified_time = get_asset_files(&path)
+    // This is only used to filter out the build files that were produced by building
+    // this package individually, if they exist. This is to avoid marking this package
+    // as dirty in a whole-workspace build if it was merely built individually.
+    let package_individual_build_path = package_path.join("build");
+    // NOTE: This logic is not optimal. It *will* consider files that shouldn't be considered
+    // (like a top-level target folder, or the individual build folders of subdirectories)
+    // but it's good enough for now. In future, we may want to consider using `ignore`
+    // to filter out files that shouldn't be considered.
+    let last_modified_time = get_files_in_path(&package_path)
+        .filter(|p| !p.starts_with(&build_path) && !p.starts_with(&package_individual_build_path))
         .filter_map(|f| f.metadata().ok()?.modified().ok())
         .map(chrono::DateTime::<chrono::Utc>::from)
         .max();
 
-    let name = manifest
-        .package
-        .name
-        .as_deref()
-        .unwrap_or_else(|| manifest.package.id.as_str());
+    let name = &manifest.package.name;
 
-    if last_build_time
+    let last_modified_before_build = last_build_time
         .zip(last_modified_time)
-        .is_some_and(|(build, modified)| modified < build)
-    {
+        .is_some_and(|(build, modified)| modified < build);
+    if last_build_settings == Some(settings) && last_modified_before_build {
         tracing::info!(
             "Skipping unmodified package \"{name}\" ({})",
             manifest.package.id
         );
-        return Ok(());
+        return Ok(build_path);
     }
 
     tracing::info!("Building package \"{name}\" ({})", manifest.package.id);
 
-    let assets_path = path.join("assets");
+    let assets_path = package_path.join("assets");
     tokio::fs::create_dir_all(&build_path)
         .await
         .context("Failed to create build directory")?;
 
-    if !build_wasm_only {
-        build_assets(&assets, &assets_path, &build_path, false).await?;
+    if !settings.build_wasm_only {
+        build_assets(assets, &assets_path, &build_path, false).await?;
     }
 
-    build_rust_if_available(&path, &manifest, &build_path, optimize)
+    build_rust_if_available(&package_path, &manifest, &build_path, settings.optimize)
         .await
         .with_context(|| format!("Failed to build Rust {build_path:?}"))?;
 
     // Bodge: for local builds, rewrite the dependencies to be relative to this package,
     // assuming that they are all in the same folder
     {
-        let package = semantic.items.get(package_id);
+        let package = semantic.items.get(package_item_id);
         let alias_to_dependency = package
             .dependencies
             .iter()
@@ -198,20 +144,20 @@ async fn build_package(
             }
 
             // If we are building for deployment, remove all local path dependencies
-            if building_for_deploy {
+            if settings.building_for_deploy {
                 *path = None;
             }
         }
     }
 
     store_manifest(&manifest, &build_path).await?;
-    store_metadata(&build_path).await?;
+    store_metadata(&build_path, settings).await?;
 
-    Ok(())
+    Ok(build_path)
 }
 
-fn get_asset_files(assets_path: &Path) -> impl Iterator<Item = PathBuf> {
-    WalkDir::new(assets_path)
+fn get_files_in_path(path: &Path) -> impl Iterator<Item = PathBuf> {
+    WalkDir::new(path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
@@ -224,7 +170,7 @@ pub async fn build_assets(
     build_path: &Path,
     for_import_only: bool,
 ) -> anyhow::Result<()> {
-    let files = get_asset_files(assets_path).map(Into::into).collect_vec();
+    let files = get_files_in_path(assets_path).map(Into::into).collect_vec();
 
     let has_errored = Arc::new(AtomicBool::new(false));
 
@@ -351,7 +297,10 @@ async fn store_manifest(manifest: &PackageManifest, build_path: &Path) -> anyhow
     Ok(())
 }
 
-async fn store_metadata(build_path: &Path) -> anyhow::Result<BuildMetadata> {
+async fn store_metadata(
+    build_path: &Path,
+    settings: &BuildSettings,
+) -> anyhow::Result<BuildMetadata> {
     let AmbientVersion { version, revision } = AmbientVersion::default();
     let metadata = BuildMetadata {
         ambient_version: Version::new_from_str(&version).expect("Failed to parse version"),
@@ -359,6 +308,7 @@ async fn store_metadata(build_path: &Path) -> anyhow::Result<BuildMetadata> {
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
         last_build_time: Some(chrono::Utc::now().to_rfc3339()),
+        settings: settings.clone(),
     };
     let metadata_path = build_path.join(BuildMetadata::FILENAME);
     tokio::fs::write(&metadata_path, toml::to_string(&metadata)?).await?;

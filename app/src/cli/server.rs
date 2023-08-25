@@ -1,24 +1,37 @@
 use std::path::PathBuf;
 
-use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
+use ambient_native_std::asset_cache::AssetCache;
 use ambient_network::native::client::ResolvedAddr;
 use anyhow::Context;
 
 use crate::{
-    retrieve_manifest, server,
+    server,
     shared::certs::{CERT, CERT_KEY},
 };
 
-use super::HostCli;
+use super::{build::BuildDirectories, HostCli};
 
 pub async fn handle(
     host: &HostCli,
     view_asset_path: Option<PathBuf>,
-    build_root_path: AbsAssetUrl,
-    main_package_path: AbsAssetUrl,
+    directories: BuildDirectories,
     assets: &AssetCache,
 ) -> anyhow::Result<ResolvedAddr> {
-    let manifest = retrieve_manifest(&main_package_path, assets).await?;
+    let BuildDirectories {
+        build_root_path,
+        main_package_path,
+    } = directories;
+
+    let manifest = match main_package_path
+        .push("ambient.toml")?
+        .download_string(assets)
+        .await
+    {
+        Ok(toml) => ambient_package::Manifest::parse(&toml)?,
+        Err(_) => {
+            anyhow::bail!("Failed to find ambient.toml in package");
+        }
+    };
     let crypto = get_crypto(host)?;
 
     let working_directory = main_package_path

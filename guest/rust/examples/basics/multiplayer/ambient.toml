@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_multiplayer"
 name = "Multiplayer"
+description = "Absolutely minimal multiplayer example."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/multiplayer"
 type = "Game"

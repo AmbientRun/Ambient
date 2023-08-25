@@ -1,12 +1,8 @@
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{collections::HashMap, fmt::Display, path::PathBuf, sync::Arc};
 
 use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_native_std::asset_cache::AssetCache;
-use ambient_package_semantic::{ItemId, Package};
+use ambient_package_semantic_native::{WasmSpawnRequest, WasmSpawnResponse};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{module_name, remote_paired_id, spawn_module, MessageType};
 use anyhow::Context;
@@ -45,46 +41,59 @@ pub async fn initialize(
 }
 
 /// `enabled` is passed here as we need knowledge of the other packages to determine if this package should be enabled or not
-pub fn instantiate_package(
+pub fn spawn_package(
     world: &mut World,
-    package_id: ItemId<Package>,
-    enabled: bool,
-) -> anyhow::Result<()> {
+    request: WasmSpawnRequest,
+) -> anyhow::Result<WasmSpawnResponse> {
+    let WasmSpawnRequest {
+        client_modules,
+        server_modules,
+    } = request;
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+    enum Side {
+        Client,
+        Server,
+    }
+    impl Side {
+        fn as_str(&self) -> &'static str {
+            match self {
+                Side::Client => "client",
+                Side::Server => "server",
+            }
+        }
+        fn corresponding(&self) -> Self {
+            match self {
+                Side::Client => Side::Server,
+                Side::Server => Side::Client,
+            }
+        }
+    }
+    impl Display for Side {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{}", self.as_str())
+        }
+    }
+
+    // Spawn all of the modules for each side, collecting them as we go
     let mut modules_to_entity_ids = HashMap::new();
-    for target in ["client", "server"] {
-        let (package_name, package_enabled, build_metadata) = {
-            let semantic = ambient_package_semantic_native::world_semantic(world);
-            let semantic = semantic.lock().unwrap();
-            let scope = semantic.items.get(package_id);
-
-            (
-                scope.data.id.to_string(),
-                enabled,
-                scope
-                    .build_metadata
-                    .as_ref()
-                    .context("no build metadata in package")?
-                    .clone(),
-            )
-        };
-        let wasm_component_paths: &[String] = build_metadata.component_paths(target);
-
-        for path in wasm_component_paths {
-            let path = Path::new(path);
-            let name = path
+    for (target, modules) in [
+        (Side::Client, client_modules),
+        (Side::Server, server_modules),
+    ] {
+        for (url, enabled) in modules {
+            let name = url
                 .file_stem()
-                .context("no file stem for {path:?}")?
-                .to_string_lossy();
+                .context("no file stem for {url}")?
+                .to_owned();
 
-            let bytecode_url =
-                ambient_package_semantic_native::file_path(world, &package_name, path)?;
-            let id = spawn_module(world, bytecode_url, package_enabled, target == "server");
+            let id = spawn_module(world, url, enabled, target == Side::Server);
             modules_to_entity_ids.insert(
                 (
                     target,
                     // Support `client_module`, `module_client` and `module`
-                    name.strip_prefix(target)
-                        .or_else(|| name.strip_suffix(target))
+                    name.strip_prefix(target.as_str())
+                        .or_else(|| name.strip_suffix(target.as_str()))
                         .unwrap_or(name.as_ref())
                         .trim_matches('_')
                         .to_string(),
@@ -94,16 +103,27 @@ pub fn instantiate_package(
         }
     }
 
+    // Associate a module with its paired module
+    // TODO: make this send to the package instead of the module so that we get routing for free
     for ((target, name), id) in modules_to_entity_ids.iter() {
-        let corresponding = match *target {
-            "client" => "server",
-            "server" => "client",
-            _ => unreachable!(),
-        };
-        if let Some(other_id) = modules_to_entity_ids.get(&(corresponding, name.clone())) {
+        if let Some(other_id) = modules_to_entity_ids.get(&(target.corresponding(), name.clone())) {
             world.add_component(*id, remote_paired_id(), *other_id)?;
         }
     }
 
-    Ok(())
+    // Collect the modules that were spawned
+    let mut client_modules = vec![];
+    let mut server_modules = vec![];
+    for ((target, _), id) in modules_to_entity_ids {
+        let modules = match target {
+            Side::Client => &mut client_modules,
+            Side::Server => &mut server_modules,
+        };
+        modules.push(id);
+    }
+
+    Ok(WasmSpawnResponse {
+        client_modules,
+        server_modules,
+    })
 }

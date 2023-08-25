@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_physics"
 name = "Physics"
+description = "Make things collide and interact in a physically realistic way."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics"
 type = "Game"

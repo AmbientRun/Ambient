@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_dependencies"
-name = "dependencies"
+name = "Dependencies"
+description = "Break your project up into packages."
 version = "0.0.1"
 content = { type = "Playable", example = true }
 

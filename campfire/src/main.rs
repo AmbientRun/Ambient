@@ -8,7 +8,7 @@ use campfire::{
 use clap::Parser;
 
 async fn run() -> anyhow::Result<()> {
-    if !std::path::Path::new("shared_crates/schema/src/ambient.toml").exists() {
+    if !std::path::Path::new("schema/ambient.toml").exists() {
         anyhow::bail!("ambient.toml not found. Please run this from the root of the Ambient repository (preferably using `cargo campfire`).");
     }
 

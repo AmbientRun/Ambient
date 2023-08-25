@@ -21,6 +21,7 @@ ambient_rustc = { path = "../rustc" }
 ambient_decals = { path = "../decals" }
 ambient_wasm = { path = "../wasm" }
 ambient_pipeline_types = { path = "../pipeline_types" }
+ambient_package_semantic_native = { path = "../package_semantic_native" }
 
 ambient_package = { path = "../../shared_crates/package" }
 ambient_package_semantic = { path = "../../shared_crates/package_semantic" }

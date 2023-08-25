@@ -14,6 +14,7 @@ includes = [
     "schema/layout.toml",
     "schema/model.toml",
     "schema/network.toml",
+    "schema/package.toml",
     "schema/physics.toml",
     "schema/player.toml",
     "schema/prefab.toml",

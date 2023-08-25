@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_clock"
-name = "clock"
+name = "Clock"
+description = "A slightly more advanced example."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/clock"
 type = "Game"

@@ -1,7 +1,7 @@
 [package]
 id = "ambient_example_asset_loading"
 name = "Asset Loading"
-description = "This shows how to load assets, and how to work with the asset pipeline."
+description = "Load and render models (gltf, fbx, etc.)"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/asset_loading"
 type = "Game"

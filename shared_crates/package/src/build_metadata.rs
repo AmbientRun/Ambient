@@ -17,6 +17,8 @@ pub struct BuildMetadata {
     pub server_component_paths: Vec<String>,
     #[serde(default)]
     pub last_build_time: Option<String>,
+    #[serde(default)]
+    pub settings: BuildSettings,
 }
 
 impl BuildMetadata {
@@ -33,4 +35,11 @@ impl BuildMetadata {
     pub fn parse(contents: &str) -> Result<Self, BuildMetadataError> {
         Ok(toml::from_str(contents)?)
     }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Default)]
+pub struct BuildSettings {
+    pub optimize: bool,
+    pub build_wasm_only: bool,
+    pub building_for_deploy: bool,
 }
