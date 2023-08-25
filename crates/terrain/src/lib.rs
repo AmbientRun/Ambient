@@ -56,8 +56,6 @@ use serde::{Deserialize, Serialize};
 pub use terrain_shader::*;
 use tracing::info_span;
 
-use crate::terrain_shader::{TerrainMaterial, TerrainMaterialParams};
-
 pub mod brushes;
 mod gather_spread;
 pub mod intents;

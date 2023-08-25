@@ -1,3 +1,7 @@
+// TODO: reconsider this allow - we should look into the flags and fix them and/or
+// switch to bitflags 2
+#![allow(clippy::bad_bit_mask)]
+
 use std::ptr::null_mut;
 
 use glam::Vec3;

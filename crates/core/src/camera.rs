@@ -493,7 +493,7 @@ impl Camera {
         let p1 = split_z(linear_factor, near, far, cascade_index + 1, n_cascades);
         let z0 = main_projection.project_point3(vec3(0., 0., p0)).z;
         let z1 = main_projection.project_point3(vec3(0., 0., p1)).z;
-        let frustum = vec![
+        let frustum = [
             Vec3::new(-1.0, -1.0, z0),
             Vec3::new(-1.0, 1.0, z0),
             Vec3::new(1.0, -1.0, z0),

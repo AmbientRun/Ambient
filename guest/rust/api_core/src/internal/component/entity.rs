@@ -63,7 +63,7 @@ impl Entity {
 
     /// Merges in the `other` Entity; any fields that were present in both will be replaced by `other`'s.
     pub fn merge(&mut self, other: Entity) {
-        self.0.extend(other.0.into_iter());
+        self.0.extend(other.0);
     }
 
     /// Spawns an entity with these components.

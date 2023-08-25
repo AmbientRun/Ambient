@@ -82,7 +82,7 @@ async fn init(app: &mut App) {
         .with(world_bounding_aabb(), aabb)
         .with(primitives(), prims)
         .with(lod_cutoffs(), LodCutoffs::new(&lods))
-        .with(gpu_lod(), Default::default())
+        .with(gpu_lod(), ())
         .spawn(world);
 
     ambient_cameras::spherical::new(

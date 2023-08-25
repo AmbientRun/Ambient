@@ -28,7 +28,9 @@ pub async fn build(
     building_for_deploy: bool,
 ) -> anyhow::Result<BuildDirectories> {
     let Some(package) = package_cli else {
-        return Ok(BuildDirectories::new_with_same_paths(package_path.url.clone()));
+        return Ok(BuildDirectories::new_with_same_paths(
+            package_path.url.clone(),
+        ));
     };
 
     if package.no_build {
@@ -38,7 +40,9 @@ pub async fn build(
     }
 
     let Some(package_fs_path) = package_path.fs_path else {
-        return Ok(BuildDirectories::new_with_same_paths(package_path.url.clone()));
+        return Ok(BuildDirectories::new_with_same_paths(
+            package_path.url.clone(),
+        ));
     };
 
     let build_path = package_fs_path.join("build");
