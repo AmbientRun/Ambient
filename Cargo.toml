@@ -213,3 +213,4 @@ wit-component = "0.11.0"
 # wasm-bindgen-shared = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 wasmtime = { git = "https://github.com/bytecodealliance/wasmtime" }
 wasmtime-wasi = { git = "https://github.com/bytecodealliance/wasmtime" }
+wasi-common = { version = "13.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
