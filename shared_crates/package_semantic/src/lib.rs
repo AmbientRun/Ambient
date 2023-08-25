@@ -16,7 +16,7 @@ mod scope;
 pub use scope::{Context, Scope};
 
 mod package;
-pub use package::{Dependency, Package, PackageLocator, RetrievableFile};
+pub use package::{Dependency, LocalOrRemote, Package, PackageLocator, RetrievableFile};
 
 mod item;
 pub use item::{

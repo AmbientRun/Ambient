@@ -61,7 +61,7 @@ pub async fn build_package(
             package.manifest.clone(),
             package
                 .source
-                .as_path()
+                .as_local_path()
                 .context("the package has no local path")?
                 .parent()
                 .context("the package path has no parent")?

@@ -97,7 +97,7 @@ pub async fn build<
             .items
             .scope_and_dependencies(primary_package_scope_id)
             .into_iter()
-            .flat_map(|id| semantic.items.get(id).source.as_path())
+            .flat_map(|id| semantic.items.get(id).source.as_local_path())
             .rev()
             .collect()
     };
