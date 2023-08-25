@@ -70,7 +70,7 @@ pub async fn handle(
             .cloned()
             .collect();
 
-        build::build(
+        let result = build::build(
             assets,
             package_path.clone(),
             package.clean_build,
@@ -152,6 +152,8 @@ pub async fn handle(
         )
         .await?;
 
+        let main_package_name = result.main_package_name;
+
         let deployment_id = manifest_path_to_deployment_id
             .lock()
             .get(&package_path.join("ambient.toml"))
@@ -160,13 +162,14 @@ pub async fn handle(
 
         match deployment_id {
             Deployment::Skipped => {
-                log::info!("Package was already deployed, skipping deployment");
+                log::info!(
+                    "Package \"{main_package_name}\" was already deployed, skipping deployment"
+                );
             }
             Deployment::Deployed(deployment_id) => {
-                log::info!("Package deployed successfully!");
-                log::info!(
-                    "Deployment ID: {deployment_id} | Deploy URL: https://assets.ambient.run/{deployment_id}"
-                );
+                log::info!("Package \"{main_package_name}\" deployed successfully!");
+                log::info!("  Deployment ID: {deployment_id}");
+                log::info!("  Deploy URL: https://assets.ambient.run/{deployment_id}");
 
                 if first_deployment_id.is_none() {
                     first_deployment_id = Some(deployment_id);

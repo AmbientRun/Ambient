@@ -13,13 +13,16 @@ use super::PackageCli;
 pub struct BuildDirectories {
     /// The location where all built packages are stored. Used for the HTTP host.
     pub build_root_path: AbsAssetUrl,
-    /// The location of the main package being executed. Used for everything else.
+    /// The location of the main package being built. Used for everything else.
     pub main_package_path: AbsAssetUrl,
+    /// The name of the main package being built.
+    pub main_package_name: String,
 }
 impl BuildDirectories {
     pub fn new_with_same_paths(path: AbsAssetUrl) -> Self {
         Self {
             build_root_path: path.clone(),
+            main_package_name: "Remote package".to_string(),
             main_package_path: path,
         }
     }
@@ -123,11 +126,13 @@ pub async fn build<
     // A fresh semantic is used to ensure that the package is being built with
     // the correct dependencies after they have been deployed (if necessary).
     let mut output_path = root_build_path.clone();
+    let mut output_package_name = String::new();
     while let Some(manifest_path) = queue.pop() {
         pre_build(manifest_path.clone()).await?;
 
         let BuildResult {
             build_path,
+            package_name,
             was_built,
         } = ambient_build::build_package(assets, &settings, &manifest_path, &root_build_path)
             .await?;
@@ -136,11 +141,13 @@ pub async fn build<
 
         if AbsAssetUrl::from_file_path(manifest_path) == main_manifest_url {
             output_path = build_path;
+            output_package_name = package_name;
         }
     }
 
     anyhow::Ok(BuildDirectories {
         build_root_path: AbsAssetUrl::from_file_path(root_build_path),
         main_package_path: AbsAssetUrl::from_file_path(output_path),
+        main_package_name: output_package_name,
     })
 }

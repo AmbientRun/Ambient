@@ -27,6 +27,7 @@ pub mod pipelines;
 #[derive(Clone, Debug)]
 pub struct BuildResult {
     pub build_path: PathBuf,
+    pub package_name: String,
     pub was_built: bool,
 }
 
@@ -169,6 +170,7 @@ pub async fn build_package(
         );
         return Ok(BuildResult {
             build_path,
+            package_name: package_name.clone(),
             was_built: false,
         });
     }
@@ -197,6 +199,7 @@ pub async fn build_package(
 
     Ok(BuildResult {
         build_path,
+        package_name: package_name.clone(),
         was_built: true,
     })
 }

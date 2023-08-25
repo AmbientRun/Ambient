@@ -20,6 +20,7 @@ pub async fn handle(
     let BuildDirectories {
         build_root_path,
         main_package_path,
+        main_package_name: _,
     } = directories;
 
     let manifest = match main_package_path
