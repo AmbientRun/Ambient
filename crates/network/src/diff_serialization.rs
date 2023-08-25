@@ -547,7 +547,9 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedComponentDescVisitor<'a> {
                 let component = with_component_registry(|r| r.get_by_path(path));
                 match component {
                     Some(desc) => Ok(desc),
-                    None => Err(serde::de::Error::custom(format!("No such component: {v}"))),
+                    None => Err(serde::de::Error::custom(format!(
+                        "Encountered unknown networked component: {v} {path:?}"
+                    ))),
                 }
             }
             None => Err(serde::de::Error::custom(format!(
