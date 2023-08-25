@@ -1,7 +1,7 @@
 [package]
 id = "input_schema"
 name = "Input Schema"
-description = "Probably something to standardize"
+description = "Schema for input interoperability"
 version = "0.0.1"
 content = { type = "Asset", schema = true }
 

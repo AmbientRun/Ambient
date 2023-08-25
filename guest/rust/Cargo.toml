@@ -63,6 +63,7 @@ members = [
 
     # Packages
     "packages/tools/console",
+    "packages/tools/editor",
     "packages/tools/package_manager",
 ]
 resolver = "2"
