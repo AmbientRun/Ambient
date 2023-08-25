@@ -75,7 +75,9 @@ pub fn main() {
     });
 
     Input::subscribe(move |source, msg| {
-        let Some(player_id) = source.client_entity_id() else { return; };
+        let Some(player_id) = source.client_entity_id() else {
+            return;
+        };
 
         entity::set_component(player_id, player_movement_direction(), msg.direction);
         entity::set_component(player_id, player_mouse_delta_x(), msg.mouse_delta_x);

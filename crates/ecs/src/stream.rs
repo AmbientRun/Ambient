@@ -152,7 +152,7 @@ impl WorldDiff {
                 .collect();
             added
                 .into_iter()
-                .chain(removed.into_iter())
+                .chain(removed)
                 .chain(std::iter::once(WorldChange::SetComponents(id, changed)))
         });
 

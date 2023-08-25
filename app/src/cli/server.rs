@@ -56,7 +56,6 @@ pub async fn handle(
 
 fn get_crypto(host: &HostCli) -> anyhow::Result<ambient_network::native::server::Crypto> {
     let Some((cert_file, key_file)) = host.cert.as_ref().zip(host.key.as_ref()) else {
-
         #[cfg(feature = "no_bundled_certs")]
         {
             anyhow::bail!("--cert and --key are required without bundled certs.");
@@ -65,9 +64,9 @@ fn get_crypto(host: &HostCli) -> anyhow::Result<ambient_network::native::server:
         {
             tracing::info!("Using bundled certificate and key");
             return Ok(ambient_network::native::server::Crypto {
-                            cert_chain: vec![CERT.to_vec()],
-                            key: CERT_KEY.to_vec(),
-                        });
+                cert_chain: vec![CERT.to_vec()],
+                key: CERT_KEY.to_vec(),
+            });
         }
     };
 

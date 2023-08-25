@@ -31,7 +31,9 @@ pub fn main() {
 
     // 1
     Hello::subscribe(|source, data| {
-        let Some(user_id) = source.client_user_id() else { return; };
+        let Some(user_id) = source.client_user_id() else {
+            return;
+        };
         println!("{user_id}: {:?}", data);
 
         let source_reliable = data.source_reliable;

@@ -54,11 +54,18 @@ pub async fn handle(
                         .await?
                         .parse()?;
 
-                let Some(dependencies) = manifest.as_table_mut().get_mut("dependencies") else { return Ok(()); };
+                let Some(dependencies) = manifest.as_table_mut().get_mut("dependencies") else {
+                    return Ok(());
+                };
 
                 for (_, dependency) in dependencies.as_table_like_mut().unwrap().iter_mut() {
-                    let Some(dependency) = dependency.as_table_like_mut() else { continue; };
-                    let Some(dependency_path) = dependency.get("path").and_then(|i| i.as_str()) else { continue; };
+                    let Some(dependency) = dependency.as_table_like_mut() else {
+                        continue;
+                    };
+                    let Some(dependency_path) = dependency.get("path").and_then(|i| i.as_str())
+                    else {
+                        continue;
+                    };
 
                     let dependency_manifest_path = ambient_std::path::normalize(
                         &package_path.join(dependency_path).join("ambient.toml"),

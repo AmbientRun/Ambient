@@ -40,7 +40,7 @@ impl PxShape {
                 physx_sys::PxPhysics_createShape_mut_1(
                     physics.0,
                     geometry.as_geometry_ptr(),
-                    mats.as_ptr() as *const *mut physx_sys::PxMaterial,
+                    mats.as_ptr(),
                     materials.len() as u16,
                     is_exclusive.unwrap_or(false),
                     physx_sys::PxShapeFlags {

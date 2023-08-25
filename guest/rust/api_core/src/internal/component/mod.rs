@@ -23,10 +23,7 @@ pub struct Component<T> {
 }
 impl<T> Clone for Component<T> {
     fn clone(&self) -> Self {
-        Self {
-            index: self.index,
-            _phantom: PhantomData,
-        }
+        *self
     }
 }
 impl<T> Copy for Component<T> {}

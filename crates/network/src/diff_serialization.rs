@@ -258,8 +258,7 @@ impl DiffSerializer {
         // serialize them so that deserialize can map idx to component path
         let mut buffer = bincode_options().serialize(&unknown_components)?;
         // keep them
-        self.known_component_paths
-            .extend(unknown_components.into_iter());
+        self.known_component_paths.extend(unknown_components);
         // serialize the actual change
         buffer.extend_from_slice(&bincode_options().serialize(&NetworkedWorldDiff(diff))?);
         Ok(buffer.into())
@@ -301,8 +300,7 @@ impl DiffSerializer {
             bincode::Deserializer::with_reader(message.as_ref(), bincode_options());
         // deserialize component paths we should know about
         let unknown_components = HashMap::<u32, String>::deserialize(&mut deserializer)?;
-        self.known_component_paths
-            .extend(unknown_components.into_iter());
+        self.known_component_paths.extend(unknown_components);
         // deserialize the actual changes
         deserializer.deserialize_seq(NetworkedChangesVisitor::from(&*self))
     }
@@ -474,7 +472,10 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedEntityVisitor<'a> {
         let mut entity = Entity::new();
         while let Some(desc) = map.next_key_seed(NetworkedComponentDescVisitor::from(self))? {
             let Some(ser) = desc.attribute::<Serializable>() else {
-                return Err(serde::de::Error::custom(format!("tried to deserialize non-serializable component {:?}", desc)));
+                return Err(serde::de::Error::custom(format!(
+                    "tried to deserialize non-serializable component {:?}",
+                    desc
+                )));
             };
             let entry = map.next_value_seed(ser.deserializer(desc))?;
             entity.set_entry(entry);
@@ -586,7 +587,10 @@ impl<'a, 'de> serde::de::Visitor<'de> for NetworkedComponentEntryVisitor<'a> {
             .next_element_seed(NetworkedComponentDescVisitor::from(self))?
             .ok_or_else(|| serde::de::Error::invalid_length(0, &self))?;
         let Some(ser) = desc.attribute::<Serializable>() else {
-            return Err(serde::de::Error::custom(format!("tried to deserialize non-serializable component {:?}", desc)));
+            return Err(serde::de::Error::custom(format!(
+                "tried to deserialize non-serializable component {:?}",
+                desc
+            )));
         };
         let entry = seq
             .next_element_seed(ser.deserializer(desc))?
@@ -719,7 +723,10 @@ impl<'a> serde::Serialize for NetworkedComponentEntry<'a> {
         let mut seq = serializer.serialize_tuple(2)?;
         seq.serialize_element(&self.0.desc().index())?;
         let Some(ser) = self.0.desc().attribute::<Serializable>() else {
-            return Err(serde::ser::Error::custom(format!("tried to serialize non-serializable component {:?}", self.0)));
+            return Err(serde::ser::Error::custom(format!(
+                "tried to serialize non-serializable component {:?}",
+                self.0
+            )));
         };
         seq.serialize_element(ser.serialize(self.0))?;
         seq.end()

@@ -274,7 +274,7 @@ pub struct Frustum {
 }
 impl Frustum {
     pub fn from_inv_projection_view(inv_projection_view: Mat4) -> Option<Frustum> {
-        let points = vec![
+        let points = [
             inv_projection_view.project_point3(vec3(-1.0, -1.0, -1.0)),
             inv_projection_view.project_point3(vec3(-1.0, -1.0, 1.0)),
             inv_projection_view.project_point3(vec3(-1.0, 1.0, -1.0)),

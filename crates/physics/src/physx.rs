@@ -128,7 +128,9 @@ pub fn sync_ecs_physics() -> SystemGroup {
                 .excl(rigid_static())
                 .to_system(|q, world, qs, _| {
                     for (id, shape) in q.collect_cloned(world, qs) {
-                        let Some(actor) = shape.get_actor() else { continue; };
+                        let Some(actor) = shape.get_actor() else {
+                            continue;
+                        };
 
                         if let Some(body) = actor.to_rigid_dynamic() {
                             world.add_component(id, rigid_dynamic(), body).unwrap();
