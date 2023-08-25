@@ -52,5 +52,5 @@ async-trait = { workspace = true }
 dyn-clonable = { workspace = true }
 symphonia = { workspace = true }
 vorbis_rs = { workspace = true }
-optivorbis = { workspace = true }
+rand = { workspace = true }
 chrono = { workspace = true }
