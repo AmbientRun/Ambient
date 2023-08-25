@@ -2,8 +2,6 @@ use ambient_native_std::asset_url::AssetType;
 use ambient_pipeline_types::audio::AudioPipeline;
 use ambient_world_audio::AudioNode;
 use anyhow::Context;
-use optivorbis::Remuxer;
-use std::io::Cursor;
 use tracing::{info_span, Instrument};
 
 use super::{
@@ -149,6 +147,9 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
         .make(&track.codec_params, &dec_opts)
         .context("Failed to create audio decoder")?;
 
+    // randomize an ogg stream serial number
+    let stream_serial: i32 = rand::random();
+
     // retrieve the sampling rate from the input file
     let sampling_rate: NonZeroU32 = decoder
         .codec_params()
@@ -174,7 +175,7 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
 
     // create the ogg Vorbis encoder
     let mut encoder = VorbisEncoder::new(
-        0,             // OptiVorbis already randomizes serials
+        stream_serial,
         [("", ""); 0], // no tags
         sampling_rate,
         channels,
@@ -221,16 +222,6 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
 
     // finish encoding
     let output = encoder.finish()?;
-    let output_size = output.len();
-    tracing::debug!("Encoded samples for {output_size} bytes");
-
-    // optimize generated file
-    let mut optimized_output = Vec::with_capacity(output_size);
-    optivorbis::OggToOgg::new_with_defaults().remux(Cursor::new(output), &mut optimized_output)?;
-    tracing::debug!(
-        "Optimized samples from {output_size} bytes -> {} bytes",
-        optimized_output.len()
-    );
-
-    Ok(optimized_output)
+    tracing::debug!("Encoded {} samples", output.len());
+    Ok(output)
 }
