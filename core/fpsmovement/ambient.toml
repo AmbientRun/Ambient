@@ -1,8 +1,10 @@
-[ember]
+[package]
 id = "afps_fpsmovement"
 name = "AFPS Movmement"
+version = "0.0.1"
+content = { type = "Asset", code = true }
 
 [dependencies]
-afps_schema = { path = "../../schema/afps" }
-input_schema = { path = "../../schema/input" }
+afps_schema = { path = "../../schema/afps", deployment = "3SeQt6RfOae5ysQjSsYXAz" }
+input_schema = { deployment = "5FtTnXIRnBg3XVIp0Ol48b" }
 editor_schema = { path = "../../schema/editor" }

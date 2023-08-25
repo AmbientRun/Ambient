@@ -18,7 +18,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::afps_schema::{
+use packages::afps_schema::{
     components::{
         self, heal_timeout, hit_freeze, player_deathcount, player_health, player_killcount,
         player_name, player_team, player_vspeed,
@@ -60,7 +60,7 @@ pub fn main() {
             //     let laser_center = (hit.position + msg.ray_origin) / 2.0;
             //     let laser = Entity::new()
             //         .with_merge(make_transformable())
-            //         .with_default(cube())
+            //         .with(cube(), ())
             //         .with(scale(), vec3(0.01, 0.01, laser_length * 0.6))
             //         .with(translation(), laser_center)
             //         .with(rotation(), rotation_quat)
@@ -97,10 +97,10 @@ pub fn main() {
                             * Quat::from_rotation_x(random::<f32>() * PI);
                         Entity::new()
                             .with_merge(make_transformable())
-                            .with_default(cube())
+                            .with(cube(), ())
                             .with(rotation(), rot)
-                            .with_default(physics_controlled())
-                            .with_default(cast_shadows())
+                            .with(physics_controlled(), ())
+                            .with(cast_shadows(), ())
                             .with(linear_velocity(), new_linear_velocity)
                             .with(angular_velocity(), new_angular_velocity)
                             // .with(linear_velocity(), vec3(0.0, 0.0, 10.0)) //random::<Vec3>() * 20.0 - 10.0)

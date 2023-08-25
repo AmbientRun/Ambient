@@ -6,7 +6,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::{
+use packages::{
     afps_schema::{
         components::{hit_freeze, player_cam_ref},
         messages::Input,
@@ -124,7 +124,7 @@ struct InputLock {
 impl InputLock {
     fn new() -> Self {
         // We keep the refcount local to this struct and not in the ECS
-        // so that other embers can't mess with it.
+        // so that other packages can't mess with it.
         let refcount = Rc::new(RefCell::new(0));
         let subscribers = vec![
             RequestInput::subscribe({

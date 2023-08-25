@@ -18,20 +18,22 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::{
-    editor::{
+use packages::{
+    editor_schema::components::in_editor,
+    this::{
         components::{
             camera_angle, editor_camera, mouseover_entity, mouseover_position, selected_entity,
         },
         messages::{Input, ToggleEditor},
     },
-    editor_schema::components::in_editor,
 };
 
 #[main]
 pub fn main() {
     ToggleEditor::subscribe(|source, _| {
-        let Some(id) = source.client_entity_id() else { return; };
+        let Some(id) = source.client_entity_id() else {
+            return;
+        };
 
         let in_editor = entity::mutate_component_with_default(id, in_editor(), true, |in_editor| {
             *in_editor = !*in_editor;
@@ -58,7 +60,7 @@ pub fn main() {
             let camera_id = Entity::new()
                 .with_merge(make_perspective_infinite_reverse_camera())
                 .with(aspect_ratio_from_window(), EntityId::resources())
-                .with_default(main_scene())
+                .with(main_scene(), ())
                 .with(user_id(), player_user_id)
                 .with(translation(), new_camera_position)
                 .with(camera_angle(), new_camera_angle)
@@ -78,12 +80,16 @@ pub fn main() {
     });
 
     Input::subscribe(|source, msg| {
-        let Some(id) = source.client_entity_id() else { return; };
+        let Some(id) = source.client_entity_id() else {
+            return;
+        };
         if !entity::get_component(id, in_editor()).unwrap_or_default() {
             return;
         }
 
-        let Some(camera_id) = entity::get_component(id, editor_camera()) else { return; };
+        let Some(camera_id) = entity::get_component(id, editor_camera()) else {
+            return;
+        };
 
         let angle = entity::mutate_component_with_default(
             camera_id,
@@ -160,7 +166,9 @@ pub fn get_active_camera(player_user_id: &str) -> Option<EntityId> {
 }
 
 fn deselect(player_id: EntityId) -> Option<EntityId> {
-    let Some(selected_id) = entity::get_component(player_id, selected_entity()) else { return None; };
+    let Some(selected_id) = entity::get_component(player_id, selected_entity()) else {
+        return None;
+    };
     entity::remove_component(selected_id, outline_recursive());
     entity::remove_component(player_id, selected_entity());
 

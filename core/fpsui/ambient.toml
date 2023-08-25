@@ -1,7 +1,9 @@
-[ember]
+[package]
 id = "afps_fpsui"
 name = "AFPS UI"
+version = "0.0.1"
+content = { type = "Asset", textures = true, code = true }
 
 [dependencies]
-input_schema = { path = "../../schema/input" }
-afps_schema = { path = "../../schema/afps" }
+input_schema = { deployment = "5FtTnXIRnBg3XVIp0Ol48b" }
+afps_schema = { path = "../../schema/afps", deployment = "3SeQt6RfOae5ysQjSsYXAz" }

@@ -1,7 +1,9 @@
-[ember]
+[package]
 id = "editor_schema"
 name = "Editor Schema"
+version = "0.0.1"
 description = "Probably something to standardize"
+content = { type = "Asset", schema = true }
 
 [components]
 # Player components

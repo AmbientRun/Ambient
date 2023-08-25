@@ -3,7 +3,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::afps_schema::{
+use packages::afps_schema::{
     components::{
         player_cam_ref, player_direction, player_jumping, player_name, player_pitch,
         player_running, player_shooting_status, player_vspeed, player_yaw, player_zoomed,

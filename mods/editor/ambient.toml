@@ -1,7 +1,8 @@
-[ember]
+[package]
 id = "editor"
 name = "editor"
 version = "0.0.1"
+content = { type = "Tool" }
 
 [dependencies]
 editor_schema = { path = "../../schema/editor" }

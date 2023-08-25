@@ -19,9 +19,9 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::{
-    afps_fpsmodel::assets,
+use packages::{
     afps_schema::components::{player_cam_ref, player_model_ref, player_name, player_zoomed},
+    this::assets,
 };
 
 #[main]
@@ -40,15 +40,15 @@ pub async fn main() {
                 let cam = Entity::new()
                     .with_merge(make_perspective_infinite_reverse_camera())
                     .with(aspect_ratio_from_window(), EntityId::resources())
-                    .with_default(main_scene())
+                    .with(main_scene(), ())
                     .with(parent(), id)
                     .with(user_id(), uid)
                     // this is FPS
                     // .with(translation(), vec3(0.0, 0.2, 2.0))
                     // third person
                     .with(translation(), vec3(0.0, 4.0, 3.0))
-                    .with_default(local_to_parent())
-                    // .with_default(local_to_world())
+                    .with(local_to_parent(), Default::default())
+                    // .with(local_to_world(), Default::default())
                     .with(
                         rotation(),
                         Quat::from_rotation_x(std::f32::consts::FRAC_PI_2),
@@ -58,7 +58,7 @@ pub async fn main() {
                     .with_merge(make_transformable())
                     .with(prefab_from_url(), assets::url("Y Bot.fbx"))
                     .with(rotation(), Quat::from_rotation_z(-std::f32::consts::PI))
-                    .with_default(local_to_parent())
+                    .with(local_to_parent(), Default::default())
                     .with(parent(), id)
                     .spawn();
                 entity::add_components(
@@ -69,9 +69,9 @@ pub async fn main() {
                         // with physics::move_character
                         .with(character_controller_height(), 2.0)
                         .with(character_controller_radius(), 0.3)
-                        .with_default(physics_controlled())
+                        .with(physics_controlled(), ())
                         // adjust the initial position
-                        .with_default(local_to_world())
+                        .with(local_to_world(), Default::default())
                         .with(
                             translation(),
                             vec3(random::<f32>() * 20., random::<f32>() * 20., 2.0),

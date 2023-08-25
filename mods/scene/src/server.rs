@@ -16,31 +16,31 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::afps_schema::components::player_team;
+use packages::afps_schema::components::player_team;
 
 #[main]
 pub async fn main() {
     Entity::new()
-        .with_default(quad())
-        .with_default(plane_collider())
+        .with(quad(), ())
+        .with(plane_collider(), ())
         .with(scale(), Vec3::ONE * 1000.)
         .spawn();
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(sky())
+        .with(sky(), ())
         .spawn();
     // Entity::new()
     //     .with(translation(), vec3(10., 10., 0.))
-    //     .with_default(cube())
+    //     .with(cube(), ())
     //     .with(cube_collider(), vec3(1., 1., 1.))
-    //     .with_default(physics_controlled())
+    //     .with(physics_controlled(), ())
     //     .with(dynamic(), true)
     //     .spawn();
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(sun())
+        .with(sun(), Default::default())
         .with(rotation(), Quat::from_rotation_y(-0.6))
-        .with_default(main_scene())
+        .with(main_scene(), ())
         .with(light_diffuse(), Vec3::ONE)
         .with(fog_density(), 0.1)
         .spawn();
@@ -49,8 +49,8 @@ pub async fn main() {
         let pos = random::<Vec2>() * 100. - 50.;
         Entity::new()
             .with_merge(make_sphere())
-            .with_default(cast_shadows())
-            .with_default(cube())
+            .with(cast_shadows(), ())
+            .with(cube(), ())
             .with(translation(), vec3(pos.x, pos.y, 0.0))
             .with(color(), vec4(0.9, 0.9, 0.9, 1.))
             .with(cube_collider(), Vec3::ONE)
@@ -62,7 +62,7 @@ pub async fn main() {
                     random::<f32>() * 7. + 0.5,
                 ),
             )
-            .with_default(physics_controlled())
+            .with(physics_controlled(), ())
             .with(dynamic(), true)
             .spawn();
     }
@@ -71,8 +71,8 @@ pub async fn main() {
         let pos = random::<Vec2>() * 100. - 50.;
         Entity::new()
             .with_merge(make_sphere())
-            .with_default(cast_shadows())
-            .with_default(cube())
+            .with(cast_shadows(), ())
+            .with(cube(), ())
             .with(translation(), vec3(pos.x, pos.y, 0.0))
             .with(
                 color(),
@@ -87,7 +87,7 @@ pub async fn main() {
                     random::<f32>() * 7. + 0.5,
                 ),
             )
-            .with_default(physics_controlled())
+            .with(physics_controlled(), ())
             .with(dynamic(), true)
             .with(player_team(), 0)
             .spawn();

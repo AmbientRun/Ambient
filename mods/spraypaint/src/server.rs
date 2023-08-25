@@ -18,10 +18,10 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::afps_schema::components;
-use embers::{
+use packages::afps_schema::components;
+use packages::{
     afps_schema::messages::Explosion,
-    afps_spraypaint::{assets, components::claymore, messages::Spraypaint},
+    this::{assets, components::claymore, messages::Spraypaint},
 };
 
 #[main]

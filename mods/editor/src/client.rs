@@ -14,14 +14,14 @@ use ambient_api::{
     input::CursorLockGuard,
     prelude::*,
 };
-use embers::{
-    editor::{
-        components::{editor_camera, mouseover_position, selected_entity},
-        messages::{Input, ToggleEditor},
-    },
+use packages::{
     editor_schema::{
         components::in_editor,
         messages::{EditorLoad, EditorMenuBarAdd, EditorMenuBarClick},
+    },
+    this::{
+        components::{editor_camera, mouseover_position, selected_entity},
+        messages::{Input, ToggleEditor},
     },
 };
 
@@ -48,7 +48,9 @@ pub fn main() {
             return;
         }
 
-        let Some(camera_id) = entity::get_component(player_id, editor_camera()) else { return; };
+        let Some(camera_id) = entity::get_component(player_id, editor_camera()) else {
+            return;
+        };
 
         let (delta, input) = input::get_delta();
 
@@ -165,7 +167,9 @@ pub fn App(hooks: &mut Hooks) -> Element {
     hooks.use_module_message::<EditorMenuBarAdd>({
         let menu_bar_items = menu_bar_items.clone();
         move |_, source, msg| {
-            let Some(id) = source.local() else { return; };
+            let Some(id) = source.local() else {
+                return;
+            };
 
             let mut menu_bar_items = menu_bar_items.clone();
             menu_bar_items.insert((id, msg.name.clone()));
@@ -224,8 +228,12 @@ fn MouseoverDisplay(hooks: &mut Hooks) -> Element {
     let (mouseover_position, _) = hooks.use_entity_component(player_id, mouseover_position());
     let (camera_id, _) = hooks.use_entity_component(player_id, editor_camera());
 
-    let Some(mouseover_position) = mouseover_position else { return Element::new(); };
-    let Some(camera_id) = camera_id else { return Element::new(); };
+    let Some(mouseover_position) = mouseover_position else {
+        return Element::new();
+    };
+    let Some(camera_id) = camera_id else {
+        return Element::new();
+    };
 
     Text::el(format!("{:.02?}", mouseover_position.to_array()))
         .with(
@@ -247,8 +255,12 @@ fn SelectedDisplay(hooks: &mut Hooks) -> Element {
         rerender();
     });
 
-    let Some(selected_entity) = selected_entity else { return Element::new(); };
-    let Some(camera_id) = camera_id else { return Element::new(); };
+    let Some(selected_entity) = selected_entity else {
+        return Element::new();
+    };
+    let Some(camera_id) = camera_id else {
+        return Element::new();
+    };
 
     Group::el([
         EntityView::el(selected_entity),
@@ -264,7 +276,9 @@ fn EntityView(_hooks: &mut Hooks, entity: EntityId) -> Element {
     struct Displays(EntityId, Vec<Element>);
     impl Displays {
         fn add<T: Editor + SupportedValue>(&mut self, name: &str, component: Component<T>) {
-            let Some(value) = entity::get_component(self.0, component) else {return;};
+            let Some(value) = entity::get_component(self.0, component) else {
+                return;
+            };
 
             self.1.push(
                 FlowColumn::el([
@@ -346,7 +360,7 @@ impl Gizmo {
             std::iter::once(
                 Element::new()
                     .init_default(rect())
-                    .with_default(main_scene())
+                    .with(main_scene(), ())
                     .with(line_from(), self.origin)
                     .with(line_to(), line_end)
                     .with(line_width(), GIZMO_WIDTH)
@@ -358,7 +372,7 @@ impl Gizmo {
 
                 Element::new()
                     .init_default(rect())
-                    .with_default(main_scene())
+                    .with(main_scene(), ())
                     .with(
                         line_from(),
                         line_end + (i as f32 * head_segment_length) * self.direction,

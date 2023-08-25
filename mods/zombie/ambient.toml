@@ -1,6 +1,8 @@
-[ember]
+[package]
 id = "afps_zombie"
 name = "AFPS Zombie"
+version = "0.0.1"
+content = { type = "Asset", models = true, animations = true, code = true }
 
 [components]
 is_zombie = { type = "Empty", attributes = ["Networked", "Debuggable"] }
@@ -22,4 +24,4 @@ zombie_model_ref = { type = "EntityId", attributes = [
 id = "EntityId"
 
 [dependencies]
-afps_schema = { path = "../../schema/afps" }
+afps_schema = { path = "../../schema/afps", deployment = "3SeQt6RfOae5ysQjSsYXAz" }

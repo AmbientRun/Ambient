@@ -18,7 +18,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use embers::afps_zombie::{assets, components};
+use packages::this::{assets, components};
 
 #[main]
 pub async fn main() {
@@ -35,7 +35,7 @@ pub async fn main() {
             let model = make_transformable()
                 .with(prefab_from_url(), character_url)
                 .with(parent(), zombie)
-                .with_default(local_to_parent())
+                .with(local_to_parent(), Default::default())
                 .with(rotation(), Quat::from_rotation_z(-FRAC_PI_2))
                 .spawn();
 
@@ -49,11 +49,11 @@ pub async fn main() {
                         vec3(-8.0 * random::<f32>(), -8.0 * random::<f32>(), 1.3),
                     )
                     .with(children(), vec![model])
-                    .with_default(local_to_world())
-                    .with_default(physics_controlled())
+                    .with(local_to_world(), Default::default())
+                    .with(physics_controlled(), ())
                     .with(components::zombie_model_ref(), model)
                     .with(components::zombie_health(), 100)
-                    .with_default(components::is_zombie()),
+                    .with(components::is_zombie(), ()),
             );
 
             let run =

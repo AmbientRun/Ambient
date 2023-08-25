@@ -1,7 +1,9 @@
-[ember]
+[package]
 id = "afps_world_latency"
 name = "AFPS World Latency"
 description = "World latency is a simple utility that displays the relative latency # of world streamed from the server as seen by all players in the world."
+version = "0.0.1"
+content = { type = "Tool" }
 
 [components]
 server_frame = { type = "U64", description = "Current server frame number", attributes = [
@@ -13,4 +15,4 @@ server_frame = { type = "U64", description = "Current server frame number", attr
 frame = "U64"
 
 [dependencies]
-afps_schema = { path = "../../schema/afps" }
+afps_schema = { path = "../../schema/afps", deployment = "3SeQt6RfOae5ysQjSsYXAz" }
