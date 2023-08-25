@@ -9,7 +9,7 @@ version = "0.3.0-dev"
 rust-version = "1.67.0"
 
 [workspace.dependencies]
-aho-corasick = "0.7.20"
+aho-corasick = "1.0.2"
 profiling = { version = "1.0.9", features = ["profile-with-puffin"] }
 tracing = "0.1.35"
 tracing-tree = { version = "0.2" }

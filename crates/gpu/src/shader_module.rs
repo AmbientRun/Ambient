@@ -321,7 +321,7 @@ impl Shader {
                 })
                 .join("\n\n");
 
-            AhoCorasick::new(patterns).replace_all(&source, &replace_with)
+            AhoCorasick::new(patterns)?.replace_all(&source, &replace_with)
         };
 
         #[cfg(all(not(target_os = "unknown"), debug_assertions))]
