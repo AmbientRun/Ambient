@@ -13,4 +13,4 @@ dir = "Vec3"
 source = "EntityId"
 
 [dependencies]
-afps_schema = { path = "../../schema/afps", deployment = "Kecsne9ja7GJjfo9BoQYF" }
+afps_schema = { path = "../../schema/afps", deployment = "5WnLWXfC9AkZFjIme3JZqU" }
