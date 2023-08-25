@@ -37,18 +37,9 @@ impl BuildMetadata {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Default)]
 pub struct BuildSettings {
     pub optimize: bool,
     pub build_wasm_only: bool,
     pub building_for_deploy: bool,
-}
-impl Default for BuildSettings {
-    fn default() -> Self {
-        Self {
-            optimize: false,
-            build_wasm_only: false,
-            building_for_deploy: false,
-        }
-    }
 }

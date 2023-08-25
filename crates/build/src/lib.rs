@@ -41,7 +41,7 @@ pub async fn build_package(
 
     let package_item_id = add_to_semantic_and_register_components(
         &mut semantic,
-        &AbsAssetUrl(AbsAssetUrl::from_file_path(&package_path).0),
+        &AbsAssetUrl(AbsAssetUrl::from_file_path(package_path).0),
     )
     .await?;
 
@@ -114,7 +114,7 @@ pub async fn build_package(
         .context("Failed to create build directory")?;
 
     if !settings.build_wasm_only {
-        build_assets(&assets, &assets_path, &build_path, false).await?;
+        build_assets(assets, &assets_path, &build_path, false).await?;
     }
 
     build_rust_if_available(&package_path, &manifest, &build_path, settings.optimize)

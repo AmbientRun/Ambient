@@ -121,7 +121,7 @@ pub async fn build<
         pre_build(manifest_path.clone()).await?;
 
         let build_path =
-            ambient_build::build_package(&assets, &settings, &manifest_path, &root_build_path)
+            ambient_build::build_package(assets, &settings, &manifest_path, &root_build_path)
                 .await?;
 
         post_build(manifest_path.clone(), build_path.clone()).await?;

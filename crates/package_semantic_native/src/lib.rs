@@ -76,7 +76,7 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
     let mut semantic = semantic.lock().await;
 
     let package_item_id =
-        add_to_semantic_and_register_components(&mut *semantic, package_url).await?;
+        add_to_semantic_and_register_components(&mut semantic, package_url).await?;
 
     let package_id_spawned = world
         .synced_resource(package_id_to_package_entity())
