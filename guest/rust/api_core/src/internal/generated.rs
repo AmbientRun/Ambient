@@ -1340,6 +1340,12 @@ mod raw {
                 pub fn is_package() -> Component<()> {
                     *IS_PACKAGE
                 }
+                static ENABLED: Lazy<Component<bool>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::package::enabled"));
+                #[doc = "**Enabled**: Whether or not this package is enabled.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn enabled() -> Component<bool> {
+                    *ENABLED
+                }
                 static ID: Lazy<Component<String>> =
                     Lazy::new(|| __internal_get_component("ambient_core::package::id"));
                 #[doc = "**ID**: The ID of the package.\n\n*Attributes*: Debuggable, Networked"]

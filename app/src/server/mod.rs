@@ -208,6 +208,7 @@ fn systems(_world: &mut World) -> SystemGroup {
             Box::new(WorldEventsSystem),
             Box::new(ambient_core::camera::camera_systems()),
             Box::new(ambient_physics::server_systems()),
+            Box::new(ambient_package_semantic_native::server_systems()),
             Box::new(wasm::systems()),
         ],
     )

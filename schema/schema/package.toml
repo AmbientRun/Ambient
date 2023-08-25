@@ -12,6 +12,12 @@ name = "Is Package"
 description = "Whether or not this entity is a package."
 attributes = ["Debuggable", "Networked"]
 
+[components.enabled]
+type = "Bool"
+name = "Enabled"
+description = "Whether or not this package is enabled."
+attributes = ["Debuggable", "Networked"]
+
 [components.id]
 type = "String"
 name = "ID"
