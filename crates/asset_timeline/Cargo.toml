@@ -14,7 +14,6 @@ ambient_ui_native = { path = "../ui_native" }
 ambient_core = { path = "../core" }
 ambient_element = { path = "../../shared_crates/element" }
 ambient_renderer = { path = "../renderer" }
-env_logger = { workspace = true }
 itertools = { workspace = true }
 chrono = { workspace = true }
 glam = { workspace = true }

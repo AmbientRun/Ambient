@@ -15,9 +15,6 @@ serde = { workspace = true }
 as-any = { workspace = true }
 async-trait = { workspace = true }
 futures = { workspace = true }
-itertools = { workspace = true }
-thiserror = { workspace = true }
-anyhow = { workspace = true }
 parking_lot = { workspace = true }
 chrono = { workspace = true }
 tracing = { workspace = true }

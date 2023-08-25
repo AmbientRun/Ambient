@@ -18,5 +18,4 @@ ambient_input = { path = "../input" , version = "0.3.0-dev" }
 glam = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
-serde = { workspace = true }
 profiling = { workspace = true }

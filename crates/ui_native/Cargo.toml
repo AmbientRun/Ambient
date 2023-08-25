@@ -10,13 +10,11 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
 ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
 ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
 ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
 ambient_core = { path = "../core" , version = "0.3.0-dev" }
 ambient_meshes = { path = "../meshes" , version = "0.3.0-dev" }
-ambient_input = { path = "../input" , version = "0.3.0-dev" }
 ambient_renderer = { path = "../renderer" , version = "0.3.0-dev" }
 ambient_layout = { path = "../layout" , version = "0.3.0-dev" }
 ambient_text = { path = "../text" , version = "0.3.0-dev" }
@@ -29,21 +27,10 @@ ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
 glam = { workspace = true }
 winit = { workspace = true }
 itertools = { workspace = true }
-futures = { workspace = true }
-closure = { workspace = true }
 log = { workspace = true }
-wgpu = { workspace = true }
-indexmap = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-async-trait = { workspace = true }
 parking_lot = { workspace = true }
-thiserror = { workspace = true }
-ordered-float = { workspace = true }
 tokio = { workspace = true }
 bytemuck = { workspace = true }
-convert_case = { workspace = true }
-anyhow = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]

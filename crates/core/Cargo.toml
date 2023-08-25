@@ -20,7 +20,6 @@ itertools = { workspace = true }
 yaml-rust = { workspace = true }
 tracing = { workspace = true }
 glam = { workspace = true }
-wgpu = { workspace = true }
 profiling = { workspace = true }
 # derive_more = { workspace = true }
 bytemuck = { workspace = true }
@@ -28,8 +27,6 @@ bytemuck = { workspace = true }
 
 winit = { workspace = true }
 ordered-float = { workspace = true }
-tokio = { workspace = true }
-parking_lot = { workspace = true }
 flume = { workspace = true }
 serde = { workspace = true }
 chrono = { workspace = true }
