@@ -3,9 +3,10 @@ use std::path::PathBuf;
 
 use ambient_build::BuildConfiguration;
 use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
-use anyhow::Context;
+use ambient_package_semantic::RetrievableFile;
+use ambient_package_semantic_native::add_to_semantic_and_register_components;
 
-use crate::shared::package;
+use anyhow::Context;
 
 use super::PackageCli;
 
@@ -38,7 +39,9 @@ pub async fn handle(
     }
 
     let Some(main_package_fs_path) = main_package_path.fs_path else {
-        return Ok(BuildDirectories::new_with_same_paths(main_package_path.url.clone()));
+        return Ok(BuildDirectories::new_with_same_paths(
+            main_package_path.url.clone(),
+        ));
     };
 
     let build_wasm_only = package_cli.build_wasm_only;
@@ -91,8 +94,11 @@ pub async fn build<
     // the correct order.
     let mut queue: Vec<_> = {
         let mut semantic = ambient_package_semantic::Semantic::new(false).await?;
-        let primary_package_scope_id =
-            package::add(None, &mut semantic, &main_manifest_url).await?;
+        let primary_package_scope_id = semantic
+            .add_package(RetrievableFile::Url(main_manifest_url.0.clone()))
+            .await?;
+        semantic.resolve()?;
+
         semantic
             .items
             .scope_and_dependencies(primary_package_scope_id)
@@ -112,8 +118,11 @@ pub async fn build<
         let package_url = AbsAssetUrl::from_file_path(&package_path).0;
 
         let mut semantic = ambient_package_semantic::Semantic::new(building_for_deploy).await?;
-        let package_item_id =
-            package::add(None, &mut semantic, &AbsAssetUrl(package_url.clone())).await?;
+        let package_item_id = add_to_semantic_and_register_components(
+            &mut semantic,
+            &AbsAssetUrl(package_url.clone()),
+        )
+        .await?;
         let package_id = semantic.items.get(package_item_id).data.id.clone();
 
         let build_path = ambient_build::build_package(

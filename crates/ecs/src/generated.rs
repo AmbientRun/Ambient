@@ -592,6 +592,23 @@ mod raw {
             }
         }
         #[allow(unused)]
+        pub mod package {
+            #[doc = r" Auto-generated component definitions."]
+            pub mod components {
+                use crate::{
+                    components, Debuggable, Description, EntityId, Enum, MaybeResource, Name,
+                    Networked, Resource, Store,
+                };
+                use ambient_shared_types::{
+                    ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
+                    ProceduralTextureHandle,
+                };
+                use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+                use std::time::Duration;
+                components ! ("package" , { # [doc = "**Is Package**: Whether or not this entity is a package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Is Package"] , Description ["Whether or not this entity is a package."]] is_package : () , # [doc = "**ID**: The ID of the package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["ID"] , Description ["The ID of the package."]] id : String , # [doc = "**URL**: The asset URL of the package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["URL"] , Description ["The asset URL of the package."]] asset_url : String , # [doc = "**Client Modules**: The clientside WASM modules spawned by this package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Client Modules"] , Description ["The clientside WASM modules spawned by this package."]] client_modules : Vec :: < EntityId > , # [doc = "**Server Modules**: The serverside WASM modules spawned by this package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Server Modules"] , Description ["The serverside WASM modules spawned by this package."]] server_modules : Vec :: < EntityId > , });
+            }
+        }
+        #[allow(unused)]
         pub mod physics {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -1438,6 +1455,7 @@ mod raw {
             crate::generated::raw::ambient_core::layout::components::init_components();
             crate::generated::raw::ambient_core::model::components::init_components();
             crate::generated::raw::ambient_core::network::components::init_components();
+            crate::generated::raw::ambient_core::package::components::init_components();
             crate::generated::raw::ambient_core::physics::components::init_components();
             crate::generated::raw::ambient_core::player::components::init_components();
             crate::generated::raw::ambient_core::prefab::components::init_components();
