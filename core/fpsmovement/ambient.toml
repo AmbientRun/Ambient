@@ -6,5 +6,5 @@ content = { type = "Asset", code = true }
 
 [dependencies]
 afps_schema = { path = "../../schema/afps", deployment = "3SeQt6RfOae5ysQjSsYXAz" }
-input_schema = { deployment = "5FtTnXIRnBg3XVIp0Ol48b" }
-editor_schema = { path = "../../schema/editor" }
+input_schema = { deployment = "2MvnveXZBFzrDo9Q3dLwm3" }
+editor_schema = { deployment = "1KkjuBC12H8bGdGeIjronN" }
