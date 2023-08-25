@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_flow_layout"
 name = "Flow Layout"
+description = "Bottom-up layout."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/flow_layout"
 type = "Game"

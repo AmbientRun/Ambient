@@ -1,7 +1,7 @@
 [package]
 id = "ambient_example_image_quad"
 name = "Image"
-description = "This shows how to load and display images in 3d."
+description = "Render 2d images as planes in 3d."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/image"
 type = "Game"

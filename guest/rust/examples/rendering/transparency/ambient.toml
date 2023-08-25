@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_transparency"
 name = "Transparency"
+description = "Draw translucent objects."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/transparency"
 type = "Game"

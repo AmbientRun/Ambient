@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_rect"
 name = "Rect"
+description = "A rectangle with border, rounded corners and background image."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/rect"
 type = "Game"

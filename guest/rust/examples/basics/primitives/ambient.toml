@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_primitives"
 name = "Primitives"
+description = "Draw boxes, spheres and other basic shapes."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/primitives"
 type = "Game"

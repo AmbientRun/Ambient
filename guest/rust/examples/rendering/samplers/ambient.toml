@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_samplers"
 name = "samplers"
+description = "How to work with samplers."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/samplers"
 type = "Game"

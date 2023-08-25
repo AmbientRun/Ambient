@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_editors"
 name = "Editors"
+description = "Text editor, number editor, list editor etc. etc."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/editors"
 type = "Game"

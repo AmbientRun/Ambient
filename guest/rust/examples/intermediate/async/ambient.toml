@@ -1,7 +1,7 @@
 [package]
 id = "ambient_example_async"
 name = "Async"
-description = "An example of using async/await in Ambient."
+description = "Learn how to use async/await."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/async"
 type = "Game"

@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_todo"
-name = "todo"
+name = "Todo"
+description = "Classic todo example, but in multiplayer."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/todo"
 type = "Game"

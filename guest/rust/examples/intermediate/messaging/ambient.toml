@@ -1,7 +1,7 @@
 [package]
 id = "ambient_example_messaging"
 name = "Messaging"
-description = "This shows how to Ambient message passing system works."
+description = "Send and receive data across network and across packages."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/messaging"
 type = "Game"

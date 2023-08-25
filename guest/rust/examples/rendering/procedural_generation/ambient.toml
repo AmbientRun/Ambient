@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_procedural_generation"
 name = "Procedural generation"
+description = "Generate meshes and textures with code."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/procedural_generation"
 type = "Game"

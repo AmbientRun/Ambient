@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_text"
 name = "Text"
+description = "Different fonts, sizes and colors etc."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/text"
 type = "Game"

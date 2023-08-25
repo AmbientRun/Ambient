@@ -1,6 +1,7 @@
 [package]
 id = "ambient_example_slider"
 name = "Slider"
+description = "Different number sliders."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/slider"
 type = "Game"
