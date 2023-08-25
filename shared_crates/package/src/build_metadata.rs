@@ -40,7 +40,7 @@ impl BuildMetadata {
         Ok(self
             .last_build_time
             .as_deref()
-            .map(|lbt| chrono::DateTime::parse_from_rfc3339(lbt))
+            .map(chrono::DateTime::parse_from_rfc3339)
             .transpose()?
             .map(|lbt| lbt.with_timezone(&chrono::Utc)))
     }

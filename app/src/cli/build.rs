@@ -1,5 +1,5 @@
-use std::future::Future;
 use std::path::PathBuf;
+use std::{collections::HashSet, future::Future};
 
 use ambient_build::BuildResult;
 use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
@@ -54,6 +54,7 @@ pub async fn handle(
         false,
         release_build,
         build_wasm_only,
+        HashSet::new(),
         |_| async { Ok(()) },
         |_, _, _| async { Ok(()) },
     )
@@ -71,6 +72,9 @@ pub async fn build<
     deploy: bool,
     release: bool,
     wasm_only: bool,
+    // Used by deploy to avoid building packages that have already been built
+    // by other packages
+    skip_building: HashSet<PathBuf>,
     mut pre_build: impl FnMut(PathBuf) -> PrebuildRet,
     mut post_build: impl FnMut(PathBuf, PathBuf, bool) -> PostbuildRet,
 ) -> anyhow::Result<BuildDirectories> {
@@ -104,6 +108,7 @@ pub async fn build<
             .scope_and_dependencies(primary_package_scope_id)
             .into_iter()
             .flat_map(|id| semantic.items.get(id).source.as_local_path())
+            .filter(|path| !skip_building.contains(path))
             .rev()
             .collect()
     };

@@ -79,6 +79,7 @@ fn main() -> anyhow::Result<()> {
         }),
         Commands::Deploy {
             package,
+            extra_packages,
             api_server,
             token,
             force_upload,
@@ -87,6 +88,7 @@ fn main() -> anyhow::Result<()> {
         } => rt.block_on(async {
             cli::deploy::handle(
                 package,
+                extra_packages,
                 &assets,
                 token,
                 api_server,

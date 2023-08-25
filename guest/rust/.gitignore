@@ -3,6 +3,8 @@ examples/*/*/.gitignore
 examples/*/*/build
 examples/*/*/target
 
+packages/*/*/build
+
 testcases/*/.cargo
 testcases/*/.gitignore
 testcases/*/build

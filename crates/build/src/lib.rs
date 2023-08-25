@@ -117,7 +117,7 @@ pub async fn build_package(
             deploy: bool,
             dependency: &ambient_package::Dependency,
         ) -> anyhow::Result<Option<chrono::DateTime<chrono::Utc>>> {
-            let metadata_path = package_dependency_to_retrievable_file(&omr, deploy, dependency)?
+            let metadata_path = package_dependency_to_retrievable_file(omr, deploy, dependency)?
                 .map(|p| p.parent_join(Path::new(BuildMetadata::FILENAME)))
                 .transpose()?;
 
@@ -136,7 +136,7 @@ pub async fn build_package(
         }))
         .await?
         .into_iter()
-        .filter_map(|x| x)
+        .flatten()
         .max()
     };
 

@@ -1,0 +1,37 @@
+[package]
+id = "package_manager"
+name = "Package Manager"
+version = "0.0.1"
+content = { type = "Tool" }
+
+[messages.PackageLoad.fields]
+url = "String"
+
+[messages.PackageLoadSuccess.fields]
+id = "String"
+name = "String"
+version = "String"
+authors = { container_type = "Vec", element_type = "String" }
+client_wasms = { container_type = "Vec", element_type = "String" }
+server_wasms = { container_type = "Vec", element_type = "String" }
+
+[messages.ErrorMessage.fields]
+reason = "String"
+
+[messages.PackageSetEnabled.fields]
+id = "EntityId"
+enabled = "Bool"
+
+[messages.WasmSetEnabled.fields]
+id = "EntityId"
+enabled = "Bool"
+
+[messages.WasmReload.fields]
+id = "EntityId"
+
+[messages.WasmReplaceBytecodeUrl.fields]
+id = "EntityId"
+url = "String"
+
+[dependencies]
+input_schema = { path = "../../schemas/input", deployment = "7am9YfgtKjHFJx4HvsHp8y" }

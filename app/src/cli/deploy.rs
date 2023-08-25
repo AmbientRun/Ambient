@@ -6,11 +6,12 @@ use parking_lot::Mutex;
 
 use crate::cli::build;
 
-use super::PackageCli;
+use super::{PackageCli, PackagePath};
 
 #[allow(clippy::too_many_arguments)]
 pub async fn handle(
     package: &PackageCli,
+    extra_packages: &[PathBuf],
     assets: &AssetCache,
     token: &str,
     api_server: &str,
@@ -29,102 +30,152 @@ pub async fn handle(
         );
     }
 
+    #[derive(Debug, Clone)]
+    enum Deployment {
+        Skipped,
+        Deployed(String),
+    }
+    impl Deployment {
+        fn as_deployed(&self) -> Option<String> {
+            match self {
+                Self::Deployed(v) => Some(v.clone()),
+                _ => None,
+            }
+        }
+    }
+
+    let manifest_path_to_deployment_id =
+        Arc::new(Mutex::new(HashMap::<PathBuf, Deployment>::new()));
+
     let Some(main_package_fs_path) = package.package_path()?.fs_path else {
         anyhow::bail!("Can only deploy a local package");
     };
 
-    let manifest_path_to_deployment_id = Arc::new(Mutex::new(HashMap::<PathBuf, String>::new()));
+    let all_package_paths = {
+        let mut all_packages = vec![main_package_fs_path];
+        all_packages.extend(extra_packages.iter().map(|p| {
+            PackagePath::new_local(p)
+                .expect("failed to construct local package path")
+                .fs_path
+                .expect("failed to get fs path for local package")
+        }));
+        all_packages
+    };
 
-    build::build(
-        assets,
-        main_package_fs_path.clone(),
-        package.clean_build,
-        true,
-        release_build,
-        package.build_wasm_only,
-        |package_manifest_path| {
-            // Before the build, rewrite all known dependencies to use their deployed version
-            // if available.
-            let manifest_path_to_deployment_id = manifest_path_to_deployment_id.clone();
-            async move {
-                let package_path = package_manifest_path.parent().unwrap();
+    let mut first_deployment_id = None;
+    for package_path in all_package_paths {
+        let skip_building = manifest_path_to_deployment_id
+            .lock()
+            .keys()
+            .cloned()
+            .collect();
 
-                let mut manifest: toml_edit::Document =
-                    tokio::fs::read_to_string(&package_manifest_path)
-                        .await?
-                        .parse()?;
+        build::build(
+            assets,
+            package_path.clone(),
+            package.clean_build,
+            true,
+            release_build,
+            package.build_wasm_only,
+            skip_building,
+            |package_manifest_path| {
+                // Before the build, rewrite all known dependencies to use their deployed version
+                // if available.
+                let manifest_path_to_deployment_id = manifest_path_to_deployment_id.clone();
+                async move {
+                    let package_path = package_manifest_path.parent().unwrap();
 
-                let Some(dependencies) = manifest.as_table_mut().get_mut("dependencies") else {
-                    return Ok(());
-                };
+                    let mut manifest: toml_edit::Document =
+                        tokio::fs::read_to_string(&package_manifest_path)
+                            .await?
+                            .parse()?;
 
-                for (_, dependency) in dependencies.as_table_like_mut().unwrap().iter_mut() {
-                    let Some(dependency) = dependency.as_table_like_mut() else {
-                        continue;
+                    let Some(dependencies) = manifest.as_table_mut().get_mut("dependencies") else {
+                        return Ok(());
                     };
-                    let Some(dependency_path) = dependency.get("path").and_then(|i| i.as_str())
-                    else {
-                        continue;
-                    };
 
-                    let dependency_manifest_path = ambient_std::path::normalize(
-                        &package_path.join(dependency_path).join("ambient.toml"),
-                    );
+                    for (_, dependency) in dependencies.as_table_like_mut().unwrap().iter_mut() {
+                        let Some(dependency) = dependency.as_table_like_mut() else {
+                            continue;
+                        };
+                        let Some(dependency_path) = dependency.get("path").and_then(|i| i.as_str())
+                        else {
+                            continue;
+                        };
 
-                    if let Some(deployment_id) = manifest_path_to_deployment_id
-                        .lock()
-                        .get(&dependency_manifest_path)
-                        .cloned()
-                    {
-                        dependency.insert("deployment", toml_edit::value(deployment_id));
+                        let dependency_manifest_path = ambient_std::path::normalize(
+                            &package_path.join(dependency_path).join("ambient.toml"),
+                        );
+
+                        if let Some(deployment_id) = manifest_path_to_deployment_id
+                            .lock()
+                            .get(&dependency_manifest_path)
+                            .cloned()
+                            .and_then(|d| d.as_deployed())
+                        {
+                            dependency.insert("deployment", toml_edit::value(deployment_id));
+                        }
                     }
+
+                    tokio::fs::write(&package_manifest_path, manifest.to_string()).await?;
+
+                    Ok(())
                 }
+            },
+            |package_manifest_path, build_path, was_built| {
+                // After build, deploy the package.
+                let manifest_path_to_deployment_id = manifest_path_to_deployment_id.clone();
+                async move {
+                    let deployment = if was_built {
+                        let deployment_id =
+                            ambient_deploy::deploy(api_server, token, build_path, force_upload)
+                                .await?;
+                        Deployment::Deployed(deployment_id)
+                    } else {
+                        // TODO: this check does not actually save much, as the process of deploying
+                        // the package and updating the manifest invalidates the last-build-time check
+                        // anyway. This means that it only really works for "root" packages, and not
+                        // anything with dependencies.
+                        //
+                        // Consider either using another metric, or implementing a more intelligent
+                        // algorithm.
+                        Deployment::Skipped
+                    };
 
-                tokio::fs::write(&package_manifest_path, manifest.to_string()).await?;
+                    manifest_path_to_deployment_id
+                        .lock()
+                        .insert(package_manifest_path.to_owned(), deployment);
 
-                Ok(())
-            }
-        },
-        |package_manifest_path, build_path, was_built| {
-            // After build, deploy the package.
-            let manifest_path_to_deployment_id = manifest_path_to_deployment_id.clone();
-            async move {
-                if !was_built {
-                    // TODO: this check does not actually save much, as the process of deploying
-                    // the package and updating the manifest invalidates the last-build-time check
-                    // anyway. This means that it only really works for "root" packages, and not
-                    // anything with dependencies.
-                    //
-                    // Consider either using another metric, or implementing a more intelligent
-                    // algorithm.
-                    return Ok(());
+                    Ok(())
                 }
+            },
+        )
+        .await?;
 
-                let deployment_id =
-                    ambient_deploy::deploy(api_server, token, build_path, force_upload).await?;
+        let deployment_id = manifest_path_to_deployment_id
+            .lock()
+            .get(&package_path.join("ambient.toml"))
+            .cloned()
+            .context("main package was not processed")?;
 
-                manifest_path_to_deployment_id
-                    .lock()
-                    .insert(package_manifest_path.to_owned(), deployment_id);
-
-                Ok(())
+        match deployment_id {
+            Deployment::Skipped => {
+                log::info!("Package was already deployed, skipping deployment");
             }
-        },
-    )
-    .await?;
+            Deployment::Deployed(deployment_id) => {
+                log::info!("Package deployed successfully!");
+                log::info!(
+                    "Deployment ID: {deployment_id} | Deploy URL: https://assets.ambient.run/{deployment_id}"
+                );
 
-    let deployment_id = manifest_path_to_deployment_id
-        .lock()
-        .get(&main_package_fs_path.join("ambient.toml"))
-        .cloned()
-        .context("main package was not deployed")?;
+                if first_deployment_id.is_none() {
+                    first_deployment_id = Some(deployment_id);
+                }
+            }
+        }
+    }
 
-    log::info!("Package deployed successfully!");
-    log::info!(
-        "Deployment ID: {deployment_id} | Deploy URL: https://assets.ambient.run/{deployment_id}"
-    );
-
-    if ensure_running {
+    if let Some(deployment_id) = first_deployment_id.filter(|_| ensure_running) {
         let spec = ambient_cloud_client::ServerSpec::new_with_deployment(deployment_id)
             .with_context(context.to_string());
         let server =
@@ -132,5 +183,6 @@ pub async fn handle(
                 .await?;
         log::info!("Deployed package is running at {}", server.host);
     }
+
     Ok(())
 }

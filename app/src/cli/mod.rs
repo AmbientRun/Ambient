@@ -63,6 +63,10 @@ pub enum Commands {
     Deploy {
         #[command(flatten)]
         package: PackageCli,
+        /// Additional packages to deploy; this allows you to share deployed dependencies
+        /// between packages when doing a group deploy
+        #[arg(long)]
+        extra_packages: Vec<PathBuf>,
         /// API server endpoint
         #[arg(long, default_value = "https://api.ambient.run")]
         api_server: String,
