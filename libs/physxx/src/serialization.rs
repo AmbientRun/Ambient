@@ -198,7 +198,7 @@ impl PxDefaultFileOutputStream {
     pub fn new(name: impl AsRef<Path>) -> Self {
         Self(unsafe {
             let name = CString::new(name.as_ref().as_os_str().to_str().unwrap()).unwrap();
-            physx_sys::PxDefaultFileOutputStream_new_alloc(name.as_ptr() as *const i8)
+            physx_sys::PxDefaultFileOutputStream_new_alloc(name.as_ptr())
         })
     }
 }
@@ -220,7 +220,7 @@ impl PxDefaultFileInputData {
     pub fn new(name: impl AsRef<Path>) -> Self {
         Self(unsafe {
             let name = CString::new(name.as_ref().as_os_str().to_str().unwrap()).unwrap();
-            physx_sys::PxDefaultFileInputData_new_alloc(name.as_ptr() as *const i8)
+            physx_sys::PxDefaultFileInputData_new_alloc(name.as_ptr())
         })
     }
 }

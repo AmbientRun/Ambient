@@ -19,7 +19,7 @@ impl PxArticulationRef {
                 Vec::with_capacity(capacity as usize);
             let len = physx_sys::PxArticulationBase_getLinks(
                 self.0 as *const physx_sys::PxArticulationBase,
-                buffer.as_mut_ptr() as *mut *mut _,
+                buffer.as_mut_ptr(),
                 capacity,
                 0,
             );

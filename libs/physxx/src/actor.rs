@@ -75,7 +75,7 @@ impl<T: AsPxActor + 'static> PxActor for T {
     }
     /// Note; physx doesn't copy the string, so the string needs to be kept alive somewhere else
     fn set_name(&self, name: &CString) {
-        unsafe { physx_sys::PxActor_setName_mut(self.as_actor().0, name.as_ptr() as *const i8) }
+        unsafe { physx_sys::PxActor_setName_mut(self.as_actor().0, name.as_ptr()) }
     }
 }
 
@@ -142,7 +142,7 @@ impl<T: AsPxRigidActor + 'static> PxRigidActor for T {
         unsafe {
             let len = physx_sys::PxRigidActor_getShapes(
                 self.as_rigid_actor().0,
-                buffer.as_mut_ptr() as *mut *mut _,
+                buffer.as_mut_ptr(),
                 capacity,
                 0,
             );
@@ -171,7 +171,7 @@ impl<T: AsPxRigidActor + 'static> PxRigidActor for T {
             let mut buff = vec![null_mut(); count as usize];
             physx_sys::PxRigidActor_getConstraints(
                 self.as_rigid_actor().0,
-                buff.as_mut_ptr() as *mut *mut _,
+                buff.as_mut_ptr(),
                 count,
                 0,
             );

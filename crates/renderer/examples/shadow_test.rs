@@ -26,7 +26,7 @@ async fn init(app: &mut App) {
 
     Cube.el()
         .with(scale(), vec3(size, size, 1.))
-        .with(cast_shadows(), Default::default())
+        .with(cast_shadows(), ())
         .spawn_static(world);
 
     for s in 1..5 {
@@ -40,7 +40,7 @@ async fn init(app: &mut App) {
                     )
                     .with(scale(), vec3(1., 1., 10.))
                     .with(color(), vec4(0.7, 0.7, 0.7, 1.))
-                    .with(cast_shadows(), Default::default())
+                    .with(cast_shadows(), ())
                     .spawn_static(world);
             }
         }
@@ -52,7 +52,7 @@ async fn init(app: &mut App) {
             .with(translation(), 100. + 10. * vec3(p, 0., 0.))
             .with(scale(), Vec3::ONE * p)
             .with(color(), vec4(0.7, 0.7, 0.7, 1.))
-            .with(cast_shadows(), Default::default())
+            .with(cast_shadows(), ())
             .spawn_static(world);
     }
 
@@ -84,7 +84,7 @@ async fn init(app: &mut App) {
             ),
         )
         .with(color(), vec4(1., 0., 0., 0.5))
-        .with(cast_shadows(), Default::default())
+        .with(cast_shadows(), ())
         .spawn_static(world);
 
     for i in 0..5 {
@@ -105,7 +105,7 @@ async fn init(app: &mut App) {
                 ),
             )
             .with(color(), vec4(0.7, 0.7, 0.7, 1.))
-            .with(cast_shadows(), Default::default())
+            .with(cast_shadows(), ())
             .spawn_static(world);
 
         for point in &demo_cam
@@ -115,7 +115,7 @@ async fn init(app: &mut App) {
             Cube.el()
                 .with(translation(), *point)
                 .with(color(), vec4(0., 0., 0., 1.))
-                .with(cast_shadows(), Default::default())
+                .with(cast_shadows(), ())
                 .spawn_static(world);
         }
     }

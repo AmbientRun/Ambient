@@ -122,8 +122,8 @@ impl<T: AsPxJoint> PxJoint for T {
     }
     fn get_actors(&self) -> (Option<PxRigidActorRef>, Option<PxRigidActorRef>) {
         unsafe {
-            let mut actor0 = null_mut() as *mut physx_sys::PxRigidActor;
-            let mut actor1 = null_mut() as *mut physx_sys::PxRigidActor;
+            let mut actor0: *mut physx_sys::PxRigidActor = null_mut();
+            let mut actor1: *mut physx_sys::PxRigidActor = null_mut();
             physx_sys::PxJoint_getActors(self.as_joint().0, &mut actor0 as _, &mut actor1 as _);
             let a0 = if actor0.is_null() {
                 None
