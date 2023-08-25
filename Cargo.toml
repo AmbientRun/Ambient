@@ -194,7 +194,7 @@ http = { version = "0.2.9" }
 #
 # WASM
 #
-wasmtime = { version = "11.0.1", features = ["component-model"] }
+wasmtime = { version = "11.0.1", default-features = false, features = ["cranelift", "component-model"] }
 wasmtime-wasi = "11.0.1"
 wasi-cap-std-sync = "11.0.1"
 wasi-common = "11.0.1"
