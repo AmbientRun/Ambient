@@ -35,6 +35,15 @@ impl BuildMetadata {
     pub fn parse(contents: &str) -> Result<Self, BuildMetadataError> {
         Ok(toml::from_str(contents)?)
     }
+
+    pub fn last_build_time(&self) -> chrono::ParseResult<Option<chrono::DateTime<chrono::Utc>>> {
+        Ok(self
+            .last_build_time
+            .as_deref()
+            .map(|lbt| chrono::DateTime::parse_from_rfc3339(lbt))
+            .transpose()?
+            .map(|lbt| lbt.with_timezone(&chrono::Utc)))
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Default)]

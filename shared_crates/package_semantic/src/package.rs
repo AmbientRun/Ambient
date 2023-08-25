@@ -10,8 +10,8 @@ use anyhow::Context as AnyhowContext;
 use url::Url;
 
 use crate::{
-    item::ResolveClone, util::read_file, Context, Item, ItemData, ItemId, ItemMap, ItemType,
-    ItemValue, Schema, Scope, StandardDefinitions,
+    item::ResolveClone, schema, util::read_file, Context, Item, ItemData, ItemId, ItemMap,
+    ItemType, ItemValue, Scope, StandardDefinitions,
 };
 
 #[derive(Clone, PartialEq, Debug, Eq, Hash)]
@@ -49,9 +49,9 @@ pub enum RetrievableFile {
     Url(Url),
 }
 impl RetrievableFile {
-    pub async fn get(&self, schema: &Schema) -> anyhow::Result<String> {
+    pub async fn get(&self) -> anyhow::Result<String> {
         Ok(match self {
-            RetrievableFile::Ambient(path) => schema
+            RetrievableFile::Ambient(path) => schema()
                 .get(ambient_std::path::path_to_unix_string_lossy(path).as_str())
                 .with_context(|| {
                     format!(
