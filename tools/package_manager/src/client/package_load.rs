@@ -95,11 +95,7 @@ fn PackageViewInner(hooks: &mut Hooks, msg: Option<messages::PackageLoadSuccess>
         msg.authors.join(", ")
     };
 
-    let subtitle = match msg.name {
-        Some(name) => format!("{} {}", name, msg.version),
-        None => msg.version,
-    };
-    let subtitle = format!("{subtitle} by {authors}");
+    let subtitle = format!("{} {} by {authors}", msg.name, msg.version);
 
     fn url_to_name(url: &str) -> String {
         url.rsplit_once('/')

@@ -1,11 +1,10 @@
-use std::collections::HashMap;
-
 use ambient_api::{
     core::{
-        text::{components::font_style, types::FontStyle},
-        wasm::components::{
-            bytecode_from_url, is_module, is_module_on_server, module_enabled, module_name,
+        package::components::{
+            authors, client_modules, description, enabled, is_package, name, server_modules,
+            version,
         },
+        text::{components::font_style, types::FontStyle},
     },
     prelude::*,
     ui::ImageFromUrl,
@@ -13,7 +12,7 @@ use ambient_api::{
 
 use crate::packages::this::{
     assets,
-    messages::{WasmReload, WasmSetEnabled},
+    messages::{PackageSetEnabled, WasmReload},
 };
 
 use super::{use_hotkey_toggle, use_input_request, Window};
@@ -34,75 +33,50 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
 fn PackageManagerInner(hooks: &mut Hooks) -> Element {
     use_input_request(hooks);
 
-    let modules: Vec<_> = hooks
-        .use_query((
-            is_module(),
-            module_name(),
-            module_enabled(),
-            bytecode_from_url(),
-        ))
-        .into_iter()
-        .map(|(id, (_, name, enabled, url))| {
-            (
-                id,
-                (
-                    entity::has_component(id, is_module_on_server()),
-                    name,
-                    enabled,
-                    url,
-                ),
-            )
-        })
-        .collect();
+    let packages = hooks.use_query((
+        is_package(),
+        enabled(),
+        name(),
+        version(),
+        authors(),
+        client_modules(),
+        server_modules(),
+    ));
 
     struct Package {
-        name: String,
         enabled: bool,
-        description: String,
+        name: String,
+        version: String,
+        authors: Vec<String>,
+        description: Option<String>,
         client_modules: Vec<EntityId>,
         server_modules: Vec<EntityId>,
     }
-    impl Package {
-        fn module_iter(&self) -> impl Iterator<Item = EntityId> + '_ {
-            self.client_modules
-                .iter()
-                .chain(self.server_modules.iter())
-                .copied()
-        }
-    }
 
-    let mut packages = HashMap::new();
-    for (id, (on_server, name, enabled, _)) in modules {
-        let name = name
-            .strip_suffix("_server")
-            .or_else(|| name.strip_suffix("_client"))
-            .or_else(|| name.strip_prefix("client_"))
-            .or_else(|| name.strip_prefix("server_"))
-            .unwrap_or(&name)
-            .to_string();
+    let mut packages: Vec<_> = packages
+        .into_iter()
+        .map(
+            |(id, (_, enabled, name, version, authors, client_modules, server_modules))| {
+                let description = entity::get_component(id, description());
 
-        let package = packages.entry(name.clone()).or_insert_with(|| Package {
-            name: name.clone(),
-            enabled: true,
-            description: "Lorem ipsum dolor sit amet.".to_string(),
-            client_modules: Vec::new(),
-            server_modules: Vec::new(),
-        });
+                (
+                    id,
+                    Package {
+                        enabled,
+                        name,
+                        version,
+                        authors,
+                        description,
+                        client_modules,
+                        server_modules,
+                    },
+                )
+            },
+        )
+        .collect();
+    packages.sort_by_key(|(_, package)| package.name.clone());
 
-        if on_server {
-            package.server_modules.push(id);
-        } else {
-            package.client_modules.push(id);
-        }
-        package.enabled &= enabled;
-    }
-
-    let mut packages: Vec<_> = packages.into_values().collect();
-    packages.sort_by_key(|package| package.name.clone());
-
-    FlowColumn::el(packages.into_iter().map(|package| {
-        let package_modules = package.module_iter().collect::<Vec<_>>();
-
+    FlowColumn::el(packages.into_iter().map(|(id, package)| {
         FlowRow::el([
             ImageFromUrl {
                 url: assets::url("construction.png"),
@@ -111,19 +85,19 @@ fn PackageManagerInner(hooks: &mut Hooks) -> Element {
             .with(width(), 48.0)
             .with(height(), 48.0),
             FlowColumn::el([
-                Checkbox::new(package.enabled, {
-                    to_owned![package_modules];
-                    move |value| {
-                        for &id in &package_modules {
-                            WasmSetEnabled::new(id, value).send_server_reliable();
-                        }
-                    }
+                Checkbox::new(package.enabled, move |value| {
+                    PackageSetEnabled { id, enabled: value }.send_server_reliable();
                 })
                 .el(),
                 Button::new(FontAwesomeIcon::el(0xf2f1, true), {
-                    to_owned![package_modules];
+                    let modules: Vec<_> = package
+                        .client_modules
+                        .iter()
+                        .chain(package.server_modules.iter())
+                        .copied()
+                        .collect();
                     move |_| {
-                        for &id in &package_modules {
+                        for &id in &modules {
                             WasmReload::new(id).send_server_reliable();
                         }
                     }
@@ -134,11 +108,17 @@ fn PackageManagerInner(hooks: &mut Hooks) -> Element {
             FlowColumn::el([
                 FlowRow::el([
                     Text::el(package.name).with(font_style(), FontStyle::Bold),
-                    Text::el("0.0.1 by"),
-                    Text::el("Ambient").with(font_style(), FontStyle::Italic),
+                    Text::el(package.version),
+                    Text::el("by"),
+                    Text::el(if package.authors.is_empty() {
+                        "No authors specified".to_string()
+                    } else {
+                        package.authors.join(", ")
+                    })
+                    .with(font_style(), FontStyle::Italic),
                 ])
                 .with(space_between_items(), 4.0),
-                Text::el(package.description),
+                Text::el(package.description.as_deref().unwrap_or("No description")),
             ])
             .with(space_between_items(), 8.0),
         ])

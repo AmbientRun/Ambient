@@ -9,7 +9,7 @@ url = "String"
 
 [messages.PackageLoadSuccess.fields]
 id = "String"
-name = { container_type = "Option", element_type = "String" }
+name = "String"
 version = "String"
 authors = { container_type = "Vec", element_type = "String" }
 client_wasms = { container_type = "Vec", element_type = "String" }
@@ -17,6 +17,10 @@ server_wasms = { container_type = "Vec", element_type = "String" }
 
 [messages.ErrorMessage.fields]
 reason = "String"
+
+[messages.PackageSetEnabled.fields]
+id = "EntityId"
+enabled = "Bool"
 
 [messages.WasmSetEnabled.fields]
 id = "EntityId"

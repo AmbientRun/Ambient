@@ -9,4 +9,5 @@ use server::*;
 pub async fn main() {
     package_load::main();
     wasm_manager::main();
+    package_manager::main();
 }

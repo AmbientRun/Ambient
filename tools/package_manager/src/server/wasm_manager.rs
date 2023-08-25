@@ -11,7 +11,9 @@ pub fn main() {
     });
 
     WasmReload::subscribe(|source, msg| {
-        let Some(_user_id) = source.client_user_id() else { return; };
+        let Some(_user_id) = source.client_user_id() else {
+            return;
+        };
         let id = msg.id;
 
         run_async(async move {
