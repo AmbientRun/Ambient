@@ -1,7 +1,5 @@
 use ambient_api::{element::Setter, prelude::*};
 
-use crate::packages::input_schema::messages::{ReleaseInput, RequestInput};
-
 pub fn use_hotkey_toggle(
     hooks: &mut Hooks,
     target_keycode: VirtualKeyCode,
@@ -17,13 +15,4 @@ pub fn use_hotkey_toggle(
     });
 
     (toggle, set_toggle)
-}
-
-pub fn use_input_request(hooks: &mut Hooks) {
-    hooks.use_spawn(|_| {
-        RequestInput {}.send_local_broadcast(false);
-        |_| {
-            ReleaseInput {}.send_local_broadcast(false);
-        }
-    });
 }
