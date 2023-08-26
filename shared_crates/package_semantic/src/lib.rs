@@ -81,7 +81,10 @@ impl Semantic {
         };
 
         semantic.ambient_package_id = semantic
-            .add_package(RetrievableFile::Ambient(PathBuf::from("ambient.toml")))
+            .add_package(
+                RetrievableFile::Ambient(PathBuf::from("ambient.toml")),
+                None,
+            )
             .await?;
 
         Ok(semantic)
@@ -92,6 +95,9 @@ impl Semantic {
     pub async fn add_package(
         &mut self,
         retrievable_manifest: RetrievableFile,
+        // Used to indicate which package had this as a dependency first,
+        // improving error diagnostics
+        dependent_package_id: Option<ItemId<Package>>,
     ) -> anyhow::Result<ItemId<Package>> {
         let manifest = Manifest::parse(&retrievable_manifest.get().await?)?;
 
@@ -108,13 +114,38 @@ impl Semantic {
             .map(|s| BuildMetadata::parse(&s))
             .transpose()?;
 
+        let scope_id = self
+            .add_scope_from_manifest_with_includes(None, &manifest, retrievable_manifest.clone())
+            .await?;
+
+        let manifest_dependencies = manifest.dependencies.clone();
+        let package = Package {
+            data: ItemData {
+                parent_id: None,
+                id: locator.id.clone().into(),
+                source: match retrievable_manifest {
+                    RetrievableFile::Ambient(_) => ItemSource::Ambient,
+                    RetrievableFile::Path(_) | RetrievableFile::Url(_) => ItemSource::User,
+                },
+            },
+            locator: locator.clone(),
+            source: retrievable_manifest.clone(),
+            manifest,
+            build_metadata,
+            dependencies: HashMap::new(),
+            scope_id,
+            dependent_package_id,
+        };
+
+        let id = self.items.add(package);
+
+        // Add the dependencies after the fact so that we can use the package id
         let mut dependencies = HashMap::new();
-        for (dependency_name, dependency) in &manifest.dependencies {
-            // path takes precedence over url
+        for (dependency_name, dependency) in manifest_dependencies {
             let Some(source) = package_dependency_to_retrievable_file(
                 &retrievable_manifest,
                 self.ignore_local_dependencies,
-                dependency,
+                &dependency,
             )?
             else {
                 anyhow::bail!(
@@ -122,7 +153,7 @@ impl Semantic {
                 )
             };
 
-            let dependency_id = self.add_package(source).await?;
+            let dependency_id = self.add_package(source, Some(id)).await?;
 
             dependencies.insert(
                 dependency_name.clone(),
@@ -132,10 +163,6 @@ impl Semantic {
                 },
             );
         }
-
-        let scope_id = self
-            .add_scope_from_manifest_with_includes(None, &manifest, retrievable_manifest.clone())
-            .await?;
 
         {
             let mut scope = self.items.get_mut(scope_id);
@@ -159,23 +186,8 @@ impl Semantic {
             }
         }
 
-        let package = Package {
-            data: ItemData {
-                parent_id: None,
-                id: locator.id.clone().into(),
-                source: match retrievable_manifest {
-                    RetrievableFile::Ambient(_) => ItemSource::Ambient,
-                    RetrievableFile::Path(_) | RetrievableFile::Url(_) => ItemSource::User,
-                },
-            },
-            source: retrievable_manifest,
-            manifest,
-            build_metadata,
-            dependencies,
-            scope_id,
-        };
+        self.items.get_mut(id).dependencies = dependencies;
 
-        let id = self.items.add(package);
         self.packages.insert(locator, id);
         Ok(id)
     }
@@ -184,9 +196,24 @@ impl Semantic {
         let mut seen_locators = HashMap::new();
         for locator in self.packages.keys() {
             if let Some(present) = seen_locators.insert(locator.id.clone(), locator.clone()) {
+                let present_package = self.items.get(self.packages[&present]);
+                let locator_package = self.items.get(self.packages[locator]);
+
+                fn imported_by(items: &ItemMap, package: &Package) -> String {
+                    match package.dependent_package_id {
+                        Some(dependent_id) => format!(
+                            "\n    - imported by {}",
+                            items.get(dependent_id).locator.to_string()
+                        ),
+                        None => String::new(),
+                    }
+                }
+
                 anyhow::bail!(
-                    "duplicate package found - {present} is already in the system, but {locator} was encountered ({})",
-                    "the system does not currently support having an package with multiple different versions"
+                    "package conflict found:\n  - {present}{}\n\n  - {locator}{}\n\n{}",
+                    imported_by(&self.items, &present_package),
+                    imported_by(&self.items, &locator_package),
+                    "the system does not currently support multiple versions of the same package in the dependency tree"
                 );
             }
         }
@@ -414,6 +441,7 @@ pub fn package_dependency_to_retrievable_file(
         .as_ref()
         .filter(|_| !ignore_local_dependencies);
 
+    // path takes precedence over url
     Ok(match (path, &dependency.url()) {
         (None, None) => None,
         (Some(path), _) => Some(retrievable_manifest.parent_join(&path.join("ambient.toml"))?),

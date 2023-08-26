@@ -102,9 +102,11 @@ pub async fn build<
     let mut queue: Vec<_> = {
         let mut semantic = ambient_package_semantic::Semantic::new(false).await?;
         let primary_package_scope_id = semantic
-            .add_package(RetrievableFile::Url(main_manifest_url.0.clone()))
+            .add_package(RetrievableFile::Url(main_manifest_url.0.clone()), None)
             .await?;
-        semantic.resolve()?;
+        semantic
+            .resolve()
+            .context("pre-build dependency resolution failed")?;
 
         semantic
             .items

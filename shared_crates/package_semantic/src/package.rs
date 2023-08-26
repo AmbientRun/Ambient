@@ -140,11 +140,14 @@ pub enum LocalOrRemote {
 #[derive(Clone, PartialEq, Debug)]
 pub struct Package {
     pub data: ItemData,
+    pub locator: PackageLocator,
     pub source: RetrievableFile,
     pub manifest: Manifest,
     pub build_metadata: Option<BuildMetadata>,
     pub dependencies: HashMap<SnakeCaseIdentifier, Dependency>,
     pub scope_id: ItemId<Scope>,
+    /// The package that this package was imported from, if any
+    pub dependent_package_id: Option<ItemId<Package>>,
 }
 impl Item for Package {
     const TYPE: ItemType = ItemType::Package;
