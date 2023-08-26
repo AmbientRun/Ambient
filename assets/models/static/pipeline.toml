@@ -1,8 +1,0 @@
-[[pipelines]]
-type = "Models"
-
-[pipelines.collider]
-type = "FromModel"
-
-[[pipelines.transforms]]
-type = "Center"

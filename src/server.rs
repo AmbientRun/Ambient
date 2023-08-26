@@ -58,7 +58,6 @@ const SPAWN_RADIUS: f32 = 20.0;
 pub fn main() {
     make_water();
     make_sun();
-    make_track();
 
     vehicle_creation_and_destruction();
     vehicle_processing();
@@ -91,15 +90,6 @@ fn make_sun() {
         .with(fog_density(), 0.01)
         .with(fog_height_falloff(), 0.1)
         .with(rotation(), Quat::from_rotation_y(190.0f32.to_radians()))
-        .spawn();
-}
-
-fn make_track() {
-    Entity::new()
-        .with_merge(make_transformable())
-        .with(translation(), vec3(-3500., 3500., -300.0))
-        .with(scale(), Vec3::ONE * 1.0)
-        .with(prefab_from_url(), assets::url("models/static/map.glb"))
         .spawn();
 }
 
