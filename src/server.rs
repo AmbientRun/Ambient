@@ -1,24 +1,25 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        model::model_from_url,
-        physics::{
+    core::{
+        app::components::main_scene,
+        model::components::model_from_url,
+        physics::components::{
             angular_velocity, cube_collider, density, dynamic, linear_velocity, physics_controlled,
             plane_collider,
         },
-        player::player as player_component,
-        prefab::prefab_from_url,
-        rendering::{
+        player::components::is_player,
+        prefab::components::prefab_from_url,
+        rendering::components::{
             cast_shadows, fog_color, fog_density, fog_height_falloff, light_diffuse, sky, sun,
             water,
         },
-        transform::{rotation, scale, translation},
+        transform::{
+            components::{rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::make_transformable,
     prelude::*,
 };
-
-mod common;
+use packages::this::{assets, components, messages::Input};
 
 const X_DISTANCE: f32 = 0.1;
 const Y_DISTANCE: f32 = 0.4;
@@ -42,6 +43,8 @@ const INPUT_PITCH_STRENGTH: f32 = 10.0;
 const INPUT_TURNING_STRENGTH: f32 = 20.0;
 const INPUT_JUMP_STRENGTH: f32 = 80.0;
 
+const JUMP_TIMEOUT: f32 = 2.0;
+
 const DENSITY: f32 = 10.0;
 const SLOWDOWN_STRENGTH: f32 = 0.8;
 
@@ -64,9 +67,9 @@ pub fn main() {
 fn make_water() {
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(water())
-        .with_default(physics_controlled())
-        .with_default(plane_collider())
+        .with(water(), ())
+        .with(physics_controlled(), ())
+        .with(plane_collider(), ())
         .with(dynamic(), false)
         .with(scale(), Vec3::ONE * 4000.)
         .spawn();
@@ -75,14 +78,14 @@ fn make_water() {
 fn make_sun() {
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(sky())
+        .with(sky(), ())
         .spawn();
 
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(sun())
-        .with_default(rotation())
-        .with_default(main_scene())
+        .with(sun(), 0.0)
+        .with(rotation(), Default::default())
+        .with(main_scene(), ())
         .with(light_diffuse(), Vec3::ONE)
         .with(fog_color(), vec3(0.88, 0.37, 0.34))
         .with(fog_density(), 0.01)
@@ -96,22 +99,19 @@ fn make_track() {
         .with_merge(make_transformable())
         .with(translation(), vec3(-3500., 3500., -300.0))
         .with(scale(), Vec3::ONE * 1.0)
-        .with(
-            prefab_from_url(),
-            asset::url("assets/models/static/map.glb").unwrap(),
-        )
+        .with(prefab_from_url(), assets::url("models/static/map.glb"))
         .spawn();
 }
 
 fn vehicle_creation_and_destruction() {
-    spawn_query(player_component()).bind(|players| {
+    spawn_query(is_player()).bind(|players| {
         for (player_id, ()) in players {
             let vehicle_id = Entity::new()
                 .with_merge(make_transformable())
-                .with_default(cast_shadows())
-                .with_default(linear_velocity())
-                .with_default(angular_velocity())
-                .with_default(physics_controlled())
+                .with(cast_shadows(), ())
+                .with(linear_velocity(), Default::default())
+                .with(angular_velocity(), Default::default())
+                .with(physics_controlled(), ())
                 .with(dynamic(), true)
                 .with(components::vehicle(), player_id)
                 .with(
@@ -126,7 +126,7 @@ fn vehicle_creation_and_destruction() {
                 .with(components::last_slowdown_time(), game_time())
                 .with(
                     model_from_url(),
-                    asset::url("assets/models/dynamic/raceCarWhite.glb/models/main.json").unwrap(),
+                    assets::url("models/dynamic/raceCarWhite.glb/models/main.json"),
                 )
                 .with(cube_collider(), Vec3::new(0.6, 1.0, 0.2))
                 .spawn();
@@ -137,7 +137,7 @@ fn vehicle_creation_and_destruction() {
         }
     });
 
-    despawn_query(player_component()).bind(|players| {
+    despawn_query(is_player()).bind(|players| {
         for (player, ()) in players {
             if let Some(vehicle) = entity::get_component(player, components::player_vehicle()) {
                 entity::despawn(vehicle);
@@ -145,7 +145,7 @@ fn vehicle_creation_and_destruction() {
         }
     });
 
-    messages::Input::subscribe(|source, input| {
+    Input::subscribe(|source, input| {
         if let Some(player) = source.client_entity_id() {
             entity::set_component(player, components::input_direction(), input.direction);
             entity::set_component(player, components::input_jump(), input.jump);
@@ -178,7 +178,7 @@ fn vehicle_processing() {
             let vehicle_last_jump_time =
                 entity::get_component(vehicle_id, components::last_jump_time()).unwrap_or_default();
             if entity::get_component(driver_id, components::input_jump()).unwrap_or_default()
-                && (game_time() - vehicle_last_jump_time).as_secs_f32() > common::JUMP_TIMEOUT
+                && (game_time() - vehicle_last_jump_time).as_secs_f32() > JUMP_TIMEOUT
             {
                 let linear_velocity =
                     entity::get_component(vehicle_id, linear_velocity()).unwrap_or_default();

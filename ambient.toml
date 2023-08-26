@@ -1,7 +1,8 @@
-[ember]
+[package]
 id = "tangent"
 name = "tangent"
 version = "0.0.1"
+content = { type = "Playable" }
 
 [components]
 debug_lines = {type = {type = "Vec", element_type = "Vec3"}, name = "Debug Lines", description = "Debug lines (orig, dest)", attributes = ["Networked"]}
@@ -19,4 +20,4 @@ input_direction = {type = "Vec2", name = "Input Direction", description = "Input
 input_jump = {type = "Bool", name = "Jump", description = "Jump"}
 
 [messages]
-input = {name = "Input", description = "Input", fields = {direction = "Vec2", jump = "Bool"}}
+Input = {name = "Input", description = "Input", fields = {direction = "Vec2", jump = "Bool"}}
