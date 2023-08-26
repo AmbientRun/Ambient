@@ -10,7 +10,7 @@ use ambient_api::{
 
 use crate::packages::this::messages::{WasmReload, WasmSetEnabled};
 
-use super::{use_hotkey_toggle, use_input_request, Window};
+use super::{use_hotkey_toggle, use_input_request};
 
 #[element_component]
 pub fn WasmManager(hooks: &mut Hooks) -> Element {

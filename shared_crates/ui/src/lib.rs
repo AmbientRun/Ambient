@@ -65,6 +65,7 @@ pub mod select;
 pub mod tabs;
 pub mod text;
 pub mod throbber;
+pub mod window;
 
 /// A base element for all UI elements. It contains all the components needed for a UI element to work.
 #[element_component]

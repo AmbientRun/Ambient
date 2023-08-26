@@ -1,21 +1,40 @@
-use ambient_api::{
-    core::{
-        messages::{WindowMouseInput, WindowMouseMotion},
-        text::{
-            components::{font_size, font_style},
-            types::FontStyle,
-        },
-        transform::components::translation,
+//! Implements a window with a title bar and a child element. Can be moved around.
+
+use ambient_cb::Cb;
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_guest_bridge::core::{
+    layout::{components::fit_horizontal, types::Fit},
+    messages::{WindowMouseInput, WindowMouseMotion},
+    text::{
+        components::{font_size, font_style},
+        types::FontStyle,
     },
-    prelude::*,
+    transform::components::translation,
+};
+use ambient_shared_types::MouseButton;
+use glam::{vec3, vec4, Vec2};
+
+use crate::{
+    button::{Button, ButtonStyle},
+    clickarea::MouseInput,
+    layout::{FlowColumn, FlowRow},
+    text::Text,
+    with_rect, UIExt,
 };
 
 #[element_component]
+/// A window with a title bar and a child element. Can be moved around.
 pub fn Window(
     hooks: &mut Hooks,
+    /// The title of the window.
     title: String,
+    /// Whether the window is visible.
     visible: bool,
+    /// A callback to be called when the window requests to be closed.
+    /// If this is `None`, the window will not have a close button.
+    /// This callback should update `visible` to `false`.
     close: Option<Cb<dyn Fn() + Send + Sync>>,
+    /// The child element.
     child: Element,
 ) -> Element {
     let (dragging, set_dragging) = hooks.use_state(false);
@@ -24,7 +43,7 @@ pub fn Window(
     hooks.use_runtime_message::<WindowMouseInput>({
         let set_dragging = set_dragging.clone();
         move |_world, event| {
-            if event.button == MouseButton::Left.into() && !event.pressed {
+            if event.button == u32::from(MouseButton::Left) && !event.pressed {
                 set_dragging(false);
             }
         }
