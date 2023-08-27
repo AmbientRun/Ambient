@@ -23,6 +23,9 @@ jobs:
           toolchain: stable
           target: wasm32-unknown-unknown
 
+      - name: Rust cache
+        uses: Leafwing-Studios/cargo-cache@v1.1.0
+
       - name: "Build campfire"
         uses: actions-rs/cargo@v1
         with:
