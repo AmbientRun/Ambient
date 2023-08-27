@@ -61,10 +61,13 @@ members = [
     # Test cases
     "testcases/588-prefab-despawn-panic",
 
-    # Packages
+    # Packages (tools)
     "packages/tools/console",
     "packages/tools/editor",
     "packages/tools/package_manager",
+
+    # Packages (games)
+    "packages/games/tangent",
 ]
 resolver = "2"
 
