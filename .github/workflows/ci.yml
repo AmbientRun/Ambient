@@ -162,7 +162,7 @@ jobs:
         run: cargo build --workspace --release
         env:
           CARGO_INCREMENTAL: 0
-          RUSTFLAGS: "-C debuginfo=0"
+          RUSTFLAGS: "-C debuginfo=0 -C lto=off"
       - name: Upload ambient executable artifact
         uses: actions/upload-artifact@v3
         with:
