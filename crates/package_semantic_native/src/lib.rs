@@ -120,7 +120,9 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
             let package = semantic.items.get(package_id);
 
             for dependency in package.dependencies.values() {
-                package_id_to_enabled.insert(dependency.id, dependency.enabled);
+                if let Some(enabled) = dependency.enabled {
+                    package_id_to_enabled.insert(dependency.id, enabled);
+                }
             }
         }
 

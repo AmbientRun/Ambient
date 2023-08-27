@@ -192,6 +192,5 @@ impl ResolveClone for Package {
 #[derive(Clone, PartialEq, Debug)]
 pub struct Dependency {
     pub id: ItemId<Package>,
-    /// On by default
-    pub enabled: bool,
+    pub enabled: Option<bool>,
 }

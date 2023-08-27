@@ -60,7 +60,7 @@ impl Printer {
                 for (name, dependency) in &package.dependencies {
                     p.print_indent();
                     println!(
-                        "{}: {} ({})",
+                        "{}: {} ({:?})",
                         name,
                         fully_qualified_display_path_ambient_style(
                             items,
