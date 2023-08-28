@@ -3,10 +3,10 @@ members = ["core/*", "mods/*"]
 resolver = "2"
 
 [workspace.dependencies]
-ambient_api = { path = "../Ambient/guest/rust/api" }
+ambient_api = { path = "../../../../../../Ambient/guest/rust/api" }
 # ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", tag = "v0.3.0-dev+20230808" }
 # ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", rev = "3fc1a20893cc9d33c42b957d3ae33b3e959798d6" }
 
-ambient_package = { path = "../Ambient/shared_crates/package" }
+ambient_package = { path = "../../../../../../Ambient/shared_crates/package" }
 # ambient_package = { git = "https://github.com/AmbientRun/Ambient.git", tag = "v0.3.0-dev+20230808" }
 # ambient_package = { git = "https://github.com/AmbientRun/Ambient.git", rev = "3fc1a20893cc9d33c42b957d3ae33b3e959798d6" }

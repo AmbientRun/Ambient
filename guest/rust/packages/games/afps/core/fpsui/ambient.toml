@@ -5,5 +5,5 @@ version = "0.0.1"
 content = { type = "Asset", textures = true, code = true }
 
 [dependencies]
-input_schema = { path = "../../../Ambient/guest/rust/packages/schemas/input", deployment = "2MvnveXZBFzrDo9Q3dLwm3" }
+input_schema = { path = "../../../../../../../../Ambient/guest/rust/packages/schemas/input", deployment = "2MvnveXZBFzrDo9Q3dLwm3" }
 afps_schema = { path = "../../schema/afps", deployment = "WhGPQCuWdq1pWfgex1fVp" }
