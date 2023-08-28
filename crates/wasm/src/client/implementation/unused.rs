@@ -153,3 +153,12 @@ impl wit::server_http::Host for Bindings {
         unimplemented!()
     }
 }
+#[async_trait::async_trait]
+impl wit::package_::Host for Bindings {
+    async fn get_entity_for_package_id(
+        &mut self,
+        _package_id: String,
+    ) -> anyhow::Result<Option<wit::types::EntityId>> {
+        unimplemented!()
+    }
+}

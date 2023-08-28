@@ -155,11 +155,33 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
             .copied()
             .unwrap_or(true);
 
-        let wasm = if let Some(metadata) = &package.build_metadata {
+        let manifest = &package.manifest;
+        let mut entity = Entity::new()
+            .with(app_name(), format!("Package {}", manifest.package.name))
+            .with(self::is_package(), ())
+            .with(self::enabled(), enabled)
+            .with(self::id(), package_id.clone())
+            .with(self::name(), manifest.package.name.clone())
+            .with(self::version(), manifest.package.version.to_string())
+            .with(self::authors(), manifest.package.authors.clone())
+            .with(self::asset_url(), base_asset_url.to_string());
+        if let Some(description) = &manifest.package.description {
+            entity.set(self::description(), description.clone());
+        }
+        if let Some(repository) = &manifest.package.repository {
+            entity.set(self::repository(), repository.clone());
+        }
+        let entity = entity.spawn(world);
+        world
+            .synced_resource_mut(package_id_to_package_entity())
+            .unwrap()
+            .insert(package_id.clone(), entity);
+
+        if let Some(metadata) = &package.build_metadata {
             let asset_url = AbsAssetUrl(base_asset_url.clone());
 
             let wasm_spawn = world.resource(self::wasm_spawn()).clone();
-            (wasm_spawn)(
+            let wasm = (wasm_spawn)(
                 world,
                 WasmSpawnRequest {
                     client_modules: metadata
@@ -173,35 +195,11 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
                         .map(|m| Ok((asset_url.push(m)?, enabled)))
                         .collect::<Result<Vec<_>, url::ParseError>>()?,
                 },
-            )?
-        } else {
-            WasmSpawnResponse::default()
+            )?;
+
+            world.add_component(entity, self::client_modules(), wasm.client_modules)?;
+            world.add_component(entity, self::server_modules(), wasm.server_modules)?;
         };
-
-        let manifest = &package.manifest;
-        let mut entity = Entity::new()
-            .with(app_name(), format!("Package {}", manifest.package.name))
-            .with(self::is_package(), ())
-            .with(self::enabled(), enabled)
-            .with(self::id(), package_id.clone())
-            .with(self::name(), manifest.package.name.clone())
-            .with(self::version(), manifest.package.version.to_string())
-            .with(self::authors(), manifest.package.authors.clone())
-            .with(self::asset_url(), base_asset_url.to_string())
-            .with(self::client_modules(), wasm.client_modules)
-            .with(self::server_modules(), wasm.server_modules);
-        if let Some(description) = &manifest.package.description {
-            entity.set(self::description(), description.clone());
-        }
-        if let Some(repository) = &manifest.package.repository {
-            entity.set(self::repository(), repository.clone());
-        }
-        let entity = entity.spawn(world);
-
-        world
-            .synced_resource_mut(package_id_to_package_entity())
-            .unwrap()
-            .insert(package_id.clone(), entity);
     }
 
     Ok(package_item_id)

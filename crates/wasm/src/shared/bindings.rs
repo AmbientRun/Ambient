@@ -21,6 +21,7 @@ pub trait BindingsBound:
     + super::wit::entity::Host
     + super::wit::message::Host
     + super::wit::player::Host
+    + super::wit::package_::Host
     // Client
     + super::wit::client_message::Host
     + super::wit::client_player::Host

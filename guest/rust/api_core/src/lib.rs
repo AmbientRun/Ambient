@@ -34,6 +34,9 @@ pub mod prelude;
 /// Animation functions
 pub mod animation;
 
+/// Package-related functionality.
+pub mod package;
+
 /// Internal implementation details.
 mod internal;
 
