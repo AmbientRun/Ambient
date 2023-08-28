@@ -153,7 +153,9 @@ impl Semantic {
                 )
             };
 
-            let dependency_id = self.add_package(source, Some(id)).await?;
+            let dependency_id = self.add_package(source, Some(id)).await.with_context(|| {
+                format!("failed to add dependency `{dependency_name}` for {locator}")
+            })?;
 
             dependencies.insert(
                 dependency_name.clone(),
