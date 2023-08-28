@@ -1,0 +1,102 @@
+[package]
+id = "afps_schema"
+name = "AFPS Schema"
+version = "0.0.1"
+content = { type = "Asset", schema = true }
+
+[components]
+player_model_ref = { type = "EntityId", description = "The player's whole body model id.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+player_cam_ref = { type = "EntityId", name = "Player cam ref", description = "The player's head/camera.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_jumping = { type = "Bool", attributes = ["Debuggable", "Networked"] }
+player_running = { type = "Bool", attributes = ["Debuggable", "Networked"] }
+player_direction = { type = "Vec2", attributes = ["Debuggable", "Networked"] }
+player_yaw = { type = "F32", name = "Player yaw", description = "The player's yaw.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+player_pitch = { type = "F32", name = "Player pitch", description = "The player's pitch.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+player_vspeed = { type = "F32", name = "Player vertical speed", description = "The player's vertical speed.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_shooting_status = { type = "Bool", description = "True when the player is in shooting", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+player_zoomed = { type = "Bool", attributes = ["Debuggable"] }
+
+player_name = { type = "String", attributes = ["Networked", "Debuggable"] }
+player_team = { type = "U8", description = "", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_killcount = { type = "I32", attributes = ["Debuggable", "Networked"] }
+player_deathcount = { type = "I32", attributes = ["Debuggable", "Networked"] }
+player_health = { type = "I32", attributes = ["Debuggable", "Networked"] }
+
+hit_freeze = { type = "I32", attributes = ["Debuggable", "Networked"] }
+heal_timeout = { type = "I32", attributes = ["Debuggable"] }
+
+player_last_frame = { type = "U64", description = "Last frame number reported by player", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+game_type = { type = "U8", description = "0: zombie mode", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+kill_log = { type = { type = "Vec", element_type = "String" }, description = "killer, victim, killer, victim", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+[messages]
+[messages.Input.fields]
+direction = "Vec2"
+mouse_delta = "Vec2"
+shoot = "Bool"
+toggle_zoom = "Bool"
+is_shooting = "Bool"
+ray_origin = "Vec3"
+ray_dir = "Vec3"
+duck = "Bool"
+jump = "Bool"
+running = "Bool"
+
+[messages.StartGame.fields]
+name = "String"
+
+[messages.Shoot.fields]
+ray_origin = "Vec3"
+ray_dir = "Vec3"
+source = "EntityId"
+# type_action = "U8"
+
+[messages.FireSound.fields]
+source = "EntityId"
+
+# this is to receive the walk trigger source from other server
+[messages.FootOnGround.fields]
+source = "EntityId"
+
+# send from audio server to audio client
+[messages.WalkSound.fields]
+source = "EntityId"
+
+# send from audio server to audio client
+[messages.Explosion.fields]
+pos = "Vec3"

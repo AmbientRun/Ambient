@@ -1,0 +1,12 @@
+[[pipelines]]
+type = "Materials"
+output_decals = false
+
+[pipelines.importer]
+type = "Single"
+name = "decals"
+base_color = "heart.png"
+
+[[pipelines]]
+type = "Models"
+sources = ["*"]
