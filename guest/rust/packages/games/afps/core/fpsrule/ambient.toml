@@ -1,0 +1,8 @@
+[package]
+id = "afps_fpsrule"
+name = "AFPS Rule"
+version = "0.0.1"
+content = { type = "Asset", code = true }
+
+[dependencies]
+afps_schema = { path = "../../schema", deployment = "WhGPQCuWdq1pWfgex1fVp" }

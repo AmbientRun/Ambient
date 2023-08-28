@@ -63,13 +63,13 @@ Each example in the [examples](./guest/rust/examples/) directory can be run with
 _(Note that ambient needs to match the version that the examples were built for, see ["Running examples"](https://ambientrun.github.io/Ambient/user/running_examples.html) in the docs)_
 
 ```
-ambient run guest/rust/examples/games/tictactoe
+ambient run guest/rust/examples/controllers/first_person_camera
 ```
 
 Every example can also be run server-only. To do so:
 
 ```
-ambient serve guest/rust/examples/games/tictactoe
+ambient serve guest/rust/examples/controllers/first_person_camera
 ```
 
 This will start a server that other people, including yourself, can join. By default, the server will use the Ambient proxy to allow clients to join from outside your local network, and give you a URL to share with others:

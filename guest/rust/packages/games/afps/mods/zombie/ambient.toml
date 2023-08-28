@@ -1,0 +1,27 @@
+[package]
+id = "afps_zombie"
+name = "AFPS Zombie"
+version = "0.0.1"
+content = { type = "Asset", models = true, animations = true, code = true }
+
+[components]
+is_zombie = { type = "Empty", attributes = ["Networked", "Debuggable"] }
+zombie_step_frame_count = { type = "U32", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+zombie_hit_reaction_count = { type = "I32", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+zombie_health = { type = "I32", attributes = ["Networked", "Debuggable"] }
+zombie_model_ref = { type = "EntityId", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+[messages.HitZombie.fields]
+id = "EntityId"
+
+[dependencies]
+afps_schema = { path = "../../schema", deployment = "WhGPQCuWdq1pWfgex1fVp" }

@@ -22,7 +22,7 @@ pub async fn generate_code(
     let mut semantic = Semantic::new(false).await?;
 
     let package_id = if let Some(manifest) = manifest {
-        Some(semantic.add_package(manifest).await?)
+        Some(semantic.add_package(manifest, None).await?)
     } else {
         None
     };

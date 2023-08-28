@@ -11,7 +11,7 @@ use ambient_api::{
 use shared::*;
 
 use packages::{
-    input_schema::messages::{ReleaseInput, RequestInput},
+    input_schema::messages::{InputRelease, InputRequest},
     this::messages::{ConsoleServerInput, ConsoleServerOutput},
 };
 
@@ -70,12 +70,7 @@ pub fn App(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
 
 #[element_component]
 pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
-    hooks.use_spawn(|_| {
-        RequestInput {}.send_local_broadcast(false);
-        |_| {
-            ReleaseInput {}.send_local_broadcast(false);
-        }
-    });
+    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
 
     let render_signal = hooks.use_rerender_signal();
     hooks.use_spawn({

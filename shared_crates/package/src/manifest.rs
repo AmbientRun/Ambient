@@ -138,8 +138,8 @@ pub struct Dependency {
     url: Option<Url>,
     #[serde(default)]
     deployment: Option<String>,
-    #[serde(default = "return_true")]
-    pub enabled: bool,
+    #[serde(default)]
+    pub enabled: Option<bool>,
 }
 impl Dependency {
     pub fn url(&self) -> Option<Url> {
@@ -155,10 +155,6 @@ impl Dependency {
     pub fn has_remote_dependency(&self) -> bool {
         self.url().is_some()
     }
-}
-
-fn return_true() -> bool {
-    true
 }
 
 #[cfg(test)]
@@ -596,7 +592,7 @@ mod tests {
         deps_assets = { path = "deps/assets" }
         deps_code = { path = "deps/code" }
         deps_ignore_me = { path = "deps/ignore_me", enabled = false }
-        deps_remote = { url = "http://example.com" }
+        deps_remote = { url = "http://example.com", enabled = true }
         deps_remote_deployment = { deployment = "jhsdfu574S" }
 
         "#;
@@ -622,7 +618,7 @@ mod tests {
                             path: Some(PathBuf::from("deps/assets")),
                             url: None,
                             deployment: None,
-                            enabled: true,
+                            enabled: None,
                         }
                     ),
                     (
@@ -631,7 +627,7 @@ mod tests {
                             path: Some(PathBuf::from("deps/code")),
                             url: None,
                             deployment: None,
-                            enabled: true,
+                            enabled: None,
                         }
                     ),
                     (
@@ -640,7 +636,7 @@ mod tests {
                             path: Some(PathBuf::from("deps/ignore_me")),
                             url: None,
                             deployment: None,
-                            enabled: false,
+                            enabled: Some(false),
                         }
                     ),
                     (
@@ -649,7 +645,7 @@ mod tests {
                             path: None,
                             url: Some(Url::parse("http://example.com").unwrap()),
                             deployment: None,
-                            enabled: true,
+                            enabled: Some(true),
                         }
                     ),
                     (
@@ -658,7 +654,7 @@ mod tests {
                             path: None,
                             url: None,
                             deployment: Some("jhsdfu574S".to_owned()),
-                            enabled: true,
+                            enabled: None,
                         }
                     )
                 ])

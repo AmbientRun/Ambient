@@ -120,7 +120,9 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
             let package = semantic.items.get(package_id);
 
             for dependency in package.dependencies.values() {
-                package_id_to_enabled.insert(dependency.id, dependency.enabled);
+                if let Some(enabled) = dependency.enabled {
+                    package_id_to_enabled.insert(dependency.id, enabled);
+                }
             }
         }
 
@@ -210,7 +212,7 @@ pub async fn add_to_semantic_and_register_components(
     url: &AbsAssetUrl,
 ) -> anyhow::Result<ItemId<Package>> {
     let id = semantic
-        .add_package(RetrievableFile::Url(url.0.clone()))
+        .add_package(RetrievableFile::Url(url.0.clone()), None)
         .await?;
 
     semantic.resolve()?;

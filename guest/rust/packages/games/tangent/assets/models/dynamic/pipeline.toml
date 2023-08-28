@@ -1,0 +1,9 @@
+[[pipelines]]
+type = "Models"
+
+[[pipelines.transforms]]
+type = "Center"
+
+[[pipelines.transforms]]
+type = "RotateZ"
+deg = 180.0

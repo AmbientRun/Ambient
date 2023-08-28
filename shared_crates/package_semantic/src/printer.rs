@@ -39,6 +39,18 @@ impl Printer {
 
         self.with_indent(|p| {
             p.print_indent();
+            println!("locator: {:?}", package.locator);
+
+            p.print_indent();
+            println!(
+                "dependent: {}",
+                package
+                    .dependent_package_id
+                    .map(|id| fully_qualified_display_path_ambient_style(items, &*items.get(id)))
+                    .unwrap_or_default()
+            );
+
+            p.print_indent();
             println!("source: {:?}", package.source);
 
             p.print_indent();
@@ -48,7 +60,7 @@ impl Printer {
                 for (name, dependency) in &package.dependencies {
                     p.print_indent();
                     println!(
-                        "{}: {} ({})",
+                        "{}: {} ({:?})",
                         name,
                         fully_qualified_display_path_ambient_style(
                             items,

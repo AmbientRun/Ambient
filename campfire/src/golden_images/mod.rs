@@ -20,10 +20,11 @@ mod failure;
 use failure::*;
 
 mod progress;
-use crate::example::all_examples;
 use progress::*;
 
-const TEST_BASE_PATH: &str = "guest/rust/examples";
+use crate::package::get_all_packages;
+
+const TEST_BASE_PATH: &str = "guest/rust";
 const TEST_MANIFEST: &str = "golden-image-manifest.toml";
 
 #[derive(Parser, Clone)]
@@ -54,10 +55,7 @@ pub async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
 
     // Get tests.
     let tests = if let Mode::Update = gi.mode {
-        all_examples(false)?
-            .into_iter()
-            .map(|(_, p)| p)
-            .collect_vec()
+        get_all_packages(true, false)?
     } else {
         tokio::spawn(parse_tests_from_manifest()).await??
     };
@@ -87,6 +85,11 @@ pub async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     } else {
         tests
     };
+
+    let tests = tests
+        .into_iter()
+        .map(|s| s.to_string_lossy().to_string())
+        .collect_vec();
 
     if tests.is_empty() {
         bail!("Nothing to do!");
@@ -137,10 +140,10 @@ pub async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
 
 #[derive(Deserialize)]
 struct Manifest {
-    tests: Vec<String>,
+    tests: Vec<PathBuf>,
 }
 
-async fn parse_tests_from_manifest() -> anyhow::Result<Vec<String>> {
+async fn parse_tests_from_manifest() -> anyhow::Result<Vec<PathBuf>> {
     let manifest_path = PathBuf::from(TEST_BASE_PATH).join(TEST_MANIFEST);
     let manifest = tokio::fs::read_to_string(&manifest_path)
         .await

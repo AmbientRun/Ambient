@@ -18,7 +18,7 @@ async fn main() -> anyhow::Result<()> {
     for path in paths {
         anyhow::ensure!(path.is_absolute(), "{path:?} must be absolute");
         semantic
-            .add_package(RetrievableFile::Path(path.join("ambient.toml")))
+            .add_package(RetrievableFile::Path(path.join("ambient.toml")), None)
             .await?;
     }
 

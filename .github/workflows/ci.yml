@@ -90,7 +90,7 @@ jobs:
       - name: Check that guest/rust's documentation is well-formed
         run: cd guest/rust && RUSTDOCFLAGS="-Dwarnings" cargo doc --workspace --all-features --no-deps
       - name: Check that guest/rust builds under all configurations
-        run: cargo run -p campfire --no-default-features example check-all
+        run: cargo campfire-slim package check-all
 
   build-web:
     runs-on: ubuntu-22.04
@@ -104,7 +104,7 @@ jobs:
       - name: Rust cache
         uses: Leafwing-Studios/cargo-cache@v1.1.0
         with:
-            cargo-target-dir: "web"
+          cargo-target-dir: "web"
 
       - name: "Build campfire"
         uses: actions-rs/cargo@v1
@@ -179,7 +179,7 @@ jobs:
       - name: Rust cache
         uses: Leafwing-Studios/cargo-cache@v1.1.0
         with:
-            cargo-target-dir: "guest/rust"
+          cargo-target-dir: "guest/rust"
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace
 

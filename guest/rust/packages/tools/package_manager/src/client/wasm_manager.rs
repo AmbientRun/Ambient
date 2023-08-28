@@ -8,9 +8,12 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::packages::this::messages::{WasmReload, WasmSetEnabled};
+use crate::packages::{
+    input_schema::messages::{InputRelease, InputRequest},
+    this::messages::{WasmReload, WasmSetEnabled},
+};
 
-use super::{use_hotkey_toggle, use_input_request, Window};
+use super::use_hotkey_toggle;
 
 #[element_component]
 pub fn WasmManager(hooks: &mut Hooks) -> Element {
@@ -26,7 +29,7 @@ pub fn WasmManager(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn WasmManagerInner(hooks: &mut Hooks) -> Element {
-    use_input_request(hooks);
+    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
 
     let mut modules: Vec<_> = hooks
         .use_query((

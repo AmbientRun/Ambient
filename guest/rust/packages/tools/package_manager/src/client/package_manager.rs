@@ -10,12 +10,15 @@ use ambient_api::{
     ui::ImageFromUrl,
 };
 
-use crate::packages::this::{
-    assets,
-    messages::{PackageSetEnabled, WasmReload},
+use crate::packages::{
+    input_schema::messages::{InputRelease, InputRequest},
+    this::{
+        assets,
+        messages::{PackageSetEnabled, WasmReload},
+    },
 };
 
-use super::{use_hotkey_toggle, use_input_request, Window};
+use super::use_hotkey_toggle;
 
 #[element_component]
 pub fn PackageManager(hooks: &mut Hooks) -> Element {
@@ -35,7 +38,7 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn PackageManagerInner(hooks: &mut Hooks) -> Element {
-    use_input_request(hooks);
+    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
 
     let packages = hooks.use_query((
         is_package(),

@@ -8,9 +8,12 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::packages::this::messages;
+use crate::packages::{
+    input_schema::messages::{InputRelease, InputRequest},
+    this::messages,
+};
 
-use super::{use_hotkey_toggle, use_input_request, Window};
+use super::use_hotkey_toggle;
 
 #[element_component]
 pub fn PackageLoad(_hooks: &mut Hooks) -> Element {
@@ -35,7 +38,7 @@ fn PackageLoadDialog(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn PackageLoadDialogInner(hooks: &mut Hooks, close: Cb<dyn Fn() + Sync + Send>) -> Element {
-    use_input_request(hooks);
+    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
     let (url, set_url) = hooks.use_state_with(|_| String::new());
 
     FlowColumn::el([
@@ -80,7 +83,7 @@ fn PackageView(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn PackageViewInner(hooks: &mut Hooks, msg: Option<messages::PackageLoadSuccess>) -> Element {
-    use_input_request(hooks);
+    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
     let modules_by_name: HashMap<_, _> = hooks
         .use_query((module_name(), bytecode_from_url()))
         .into_iter()
@@ -204,7 +207,7 @@ fn ErrorMessageInner(
     reason: String,
     close: Cb<dyn Fn() + Send + Sync>,
 ) -> Element {
-    use_input_request(hooks);
+    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
     FlowColumn::el([Text::el(reason), Button::new("OK", move |_| close()).el()])
         .with(space_between_items(), 4.0)
         .with_margin_even(STREET)

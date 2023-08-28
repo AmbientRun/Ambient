@@ -257,6 +257,29 @@ impl<'a> Hooks<'a> {
         });
     }
 
+    /// Send the `Enter` message when this [`Element`] is mounted, and the `Exit` message when it is unmounted.
+    ///
+    /// If the `target_id` is `Some`, the message will be directed to that target; otherwise, it will be broadcast.
+    #[cfg(feature = "guest")]
+    pub fn use_module_message_effect<
+        Enter: ModuleMessage + Default,
+        Exit: ModuleMessage + Default,
+    >(
+        &mut self,
+        target_id: Option<EntityId>,
+    ) {
+        use ambient_guest_bridge::Target;
+
+        self.use_effect(target_id, move |_, id| {
+            let target = match *id {
+                Some(id) => Target::Local(id),
+                None => Target::LocalBroadcast { include_self: true },
+            };
+            Enter::default().send(target.clone());
+            |_| Exit::default().send(target)
+        });
+    }
+
     /// Spawns the provided future as a task.
     ///
     /// The task is aborted when this [Element](crate::Element) is removed.
