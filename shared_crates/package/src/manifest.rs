@@ -70,6 +70,10 @@ pub struct Package {
     pub includes: Vec<PathBuf>,
 }
 
+fn return_true() -> bool {
+    true
+}
+
 // ----- NOTE: Update docs/reference/package.md when changing this ----
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
