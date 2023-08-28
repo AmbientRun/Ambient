@@ -25,7 +25,7 @@ use parking_lot::Mutex;
 fn spawn_emitters(world: &mut World) {
     let track = Track::from_vorbis(
         std::fs::read(
-            "guest/rust/examples/games/pong/assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg",
+            "guest/rust/packages/games/pong/assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg",
         )
         .expect("Failed to read audio file")
         .to_vec(),

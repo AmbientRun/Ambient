@@ -7,7 +7,6 @@ use ambient_api::{
             plane_collider,
         },
         player::components::is_player,
-        prefab::components::prefab_from_url,
         rendering::components::{
             cast_shadows, fog_color, fog_density, fog_height_falloff, light_diffuse, sky, sun,
             water,

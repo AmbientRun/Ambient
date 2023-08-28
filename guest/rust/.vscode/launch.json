@@ -272,7 +272,7 @@
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
             ],
-            "cwd": "${workspaceFolder}/examples/games/minigolf"
+            "cwd": "${workspaceFolder}/packages/games/minigolf"
         },
         {
             "name": "games/music_sequencer",
@@ -285,7 +285,7 @@
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
             ],
-            "cwd": "${workspaceFolder}/examples/games/music_sequencer"
+            "cwd": "${workspaceFolder}/packages/games/music_sequencer"
         },
         {
             "name": "games/pong",
@@ -298,7 +298,7 @@
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
             ],
-            "cwd": "${workspaceFolder}/examples/games/pong"
+            "cwd": "${workspaceFolder}/packages/games/pong"
         },
         {
             "name": "games/tictactoe",
@@ -311,7 +311,7 @@
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
             ],
-            "cwd": "${workspaceFolder}/examples/games/tictactoe"
+            "cwd": "${workspaceFolder}/packages/games/tictactoe"
         },
         {
             "name": "ui/auto_editor",

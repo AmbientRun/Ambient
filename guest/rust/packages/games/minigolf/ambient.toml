@@ -3,7 +3,7 @@ id = "ambient_example_minigolf"
 name = "Minigolf"
 description = "Can you hit a hole-in-one?"
 version = "0.0.1"
-repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/minigolf"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/minigolf"
 type = "Game"
 content = { type = "Playable", example = true }
 

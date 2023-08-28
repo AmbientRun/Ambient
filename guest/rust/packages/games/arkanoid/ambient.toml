@@ -3,7 +3,7 @@ id = "ambient_example_arkanoid"
 name = "Arkanoid"
 description = "The classic."
 version = "0.0.1"
-repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/arkanoid"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/arkanoid"
 type = "Game"
 content = { type = "Playable", example = true }
 

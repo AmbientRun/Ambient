@@ -3,7 +3,7 @@ id = "ambient_example_pong"
 name = "Pong"
 description = "Minimal multiplayer pong."
 version = "0.0.1"
-repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/pong"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/pong"
 type = "Game"
 content = { type = "Playable", example = true }
 

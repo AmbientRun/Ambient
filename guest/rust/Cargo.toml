@@ -51,13 +51,6 @@ members = [
     "examples/ui/text",
     "examples/ui/todo",
 
-    # Games
-    "examples/games/minigolf",
-    "examples/games/music_sequencer",
-    "examples/games/pong",
-    "examples/games/tictactoe",
-    "examples/games/arkanoid",
-
     # Test cases
     "testcases/588-prefab-despawn-panic",
 
@@ -68,6 +61,11 @@ members = [
 
     # Packages (games)
     "packages/games/tangent",
+    "packages/games/minigolf",
+    "packages/games/music_sequencer",
+    "packages/games/pong",
+    "packages/games/tictactoe",
+    "packages/games/arkanoid",
 ]
 resolver = "2"
 
