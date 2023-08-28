@@ -84,13 +84,14 @@ Note that `ValueType`s are not themselves values, but rather types of values. Fo
 
 The `package` section contains metadata about the package itself, such as its name and version.
 
-| Property      | Type                  | Description                                                                                   |
-| ------------- | --------------------- | --------------------------------------------------------------------------------------------- |
-| `id`          | `SnakeCaseIdentifier` | _Required_. The package's snake-cased ID.                                                     |
-| `name`        | `String`              | _Optional_. A human-readable name for the package.                                            |
-| `description` | `String`              | _Optional_. A human-readable description of the package.                                      |
-| `version`     | `String`              | _Optional_. The package's version, in `(major, minor, patch)` format. Semantically versioned. |
-| `content`     | `PackageContent`      | A description of the content of this Package. See below.                                      |
+| Property      | Type                  | Description                                                                                       |
+| ------------- | --------------------- | ------------------------------------------------------------------------------------------------- |
+| `id`          | `SnakeCaseIdentifier` | _Required_. The package's snake-cased ID.                                                         |
+| `name`        | `String`              | _Optional_. A human-readable name for the package.                                                |
+| `description` | `String`              | _Optional_. A human-readable description of the package.                                          |
+| `version`     | `String`              | _Optional_. The package's version, in `(major, minor, patch)` format. Semantically versioned.     |
+| `content`     | `PackageContent`      | _Required_. A description of the content of this Package. See below.                              |
+| `public`      | `Bool`                | _Optional_. Indicates if this package will be publicly available when deployed. Defaults to true. |
 
 #### `PackageContent`
 

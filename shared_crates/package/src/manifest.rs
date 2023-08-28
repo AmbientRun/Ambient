@@ -64,6 +64,8 @@ pub struct Package {
     #[serde(default)]
     pub authors: Vec<String>,
     pub content: PackageContent,
+    #[serde(default = "return_true")]
+    pub public: bool,
     #[serde(default)]
     pub includes: Vec<PathBuf>,
 }
@@ -194,6 +196,7 @@ mod tests {
         name = "Test"
         version = "0.0.1"
         content = { type = "Playable" }
+        public = false
         "#;
 
         assert_eq!(
@@ -233,6 +236,7 @@ mod tests {
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
+        public = false
 
         [components]
         cell = { type = "i32", name = "Cell", description = "The ID of the cell this player is in", attributes = ["store"] }
@@ -292,6 +296,7 @@ mod tests {
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
+        public = false
 
         [build.rust]
         feature-multibuild = ["client"]
@@ -326,6 +331,7 @@ mod tests {
         name = "My Package"
         version = "0.0.1"
         content = { type = "Playable" }
+        public = false
 
         [components]
         "core::transform::rotation" = { type = "quat", name = "Rotation", description = "" }
@@ -467,6 +473,7 @@ mod tests {
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
+        public = false
 
         [enums.CellState]
         description = "The current cell state"
@@ -511,6 +518,7 @@ mod tests {
         name = "Test"
         version = "0.0.1"
         content = { type = "Playable" }
+        public = false
 
         [components]
         test = { type = "I32", name = "Test", description = "Test" }
@@ -587,6 +595,7 @@ mod tests {
         name = "dependencies"
         version = "0.0.1"
         content = { type = "Playable" }
+        public = false
 
         [dependencies]
         deps_assets = { path = "deps/assets" }
