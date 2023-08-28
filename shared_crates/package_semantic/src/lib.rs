@@ -203,10 +203,9 @@ impl Semantic {
 
                 fn imported_by(items: &ItemMap, package: &Package) -> String {
                     match package.dependent_package_id {
-                        Some(dependent_id) => format!(
-                            "\n    - imported by {}",
-                            items.get(dependent_id).locator.to_string()
-                        ),
+                        Some(dependent_id) => {
+                            format!("\n    - imported by {}", items.get(dependent_id).locator)
+                        }
                         None => String::new(),
                     }
                 }
