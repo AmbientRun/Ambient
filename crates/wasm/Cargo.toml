@@ -8,35 +8,28 @@ edition = "2021"
 
 [dependencies]
 ambient_sys = { path = "../sys" }
-ambient_animation = { path = "../animation" }
-ambient_app = { path = "../app" }
 ambient_core = { path = "../core" }
 ambient_ecs = { path = "../ecs" }
 ambient_input = { path = "../input" }
 ambient_network = { path = "../network" }
-ambient_model = { path = "../model" }
 ambient_native_std = { path = "../native_std" }
 ambient_gpu = { path = "../gpu" }
 ambient_renderer = { path = "../renderer" }
 ambient_procedurals = { path = "../procedurals" }
 ambient_package_semantic_native = { path = "../package_semantic_native" }
 
-ambient_package = { path = "../../shared_crates/package" }
 ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
     "native",
 ] }
 
+tracing = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 byteorder = { workspace = true }
 bytes = { workspace = true }
 data-encoding = { workspace = true }
-chrono = { workspace = true }
 flume = { workspace = true }
-fs_extra = { workspace = true }
 glam = { workspace = true }
-indexmap = { workspace = true }
-indoc = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
 once_cell = { workspace = true }
@@ -44,15 +37,12 @@ parking_lot = { workspace = true }
 paste = { workspace = true }
 profiling = { workspace = true }
 reqwest = { workspace = true }
-serde_bytes = { workspace = true }
-serde_json = { workspace = true }
 serde = { workspace = true }
 slotmap = { workspace = true }
 tokio = { workspace = true }
 winit = { workspace = true }
 wgpu = { workspace = true }
 ulid = { workspace = true }
-tracing = { workspace = true }
 wit-component = { workspace = true }
 futures = { workspace = true }
 

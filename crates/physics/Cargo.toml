@@ -22,7 +22,6 @@ ambient_primitives = { path = "../primitives", version = "0.3.0-dev" }
 
 physxx = { path = "../../libs/physxx", version = "0.3.0-dev" }
 serde = { workspace = true }
-serde_json = { workspace = true }
 glam = { workspace = true }
 itertools = { workspace = true }
 futures = { workspace = true }
@@ -33,7 +32,6 @@ tracing = { workspace = true }
 anyhow = { workspace = true }
 profiling = { workspace = true }
 ordered-float = { workspace = true }
-once_cell = { workspace = true }
 tokio = { workspace = true }
 log = { workspace = true }
 

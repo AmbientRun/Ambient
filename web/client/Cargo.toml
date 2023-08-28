@@ -33,6 +33,7 @@ ambient_layout = { workspace = true }
 ambient_debugger = { workspace = true }
 ambient_primitives = { workspace = true }
 ambient_client_shared = { workspace = true }
+ambient_package_semantic_native = { workspace = true }
 
 url = { workspace = true }
 anyhow = { workspace = true }

@@ -12,16 +12,52 @@ name = "Is Package"
 description = "Whether or not this entity is a package."
 attributes = ["Debuggable", "Networked"]
 
+[components.enabled]
+type = "Bool"
+name = "Enabled"
+description = "Whether or not this package is enabled."
+attributes = ["Debuggable", "Networked"]
+
 [components.id]
 type = "String"
 name = "ID"
 description = "The ID of the package."
 attributes = ["Debuggable", "Networked"]
 
+[components.name]
+type = "String"
+name = "Name"
+description = "The name of the package."
+attributes = ["Debuggable", "Networked"]
+
+[components.version]
+type = "String"
+name = "Version"
+description = "The version of the package."
+attributes = ["Debuggable", "Networked"]
+
+[components.authors]
+type = { container_type = "Vec", element_type = "String" }
+name = "Authors"
+description = "The authors of the package."
+attributes = ["Debuggable", "Networked"]
+
+[components.description]
+type = "String"
+name = "Description"
+description = "The description of the package. If not attached, the package does not have a description."
+attributes = ["Debuggable", "Networked"]
+
+[components.repository]
+type = "String"
+name = "Repository"
+description = "The repository of the package. If not attached, the package does not have a repository."
+attributes = ["Debuggable", "Networked"]
+
 [components.asset_url]
 type = "String"
-name = "URL"
-description = "The asset URL of the package."
+name = "Asset URL"
+description = "The asset URL (i.e. where the built assets are) of the package."
 attributes = ["Debuggable", "Networked"]
 
 [components.client_modules]

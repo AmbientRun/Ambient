@@ -85,10 +85,21 @@ pub async fn handle(
                 Ok(())
             }
         },
-        |package_manifest_path, build_path| {
+        |package_manifest_path, build_path, was_built| {
             // After build, deploy the package.
             let manifest_path_to_deployment_id = manifest_path_to_deployment_id.clone();
             async move {
+                if !was_built {
+                    // TODO: this check does not actually save much, as the process of deploying
+                    // the package and updating the manifest invalidates the last-build-time check
+                    // anyway. This means that it only really works for "root" packages, and not
+                    // anything with dependencies.
+                    //
+                    // Consider either using another metric, or implementing a more intelligent
+                    // algorithm.
+                    return Ok(());
+                }
+
                 let deployment_id =
                     ambient_deploy::deploy(api_server, token, build_path, force_upload).await?;
 

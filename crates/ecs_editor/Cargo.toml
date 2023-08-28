@@ -20,7 +20,6 @@ ambient_renderer = { path = "../renderer" , version = "0.3.0-dev" }
 env_logger = { workspace = true }
 itertools = { workspace = true }
 glam = { workspace = true }
-parking_lot = { workspace = true }
 
 [dev-dependencies]
 ambient_app = { path = "../app", features = ["profile"] }

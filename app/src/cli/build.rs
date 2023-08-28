@@ -1,6 +1,7 @@
 use std::future::Future;
 use std::path::PathBuf;
 
+use ambient_build::BuildResult;
 use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use ambient_package::BuildSettings;
 use ambient_package_semantic::RetrievableFile;
@@ -54,7 +55,7 @@ pub async fn handle(
         release_build,
         build_wasm_only,
         |_| async { Ok(()) },
-        |_, _| async { Ok(()) },
+        |_, _, _| async { Ok(()) },
     )
     .await
 }
@@ -67,11 +68,11 @@ pub async fn build<
     assets: &AssetCache,
     main_package_fs_path: PathBuf,
     clean_build: bool,
-    building_for_deploy: bool,
-    release_build: bool,
-    build_wasm_only: bool,
+    deploy: bool,
+    release: bool,
+    wasm_only: bool,
     mut pre_build: impl FnMut(PathBuf) -> PrebuildRet,
-    mut post_build: impl FnMut(PathBuf, PathBuf) -> PostbuildRet,
+    mut post_build: impl FnMut(PathBuf, PathBuf, bool) -> PostbuildRet,
 ) -> anyhow::Result<BuildDirectories> {
     let root_build_path = main_package_fs_path.join("build");
     let main_manifest_url = AbsAssetUrl::from_file_path(main_package_fs_path.join("ambient.toml"));
@@ -108,9 +109,9 @@ pub async fn build<
     };
 
     let settings = BuildSettings {
-        optimize: release_build,
-        build_wasm_only,
-        building_for_deploy,
+        release,
+        wasm_only,
+        deploy,
     };
 
     // For each package, build the package using a fresh semantic.
@@ -120,11 +121,13 @@ pub async fn build<
     while let Some(manifest_path) = queue.pop() {
         pre_build(manifest_path.clone()).await?;
 
-        let build_path =
-            ambient_build::build_package(assets, &settings, &manifest_path, &root_build_path)
-                .await?;
+        let BuildResult {
+            build_path,
+            was_built,
+        } = ambient_build::build_package(assets, &settings, &manifest_path, &root_build_path)
+            .await?;
 
-        post_build(manifest_path.clone(), build_path.clone()).await?;
+        post_build(manifest_path.clone(), build_path.clone(), was_built).await?;
 
         if AbsAssetUrl::from_file_path(manifest_path) == main_manifest_url {
             output_path = build_path;

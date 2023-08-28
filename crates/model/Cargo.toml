@@ -17,8 +17,6 @@ ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
 ambient_renderer = { path = "../renderer" , version = "0.3.0-dev" }
 ambient_meshes = { path = "../meshes" , version = "0.3.0-dev" }
 ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
-ambient_editor_derive = { path = "../../shared_crates/editor_derive" , version = "0.3.0-dev" }
-ambient_ui_native = { path = "../ui_native" , version = "0.3.0-dev" }
 futures = { workspace = true }
 glam = { workspace = true }
 itertools = { workspace = true }
@@ -29,7 +27,6 @@ tokio = { workspace = true }
 tracing = { workspace = true }
 bytemuck = { workspace = true }
 async-trait = { workspace = true }
-url = { workspace = true }
 
 [features]
 hotload-includes = ['ambient_native_std/hotload-includes']

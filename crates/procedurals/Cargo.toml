@@ -15,8 +15,5 @@ ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
 ambient_renderer = { path = "../renderer" , version = "0.3.0-dev" }
 ambient_shared_types = { path = "../../shared_crates/shared_types" , version = "0.3.0-dev" }
 
-parking_lot = { workspace = true }
-ulid = { workspace = true }
-tracing = { workspace = true }
 wgpu = { workspace = true }
 paste = { workspace = true }

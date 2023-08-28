@@ -2,6 +2,7 @@ use std::{
     cell::Ref,
     collections::HashMap,
     path::{Path, PathBuf},
+    sync::OnceLock,
 };
 
 use anyhow::Context as AnyhowContext;
@@ -51,10 +52,13 @@ pub use printer::Printer;
 mod util;
 
 pub type Schema = HashMap<&'static str, &'static str>;
+pub fn schema() -> &'static Schema {
+    static SCHEMA: OnceLock<Schema> = OnceLock::new();
+    SCHEMA.get_or_init(|| HashMap::from_iter(ambient_schema::FILES.iter().copied()))
+}
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Semantic {
-    pub schema: Schema,
     pub items: ItemMap,
     pub root_scope_id: ItemId<Scope>,
     pub packages: HashMap<PackageLocator, ItemId<Package>>,
@@ -68,7 +72,6 @@ impl Semantic {
         let (root_scope_id, standard_definitions) = create_root_scope(&mut items)?;
 
         let mut semantic = Self {
-            schema: HashMap::from_iter(ambient_schema::FILES.iter().copied()),
             items,
             root_scope_id,
             packages: HashMap::new(),
@@ -90,7 +93,7 @@ impl Semantic {
         &mut self,
         retrievable_manifest: RetrievableFile,
     ) -> anyhow::Result<ItemId<Package>> {
-        let manifest = Manifest::parse(&retrievable_manifest.get(&self.schema).await?)?;
+        let manifest = Manifest::parse(&retrievable_manifest.get().await?)?;
 
         let locator = PackageLocator::from_manifest(&manifest, retrievable_manifest.clone());
         if let Some(id) = self.packages.get(&locator) {
@@ -99,7 +102,7 @@ impl Semantic {
 
         let build_metadata = retrievable_manifest
             .parent_join(Path::new(BuildMetadata::FILENAME))?
-            .get(&self.schema)
+            .get()
             .await
             .ok()
             .map(|s| BuildMetadata::parse(&s))
@@ -108,27 +111,15 @@ impl Semantic {
         let mut dependencies = HashMap::new();
         for (dependency_name, dependency) in &manifest.dependencies {
             // path takes precedence over url
-            let source = match (
-                dependency
-                    .path
-                    .as_ref()
-                    .filter(|_| !self.ignore_local_dependencies),
-                &dependency.url(),
-            ) {
-                (None, None) => {
-                    anyhow::bail!(
-                        "{locator}: dependency `{dependency_name}` has no supported sources specified (are you trying to deploy a package with a local dependency?)"
-                    )
-                }
-                (Some(path), _) => retrievable_manifest.parent_join(&path.join("ambient.toml"))?,
-                (_, Some(url)) => {
-                    // ensure it is a directory
-                    let mut url = url.clone();
-                    if !url.path().ends_with('/') {
-                        url.set_path(&format!("{}/", url.path()));
-                    }
-                    RetrievableFile::Url(url.join("ambient.toml")?)
-                }
+            let Some(source) = package_dependency_to_retrievable_file(
+                &retrievable_manifest,
+                self.ignore_local_dependencies,
+                dependency,
+            )?
+            else {
+                anyhow::bail!(
+                    "{locator}: dependency `{dependency_name}` has no supported sources specified (are you trying to deploy a package with a local dependency?)"
+                )
             };
 
             let dependency_id = self.add_package(source).await?;
@@ -240,7 +231,7 @@ impl Semantic {
             );
 
             let include_source = source.parent_join(include)?;
-            let include_manifest = Manifest::parse(&include_source.get(&self.schema).await?)?;
+            let include_manifest = Manifest::parse(&include_source.get().await?)?;
             let include_scope_id = self
                 .add_scope_from_manifest_with_includes(
                     Some(scope_id),
@@ -411,4 +402,28 @@ pub fn create_root_scope(
 
     let standard_definitions = StandardDefinitions { attributes };
     Ok((root_scope, standard_definitions))
+}
+
+pub fn package_dependency_to_retrievable_file(
+    retrievable_manifest: &RetrievableFile,
+    ignore_local_dependencies: bool,
+    dependency: &ambient_package::Dependency,
+) -> anyhow::Result<Option<RetrievableFile>> {
+    let path = dependency
+        .path
+        .as_ref()
+        .filter(|_| !ignore_local_dependencies);
+
+    Ok(match (path, &dependency.url()) {
+        (None, None) => None,
+        (Some(path), _) => Some(retrievable_manifest.parent_join(&path.join("ambient.toml"))?),
+        (_, Some(url)) => {
+            // ensure it is a directory
+            let mut url = url.clone();
+            if !url.path().ends_with('/') {
+                url.set_path(&format!("{}/", url.path()));
+            }
+            Some(RetrievableFile::Url(url.join("ambient.toml")?))
+        }
+    })
 }

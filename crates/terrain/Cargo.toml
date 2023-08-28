@@ -35,13 +35,9 @@ bytemuck = { workspace = true }
 serde_json = { workspace = true }
 closure = { workspace = true }
 profiling = { workspace = true }
-bitflags = { workspace = true }
 rand = { workspace = true }
 rand_pcg = { workspace = true }
-tokio = { workspace = true }
 anyhow = { workspace = true }
-parking_lot = { workspace = true }
-flume = { workspace = true }
 tracing = { workspace = true }
 
 [features]

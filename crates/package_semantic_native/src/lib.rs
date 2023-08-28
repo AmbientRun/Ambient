@@ -7,9 +7,10 @@ use std::{
 
 use ambient_cb::Cb;
 use ambient_ecs::{
-    components, generated::app::components::name, ComponentRegistry, Entity, EntityId,
+    components, generated::app::components::name as app_name,
+    generated::wasm::components::module_enabled, query, ComponentRegistry, Entity, EntityId,
     ExternalComponentAttributes, ExternalComponentDesc, Networked, PrimitiveComponentType,
-    Resource, World,
+    Resource, SystemGroup, World,
 };
 use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::ServerWorldExt;
@@ -67,6 +68,25 @@ pub async fn initialize(
     add(world, &main_package_path.push("ambient.toml")?).await?;
 
     Ok(())
+}
+
+pub fn server_systems() -> SystemGroup {
+    SystemGroup::new(
+        "package",
+        vec![
+            query((enabled().changed(), client_modules(), server_modules())).to_system(
+                |q, world, qs, _| {
+                    for (_, (enabled, client_modules, server_modules)) in
+                        q.collect_cloned(world, qs)
+                    {
+                        for id in client_modules.into_iter().chain(server_modules) {
+                            world.add_component(id, module_enabled(), enabled).unwrap();
+                        }
+                    }
+                },
+            ),
+        ],
+    )
 }
 
 pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result<ItemId<Package>> {
@@ -128,12 +148,12 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
             }
         };
 
-        let wasm = if let Some(metadata) = &package.build_metadata {
-            let enabled = package_id_to_enabled
-                .get(&package_item_id)
-                .copied()
-                .unwrap_or(true);
+        let enabled = package_id_to_enabled
+            .get(&package_item_id)
+            .copied()
+            .unwrap_or(true);
 
+        let wasm = if let Some(metadata) = &package.build_metadata {
             let asset_url = AbsAssetUrl(base_asset_url.clone());
 
             let wasm_spawn = world.resource(self::wasm_spawn()).clone();
@@ -156,14 +176,25 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
             WasmSpawnResponse::default()
         };
 
-        let entity = Entity::new()
-            .with(name(), format!("Package {}", package.manifest.package.name))
+        let manifest = &package.manifest;
+        let mut entity = Entity::new()
+            .with(app_name(), format!("Package {}", manifest.package.name))
             .with(self::is_package(), ())
+            .with(self::enabled(), enabled)
             .with(self::id(), package_id.clone())
+            .with(self::name(), manifest.package.name.clone())
+            .with(self::version(), manifest.package.version.to_string())
+            .with(self::authors(), manifest.package.authors.clone())
             .with(self::asset_url(), base_asset_url.to_string())
             .with(self::client_modules(), wasm.client_modules)
-            .with(self::server_modules(), wasm.server_modules)
-            .spawn(world);
+            .with(self::server_modules(), wasm.server_modules);
+        if let Some(description) = &manifest.package.description {
+            entity.set(self::description(), description.clone());
+        }
+        if let Some(repository) = &manifest.package.repository {
+            entity.set(self::repository(), repository.clone());
+        }
+        let entity = entity.spawn(world);
 
         world
             .synced_resource_mut(package_id_to_package_entity())

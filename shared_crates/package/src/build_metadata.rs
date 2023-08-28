@@ -35,11 +35,26 @@ impl BuildMetadata {
     pub fn parse(contents: &str) -> Result<Self, BuildMetadataError> {
         Ok(toml::from_str(contents)?)
     }
+
+    pub fn last_build_time(&self) -> chrono::ParseResult<Option<chrono::DateTime<chrono::Utc>>> {
+        Ok(self
+            .last_build_time
+            .as_deref()
+            .map(|lbt| chrono::DateTime::parse_from_rfc3339(lbt))
+            .transpose()?
+            .map(|lbt| lbt.with_timezone(&chrono::Utc)))
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Default)]
 pub struct BuildSettings {
-    pub optimize: bool,
-    pub build_wasm_only: bool,
-    pub building_for_deploy: bool,
+    #[serde(default)]
+    /// Build with optimizations.
+    pub release: bool,
+    #[serde(default)]
+    /// Build the WASM files only.
+    pub wasm_only: bool,
+    #[serde(default)]
+    /// Build with deployment in mind (i.e. ignore local dependencies).
+    pub deploy: bool,
 }

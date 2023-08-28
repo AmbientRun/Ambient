@@ -66,15 +66,6 @@ dependencies = [
 
 [[package]]
 name = "aho-corasick"
-version = "0.7.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc936419f96fa211c1b9166887b38e5e40b19958e5b895be7c1f93adec7071ac"
-dependencies = [
- "memchr",
-]
-
-[[package]]
-name = "aho-corasick"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6748e8def348ed4d14996fa801f4122cd763fff530258cdc03f64b25f89d3a5a"
@@ -124,13 +115,10 @@ dependencies = [
  "ambient_ecs",
  "ambient_model",
  "ambient_native_std",
- "ambient_sys",
  "anyhow",
  "async-trait",
- "derive_more",
  "glam",
  "itertools",
- "log",
  "ordered-float 3.9.1",
  "serde",
 ]
@@ -160,7 +148,6 @@ dependencies = [
  "parking_lot",
  "profiling",
  "thread-priority",
- "tokio",
  "tracing",
  "web-sys",
  "wgpu",
@@ -172,16 +159,13 @@ name = "ambient_asset_cache"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_sys",
- "anyhow",
  "as-any",
  "async-trait",
  "chrono",
  "futures",
- "itertools",
  "parking_lot",
  "pin-project",
  "serde",
- "thiserror",
  "tracing",
 ]
 
@@ -189,7 +173,6 @@ dependencies = [
 name = "ambient_audio"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_ecs",
  "ambient_native_std",
  "ambient_sys",
  "ambient_ui_native",
@@ -210,12 +193,10 @@ dependencies = [
  "ordered-float 3.9.1",
  "parking_lot",
  "rand",
- "rand_chacha",
  "rayon",
  "rustfft",
  "serde",
  "slotmap",
- "static_assertions",
  "thiserror",
  "tokio",
  "tracing",
@@ -281,12 +262,9 @@ dependencies = [
  "glam",
  "itertools",
  "ordered-float 3.9.1",
- "parking_lot",
  "profiling",
  "serde",
- "tokio",
  "tracing",
- "wgpu",
  "winit",
  "yaml-rust-davvid",
 ]
@@ -298,9 +276,7 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_element",
- "ambient_element_component",
  "ambient_gizmos",
- "ambient_gpu",
  "ambient_native_std",
  "ambient_network",
  "ambient_renderer",
@@ -312,7 +288,6 @@ dependencies = [
  "glam",
  "tracing",
  "wgpu",
- "winit",
 ]
 
 [[package]]
@@ -327,7 +302,6 @@ dependencies = [
  "ambient_meshes",
  "ambient_native_std",
  "ambient_renderer",
- "ambient_ui_native",
  "glam",
  "log",
 ]
@@ -347,23 +321,18 @@ dependencies = [
  "bit-vec",
  "byteorder",
  "data-encoding",
- "derive_more",
  "downcast-rs",
  "erased-serde",
  "glam",
  "itertools",
- "lazy_static",
  "log",
  "once_cell",
  "parking_lot",
  "paste",
  "profiling",
  "rand",
- "reqwest",
  "serde",
  "serde_json",
- "serde_yaml",
- "smallvec",
  "thiserror",
  "tracing",
  "yaml-rust-davvid",
@@ -383,15 +352,12 @@ dependencies = [
  "env_logger",
  "glam",
  "itertools",
- "parking_lot",
 ]
 
 [[package]]
 name = "ambient_editor_derive"
 version = "0.3.0-dev"
 dependencies = [
- "convert_case 0.6.0",
- "itertools",
  "pretty_assertions",
  "proc-macro-crate",
  "proc-macro2",
@@ -413,7 +379,6 @@ dependencies = [
  "atomic_refcell",
  "derivative",
  "dyn-clonable",
- "futures",
  "itertools",
  "parking_lot",
  "profiling",
@@ -426,7 +391,6 @@ name = "ambient_element_component"
 version = "0.3.0-dev"
 dependencies = [
  "itertools",
- "proc-macro-crate",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
@@ -463,7 +427,7 @@ dependencies = [
 name = "ambient_gpu"
 version = "0.3.0-dev"
 dependencies = [
- "aho-corasick 0.7.20",
+ "aho-corasick",
  "ambient_native_std",
  "ambient_std",
  "ambient_sys",
@@ -486,7 +450,6 @@ dependencies = [
  "tokio",
  "toml 0.7.6",
  "tracing",
- "ulid",
  "wgpu",
  "winit",
 ]
@@ -537,8 +500,6 @@ dependencies = [
  "ambient_shared_types",
  "glam",
  "serde",
- "serde_json",
- "tracing",
  "winit",
 ]
 
@@ -555,7 +516,6 @@ dependencies = [
  "itertools",
  "log",
  "profiling",
- "serde",
 ]
 
 [[package]]
@@ -583,13 +543,11 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
- "ambient_editor_derive",
  "ambient_gpu",
  "ambient_meshes",
  "ambient_native_std",
  "ambient_renderer",
  "ambient_sys",
- "ambient_ui_native",
  "anyhow",
  "async-trait",
  "bytemuck",
@@ -599,7 +557,6 @@ dependencies = [
  "serde",
  "tokio",
  "tracing",
- "url",
  "wgpu",
 ]
 
@@ -614,25 +571,18 @@ dependencies = [
  "ambient_math",
  "ambient_sys",
  "anyhow",
- "as-any",
  "async-trait",
  "bincode",
  "bytemuck",
- "chrono",
  "convert_case 0.6.0",
  "data-encoding",
  "futures",
  "git-version",
  "glam",
- "itertools",
  "log",
  "mikktspace",
- "once_cell",
  "ordered-float 3.9.1",
- "parking_lot",
  "percent-encoding",
- "pin-project",
- "profiling",
  "rand",
  "relative-path",
  "reqwest",
@@ -647,7 +597,6 @@ dependencies = [
  "tracing",
  "ulid",
  "url",
- "wgpu",
 ]
 
 [[package]]
@@ -671,11 +620,8 @@ dependencies = [
  "anyhow",
  "async-trait",
  "bincode",
- "byteorder",
  "bytes",
  "colored",
- "dashmap",
- "enum_dispatch",
  "flume",
  "futures",
  "glam",
@@ -686,8 +632,6 @@ dependencies = [
  "itertools",
  "js-sys",
  "log",
- "manual_future",
- "once_cell",
  "parking_lot",
  "pin-project",
  "profiling",
@@ -706,13 +650,13 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "wgpu",
- "winit",
 ]
 
 [[package]]
 name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
+ "chrono",
  "convert_case 0.6.0",
  "indexmap 2.0.0",
  "once_cell",
@@ -738,9 +682,6 @@ dependencies = [
  "quote",
  "serde",
  "syn 1.0.109",
- "thiserror",
- "tokio",
- "toml 0.7.6",
 ]
 
 [[package]]
@@ -762,7 +703,6 @@ dependencies = [
  "ambient_std",
  "anyhow",
  "async-recursion",
- "async-trait",
  "data-encoding",
  "glam",
  "indexmap 2.0.0",
@@ -808,14 +748,12 @@ dependencies = [
  "glam",
  "itertools",
  "log",
- "once_cell",
  "ordered-float 3.9.1",
  "parking_lot",
  "physxx",
  "profiling",
  "rand",
  "serde",
- "serde_json",
  "tokio",
  "tracing",
 ]
@@ -829,16 +767,11 @@ dependencies = [
  "ambient_ecs",
  "ambient_model",
  "ambient_native_std",
- "ambient_network",
  "ambient_physics",
  "ambient_rpc",
  "anyhow",
  "async-trait",
- "glam",
- "log",
- "serde",
  "serde_json",
- "thiserror",
  "tokio",
 ]
 
@@ -849,7 +782,6 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_element",
- "ambient_gpu",
  "ambient_meshes",
  "ambient_native_std",
  "ambient_renderer",
@@ -866,10 +798,7 @@ dependencies = [
  "ambient_native_std",
  "ambient_renderer",
  "ambient_shared_types",
- "parking_lot",
  "paste",
- "tracing",
- "ulid",
  "wgpu",
 ]
 
@@ -942,7 +871,6 @@ dependencies = [
  "serde",
  "smallvec",
  "tracing",
- "ulid",
  "wgpu",
 ]
 
@@ -950,10 +878,8 @@ dependencies = [
 name = "ambient_rpc"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_sys",
  "bincode",
  "futures",
- "lazy_static",
  "serde",
  "thiserror",
 ]
@@ -967,7 +893,6 @@ name = "ambient_shared_types"
 version = "0.3.0-dev"
 dependencies = [
  "bitflags 1.3.2",
- "itertools",
  "paste",
  "serde",
  "strum",
@@ -1017,7 +942,6 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_gpu",
- "ambient_input",
  "ambient_layout",
  "ambient_native_std",
  "ambient_renderer",
@@ -1027,7 +951,6 @@ dependencies = [
  "glyph_brush",
  "log",
  "parking_lot",
- "strum",
  "wgpu",
 ]
 
@@ -1059,8 +982,6 @@ dependencies = [
  "parking_lot",
  "rand",
  "serde",
- "serde_json",
- "tracing",
 ]
 
 [[package]]
@@ -1073,35 +994,22 @@ dependencies = [
  "ambient_editor_derive",
  "ambient_element",
  "ambient_gpu",
- "ambient_input",
  "ambient_layout",
  "ambient_meshes",
  "ambient_native_std",
  "ambient_rect",
  "ambient_renderer",
  "ambient_shared_types",
- "ambient_sys",
  "ambient_text",
  "ambient_ui",
- "anyhow",
  "arboard",
- "async-trait",
  "bytemuck",
- "closure",
- "convert_case 0.6.0",
- "futures",
  "glam",
- "indexmap 2.0.0",
  "itertools",
  "log",
- "ordered-float 3.9.1",
  "parking_lot",
- "serde",
- "serde_json",
- "thiserror",
  "tokio",
  "tracing",
- "wgpu",
  "winit",
 ]
 
@@ -1109,16 +1017,12 @@ dependencies = [
 name = "ambient_wasm"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_animation",
- "ambient_app",
  "ambient_core",
  "ambient_ecs",
  "ambient_gpu",
  "ambient_input",
- "ambient_model",
  "ambient_native_std",
  "ambient_network",
- "ambient_package",
  "ambient_package_macro_common",
  "ambient_package_semantic_native",
  "ambient_physics",
@@ -1132,15 +1036,11 @@ dependencies = [
  "async-trait",
  "byteorder",
  "bytes",
- "chrono",
  "data-encoding",
  "dunce",
  "flume",
- "fs_extra",
  "futures",
  "glam",
- "indexmap 2.0.0",
- "indoc",
  "itertools",
  "log",
  "once_cell",
@@ -1150,8 +1050,6 @@ dependencies = [
  "profiling",
  "reqwest",
  "serde",
- "serde_bytes",
- "serde_json",
  "slotmap",
  "tokio",
  "tracing",
@@ -1187,6 +1085,7 @@ dependencies = [
  "ambient_layout",
  "ambient_native_std",
  "ambient_network",
+ "ambient_package_semantic_native",
  "ambient_primitives",
  "ambient_renderer",
  "ambient_rpc",
@@ -1223,25 +1122,15 @@ dependencies = [
  "ambient_sys",
  "ambient_ui_native",
  "anyhow",
- "atomic_refcell",
- "closure",
- "dashmap",
  "derive_more",
  "flume",
- "futures",
  "glam",
- "indexmap 2.0.0",
  "itertools",
  "log",
- "once_cell",
- "ordered-float 3.9.1",
  "parking_lot",
- "profiling",
  "rand",
  "rand_chacha",
  "serde",
- "serde_json",
- "slotmap",
  "thiserror",
  "tokio",
  "tracing",
@@ -1799,12 +1688,6 @@ dependencies = [
  "str-buf",
  "winapi",
 ]
-
-[[package]]
-name = "closure"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6173fd61b610d15a7566dd7b7620775627441c4ab9dac8906e17cb93a24b782"
 
 [[package]]
 name = "codespan-reporting"
@@ -2591,18 +2474,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "enum_dispatch"
-version = "0.3.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f33313078bb8d4d05a2733a94ac4c2d8a0df9a2b84424ebf4f33bfc224a890e"
-dependencies = [
- "once_cell",
- "proc-macro2",
- "quote",
- "syn 2.0.29",
-]
-
-[[package]]
 name = "enumflags2"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2893,12 +2764,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fs_extra"
-version = "1.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42703706b716c37f96a77aea830392ad231f44c9e9a67872fa5548707e11b11c"
-
-[[package]]
 name = "fsevent-sys"
 version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3138,7 +3003,7 @@ version = "0.4.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "759c97c1e17c55525b57192c06a267cda0ac5210b222d6b82189a2338fa1c13d"
 dependencies = [
- "aho-corasick 1.0.4",
+ "aho-corasick",
  "bstr",
  "fnv",
  "log",
@@ -3767,12 +3632,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "indoc"
-version = "2.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c785eefb63ebd0e33416dfcb8d6da0bf27ce752843a45632a67bf10d4d4b5c4"
-
-[[package]]
 name = "inotify"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4150,15 +4009,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62bb907fe88d54d8d9ce32a3cceab4218ed2f6b7d35617cafe9adf84e43919cb"
 dependencies = [
  "libc",
-]
-
-[[package]]
-name = "manual_future"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "943968aefb9b0fdf36cccc03f6cd9d6698b23574ab49eccc185ae6c5cb6ad43e"
-dependencies = [
- "futures",
 ]
 
 [[package]]
@@ -5240,7 +5090,7 @@ version = "1.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81bc1d4caf89fac26a70747fe603c130093b53c773888797a6329091246d651a"
 dependencies = [
- "aho-corasick 1.0.4",
+ "aho-corasick",
  "memchr",
  "regex-automata",
  "regex-syntax",
@@ -5252,7 +5102,7 @@ version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fed1ceff11a1dddaee50c9dc8e4938bd106e9d89ae372f192311e7da498e3b69"
 dependencies = [
- "aho-corasick 1.0.4",
+ "aho-corasick",
  "memchr",
  "regex-syntax",
 ]
@@ -5673,15 +5523,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_bytes"
-version = "0.11.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab33ec92f677585af6d88c65593ae2375adde54efdbf16d597f2cbc7a6d368ff"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "serde_derive"
 version = "1.0.186"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5743,19 +5584,6 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
-]
-
-[[package]]
-name = "serde_yaml"
-version = "0.9.25"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a49e178e4452f45cb61d0cd8cebc1b0fafd3e41929e996cef79aa3aca91f574"
-dependencies = [
- "indexmap 2.0.0",
- "itoa",
- "ryu",
- "serde",
- "unsafe-libyaml",
 ]
 
 [[package]]
@@ -6558,12 +6386,6 @@ name = "unicode-xid"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f962df74c8c05a667b5ee8bcf162993134c104e96440b663c8daa176dc772d8c"
-
-[[package]]
-name = "unsafe-libyaml"
-version = "0.2.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f28467d3e1d3c6586d8f25fa243f544f5800fec42d97032474e17222c2b75cfa"
 
 [[package]]
 name = "untrusted"
