@@ -12,6 +12,8 @@ quote = "1.0"
 syn = "1.0"
 proc-macro2 = "1.0"
 
+ambient_shared_types = { path = "../../shared_crates/shared_types" }
+
 serde = { workspace = true }
 toml = { workspace = true }
 thiserror = { workspace = true }
@@ -24,4 +26,3 @@ chrono = { workspace = true }
 [dev-dependencies]
 paste = { workspace = true }
 serde_json = { workspace = true }
-ambient_shared_types = { path = "../../shared_crates/shared_types" }

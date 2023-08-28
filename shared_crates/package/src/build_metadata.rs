@@ -1,3 +1,4 @@
+use ambient_shared_types::asset::BuildAsset;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -19,6 +20,20 @@ pub struct BuildMetadata {
     pub last_build_time: Option<String>,
     #[serde(default)]
     pub settings: BuildSettings,
+    #[serde(default)]
+    pub asset: Vec<BuildAsset>,
+}
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Default)]
+pub struct BuildSettings {
+    #[serde(default)]
+    /// Build with optimizations.
+    pub release: bool,
+    #[serde(default)]
+    /// Build the WASM files only.
+    pub wasm_only: bool,
+    #[serde(default)]
+    /// Build with deployment in mind (i.e. ignore local dependencies).
+    pub deploy: bool,
 }
 
 impl BuildMetadata {
@@ -44,17 +59,4 @@ impl BuildMetadata {
             .transpose()?
             .map(|lbt| lbt.with_timezone(&chrono::Utc)))
     }
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Default)]
-pub struct BuildSettings {
-    #[serde(default)]
-    /// Build with optimizations.
-    pub release: bool,
-    #[serde(default)]
-    /// Build the WASM files only.
-    pub wasm_only: bool,
-    #[serde(default)]
-    /// Build with deployment in mind (i.e. ignore local dependencies).
-    pub deploy: bool,
 }

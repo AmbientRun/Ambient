@@ -534,6 +534,7 @@ dependencies = [
 name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_shared_types",
  "chrono",
  "convert_case",
  "indexmap 2.0.0",

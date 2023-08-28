@@ -82,7 +82,7 @@ pub fn deploy_all(token: &str, include_examples: bool) -> anyhow::Result<()> {
         if idx != 0 {
             args.push("--extra-packages");
         }
-        args.push(&path);
+        args.push(path);
     }
     args.push("--token");
     args.push(token);
