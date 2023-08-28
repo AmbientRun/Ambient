@@ -15,7 +15,7 @@ use packages::{
         },
         messages::StartGame,
     },
-    input_schema::messages::{ReleaseInput, RequestInput},
+    input_schema::messages::{InputRelease, InputRequest},
     this::assets,
 };
 
@@ -37,7 +37,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn JoinScreen(hooks: &mut Hooks) -> Element {
-    use_input_request(hooks);
+    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
     let (name, set_name) = hooks.use_state("".to_string());
 
     FocusRoot::el([
@@ -166,7 +166,7 @@ fn KillHistory(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn Scoreboard(hooks: &mut Hooks) -> Element {
-    use_input_request(hooks);
+    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
 
     let players = hooks.use_query((
         is_player(),
@@ -199,14 +199,4 @@ fn Scoreboard(hooks: &mut Hooks) -> Element {
     )
     .with(space_between_items(), STREET)])
     .with_padding_even(20.)
-}
-
-/// Requests input from the user, and releases it when the element is unmounted.
-fn use_input_request(hooks: &mut Hooks<'_>) {
-    hooks.use_spawn(|_| {
-        RequestInput {}.send_local_broadcast(false);
-        |_| {
-            ReleaseInput {}.send_local_broadcast(false);
-        }
-    })
 }

@@ -12,7 +12,7 @@ use packages::{
         messages::Input,
     },
     editor_schema::components::in_editor,
-    input_schema::messages::{ReleaseInput, RequestInput},
+    input_schema::messages::{InputRelease, InputRequest},
 };
 
 #[main]
@@ -127,13 +127,13 @@ impl InputLock {
         // so that other packages can't mess with it.
         let refcount = Rc::new(RefCell::new(0));
         let subscribers = vec![
-            RequestInput::subscribe({
+            InputRequest::subscribe({
                 let refcount = refcount.clone();
                 move |_, _| {
                     *refcount.borrow_mut() += 1;
                 }
             }),
-            ReleaseInput::subscribe({
+            InputRelease::subscribe({
                 let refcount = refcount.clone();
                 move |_, _| {
                     let mut refcount = refcount.borrow_mut();

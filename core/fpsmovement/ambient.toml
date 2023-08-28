@@ -6,5 +6,5 @@ content = { type = "Asset", code = true }
 
 [dependencies]
 afps_schema = { path = "../../schema/afps", deployment = "WhGPQCuWdq1pWfgex1fVp" }
-input_schema = { deployment = "2MvnveXZBFzrDo9Q3dLwm3" }
-editor_schema = { deployment = "1KkjuBC12H8bGdGeIjronN" }
+input_schema = { path = "../../../Ambient/guest/rust/packages/schemas/input", deployment = "2MvnveXZBFzrDo9Q3dLwm3" }
+editor_schema = { path = "../../../Ambient/guest/rust/packages/schemas/editor", deployment = "1KkjuBC12H8bGdGeIjronN" }
