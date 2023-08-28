@@ -1,6 +1,0 @@
-/target
-**/*/build
-build/
-/tmp
-.DS_Store
-data

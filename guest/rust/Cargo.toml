@@ -66,6 +66,8 @@ members = [
     "packages/games/pong",
     "packages/games/tictactoe",
     "packages/games/arkanoid",
+    "packages/games/afps/core/*",
+    "packages/games/afps/mods/*",
 ]
 resolver = "2"
 
