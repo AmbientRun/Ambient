@@ -1,0 +1,32 @@
+tests = [
+    "examples/basics/input",
+    "examples/basics/primitives",
+
+    "examples/intermediate/async",
+    "examples/intermediate/messaging",
+
+    "examples/controllers/first_person_camera",
+    "examples/controllers/third_person_camera",
+
+    "examples/rendering/decals",
+    "examples/rendering/fog",
+    "examples/rendering/image",
+    "examples/rendering/raw_text",
+    "examples/rendering/samplers",
+    "examples/rendering/procedural_generation",
+    "examples/rendering/transparency",
+
+    "examples/ui/auto_editor",
+    "examples/ui/button",
+    "examples/ui/dock_layout",
+    "examples/ui/editors",
+    "examples/ui/flow_layout",
+    "examples/ui/image",
+    "examples/ui/rect",
+    "examples/ui/screens",
+    "examples/ui/slider",
+    "examples/ui/text",
+
+    "packages/games/tictactoe",
+    "packages/games/arkanoid",
+]
