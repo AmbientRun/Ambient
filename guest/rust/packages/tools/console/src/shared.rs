@@ -285,6 +285,7 @@ mod wasm {
         list_internal(ctx, ListFilter::Server)
     }
 
+    #[allow(dead_code)]
     enum ListFilter {
         Client,
         Server,

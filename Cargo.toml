@@ -176,7 +176,7 @@ wasm-bindgen-futures = "0.4"
 #
 # Networking
 #
-time = { version = "0.3", features = ["macros"] }
+time = { version = "0.3" }
 quinn = { version = "0.10" }
 rustls-native-certs = "0.6.2"
 webpki-roots = "0.23.0"
