@@ -62,10 +62,8 @@ jobs:
           service_account: github@ambient-733e7.iam.gserviceaccount.com
           access_token_lifetime: 1800s
 
-      - name: Upload to Google Cloud for macOS and Ubuntu
-        if: ${{ matrix.os != 'windows-latest' }}
+      - name: Upload to Google Cloud
         uses: google-github-actions/upload-cloud-storage@v1
         with:
-          name: ambient-${{ matrix.os }}
-          path: target/release/ambient
+          path: target/release/${{ matrix.os == 'windows-latest' && 'ambient.exe' || 'ambient' }}
           destination: "ambient-artifacts/ambient-nightly-build/${{ env.date_suffix }}/${{ matrix.os }}"
