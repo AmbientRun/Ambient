@@ -71,7 +71,7 @@ impl ShadowsRenderer {
             ..Default::default()
         });
 
-        let settings = SettingsKey.get(assets);
+        let settings = SettingsKey.get(assets).render;
 
         Self {
             renderer: TreeRenderer::new(

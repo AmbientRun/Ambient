@@ -85,7 +85,7 @@ impl Outlines {
             },
         );
 
-        let settings = SettingsKey.get(assets);
+        let settings = SettingsKey.get(assets).render;
 
         Self {
             outlines: Self::create_outline_texture(

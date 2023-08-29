@@ -1,54 +1,15 @@
 use ambient_native_std::asset_cache::SyncAssetKey;
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
+
+mod render;
+pub use render::*;
 
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct Settings {
-    #[serde(default)]
-    resolution: Resolution,
-    #[serde(default)]
-    vsync: Vsync,
-    #[serde(default)]
-    pub render_mode: RenderMode,
-    #[serde(default)]
-    pub software_culling: bool,
-}
-
-#[derive(Default, Serialize, Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum RenderMode {
-    #[default]
-    MultiIndirect,
-    Indirect,
-    Direct,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-struct Resolution((u32, u32));
-
-impl Default for Resolution {
-    fn default() -> Self {
-        Self((800, 600))
-    }
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-struct Vsync(bool);
-
-impl Default for Vsync {
-    fn default() -> Self {
-        Self(true)
-    }
-}
-
-impl Settings {
-    pub fn resolution(&self) -> (u32, u32) {
-        self.resolution.0
-    }
-
-    pub fn vsync(&self) -> bool {
-        self.vsync.0
-    }
+    pub render: RenderSettings,
 }
 
 impl Settings {
@@ -56,42 +17,66 @@ impl Settings {
     pub fn load_from_file() -> Result<Settings> {
         use std::io::ErrorKind;
 
+        let path = Self::path()?;
+        let settings = std::fs::read_to_string(&path);
+        match settings {
+            Ok(settings) => {
+                Ok(match toml::from_str(&settings) {
+                    Ok(settings) => settings,
+                    Err(err) => {
+                        if let Ok(render) = toml::from_str::<RenderSettings>(&settings) {
+                            // TEMP: Migrate old settings, which only had render settings,
+                            // to the new format
+                            let settings = Settings {
+                                render,
+                                ..Default::default()
+                            };
+                            settings.write_to_file(&path)?;
+                            settings
+                        } else {
+                            return Err(err)
+                                .with_context(|| format!("Failed to parse settings at {path:?}"));
+                        }
+                    }
+                })
+            }
+            Err(e) if e.kind() == ErrorKind::NotFound => {
+                let settings = Settings::default();
+                settings.write_to_file(&path)?;
+                Ok(settings)
+            }
+            Err(e) => Err(e).with_context(|| format!("Error reading settings file at {path:?}")),
+        }
+    }
+
+    #[cfg(not(target_os = "unknown"))]
+    pub fn write_to_file(&self, path: &Path) -> anyhow::Result<()> {
+        Ok(std::fs::write(path, toml::to_string(self)?)
+            .with_context(|| format!("Failed to write settings to {path:?}"))?)
+    }
+}
+impl Settings {
+    #[cfg(not(target_os = "unknown"))]
+    fn path() -> anyhow::Result<PathBuf> {
         const QUALIFIER: &str = "com";
         const ORGANIZATION: &str = "Ambient";
         const APPLICATION: &str = "Ambient";
         const FILE_NAME: &str = "settings.toml";
 
-        let Some(project_dirs) = ProjectDirs::from(QUALIFIER, ORGANIZATION, APPLICATION) else {
-            bail!("Failed to open home directory");
-        };
+        let project_dirs = ProjectDirs::from(QUALIFIER, ORGANIZATION, APPLICATION)
+            .context("Failed to open home directory")?;
 
         let settings_dir = project_dirs.config_dir();
         if !settings_dir.exists() {
             std::fs::create_dir_all(settings_dir).with_context(|| {
                 format!(
-                    "Creating {APPLICATION} settings directory at {}",
+                    "Failed to create {APPLICATION} settings directory at {}",
                     settings_dir.display()
                 )
             })?;
         }
 
-        let settings_path = settings_dir.join(FILE_NAME);
-        tracing::info!("Reading {FILE_NAME} from {}", settings_path.display());
-        let settings = std::fs::read_to_string(&settings_path);
-        match settings {
-            Ok(settings) => {
-                let settings: Settings = toml::from_str(&settings)
-                    .with_context(|| format!("Deserializing {FILE_NAME}"))?;
-                Ok(settings)
-            }
-            Err(e) if e.kind() == ErrorKind::NotFound => {
-                let settings = Settings::default();
-                std::fs::write(&settings_path, toml::to_string(&settings)?)
-                    .with_context(|| format!("Writing {FILE_NAME}"))?;
-                Ok(settings)
-            }
-            Err(e) => Err(e).context("Error reading settings file at {settings_path:?}"),
-        }
+        Ok(settings_dir.join(FILE_NAME))
     }
 }
 
@@ -103,10 +88,10 @@ impl SyncAssetKey<Settings> for SettingsKey {
         #[cfg(target_os = "unknown")]
         {
             Settings {
-                resolution: Resolution((800, 600)),
-                vsync: Vsync(true),
-                render_mode: RenderMode::Indirect,
-                software_culling: false,
+                render: RenderSettings {
+                    render_mode: RenderMode::Indirect,
+                    ..Default::default()
+                },
             }
         }
         #[cfg(not(target_os = "unknown"))]

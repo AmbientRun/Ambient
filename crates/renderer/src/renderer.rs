@@ -201,7 +201,7 @@ impl Renderer {
             None
         };
 
-        let settings = SettingsKey.get(assets);
+        let settings = SettingsKey.get(assets).render;
 
         let normals_format = to_linear_format(gpu.swapchain_format()).into();
 
