@@ -480,7 +480,7 @@ mod test {
         init_components();
 
         crate::init_components();
-        let _world = World::new("registry_test");
+        let _world = World::new_unknown("registry_test");
 
         let mut reg = IntentRegistry::new();
         reg.register(

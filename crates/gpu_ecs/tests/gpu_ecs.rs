@@ -46,7 +46,7 @@ impl TestCommon {
         init_gpu_components();
 
         let gpu = Arc::new(Gpu::new(None).await);
-        let mut world = World::new("TestCommon");
+        let mut world = World::new_unknown("TestCommon");
 
         let assets = AssetCache::new(tokio::runtime::Handle::current());
         GpuKey.insert(&assets, gpu.clone());

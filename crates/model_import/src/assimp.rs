@@ -208,7 +208,7 @@ fn import_sync(
         model_crate.meshes.insert(i.to_string(), out_mesh);
     }
 
-    let mut world = World::new("assimp");
+    let mut world = World::new("assimp", ambient_ecs::WorldContext::Prefab);
     fn recursive_build_nodes(
         model_crate: &ModelCrate,
         scene: &Scene,

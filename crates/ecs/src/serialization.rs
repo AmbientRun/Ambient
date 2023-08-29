@@ -65,7 +65,11 @@ impl<'de> Deserialize<'de> for World {
             where
                 V: MapAccess<'de>,
             {
-                let mut res = World::new_with_config_internal("deserialized-world", false);
+                let mut res = World::new_with_config_internal(
+                    "deserialized-world",
+                    crate::WorldContext::Prefab,
+                    false,
+                );
                 while let Some((id, entity)) = map.next_entry::<EntityId, Entity>()? {
                     res.spawn_with_id(id, entity);
                 }
@@ -103,7 +107,11 @@ impl<'de> Deserialize<'de> for DeserWorldWithWarnings {
                 V: MapAccess<'de>,
             {
                 let mut res = DeserWorldWithWarnings {
-                    world: World::new_with_config_internal("deserialized", false),
+                    world: World::new_with_config_internal(
+                        "deserialized",
+                        crate::WorldContext::Prefab,
+                        false,
+                    ),
                     warnings: Default::default(),
                 };
                 while let Some((id, entity)) =
@@ -176,7 +184,7 @@ mod test {
     #[test]
     pub fn test_serialize_world() {
         init();
-        let mut world = World::new("test");
+        let mut world = World::new_unknown("test");
         let id = Entity::new()
             .with(ser_test3(), "hi".to_string())
             .spawn(&mut world);
@@ -199,7 +207,7 @@ mod test {
     #[test]
     pub fn test_serialize_world_resources() {
         init();
-        let mut world = World::new("test");
+        let mut world = World::new_unknown("test");
         world.add_resource(ser_test3(), "hi".to_string());
         let ser = serde_json::to_string(&world).unwrap();
         assert_eq!(
@@ -213,7 +221,7 @@ mod test {
     #[test]
     pub fn test_serialize_world_without_resources() {
         init();
-        let world = World::new_with_config("test", false);
+        let world = World::new_with_config("test", WorldContext::Unknown, false);
         let ser = serde_json::to_string(&world).unwrap();
         assert_eq!(&ser, r#"{}"#);
         let deser: World = serde_json::from_str(&ser).unwrap();

@@ -58,7 +58,7 @@ impl ClientGameState {
         client_systems: SystemGroup,
         all_resources: Entity,
     ) -> Self {
-        let mut game_world = World::new("client_game_world");
+        let mut game_world = World::new("client_game_world", ambient_ecs::WorldContext::Client);
         setup_audio(&mut game_world).unwrap();
 
         game_world

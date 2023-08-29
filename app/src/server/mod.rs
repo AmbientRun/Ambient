@@ -8,7 +8,7 @@ use std::{
 
 use ambient_core::{asset_cache, main_package_name, name, no_sync, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
-    dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World,
+    dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World, WorldContext,
     WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_native_std::{
@@ -119,7 +119,7 @@ pub async fn start(
     }
 
     tokio::task::spawn(async move {
-        let mut server_world = World::new_with_config("server", true);
+        let mut server_world = World::new_with_config("server", WorldContext::Server, true);
         server_world.init_shape_change_tracking();
 
         server_world

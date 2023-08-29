@@ -143,8 +143,7 @@ pub fn systems() -> SystemGroup {
                     }
                 }),
             query(bytecode_from_url().changed()).to_system(move |q, world, qs, _| {
-                // TODO: there has got to be a better way to do this
-                let is_server = world.name() == "server";
+                let is_server = world.context() == WorldContext::Server;
 
                 for (id, url) in q.collect_cloned(world, qs) {
                     let on_server = world.has_component(id, is_module_on_server());

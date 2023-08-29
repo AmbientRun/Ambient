@@ -105,9 +105,25 @@ pub fn init_components() {
     internal_components::init_components();
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+/// Indicates what the intended purpose for a [`World`] is
+pub enum WorldContext {
+    /// The world is running on the server
+    Server,
+    /// The world is running on the client
+    Client,
+    /// The world is running in an app, and may be used to present a client world
+    App,
+    /// The world exists for a prefab that can be instantiated
+    Prefab,
+    /// The context of this world is unimportant (tests, etc)
+    Unknown,
+}
+
 #[derive(Clone)]
 pub struct World {
     name: &'static str,
+    context: WorldContext,
     archetypes: Vec<Archetype>,
     locs: HashMap<EntityId, EntityLocation, EntityIdHashBuilder>,
     loc_changed: FramedEvents<EntityId>,
@@ -118,15 +134,23 @@ pub struct World {
     query_ticker: CloneableAtomicU64,
 }
 impl World {
-    pub fn new(name: &'static str) -> Self {
-        Self::new_with_config(name, true)
+    pub fn new_unknown(name: &'static str) -> Self {
+        Self::new(name, WorldContext::Unknown)
     }
-    pub fn new_with_config(name: &'static str, resources: bool) -> Self {
-        Self::new_with_config_internal(name, resources)
+    pub fn new(name: &'static str, context: WorldContext) -> Self {
+        Self::new_with_config(name, context, true)
     }
-    fn new_with_config_internal(name: &'static str, resources: bool) -> Self {
+    pub fn new_with_config(name: &'static str, context: WorldContext, resources: bool) -> Self {
+        Self::new_with_config_internal(name, context, resources)
+    }
+    fn new_with_config_internal(
+        name: &'static str,
+        context: WorldContext,
+        resources: bool,
+    ) -> Self {
         let mut world = Self {
             name,
+            context,
             archetypes: Vec::new(),
             locs: HashMap::with_hasher(EntityIdHashBuilder),
             loc_changed: FramedEvents::new(),
@@ -146,7 +170,7 @@ impl World {
         entities: impl IntoIterator<Item = EntityId>,
         serializable_only: bool,
     ) -> Self {
-        let mut res = World::new_with_config("from_entities", false);
+        let mut res = World::new_with_config("from_entities", world.context(), false);
         for id in entities {
             let mut entity = world.clone_entity(id).unwrap();
             if serializable_only {
@@ -768,6 +792,10 @@ impl World {
 
     pub fn add_entry(&mut self, id: EntityId, entry: ComponentEntry) -> Result<(), ECSError> {
         self.add_components(id, once(entry).collect())
+    }
+
+    pub fn context(&self) -> WorldContext {
+        self.context
     }
 }
 impl World {

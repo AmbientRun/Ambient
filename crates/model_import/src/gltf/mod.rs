@@ -310,7 +310,7 @@ pub async fn import(
         );
     }
 
-    let mut world = World::new("gltf");
+    let mut world = World::new("gltf", ambient_ecs::WorldContext::Prefab);
     let nodes = import
         .document
         .nodes()

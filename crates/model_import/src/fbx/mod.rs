@@ -108,7 +108,7 @@ pub async fn import_from_fbx_reader(
                 asset_crate.materials.insert(material.id.to_string(), mat);
             }
 
-            let mut world = World::new("fbx_reader");
+            let mut world = World::new("fbx_reader", ambient_ecs::WorldContext::Prefab);
             let mut entities = HashMap::new();
             for model in doc.models.values() {
                 model.create_model_nodes(
