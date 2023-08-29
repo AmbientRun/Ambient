@@ -9,9 +9,14 @@ pub use render::*;
 
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct Settings {
+    #[serde(default)]
+    pub general: GeneralSettings,
     pub render: RenderSettings,
 }
-
+#[derive(Serialize, Deserialize, Clone, Default, Debug)]
+pub struct GeneralSettings {
+    pub api_token: Option<String>,
+}
 impl Settings {
     #[cfg(not(target_os = "unknown"))]
     pub fn load_from_file() -> Result<Settings> {
@@ -57,7 +62,7 @@ impl Settings {
 }
 impl Settings {
     #[cfg(not(target_os = "unknown"))]
-    fn path() -> anyhow::Result<PathBuf> {
+    pub fn path() -> anyhow::Result<PathBuf> {
         const QUALIFIER: &str = "com";
         const ORGANIZATION: &str = "Ambient";
         const APPLICATION: &str = "Ambient";

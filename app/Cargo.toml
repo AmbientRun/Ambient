@@ -33,6 +33,7 @@ ambient_sky = { path = "../crates/sky" }
 ambient_water = { path = "../crates/water" }
 ambient_client_shared = { path = "../crates/client_shared/" }
 ambient_package_semantic_native = { path = "../crates/package_semantic_native" }
+ambient_settings = { path = "../crates/settings" }
 
 ambient_element = { path = "../shared_crates/element" }
 ambient_package = { path = "../shared_crates/package" }

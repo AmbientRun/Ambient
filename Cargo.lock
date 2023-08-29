@@ -145,6 +145,7 @@ dependencies = [
  "ambient_prefab",
  "ambient_primitives",
  "ambient_rpc",
+ "ambient_settings",
  "ambient_shared_types",
  "ambient_sky",
  "ambient_std",

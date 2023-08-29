@@ -71,8 +71,8 @@ pub enum Commands {
         #[arg(long, default_value = "https://api.ambient.run")]
         api_server: String,
         /// Authentication token
-        #[arg(short, long, required = true)]
-        token: String,
+        #[arg(short, long)]
+        token: Option<String>,
         /// Don't use differential upload and upload all assets
         #[arg(long)]
         force_upload: bool,
