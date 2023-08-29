@@ -315,11 +315,14 @@ fn setup_logging() -> anyhow::Result<()> {
 
         // otherwise use the default format
         layered_registry
-            .with(tracing_subscriber::fmt::Layer::new().with_timer(
-                tracing_subscriber::fmt::time::LocalTime::new(time::macros::format_description!(
-                    "[hour]:[minute]:[second]"
-                )),
-            ))
+            .with(
+                tracing_subscriber::fmt::Layer::new().with_timer(
+                    tracing_subscriber::fmt::time::LocalTime::new(
+                        time::format_description::parse("[hour]:[minute]:[second]")
+                            .expect("format string should be valid!"),
+                    ),
+                ),
+            )
             .try_init()?;
 
         Ok(())
