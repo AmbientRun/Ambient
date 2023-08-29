@@ -86,6 +86,7 @@ jobs:
           xcrun notarytool submit "ambient-${{ matrix.target }}.zip" --keychain-profile "notarytool-profile" --wait
       - name: Set date suffix
         run: echo "date_suffix=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+        shell: bash
 
       # - name: Upload ambient executable artifact
       #   uses: actions/upload-artifact@v3
