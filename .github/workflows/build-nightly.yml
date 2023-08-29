@@ -51,7 +51,10 @@ jobs:
         uses: Leafwing-Studios/cargo-cache@v1.1.0
       
       - name: Build
-        run: cargo build --release -p ambient --target ${{ matrix.target }}  --features production
+        run: cargo build --release -p ambient --target ${{ matrix.target }}
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0"
 
       # - name: Build
       #   run: cargo build -p ambient --release
@@ -84,13 +87,13 @@ jobs:
       - name: Set date suffix
         run: echo "date_suffix=$(date +%Y-%m-%d)" >> $GITHUB_ENV
 
-      - name: Upload ambient executable artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ambient-${{ matrix.os }}
-          path: |
-            target/release/ambient
-            target/release/ambient.exe
+      # - name: Upload ambient executable artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: ambient-${{ matrix.os }}
+      #     path: |
+      #       target/release/ambient
+      #       target/release/ambient.exe
       - id: auth
         name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v0
