@@ -99,7 +99,8 @@ impl Semantic {
         // improving error diagnostics
         dependent_package_id: Option<ItemId<Package>>,
     ) -> anyhow::Result<ItemId<Package>> {
-        let manifest = Manifest::parse(&retrievable_manifest.get().await?)?;
+        let manifest = Manifest::parse(&retrievable_manifest.get().await?)
+            .with_context(|| format!("failed to parse manifest from {retrievable_manifest}"))?;
 
         let locator = PackageLocator::from_manifest(&manifest, retrievable_manifest.clone());
         if let Some(id) = self.packages.get(&locator) {
@@ -259,7 +260,10 @@ impl Semantic {
             );
 
             let include_source = source.parent_join(include)?;
-            let include_manifest = Manifest::parse(&include_source.get().await?)?;
+            let include_manifest =
+                Manifest::parse(&include_source.get().await?).with_context(|| {
+                    format!("failed to parse included manifest {source} for {source}")
+                })?;
             let include_scope_id = self
                 .add_scope_from_manifest_with_includes(
                     Some(scope_id),

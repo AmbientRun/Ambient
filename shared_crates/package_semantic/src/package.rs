@@ -131,6 +131,15 @@ impl RetrievableFile {
         }
     }
 }
+impl Display for RetrievableFile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RetrievableFile::Ambient(path) => write!(f, "ambient://{}", path.display()),
+            RetrievableFile::Path(path) => write!(f, "file://{}", path.display()),
+            RetrievableFile::Url(url) => write!(f, "{}", url),
+        }
+    }
+}
 
 pub enum LocalOrRemote {
     Local(PathBuf),

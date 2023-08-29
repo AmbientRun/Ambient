@@ -14,13 +14,12 @@ use crate::{
 pub enum ManifestParseError {
     #[error("manifest was not valid TOML")]
     TomlError(#[from] toml::de::Error),
-    #[error("manifest contains a project section; projects have been renamed to packages")]
-    ProjectRenamedToPackageError,
+    #[error("manifest contains a project and/or an ember section; projects/embers have been renamed to packages")]
+    ProjectEmberRenamedToPackageError,
 }
 
 #[derive(Deserialize, Clone, Debug, Default, PartialEq, Serialize)]
 pub struct Manifest {
-    #[serde(default)]
     pub package: Package,
     #[serde(default)]
     pub build: Build,
@@ -42,8 +41,8 @@ pub struct Manifest {
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, ManifestParseError> {
         let raw = toml::from_str::<toml::Table>(manifest)?;
-        if raw.contains_key("project") {
-            return Err(ManifestParseError::ProjectRenamedToPackageError);
+        if raw.contains_key("project") || raw.contains_key("ember") {
+            return Err(ManifestParseError::ProjectEmberRenamedToPackageError);
         }
 
         Ok(toml::from_str(manifest)?)
@@ -228,7 +227,7 @@ mod tests {
 
         assert_eq!(
             Manifest::parse(TOML),
-            Err(ManifestParseError::ProjectRenamedToPackageError)
+            Err(ManifestParseError::ProjectEmberRenamedToPackageError)
         )
     }
 
