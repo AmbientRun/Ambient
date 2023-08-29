@@ -24,6 +24,7 @@ ambient_input = { path = "../input" , version = "0.3.0-dev" }
 ambient_model = { path = "../model" , version = "0.3.0-dev" }
 ambient_animation = { path = "../animation" , version = "0.3.0-dev" }
 ambient_procedurals = { path = "../procedurals" , version = "0.3.0-dev" }
+ambient_settings = { path = "../settings" , version = "0.3.0-dev" }
 
 ambient_element = { path = "../../shared_crates/element" , version = "0.3.0-dev" }
 

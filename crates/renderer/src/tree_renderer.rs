@@ -9,10 +9,10 @@ use ambient_gpu::{
     gpu::Gpu,
     mesh_buffer::MeshBuffer,
     multi_buffer::{MultiBufferSizeStrategy, SubBufferId, TypedMultiBuffer},
-    settings::RenderMode,
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
 use ambient_native_std::asset_cache::AssetCache;
+use ambient_settings::RenderMode;
 use bytemuck::Zeroable;
 use glam::UVec4;
 use itertools::Itertools;

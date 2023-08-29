@@ -1,12 +1,11 @@
 use std::sync::Arc;
 
 use ambient_native_std::asset_cache::SyncAssetKey;
+use ambient_settings::Settings;
 use bytemuck::{Pod, Zeroable};
 use glam::{uvec2, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use wgpu::{InstanceDescriptor, PresentMode, TextureFormat};
 use winit::window::Window;
-
-use crate::settings::Settings;
 
 // #[cfg(debug_assertions)]
 pub const DEFAULT_SAMPLE_COUNT: u32 = 1;
