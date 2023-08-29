@@ -26,6 +26,8 @@ jobs:
             exe_name: ambient.exe
 
     runs-on: ${{ matrix.os }}
+    env:
+      EXE_DIR: target/${{ matrix.target }}/release
     steps:
       - name: Free up disk space
         if: ${{ matrix.os == 'ubuntu-22.04' }}
