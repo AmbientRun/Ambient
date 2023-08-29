@@ -55,6 +55,13 @@ For alternative installation options, go to the [documentation on installing](ht
 | Custom shaders          | 🚧     | Custom shaders are supported by the renderer, but are not yet exposed in the API. See [this issue](https://github.com/AmbientRun/Ambient/issues/98).                                                                               |
 | Hot-reloading assets    | 🚧     | See [this issue](https://github.com/AmbientRun/Ambient/issues/12).                                                                                                                                                                 |
 | ECS save/load           | 🚧     | For loading, [see this issue](https://github.com/AmbientRun/Ambient/issues/71).                                                                                                                                                    |
+| IDE                     | 🚧     | [#694](https://github.com/AmbientRun/Ambient/issues/694)                                                                                                                                                                           |
+
+In addition to the above the following areas have umbrella issues:
+| Area           | Issue                                                    |
+| -------------- | -------------------------------------------------------- |
+| Networking     | [#764](https://github.com/AmbientRun/Ambient/issues/671) |
+| Asset pipeline | [#764](https://github.com/AmbientRun/Ambient/issues/764) |
 
 ## Examples
 
