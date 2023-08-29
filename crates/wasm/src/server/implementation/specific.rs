@@ -151,7 +151,7 @@ impl shared::wit::server_http::Host for Bindings {
 }
 
 #[async_trait::async_trait]
-impl shared::wit::package_::Host for Bindings {
+impl shared::wit::ambient_package::Host for Bindings {
     async fn get_entity_for_package_id(
         &mut self,
         package_id: String,

@@ -4,6 +4,6 @@ use crate::{
 };
 
 #[doc(hidden)]
-pub fn get_entity_for_package_id(package_id: String) -> Option<EntityId> {
-    internal::wit::package_::get_entity_for_package_id(&package_id).from_bindgen()
+pub fn get_entity_for_package_id(package_id: &str) -> Option<EntityId> {
+    internal::wit::ambient_package::get_entity_for_package_id(package_id).from_bindgen()
 }

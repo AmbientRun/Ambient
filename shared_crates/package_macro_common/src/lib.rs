@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
 pub use ambient_package_semantic::RetrievableFile;
-use ambient_package_semantic::{Item, ItemId, ItemMap, Scope, Semantic, Type, TypeInner};
+use ambient_package_semantic::{Item, ItemId, ItemMap, Package, Scope, Semantic, Type, TypeInner};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use std::collections::HashMap;
@@ -48,21 +48,7 @@ pub async fn generate_code(
     let outputs = semantic
         .packages
         .values()
-        .map(|&package_id| {
-            let package = items.get(package_id);
-            let generate_from_scope = &*items.get(package.scope_id);
-
-            let generated_output = generate(context, items, &type_printer, generate_from_scope)?;
-            let components_init = components::generate_init(context, items, generate_from_scope)?;
-
-            let id = make_path(package.data.id.as_str());
-            anyhow::Ok(quote! {
-                pub mod #id {
-                    #generated_output
-                    #components_init
-                }
-            })
-        })
+        .map(|id| generate_package(context, items, &type_printer, *id))
         .collect::<Result<Vec<_>, _>>()?;
 
     let imports = if let Some(package_id) = package_id {
@@ -113,7 +99,44 @@ pub async fn generate_code(
     Ok(output)
 }
 
-fn generate(
+fn generate_package(
+    context: context::Context,
+    items: &ItemMap,
+    type_printer: &TypePrinter,
+    package_id: ItemId<Package>,
+) -> anyhow::Result<TokenStream> {
+    let package = items.get(package_id);
+    let generate_from_scope = &*items.get(package.scope_id);
+
+    let entity = match context {
+        Context::GuestUser => {
+            let package_ambient_id = package.data().id.to_string();
+            quote! {
+                pub fn entity() -> ambient_api::global::EntityId {
+                    use ambient_api::once_cell::sync::Lazy;
+                    static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                        ambient_api::package::get_entity_for_package_id(#package_ambient_id).expect("Failed to get package entity - was it despawned?")
+                    });
+                    *ENTITY
+                }
+            }
+        }
+        _ => TokenStream::new(),
+    };
+    let generated_output = generate_scope(context, items, &type_printer, generate_from_scope)?;
+    let components_init = components::generate_init(context, items, generate_from_scope)?;
+
+    let id = make_path(package.data.id.as_str());
+    anyhow::Ok(quote! {
+        pub mod #id {
+            #entity
+            #generated_output
+            #components_init
+        }
+    })
+}
+
+fn generate_scope(
     context: context::Context,
     items: &ItemMap,
     type_printer: &TypePrinter,
@@ -129,7 +152,7 @@ fn generate(
             }
 
             let id = make_path(scope.data.id.as_str());
-            let inner = generate(context, items, type_printer, &scope)?;
+            let inner = generate_scope(context, items, type_printer, &scope)?;
             if inner.is_empty() {
                 return Ok(quote! {});
             }

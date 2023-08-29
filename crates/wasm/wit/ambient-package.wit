@@ -1,4 +1,4 @@
-interface package_ {
+interface ambient-package {
     use types.{entity-id}
 
     get-entity-for-package-id: func(package-id: string) -> option<entity-id>

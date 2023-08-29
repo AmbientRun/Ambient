@@ -306,3 +306,32 @@ the_basics = { path = "../basics" }
 [components]
 my_component = { type = "the_basics::BasicEnum" }
 ```
+
+### Runtime access to packages
+
+Packages are represented as entities within the ECS, with their metadata being stored as components. This means that you can access the metadata of a package at runtime. To do so, you can use the `entity()` function inside the generated Rust code for the package:
+
+```rust
+use ambient_api::prelude::*;
+
+#[main]
+fn main() {
+    dbg!(entity::get_all_components(packages::this::entity()));
+}
+```
+
+Or by querying for entities that have the `is_package` component:
+
+```rust
+use ambient_api::{
+    core::package::components::{is_package, name},
+    prelude::*,
+};
+
+#[main]
+fn main() {
+    let q = query((is_package(), name())).build();
+    // List all packages and their names.
+    dbg!(q.evaluate());
+}
+```

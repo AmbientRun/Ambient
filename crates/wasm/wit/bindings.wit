@@ -8,7 +8,7 @@ world bindings {
     import entity
     import message
     import player
-    import package_
+    import ambient-package
 
     import client-message
     import client-player
