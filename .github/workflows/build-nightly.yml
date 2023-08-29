@@ -48,14 +48,14 @@ jobs:
       - name: Rust cache
         uses: Leafwing-Studios/cargo-cache@v1.1.0
 
-      - name: Build
-        run: cargo build --release -p ambient --target ${{ matrix.target }} --features production
-
       # - name: Build
-      #   run: cargo build --workspace --release
-      #   env:
-      #     CARGO_INCREMENTAL: 0
-      #     RUSTFLAGS: "-C debuginfo=0"
+      #   run: cargo build --release -p ambient --target ${{ matrix.target }} --features production
+
+      - name: Build
+        run: cargo build -p ambient --release
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0"
           
       - name: Install certificate (OSX)
         if: matrix.os == 'macos-latest'
