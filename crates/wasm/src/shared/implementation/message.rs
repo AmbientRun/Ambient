@@ -1,5 +1,5 @@
 use ambient_core::runtime;
-use ambient_ecs::{EntityId, World};
+use ambient_ecs::{generated::wasm::components::package_ref, EntityId, World};
 use ambient_network::{
     client::NetworkTransport, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
 };
@@ -14,7 +14,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::shared::{message::Target, remote_paired_id};
+use crate::shared::message::Target;
 
 pub const MAX_STREAM_LENGTH: usize = 10 * 1024 * 1024;
 
@@ -28,8 +28,8 @@ pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> 
     use byteorder::ReadBytesExt;
 
     let mut cursor = Cursor::new(&bytes);
-    let remote_module_id = cursor.read_u128::<byteorder::BigEndian>()?;
-    let remote_module_id = EntityId(remote_module_id);
+    let package_id = cursor.read_u128::<byteorder::BigEndian>()?;
+    let package_id = EntityId(package_id);
 
     let name_len: usize = cursor.get_u32().try_into()?;
     let mut name = vec![0u8; name_len];
@@ -39,7 +39,7 @@ pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> 
     let position = cursor.position();
     let data = &bytes[usize::try_from(position)?..];
 
-    process_network_message(world, user_id, remote_module_id, name, data.to_vec())?;
+    process_network_message(world, user_id, package_id, name, data.to_vec())?;
 
     Ok(())
 }
@@ -49,8 +49,8 @@ pub async fn read_unistream<R: ?Sized + tokio::io::AsyncRead>(
 ) -> anyhow::Result<(EntityId, String, Vec<u8>)> {
     use tokio::io::AsyncReadExt;
 
-    let remote_module_id = recv_stream.read_u128().await?;
-    let remote_module_id = EntityId(remote_module_id);
+    let package_id = recv_stream.read_u128().await?;
+    let package_id = EntityId(package_id);
 
     let name_len: usize = recv_stream
         .read_u32()
@@ -68,29 +68,21 @@ pub async fn read_unistream<R: ?Sized + tokio::io::AsyncRead>(
         .read_to_end(&mut data)
         .await?;
 
-    Ok((remote_module_id, name, data))
+    Ok((package_id, name, data))
 }
 
 pub fn process_network_message(
     world: &mut World,
     user_id: Option<String>,
-    remote_module_id: EntityId,
+    package_id: EntityId,
     name: String,
     data: Vec<u8>,
 ) -> anyhow::Result<()> {
     use crate::shared::message;
 
-    let module_id = world
-        .get(remote_module_id, remote_paired_id())
-        .with_context(|| {
-            format!(
-                "Failed to get remote paired ID for unistream for remote module {remote_module_id}"
-            )
-        })?;
-
     message::send(
         world,
-        Target::Module(module_id),
+        Target::PackageOrModule(package_id),
         match user_id {
             Some(user_id) => message::Source::Client(user_id),
             None => message::Source::Server,
@@ -132,24 +124,26 @@ pub fn send_networked(
     data: &[u8],
     reliable: bool,
 ) -> anyhow::Result<()> {
+    let package_id = world.get(module_id, package_ref())?;
+
     if reliable {
-        send_unistream(world, transport, module_id, name, data);
+        send_unistream(world, transport, package_id, name, data);
         Ok(())
     } else {
-        send_datagram(world, transport, module_id, name, data)
+        send_datagram(world, transport, package_id, name, data)
     }
 }
 
 fn send_datagram(
     world: &World,
     transport: Arc<dyn NetworkTransport>,
-    module_id: EntityId,
+    package_id: EntityId,
     name: &str,
     data: &[u8],
 ) -> anyhow::Result<()> {
     let mut payload = BytesMut::new();
 
-    payload.put_u128(module_id.0);
+    payload.put_u128(package_id.0);
 
     payload.put_u32(name.len().try_into()?);
     payload.extend_from_slice(name.as_bytes());
@@ -170,7 +164,7 @@ fn send_datagram(
 fn send_unistream(
     world: &World,
     transport: Arc<dyn NetworkTransport>,
-    module_id: EntityId,
+    package_id: EntityId,
     name: &str,
     data: &[u8],
 ) {
@@ -179,7 +173,7 @@ fn send_unistream(
 
     world.resource(runtime()).spawn(async move {
         let mut payload = BytesMut::new();
-        payload.put_u128(module_id.0);
+        payload.put_u128(package_id.0);
 
         payload.put_u32(name.len().try_into()?);
         payload.put(name.as_bytes());

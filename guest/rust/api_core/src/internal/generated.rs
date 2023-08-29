@@ -2485,6 +2485,12 @@ mod raw {
                 pub fn module_name() -> Component<String> {
                     *MODULE_NAME
                 }
+                static PACKAGE_REF: Lazy<Component<EntityId>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::wasm::package_ref"));
+                #[doc = "**Package reference**: The package that this module belongs to.\n\n*Attributes*: Networked, Store, Debuggable"]
+                pub fn package_ref() -> Component<EntityId> {
+                    *PACKAGE_REF
+                }
             }
         }
         #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]

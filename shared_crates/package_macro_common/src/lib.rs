@@ -123,7 +123,7 @@ fn generate_package(
         }
         _ => TokenStream::new(),
     };
-    let generated_output = generate_scope(context, items, &type_printer, generate_from_scope)?;
+    let generated_output = generate_scope(context, items, type_printer, generate_from_scope)?;
     let components_init = components::generate_init(context, items, generate_from_scope)?;
 
     let id = make_path(package.data.id.as_str());

@@ -13,17 +13,15 @@ pub mod message;
 pub mod wit;
 
 pub use ambient_ecs::generated::wasm::components::*;
-pub use internal::{
-    messenger, module_bytecode, module_errors, module_state, module_state_maker, remote_paired_id,
-};
+pub use internal::{messenger, module_bytecode, module_errors, module_state, module_state_maker};
 pub use module::*;
 
 use std::{path::Path, str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, runtime};
 use ambient_ecs::{
-    dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
-    Message, SystemGroup, World, WorldEventReader,
+    dont_despawn_on_unload, generated::messages, query, world_events, EntityId, FnSystem, Message,
+    SystemGroup, World, WorldContext, WorldEventReader,
 };
 
 pub use ambient_ecs::generated::wasm::components::*;
@@ -48,8 +46,6 @@ mod internal {
         module_bytecode: ModuleBytecode,
         @[Networked, Store, Debuggable]
         module_errors: ModuleErrors,
-        @[Networked, Debuggable, Description["The ID of the module on the \"other side\" of this module, if available. (e.g. serverside module to clientside module)."]]
-        remote_paired_id: EntityId,
 
         @[Resource, Description["Used to signal messages from the WASM host/runtime."]]
         messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
@@ -430,26 +426,6 @@ pub(crate) fn unload(world: &mut World, module_id: EntityId, reason: &str) {
         MessageType::Info,
         &format!("Unloaded (reason: {reason})"),
     );
-}
-
-pub fn spawn_module(
-    world: &mut World,
-    bytecode_from_url: AbsAssetUrl,
-    enabled: bool,
-    on_server: bool,
-) -> EntityId {
-    let entity = Entity::new()
-        .with(is_module(), ())
-        .with(self::bytecode_from_url(), bytecode_from_url.to_string())
-        .with(module_enabled(), enabled);
-
-    let entity = if on_server {
-        entity.with(is_module_on_server(), ())
-    } else {
-        entity
-    };
-
-    entity.spawn(world)
 }
 
 fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {

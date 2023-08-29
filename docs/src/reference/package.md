@@ -229,7 +229,7 @@ components = { cool_component2 = 1 }
 
 ### Messages / `[messages]`
 
-The `messages` section contains custom messages defined by the package. Messages are used to communicate between client and server.
+The `messages` section contains custom messages defined by the package. Messages are used to communicate between client and server, or between packages/modules on the same side.
 
 For an example of how to use messages, see the [messaging example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/intermediate/messaging).
 

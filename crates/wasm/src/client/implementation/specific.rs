@@ -71,7 +71,7 @@ impl wit::client_message::Host for Bindings {
             WitTarget::Local(id) => message::send_local(
                 world,
                 module_id,
-                Target::Module(id.from_bindgen()),
+                Target::PackageOrModule(id.from_bindgen()),
                 name,
                 data,
             ),

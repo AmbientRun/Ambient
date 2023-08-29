@@ -1,5 +1,9 @@
 use super::module_name;
-use ambient_ecs::{components, Debuggable, EntityId, Resource, World};
+use ambient_ecs::{
+    components, generated::wasm::components::is_module, Debuggable, EntityId, Resource, World,
+    WorldContext,
+};
+use ambient_package_semantic_native::{client_modules, is_package, server_modules};
 
 components!("wasm::message", {
     @[Debuggable, Resource]
@@ -16,7 +20,6 @@ pub enum Source {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct SerializedMessage {
-    /// If unspecified, this will broadcast to all modules
     pub(super) target: Target,
     pub(super) source: Source,
     pub(super) name: String,
@@ -25,10 +28,10 @@ pub struct SerializedMessage {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Target {
-    /// Send to all modules on this side
+    /// Send to all packages on this side
     All { include_self: bool },
-    /// Send to a specific module on this side
-    Module(EntityId),
+    /// Send to a specific package or module on this side
+    PackageOrModule(EntityId),
 }
 
 pub fn send(world: &mut World, target: Target, source: Source, name: String, data: Vec<u8>) {
@@ -70,19 +73,52 @@ pub(super) fn run(
                 super::run(world, id, sms, &source, &name, &data)
             }
         }
-        Target::Module(module_id) => match world.get_cloned(module_id, module_state()) {
-            Ok(state) => super::run(world, module_id, state, &source, &name, &data),
-            Err(_) => {
-                let module_name = world
-                    .get_cloned(module_id, module_name())
-                    .unwrap_or_default();
+        Target::PackageOrModule(id) => {
+            let is_module = world.has_component(id, is_module());
+            let is_package = world.has_component(id, is_package());
 
-                world.resource(messenger()).as_ref()(
-                    world, module_id, MessageType::Warn,
-                    &format!("Received message for unloaded module {module_id} ({module_name}); message {name:?} from {source:?}")
-                );
+            let warn = |msg| {
+                world.resource(messenger()).as_ref()(world, id, MessageType::Warn, msg);
+            };
+
+            match (is_package, is_module) {
+                (true, _) => {
+                    let modules = match world.context() {
+                        WorldContext::Server => world
+                            .get_cloned(id, server_modules())
+                            .ok()
+                            .unwrap_or_default(),
+                        WorldContext::Client => world
+                            .get_cloned(id, client_modules())
+                            .ok()
+                            .unwrap_or_default(),
+                        _ => {
+                            let msg = format!("Received message {name:?} from {source:?} for package {id}, but the current world does not support WASM");
+                            warn(&msg);
+                            return;
+                        }
+                    };
+
+                    for module_id in modules {
+                        if let Ok(module_state) = world.get_cloned(module_id, module_state()) {
+                            super::run(world, module_id, module_state, &source, &name, &data);
+                        }
+                    }
+                }
+                (_, true) => match world.get_cloned(id, module_state()) {
+                    Ok(state) => super::run(world, id, state, &source, &name, &data),
+                    Err(_) => {
+                        let name = world.get_cloned(id, module_name()).unwrap_or_default();
+                        let msg = format!("Received message {name:?} from {source:?} for unloaded module {id} ({name})");
+                        warn(&msg);
+                    }
+                },
+                (false, false) => {
+                    let msg = format!("Received message for entity {id}, but entity is neither a package or a module; message {name:?} from {source:?}");
+                    warn(&msg)
+                }
             }
-        },
+        }
     }
 }
 
@@ -95,7 +131,7 @@ impl<T: ambient_ecs::RuntimeMessage> RuntimeMessageExt for T {
             world,
             SerializedMessage {
                 target: module_id
-                    .map(Target::Module)
+                    .map(Target::PackageOrModule)
                     .unwrap_or(Target::All { include_self: true }),
                 source: Source::Runtime,
                 name: T::id().to_string(),

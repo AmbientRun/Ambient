@@ -39,6 +39,7 @@ pub type WasmSpawn =
     Cb<dyn Fn(&mut World, WasmSpawnRequest) -> anyhow::Result<WasmSpawnResponse> + Sync + Send>;
 #[derive(Debug)]
 pub struct WasmSpawnRequest {
+    pub package_id: EntityId,
     pub client_modules: Vec<(AbsAssetUrl, bool)>,
     pub server_modules: Vec<(AbsAssetUrl, bool)>,
 }
@@ -184,6 +185,7 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
             let wasm = (wasm_spawn)(
                 world,
                 WasmSpawnRequest {
+                    package_id: entity,
                     client_modules: metadata
                         .client_component_paths
                         .iter()

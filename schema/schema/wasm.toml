@@ -34,3 +34,9 @@ name = "Module name"
 description = "The name of this module."
 type = "String"
 attributes = ["Networked", "Store", "Debuggable"]
+
+[components.package_ref]
+name = "Package reference"
+description = "The package that this module belongs to."
+type = "EntityId"
+attributes = ["Networked", "Store", "Debuggable"]
