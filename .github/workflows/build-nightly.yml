@@ -49,15 +49,15 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Rust cache
         uses: Leafwing-Studios/cargo-cache@v1.1.0
+      
+      - name: Build
+        run: cargo build --release -p ambient --target ${{ matrix.target }}  --features production
 
       # - name: Build
-      #   run: cargo build --release -p ambient --target ${{ matrix.target }} --features production
-
-      - name: Build
-        run: cargo build -p ambient --release
-        env:
-          CARGO_INCREMENTAL: 0
-          RUSTFLAGS: "-C debuginfo=0"
+      #   run: cargo build -p ambient --release
+      #   env:
+      #     CARGO_INCREMENTAL: 0
+      #     RUSTFLAGS: "-C debuginfo=0"
           
       - name: Install certificate (OSX)
         if: matrix.os == 'macos-latest'
@@ -68,7 +68,19 @@ jobs:
       - name: Codesign executable (OSX)
         if: matrix.os == 'macos-latest'
         run: /usr/bin/codesign --force -s ${{ secrets.MAC_CODESIGN }} --options=runtime --entitlements app/osx_entitlements.xml --deep ${{ env.EXE_DIR }}/${{ matrix.exe_name }} -v
-
+      - name: Bundle
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: "zip"
+          filename: ambient-${{ matrix.target }}.zip
+          directory: ${{ env.EXE_DIR }}
+          path: ${{ matrix.exe_name }}
+      - name: Notarize app bundle (OSX)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd ${{ env.EXE_DIR }}
+          xcrun notarytool store-credentials "notarytool-profile" --apple-id "${{ secrets.APPLE_DEVELOPER_EMAIL }}" --team-id="${{ secrets.APPLE_TEAM_ID }}" --password "${{ secrets.APPLE_DEVELOPER_PASSWORD }}"
+          xcrun notarytool submit "ambient-${{ matrix.target }}.zip" --keychain-profile "notarytool-profile" --wait
       - name: Set date suffix
         run: echo "date_suffix=$(date +%Y-%m-%d)" >> $GITHUB_ENV
 
@@ -91,5 +103,5 @@ jobs:
       - name: Upload to Google Cloud
         uses: google-github-actions/upload-cloud-storage@v1
         with:
-          path: target/release/${{ matrix.os == 'windows-latest' && 'ambient.exe' || 'ambient' }}
+          path: ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
           destination: "ambient-artifacts/ambient-nightly-build/${{ env.date_suffix }}/${{ matrix.os }}"
