@@ -3,9 +3,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct RenderSettings {
     #[serde(default)]
-    resolution: Resolution,
+    pub(crate) resolution: Resolution,
     #[serde(default)]
-    vsync: Vsync,
+    pub(crate) vsync: Vsync,
     #[serde(default)]
     pub render_mode: RenderMode,
     #[serde(default)]

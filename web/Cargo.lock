@@ -117,6 +117,7 @@ dependencies = [
  "ambient_native_std",
  "ambient_procedurals",
  "ambient_renderer",
+ "ambient_settings",
  "ambient_sys",
  "ambient_ui_native",
  "anyhow",
@@ -390,6 +391,7 @@ version = "0.3.0-dev"
 dependencies = [
  "aho-corasick 1.0.4",
  "ambient_native_std",
+ "ambient_settings",
  "ambient_std",
  "ambient_sys",
  "anyhow",
@@ -397,7 +399,6 @@ dependencies = [
  "bytemuck",
  "byteorder",
  "cfg-if",
- "directories",
  "futures",
  "glam",
  "image",
@@ -409,7 +410,6 @@ dependencies = [
  "serde",
  "thiserror",
  "tokio",
- "toml",
  "tracing",
  "wgpu",
  "winit",
@@ -530,6 +530,7 @@ dependencies = [
  "ambient_color",
  "ambient_friendly_id",
  "ambient_math",
+ "ambient_shared_types",
  "ambient_sys",
  "anyhow",
  "async-trait",
@@ -617,6 +618,7 @@ dependencies = [
 name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_shared_types",
  "chrono",
  "convert_case 0.6.0",
  "indexmap 2.0.0",
@@ -771,6 +773,7 @@ dependencies = [
  "ambient_gpu_ecs",
  "ambient_meshes",
  "ambient_native_std",
+ "ambient_settings",
  "ambient_sys",
  "anyhow",
  "async-trait",
@@ -802,6 +805,18 @@ dependencies = [
 [[package]]
 name = "ambient_schema"
 version = "0.3.0-dev"
+
+[[package]]
+name = "ambient_settings"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_native_std",
+ "anyhow",
+ "directories",
+ "serde",
+ "toml",
+ "tracing",
+]
 
 [[package]]
 name = "ambient_shared_types"

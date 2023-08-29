@@ -97,6 +97,7 @@ impl SyncAssetKey<Settings> for SettingsKey {
                     render_mode: RenderMode::Indirect,
                     ..Default::default()
                 },
+                ..Default::default()
             }
         }
         #[cfg(not(target_os = "unknown"))]
