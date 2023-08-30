@@ -236,17 +236,10 @@ pub enum FilePathError {
 /// asset will require `assets/` prefixed to the path.
 pub fn file_path(
     world: &World,
-    package_id: &str,
+    package_id: EntityId,
     path: &Path,
 ) -> Result<AbsAssetUrl, FilePathError> {
-    let entity = world
-        .synced_resource(package_id_to_package_entity())
-        .unwrap()
-        .get(package_id)
-        .copied()
-        .ok_or_else(|| FilePathError::PackageNotFound(package_id.to_string()))?;
-
-    if let Ok(url) = world.get_cloned(entity, asset_url()) {
+    if let Ok(url) = world.get_cloned(package_id, asset_url()) {
         Ok(AbsAssetUrl::from_str(&format!("{url}/{}", path.display()))?)
     } else {
         Ok(AbsAssetUrl::from_asset_key(path.to_string_lossy())?)

@@ -1,6 +1,9 @@
 use thiserror::Error;
 
-use crate::internal::wit;
+use crate::{
+    internal::{conversion::IntoBindgen, wit},
+    prelude::EntityId,
+};
 
 #[derive(Error, Debug)]
 /// Errors that can occur when resolving an asset URL.
@@ -19,6 +22,6 @@ impl From<wit::asset::UrlError> for UrlError {
 
 /// Resolves a asset path for an Ambient asset to an absolute URL.
 #[doc(hidden)]
-pub fn url_for_package_asset(package_id: &str, path: &str) -> Result<String, UrlError> {
-    Ok(wit::asset::url(package_id, path)?)
+pub fn url_for_package_asset(package_id: EntityId, path: &str) -> Result<String, UrlError> {
+    Ok(wit::asset::url(package_id.into_bindgen(), path)?)
 }
