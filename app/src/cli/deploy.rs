@@ -1,6 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
-use ambient_native_std::asset_cache::AssetCache;
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_settings::{Settings, SettingsKey};
 use anyhow::Context;
 use parking_lot::Mutex;
 
@@ -13,7 +14,7 @@ pub async fn handle(
     package: &PackageCli,
     extra_packages: &[PathBuf],
     assets: &AssetCache,
-    token: &str,
+    token: Option<&str>,
     api_server: &str,
     release_build: bool,
     force_upload: bool,
@@ -29,6 +30,21 @@ pub async fn handle(
             "Remove `--debug` to deploy a release build."
         );
     }
+
+    let settings = SettingsKey.get(assets);
+    let token = match token {
+        Some(token) => token,
+        None => {
+            settings
+                .general
+                .api_token
+                .as_ref()
+                .with_context(|| format!(
+                    "No API token provided. You can provide one with `--token` or by specifying it in `general.api_token` in {:?}.",
+                    Settings::path().unwrap_or_default()
+                ))?
+        }
+    };
 
     #[derive(Debug, Clone)]
     enum Deployment {

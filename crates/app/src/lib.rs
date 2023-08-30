@@ -26,7 +26,6 @@ use ambient_gizmos::{gizmos, Gizmos};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBufferKey,
-    settings::SettingsKey,
 };
 use ambient_gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate};
 use ambient_native_std::{
@@ -35,7 +34,9 @@ use ambient_native_std::{
 };
 use ambient_procedurals::{procedural_storage, ProceduralStorage};
 use ambient_renderer::lod::lod_system;
+use ambient_settings::SettingsKey;
 use ambient_sys::task::RuntimeHandle;
+
 use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{main_renderer, ui_renderer, MainRenderer, UiRenderer};
@@ -295,8 +296,8 @@ impl AppBuilder {
         } else {
             let event_loop = self.event_loop.unwrap_or_else(EventLoop::new);
             let window = WindowBuilder::new().with_inner_size(winit::dpi::LogicalSize {
-                width: settings.resolution().0,
-                height: settings.resolution().1,
+                width: settings.render.resolution().0,
+                height: settings.render.resolution().1,
             });
             let window = Arc::new(window.build(&event_loop).unwrap());
             (Some(window), Some(event_loop))
@@ -367,7 +368,7 @@ impl AppBuilder {
         let _ = thread_priority::set_current_thread_priority(thread_priority::ThreadPriority::Max);
 
         let mut world = World::new("main_app", ambient_ecs::WorldContext::App);
-        let gpu = Arc::new(Gpu::with_config(window.as_deref(), true, &settings).await);
+        let gpu = Arc::new(Gpu::with_config(window.as_deref(), true, &settings.render).await);
 
         tracing::debug!("Inserting runtime");
         RuntimeKey.insert(&assets, runtime.clone());

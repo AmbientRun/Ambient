@@ -90,7 +90,7 @@ fn main() -> anyhow::Result<()> {
                 package,
                 extra_packages,
                 &assets,
-                token,
+                token.as_deref(),
                 api_server,
                 release_build,
                 *force_upload,

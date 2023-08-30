@@ -145,6 +145,7 @@ dependencies = [
  "ambient_prefab",
  "ambient_primitives",
  "ambient_rpc",
+ "ambient_settings",
  "ambient_shared_types",
  "ambient_sky",
  "ambient_std",
@@ -252,6 +253,7 @@ dependencies = [
  "ambient_primitives",
  "ambient_procedurals",
  "ambient_renderer",
+ "ambient_settings",
  "ambient_sys",
  "ambient_ui_native",
  "anyhow",
@@ -723,6 +725,7 @@ version = "0.3.0-dev"
 dependencies = [
  "aho-corasick",
  "ambient_native_std",
+ "ambient_settings",
  "ambient_std",
  "ambient_sys",
  "anyhow",
@@ -730,7 +733,6 @@ dependencies = [
  "bytemuck",
  "byteorder",
  "cfg-if",
- "directories",
  "futures",
  "glam 0.24.1",
  "image",
@@ -742,7 +744,6 @@ dependencies = [
  "serde",
  "thiserror",
  "tokio",
- "toml 0.7.6",
  "tracing",
  "wgpu 0.15.1",
  "wgpu 0.16.3",
@@ -1275,6 +1276,7 @@ dependencies = [
  "ambient_model_import",
  "ambient_native_std",
  "ambient_primitives",
+ "ambient_settings",
  "ambient_std",
  "ambient_sys",
  "anyhow",
@@ -1321,6 +1323,18 @@ dependencies = [
 [[package]]
 name = "ambient_schema"
 version = "0.3.0-dev"
+
+[[package]]
+name = "ambient_settings"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_native_std",
+ "anyhow",
+ "directories",
+ "serde",
+ "toml 0.7.6",
+ "tracing",
+]
 
 [[package]]
 name = "ambient_shared_types"

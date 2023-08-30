@@ -5,11 +5,11 @@ use ambient_ecs::{ArchetypeFilter, World};
 use ambient_gpu::{
     gpu::Gpu,
     mesh_buffer::MeshBuffer,
-    settings::SettingsKey,
     shader_module::DEPTH_FORMAT,
     texture::{Texture, TextureView},
 };
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_settings::SettingsKey;
 use bytemuck::{Pod, Zeroable};
 use glam::{Mat4, Vec3};
 use itertools::Itertools;
@@ -71,7 +71,7 @@ impl ShadowsRenderer {
             ..Default::default()
         });
 
-        let settings = SettingsKey.get(assets);
+        let settings = SettingsKey.get(assets).render;
 
         Self {
             renderer: TreeRenderer::new(
