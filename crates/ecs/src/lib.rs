@@ -186,7 +186,7 @@ impl World {
         use anyhow::Context;
         let content = ambient_sys::fs::read(path.as_ref())
             .await
-            .with_context(|| format!("No such file: {:?}", path.as_ref()))?;
+            .with_context(|| format!("Failed to read ECS slice from {:?}", path.as_ref()))?;
         Self::from_slice(&content)
     }
 

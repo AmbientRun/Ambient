@@ -11,7 +11,8 @@ pub struct PackagePath {
 impl PackagePath {
     pub fn new_local(path: impl Into<PathBuf>) -> anyhow::Result<Self> {
         let path = path.into();
-        let current_dir = std::env::current_dir().context("Error getting current directory")?;
+        let current_dir =
+            std::env::current_dir().context("Error getting current directory for package path")?;
         let path = if path.is_absolute() {
             path
         } else {

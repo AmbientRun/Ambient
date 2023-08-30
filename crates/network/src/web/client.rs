@@ -105,7 +105,7 @@ impl ElementComponent for GameClientView {
                 sleep(Duration::from_millis(1000)).await;
 
                 let conn = Connection::connect(&url.as_str()).await.with_context(|| {
-                    format!("Failed to establish a WebTransport  session to {url}")
+                    format!("Failed to establish a WebTransport session for \"{url}\"")
                 })?;
 
                 tracing::info!("Established WebTransport session");
@@ -442,6 +442,7 @@ async fn resolve_hosted_server(assets: &AssetCache, url: Url) -> anyhow::Result<
         .await
         .context("Failed to get result for request")?;
 
-    Url::parse(&format!("https://{}", res.trim()))
-        .with_context(|| format!("Expected a valid URL for host resolution. Got: {res}"))
+    Url::parse(&format!("https://{}", res.trim())).with_context(|| {
+        format!("Expected a valid URL for host resolution, but was unable to resolve \"{res}\"")
+    })
 }

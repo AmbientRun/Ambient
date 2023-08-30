@@ -100,7 +100,7 @@ impl Semantic {
         dependent_package_id: Option<ItemId<Package>>,
     ) -> anyhow::Result<ItemId<Package>> {
         let manifest = Manifest::parse(&retrievable_manifest.get().await?)
-            .with_context(|| format!("failed to parse manifest from {retrievable_manifest}"))?;
+            .with_context(|| format!("Failed to parse manifest from `{retrievable_manifest}`"))?;
 
         let locator = PackageLocator::from_manifest(&manifest, retrievable_manifest.clone());
         if let Some(id) = self.packages.get(&locator) {
@@ -155,7 +155,7 @@ impl Semantic {
             };
 
             let dependency_id = self.add_package(source, Some(id)).await.with_context(|| {
-                format!("failed to add dependency `{dependency_name}` for {locator}")
+                format!("Failed to add dependency `{dependency_name}` for {locator}")
             })?;
 
             dependencies.insert(
@@ -255,14 +255,13 @@ impl Semantic {
         for include in &includes {
             anyhow::ensure!(
                 include.extension().is_some(),
-                "include {} must have an extension",
-                include.display()
+                "Include {include:?} for `{source}` must have an extension"
             );
 
             let include_source = source.parent_join(include)?;
             let include_manifest =
                 Manifest::parse(&include_source.get().await?).with_context(|| {
-                    format!("failed to parse included manifest {source} for {source}")
+                    format!("Failed to parse included manifest {source} for {source}")
                 })?;
             let include_scope_id = self
                 .add_scope_from_manifest_with_includes(

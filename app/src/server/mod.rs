@@ -69,18 +69,19 @@ pub async fn start(
             &crypto,
         )
         .await
-        .context("failed to create game server with port")
+        .with_context(|| format!("Failed to create game server with port {port}"))
         .unwrap()
     } else {
+        let port_range = QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10);
         GameServer::new_with_port_in_range(
             host_cli.bind_address,
-            QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10),
+            port_range.clone(),
             false,
             proxy_settings,
             &crypto,
         )
         .await
-        .context("failed to create game server with port in range")
+        .with_context(|| format!("Failed to create game server with port in range {port_range:?}"))
         .unwrap()
     };
 
@@ -307,11 +308,11 @@ fn start_http_interface(build_path: Option<&Path>, http_interface_port: u16) {
     tokio::task::spawn(async move {
         let addr = SocketAddr::from(([0, 0, 0, 0], http_interface_port));
 
-        tracing::debug!(?build_path, "Starting HTTP interface on: {addr}");
+        tracing::debug!(?build_path, "Starting HTTP interface on `{addr}`");
 
         if let Err(err) = serve(addr)
             .await
-            .with_context(|| format!("Failed to start server on: {addr}"))
+            .with_context(|| format!("Failed to start server on `{addr}`"))
         {
             tracing::error!("{err:?}");
         }

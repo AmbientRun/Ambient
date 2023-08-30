@@ -20,7 +20,7 @@ pub async fn process(path: PathBuf) -> anyhow::Result<()> {
         .then(|path: PathBuf| async move {
             migrate_pipeline(&path)
                 .await
-                .with_context(|| format!("Error migrating pipeline {path:?}"))?;
+                .with_context(|| format!("Error migrating pipeline at {path:?}"))?;
 
             Ok(())
         })
@@ -33,16 +33,12 @@ async fn migrate_pipeline(path: &Path) -> anyhow::Result<()> {
 
     let str = tokio::fs::read_to_string(path)
         .await
-        .context("Error reading json pipeline file")?;
-
-    tracing::info!("Read string: {str}");
+        .context("Error reading JSON pipeline file")?;
 
     let de = &mut serde_json::de::Deserializer::from_str(&str);
 
     let value: PipelineOneOrMany = serde_path_to_error::deserialize(de)
-        .with_context(|| format!("Error deserializing json pipeline file {:?}", path))?;
-
-    tracing::info!("Deserialized json pipeline file: {value:#?}");
+        .with_context(|| format!("Error deserializing JSON pipeline file at {path:?}"))?;
 
     let value = PipelinesFile {
         pipelines: {
@@ -55,16 +51,14 @@ async fn migrate_pipeline(path: &Path) -> anyhow::Result<()> {
 
     let mut toml = String::new();
     let serializer = toml::ser::Serializer::new(&mut toml);
-    serde_path_to_error::serialize(&value, serializer).context("Error serializing json to toml")?;
-
-    tracing::info!("Serialized to toml: {toml}");
+    serde_path_to_error::serialize(&value, serializer).context("Error serializing JSON to TOML")?;
 
     let toml_path = path.with_extension("toml");
     tokio::fs::write(&toml_path, toml)
         .await
-        .context("Error writing toml pipeline file")?;
+        .context("Error writing TOML pipeline file")?;
 
-    eprintln!("Wrote toml pipeline file: {:?}", toml_path);
+    tracing::info!("Wrote TOML pipeline file at {:?}", toml_path);
 
     Ok(())
 }

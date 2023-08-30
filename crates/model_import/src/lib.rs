@@ -61,14 +61,14 @@ impl ModelImportPipeline {
                     "merged_mesh_lods/{}",
                     lods[0]
                         .get_cache_path()
-                        .context("Lod 0 doesn't have a cache path")?
+                        .context("LOD 0 doesn't have a cache path")?
                 ));
             } else if let ModelImportTransform::MergeUnityMeshLods { url, .. } = step {
                 return Ok(url.relative_cache_path());
             }
         }
         Err(anyhow!(
-            "Can't create cache path, no ImportModelFromUrl or MergeMeshLods"
+            "Can't create cache path, no `ImportModelFromUrl` or `MergeMeshLods`"
         ))
     }
     pub async fn produce_crate(&self, assets: &AssetCache) -> anyhow::Result<ModelCrate> {
@@ -76,7 +76,7 @@ impl ModelImportPipeline {
         for step in &self.steps {
             step.run(assets, &mut asset_crate)
                 .await
-                .with_context(|| format!("Failed to run step: {step:?}"))?;
+                .with_context(|| format!("Failed to run model crate step {step:?}"))?;
         }
         Ok(asset_crate)
     }

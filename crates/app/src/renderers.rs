@@ -97,7 +97,7 @@ impl MainRenderer {
         let is_srgb = gpu.swapchain_format().is_srgb();
         let gamma_correction = if !is_srgb {
             tracing::info!(
-                "Output format is not in srgb colorspace. Applying manual gamma correction"
+                "Output format is not in sRGB colorspace. Applying manual gamma correction."
             );
             Some(2.2)
         } else {

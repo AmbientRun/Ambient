@@ -85,7 +85,7 @@ pub async fn build<
     let main_manifest_url = AbsAssetUrl::from_file_path(main_package_fs_path.join("ambient.toml"));
 
     if clean_build {
-        tracing::debug!("Removing build directory: {root_build_path:?}");
+        tracing::debug!("Removing build directory {root_build_path:?}");
         match tokio::fs::remove_dir_all(&root_build_path).await {
             Ok(_) => {}
             Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
@@ -106,7 +106,7 @@ pub async fn build<
             .await?;
         semantic
             .resolve()
-            .context("pre-build dependency resolution failed")?;
+            .context("Failed to resolve dependencies for pre-build")?;
 
         semantic
             .items

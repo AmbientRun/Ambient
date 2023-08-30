@@ -43,9 +43,9 @@ pub async fn deploy(
 
     let package_id = manifest.package.id.to_string();
     log::info!(
-        "Deploying package `{}` ({})",
-        package_id,
-        manifest.package.name
+        "Deploying package \"{}\" ({})",
+        manifest.package.name,
+        package_id
     );
     let base_path = path.as_ref().to_owned();
 

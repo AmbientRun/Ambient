@@ -71,9 +71,9 @@ pub async fn handle(
         let mut all_packages = vec![main_package_fs_path];
         all_packages.extend(extra_packages.iter().map(|p| {
             PackagePath::new_local(p)
-                .expect("failed to construct local package path")
+                .expect("Failed to construct local package path")
                 .fs_path
-                .expect("failed to get fs path for local package")
+                .expect("Failed to get FS path for local package")
         }));
         all_packages
     };
@@ -174,7 +174,7 @@ pub async fn handle(
             .lock()
             .get(&package_path.join("ambient.toml"))
             .cloned()
-            .context("main package was not processed")?;
+            .context("Main package was not processed; this is a bug")?;
 
         match deployment_id {
             Deployment::Skipped => {

@@ -124,7 +124,7 @@ where
         let resp = builder
             .send()
             .await
-            .with_context(|| format!("Failed to request {url_str}"))?;
+            .with_context(|| format!("Failed to send request to \"{url_str}\""))?;
 
         if !resp.status().is_success() {
             log::warn!("Request for {} failed: {:?}", url_str, resp.status());

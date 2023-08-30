@@ -293,7 +293,7 @@ impl AsyncAssetKey<AssetResult<Arc<AbsAssetUrl>>> for PipeImage {
         }
         .get(&assets)
         .await
-        .with_context(|| format!("Failed to download image {}", self.source))?)
+        .with_context(|| format!("Failed to download image \"{}\"", self.source))?)
         .clone();
         let mut extension = "png".to_string();
         let second_image = if let Some(second_source) = &self.second_source {
@@ -303,7 +303,7 @@ impl AsyncAssetKey<AssetResult<Arc<AbsAssetUrl>>> for PipeImage {
                 }
                 .get(&assets)
                 .await
-                .with_context(|| format!("Failed to download second image {}", self.source))?,
+                .with_context(|| format!("Failed to download second image \"{}\"", self.source))?,
             )
         } else {
             None

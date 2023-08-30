@@ -250,7 +250,7 @@ impl UnityMaterials {
                 unity_ref.guid.as_ref().unwrap(),
             )
             .await
-            .with_context(|| format!("Failed to get material {material_path}"))
+            .with_context(|| format!("Failed to get material \"{material_path}\""))
         } else if unity_ref.type_ == Some(3) {
             Ok(Default::default())
         } else {

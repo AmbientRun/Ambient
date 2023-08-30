@@ -194,7 +194,7 @@ pub async fn build_package(
 
     build_rust_if_available(&package_path, &manifest, &build_path, settings.release)
         .await
-        .with_context(|| format!("Failed to build Rust {build_path:?}"))?;
+        .with_context(|| format!("Failed to build Rust in {build_path:?}"))?;
 
     tokio::fs::write(&output_manifest_path, toml::to_string(&manifest)?).await?;
 

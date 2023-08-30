@@ -156,7 +156,7 @@ impl ConnectedClient {
         let (name, handler) = world
             .resource(datagram_handlers())
             .get(&id)
-            .with_context(|| format!("No handler for stream {id}"))?
+            .with_context(|| format!("No handler for datagram {id}"))?
             .clone();
 
         let _span = debug_span!("handle_uni", name, id).entered();
@@ -183,7 +183,7 @@ impl ConnectedClient {
                     let (name, handler) = world
                         .resource(uni_stream_handlers())
                         .get(&id)
-                        .with_context(|| format!("No handler for stream {id}"))?
+                        .with_context(|| format!("No handler for unistream {id}"))?
                         .clone();
 
                     handler(world, assets, recv).instrument(tracing::debug_span!(
@@ -229,7 +229,7 @@ impl ConnectedClient {
                 let (name, handler) = world
                     .resource(bi_stream_handlers())
                     .get(&id)
-                    .with_context(|| format!("No handler for stream {id}"))?
+                    .with_context(|| format!("No handler for bistream {id}"))?
                     .clone();
 
                 handler(world, assets, send, recv).instrument(debug_span!("handle_bi", name, id))

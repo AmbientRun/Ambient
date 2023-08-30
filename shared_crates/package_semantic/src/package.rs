@@ -53,15 +53,10 @@ impl RetrievableFile {
         Ok(match self {
             RetrievableFile::Ambient(path) => schema()
                 .get(ambient_std::path::path_to_unix_string_lossy(path).as_str())
-                .with_context(|| {
-                    format!(
-                        "failed to find path in Ambient schema: {}",
-                        path.to_string_lossy()
-                    )
-                })?
+                .with_context(|| format!("Failed to find {path:?} in Ambient schema"))?
                 .to_string(),
             RetrievableFile::Path(path) => {
-                anyhow::ensure!(path.is_absolute(), "path {path:?} must be absolute");
+                anyhow::ensure!(path.is_absolute(), "Path {path:?} must be absolute");
                 #[cfg(target_os = "unknown")]
                 {
                     unimplemented!("file reading is not supported on web")

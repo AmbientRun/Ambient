@@ -77,13 +77,21 @@ impl PipelineCtx {
         let res = tokio::spawn({
             let ctx = self.clone();
             async move {
-                process(ctx.clone())
-                    .await
-                    .with_context(|| format!("In pipeline {}", ctx.pipeline_path()))
+                process(ctx.clone()).await.with_context(|| {
+                    format!(
+                        "Error while processing single pipeline \"{}\"",
+                        ctx.pipeline_path()
+                    )
+                })
             }
         })
         .await
-        .with_context(|| format!("In pipeline {}", self.pipeline_path()));
+        .with_context(|| {
+            format!(
+                "Error while retrieving result of processed single pipeline \"{}\"",
+                self.pipeline_path()
+            )
+        });
         let err = match res {
             Ok(Ok(res)) => return res,
             Ok(Err(err)) => err,
@@ -198,9 +206,8 @@ impl PipelineCtx {
                             .await
                             .with_context(|| {
                                 format!(
-                                    "In pipeline {}, at file {}",
-                                    ctx.pipeline_path(),
-                                    file_path
+                                    "Error while processing pipeline \"{}\" for file \"{file_path}\"",
+                                    ctx.pipeline_path()
                                 )
                             })
                     }
@@ -208,7 +215,7 @@ impl PipelineCtx {
                 .await
                 .with_context(|| {
                     format!(
-                        "In pipeline {}, at file {}",
+                        "Error while processing pipeline \"{}\" for file \"{}\"",
                         ctx.pipeline_path(),
                         ctx.in_root().relative_path(file.decoded_path())
                     )
@@ -233,7 +240,7 @@ impl PipelineCtx {
             .0
             .iter()
             .find(|x| x.decoded_path() == url.decoded_path())
-            .with_context(|| format!("No such file: {url}"))
+            .with_context(|| format!("Unable to find downloadable URL for `{url}`"))
     }
 }
 

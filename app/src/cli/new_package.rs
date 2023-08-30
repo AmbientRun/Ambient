@@ -26,7 +26,7 @@ pub(crate) fn handle(
     let name = package_path
         .file_name()
         .and_then(|s| s.to_str())
-        .context("package path has no terminating segment")?;
+        .context("Package path has no terminating segment")?;
 
     if package_path.is_dir() && std::fs::read_dir(&package_path)?.next().is_some() {
         anyhow::bail!("package path {package_path:?} is not empty");
@@ -134,7 +134,7 @@ pub(crate) fn handle(
 
     for (filename, contents) in files_to_write {
         std::fs::write(package_path.join(filename), contents)
-            .with_context(|| format!("failed to create {filename:?}"))?;
+            .with_context(|| format!("Failed to create {filename:?}"))?;
     }
 
     log::info!("Package \"{name}\" with id `{id}` created at {package_path:?}");

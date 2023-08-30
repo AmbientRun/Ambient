@@ -300,7 +300,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
     // Spawn the module on another thread to ensure that it does not block the main thread during compilation.
     std::thread::spawn(move || {
         let result = run_and_catch_panics(|| {
-            log::info!("Loading module: {}", name);
+            log::info!("Loading module {}", name);
             let res = module_state_maker(module::ModuleStateArgs {
                 component_bytecode: &component_bytecode,
                 stdout_output: Box::new({
@@ -316,7 +316,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
                 #[cfg(feature = "wit")]
                 preopened_dir,
             });
-            log::info!("Done loading module: {}", name);
+            log::info!("Done loading module {name}");
             res
         });
 
@@ -332,7 +332,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
 
                     world.add_component(id, module_state(), sms).unwrap();
 
-                    log::info!("Running startup event for module: {}", name);
+                    log::info!("Running startup event for module {name}");
                     messages::ModuleLoad::new().run(world, Some(id)).unwrap();
                 }
                 Err(err) => update_errors(world, &[(id, err)]),

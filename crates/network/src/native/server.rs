@@ -282,7 +282,7 @@ async fn resolve_connection(
 }
 
 /// Setup the protocol and enter the update loop for a new connected client
-#[tracing::instrument(name = "server", level = "info", skip_all, fields(content_base_url))]
+#[tracing::instrument(level = "info", skip_all, fields(content_base_url))]
 async fn handle_quinn_connection(
     conn: ConnectionKind,
     state: SharedServerState,

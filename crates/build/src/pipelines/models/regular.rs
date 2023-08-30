@@ -34,7 +34,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                         create_texture_resolver(&ctx),
                     )
                     .await
-                    .with_context(|| format!("Failed to import model {file}"))?;
+                    .with_context(|| format!("Failed to import model \"{file}\""))?;
                 model_crate
                     .model_mut()
                     .set_name(file.decoded_path().file_name().unwrap());

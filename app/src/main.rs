@@ -113,7 +113,7 @@ fn main() -> anyhow::Result<()> {
 
             tokio::signal::ctrl_c()
                 .await
-                .context("Failed to listen for shutdown signal")
+                .context("Failed to listen for Ctrl+C signal")
         }),
 
         // client+server
@@ -210,7 +210,7 @@ impl LaunchJson {
         if !launch_file.exists() {
             return Ok(None);
         }
-        log::info!("Using launch.json for cli args: {}", launch_file.display());
+        log::info!("Using launch.json for CLI args: {}", launch_file.display());
         let launch_json =
             std::fs::read_to_string(launch_file).context("Failed to read launch.json")?;
         let launch_json: Self =

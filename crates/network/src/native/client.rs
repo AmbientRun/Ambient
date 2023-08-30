@@ -151,7 +151,9 @@ impl ElementComponent for ClientView {
             let task = async move {
                 let conn = open_connection(server_addr.clone(), cert.map(Certificate))
                     .await
-                    .with_context(|| format!("Failed to connect to endpoint: {server_addr:?}"))?;
+                    .with_context(|| {
+                        format!("Failed to connect to endpoint \"{server_addr:?}\"")
+                    })?;
 
                 handle_connection(
                     conn.clone(),

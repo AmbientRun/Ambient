@@ -48,11 +48,11 @@ pub async fn handle(command: &AssetCommand, assets: &crate::AssetCache) -> anyho
                 if ext == "wav" || ext == "mp3" || ext == "ogg" {
                     let convert = opt.convert_audio;
                     ambient_build::pipelines::import_audio(opt.path.clone(), convert)
-                        .context("failed to import audio")?;
+                        .context("Failed to import audio")?;
                 } else if ext == "fbx" || ext == "glb" || ext == "gltf" || ext == "obj" {
                     let collider_from_model = opt.collider_from_model;
                     ambient_build::pipelines::import_model(opt.path.clone(), collider_from_model)
-                        .context("failed to import models")?;
+                        .context("Failed to import models")?;
                 } else if ext == "jpg" || ext == "png" || ext == "gif" || ext == "webp" {
                     // TODO: import textures API may change, so this is just a placeholder
                     todo!();

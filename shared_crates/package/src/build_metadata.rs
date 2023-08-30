@@ -6,7 +6,7 @@ use crate::Version;
 
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum BuildMetadataError {
-    #[error("failed to parse build metadata")]
+    #[error("Failed to parse build metadata")]
     ParseError(#[from] toml::de::Error),
 }
 
