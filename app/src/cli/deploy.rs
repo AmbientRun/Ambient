@@ -186,6 +186,8 @@ pub async fn handle(
                 log::info!("Package \"{main_package_name}\" deployed successfully!");
                 log::info!("  Deployment ID: {deployment_id}");
                 log::info!("  Deploy URL: https://assets.ambient.run/{deployment_id}");
+                log::info!("  Run: ambient run 'https://assets.ambient.run/{deployment_id}'");
+                log::info!("  Join: ambient join 'https://api.ambient.run/servers/ensure-running?deployment_id={deployment_id}'");
 
                 if first_deployment_id.is_none() {
                     first_deployment_id = Some(deployment_id);
