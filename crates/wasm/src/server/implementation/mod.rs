@@ -213,3 +213,12 @@ impl wit::asset::Host for Bindings {
         shared::implementation::asset::url(self.world(), package_id, path, false)
     }
 }
+#[async_trait::async_trait]
+impl wit::ambient_package::Host for Bindings {
+    async fn get_entity_for_package_id(
+        &mut self,
+        package_id: String,
+    ) -> anyhow::Result<Option<shared::wit::types::EntityId>> {
+        shared::implementation::package::get_entity_for_package_id(self.world(), package_id)
+    }
+}

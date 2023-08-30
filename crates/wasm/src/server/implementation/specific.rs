@@ -12,13 +12,13 @@ use ambient_core::{
 };
 use ambient_ecs::{generated::messages::HttpResponse, query, EntityId, Message, World};
 use ambient_native_std::asset_url::AbsAssetUrl;
-use ambient_network::{server::player_transport, ServerWorldExt};
+use ambient_network::server::player_transport;
 
 use super::super::Bindings;
 
 use crate::shared::{
     self,
-    conversion::{FromBindgen, IntoBindgen},
+    conversion::FromBindgen,
     implementation::message,
     message::{Source, Target},
 };
@@ -147,20 +147,5 @@ impl shared::wit::server_http::Host for Bindings {
         });
 
         Ok(())
-    }
-}
-
-#[async_trait::async_trait]
-impl shared::wit::ambient_package::Host for Bindings {
-    async fn get_entity_for_package_id(
-        &mut self,
-        package_id: String,
-    ) -> anyhow::Result<Option<shared::wit::types::EntityId>> {
-        Ok(self
-            .world()
-            .synced_resource(ambient_package_semantic_native::package_id_to_package_entity())
-            .unwrap()
-            .get(&package_id)
-            .map(|id| (*id).into_bindgen()))
     }
 }

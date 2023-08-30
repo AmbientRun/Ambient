@@ -4,7 +4,10 @@ pub mod asset;
 pub mod component;
 #[cfg(feature = "wit")]
 pub mod entity;
+#[cfg(feature = "wit")]
 pub mod message;
+#[cfg(feature = "wit")]
+pub mod package;
 #[cfg(feature = "wit")]
 pub mod player;
 
