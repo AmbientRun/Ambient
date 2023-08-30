@@ -1,8 +1,14 @@
 use ambient_native_std::asset_cache::SyncAssetKey;
-use anyhow::{Context, Result};
-use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
+
+#[cfg(not(target_os = "unknown"))]
+use std::path::PathBuf;
+
+#[cfg(not(target_os = "unknown"))]
+use anyhow::Context;
+
+#[cfg(not(target_os = "unknown"))]
+use directories::ProjectDirs;
 
 mod render;
 pub use render::*;
@@ -17,9 +23,9 @@ pub struct Settings {
 pub struct GeneralSettings {
     pub api_token: Option<String>,
 }
+#[cfg(not(target_os = "unknown"))]
 impl Settings {
-    #[cfg(not(target_os = "unknown"))]
-    pub fn load_from_file() -> Result<Settings> {
+    pub fn load_from_file() -> anyhow::Result<Settings> {
         use std::io::ErrorKind;
 
         let path = Self::path()?;
@@ -36,7 +42,7 @@ impl Settings {
                                 render,
                                 ..Default::default()
                             };
-                            settings.write_to_file(&path)?;
+                            settings.write_to_file(Some(path.clone()))?;
                             settings
                         } else {
                             return Err(err)
@@ -47,21 +53,22 @@ impl Settings {
             }
             Err(e) if e.kind() == ErrorKind::NotFound => {
                 let settings = Settings::default();
-                settings.write_to_file(&path)?;
+                settings.write_to_file(Some(path.clone()))?;
                 Ok(settings)
             }
             Err(e) => Err(e).with_context(|| format!("Error reading settings file at {path:?}")),
         }
     }
 
-    #[cfg(not(target_os = "unknown"))]
-    pub fn write_to_file(&self, path: &Path) -> anyhow::Result<()> {
-        Ok(std::fs::write(path, toml::to_string(self)?)
+    pub fn write_to_file(&self, path: Option<PathBuf>) -> anyhow::Result<()> {
+        let path = match path {
+            Some(path) => path,
+            None => Self::path()?,
+        };
+        Ok(std::fs::write(&path, toml::to_string(self)?)
             .with_context(|| format!("Failed to write settings to {path:?}"))?)
     }
-}
-impl Settings {
-    #[cfg(not(target_os = "unknown"))]
+
     pub fn path() -> anyhow::Result<PathBuf> {
         const QUALIFIER: &str = "com";
         const ORGANIZATION: &str = "Ambient";

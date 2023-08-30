@@ -99,6 +99,7 @@ fn main() -> anyhow::Result<()> {
             )
             .await
         }),
+        Commands::Login => rt.block_on(cli::login::handle(&assets)),
 
         // client
         Commands::Join { run, host } => {

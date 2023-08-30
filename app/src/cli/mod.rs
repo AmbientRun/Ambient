@@ -8,6 +8,7 @@ pub mod assets;
 pub mod build;
 pub mod client;
 pub mod deploy;
+pub mod login;
 pub mod server;
 
 mod package_path;
@@ -102,6 +103,8 @@ pub enum Commands {
         #[command(subcommand)]
         command: AssetCommand,
     },
+    /// Log into Ambient and save your API token to settings
+    Login,
 }
 
 #[derive(Subcommand, Clone, Copy, Debug)]
@@ -245,6 +248,7 @@ impl Cli {
             Commands::View { package, .. } => Some(package),
             Commands::Join { .. } => None,
             Commands::Assets { .. } => None,
+            Commands::Login => None,
         }
     }
     pub fn use_release_build(&self) -> bool {
@@ -255,7 +259,7 @@ impl Cli {
             Run { package, .. } | Build { package, .. } | View { package, .. } => {
                 package.is_release().unwrap_or(false)
             }
-            New { .. } | Join { .. } | Assets { .. } => false,
+            New { .. } | Join { .. } | Assets { .. } | Login => false,
         }
     }
 }

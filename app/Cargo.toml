@@ -64,6 +64,7 @@ image = { workspace = true }
 tracing = { workspace = true }
 image_hasher = { workspace = true }
 toml_edit = { workspace = true }
+rpassword = { workspace = true }
 
 [dev-dependencies]
 glam = { workspace = true }
