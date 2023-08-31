@@ -971,6 +971,14 @@ mod raw {
                         use crate::ecs::EnumComponent;
                         self.to_u32().into_result()
                     }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
+                    }
                 }
                 impl MessageSerde for Align {
                     fn serialize_message_part(
@@ -1037,6 +1045,14 @@ mod raw {
                         use crate::ecs::EnumComponent;
                         self.to_u32().into_result()
                     }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
+                    }
                 }
                 impl MessageSerde for Fit {
                     fn serialize_message_part(
@@ -1096,6 +1112,14 @@ mod raw {
                     fn into_result(self) -> crate::ecs::WitComponentValue {
                         use crate::ecs::EnumComponent;
                         self.to_u32().into_result()
+                    }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
                     }
                 }
                 impl MessageSerde for Orientation {
@@ -1175,6 +1199,14 @@ mod raw {
                         use crate::ecs::EnumComponent;
                         self.to_u32().into_result()
                     }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
+                    }
                 }
                 impl MessageSerde for Docking {
                     fn serialize_message_part(
@@ -1246,6 +1278,14 @@ mod raw {
                     fn into_result(self) -> crate::ecs::WitComponentValue {
                         use crate::ecs::EnumComponent;
                         self.to_u32().into_result()
+                    }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
                     }
                 }
                 impl MessageSerde for Layout {
@@ -2266,6 +2306,14 @@ mod raw {
                     fn into_result(self) -> crate::ecs::WitComponentValue {
                         use crate::ecs::EnumComponent;
                         self.to_u32().into_result()
+                    }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
                     }
                 }
                 impl MessageSerde for FontStyle {
