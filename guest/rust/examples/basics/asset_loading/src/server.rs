@@ -23,7 +23,7 @@ use ambient_api::{
 use packages::this::{assets, components::is_the_best};
 
 #[main]
-pub async fn main(world: &mut dyn World) {
+pub async fn main(world: &mut World) {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())

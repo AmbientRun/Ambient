@@ -150,7 +150,7 @@ fn generate_is(
             let api_path = context.guest_api_path().unwrap();
             quote! {
                 #[doc = #is_comment]
-                pub fn #is_ident(world: &dyn #api_path::prelude::World, id: EntityId) -> bool {
+                pub fn #is_ident(world: &#api_path::prelude::World, id: EntityId) -> bool {
                     #(#extends(world, id) && )* world.has_components(id, &[
                         #(&#components),*
                     ])

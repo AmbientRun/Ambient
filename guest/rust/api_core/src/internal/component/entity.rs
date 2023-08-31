@@ -71,8 +71,8 @@ impl Entity {
     /// Spawns an entity with these components.
     ///
     /// Returns `spawned_entity_id`.
-    pub fn spawn(&self, world: &mut dyn World) -> crate::prelude::EntityId {
-        world.spawn(self)
+    pub fn spawn(&self, world: &mut World) -> crate::prelude::EntityId {
+        world.spawn(self.clone())
     }
 }
 impl FromBindgen for wit::component::Entity {

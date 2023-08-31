@@ -31,15 +31,9 @@ pub async fn sleep(seconds: f32) {
 pub mod ecs {
     use super::api;
     pub use api::{
-        ecs::{Component, SupportedValue as ComponentValue, UntypedComponent, World, WorldExt},
+        ecs::{Component, ECSError, SupportedValue as ComponentValue, UntypedComponent, World},
         prelude::{Entity, EntityId},
     };
-
-    #[derive(Debug)]
-    pub enum ECSError {
-        EntityDoesntHaveComponent,
-        NoSuchEntity,
-    }
 
     pub struct ComponentDesc(Box<dyn UntypedComponent>);
     impl ComponentDesc {

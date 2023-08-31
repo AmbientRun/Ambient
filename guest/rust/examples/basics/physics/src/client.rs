@@ -2,7 +2,7 @@ use ambient_api::{ecs::World, prelude::*};
 use packages::this::{assets, messages::Bonk};
 
 #[main]
-pub fn main(world: &mut dyn World) {
+pub fn main(world: &mut World) {
     let spatial_audio_player = audio::SpatialAudioPlayer::new();
 
     Bonk::subscribe(move |_source, data| {

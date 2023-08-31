@@ -8,7 +8,8 @@ use crate::{
         app::components::{name, ref_count},
         ecs::components::{children, parent},
     },
-    prelude::{epoch_time, Entity, EntityId, World, WorldExt},
+    ecs,
+    prelude::{epoch_time, Entity, EntityId, World},
 };
 
 /// This plays animations, and can handle blending and masking of animations together to create
@@ -17,7 +18,7 @@ use crate::{
 pub struct AnimationPlayer(pub EntityId);
 impl AnimationPlayer {
     /// Create a new animation player, with `root` as the currently playing node
-    pub fn new(world: &mut dyn World, root: impl AsRef<AnimationNode>) -> Self {
+    pub fn new(world: &mut World, root: impl AsRef<AnimationNode>) -> Self {
         let root: &AnimationNode = root.as_ref();
         let player = Entity::new()
             .with(is_animation_player(), ())
@@ -27,20 +28,20 @@ impl AnimationPlayer {
         world.add_component(root.0, parent(), player);
         Self(player)
     }
-    fn root(&self, world: &dyn World) -> Option<EntityId> {
-        if let Some(children) = world.get_component(self.0, children()) {
+    fn root(&self, world: &World) -> Option<EntityId> {
+        if let Ok(children) = world.get_component(self.0, children()) {
             children.get(0).copied()
         } else {
             None
         }
     }
-    fn free_root(&self, world: &mut dyn World) {
+    fn free_root(&self, world: &mut World) {
         if let Some(root) = self.root(world) {
             world.remove_component(root, parent());
         }
     }
     /// Replaces the current root node of the animation player with a new node
-    pub fn play(&self, world: &mut dyn World, node: impl AsRef<AnimationNode>) {
+    pub fn play(&self, world: &mut World, node: impl AsRef<AnimationNode>) {
         self.free_root(world);
         let new_root: &AnimationNode = node.as_ref();
         world.add_component(self.0, children(), vec![new_root.0]);
@@ -48,7 +49,7 @@ impl AnimationPlayer {
     }
     /// Despawn this animation player.
     /// Note that dropping this player won't despawn it automatically; only call this method will despawn it.
-    pub fn despawn(self, world: &mut dyn World) {
+    pub fn despawn(self, world: &mut World) {
         self.free_root(world);
         world.despawn(self.0);
     }
@@ -63,7 +64,7 @@ impl AnimationNode {
         self.0
     }
     /// Use an existing node
-    pub fn from_entity(world: &mut dyn World, entity: EntityId) -> Self {
+    pub fn from_entity(world: &mut World, entity: EntityId) -> Self {
         world.mutate_component(entity, ref_count(), |x| *x += 1);
         Self(entity)
     }
@@ -86,7 +87,7 @@ impl AnimationNode {
 pub struct PlayClipFromUrlNode(pub AnimationNode);
 impl PlayClipFromUrlNode {
     /// Create a new node.
-    pub fn new(world: &mut dyn World, url: impl Into<String>) -> Self {
+    pub fn new(world: &mut World, url: impl Into<String>) -> Self {
         let node = Entity::new()
             .with(play_clip_from_url(), url.into())
             .with(name(), "Play clip from URL".to_string())
@@ -97,23 +98,23 @@ impl PlayClipFromUrlNode {
         Self(AnimationNode(node))
     }
     /// Use an existing node
-    pub fn from_entity(world: &mut dyn World, entity: EntityId) -> Self {
+    pub fn from_entity(world: &mut World, entity: EntityId) -> Self {
         Self(AnimationNode::from_entity(world, entity))
     }
     /// Set if the animation should loop or not
-    pub fn looping(&self, world: &mut dyn World, value: bool) {
+    pub fn looping(&self, world: &mut World, value: bool) {
         world.add_component(self.0 .0, looping(), value);
     }
     /// Freeze the animation at time
-    pub fn freeze_at_time(&self, world: &mut dyn World, time: f32) {
+    pub fn freeze_at_time(&self, world: &mut World, time: f32) {
         world.add_component(self.0 .0, freeze_at_time(), time);
     }
     /// Freeze the animation at time = percentage * duration
-    pub fn freeze_at_percentage(&self, world: &mut dyn World, percentage: f32) {
+    pub fn freeze_at_percentage(&self, world: &mut World, percentage: f32) {
         world.add_component(self.0 .0, freeze_at_percentage(), percentage);
     }
     /// Set up retargeting
-    pub fn set_retargeting(&self, world: &mut dyn World, retargeting: AnimationRetargeting) {
+    pub fn set_retargeting(&self, world: &mut World, retargeting: AnimationRetargeting) {
         match retargeting {
             AnimationRetargeting::None => {
                 world.remove_component(self.0 .0, retarget_model_from_url());
@@ -141,7 +142,7 @@ impl PlayClipFromUrlNode {
     /// character models which don't have the same pre-rotations we need to make sure they're up to sync
     ///
     /// I.e. this is mostly relevant for retargeting
-    pub fn apply_base_pose(&self, world: &mut dyn World, value: bool) {
+    pub fn apply_base_pose(&self, world: &mut World, value: bool) {
         if value {
             world.add_component(self.0 .0, apply_base_pose(), ());
         } else {
@@ -149,29 +150,29 @@ impl PlayClipFromUrlNode {
         }
     }
     /// Returns None if the duration hasn't been loaded yet
-    pub fn peek_clip_duration(&self, world: &dyn World) -> Option<f32> {
+    pub fn peek_clip_duration(&self, world: &World) -> ecs::Result<f32> {
         world.get_component(self.0 .0, clip_duration())
     }
     /// Returns the duration of this clip. This is async because it needs to wait for the clip to load before the duration can be returned.
-    pub async fn clip_duration(&self, world: &dyn World) -> f32 {
+    pub async fn clip_duration(&self, world: &World) -> f32 {
         world
             .wait_for_component(self.0 .0, clip_duration())
             .await
             .unwrap_or_default()
     }
     /// Returns None if the clip hasn't been loaded yet
-    pub fn peek_bind_ids(&self, world: &dyn World) -> Option<Vec<String>> {
+    pub fn peek_bind_ids(&self, world: &World) -> ecs::Result<Vec<String>> {
         world.get_component(self.0 .0, bind_ids())
     }
     /// Returns the bind ids of this clip. This is async because it needs to wait for the clip to load before the bind ids can be returned.
-    pub async fn bind_ids(&self, world: &dyn World) -> Vec<String> {
+    pub async fn bind_ids(&self, world: &World) -> Vec<String> {
         world
             .wait_for_component(self.0 .0, bind_ids())
             .await
             .unwrap_or_default()
     }
     /// Wait until the clip has been loaded
-    pub async fn wait_for_load(&self, world: &dyn World) {
+    pub async fn wait_for_load(&self, world: &World) {
         self.clip_duration(world).await;
     }
 }
@@ -192,7 +193,7 @@ impl BlendNode {
     /// If the weight is 1, only the right animation will play.
     /// Values in between blend between the two animations.
     pub fn new(
-        world: &mut dyn World,
+        world: &mut World,
         left: impl AsRef<AnimationNode>,
         right: impl AsRef<AnimationNode>,
         weight: f32,
@@ -210,7 +211,7 @@ impl BlendNode {
         Self(AnimationNode(node))
     }
     /// Use an existing node
-    pub fn from_entity(world: &mut dyn World, entity: EntityId) -> Self {
+    pub fn from_entity(world: &mut World, entity: EntityId) -> Self {
         Self(AnimationNode::from_entity(world, entity))
     }
     /// Set the weight of this blend node.
@@ -218,14 +219,14 @@ impl BlendNode {
     /// If the weight is 0, only the left animation will play.
     /// If the weight is 1, only the right animation will play.
     /// Values in between blend between the two animations.
-    pub fn set_weight(&self, world: &mut dyn World, weight: f32) {
+    pub fn set_weight(&self, world: &mut World, weight: f32) {
         world.set_component(self.0 .0, blend(), weight);
     }
     /// Sets the mask of this blend node.
     ///
     /// For example `blend_node.set_mask(vec![("LeftLeg".to_string(), 1.)])` means
     /// that the LeftLeg is always controlled by the right animation.
-    pub fn set_mask(&self, world: &mut dyn World, weights: Vec<(BindId, f32)>) {
+    pub fn set_mask(&self, world: &mut World, weights: Vec<(BindId, f32)>) {
         let (bind_ids, weights): (Vec<_>, Vec<_>) = weights
             .into_iter()
             .map(|(a, b)| (a.as_str().to_string(), b))
@@ -234,7 +235,7 @@ impl BlendNode {
         world.add_component(self.0 .0, mask_weights(), weights);
     }
     /// Sets a mask value to all bones of a humanoids lower body
-    pub fn set_mask_humanoid_lower_body(&self, world: &mut dyn World, weight: f32) {
+    pub fn set_mask_humanoid_lower_body(&self, world: &mut World, weight: f32) {
         self.set_mask(
             world,
             BindId::HUMANOID_LOWER_BODY
@@ -244,7 +245,7 @@ impl BlendNode {
         );
     }
     /// Sets a mask value to all bones of a humanoids upper body
-    pub fn set_mask_humanoid_upper_body(&self, world: &mut dyn World, weight: f32) {
+    pub fn set_mask_humanoid_upper_body(&self, world: &mut World, weight: f32) {
         self.set_mask(
             world,
             BindId::HUMANOID_UPPER_BODY
@@ -287,17 +288,13 @@ impl Default for AnimationRetargeting {
 }
 
 /// Get the bone entity from the bind_id; for example "LeftFoot"
-pub fn get_bone_by_bind_id(
-    world: &dyn World,
-    entity: EntityId,
-    bind_id: &BindId,
-) -> Option<EntityId> {
-    if let Some(bid) = world.get_component(entity, self::bind_id()) {
+pub fn get_bone_by_bind_id(world: &World, entity: EntityId, bind_id: &BindId) -> Option<EntityId> {
+    if let Ok(bid) = world.get_component(entity, self::bind_id()) {
         if bid == bind_id.as_str() {
             return Some(entity);
         }
     }
-    if let Some(childs) = world.get_component(entity, children()) {
+    if let Ok(childs) = world.get_component(entity, children()) {
         for c in childs {
             if let Some(bid) = get_bone_by_bind_id(world, c, bind_id) {
                 return Some(bid);

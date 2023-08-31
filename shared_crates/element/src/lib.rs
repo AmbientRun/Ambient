@@ -274,17 +274,10 @@ impl Element {
         );
         world.spawn(entity)
     }
-    /// This spawns the elemet tree and returns it. The tree won't be automatically updated, but can manually be updated
+    /// This spawns the element tree and returns it. The tree won't be automatically updated, but can manually be updated
     /// by calling the `update` method.
-    #[cfg(feature = "native")]
     pub fn spawn_tree(self, world: &mut World) -> ElementTree {
         ElementTree::new(world, self)
-    }
-    /// This spawns the elemet tree and returns it. The tree won't be automatically updated, but can manually be updated
-    /// by calling the `update` method.
-    #[cfg(feature = "guest")]
-    pub fn spawn_tree(self) -> ElementTree {
-        ElementTree::new(&mut World, self)
     }
     /// This spawns the element tree and sets up listeners to automatically update it.
     ///
@@ -301,14 +294,14 @@ impl Element {
     /// });
     /// ```
     #[cfg(feature = "guest")]
-    pub fn spawn_interactive(self) {
+    pub fn spawn_interactive(self, world: &mut World) {
         use ambient_guest_bridge::api::{
             core::messages::Frame, message::RuntimeMessage, prelude::OkEmpty,
         };
 
-        let mut tree = self.spawn_tree();
+        let mut tree = self.spawn_tree(world);
         Frame::subscribe(move |_| {
-            tree.update(&mut World);
+            tree.update(world);
             OkEmpty
         });
     }

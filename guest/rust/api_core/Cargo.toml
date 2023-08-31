@@ -33,7 +33,6 @@ wit-bindgen = { workspace = true }
 ulid = { workspace = true }
 indexmap = { workspace = true }
 serde = { workspace = true }
-async-trait = { workspace = true }
 
 [features]
 client = []

@@ -10,25 +10,25 @@ use crate::{
     core::app,
     global::{OkEmpty, ResultEmpty},
     internal::executor::EXECUTOR,
-    prelude::{RuntimeMessage, World, WorldExt},
+    prelude::{RuntimeMessage, World},
 };
 
 /// The time, relative to the start of the game. Guaranteed to be monotonic.
-pub fn game_time(world: &dyn World) -> Duration {
+pub fn game_time(world: &World) -> Duration {
     world
         .get_component(world.resources(), app::components::game_time())
         .unwrap()
 }
 
 /// The time, relative to Jan 1, 1970. Not guaranteed to be monotonic. Use [game_time] for most applications.
-pub fn epoch_time(world: &dyn World) -> Duration {
+pub fn epoch_time(world: &World) -> Duration {
     world
         .get_component(world.resources(), app::components::epoch_time())
         .unwrap()
 }
 
 /// The length of the previous frame, in seconds.
-pub fn delta_time(world: &dyn World) -> f32 {
+pub fn delta_time(world: &World) -> f32 {
     world
         .get_component(world.resources(), app::components::delta_time())
         .unwrap()

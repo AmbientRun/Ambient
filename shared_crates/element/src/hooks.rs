@@ -34,6 +34,9 @@ use crate::{AnyCloneable, ElementTree, HookContext, InstanceId};
 
 /// Helper type for a callback that sets some value.
 pub type Setter<T> = Cb<dyn Fn(T) + Sync + Send>;
+/// Helper type for a callback that sets some value using the world.
+#[cfg(feature = "guest")]
+pub type SetterWithWorld<T> = Cb<dyn Fn(&mut World, T) + Sync + Send>;
 
 type SpawnFn = Box<dyn FnOnce(&mut World) -> DespawnFn + Sync + Send>;
 /// The return type of a function passed to [Hooks::use_spawn]. This function is called
@@ -230,9 +233,9 @@ impl<'a> Hooks<'a> {
         {
             let handler = self.use_ref_with(|_| None);
             *handler.lock() = Some(cb(func));
-            self.use_effect((), move |_, _| {
+            self.use_effect((), move |world, _| {
                 let listener = T::subscribe(move |event| {
-                    (handler.lock().as_ref().unwrap())(&mut World, &event);
+                    (handler.lock().as_ref().unwrap())(world, &event);
                 });
                 |_| listener.stop()
             });
@@ -249,9 +252,9 @@ impl<'a> Hooks<'a> {
     ) {
         let handler = self.use_ref_with(|_| None);
         *handler.lock() = Some(cb(func));
-        self.use_effect((), move |_, _| {
+        self.use_effect((), move |world, _| {
             let listener = T::subscribe(move |source, event| {
-                (handler.lock().as_ref().unwrap())(&mut World, source, &event);
+                (handler.lock().as_ref().unwrap())(world, source, &event);
             });
             |_| listener.stop()
         });
@@ -600,8 +603,8 @@ impl<'a> Hooks<'a> {
         &mut self,
         id: EntityId,
         component: ambient_guest_bridge::api::ecs::Component<T>,
-    ) -> (Option<T>, Setter<T>) {
-        use ambient_guest_bridge::api::prelude::{change_query, entity};
+    ) -> (Option<T>, SetterWithWorld<T>) {
+        use ambient_guest_bridge::api::prelude::change_query;
 
         let refresh = self.use_rerender_signal();
         self.use_spawn(move |_| {
@@ -615,8 +618,10 @@ impl<'a> Hooks<'a> {
         });
 
         (
-            entity::get_component(id, component),
-            cb(move |value| entity::add_component(id, component, value)),
+            self.world.get(id, component).ok(),
+            cb(move |world, value| {
+                world.add_component(id, component, value);
+            }),
         )
     }
 
@@ -636,10 +641,8 @@ impl<'a> Hooks<'a> {
     >(
         &mut self,
         component: ambient_guest_bridge::api::ecs::Component<T>,
-    ) -> (Option<T>, Setter<T>) {
-        use ambient_guest_bridge::api::entity;
-
-        self.use_entity_component(entity::resources(), component)
+    ) -> (Option<T>, SetterWithWorld<T>) {
+        self.use_entity_component(self.world.resources(), component)
     }
 
     /// Run `cb` every `seconds` seconds.
