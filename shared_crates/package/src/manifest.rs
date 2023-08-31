@@ -268,7 +268,7 @@ mod tests {
                 package: Package {
                     id: SnakeCaseIdentifier::new("test").unwrap(),
                     name: "Test".to_string(),
-                    version: Some(Version::parse("0.0.1").unwrap()),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -317,7 +317,7 @@ mod tests {
                 package: Package {
                     id: sci("tictactoe"),
                     name: "Tic Tac Toe".to_string(),
-                    version: Some(Version::parse("0.0.1").unwrap()),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build {
@@ -371,7 +371,7 @@ mod tests {
                 package: Package {
                     id: sci("tictactoe"),
                     name: "Tic Tac Toe".to_string(),
-                    version: Some(Version::parse("0.0.1").unwrap()),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build {
@@ -420,7 +420,7 @@ mod tests {
                 package: Package {
                     id: sci("my_package"),
                     name: "My Package".to_string(),
-                    version: Some(Version::parse("0.0.1").unwrap()),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build {
@@ -551,7 +551,7 @@ mod tests {
                 package: Package {
                     id: sci("tictactoe"),
                     name: "Tic Tac Toe".to_string(),
-                    version: Some(Version::parse("0.0.1").unwrap()),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build::default(),
@@ -596,7 +596,7 @@ mod tests {
                 package: Package {
                     id: sci("test"),
                     name: "Test".to_string(),
-                    version: Some(Version::parse("0.0.1").unwrap()),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build {
@@ -675,7 +675,7 @@ mod tests {
                 package: Package {
                     id: sci("dependencies"),
                     name: "dependencies".to_string(),
-                    version: Some(Version::parse("0.0.1").unwrap()),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Default::default(),
