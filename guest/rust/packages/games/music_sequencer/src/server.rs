@@ -54,13 +54,13 @@ pub async fn main() {
         });
 
     // When a player requests a BPM change, update it.
-    SetBpm::subscribe(|_source, data| {
+    SetBpm::subscribe(|_ctx, data| {
         entity::set_component(synchronized_resources(), bpm(), data.bpm);
     });
 
     // When a player clicks on a note, toggle it.
-    Click::subscribe(move |source, data| {
-        let id = source.client_entity_id().unwrap();
+    Click::subscribe(move |ctx, data| {
+        let id = ctx.client_entity_id().unwrap();
         let color_to_set = entity::get_component(id, player_hue()).unwrap();
 
         entity::mutate_component(data.track_id, track_note_selection(), |selection| {

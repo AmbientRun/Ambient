@@ -10,8 +10,8 @@ pub fn main() {
         entity::set_component(msg.id, module_enabled(), msg.enabled);
     });
 
-    WasmReload::subscribe(|source, msg| {
-        let Some(_user_id) = source.client_user_id() else {
+    WasmReload::subscribe(|ctx, msg| {
+        let Some(_user_id) = ctx.client_user_id() else {
             return;
         };
         let id = msg.id;

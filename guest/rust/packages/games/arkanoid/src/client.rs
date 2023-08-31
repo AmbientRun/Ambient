@@ -31,7 +31,7 @@ async fn main() {
     let bgm_player = audio::AudioPlayer::new();
     bgm_player.set_amplitude(0.2);
 
-    Ping::subscribe(move |_source, _data| {
+    Ping::subscribe(move |_ctx, _data| {
         bgm_player.play(url_from_server.clone());
     });
 

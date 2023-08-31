@@ -134,8 +134,8 @@ fn vehicle_creation_and_destruction() {
         }
     });
 
-    Input::subscribe(|source, input| {
-        if let Some(player) = source.client_entity_id() {
+    Input::subscribe(|ctx, input| {
+        if let Some(player) = ctx.client_entity_id() {
             entity::set_component(player, components::input_direction(), input.direction);
             entity::set_component(player, components::input_jump(), input.jump);
         }

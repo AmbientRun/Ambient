@@ -30,8 +30,8 @@ use packages::{
 
 #[main]
 pub fn main() {
-    ToggleEditor::subscribe(|source, _| {
-        let Some(id) = source.client_entity_id() else {
+    ToggleEditor::subscribe(|ctx, _| {
+        let Some(id) = ctx.client_entity_id() else {
             return;
         };
 
@@ -79,8 +79,8 @@ pub fn main() {
         }
     });
 
-    Input::subscribe(|source, msg| {
-        let Some(id) = source.client_entity_id() else {
+    Input::subscribe(|ctx, msg| {
+        let Some(id) = ctx.client_entity_id() else {
             return;
         };
         if !entity::get_component(id, in_editor()).unwrap_or_default() {

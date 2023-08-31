@@ -27,7 +27,7 @@ use packages::{
 #[main]
 
 pub fn main() {
-    Spraypaint::subscribe(move |_source, msg| {
+    Spraypaint::subscribe(move |_ctx, msg| {
         if let Some(hit) = physics::raycast_first(msg.origin, msg.dir) {
             let player_pos = entity::get_component(msg.source, translation()).unwrap();
             let distance = (player_pos - hit.position).length();

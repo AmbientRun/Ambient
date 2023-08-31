@@ -76,8 +76,8 @@ pub fn main() {
         }
     });
 
-    Input::subscribe(move |source, msg| {
-        let Some(player_id) = source.client_entity_id() else {
+    Input::subscribe(move |ctx, msg| {
+        let Some(player_id) = ctx.client_entity_id() else {
             return;
         };
 

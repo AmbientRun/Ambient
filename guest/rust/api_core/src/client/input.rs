@@ -59,7 +59,7 @@ pub fn set_cursor_lock(locked: bool) {
 /// Will unlock the cursor when dropped.
 pub struct CursorLockGuard {
     inner: Arc<Mutex<CursorLockGuardInner>>,
-    listener: Option<Listener>,
+    listener: Listener,
 }
 impl CursorLockGuard {
     /// Creates a new [CursorLockGuard] with the given lock state.
@@ -67,9 +67,9 @@ impl CursorLockGuard {
         let inner = Arc::new(Mutex::new(CursorLockGuardInner::new()));
         Self {
             inner: inner.clone(),
-            listener: Some(WindowFocusChange::subscribe(move |msg| {
+            listener: WindowFocusChange::subscribe(move |msg| {
                 inner.lock().unwrap().set_locked(msg.focused)
-            })),
+            }),
         }
     }
 
@@ -113,7 +113,7 @@ impl Default for CursorLockGuard {
 impl Drop for CursorLockGuard {
     fn drop(&mut self) {
         self.set_locked(false);
-        self.listener.take().unwrap().stop();
+        self.listener.stop();
     }
 }
 

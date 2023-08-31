@@ -26,7 +26,7 @@ fn main() {
 
     let ball_hit_player = audio::AudioPlayer::new();
     let ball_drop_player = audio::AudioPlayer::new();
-    Hit::subscribe(move |_source, data| {
+    Hit::subscribe(move |_ctx, data| {
         let ball = data.ball;
         let vel = entity::get_component(ball, linear_velocity()).unwrap_or_default();
         let mut amp = (vel.x.abs() / 5.0).powf(2.0)
@@ -38,7 +38,7 @@ fn main() {
         ball_hit_player.play(assets::url("ball-hit.ogg"));
     });
 
-    Bonk::subscribe(move |_source, data| {
+    Bonk::subscribe(move |_ctx, data| {
         let ball = data.ball;
         let vel = entity::get_component(ball, linear_velocity()).unwrap_or_default();
         let mut amp = (vel.x.abs() / 5.0).powf(2.0)

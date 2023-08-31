@@ -18,7 +18,7 @@ use ambient_guest_bridge::ecs::{
 use ambient_guest_bridge::ecs::{ComponentValue, World};
 use ambient_guest_bridge::RuntimeMessage;
 #[cfg(feature = "guest")]
-use ambient_guest_bridge::{ecs::EntityId, ModuleMessage, Source};
+use ambient_guest_bridge::{ecs::EntityId, MessageContext, ModuleMessage};
 #[cfg(feature = "native")]
 use ambient_sys::task;
 use as_any::Downcast;
@@ -234,7 +234,7 @@ impl<'a> Hooks<'a> {
                 let listener = T::subscribe(move |event| {
                     (handler.lock().as_ref().unwrap())(&mut World, &event);
                 });
-                |_| listener.stop()
+                move |_| listener.stop()
             });
         }
     }
@@ -245,19 +245,19 @@ impl<'a> Hooks<'a> {
     #[cfg(feature = "guest")]
     pub fn use_module_message<T: ModuleMessage>(
         &mut self,
-        func: impl Fn(&mut World, Source, &T) + Sync + Send + 'static,
+        func: impl Fn(&mut World, MessageContext, &T) + Sync + Send + 'static,
     ) {
         let handler = self.use_ref_with(|_| None);
         *handler.lock() = Some(cb(func));
         self.use_effect((), move |_, _| {
-            let listener = T::subscribe(move |source, event| {
-                (handler.lock().as_ref().unwrap())(&mut World, source, &event);
+            let listener = T::subscribe(move |ctx, event| {
+                (handler.lock().as_ref().unwrap())(&mut World, ctx, &event);
             });
-            |_| listener.stop()
+            move |_| listener.stop()
         });
     }
 
-    /// Send the `Enter` message when this [`Element`] is mounted, and the `Exit` message when it is unmounted.
+    /// Send the `Enter` message when this `Element` is mounted, and the `Exit` message when it is unmounted.
     ///
     /// If the `target_id` is `Some`, the message will be directed to that target; otherwise, it will be broadcast.
     #[cfg(feature = "guest")]
@@ -574,7 +574,7 @@ impl<'a> Hooks<'a> {
                 let refresh = refresh.clone();
                 move |_| refresh()
             });
-            |_| {
+            move |_| {
                 s.stop();
                 d.stop();
                 c.stop();
@@ -609,7 +609,7 @@ impl<'a> Hooks<'a> {
                 let refresh = refresh.clone();
                 move |_| refresh()
             });
-            |_| {
+            move |_| {
                 c.stop();
             }
         });
