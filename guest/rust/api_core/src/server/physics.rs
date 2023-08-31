@@ -192,8 +192,18 @@ pub struct CharacterCollision {
     pub down: bool,
 }
 
-/// Move an entity with a character collider on it, by sweeping the collider. This will ensure that it collides with any
-/// objects in its path. You can also update the entity's [translation](crate::core::transform::components::translation) component, but this will teleport it to that location.
+/// Move an entity with a character collider on it, by sweeping the collider.
+/// This will ensure that it collides with any objects in its path.
+///
+/// A character collider can be added to an entity using the `character_controller` concept.
+///
+/// You can also update the entity's [translation](crate::core::transform::components::translation) component,
+/// but this will teleport it to that location.
+///
+/// Arguments:
+///  - `displacement`: The displacement to move the character by.
+///  - `min_dist`: The minimum travelled distance to consider. If travelled distance is smaller, the character doesn't move. This is used to stop the recursive motion algorithm when remaining distance to travel is small.
+///  - `elapsed_time`: The elapsed time since last call to this function.
 pub fn move_character(
     entity: EntityId,
     displacement: Vec3,
