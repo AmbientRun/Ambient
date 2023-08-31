@@ -1,7 +1,7 @@
 use ambient_api::prelude::*;
 
 #[main]
-fn main() {
+fn main(_world: &mut World) {
     // Load the asset
     println!(
         "asset url can be accessed from client: {}",

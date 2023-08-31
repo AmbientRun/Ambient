@@ -31,82 +31,9 @@ pub async fn sleep(seconds: f32) {
 pub mod ecs {
     use super::api;
     pub use api::{
-        ecs::{Component, SupportedValue as ComponentValue, UntypedComponent},
+        ecs::{Component, ECSError, SupportedValue as ComponentValue, UntypedComponent, World},
         prelude::{Entity, EntityId},
     };
-
-    #[derive(Clone, Copy)]
-    pub struct World;
-    impl World {
-        pub fn spawn(&self, entity: Entity) -> EntityId {
-            api::entity::spawn(&entity)
-        }
-        pub fn despawn(&self, entity_id: EntityId) -> Option<Entity> {
-            api::entity::despawn(entity_id)
-        }
-        pub fn exists(&self, entity_id: EntityId) -> bool {
-            api::entity::exists(entity_id)
-        }
-        pub fn set<T: ComponentValue>(
-            &self,
-            entity_id: EntityId,
-            component: Component<T>,
-            value: T,
-        ) -> Result<(), ECSError> {
-            // TODO: set_component needs to return errors
-            api::entity::set_component(entity_id, component, value);
-            Ok(())
-        }
-        pub fn add_component<T: ComponentValue>(
-            &self,
-            entity_id: EntityId,
-            component: Component<T>,
-            value: T,
-        ) -> Result<(), ECSError> {
-            // TODO: add_component needs to return errors
-            api::entity::add_component(entity_id, component, value);
-            Ok(())
-        }
-        pub fn add_components(
-            &self,
-            entity_id: EntityId,
-            components: Entity,
-        ) -> Result<(), ECSError> {
-            // TODO: add_components needs to return errors
-            api::entity::add_components(entity_id, components);
-            Ok(())
-        }
-        pub fn get<T: ComponentValue>(
-            &self,
-            entity_id: EntityId,
-            component: Component<T>,
-        ) -> Result<T, ECSError> {
-            api::entity::get_component(entity_id, component)
-                .ok_or_else(|| ECSError::EntityDoesntHaveComponent)
-        }
-        pub fn get_cloned<T: ComponentValue>(
-            &self,
-            entity_id: EntityId,
-            component: Component<T>,
-        ) -> Result<T, ECSError> {
-            self.get(entity_id, component)
-        }
-        pub fn has_component<T: ComponentValue>(
-            &self,
-            entity_id: EntityId,
-            component: Component<T>,
-        ) -> bool {
-            api::entity::has_component(entity_id, component)
-        }
-        pub fn resource<T: ComponentValue>(&self, component: Component<T>) -> T {
-            api::entity::get_component(api::entity::resources(), component).unwrap()
-        }
-    }
-    #[derive(Debug)]
-    pub enum ECSError {
-        EntityDoesntHaveComponent,
-        NoSuchEntity,
-    }
 
     pub struct ComponentDesc(Box<dyn UntypedComponent>);
     impl ComponentDesc {

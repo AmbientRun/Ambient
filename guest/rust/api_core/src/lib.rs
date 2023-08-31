@@ -19,8 +19,6 @@ pub mod server;
 pub mod asset;
 /// ECS-related functionality not directly related to entities.
 pub mod ecs;
-/// Manipulation, creation, removal, search and more for entities.
-pub mod entity;
 /// Global functions and types for your convenience.
 pub mod global;
 /// Messaging to other packages and to the other side of the network boundary.

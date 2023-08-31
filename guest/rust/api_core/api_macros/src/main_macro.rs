@@ -33,9 +33,9 @@ pub fn main(item: TokenStream, ambient_toml: RetrievableFile) -> TokenStream {
 
     let call_stmt = if let Some(ParsedFunction { fn_name, is_async }) = parsed {
         let call_expr = if is_async {
-            quote! { #fn_name() }
+            quote! { #fn_name(world) }
         } else {
-            quote! { async { #fn_name() } }
+            quote! { async { #fn_name(world) } }
         };
 
         quote! { #path::global::run_async(#call_expr) }
@@ -50,7 +50,7 @@ pub fn main(item: TokenStream, ambient_toml: RetrievableFile) -> TokenStream {
 
         #[no_mangle]
         #[doc(hidden)]
-        pub fn main() {
+        pub fn main(world: &mut dyn #path::ecs::World) {
             #call_stmt
         }
     }

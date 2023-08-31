@@ -44,6 +44,8 @@ impl<T> UntypedComponent for Component<T> {
         self.index
     }
 }
+unsafe impl<T> Send for Component<T> {}
+unsafe impl<T> Sync for Component<T> {}
 
 /// A tuple of [Component]s.
 pub trait ComponentsTuple {
