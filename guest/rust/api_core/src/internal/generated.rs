@@ -1594,6 +1594,51 @@ mod raw {
                     *VISUALIZE_COLLIDER
                 }
             }
+            #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+            #[doc = r""]
+            #[doc = r" They do not have any runtime representation outside of the components that compose them."]
+            pub mod concepts {
+                use crate::prelude::*;
+                #[allow(clippy::approx_constant)]
+                #[doc = "Makes a *Character Controller*.\n\nA capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::physics::character_controller_height\": f32 = 2.0,\n  \"ambient_core::physics::character_controller_radius\": f32 = 0.5,\n  \"ambient_core::physics::physics_controlled\": () = (),\n}\n```\n"]
+                pub fn make_character_controller() -> Entity {
+                    Entity::new()
+                        .with(
+                            crate::ambient_core::physics::components::character_controller_height(),
+                            2f32,
+                        )
+                        .with(
+                            crate::ambient_core::physics::components::character_controller_radius(),
+                            0.5f32,
+                        )
+                        .with(
+                            crate::ambient_core::physics::components::physics_controlled(),
+                            (),
+                        )
+                }
+                #[doc = "Checks if the entity is a *Character Controller*.\n\nA capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::physics::character_controller_height\": f32 = 2.0,\n  \"ambient_core::physics::character_controller_radius\": f32 = 0.5,\n  \"ambient_core::physics::physics_controlled\": () = (),\n}\n```\n"]
+                pub fn is_character_controller(id: EntityId) -> bool {
+                    entity::has_components(
+                        id,
+                        &[
+                            &crate::ambient_core::physics::components::character_controller_height(
+                            ),
+                            &crate::ambient_core::physics::components::character_controller_radius(
+                            ),
+                            &crate::ambient_core::physics::components::physics_controlled(),
+                        ],
+                    )
+                }
+                #[doc = "Returns the components that comprise *Character Controller* as a tuple.\n\nA capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::physics::character_controller_height\": f32 = 2.0,\n  \"ambient_core::physics::character_controller_radius\": f32 = 0.5,\n  \"ambient_core::physics::physics_controlled\": () = (),\n}\n```\n"]
+                #[allow(clippy::type_complexity)]
+                pub fn character_controller() -> (Component<f32>, Component<f32>, Component<()>) {
+                    (
+                        crate::ambient_core::physics::components::character_controller_height(),
+                        crate::ambient_core::physics::components::character_controller_radius(),
+                        crate::ambient_core::physics::components::physics_controlled(),
+                    )
+                }
+            }
         }
         #[allow(unused)]
         pub mod player {
