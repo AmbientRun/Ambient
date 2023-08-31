@@ -24,6 +24,7 @@ indexmap = { workspace = true }
 async-recursion = { workspace = true }
 url = { workspace = true }
 reqwest = { workspace = true }
+semver = { workspace = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }

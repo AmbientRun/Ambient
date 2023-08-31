@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use ambient_package::{BuildMetadata, Manifest, SnakeCaseIdentifier, Version};
+use ambient_package::{BuildMetadata, Manifest, SnakeCaseIdentifier};
 use ambient_std::path;
 use anyhow::Context as AnyhowContext;
 use url::Url;
@@ -13,6 +13,7 @@ use crate::{
     item::ResolveClone, schema, util::read_file, Context, Item, ItemData, ItemId, ItemMap,
     ItemType, ItemValue, Scope, StandardDefinitions,
 };
+use semver::Version;
 
 #[derive(Clone, PartialEq, Debug, Eq, Hash)]
 pub struct PackageLocator {

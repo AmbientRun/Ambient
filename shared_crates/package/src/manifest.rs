@@ -53,11 +53,11 @@ impl Manifest {
     }
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Package {
     pub id: SnakeCaseIdentifier,
     pub name: String,
-    pub version: Option<Version>,
+    pub version: Version,
     pub description: Option<String>,
     pub repository: Option<String>,
     pub ambient_version: Option<AmbientRuntimeVersion>,
@@ -68,6 +68,22 @@ pub struct Package {
     pub public: bool,
     #[serde(default)]
     pub includes: Vec<PathBuf>,
+}
+impl Default for Package {
+    fn default() -> Self {
+        Self {
+            id: Default::default(),
+            name: Default::default(),
+            version: Version::parse("0.0.0").unwrap(),
+            description: Default::default(),
+            repository: Default::default(),
+            ambient_version: Default::default(),
+            authors: Default::default(),
+            content: Default::default(),
+            public: true,
+            includes: Default::default(),
+        }
+    }
 }
 
 fn return_true() -> bool {

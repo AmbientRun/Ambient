@@ -1109,6 +1109,7 @@ dependencies = [
  "indexmap 2.0.0",
  "paste",
  "reqwest",
+ "semver 1.0.18",
  "thiserror",
  "tokio",
  "toml 0.7.6",
