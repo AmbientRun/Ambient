@@ -16,7 +16,7 @@ use anyhow::Context;
 use cli::{Cli, Commands};
 use log::LevelFilter;
 use serde::Deserialize;
-use server::QUIC_INTERFACE_PORT;
+use server::{ServerHandle, QUIC_INTERFACE_PORT};
 use std::path::{Path, PathBuf};
 
 fn main() -> anyhow::Result<()> {
@@ -109,8 +109,8 @@ fn main() -> anyhow::Result<()> {
 
         // server
         Commands::Serve { package, host } => rt.block_on(async {
-            let (_, join_handle) = run_server(&assets, release_build, package, host, None).await?;
-            Ok(join_handle.await?)
+            let server_handle = run_server(&assets, release_build, package, host, None).await?;
+            Ok(server_handle.join().await?)
         }),
 
         // client+server
@@ -160,7 +160,7 @@ async fn run_server(
     package: &cli::PackageCli,
     host: &cli::HostCli,
     view_asset_path: Option<PathBuf>,
-) -> anyhow::Result<(ResolvedAddr, tokio::task::JoinHandle<()>)> {
+) -> anyhow::Result<ServerHandle> {
     let dirs = cli::build::handle(package, assets, release_build).await?;
     cli::server::handle(host, view_asset_path, dirs, assets).await
 }
@@ -174,7 +174,7 @@ fn run_client_and_server(
     run: &cli::RunCli,
     view_asset_path: Option<PathBuf>,
 ) -> anyhow::Result<()> {
-    let (server_addr, _) = rt.block_on(run_server(
+    let server_handle = rt.block_on(run_server(
         &assets,
         release_build,
         package,
@@ -183,7 +183,13 @@ fn run_client_and_server(
     ))?;
 
     let package_path = package.package_path()?;
-    cli::client::handle(run, rt, assets, server_addr, package_path.fs_path)
+    cli::client::handle(
+        run,
+        rt,
+        assets,
+        server_handle.resolve_as_localhost(),
+        package_path.fs_path,
+    )
 }
 
 #[derive(Deserialize)]

@@ -1,11 +1,10 @@
 use std::path::PathBuf;
 
 use ambient_native_std::asset_cache::AssetCache;
-use ambient_network::native::client::ResolvedAddr;
 use anyhow::Context;
 
 use crate::{
-    server,
+    server::{self, ServerHandle},
     shared::certs::{CERT, CERT_KEY},
 };
 
@@ -16,7 +15,7 @@ pub async fn handle(
     view_asset_path: Option<PathBuf>,
     directories: BuildDirectories,
     assets: &AssetCache,
-) -> anyhow::Result<(ResolvedAddr, tokio::task::JoinHandle<()>)> {
+) -> anyhow::Result<ServerHandle> {
     let BuildDirectories {
         build_root_path,
         main_package_path,
@@ -40,7 +39,7 @@ pub async fn handle(
         .clone()
         .unwrap_or(std::env::current_dir()?);
 
-    let (addr, join_handle) = server::start(
+    let server_handle = server::start(
         assets.clone(),
         host,
         build_root_path,
@@ -52,7 +51,7 @@ pub async fn handle(
     )
     .await;
 
-    Ok((ResolvedAddr::localhost_with_port(addr.port()), join_handle))
+    Ok(server_handle)
 }
 
 fn get_crypto(host: &HostCli) -> anyhow::Result<ambient_network::native::server::Crypto> {
