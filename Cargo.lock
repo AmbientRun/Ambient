@@ -388,6 +388,7 @@ dependencies = [
  "parking_lot",
  "rand 0.8.5",
  "relative-path",
+ "semver 1.0.18",
  "serde",
  "serde_json",
  "serde_path_to_error",
