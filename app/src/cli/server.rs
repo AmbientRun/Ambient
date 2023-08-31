@@ -16,7 +16,7 @@ pub async fn handle(
     view_asset_path: Option<PathBuf>,
     directories: BuildDirectories,
     assets: &AssetCache,
-) -> anyhow::Result<ResolvedAddr> {
+) -> anyhow::Result<(ResolvedAddr, tokio::task::JoinHandle<()>)> {
     let BuildDirectories {
         build_root_path,
         main_package_path,
@@ -40,7 +40,7 @@ pub async fn handle(
         .clone()
         .unwrap_or(std::env::current_dir()?);
 
-    let addr = server::start(
+    let (addr, join_handle) = server::start(
         assets.clone(),
         host,
         build_root_path,
@@ -52,7 +52,7 @@ pub async fn handle(
     )
     .await;
 
-    Ok(ResolvedAddr::localhost_with_port(addr.port()))
+    Ok((ResolvedAddr::localhost_with_port(addr.port()), join_handle))
 }
 
 fn get_crypto(host: &HostCli) -> anyhow::Result<ambient_network::native::server::Crypto> {

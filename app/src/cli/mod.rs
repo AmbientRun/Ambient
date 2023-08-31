@@ -234,6 +234,10 @@ pub struct HostCli {
     /// Private key for the certificate
     #[arg(long)]
     pub key: Option<PathBuf>,
+
+    /// Shutdown the server after the specified number of seconds of inactivity
+    #[arg(long)]
+    pub shutdown_after_inactivity_seconds: Option<u64>,
 }
 
 impl Cli {

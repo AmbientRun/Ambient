@@ -4,6 +4,7 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
     sync::Arc,
+    time::Duration,
 };
 
 use ambient_core::{asset_cache, main_package_name, name, no_sync, FIXED_SERVER_TICK_TIME};
@@ -47,7 +48,7 @@ pub async fn start(
     working_directory: PathBuf,
     manifest: ambient_package::Manifest,
     crypto: Crypto,
-) -> SocketAddr {
+) -> (SocketAddr, tokio::task::JoinHandle<()>) {
     let quic_interface_port = host_cli.quic_interface_port;
 
     let proxy_settings = (!host_cli.no_proxy).then(|| ProxySettings {
@@ -64,7 +65,9 @@ pub async fn start(
     let server = if let Some(port) = quic_interface_port {
         GameServer::new_with_port(
             SocketAddr::new(host_cli.bind_address, port),
-            false,
+            host_cli
+                .shutdown_after_inactivity_seconds
+                .map(Duration::from_secs),
             proxy_settings,
             &crypto,
         )
@@ -76,7 +79,9 @@ pub async fn start(
         GameServer::new_with_port_in_range(
             host_cli.bind_address,
             port_range.clone(),
-            false,
+            host_cli
+                .shutdown_after_inactivity_seconds
+                .map(Duration::from_secs),
             proxy_settings,
             &crypto,
         )
@@ -119,7 +124,7 @@ pub async fn start(
         start_http_interface(None, http_interface_port);
     }
 
-    tokio::task::spawn(async move {
+    let handle = tokio::task::spawn(async move {
         let mut server_world = World::new_with_config("server", WorldContext::Server, true);
         server_world.init_shape_change_tracking();
 
@@ -188,7 +193,7 @@ pub async fn start(
             .await;
     });
 
-    addr
+    (addr, handle)
 }
 
 fn systems(_world: &mut World) -> SystemGroup {
