@@ -68,7 +68,7 @@ fn rerender_child() {
     assert_eq!(
         1,
         world
-            .get_ref(tree.root_entity().unwrap(), children())
+            .get_cloned(tree.root_entity().unwrap(), children())
             .unwrap()
             .len()
     );

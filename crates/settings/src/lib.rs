@@ -65,8 +65,8 @@ impl Settings {
             Some(path) => path,
             None => Self::path()?,
         };
-        Ok(std::fs::write(&path, toml::to_string(self)?)
-            .with_context(|| format!("Failed to write settings to {path:?}"))?)
+        std::fs::write(&path, toml::to_string(self)?)
+            .with_context(|| format!("Failed to write settings to {path:?}"))
     }
 
     pub fn path() -> anyhow::Result<PathBuf> {

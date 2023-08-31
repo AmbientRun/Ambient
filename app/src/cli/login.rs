@@ -11,7 +11,7 @@ pub async fn handle(assets: &AssetCache) -> anyhow::Result<()> {
 
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;
-        if !input.trim().to_ascii_lowercase().starts_with("y") {
+        if !input.trim().to_ascii_lowercase().starts_with('y') {
             return Ok(());
         }
     }

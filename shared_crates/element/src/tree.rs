@@ -147,7 +147,7 @@ impl ElementTree {
         handle: Component<ShareableElementTree>,
         element: Element,
     ) {
-        if let Ok(tree) = world.get_ref(id, handle).map(|x| x.clone()) {
+        if let Ok(tree) = world.get_cloned(id, handle) {
             tree.0.lock().migrate_root(world, element);
         } else {
             let tree = ShareableElementTree::new(world, element);
@@ -334,7 +334,7 @@ impl ElementTree {
                     .config
                     .init_components
                     .write_to_entity_data(world, &mut components);
-                let name = world.get_ref(entity, crate::element()).unwrap().clone();
+                let name = world.get_cloned(entity, crate::element()).unwrap();
                 world
                     .set(
                         entity,
@@ -375,7 +375,7 @@ impl ElementTree {
         let instance = self.instances.get_mut(instance_id).unwrap();
         if instance.entity != old_entity {
             if let Some(parent) = instance.parent_entity {
-                let mut childs = world.get_ref(parent, children()).unwrap().clone();
+                let mut childs = world.get_cloned(parent, children()).unwrap();
                 for c in childs.iter_mut() {
                     if *c == old_entity {
                         *c = instance.entity;
