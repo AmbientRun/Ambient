@@ -146,14 +146,17 @@ fn generate_is(
                 })
             }
         },
-        Context::GuestApi | Context::GuestUser => quote! {
-            #[doc = #is_comment]
-            pub fn #is_ident(id: EntityId) -> bool {
-                #(#extends(id) && )* entity::has_components(id, &[
-                    #(&#components),*
-                ])
+        Context::GuestApi | Context::GuestUser => {
+            let api_path = context.guest_api_path().unwrap();
+            quote! {
+                #[doc = #is_comment]
+                pub fn #is_ident(world: &dyn #api_path::prelude::World, id: EntityId) -> bool {
+                    #(#extends(world, id) && )* world.has_components(id, &[
+                        #(&#components),*
+                    ])
+                }
             }
-        },
+        }
     })
 }
 

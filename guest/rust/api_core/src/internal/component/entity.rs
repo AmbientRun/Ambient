@@ -1,8 +1,11 @@
 use std::collections::HashMap;
 
-use crate::internal::{
-    conversion::{FromBindgen, IntoBindgen},
-    wit,
+use crate::{
+    internal::{
+        conversion::{FromBindgen, IntoBindgen},
+        wit,
+    },
+    prelude::World,
 };
 
 use super::{Component, ComponentValue, SupportedValue, SupportedValueRef, UntypedComponent};
@@ -67,9 +70,9 @@ impl Entity {
 
     /// Spawns an entity with these components.
     ///
-    /// Returns `spawned_entity_uid`.
-    pub fn spawn(&self) -> crate::prelude::EntityId {
-        crate::entity::spawn(self)
+    /// Returns `spawned_entity_id`.
+    pub fn spawn(&self, world: &mut dyn World) -> crate::prelude::EntityId {
+        world.spawn(self)
     }
 }
 impl FromBindgen for wit::component::Entity {

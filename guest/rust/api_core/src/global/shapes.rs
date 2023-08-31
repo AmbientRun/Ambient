@@ -1,8 +1,8 @@
 use super::EntityId;
 use crate::{
     core::transform::components::local_to_world,
-    entity::get_component,
     internal::{conversion::FromBindgen, wit},
+    prelude::{World, WorldExt},
 };
 use glam::{vec3, Vec3};
 
@@ -16,8 +16,8 @@ pub struct Ray {
 }
 impl Ray {
     /// This creates a ray from a cameras view matrix (i.e. from `local_to_world` of a camera entity).
-    pub fn from_camera_view_matrix(camera: EntityId) -> Option<Ray> {
-        let mat4 = get_component(camera, local_to_world())?;
+    pub fn from_camera_view_matrix(world: &dyn World, camera: EntityId) -> Option<Ray> {
+        let mat4 = world.get_component(camera, local_to_world())?;
         let origin = mat4.project_point3(Vec3::ZERO);
         let end = mat4.project_point3(vec3(0., 0., 1.));
         let dir = (end - origin).normalize();

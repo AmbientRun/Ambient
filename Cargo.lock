@@ -210,6 +210,7 @@ dependencies = [
  "ambient_package_rt",
  "ambient_shared_types",
  "anyhow",
+ "async-trait",
  "byteorder",
  "data-encoding",
  "futures",
