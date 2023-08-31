@@ -1363,6 +1363,12 @@ mod raw {
                 pub fn is_synced_resources() -> Component<()> {
                     *IS_SYNCED_RESOURCES
                 }
+                static NO_SYNC: Lazy<Component<()>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::network::no_sync"));
+                #[doc = "**No sync**: If attached, this entity will not be synchronized to clients.\n\n*Attributes*: Debuggable, Networked, Store"]
+                pub fn no_sync() -> Component<()> {
+                    *NO_SYNC
+                }
             }
         }
         #[allow(unused)]
