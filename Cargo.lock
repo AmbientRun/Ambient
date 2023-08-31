@@ -1059,6 +1059,7 @@ dependencies = [
  "paste",
  "proc-macro2",
  "quote",
+ "semver 1.0.18",
  "serde",
  "serde_json",
  "serde_with",

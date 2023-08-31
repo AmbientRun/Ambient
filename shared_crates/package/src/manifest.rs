@@ -7,8 +7,8 @@ use url::Url;
 
 use crate::{
     Component, Concept, Enum, ItemPathBuf, Message, PascalCaseIdentifier, SnakeCaseIdentifier,
-    Version,
 };
+use semver::{Version, VersionReq};
 
 #[derive(Error, Debug, PartialEq)]
 pub enum ManifestParseError {
@@ -57,7 +57,7 @@ impl Manifest {
 pub struct Package {
     pub id: SnakeCaseIdentifier,
     pub name: String,
-    pub version: Version,
+    pub version: Option<Version>,
     pub description: Option<String>,
     pub repository: Option<String>,
     pub ambient_version: Option<AmbientRuntimeVersion>,
@@ -84,29 +84,18 @@ fn return_true() -> bool {
     serde_with::DeserializeFromStr,
 )]
 pub enum AmbientRuntimeVersion {
-    #[display("{major}.{minor}.{patch}")]
-    Stable { major: u32, minor: u32, patch: u32 },
+    #[display("{0}")]
+    Stable(VersionReq),
     #[display("nightly-{date}")]
     Nightly { date: String },
-}
-impl Default for AmbientRuntimeVersion {
-    fn default() -> Self {
-        Self::Stable {
-            major: 0,
-            minor: 0,
-            patch: 0,
-        }
-    }
 }
 #[test]
 fn test_ambient_runtime_version() {
     assert_eq!(
         "1.2.3".parse(),
-        Ok(AmbientRuntimeVersion::Stable {
-            major: 1,
-            minor: 2,
-            patch: 3
-        })
+        Ok(AmbientRuntimeVersion::Stable(
+            VersionReq::parse("1.2.3").unwrap()
+        ))
     );
     assert_eq!(
         "nightly-2021-01-01".parse(),
@@ -115,13 +104,8 @@ fn test_ambient_runtime_version() {
         })
     );
     assert_eq!(
-        AmbientRuntimeVersion::Stable {
-            major: 1,
-            minor: 2,
-            patch: 3
-        }
-        .to_string(),
-        "1.2.3"
+        AmbientRuntimeVersion::Stable(VersionReq::parse("1.2.3").unwrap()).to_string(),
+        "^1.2.3"
     );
     assert_eq!(
         AmbientRuntimeVersion::Nightly {
@@ -231,8 +215,9 @@ mod tests {
     use crate::{
         Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Enum,
         Identifier, ItemPathBuf, Manifest, ManifestParseError, Package, PascalCaseIdentifier,
-        SnakeCaseIdentifier, Version, VersionSuffix,
+        SnakeCaseIdentifier,
     };
+    use semver::Version;
 
     fn i(s: &str) -> Identifier {
         Identifier::new(s).unwrap()
@@ -267,7 +252,7 @@ mod tests {
                 package: Package {
                     id: SnakeCaseIdentifier::new("test").unwrap(),
                     name: "Test".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::parse("0.0.1").unwrap()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -316,7 +301,7 @@ mod tests {
                 package: Package {
                     id: sci("tictactoe"),
                     name: "Tic Tac Toe".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::parse("0.0.1").unwrap()),
                     ..Default::default()
                 },
                 build: Build {
@@ -370,7 +355,7 @@ mod tests {
                 package: Package {
                     id: sci("tictactoe"),
                     name: "Tic Tac Toe".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::parse("0.0.1").unwrap()),
                     ..Default::default()
                 },
                 build: Build {
@@ -419,7 +404,7 @@ mod tests {
                 package: Package {
                     id: sci("my_package"),
                     name: "My Package".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::parse("0.0.1").unwrap()),
                     ..Default::default()
                 },
                 build: Build {
@@ -550,7 +535,7 @@ mod tests {
                 package: Package {
                     id: sci("tictactoe"),
                     name: "Tic Tac Toe".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::parse("0.0.1").unwrap()),
                     ..Default::default()
                 },
                 build: Build::default(),
@@ -595,7 +580,7 @@ mod tests {
                 package: Package {
                     id: sci("test"),
                     name: "Test".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::parse("0.0.1").unwrap()),
                     ..Default::default()
                 },
                 build: Build {
@@ -674,7 +659,7 @@ mod tests {
                 package: Package {
                     id: sci("dependencies"),
                     name: "dependencies".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::parse("0.0.1").unwrap()),
                     ..Default::default()
                 },
                 build: Default::default(),

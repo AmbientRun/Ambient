@@ -24,6 +24,7 @@ url = { workspace = true }
 chrono = { workspace = true }
 parse-display = { workspace = true }
 serde_with = { workspace = true }
+semver = { workspace = true }
 
 [dev-dependencies]
 paste = { workspace = true }
