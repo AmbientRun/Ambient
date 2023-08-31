@@ -405,7 +405,7 @@ pub fn create_root_scope(
         name: &str,
     ) -> anyhow::Result<ItemId<Attribute>> {
         let id = PascalCaseIdentifier::new(name)
-            .map_err(anyhow::Error::msg)
+            .map_err(|e| anyhow::Error::msg(e.to_string()))
             .context("standard value was not valid snake-case")?;
         let item_id = items.add(Attribute {
             data: ItemData {
