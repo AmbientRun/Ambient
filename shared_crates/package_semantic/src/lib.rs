@@ -172,16 +172,8 @@ impl Semantic {
 
             // If this is not the Ambient package, import the Ambient package
             if !matches!(retrievable_manifest, RetrievableFile::Ambient(_)) {
-                let ambient_package = self.items.get(self.ambient_package_id);
-                scope.imports.insert(
-                    ambient_package
-                        .data()
-                        .id
-                        .as_snake()
-                        .map_err(|e| e.to_owned())?
-                        .clone(),
-                    self.ambient_package_id,
-                );
+                let id = SnakeCaseIdentifier::new("ambient_core")?;
+                scope.imports.insert(id, self.ambient_package_id);
             }
 
             for (name, dependency) in &dependencies {

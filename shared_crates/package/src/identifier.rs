@@ -10,6 +10,8 @@ use quote::{ToTokens, TokenStreamExt};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use crate::PackageId;
+
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// A path to an item (non-owning). Always non-empty.
 pub struct ItemPath<'a> {
@@ -224,6 +226,8 @@ pub enum IdentifierCaseError<'a> {
     NotSnakeCase { identifier: &'a Identifier },
     #[error("the identifier {identifier} is not PascalCase")]
     NotPascalCase { identifier: &'a Identifier },
+    #[error("the identifier {identifier} is not a package ID")]
+    NotPackageId { identifier: &'a Identifier },
 }
 impl IdentifierCaseError<'_> {
     pub fn to_owned(self) -> IdentifierCaseOwnedError {
@@ -236,6 +240,8 @@ pub enum IdentifierCaseOwnedError {
     NotSnakeCase { identifier: Identifier },
     #[error("the identifier {identifier} is not PascalCase")]
     NotPascalCase { identifier: Identifier },
+    #[error("the identifier {identifier} is not a package ID")]
+    NotPackageId { identifier: Identifier },
 }
 impl From<IdentifierCaseError<'_>> for IdentifierCaseOwnedError {
     fn from(value: IdentifierCaseError<'_>) -> Self {
@@ -246,6 +252,9 @@ impl From<IdentifierCaseError<'_>> for IdentifierCaseOwnedError {
             IdentifierCaseError::NotPascalCase { identifier } => Self::NotPascalCase {
                 identifier: identifier.to_owned(),
             },
+            IdentifierCaseError::NotPackageId { identifier } => Self::NotPackageId {
+                identifier: identifier.to_owned(),
+            },
         }
     }
 }
@@ -254,6 +263,7 @@ impl From<IdentifierCaseError<'_>> for IdentifierCaseOwnedError {
 pub enum Identifier {
     Snake(SnakeCaseIdentifier),
     Pascal(PascalCaseIdentifier),
+    PackageId(PackageId),
 }
 impl From<SnakeCaseIdentifier> for Identifier {
     fn from(v: SnakeCaseIdentifier) -> Self {
@@ -263,6 +273,11 @@ impl From<SnakeCaseIdentifier> for Identifier {
 impl From<PascalCaseIdentifier> for Identifier {
     fn from(v: PascalCaseIdentifier) -> Self {
         Self::Pascal(v)
+    }
+}
+impl From<PackageId> for Identifier {
+    fn from(v: PackageId) -> Self {
+        Self::PackageId(v)
     }
 }
 impl Identifier {
@@ -280,6 +295,7 @@ impl Identifier {
         match self {
             Identifier::Snake(id) => id.as_str(),
             Identifier::Pascal(id) => id.as_str(),
+            Identifier::PackageId(id) => id.as_str(),
         }
     }
 
@@ -296,12 +312,20 @@ impl Identifier {
             _ => Err(IdentifierCaseError::NotPascalCase { identifier: self }),
         }
     }
+
+    pub fn as_package_id(&self) -> Result<&PackageId, IdentifierCaseError> {
+        match self {
+            Self::PackageId(v) => Ok(v),
+            _ => Err(IdentifierCaseError::NotPascalCase { identifier: self }),
+        }
+    }
 }
 impl Debug for Identifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Identifier::Snake(id) => Debug::fmt(id, f),
             Identifier::Pascal(id) => Debug::fmt(id, f),
+            Identifier::PackageId(id) => Debug::fmt(id, f),
         }
     }
 }
@@ -313,6 +337,7 @@ impl Serialize for Identifier {
         match self {
             Identifier::Snake(id) => id.serialize(serializer),
             Identifier::Pascal(id) => id.serialize(serializer),
+            Identifier::PackageId(id) => id.serialize(serializer),
         }
     }
 }
@@ -329,6 +354,7 @@ impl Display for Identifier {
         match self {
             Identifier::Snake(id) => Display::fmt(id, f),
             Identifier::Pascal(id) => Display::fmt(id, f),
+            Identifier::PackageId(id) => Display::fmt(id, f),
         }
     }
 }
