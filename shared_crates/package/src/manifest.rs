@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, fmt::Display, path::PathBuf};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -36,6 +36,8 @@ pub struct Manifest {
     #[serde(alias = "enum")]
     pub enums: IndexMap<PascalCaseIdentifier, Enum>,
     #[serde(default)]
+    pub includes: HashMap<SnakeCaseIdentifier, PathBuf>,
+    #[serde(default)]
     pub dependencies: IndexMap<SnakeCaseIdentifier, Dependency>,
 }
 impl Manifest {
@@ -65,8 +67,6 @@ pub struct Package {
     pub content: PackageContent,
     #[serde(default = "return_true")]
     pub public: bool,
-    #[serde(default)]
-    pub includes: Vec<PathBuf>,
 }
 
 fn return_true() -> bool {
@@ -286,6 +286,7 @@ mod tests {
                 )]),
                 messages: Default::default(),
                 enums: Default::default(),
+                includes: Default::default(),
                 dependencies: Default::default(),
             })
         )
@@ -447,6 +448,7 @@ mod tests {
                 )]),
                 messages: Default::default(),
                 enums: Default::default(),
+                includes: Default::default(),
                 dependencies: Default::default(),
             }
         );
@@ -508,6 +510,7 @@ mod tests {
                         ])
                     }
                 )]),
+                includes: Default::default(),
                 dependencies: Default::default(),
             })
         )
@@ -585,6 +588,7 @@ mod tests {
                 concepts: Default::default(),
                 messages: Default::default(),
                 enums: Default::default(),
+                includes: Default::default(),
                 dependencies: Default::default(),
             })
         )
@@ -623,6 +627,7 @@ mod tests {
                 concepts: Default::default(),
                 messages: Default::default(),
                 enums: Default::default(),
+                includes: Default::default(),
                 dependencies: IndexMap::from_iter([
                     (
                         sci("deps_assets"),
