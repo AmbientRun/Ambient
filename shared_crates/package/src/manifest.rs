@@ -7,8 +7,8 @@ use url::Url;
 
 use crate::{
     Component, Concept, Enum, ItemPathBuf, Message, PascalCaseIdentifier, SnakeCaseIdentifier,
-    Version,
 };
+use semver::{Version, VersionReq};
 
 #[derive(Error, Debug, PartialEq)]
 pub enum ManifestParseError {
@@ -69,18 +69,34 @@ impl Display for PackageId {
     }
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Package {
     pub id: PackageId,
     pub name: String,
     pub version: Version,
     pub description: Option<String>,
     pub repository: Option<String>,
+    pub ambient_version: Option<VersionReq>,
     #[serde(default)]
     pub authors: Vec<String>,
     pub content: PackageContent,
     #[serde(default = "return_true")]
     pub public: bool,
+}
+impl Default for Package {
+    fn default() -> Self {
+        Self {
+            id: Default::default(),
+            name: Default::default(),
+            version: Version::parse("0.0.0").unwrap(),
+            description: Default::default(),
+            repository: Default::default(),
+            ambient_version: Default::default(),
+            authors: Default::default(),
+            content: Default::default(),
+            public: true,
+        }
+    }
 }
 
 fn return_true() -> bool {
@@ -186,8 +202,9 @@ mod tests {
     use crate::{
         Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Enum,
         Identifier, ItemPathBuf, Manifest, ManifestParseError, Package, PackageId,
-        PascalCaseIdentifier, SnakeCaseIdentifier, Version, VersionSuffix,
+        PascalCaseIdentifier, SnakeCaseIdentifier,
     };
+    use semver::Version;
 
     fn i(s: &str) -> Identifier {
         Identifier::new(s).unwrap()
@@ -213,7 +230,6 @@ mod tests {
         name = "Test"
         version = "0.0.1"
         content = { type = "Playable" }
-        public = false
         "#;
 
         assert_eq!(
@@ -222,7 +238,7 @@ mod tests {
                 package: Package {
                     id: PackageId("test".to_string()),
                     name: "Test".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -253,7 +269,6 @@ mod tests {
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
-        public = false
 
         [components]
         cell = { type = "i32", name = "Cell", description = "The ID of the cell this player is in", attributes = ["store"] }
@@ -271,7 +286,7 @@ mod tests {
                 package: Package {
                     id: PackageId("tictactoe".to_string()),
                     name: "Tic Tac Toe".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build {
@@ -314,7 +329,7 @@ mod tests {
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
-        public = false
+        ambient_version = "0.3.0-nightly-2023-08-31"
 
         [build.rust]
         feature-multibuild = ["client"]
@@ -326,7 +341,10 @@ mod tests {
                 package: Package {
                     id: PackageId("tictactoe".to_string()),
                     name: "Tic Tac Toe".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
+                    ambient_version: Some(
+                        semver::VersionReq::parse("0.3.0-nightly-2023-08-31").unwrap()
+                    ),
                     ..Default::default()
                 },
                 build: Build {
@@ -349,7 +367,6 @@ mod tests {
         name = "My Package"
         version = "0.0.1"
         content = { type = "Playable" }
-        public = false
 
         [components]
         "core::transform::rotation" = { type = "quat", name = "Rotation", description = "" }
@@ -375,7 +392,7 @@ mod tests {
                 package: Package {
                     id: PackageId("my_package".to_string()),
                     name: "My Package".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build {
@@ -492,7 +509,6 @@ mod tests {
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
-        public = false
 
         [enums.CellState]
         description = "The current cell state"
@@ -507,7 +523,7 @@ mod tests {
                 package: Package {
                     id: PackageId("tictactoe".to_string()),
                     name: "Tic Tac Toe".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build::default(),
@@ -538,7 +554,6 @@ mod tests {
         name = "Test"
         version = "0.0.1"
         content = { type = "Playable" }
-        public = false
 
         [components]
         test = { type = "I32", name = "Test", description = "Test" }
@@ -553,7 +568,7 @@ mod tests {
                 package: Package {
                     id: PackageId("test".to_string()),
                     name: "Test".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build {
@@ -616,7 +631,6 @@ mod tests {
         name = "dependencies"
         version = "0.0.1"
         content = { type = "Playable" }
-        public = false
 
         [dependencies]
         deps_assets = { path = "deps/assets" }
@@ -633,7 +647,7 @@ mod tests {
                 package: Package {
                     id: PackageId("dependencies".to_string()),
                     name: "dependencies".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Default::default(),

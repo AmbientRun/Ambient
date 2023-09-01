@@ -1,8 +1,7 @@
 use ambient_shared_types::asset::BuildAsset;
+use semver::Version;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-
-use crate::Version;
 
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum BuildMetadataError {

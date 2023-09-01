@@ -24,6 +24,7 @@ convert_case = { workspace = true }
 once_cell = { workspace = true }
 url = { workspace = true }
 chrono = { workspace = true }
+semver = { workspace = true }
 
 [dev-dependencies]
 paste = { workspace = true }
