@@ -244,6 +244,9 @@
   "check-web": {
     "cmd": "cargo cf web check"
   },
+  "serve-web": {
+    "cmd": "cargo cf web serve"
+  },
   "run": {
     "cmd": "npm run dev",
     "cwd": "web/www",

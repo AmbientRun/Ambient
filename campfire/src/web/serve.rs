@@ -7,7 +7,6 @@ use std::{
 use anyhow::Context;
 use clap::Args;
 use futures::StreamExt;
-use itertools::process_results;
 use notify::{
     event::{CreateKind, RemoveKind},
     EventKind, RecursiveMode, Watcher,
@@ -142,10 +141,13 @@ impl Serve {
 
         log::debug!("Created watcher");
 
-        process_results(find_watched_dirs("."), |mut v| {
-            v.try_for_each(|v| watcher.add(v.path()))
-        })
-        .context("Failed to watch initial root")??;
+        let dirs = find_watched_dirs(".").collect::<Result<Vec<_>, _>>()?;
+
+        tokio::task::block_in_place(|| {
+            for dir in &dirs {
+                watcher.add(dir.path()).unwrap();
+            }
+        });
 
         let mut rx = rx.into_stream();
         while let Some(events) = rx.next().await {
@@ -165,10 +167,12 @@ impl Serve {
                         for path in &event.paths {
                             log::debug!("Folder created: {path:?}");
 
-                            process_results(find_watched_dirs(path), |mut v| {
-                                v.try_for_each(|v| watcher.add(v.path()))
-                            })
-                            .context("Failed to watch new folder")??;
+                            let dirs = find_watched_dirs(path).collect::<Result<Vec<_>, _>>()?;
+                            tokio::task::block_in_place(|| {
+                                for dir in &dirs {
+                                    watcher.add(dir.path()).unwrap();
+                                }
+                            });
                         }
                         needs_rebuild = true;
                     }
