@@ -6591,7 +6591,7 @@ checksum = "ca6ad05a4870b2bf5fe995117d3728437bd27d7cd5f06f13c17443ef369775a1"
 [[package]]
 name = "wasm-bridge"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#1fe0cf901b09afcd5bd2cd8939699b5fded5c0da"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#04858e1eab34a8e6d0e812a565c23fce0614e616"
 dependencies = [
  "async-trait",
  "wasm-bridge-js",
@@ -6603,7 +6603,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge-js"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#1fe0cf901b09afcd5bd2cd8939699b5fded5c0da"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#04858e1eab34a8e6d0e812a565c23fce0614e616"
 dependencies = [
  "anyhow",
  "getrandom",
@@ -6611,6 +6611,7 @@ dependencies = [
  "js-component-bindgen",
  "js-sys",
  "rand_core",
+ "tracing",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bridge-macros",
@@ -6620,7 +6621,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge-macros"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#1fe0cf901b09afcd5bd2cd8939699b5fded5c0da"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#04858e1eab34a8e6d0e812a565c23fce0614e616"
 dependencies = [
  "anyhow",
  "heck",

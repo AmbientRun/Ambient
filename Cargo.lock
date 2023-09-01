@@ -249,7 +249,7 @@ dependencies = [
  "ambient_sys",
  "ambient_ui_native",
  "anyhow",
- "flume",
+ "flume 0.10.14",
  "glam 0.24.1",
  "parking_lot",
  "profiling",
@@ -318,7 +318,7 @@ dependencies = [
  "dashmap",
  "derivative",
  "derive_more",
- "flume",
+ "flume 0.10.14",
  "glam 0.24.1",
  "hound",
  "itertools",
@@ -462,7 +462,7 @@ dependencies = [
  "ambient_sys",
  "bytemuck",
  "chrono",
- "flume",
+ "flume 0.10.14",
  "glam 0.24.1",
  "itertools",
  "ordered-float",
@@ -531,7 +531,7 @@ dependencies = [
  "ambient_std",
  "ambient_sys",
  "anyhow",
- "flume",
+ "flume 0.10.14",
  "log",
  "md-5",
  "prost",
@@ -1006,7 +1006,7 @@ dependencies = [
  "bincode",
  "bytes",
  "colored",
- "flume",
+ "flume 0.10.14",
  "futures",
  "glam 0.24.1",
  "h3",
@@ -1222,7 +1222,7 @@ dependencies = [
  "bytes",
  "dashmap",
  "flate2",
- "flume",
+ "flume 0.10.14",
  "futures",
  "parking_lot",
  "quinn",
@@ -1382,7 +1382,7 @@ dependencies = [
  "arboard",
  "console_error_panic_hook",
  "derive_more",
- "flume",
+ "flume 0.10.14",
  "futures",
  "gloo",
  "js-sys",
@@ -1559,7 +1559,7 @@ dependencies = [
  "bytes",
  "data-encoding",
  "dunce",
- "flume",
+ "flume 0.10.14",
  "futures",
  "glam 0.24.1",
  "itertools",
@@ -1623,7 +1623,7 @@ dependencies = [
  "ambient_ui_native",
  "anyhow",
  "derive_more",
- "flume",
+ "flume 0.10.14",
  "glam 0.24.1",
  "itertools",
  "log",
@@ -2158,7 +2158,7 @@ dependencies = [
  "anyhow",
  "cargo_toml",
  "clap 4.4.2",
- "flume",
+ "flume 0.11.0",
  "futures",
  "guppy",
  "home",
@@ -3219,7 +3219,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d1e481eb11a482815d3e9d618db8c42a93207134662873809335a92327440c18"
 dependencies = [
  "bit_field",
- "flume",
+ "flume 0.10.14",
  "half",
  "lebe",
  "miniz_oxide",
@@ -3353,6 +3353,18 @@ dependencies = [
  "futures-sink",
  "nanorand",
  "pin-project",
+ "spin 0.9.8",
+]
+
+[[package]]
+name = "flume"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "55ac459de2512911e4b674ce33cf20befaba382d05b62b008afc1c8b57cbf181"
+dependencies = [
+ "futures-core",
+ "futures-sink",
+ "nanorand",
  "spin 0.9.8",
 ]
 
