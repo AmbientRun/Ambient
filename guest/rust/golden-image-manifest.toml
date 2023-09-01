@@ -8,7 +8,8 @@ tests = [
     "examples/controllers/first_person_camera",
     "examples/controllers/third_person_camera",
 
-    "examples/assets/models",
+    "examples/assets/basic_model",
+    "examples/assets/material_overriding",
     "examples/assets/unity",
 
     "examples/rendering/decals",
