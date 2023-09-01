@@ -18,7 +18,7 @@ fn init() {
 #[test]
 fn simple_index() {
     init();
-    let mut world = World::new("simple_index");
+    let mut world = World::new_unknown("simple_index");
     let mut index = Index::new(IndexColumns::new().add_column(a()));
 
     let x = world.spawn(Entity::new().with(a(), 5));
@@ -56,7 +56,7 @@ fn simple_index() {
 #[test]
 fn index_as_resource() {
     init();
-    let mut world = World::new("index_as_resource");
+    let mut world = World::new_unknown("index_as_resource");
     let mut systems = index_system(
         ArchetypeFilter::new(),
         IndexColumns::new().add_column(a()),
@@ -98,7 +98,7 @@ fn index_as_resource() {
 #[test]
 fn changes() {
     init();
-    let mut world = World::new("changes");
+    let mut world = World::new_unknown("changes");
     let mut systems = index_system(
         ArchetypeFilter::new(),
         IndexColumns::new().add_column(a()),
@@ -142,7 +142,7 @@ fn changes() {
 #[test]
 fn simple_index_exact() {
     init();
-    let mut world = World::new("simple_index_exact");
+    let mut world = World::new_unknown("simple_index_exact");
     let mut index = Index::new(IndexColumns::new().add_column(a()));
 
     let x = world.spawn(Entity::new().with(a(), 5));
@@ -187,7 +187,7 @@ fn simple_index_exact() {
 #[test]
 fn multiple_for_exact_value() {
     init();
-    let mut world = World::new("multiple_for_exact_value");
+    let mut world = World::new_unknown("multiple_for_exact_value");
     let mut index = Index::new(IndexColumns::new().add_column(a()));
 
     let x = world.spawn(Entity::new().with(a(), 3));

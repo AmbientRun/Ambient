@@ -20,7 +20,10 @@ pub fn initialize() -> World {
     ambient_element::init_components();
     init_components();
 
-    let mut world = World::new("initialize");
+    let mut world = World::new(
+        "initialize",
+        ambient_guest_bridge::ecs::WorldContext::Unknown,
+    );
     world
         .add_component(world.resource_entity(), counter(), 0)
         .unwrap();

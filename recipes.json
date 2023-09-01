@@ -158,13 +158,13 @@
     }
   },
   "minigolf": {
-    "cmd": "cargo run -- run ./guest/rust/examples/games/minigolf"
+    "cmd": "cargo run -- run ./guest/rust/packages/games/minigolf"
   },
   "minigolf-release": {
-    "cmd": "cargo run --release -- run --release ./guest/rust/examples/games/minigolf"
+    "cmd": "cargo run --release -- run --release ./guest/rust/packages/games/minigolf"
   },
   "tictactoe": {
-    "cmd": "cargo run -- run ./guest/rust/examples/games/tictactoe"
+    "cmd": "cargo run -- run ./guest/rust/packages/games/tictactoe"
   },
   "fog": {
     "cmd": "cargo run -- run ./guest/rust/examples/basics/fog/"
@@ -194,7 +194,7 @@
         "adapter": "rust",
         "args": [
           "run",
-          "./guest/rust/examples/games/minigolf"
+          "./guest/rust/packages/games/minigolf"
         ]
       }
     }

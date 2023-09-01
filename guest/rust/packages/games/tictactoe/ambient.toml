@@ -1,0 +1,31 @@
+[package]
+id = "ambient_example_tictactoe"
+name = "Tic Tac Toe"
+description = "Aka five-in-a-row."
+version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/tictactoe"
+type = "Game"
+content = { type = "Playable", example = true }
+
+[components]
+cells = { type = { type = "Vec", element_type = "EntityId" }, name = "Cells", description = "The cells in the game", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+cell = { type = "I32", name = "Cell", description = "The ID of the cell this player is in", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+owned_by = { type = "EntityId", name = "Owned By", description = "The ID of the player that owns this cell", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+[messages.Input]
+description = "The player's input"
+[messages.Input.fields]
+up = "Bool"
+down = "Bool"
+left = "Bool"
+right = "Bool"
+capture = "Bool"

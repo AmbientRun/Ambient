@@ -81,7 +81,10 @@ impl Semantic {
         };
 
         semantic.ambient_package_id = semantic
-            .add_package(RetrievableFile::Ambient(PathBuf::from("ambient.toml")))
+            .add_package(
+                RetrievableFile::Ambient(PathBuf::from("ambient.toml")),
+                None,
+            )
             .await?;
 
         Ok(semantic)
@@ -92,8 +95,12 @@ impl Semantic {
     pub async fn add_package(
         &mut self,
         retrievable_manifest: RetrievableFile,
+        // Used to indicate which package had this as a dependency first,
+        // improving error diagnostics
+        dependent_package_id: Option<ItemId<Package>>,
     ) -> anyhow::Result<ItemId<Package>> {
-        let manifest = Manifest::parse(&retrievable_manifest.get().await?)?;
+        let manifest = Manifest::parse(&retrievable_manifest.get().await?)
+            .with_context(|| format!("Failed to parse manifest from `{retrievable_manifest}`"))?;
 
         let locator = PackageLocator::from_manifest(&manifest, retrievable_manifest.clone());
         if let Some(id) = self.packages.get(&locator) {
@@ -108,13 +115,38 @@ impl Semantic {
             .map(|s| BuildMetadata::parse(&s))
             .transpose()?;
 
+        let scope_id = self
+            .add_scope_from_manifest_with_includes(None, &manifest, retrievable_manifest.clone())
+            .await?;
+
+        let manifest_dependencies = manifest.dependencies.clone();
+        let package = Package {
+            data: ItemData {
+                parent_id: None,
+                id: locator.id.clone().into(),
+                source: match retrievable_manifest {
+                    RetrievableFile::Ambient(_) => ItemSource::Ambient,
+                    RetrievableFile::Path(_) | RetrievableFile::Url(_) => ItemSource::User,
+                },
+            },
+            locator: locator.clone(),
+            source: retrievable_manifest.clone(),
+            manifest,
+            build_metadata,
+            dependencies: HashMap::new(),
+            scope_id,
+            dependent_package_id,
+        };
+
+        let id = self.items.add(package);
+
+        // Add the dependencies after the fact so that we can use the package id
         let mut dependencies = HashMap::new();
-        for (dependency_name, dependency) in &manifest.dependencies {
-            // path takes precedence over url
+        for (dependency_name, dependency) in manifest_dependencies {
             let Some(source) = package_dependency_to_retrievable_file(
                 &retrievable_manifest,
                 self.ignore_local_dependencies,
-                dependency,
+                &dependency,
             )?
             else {
                 anyhow::bail!(
@@ -122,7 +154,9 @@ impl Semantic {
                 )
             };
 
-            let dependency_id = self.add_package(source).await?;
+            let dependency_id = self.add_package(source, Some(id)).await.with_context(|| {
+                format!("Failed to add dependency `{dependency_name}` for {locator}")
+            })?;
 
             dependencies.insert(
                 dependency_name.clone(),
@@ -133,25 +167,13 @@ impl Semantic {
             );
         }
 
-        let scope_id = self
-            .add_scope_from_manifest_with_includes(None, &manifest, retrievable_manifest.clone())
-            .await?;
-
         {
             let mut scope = self.items.get_mut(scope_id);
 
             // If this is not the Ambient package, import the Ambient package
             if !matches!(retrievable_manifest, RetrievableFile::Ambient(_)) {
-                let ambient_package = self.items.get(self.ambient_package_id);
-                scope.imports.insert(
-                    ambient_package
-                        .data()
-                        .id
-                        .as_snake()
-                        .map_err(|e| e.to_owned())?
-                        .clone(),
-                    self.ambient_package_id,
-                );
+                let id = SnakeCaseIdentifier::new("ambient_core")?;
+                scope.imports.insert(id, self.ambient_package_id);
             }
 
             for (name, dependency) in &dependencies {
@@ -159,23 +181,8 @@ impl Semantic {
             }
         }
 
-        let package = Package {
-            data: ItemData {
-                parent_id: None,
-                id: locator.id.clone().into(),
-                source: match retrievable_manifest {
-                    RetrievableFile::Ambient(_) => ItemSource::Ambient,
-                    RetrievableFile::Path(_) | RetrievableFile::Url(_) => ItemSource::User,
-                },
-            },
-            source: retrievable_manifest,
-            manifest,
-            build_metadata,
-            dependencies,
-            scope_id,
-        };
+        self.items.get_mut(id).dependencies = dependencies;
 
-        let id = self.items.add(package);
         self.packages.insert(locator, id);
         Ok(id)
     }
@@ -184,9 +191,23 @@ impl Semantic {
         let mut seen_locators = HashMap::new();
         for locator in self.packages.keys() {
             if let Some(present) = seen_locators.insert(locator.id.clone(), locator.clone()) {
+                let present_package = self.items.get(self.packages[&present]);
+                let locator_package = self.items.get(self.packages[locator]);
+
+                fn imported_by(items: &ItemMap, package: &Package) -> String {
+                    match package.dependent_package_id {
+                        Some(dependent_id) => {
+                            format!("\n    - imported by {}", items.get(dependent_id).locator)
+                        }
+                        None => String::new(),
+                    }
+                }
+
                 anyhow::bail!(
-                    "duplicate package found - {present} is already in the system, but {locator} was encountered ({})",
-                    "the system does not currently support having an package with multiple different versions"
+                    "package conflict found:\n  - {present}{}\n\n  - {locator}{}\n\n{}",
+                    imported_by(&self.items, &present_package),
+                    imported_by(&self.items, &locator_package),
+                    "the system does not currently support multiple versions of the same package in the dependency tree"
                 );
             }
         }
@@ -219,19 +240,26 @@ impl Semantic {
         manifest: &Manifest,
         source: RetrievableFile,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let includes = manifest.package.includes.clone();
+        let includes = manifest.includes.clone();
         let scope_id =
             self.add_scope_from_manifest_without_includes(parent_id, manifest, source.clone())?;
 
-        for include in &includes {
+        let mut include_names: Vec<_> = includes.keys().collect();
+        include_names.sort();
+
+        for include_name in include_names {
+            let include_path = &includes[include_name];
+
             anyhow::ensure!(
-                include.extension().is_some(),
-                "include {} must have an extension",
-                include.display()
+                include_path.extension().is_some(),
+                "Include `{include_name}` = {include_path:?} for `{source}` must have an extension"
             );
 
-            let include_source = source.parent_join(include)?;
-            let include_manifest = Manifest::parse(&include_source.get().await?)?;
+            let include_source = source.parent_join(include_path)?;
+            let include_manifest =
+                Manifest::parse(&include_source.get().await?).with_context(|| {
+                    format!("Failed to parse included manifest {source} for {source}")
+                })?;
             let include_scope_id = self
                 .add_scope_from_manifest_with_includes(
                     Some(scope_id),
@@ -239,12 +267,11 @@ impl Semantic {
                     include_source,
                 )
                 .await?;
-            let id = self.items.get(include_scope_id).data().id.clone();
 
-            self.items.get_mut(scope_id).scopes.insert(
-                id.as_snake().map_err(|e| e.to_owned())?.clone(),
-                include_scope_id,
-            );
+            self.items
+                .get_mut(scope_id)
+                .scopes
+                .insert(include_name.clone(), include_scope_id);
         }
 
         Ok(scope_id)
@@ -378,7 +405,7 @@ pub fn create_root_scope(
         name: &str,
     ) -> anyhow::Result<ItemId<Attribute>> {
         let id = PascalCaseIdentifier::new(name)
-            .map_err(anyhow::Error::msg)
+            .map_err(|e| anyhow::Error::msg(e.to_string()))
             .context("standard value was not valid snake-case")?;
         let item_id = items.add(Attribute {
             data: ItemData {
@@ -414,6 +441,7 @@ pub fn package_dependency_to_retrievable_file(
         .as_ref()
         .filter(|_| !ignore_local_dependencies);
 
+    // path takes precedence over url
     Ok(match (path, &dependency.url()) {
         (None, None) => None,
         (Some(path), _) => Some(retrievable_manifest.parent_join(&path.join("ambient.toml"))?),

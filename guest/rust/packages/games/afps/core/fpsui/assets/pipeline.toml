@@ -1,0 +1,8 @@
+[[pipelines]]
+type = "Materials"
+output_decals = false
+
+[pipelines.importer]
+type = "Single"
+name = "afps"
+base_color = "afps.jpeg"

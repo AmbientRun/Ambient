@@ -54,11 +54,11 @@ fn get_pipelines(
             )
         })
         .then(move |file| async move {
-            log::debug!("Found pipeline file: {:?}, parsing...", file.0.path());
+            log::debug!("Found pipeline file at {:?}, parsing...", file.0.path());
             let schema = file
                 .download_toml::<PipelinesFile>(&ctx.assets)
                 .await
-                .with_context(|| format!("Failed to read pipeline {:?}", file.0.path()))?;
+                .with_context(|| format!("Failed to read pipeline at {:?}", file.0.path()))?;
 
             Ok((file, schema))
         })

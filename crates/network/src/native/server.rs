@@ -6,10 +6,10 @@ use std::{
     time::Duration,
 };
 
-use ambient_core::{asset_cache, no_sync, FIXED_SERVER_TICK_TIME};
+use ambient_core::{asset_cache, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
-    ArchetypeFilter, ComponentDesc, System, SystemGroup, World, WorldStream, WorldStreamCompEvent,
-    WorldStreamFilter,
+    generated::network::components::no_sync, ArchetypeFilter, ComponentDesc, System, SystemGroup,
+    World, WorldStream, WorldStreamCompEvent, WorldStreamFilter,
 };
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
@@ -54,14 +54,14 @@ pub struct Crypto {
 pub struct GameServer {
     endpoint: Endpoint,
     /// Shuts down the server if there are no players
-    pub use_inactivity_shutdown: bool,
+    pub inactivity_shutdown: Option<Duration>,
     proxy_settings: Option<ProxySettings>,
 }
 
 impl GameServer {
     pub async fn new_with_port(
         server_addr: SocketAddr,
-        use_inactivity_shutdown: bool,
+        inactivity_shutdown: Option<Duration>,
         proxy_settings: Option<ProxySettings>,
         crypto: &Crypto,
     ) -> anyhow::Result<Self> {
@@ -70,7 +70,7 @@ impl GameServer {
         tracing::debug!("GameServer listening on port {}", server_addr.port());
         Ok(Self {
             endpoint,
-            use_inactivity_shutdown,
+            inactivity_shutdown,
             proxy_settings,
         })
     }
@@ -78,14 +78,14 @@ impl GameServer {
     pub async fn new_with_port_in_range(
         bind_addr: IpAddr,
         port_range: Range<u16>,
-        use_inactivity_shutdown: bool,
+        inactivity_shutdown: Option<Duration>,
         proxy_settings: Option<ProxySettings>,
         crypto: &Crypto,
     ) -> anyhow::Result<Self> {
         for port in port_range {
             match Self::new_with_port(
                 SocketAddr::new(bind_addr, port),
-                use_inactivity_shutdown,
+                inactivity_shutdown,
                 proxy_settings.clone(),
                 crypto,
             )
@@ -186,9 +186,9 @@ impl GameServer {
                         }
                     });
                 }
-                _ = inactivity_interval.tick(), if self.use_inactivity_shutdown => {
+                _ = inactivity_interval.tick(), if self.inactivity_shutdown.is_some() => {
                     if state.lock().player_count() == 0 {
-                        if Instant::now().duration_since(last_active).as_secs_f32() > 2. * 60. {
+                        if Instant::now().duration_since(last_active) > self.inactivity_shutdown.unwrap() {
                             tracing::info!("Shutting down due to inactivity");
                             break;
                         }
@@ -282,7 +282,7 @@ async fn resolve_connection(
 }
 
 /// Setup the protocol and enter the update loop for a new connected client
-#[tracing::instrument(name = "server", level = "info", skip_all, fields(content_base_url))]
+#[tracing::instrument(level = "info", skip_all, fields(content_base_url))]
 async fn handle_quinn_connection(
     conn: ConnectionKind,
     state: SharedServerState,

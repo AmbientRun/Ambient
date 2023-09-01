@@ -1,11 +1,11 @@
+use ambient_shared_types::asset::BuildAsset;
+use semver::Version;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::Version;
-
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum BuildMetadataError {
-    #[error("failed to parse build metadata")]
+    #[error("Failed to parse build metadata")]
     ParseError(#[from] toml::de::Error),
 }
 
@@ -19,6 +19,20 @@ pub struct BuildMetadata {
     pub last_build_time: Option<String>,
     #[serde(default)]
     pub settings: BuildSettings,
+    #[serde(default)]
+    pub asset: Vec<BuildAsset>,
+}
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Default)]
+pub struct BuildSettings {
+    #[serde(default)]
+    /// Build with optimizations.
+    pub release: bool,
+    #[serde(default)]
+    /// Build the WASM files only.
+    pub wasm_only: bool,
+    #[serde(default)]
+    /// Build with deployment in mind (i.e. ignore local dependencies).
+    pub deploy: bool,
 }
 
 impl BuildMetadata {
@@ -40,21 +54,8 @@ impl BuildMetadata {
         Ok(self
             .last_build_time
             .as_deref()
-            .map(|lbt| chrono::DateTime::parse_from_rfc3339(lbt))
+            .map(chrono::DateTime::parse_from_rfc3339)
             .transpose()?
             .map(|lbt| lbt.with_timezone(&chrono::Utc)))
     }
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Default)]
-pub struct BuildSettings {
-    #[serde(default)]
-    /// Build with optimizations.
-    pub release: bool,
-    #[serde(default)]
-    /// Build the WASM files only.
-    pub wasm_only: bool,
-    #[serde(default)]
-    /// Build with deployment in mind (i.e. ignore local dependencies).
-    pub deploy: bool,
 }

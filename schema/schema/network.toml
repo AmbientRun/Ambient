@@ -22,3 +22,9 @@ type = "Empty"
 name = "Is synchronized resources"
 description = "If attached, this entity contains global resources that are synchronized to clients, but not persisted."
 attributes = ["Debuggable", "Networked"]
+
+[components.no_sync]
+type = "Empty"
+name = "No sync"
+description = "If attached, this entity will not be synchronized to clients."
+attributes = ["Debuggable", "Networked", "Store"]

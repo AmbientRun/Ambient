@@ -62,7 +62,7 @@ impl shared::wit::server_message::Host for Bindings {
             WitTarget::Local(id) => message::send_local(
                 world,
                 module_id,
-                Target::Module(id.from_bindgen()),
+                Target::PackageOrModule(id.from_bindgen()),
                 name,
                 data,
             ),
@@ -137,7 +137,7 @@ impl shared::wit::server_http::Host for Bindings {
             async_run.run(move |world| {
                 shared::message::send(
                     world,
-                    Target::Module(id),
+                    Target::PackageOrModule(id),
                     Source::Runtime,
                     HttpResponse::id().to_string(),
                     response.serialize_message().unwrap(),

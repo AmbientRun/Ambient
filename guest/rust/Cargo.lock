@@ -24,6 +24,89 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aae1277d39aeec15cb388266ecc24b11c80469deae6067e17a1a7aa9e5c1f234"
 
 [[package]]
+name = "afps_fpsanim"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "afps_fpsaudio"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "afps_fpsmodel"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "afps_fpsmovement"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "afps_fpsrule"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "afps_fpsui"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "afps_scene"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "afps_spraypaint"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "afps_world_latency"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "afps_zombie"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ahash"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c99f64d1e06488f620f932677e24bc6e2897582980441ae90a671415bd7ec2f"
+dependencies = [
+ "cfg-if",
+ "const-random",
+ "getrandom 0.2.10",
+ "once_cell",
+ "version_check",
+]
+
+[[package]]
 name = "ambient_api"
 version = "0.3.0-dev"
 dependencies = [
@@ -451,12 +534,15 @@ dependencies = [
 name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_friendly_id",
+ "ambient_shared_types",
  "chrono",
  "convert_case",
  "indexmap 2.0.0",
  "once_cell",
  "proc-macro2",
  "quote",
+ "semver",
  "serde",
  "syn 1.0.109",
  "thiserror",
@@ -503,6 +589,7 @@ dependencies = [
  "indexmap 2.0.0",
  "paste",
  "reqwest",
+ "semver",
  "thiserror",
  "toml 0.7.6",
  "ulid",
@@ -729,6 +816,36 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
 
 [[package]]
+name = "console"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+ "rhai",
+]
+
+[[package]]
+name = "const-random"
+version = "0.1.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "368a7a772ead6ce7e1de82bfb04c485f3db8ec744f72925af5735e29a22cc18e"
+dependencies = [
+ "const-random-macro",
+ "proc-macro-hack",
+]
+
+[[package]]
+name = "const-random-macro"
+version = "0.1.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d7d6ab3c3a2282db210df5f02c4dab6e0a7057af0fb7ebd4070f30fe05c0ddb"
+dependencies = [
+ "getrandom 0.2.10",
+ "once_cell",
+ "proc-macro-hack",
+ "tiny-keccak",
+]
+
+[[package]]
 name = "convert_case"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -796,6 +913,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "crunchy"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
+
+[[package]]
 name = "data-encoding"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -861,6 +984,13 @@ name = "dyn-clone"
 version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbfc4744c1b8f2a09adc0e55242f60b1af195d88596bd8700be74418c056c555"
+
+[[package]]
+name = "editor"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
 
 [[package]]
 name = "either"
@@ -1479,6 +1609,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "package_manager"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+ "ambient_package",
+ "serde",
+ "toml 0.7.6",
+]
+
+[[package]]
 name = "palette"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1651,6 +1791,12 @@ dependencies = [
  "once_cell",
  "toml_edit",
 ]
+
+[[package]]
+name = "proc-macro-hack"
+version = "0.5.20+deprecated"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc375e1527247fe1a97d8b7156678dfe7c1af2fc075c9a4db3690ecd2a148068"
 
 [[package]]
 name = "proc-macro2"
@@ -1874,6 +2020,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "rhai"
+version = "1.15.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c2a11a646ef5d4e4a9d5cf80c7e4ecb20f9b1954292d5c5e6d6cbc8d33728ec"
+dependencies = [
+ "ahash",
+ "bitflags 1.3.2",
+ "instant",
+ "num-traits",
+ "rhai_codegen",
+ "smallvec",
+ "smartstring",
+]
+
+[[package]]
+name = "rhai_codegen"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db74e3fdd29d969a0ec1f8e79171a6f0f71d0429293656901db382d248c4c021"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "ring"
 version = "0.16.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1964,6 +2136,9 @@ name = "semver"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0293b4b29daaf487284529cc2f5675b8e57c61f70167ba415a463651fd6a918"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "serde"
@@ -2048,6 +2223,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62bb4feee49fdd9f707ef802e22365a35de4b7b299de4763d44bfea899442ff9"
 
 [[package]]
+name = "smartstring"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3fb72c633efbaa2dd666986505016c32c3044395ceaf881518399d2f4127ee29"
+dependencies = [
+ "autocfg",
+ "static_assertions",
+ "version_check",
+]
+
+[[package]]
 name = "socket2"
 version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2081,6 +2267,12 @@ name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
+
+[[package]]
+name = "static_assertions"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "strum"
@@ -2127,6 +2319,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tangent"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2155,6 +2354,15 @@ dependencies = [
  "jpeg-decoder",
  "miniz_oxide 0.4.4",
  "weezl",
+]
+
+[[package]]
+name = "tiny-keccak"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c9d3793400a45f954c52e73d068316d76b6f4e36977e3fcebb13a2721e80237"
+dependencies = [
+ "crunchy",
 ]
 
 [[package]]

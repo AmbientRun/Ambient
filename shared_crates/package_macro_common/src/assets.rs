@@ -21,7 +21,7 @@ pub fn generate(context: Context, _items: &ItemMap, scope: &Scope) -> anyhow::Re
         /// Helpers for accessing the assets for this package.
         pub mod assets {
             pub fn url(path: &str) -> String {
-                #api_path::asset::url_for_package_asset(#package_id, path).unwrap()
+                #api_path::asset::url_for_package_asset(super::entity(), path).unwrap()
             }
         }
     })

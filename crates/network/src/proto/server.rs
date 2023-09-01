@@ -258,7 +258,7 @@ impl ConnectedClient {
                 world
                     .resource(datagram_handlers())
                     .get(&id)
-                    .with_context(|| format!("No handler for datagram: {id}"))?
+                    .with_context(|| format!("No handler for datagram {id}"))?
                     .clone(),
                 state.assets.clone(),
             )
@@ -291,7 +291,7 @@ impl ConnectedClient {
                         world
                             .resource(uni_stream_handlers())
                             .get(&id)
-                            .with_context(|| format!("No handler for uni stream: {id}"))?
+                            .with_context(|| format!("No handler for unistream {id}"))?
                             .clone(),
                         state.assets.clone(),
                     )
@@ -329,7 +329,7 @@ impl ConnectedClient {
                         world
                             .resource(bi_stream_handlers())
                             .get(&id)
-                            .with_context(|| format!("No handler for bi stream: {id}"))?
+                            .with_context(|| format!("No handler for bistream {id}"))?
                             .clone(),
                         state.assets.clone(),
                     )

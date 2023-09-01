@@ -1,0 +1,22 @@
+[package]
+id = "afps"
+name = "afps"
+version = "0.0.1"
+content = { type = "Playable" }
+
+[dependencies]
+fpsanim = { path = "core/fpsanim", deployment = "1UCrylJ9BgszvX5KbJn6tw" }
+fpsaudio = { path = "core/fpsaudio", deployment = "h65YTk2QHOrCkXSrKVrkn" }
+fpsmodel = { path = "core/fpsmodel", deployment = "3xcHZ8at7PuThRvcbNly4o" }
+fpsmovement = { path = "core/fpsmovement", deployment = "7l4FTuTKTpeu1mac5oD40L" }
+fpsrule = { path = "core/fpsrule", deployment = "5HeIVDCgvDKHwKAUxTjUt" }
+fpsui = { path = "core/fpsui", deployment = "5qQgZVcBN140dubDYGovlL" }
+
+console = { path = "../../tools/console", deployment = "6q07YgbS4KLdUYnWA2Fm0u" }
+package_manager = { path = "../../tools/package_manager", deployment = "2tN8rHxmJTOgI6WnTEnc2d" }
+editor = { path = "../../tools/editor", deployment = "2pt9iMonnqwMHqIJqKDEt3" }
+
+scene = { path = "mods/scene", deployment = "3nJWa6lupfktD0HGLyH4ZL" }
+spraypaint = { path = "mods/spraypaint", deployment = "7lY5Cwe3pO0BQpKyNmjJj1" }
+zombie = { path = "mods/zombie", deployment = "5eLraBvpR2KCh6ybNUytAg" }
+world_latency = { path = "mods/world_latency", deployment = "4xLzugw3UM9C3qwBN1llTW" }

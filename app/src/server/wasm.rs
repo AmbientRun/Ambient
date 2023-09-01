@@ -1,11 +1,13 @@
-use std::{collections::HashMap, fmt::Display, path::PathBuf, sync::Arc};
+use std::{fmt::Display, path::PathBuf, sync::Arc};
 
-use ambient_ecs::{EntityId, SystemGroup, World};
+use ambient_ecs::{Entity, EntityId, SystemGroup, World};
 use ambient_native_std::asset_cache::AssetCache;
 use ambient_package_semantic_native::{WasmSpawnRequest, WasmSpawnResponse};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
-use ambient_wasm::shared::{module_name, remote_paired_id, spawn_module, MessageType};
-use anyhow::Context;
+use ambient_wasm::shared::{
+    bytecode_from_url, is_module, is_module_on_server, module_enabled, module_name, package_ref,
+    MessageType,
+};
 
 pub fn systems() -> SystemGroup {
     ambient_wasm::server::systems()
@@ -46,8 +48,9 @@ pub fn spawn_package(
     request: WasmSpawnRequest,
 ) -> anyhow::Result<WasmSpawnResponse> {
     let WasmSpawnRequest {
-        client_modules,
-        server_modules,
+        package_id,
+        client_modules: client_request,
+        server_modules: server_request,
     } = request;
 
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -62,12 +65,6 @@ pub fn spawn_package(
                 Side::Server => "server",
             }
         }
-        fn corresponding(&self) -> Self {
-            match self {
-                Side::Client => Side::Server,
-                Side::Server => Side::Client,
-            }
-        }
     }
     impl Display for Side {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -76,50 +73,33 @@ pub fn spawn_package(
     }
 
     // Spawn all of the modules for each side, collecting them as we go
-    let mut modules_to_entity_ids = HashMap::new();
-    for (target, modules) in [
-        (Side::Client, client_modules),
-        (Side::Server, server_modules),
-    ] {
-        for (url, enabled) in modules {
-            let name = url
-                .file_stem()
-                .context("no file stem for {url}")?
-                .to_owned();
-
-            let id = spawn_module(world, url, enabled, target == Side::Server);
-            modules_to_entity_ids.insert(
-                (
-                    target,
-                    // Support `client_module`, `module_client` and `module`
-                    name.strip_prefix(target.as_str())
-                        .or_else(|| name.strip_suffix(target.as_str()))
-                        .unwrap_or(name.as_ref())
-                        .trim_matches('_')
-                        .to_string(),
-                ),
-                id,
-            );
-        }
-    }
-
-    // Associate a module with its paired module
-    // TODO: make this send to the package instead of the module so that we get routing for free
-    for ((target, name), id) in modules_to_entity_ids.iter() {
-        if let Some(other_id) = modules_to_entity_ids.get(&(target.corresponding(), name.clone())) {
-            world.add_component(*id, remote_paired_id(), *other_id)?;
-        }
-    }
-
-    // Collect the modules that were spawned
     let mut client_modules = vec![];
     let mut server_modules = vec![];
-    for ((target, _), id) in modules_to_entity_ids {
-        let modules = match target {
-            Side::Client => &mut client_modules,
-            Side::Server => &mut server_modules,
-        };
-        modules.push(id);
+    for (target, modules) in [
+        (Side::Client, client_request),
+        (Side::Server, server_request),
+    ] {
+        for (url, enabled) in modules {
+            let entity = Entity::new()
+                .with(self::is_module(), ())
+                .with(self::bytecode_from_url(), url.to_string())
+                .with(self::module_enabled(), enabled)
+                .with(self::package_ref(), package_id);
+
+            let is_server = target == Side::Server;
+            let entity = if is_server {
+                entity.with(is_module_on_server(), ())
+            } else {
+                entity
+            };
+
+            let id = entity.spawn(world);
+            if is_server {
+                server_modules.push(id);
+            } else {
+                client_modules.push(id);
+            }
+        }
     }
 
     Ok(WasmSpawnResponse {

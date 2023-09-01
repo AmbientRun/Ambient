@@ -9,6 +9,7 @@ use ambient_core::{
 };
 use ambient_ecs::{
     query, query_mut, Component, ComponentValue, Entity, EntityId, FrameEvent, System, World,
+    WorldContext,
 };
 use ambient_model::{
     model_from_url, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model,
@@ -308,7 +309,7 @@ impl ModelCrate {
         let lod_0_node = lods[0].get_node_id();
         let lod_0_world = lods[0].world();
 
-        let mut world = World::new("model mesh lods");
+        let mut world = World::new("model mesh lods", WorldContext::Prefab);
         world.add_resource(
             name(),
             format!(
@@ -579,7 +580,7 @@ impl ModelCrate {
     }
 
     pub fn create_prefab(&mut self, data: Entity) {
-        let mut prefab = World::new("prefab_asset");
+        let mut prefab = World::new("prefab_asset", WorldContext::Prefab);
         let o = data.spawn(&mut prefab);
         prefab.add_resource(children(), vec![o]);
         self.prefabs.insert(ModelCrate::MAIN, prefab);

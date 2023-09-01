@@ -1,0 +1,8 @@
+[package]
+id = "afps_scene"
+name = "AFPS Scene"
+version = "0.0.1"
+content = { type = "Asset", models = true, code = true }
+
+[dependencies]
+afps_schema = { path = "../../schema", deployment = "3xxxP2nZxCq3jblLOYefNU" }

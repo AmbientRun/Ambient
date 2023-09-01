@@ -21,8 +21,8 @@ use std::{path::Path, str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, runtime};
 use ambient_ecs::{
-    dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
-    Message, SystemGroup, World, WorldEventReader,
+    dont_despawn_on_unload, generated::messages, query, world_events, EntityId, FnSystem, Message,
+    SystemGroup, World, WorldContext, WorldEventReader,
 };
 
 pub use ambient_ecs::generated::wasm::components::*;
@@ -146,8 +146,7 @@ pub fn systems() -> SystemGroup {
                     }
                 }),
             query(bytecode_from_url().changed()).to_system(move |q, world, qs, _| {
-                // TODO: there has got to be a better way to do this
-                let is_server = world.name() == "server";
+                let is_server = world.context() == WorldContext::Server;
 
                 for (id, url) in q.collect_cloned(world, qs) {
                     let on_server = world.has_component(id, is_module_on_server());
@@ -316,7 +315,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
     // TODO: offload to thread
     let task = async move {
         // let result = run_and_catch_panics(|| {
-        log::info!("Loading module: {}", name);
+        log::info!("Loading module {}", name);
         let res = module_state_maker(module::ModuleStateArgs {
             component_bytecode: &component_bytecode,
             stdout_output: Box::new({
@@ -333,8 +332,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
             preopened_dir,
         })
         .await;
-        log::info!("Done loading module: {}", name);
-        // });
+        log::info!("Done loading module {}", name);
 
         async_run.run(move |world| {
             match res {
@@ -348,7 +346,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
 
                     world.add_component(id, module_state(), sms).unwrap();
 
-                    log::info!("Running startup event for module: {}", name);
+                    log::info!("Running startup event for module {name}");
                     messages::ModuleLoad::new().run(world, Some(id)).unwrap();
                 }
                 Err(err) => update_errors(world, &[(id, format!("{err:?}"))]),
@@ -447,26 +445,6 @@ pub(crate) fn unload(world: &mut World, module_id: EntityId, reason: &str) {
         MessageType::Info,
         &format!("Unloaded (reason: {reason})"),
     );
-}
-
-pub fn spawn_module(
-    world: &mut World,
-    bytecode_from_url: AbsAssetUrl,
-    enabled: bool,
-    on_server: bool,
-) -> EntityId {
-    let entity = Entity::new()
-        .with(is_module(), ())
-        .with(self::bytecode_from_url(), bytecode_from_url.to_string())
-        .with(module_enabled(), enabled);
-
-    let entity = if on_server {
-        entity.with(is_module_on_server(), ())
-    } else {
-        entity
-    };
-
-    entity.spawn(world)
 }
 
 fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {

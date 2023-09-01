@@ -23,7 +23,7 @@ pub mod ecs;
 pub mod entity;
 /// Global functions and types for your convenience.
 pub mod global;
-/// Messaging to other modules and to the other side of the network boundary.
+/// Messaging to other packages and to the other side of the network boundary.
 pub mod message;
 /// Player-specific functionality.
 pub mod player;
@@ -33,6 +33,9 @@ pub mod prelude;
 
 /// Animation functions
 pub mod animation;
+
+/// Package-related functionality.
+pub mod package;
 
 /// Internal implementation details.
 mod internal;

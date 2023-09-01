@@ -4,12 +4,13 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
     sync::Arc,
+    time::Duration,
 };
 
-use ambient_core::{asset_cache, main_package_name, name, no_sync, FIXED_SERVER_TICK_TIME};
+use ambient_core::{asset_cache, main_package_name, name, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
-    dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World,
-    WorldEventsSystem, WorldStreamCompEvent,
+    dont_store, generated::network::components::no_sync, world_events, ComponentDesc, Entity,
+    Networked, SystemGroup, World, WorldContext, WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_native_std::{
     ambient_version,
@@ -19,7 +20,10 @@ use ambient_native_std::{
 };
 use ambient_network::{
     is_persistent_resources, is_synced_resources,
-    native::server::{Crypto, GameServer},
+    native::{
+        client::ResolvedAddr,
+        server::{Crypto, GameServer},
+    },
     server::{ForkingEvent, ProxySettings, ShutdownEvent},
 };
 use ambient_prefab::PrefabFromUrl;
@@ -37,6 +41,20 @@ use crate::{cli::HostCli, shared};
 
 pub mod wasm;
 
+pub struct ServerHandle {
+    addr: SocketAddr,
+    join_handle: tokio::task::JoinHandle<()>,
+}
+impl ServerHandle {
+    pub async fn join(self) -> Result<(), tokio::task::JoinError> {
+        self.join_handle.await
+    }
+
+    pub fn resolve_as_localhost(&self) -> ResolvedAddr {
+        ResolvedAddr::localhost_with_port(self.addr.port())
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 pub async fn start(
     assets: AssetCache,
@@ -47,7 +65,7 @@ pub async fn start(
     working_directory: PathBuf,
     manifest: ambient_package::Manifest,
     crypto: Crypto,
-) -> SocketAddr {
+) -> ServerHandle {
     let quic_interface_port = host_cli.quic_interface_port;
 
     let proxy_settings = (!host_cli.no_proxy).then(|| ProxySettings {
@@ -64,23 +82,28 @@ pub async fn start(
     let server = if let Some(port) = quic_interface_port {
         GameServer::new_with_port(
             SocketAddr::new(host_cli.bind_address, port),
-            false,
+            host_cli
+                .shutdown_after_inactivity_seconds
+                .map(Duration::from_secs),
             proxy_settings,
             &crypto,
         )
         .await
-        .context("failed to create game server with port")
+        .with_context(|| format!("Failed to create game server with port {port}"))
         .unwrap()
     } else {
+        let port_range = QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10);
         GameServer::new_with_port_in_range(
             host_cli.bind_address,
-            QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10),
-            false,
+            port_range.clone(),
+            host_cli
+                .shutdown_after_inactivity_seconds
+                .map(Duration::from_secs),
             proxy_settings,
             &crypto,
         )
         .await
-        .context("failed to create game server with port in range")
+        .with_context(|| format!("Failed to create game server with port in range {port_range:?}"))
         .unwrap()
     };
 
@@ -118,8 +141,8 @@ pub async fn start(
         start_http_interface(None, http_interface_port);
     }
 
-    tokio::task::spawn(async move {
-        let mut server_world = World::new_with_config("server", true);
+    let join_handle = tokio::task::spawn(async move {
+        let mut server_world = World::new_with_config("server", WorldContext::Server, true);
         server_world.init_shape_change_tracking();
 
         server_world
@@ -187,7 +210,7 @@ pub async fn start(
             .await;
     });
 
-    addr
+    ServerHandle { addr, join_handle }
 }
 
 fn systems(_world: &mut World) -> SystemGroup {
@@ -307,11 +330,11 @@ fn start_http_interface(build_path: Option<&Path>, http_interface_port: u16) {
     tokio::task::spawn(async move {
         let addr = SocketAddr::from(([0, 0, 0, 0], http_interface_port));
 
-        tracing::debug!(?build_path, "Starting HTTP interface on: {addr}");
+        tracing::debug!(?build_path, "Starting HTTP interface on `{addr}`");
 
         if let Err(err) = serve(addr)
             .await
-            .with_context(|| format!("Failed to start server on: {addr}"))
+            .with_context(|| format!("Failed to start server on `{addr}`"))
         {
             tracing::error!("{err:?}");
         }

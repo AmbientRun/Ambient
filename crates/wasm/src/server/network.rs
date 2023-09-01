@@ -74,7 +74,7 @@ fn on_unistream(
         let (remote_module_id, name, data) =
             unwrap_log_network_err!(read_unistream(recv_stream.as_mut())
                 .await
-                .context("Failed to read uni stream"));
+                .context("Failed to read unistream"));
 
         async_run.run(move |world| {
             log_network_result!(process_network_message(

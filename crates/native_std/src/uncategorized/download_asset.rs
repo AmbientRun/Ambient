@@ -99,9 +99,9 @@ pub(crate) async fn download<T: 'static + Send, F: Future<Output = anyhow::Resul
         let max_retries = 12;
         for i in 0..max_retries {
             let semaphore = DownloadSemaphore.get(&assets);
-            log::info!("download [pending ] {}", url_short);
+            log::info!("Download [pending ] {}", url_short);
             let _permit = semaphore.acquire().await.unwrap();
-            log::info!("download [download] {}", url_short);
+            log::info!("Download [download] {}", url_short);
             let resp = client
                 .get(url.clone())
                 .send()
@@ -116,7 +116,7 @@ pub(crate) async fn download<T: 'static + Send, F: Future<Output = anyhow::Resul
             }
             match map(resp).await {
                 Ok(res) => {
-                    log::info!("download [complete] {}", url_short);
+                    log::info!("Download [complete] {}", url_short);
                     return Ok(res);
                 }
                 Err(err) => {

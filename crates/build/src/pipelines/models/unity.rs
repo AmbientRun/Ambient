@@ -250,7 +250,7 @@ impl UnityMaterials {
                 unity_ref.guid.as_ref().unwrap(),
             )
             .await
-            .with_context(|| format!("Failed to get material {material_path}"))
+            .with_context(|| format!("Failed to get material \"{material_path}\""))
         } else if unity_ref.type_ == Some(3) {
             Ok(Default::default())
         } else {
@@ -406,10 +406,10 @@ async fn model_from_prefab(
     // std::fs::write("tmp/unity.yml", prefab_file.dump());
     let root_game_objects = prefab_file.get_root_game_objects();
     let model_crate = parking_lot::Mutex::new(ModelCrate::new());
-    model_crate
-        .lock()
-        .models
-        .insert(ModelCrate::MAIN, Model(World::new("model")));
+    model_crate.lock().models.insert(
+        ModelCrate::MAIN,
+        Model(World::new("model", ambient_ecs::WorldContext::Prefab)),
+    );
     let roots = join_all(root_game_objects.into_iter().map(|root_game_object| {
         recursively_create_game_objects(
             ctx,

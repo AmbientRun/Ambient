@@ -67,3 +67,24 @@ a.local_to_world = mat4_from(a.scale, a.rotation, a.translation);
 b.local_to_parent = mat4_from(b.scale, b.rotation, b.translation);
 b.local_to_world = a.local_to_world * b.local_to_parent;
 ```
+
+### Mesh transforms
+
+The above will let you express any transform hierarchy, but to reduce the number of entities, you can also use
+`mesh_to_local` and `mesh_to_world`. When `mesh_to_world` exists, it replaces `local_to_world` as the "final"
+transform for the renderered mesh. It's calculated as follows:
+
+```yml
+entity a:
+    - local_to_world: Mat4(..)
+    - mesh_to_local: Mat4(..)
+    - mesh_to_world: Mat4(..)
+```
+
+```rust
+mesh_to_world = local_to_world * mesh_to_local
+```
+
+This also means that you can attach a mesh in the middle of a hierarchy, with an offset. For instance, if you have
+a bone hierarchy on a character, you can attach an mesh to the upper arm bone, but without `mesh_to_local/world` it
+would be rendered at the center of the arm (inside the arm), so by using `mesh_to_local/world` you can offset it.

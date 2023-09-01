@@ -11,7 +11,7 @@ components!("test", {
 fn test_copy_component_recursive() {
     init_components();
     ambient_ecs::init_components();
-    let mut world = World::new("test");
+    let mut world = World::new_unknown("test");
 
     let c = Entity::new().spawn(&mut world);
     let b = Entity::new().with(parent(), c).spawn(&mut world);

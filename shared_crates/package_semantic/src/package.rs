@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use ambient_package::{BuildMetadata, Manifest, SnakeCaseIdentifier, Version};
+use ambient_package::{BuildMetadata, Manifest, PackageId, SnakeCaseIdentifier};
 use ambient_std::path;
 use anyhow::Context as AnyhowContext;
 use url::Url;
@@ -13,10 +13,11 @@ use crate::{
     item::ResolveClone, schema, util::read_file, Context, Item, ItemData, ItemId, ItemMap,
     ItemType, ItemValue, Scope, StandardDefinitions,
 };
+use semver::Version;
 
 #[derive(Clone, PartialEq, Debug, Eq, Hash)]
 pub struct PackageLocator {
-    pub id: SnakeCaseIdentifier,
+    pub id: PackageId,
     pub version: Version,
     pub source: RetrievableFile,
 }
@@ -53,15 +54,10 @@ impl RetrievableFile {
         Ok(match self {
             RetrievableFile::Ambient(path) => schema()
                 .get(ambient_std::path::path_to_unix_string_lossy(path).as_str())
-                .with_context(|| {
-                    format!(
-                        "failed to find path in Ambient schema: {}",
-                        path.to_string_lossy()
-                    )
-                })?
+                .with_context(|| format!("Failed to find {path:?} in Ambient schema"))?
                 .to_string(),
             RetrievableFile::Path(path) => {
-                anyhow::ensure!(path.is_absolute(), "path {path:?} must be absolute");
+                anyhow::ensure!(path.is_absolute(), "Path {path:?} must be absolute");
                 #[cfg(target_os = "unknown")]
                 {
                     unimplemented!("file reading is not supported on web")
@@ -131,6 +127,15 @@ impl RetrievableFile {
         }
     }
 }
+impl Display for RetrievableFile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RetrievableFile::Ambient(path) => write!(f, "ambient://{}", path.display()),
+            RetrievableFile::Path(path) => write!(f, "file://{}", path.display()),
+            RetrievableFile::Url(url) => write!(f, "{}", url),
+        }
+    }
+}
 
 pub enum LocalOrRemote {
     Local(PathBuf),
@@ -140,11 +145,14 @@ pub enum LocalOrRemote {
 #[derive(Clone, PartialEq, Debug)]
 pub struct Package {
     pub data: ItemData,
+    pub locator: PackageLocator,
     pub source: RetrievableFile,
     pub manifest: Manifest,
     pub build_metadata: Option<BuildMetadata>,
     pub dependencies: HashMap<SnakeCaseIdentifier, Dependency>,
     pub scope_id: ItemId<Scope>,
+    /// The package that this package was imported from, if any
+    pub dependent_package_id: Option<ItemId<Package>>,
 }
 impl Item for Package {
     const TYPE: ItemType = ItemType::Package;
@@ -189,6 +197,5 @@ impl ResolveClone for Package {
 #[derive(Clone, PartialEq, Debug)]
 pub struct Dependency {
     pub id: ItemId<Package>,
-    /// On by default
-    pub enabled: bool,
+    pub enabled: Option<bool>,
 }

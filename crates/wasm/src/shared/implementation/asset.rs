@@ -4,11 +4,11 @@ use ambient_core::asset_cache;
 use ambient_ecs::World;
 use ambient_native_std::asset_url::ParseError;
 
-use crate::shared::wit;
+use crate::shared::{conversion::FromBindgen, wit};
 
 pub(crate) fn url(
     world: &World,
-    package_id: String,
+    package_id: wit::types::EntityId,
     path: String,
     resolve: bool,
 ) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
@@ -16,7 +16,7 @@ pub(crate) fn url(
 
     let asset_url = ambient_package_semantic_native::file_path(
         world,
-        &package_id,
+        package_id.from_bindgen(),
         &Path::new("assets").join(path),
     )?;
 

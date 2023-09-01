@@ -26,6 +26,7 @@ ambient_package_semantic_native = { path = "../package_semantic_native" }
 ambient_package = { path = "../../shared_crates/package" }
 ambient_package_semantic = { path = "../../shared_crates/package_semantic" }
 ambient_std = { path = "../../shared_crates/std" }
+ambient_shared_types = { path = "../../shared_crates/shared_types" }
 
 ambient_unity_parser = { path = "../../libs/unity_parser" }
 walkdir = { workspace = true }
@@ -54,3 +55,4 @@ symphonia = { workspace = true }
 vorbis_rs = { workspace = true }
 rand = { workspace = true }
 chrono = { workspace = true }
+semver = { workspace = true }

@@ -1,5 +1,5 @@
-use std::future::Future;
 use std::path::PathBuf;
+use std::{collections::HashSet, future::Future};
 
 use ambient_build::BuildResult;
 use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
@@ -13,13 +13,16 @@ use super::PackageCli;
 pub struct BuildDirectories {
     /// The location where all built packages are stored. Used for the HTTP host.
     pub build_root_path: AbsAssetUrl,
-    /// The location of the main package being executed. Used for everything else.
+    /// The location of the main package being built. Used for everything else.
     pub main_package_path: AbsAssetUrl,
+    /// The name of the main package being built.
+    pub main_package_name: String,
 }
 impl BuildDirectories {
     pub fn new_with_same_paths(path: AbsAssetUrl) -> Self {
         Self {
             build_root_path: path.clone(),
+            main_package_name: "Remote package".to_string(),
             main_package_path: path,
         }
     }
@@ -54,6 +57,7 @@ pub async fn handle(
         false,
         release_build,
         build_wasm_only,
+        HashSet::new(),
         |_| async { Ok(()) },
         |_, _, _| async { Ok(()) },
     )
@@ -71,6 +75,9 @@ pub async fn build<
     deploy: bool,
     release: bool,
     wasm_only: bool,
+    // Used by deploy to avoid building packages that have already been built
+    // by other packages
+    skip_building: HashSet<PathBuf>,
     mut pre_build: impl FnMut(PathBuf) -> PrebuildRet,
     mut post_build: impl FnMut(PathBuf, PathBuf, bool) -> PostbuildRet,
 ) -> anyhow::Result<BuildDirectories> {
@@ -78,7 +85,7 @@ pub async fn build<
     let main_manifest_url = AbsAssetUrl::from_file_path(main_package_fs_path.join("ambient.toml"));
 
     if clean_build {
-        tracing::debug!("Removing build directory: {root_build_path:?}");
+        tracing::debug!("Removing build directory {root_build_path:?}");
         match tokio::fs::remove_dir_all(&root_build_path).await {
             Ok(_) => {}
             Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
@@ -95,15 +102,18 @@ pub async fn build<
     let mut queue: Vec<_> = {
         let mut semantic = ambient_package_semantic::Semantic::new(false).await?;
         let primary_package_scope_id = semantic
-            .add_package(RetrievableFile::Url(main_manifest_url.0.clone()))
+            .add_package(RetrievableFile::Url(main_manifest_url.0.clone()), None)
             .await?;
-        semantic.resolve()?;
+        semantic
+            .resolve()
+            .context("Failed to resolve dependencies for pre-build")?;
 
         semantic
             .items
             .scope_and_dependencies(primary_package_scope_id)
             .into_iter()
             .flat_map(|id| semantic.items.get(id).source.as_local_path())
+            .filter(|path| !skip_building.contains(path))
             .rev()
             .collect()
     };
@@ -118,11 +128,13 @@ pub async fn build<
     // A fresh semantic is used to ensure that the package is being built with
     // the correct dependencies after they have been deployed (if necessary).
     let mut output_path = root_build_path.clone();
+    let mut output_package_name = String::new();
     while let Some(manifest_path) = queue.pop() {
         pre_build(manifest_path.clone()).await?;
 
         let BuildResult {
             build_path,
+            package_name,
             was_built,
         } = ambient_build::build_package(assets, &settings, &manifest_path, &root_build_path)
             .await?;
@@ -131,11 +143,13 @@ pub async fn build<
 
         if AbsAssetUrl::from_file_path(manifest_path) == main_manifest_url {
             output_path = build_path;
+            output_package_name = package_name;
         }
     }
 
     anyhow::Ok(BuildDirectories {
         build_root_path: AbsAssetUrl::from_file_path(root_build_path),
         main_package_path: AbsAssetUrl::from_file_path(output_path),
+        main_package_name: output_package_name,
     })
 }

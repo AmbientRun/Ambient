@@ -1,0 +1,24 @@
+[package]
+id = "ambient_example_pong"
+name = "Pong"
+description = "Minimal multiplayer pong."
+version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/pong"
+type = "Game"
+content = { type = "Playable", example = true }
+
+[components]
+player_movement_direction = { type = "F32", name = "Player Movement Direction", description = "Direction of player movement" }
+track_audio_url = { type = "String", name = "Track Audio URL", description = "URL of the track audio", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+[messages.Input]
+description = "Describes the input state of the player."
+[messages.Input.fields]
+direction = "F32"
+
+[messages.Ping]
+description = "Time to ping sound."
+fields = {}

@@ -971,6 +971,14 @@ mod raw {
                         use crate::ecs::EnumComponent;
                         self.to_u32().into_result()
                     }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
+                    }
                 }
                 impl MessageSerde for Align {
                     fn serialize_message_part(
@@ -1037,6 +1045,14 @@ mod raw {
                         use crate::ecs::EnumComponent;
                         self.to_u32().into_result()
                     }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
+                    }
                 }
                 impl MessageSerde for Fit {
                     fn serialize_message_part(
@@ -1096,6 +1112,14 @@ mod raw {
                     fn into_result(self) -> crate::ecs::WitComponentValue {
                         use crate::ecs::EnumComponent;
                         self.to_u32().into_result()
+                    }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
                     }
                 }
                 impl MessageSerde for Orientation {
@@ -1175,6 +1199,14 @@ mod raw {
                         use crate::ecs::EnumComponent;
                         self.to_u32().into_result()
                     }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
+                    }
                 }
                 impl MessageSerde for Docking {
                     fn serialize_message_part(
@@ -1246,6 +1278,14 @@ mod raw {
                     fn into_result(self) -> crate::ecs::WitComponentValue {
                         use crate::ecs::EnumComponent;
                         self.to_u32().into_result()
+                    }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
                     }
                 }
                 impl MessageSerde for Layout {
@@ -1322,6 +1362,12 @@ mod raw {
                 #[doc = "**Is synchronized resources**: If attached, this entity contains global resources that are synchronized to clients, but not persisted.\n\n*Attributes*: Debuggable, Networked"]
                 pub fn is_synced_resources() -> Component<()> {
                     *IS_SYNCED_RESOURCES
+                }
+                static NO_SYNC: Lazy<Component<()>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::network::no_sync"));
+                #[doc = "**No sync**: If attached, this entity will not be synchronized to clients.\n\n*Attributes*: Debuggable, Networked, Store"]
+                pub fn no_sync() -> Component<()> {
+                    *NO_SYNC
                 }
             }
         }
@@ -1552,6 +1598,51 @@ mod raw {
                 #[doc = "**Visualize collider**: If attached, the collider will be rendered.\n\n\n\n**Note**: this will continuously overwrite the `local_gizmos` component.\n\n\n\n*Attributes*: Debuggable, Networked"]
                 pub fn visualize_collider() -> Component<()> {
                     *VISUALIZE_COLLIDER
+                }
+            }
+            #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+            #[doc = r""]
+            #[doc = r" They do not have any runtime representation outside of the components that compose them."]
+            pub mod concepts {
+                use crate::prelude::*;
+                #[allow(clippy::approx_constant)]
+                #[doc = "Makes a *Character Controller*.\n\nA capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::physics::character_controller_height\": f32 = 2.0,\n  \"ambient_core::physics::character_controller_radius\": f32 = 0.5,\n  \"ambient_core::physics::physics_controlled\": () = (),\n}\n```\n"]
+                pub fn make_character_controller() -> Entity {
+                    Entity::new()
+                        .with(
+                            crate::ambient_core::physics::components::character_controller_height(),
+                            2f32,
+                        )
+                        .with(
+                            crate::ambient_core::physics::components::character_controller_radius(),
+                            0.5f32,
+                        )
+                        .with(
+                            crate::ambient_core::physics::components::physics_controlled(),
+                            (),
+                        )
+                }
+                #[doc = "Checks if the entity is a *Character Controller*.\n\nA capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::physics::character_controller_height\": f32 = 2.0,\n  \"ambient_core::physics::character_controller_radius\": f32 = 0.5,\n  \"ambient_core::physics::physics_controlled\": () = (),\n}\n```\n"]
+                pub fn is_character_controller(id: EntityId) -> bool {
+                    entity::has_components(
+                        id,
+                        &[
+                            &crate::ambient_core::physics::components::character_controller_height(
+                            ),
+                            &crate::ambient_core::physics::components::character_controller_radius(
+                            ),
+                            &crate::ambient_core::physics::components::physics_controlled(),
+                        ],
+                    )
+                }
+                #[doc = "Returns the components that comprise *Character Controller* as a tuple.\n\nA capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::physics::character_controller_height\": f32 = 2.0,\n  \"ambient_core::physics::character_controller_radius\": f32 = 0.5,\n  \"ambient_core::physics::physics_controlled\": () = (),\n}\n```\n"]
+                #[allow(clippy::type_complexity)]
+                pub fn character_controller() -> (Component<f32>, Component<f32>, Component<()>) {
+                    (
+                        crate::ambient_core::physics::components::character_controller_height(),
+                        crate::ambient_core::physics::components::character_controller_radius(),
+                        crate::ambient_core::physics::components::physics_controlled(),
+                    )
                 }
             }
         }
@@ -2267,6 +2358,14 @@ mod raw {
                         use crate::ecs::EnumComponent;
                         self.to_u32().into_result()
                     }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
+                    }
                 }
                 impl MessageSerde for FontStyle {
                     fn serialize_message_part(
@@ -2484,6 +2583,12 @@ mod raw {
                 #[doc = "**Module name**: The name of this module.\n\n*Attributes*: Networked, Store, Debuggable"]
                 pub fn module_name() -> Component<String> {
                     *MODULE_NAME
+                }
+                static PACKAGE_REF: Lazy<Component<EntityId>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::wasm::package_ref"));
+                #[doc = "**Package reference**: The package that this module belongs to.\n\n*Attributes*: Networked, Store, Debuggable"]
+                pub fn package_ref() -> Component<EntityId> {
+                    *PACKAGE_REF
                 }
             }
         }

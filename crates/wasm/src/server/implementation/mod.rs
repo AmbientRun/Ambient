@@ -194,9 +194,18 @@ impl wit::player::Host for Bindings {
 impl wit::asset::Host for Bindings {
     fn url(
         &mut self,
-        package_id: String,
+        package_id: wit::types::EntityId,
         path: String,
     ) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
         shared::implementation::asset::url(self.world(), package_id, path, false)
+    }
+}
+
+impl wit::ambient_package::Host for Bindings {
+    fn get_entity_for_package_id(
+        &mut self,
+        package_id: String,
+    ) -> anyhow::Result<Option<shared::wit::types::EntityId>> {
+        shared::implementation::package::get_entity_for_package_id(self.world(), package_id)
     }
 }

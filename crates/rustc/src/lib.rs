@@ -112,14 +112,14 @@ impl Installation {
             handle_command_failure(task, self.run(cmd, ["--version"], None))?
                 .split_whitespace()
                 .nth(1)
-                .context("failed to extract version component (1)")?
+                .context("Failed to extract version component (1)")?
                 .split('-')
                 .next()
-                .context("failed to extract version component (2)")?
+                .context("Failed to extract version component (2)")?
                 .split('.')
                 .map(|i| i.parse().unwrap_or_default())
                 .collect_tuple()
-                .context("failed to collect version into tuple")?,
+                .context("Failed to collect version into tuple")?,
         ))
     }
 
@@ -207,7 +207,7 @@ fn parse_command_result_for_filenames(
             .join("");
 
         anyhow::bail!(
-            "failed to compile\n{}",
+            "Failed to compile\n{}",
             generate_error_report(stdout_errors, stderr)
         );
     }
@@ -220,7 +220,7 @@ fn handle_command_failure(
     let (success, stdout, stderr) = result?;
     if !success {
         anyhow::bail!(
-            "failed to {task}\n{}",
+            "Failed to {task}\n{}",
             generate_error_report(stdout, stderr)
         )
     }

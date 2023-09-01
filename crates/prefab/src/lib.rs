@@ -63,10 +63,10 @@ pub struct PrefabFromUrl(pub AssetUrl);
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<World>, AssetError>> for PrefabFromUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<World>, AssetError> {
-        let obj_url = self
-            .0
-            .abs()
-            .context(format!("PrefabFromUrl got relative url: {}", self.0))?;
+        let obj_url = self.0.abs().context(format!(
+            "`PrefabFromUrl` cannot load from a relative URL: {}",
+            self.0
+        ))?;
         let data = BytesFromUrl::new(obj_url.clone(), true)
             .get(&assets)
             .await?;
@@ -74,13 +74,13 @@ impl AsyncAssetKey<Result<Arc<World>, AssetError>> for PrefabFromUrl {
             mut world,
             warnings,
         } = tokio::task::block_in_place(|| serde_json::from_slice(&data))
-            .with_context(|| format!("Failed to deserialize object2 from url {obj_url}"))?;
+            .with_context(|| format!("Failed to deserialize object2 from URL {obj_url}"))?;
         warnings.log_warnings();
         for (_id, (url,), _) in query_mut((model_from_url(),), ()).iter(&mut world, None) {
             *url = AssetUrl::from_str(url)
-                .context("Invalid model url")?
+                .context("Invalid model URL")?
                 .resolve(&obj_url)
-                .context("Failed to resolve model url")?
+                .context("Failed to resolve model URL")?
                 .into();
         }
         for (_id, (def,), _) in

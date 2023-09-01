@@ -10,17 +10,18 @@ use crate::{
 };
 use ambient_core::{asset_cache, camera::*, gpu, player::local_user_id, ui_scene};
 use ambient_ecs::{ArchetypeFilter, Component, World};
+use ambient_gpu::mesh_buffer::MeshBufferKey;
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBuffer,
     shader_module::BindGroupDesc,
 };
-use ambient_gpu::{mesh_buffer::MeshBufferKey, settings::SettingsKey};
 use ambient_gpu_ecs::gpu_world;
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     color::Color,
 };
+use ambient_settings::SettingsKey;
 use glam::uvec2;
 use std::sync::Arc;
 use tracing::debug_span;
@@ -200,7 +201,7 @@ impl Renderer {
             None
         };
 
-        let settings = SettingsKey.get(assets);
+        let settings = SettingsKey.get(assets).render;
 
         let normals_format = to_linear_format(gpu.swapchain_format()).into();
 

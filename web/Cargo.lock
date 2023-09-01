@@ -131,6 +131,7 @@ dependencies = [
  "ambient_native_std",
  "ambient_procedurals",
  "ambient_renderer",
+ "ambient_settings",
  "ambient_sys",
  "ambient_ui_native",
  "anyhow",
@@ -420,6 +421,7 @@ version = "0.3.0-dev"
 dependencies = [
  "aho-corasick",
  "ambient_native_std",
+ "ambient_settings",
  "ambient_std",
  "ambient_sys",
  "anyhow",
@@ -427,7 +429,6 @@ dependencies = [
  "bytemuck",
  "byteorder",
  "cfg-if",
- "directories",
  "futures",
  "glam",
  "image",
@@ -439,7 +440,6 @@ dependencies = [
  "serde",
  "thiserror",
  "tokio",
- "toml 0.7.6",
  "tracing",
  "wgpu",
  "winit",
@@ -560,6 +560,7 @@ dependencies = [
  "ambient_color",
  "ambient_friendly_id",
  "ambient_math",
+ "ambient_shared_types",
  "ambient_sys",
  "anyhow",
  "async-trait",
@@ -647,12 +648,15 @@ dependencies = [
 name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_friendly_id",
+ "ambient_shared_types",
  "chrono",
  "convert_case 0.6.0",
  "indexmap 2.0.0",
  "once_cell",
  "proc-macro2",
  "quote",
+ "semver 1.0.18",
  "serde",
  "syn 1.0.109",
  "thiserror",
@@ -699,6 +703,7 @@ dependencies = [
  "indexmap 2.0.0",
  "paste",
  "reqwest",
+ "semver 1.0.18",
  "thiserror",
  "toml 0.7.6",
  "ulid",
@@ -847,6 +852,7 @@ dependencies = [
  "ambient_gpu_ecs",
  "ambient_meshes",
  "ambient_native_std",
+ "ambient_settings",
  "ambient_sys",
  "anyhow",
  "async-trait",
@@ -878,6 +884,18 @@ dependencies = [
 [[package]]
 name = "ambient_schema"
 version = "0.3.0-dev"
+
+[[package]]
+name = "ambient_settings"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_native_std",
+ "anyhow",
+ "directories",
+ "serde",
+ "toml 0.7.6",
+ "tracing",
+]
 
 [[package]]
 name = "ambient_shared_types"
@@ -5405,6 +5423,9 @@ name = "semver"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0293b4b29daaf487284529cc2f5675b8e57c61f70167ba415a463651fd6a918"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "semver-parser"

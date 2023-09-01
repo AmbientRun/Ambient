@@ -8,7 +8,7 @@ use proc_macro::TokenStream;
 mod main_macro;
 
 /// Makes your `main()` function accessible to the WASM host, and generates a
-/// `packages` module that contain all packages visible to your module.
+/// `packages` module that contain all packages visible to your package, including itself.
 ///
 /// If you do not add this attribute to your `main()` function, your module will not run.
 #[proc_macro_attribute]

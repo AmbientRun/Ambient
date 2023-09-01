@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, fmt::Display, path::PathBuf};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -7,20 +7,19 @@ use url::Url;
 
 use crate::{
     Component, Concept, Enum, ItemPathBuf, Message, PascalCaseIdentifier, SnakeCaseIdentifier,
-    Version,
 };
+use semver::{Version, VersionReq};
 
 #[derive(Error, Debug, PartialEq)]
 pub enum ManifestParseError {
     #[error("manifest was not valid TOML")]
     TomlError(#[from] toml::de::Error),
-    #[error("manifest contains a project section; projects have been renamed to packages")]
-    ProjectRenamedToPackageError,
+    #[error("manifest contains a project and/or an ember section; projects/embers have been renamed to packages")]
+    ProjectEmberRenamedToPackageError,
 }
 
 #[derive(Deserialize, Clone, Debug, Default, PartialEq, Serialize)]
 pub struct Manifest {
-    #[serde(default)]
     pub package: Package,
     #[serde(default)]
     pub build: Build,
@@ -37,13 +36,15 @@ pub struct Manifest {
     #[serde(alias = "enum")]
     pub enums: IndexMap<PascalCaseIdentifier, Enum>,
     #[serde(default)]
+    pub includes: HashMap<SnakeCaseIdentifier, PathBuf>,
+    #[serde(default)]
     pub dependencies: IndexMap<SnakeCaseIdentifier, Dependency>,
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, ManifestParseError> {
         let raw = toml::from_str::<toml::Table>(manifest)?;
-        if raw.contains_key("project") {
-            return Err(ManifestParseError::ProjectRenamedToPackageError);
+        if raw.contains_key("project") || raw.contains_key("ember") {
+            return Err(ManifestParseError::ProjectEmberRenamedToPackageError);
         }
 
         Ok(toml::from_str(manifest)?)
@@ -54,18 +55,52 @@ impl Manifest {
     }
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
+#[derive(Deserialize, Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Default, Serialize)]
+#[serde(transparent)]
+pub struct PackageId(pub(crate) String);
+impl PackageId {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+impl Display for PackageId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Package {
-    pub id: SnakeCaseIdentifier,
+    pub id: PackageId,
     pub name: String,
     pub version: Version,
     pub description: Option<String>,
     pub repository: Option<String>,
+    pub ambient_version: Option<VersionReq>,
     #[serde(default)]
     pub authors: Vec<String>,
     pub content: PackageContent,
-    #[serde(default)]
-    pub includes: Vec<PathBuf>,
+    #[serde(default = "return_true")]
+    pub public: bool,
+}
+impl Default for Package {
+    fn default() -> Self {
+        Self {
+            id: Default::default(),
+            name: Default::default(),
+            version: Version::parse("0.0.0").unwrap(),
+            description: Default::default(),
+            repository: Default::default(),
+            ambient_version: Default::default(),
+            authors: Default::default(),
+            content: Default::default(),
+            public: true,
+        }
+    }
+}
+
+fn return_true() -> bool {
+    true
 }
 
 // ----- NOTE: Update docs/reference/package.md when changing this ----
@@ -138,8 +173,8 @@ pub struct Dependency {
     url: Option<Url>,
     #[serde(default)]
     deployment: Option<String>,
-    #[serde(default = "return_true")]
-    pub enabled: bool,
+    #[serde(default)]
+    pub enabled: Option<bool>,
 }
 impl Dependency {
     pub fn url(&self) -> Option<Url> {
@@ -157,10 +192,6 @@ impl Dependency {
     }
 }
 
-fn return_true() -> bool {
-    true
-}
-
 #[cfg(test)]
 mod tests {
     use std::path::PathBuf;
@@ -170,9 +201,10 @@ mod tests {
 
     use crate::{
         Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Enum,
-        Identifier, ItemPathBuf, Manifest, ManifestParseError, Package, PascalCaseIdentifier,
-        SnakeCaseIdentifier, Version, VersionSuffix,
+        Identifier, ItemPathBuf, Manifest, ManifestParseError, Package, PackageId,
+        PascalCaseIdentifier, SnakeCaseIdentifier,
     };
+    use semver::Version;
 
     fn i(s: &str) -> Identifier {
         Identifier::new(s).unwrap()
@@ -204,9 +236,9 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: SnakeCaseIdentifier::new("test").unwrap(),
+                    id: PackageId("test".to_string()),
                     name: "Test".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -225,7 +257,7 @@ mod tests {
 
         assert_eq!(
             Manifest::parse(TOML),
-            Err(ManifestParseError::ProjectRenamedToPackageError)
+            Err(ManifestParseError::ProjectEmberRenamedToPackageError)
         )
     }
 
@@ -252,9 +284,9 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: sci("tictactoe"),
+                    id: PackageId("tictactoe".to_string()),
                     name: "Tic Tac Toe".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build {
@@ -283,6 +315,7 @@ mod tests {
                 )]),
                 messages: Default::default(),
                 enums: Default::default(),
+                includes: Default::default(),
                 dependencies: Default::default(),
             })
         )
@@ -296,6 +329,7 @@ mod tests {
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
+        ambient_version = "0.3.0-nightly-2023-08-31"
 
         [build.rust]
         feature-multibuild = ["client"]
@@ -305,9 +339,12 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: sci("tictactoe"),
+                    id: PackageId("tictactoe".to_string()),
                     name: "Tic Tac Toe".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
+                    ambient_version: Some(
+                        semver::VersionReq::parse("0.3.0-nightly-2023-08-31").unwrap()
+                    ),
                     ..Default::default()
                 },
                 build: Build {
@@ -353,9 +390,9 @@ mod tests {
             manifest,
             Manifest {
                 package: Package {
-                    id: sci("my_package"),
+                    id: PackageId("my_package".to_string()),
                     name: "My Package".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build {
@@ -442,6 +479,7 @@ mod tests {
                 )]),
                 messages: Default::default(),
                 enums: Default::default(),
+                includes: Default::default(),
                 dependencies: Default::default(),
             }
         );
@@ -483,9 +521,9 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: sci("tictactoe"),
+                    id: PackageId("tictactoe".to_string()),
                     name: "Tic Tac Toe".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build::default(),
@@ -502,6 +540,7 @@ mod tests {
                         ])
                     }
                 )]),
+                includes: Default::default(),
                 dependencies: Default::default(),
             })
         )
@@ -527,9 +566,9 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: sci("test"),
+                    id: PackageId("test".to_string()),
                     name: "Test".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Build {
@@ -578,6 +617,7 @@ mod tests {
                 concepts: Default::default(),
                 messages: Default::default(),
                 enums: Default::default(),
+                includes: Default::default(),
                 dependencies: Default::default(),
             })
         )
@@ -596,7 +636,7 @@ mod tests {
         deps_assets = { path = "deps/assets" }
         deps_code = { path = "deps/code" }
         deps_ignore_me = { path = "deps/ignore_me", enabled = false }
-        deps_remote = { url = "http://example.com" }
+        deps_remote = { url = "http://example.com", enabled = true }
         deps_remote_deployment = { deployment = "jhsdfu574S" }
 
         "#;
@@ -605,9 +645,9 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: sci("dependencies"),
+                    id: PackageId("dependencies".to_string()),
                     name: "dependencies".to_string(),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
                 build: Default::default(),
@@ -615,6 +655,7 @@ mod tests {
                 concepts: Default::default(),
                 messages: Default::default(),
                 enums: Default::default(),
+                includes: Default::default(),
                 dependencies: IndexMap::from_iter([
                     (
                         sci("deps_assets"),
@@ -622,7 +663,7 @@ mod tests {
                             path: Some(PathBuf::from("deps/assets")),
                             url: None,
                             deployment: None,
-                            enabled: true,
+                            enabled: None,
                         }
                     ),
                     (
@@ -631,7 +672,7 @@ mod tests {
                             path: Some(PathBuf::from("deps/code")),
                             url: None,
                             deployment: None,
-                            enabled: true,
+                            enabled: None,
                         }
                     ),
                     (
@@ -640,7 +681,7 @@ mod tests {
                             path: Some(PathBuf::from("deps/ignore_me")),
                             url: None,
                             deployment: None,
-                            enabled: false,
+                            enabled: Some(false),
                         }
                     ),
                     (
@@ -649,7 +690,7 @@ mod tests {
                             path: None,
                             url: Some(Url::parse("http://example.com").unwrap()),
                             deployment: None,
-                            enabled: true,
+                            enabled: Some(true),
                         }
                     ),
                     (
@@ -658,7 +699,7 @@ mod tests {
                             path: None,
                             url: None,
                             deployment: Some("jhsdfu574S".to_owned()),
-                            enabled: true,
+                            enabled: None,
                         }
                     )
                 ])

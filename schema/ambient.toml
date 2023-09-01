@@ -4,28 +4,28 @@ description = "Contains all core components for the Ambient runtime."
 name = "Core Components"
 version = "0.3.0-dev"
 content = { type = "Asset", schema = true }
-includes = [
-    "schema/animation.toml",
-    "schema/app_.toml",
-    "schema/audio.toml",
-    "schema/camera.toml",
-    "schema/ecs.toml",
-    "schema/input.toml",
-    "schema/layout.toml",
-    "schema/model.toml",
-    "schema/network.toml",
-    "schema/package.toml",
-    "schema/physics.toml",
-    "schema/player.toml",
-    "schema/prefab.toml",
-    "schema/primitives.toml",
-    "schema/procedurals.toml",
-    "schema/rect.toml",
-    "schema/rendering.toml",
-    "schema/text.toml",
-    "schema/transform.toml",
-    "schema/wasm.toml"
-]
+
+[includes]
+animation = "schema/animation.toml"
+app = "schema/app_.toml"
+audio = "schema/audio.toml"
+camera = "schema/camera.toml"
+ecs = "schema/ecs.toml"
+input = "schema/input.toml"
+layout = "schema/layout.toml"
+model = "schema/model.toml"
+network = "schema/network.toml"
+package = "schema/package.toml"
+physics = "schema/physics.toml"
+player = "schema/player.toml"
+prefab = "schema/prefab.toml"
+primitives = "schema/primitives.toml"
+procedurals = "schema/procedurals.toml"
+rect = "schema/rect.toml"
+rendering = "schema/rendering.toml"
+text = "schema/text.toml"
+transform = "schema/transform.toml"
+wasm = "schema/wasm.toml"
 
 # Messages
 [messages.Frame]

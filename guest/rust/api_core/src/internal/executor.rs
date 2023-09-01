@@ -15,7 +15,7 @@ use rand::random;
 use super::wit;
 
 pub type EventFuture = Pin<Box<dyn Future<Output = ResultEmpty>>>;
-type EventCallbackFn = Box<dyn FnMut(&wit::guest::Source, &[u8]) -> ResultEmpty>;
+type EventCallbackFn = Box<dyn FnMut(&wit::guest::Source, u128, &[u8]) -> ResultEmpty>;
 
 // the function is too general to be passed in directly
 #[allow(clippy::redundant_closure)]
@@ -71,8 +71,8 @@ impl Executor {
         {
             let mut callbacks = self.current_callbacks.borrow_mut();
             if let Some(callbacks) = callbacks.on.get_mut(&message_name) {
-                for callback in callbacks.values_mut() {
-                    callback(&source, &message_data).unwrap();
+                for (listener_id, callback) in callbacks.iter_mut() {
+                    callback(&source, *listener_id, &message_data).unwrap();
                 }
             }
         }

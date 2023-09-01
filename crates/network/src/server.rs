@@ -188,7 +188,7 @@ impl ServerState {
             instances: [(
                 MAIN_INSTANCE_ID.to_string(),
                 WorldInstance {
-                    world: World::new("main_server"),
+                    world: World::new("main_server", ambient_ecs::WorldContext::Server),
                     world_stream: WorldStream::new(world_stream_filter),
                     systems: SystemGroup::new("", vec![]),
                 },

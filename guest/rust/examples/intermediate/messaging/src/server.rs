@@ -30,8 +30,8 @@ pub fn main() {
     // See <https://github.com/AmbientRun/Ambient/issues/590> for more details.
 
     // 1
-    Hello::subscribe(|source, data| {
-        let Some(user_id) = source.client_user_id() else {
+    Hello::subscribe(|ctx, data| {
+        let Some(user_id) = ctx.client_user_id() else {
             return;
         };
         println!("{user_id}: {:?}", data);
@@ -80,9 +80,9 @@ pub fn main() {
     let handled = Arc::new(AtomicBool::new(false));
     Local::subscribe({
         let handled = handled.clone();
-        move |source, data| {
+        move |ctx, data| {
             handled.store(true, Ordering::SeqCst);
-            println!("{source:?}: {data:?}");
+            println!("{ctx:?}: {data:?}");
         }
     });
 

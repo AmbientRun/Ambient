@@ -172,3 +172,12 @@ description = """If attached, the collider will be rendered.
 **Note**: this will continuously overwrite the `local_gizmos` component.
 """
 attributes = ["Debuggable", "Networked"]
+
+[concepts.character_controller]
+name = "Character Controller"
+description = "A capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule."
+
+[concepts.character_controller.components]
+character_controller_height = 2.0
+character_controller_radius = 0.5
+physics_controlled = {}

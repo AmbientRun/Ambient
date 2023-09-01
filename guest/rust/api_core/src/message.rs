@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::{
     global::{CallbackReturn, EntityId},
     internal::{conversion::FromBindgen, executor::EXECUTOR, wit},
@@ -11,16 +13,16 @@ use crate::internal::conversion::IntoBindgen;
 pub enum Source {
     /// This message came from the runtime.
     Runtime,
-    /// This message came from the corresponding serverside module.
+    /// This message came from the corresponding serverside package.
     #[cfg(feature = "client")]
     Server,
-    /// This message came from the corresponding clientside module and was sent from `user_id`.
+    /// This message came from the corresponding clientside package and was sent from `user_id`.
     #[cfg(feature = "server")]
     Client {
         /// The user that sent this message.
         user_id: String,
     },
-    /// This message came from another module on this side.
+    /// This message came from another package on this side.
     Local(EntityId),
 }
 impl Source {
@@ -30,7 +32,7 @@ impl Source {
     }
 
     #[cfg(feature = "client")]
-    /// Is this message from the corresponding serverside module?
+    /// Is this message from the corresponding serverside package?
     pub fn server(&self) -> bool {
         matches!(self, Source::Server)
     }
@@ -89,12 +91,12 @@ impl FromBindgen for wit::guest::Source {
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
 /// The target for a originating message.
 pub enum Target {
-    /// A message to all other modules running on this side.
+    /// A message to all other packages running on this side.
     LocalBroadcast {
-        /// Whether or not the message should be sent to the module that originally sent the message.
+        /// Whether or not the message should be sent to the package that originally sent the message.
         include_self: bool,
     },
-    /// A message to a specific module running on this side.
+    /// A message to a specific package or module running on this side.
     Local(EntityId),
 
     // Client
@@ -106,9 +108,9 @@ pub enum Target {
     /// for messages that are sent frequently, but are not critical to the functioning
     /// of the logic on the server.
     ///
-    /// Note that this message will only be received by the corresponding module
-    /// on the server, and not by any other modules. You will need to explicitly
-    /// relay the message to other modules on the server.
+    /// Note that this message will only be received by the corresponding package
+    /// on the server, and not by any other packages. You will need to explicitly
+    /// relay the message to other packages on the server.
     #[cfg(feature = "client")]
     ServerUnreliable,
     /// A reliable transmission to the server (guaranteed to be received).
@@ -116,9 +118,9 @@ pub enum Target {
     /// Reliable messages are implemented using QUIC streams. This makes them ideal
     /// for messages that are sent infrequently, but must be received by the server.
     ///
-    /// Note that this message will only be received by the corresponding module
-    /// on the server, and not by any other modules. You will need to explicitly
-    /// relay the message to other modules on the server.
+    /// Note that this message will only be received by the corresponding package
+    /// on the server, and not by any other packages. You will need to explicitly
+    /// relay the message to other packages on the server.
     #[cfg(feature = "client")]
     ServerReliable,
 
@@ -131,9 +133,9 @@ pub enum Target {
     /// for messages that are sent frequently, but are not critical to the functioning
     /// of the logic on the client.
     ///
-    /// Note that this message will only be received by the corresponding module
-    /// on the client, and not by any other modules. You will need to explicitly
-    /// relay the message to other modules on the client.
+    /// Note that this message will only be received by the corresponding package
+    /// on the client, and not by any other packages. You will need to explicitly
+    /// relay the message to other packages on the client.
     #[cfg(feature = "server")]
     ClientBroadcastUnreliable,
     /// A reliable transmission to all clients (guaranteed to be received).
@@ -141,9 +143,9 @@ pub enum Target {
     /// Reliable messages are implemented using QUIC streams. This makes them ideal
     /// for messages that are sent infrequently, but must be received by the client.
     ///
-    /// Note that this message will only be received by the corresponding module
-    /// on the client, and not by any other modules. You will need to explicitly
-    /// relay the message to other modules on the client.
+    /// Note that this message will only be received by the corresponding package
+    /// on the client, and not by any other packages. You will need to explicitly
+    /// relay the message to other packages on the client.
     #[cfg(feature = "server")]
     ClientBroadcastReliable,
     /// An unreliable transmission to a specific client.
@@ -154,9 +156,9 @@ pub enum Target {
     /// for messages that are sent frequently, but are not critical to the functioning
     /// of the logic on the client.
     ///
-    /// Note that this message will only be received by the corresponding module
-    /// on the client, and not by any other modules. You will need to explicitly
-    /// relay the message to other modules on the client.
+    /// Note that this message will only be received by the corresponding package
+    /// on the client, and not by any other packages. You will need to explicitly
+    /// relay the message to other packages on the client.
     #[cfg(feature = "server")]
     ClientTargetedUnreliable(
         /// The user to send to.
@@ -167,9 +169,9 @@ pub enum Target {
     /// Reliable messages are implemented using QUIC streams. This makes them ideal
     /// for messages that are sent infrequently, but must be received by the client.
     ///
-    /// Note that this message will only be received by the corresponding module
-    /// on the client, and not by any other modules. You will need to explicitly
-    /// relay the message to other modules on the client.
+    /// Note that this message will only be received by the corresponding package
+    /// on the client, and not by any other packages. You will need to explicitly
+    /// relay the message to other packages on the client.
     #[cfg(feature = "server")]
     ClientTargetedReliable(
         /// The user to send to.
@@ -215,7 +217,7 @@ impl<'a> IntoBindgen for &'a Target {
     }
 }
 
-/// Send a message from this module to a specific `target`.
+/// Send a message from this package to a specific `target`.
 pub fn send<T: Message>(target: Target, data: &T) {
     #[cfg(all(feature = "client", not(feature = "server")))]
     wit::client_message::send(
@@ -240,15 +242,65 @@ pub fn send<T: Message>(target: Target, data: &T) {
 pub struct Listener(String, u128);
 impl Listener {
     /// Stops listening.
-    pub fn stop(self) {
+    pub fn stop(&self) {
         EXECUTOR.unregister_callback(&self.0, self.1);
     }
 }
 
+/// Message context.
+pub struct MessageContext {
+    /// Where the message came from.
+    pub source: Source,
+    /// The listener that can be used to stop listening.
+    pub listener: Listener,
+}
+impl MessageContext {
+    /// Is this message from the runtime?
+    pub fn runtime(&self) -> bool {
+        self.source.runtime()
+    }
+
+    #[cfg(feature = "client")]
+    /// Is this message from the corresponding serverside package?
+    pub fn server(&self) -> bool {
+        self.source.server()
+    }
+
+    #[cfg(feature = "server")]
+    /// The user that sent this message, if any.
+    pub fn client_user_id(&self) -> Option<String> {
+        self.source.client_user_id()
+    }
+
+    #[cfg(feature = "server")]
+    /// The entity ID of the player that sent this message, if any.
+    pub fn client_entity_id(&self) -> Option<EntityId> {
+        self.source.client_entity_id()
+    }
+
+    /// The module on this side that sent this message, if any.
+    pub fn local(&self) -> Option<EntityId> {
+        self.source.local()
+    }
+
+    /// Stops listening.
+    pub fn stop(&self) {
+        self.listener.stop()
+    }
+}
+impl Debug for MessageContext {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.source.fmt(f)
+    }
+}
+
 /// Subscribes to a message.
+///
+/// To unsubscribe from a message, call [Listener::stop] on the returned [Listener],
+/// or on the [MessageContext] that is passed to the callback.
 #[allow(clippy::collapsible_else_if)]
 pub fn subscribe<R: CallbackReturn, T: Message>(
-    mut callback: impl FnMut(Source, T) -> R + 'static,
+    mut callback: impl FnMut(MessageContext, T) -> R + 'static,
 ) -> Listener {
     let id = T::id();
     wit::message::subscribe(id);
@@ -256,9 +308,15 @@ pub fn subscribe<R: CallbackReturn, T: Message>(
         id.to_string(),
         EXECUTOR.register_callback(
             id.to_string(),
-            Box::new(move |source, data| {
-                callback(source.clone().from_bindgen(), T::deserialize_message(data)?)
-                    .into_result()?;
+            Box::new(move |source, listener_id, data| {
+                callback(
+                    MessageContext {
+                        source: source.clone().from_bindgen(),
+                        listener: Listener(id.to_string(), listener_id),
+                    },
+                    T::deserialize_message(data)?,
+                )
+                .into_result()?;
                 Ok(())
             }),
         ),
@@ -272,24 +330,24 @@ pub trait ModuleMessage: Message {
         self::send(target, self)
     }
 
-    /// Sends a message to every module on this side.
+    /// Sends a message to every package on this side.
     ///
-    /// `include_self` controls whether or not the message is sent to the module that originally sent the message.
+    /// `include_self` controls whether or not the message is sent to the package that originally sent the message.
     fn send_local_broadcast(&self, include_self: bool) {
         self.send(Target::LocalBroadcast { include_self })
     }
 
-    /// Sends a message to a specific module on this side.
-    fn send_local(&self, module_id: EntityId) {
-        self.send(Target::Local(module_id))
+    /// Sends a message to a specific package or module on this side.
+    fn send_local(&self, target_id: EntityId) {
+        self.send(Target::Local(target_id))
     }
 
     #[cfg(feature = "client")]
     /// Sends an unreliable message to the server.
     ///
-    /// Note that this message will only be received by the corresponding module on the server,
-    /// and not by any other modules. You will need to explicitly relay the message to other
-    /// modules on the server.
+    /// Note that this message will only be received by the corresponding package on the server,
+    /// and not by any other packages. You will need to explicitly relay the message to other
+    /// packages on the server.
     ///
     /// See [Target::ServerUnreliable] for details.
     fn send_server_unreliable(&self) {
@@ -299,9 +357,9 @@ pub trait ModuleMessage: Message {
     #[cfg(feature = "client")]
     /// Sends a reliable message to the server.
     ///
-    /// Note that this message will only be received by the corresponding module on the server,
-    /// and not by any other modules. You will need to explicitly relay the message to other
-    /// modules on the server.
+    /// Note that this message will only be received by the corresponding package on the server,
+    /// and not by any other packages. You will need to explicitly relay the message to other
+    /// packages on the server.
     ///
     /// See [Target::ServerReliable] for details.
     fn send_server_reliable(&self) {
@@ -311,9 +369,9 @@ pub trait ModuleMessage: Message {
     #[cfg(feature = "server")]
     /// Sends an unreliable message to all clients.
     ///
-    /// Note that this message will only be received by the corresponding module on the client,
-    /// and not by any other modules. You will need to explicitly relay the message to other
-    /// modules on the client.
+    /// Note that this message will only be received by the corresponding package on the client,
+    /// and not by any other packages. You will need to explicitly relay the message to other
+    /// packages on the client.
     ///
     /// See [Target::ClientBroadcastUnreliable] for details.
     fn send_client_broadcast_unreliable(&self) {
@@ -323,9 +381,9 @@ pub trait ModuleMessage: Message {
     #[cfg(feature = "server")]
     /// Sends a reliable message to all clients.
     ///
-    /// Note that this message will only be received by the corresponding module on the client,
-    /// and not by any other modules. You will need to explicitly relay the message to other
-    /// modules on the client.
+    /// Note that this message will only be received by the corresponding package on the client,
+    /// and not by any other packages. You will need to explicitly relay the message to other
+    /// packages on the client.
     ///
     /// See [Target::ClientBroadcastReliable] for details.
     fn send_client_broadcast_reliable(&self) {
@@ -335,9 +393,9 @@ pub trait ModuleMessage: Message {
     #[cfg(feature = "server")]
     /// Sends an unreliable message to a specific client.
     ///
-    /// Note that this message will only be received by the corresponding module on the client,
-    /// and not by any other modules. You will need to explicitly relay the message to other
-    /// modules on the client.
+    /// Note that this message will only be received by the corresponding package on the client,
+    /// and not by any other packages. You will need to explicitly relay the message to other
+    /// packages on the client.
     ///
     /// See [Target::ClientTargetedUnreliable] for details.
     fn send_client_targeted_unreliable(&self, user_id: String) {
@@ -347,9 +405,9 @@ pub trait ModuleMessage: Message {
     #[cfg(feature = "server")]
     /// Sends a reliable message to a specific client.
     ///
-    /// Note that this message will only be received by the corresponding module on the client,
-    /// and not by any other modules. You will need to explicitly relay the message to other
-    /// modules on the client.
+    /// Note that this message will only be received by the corresponding package on the client,
+    /// and not by any other packages. You will need to explicitly relay the message to other
+    /// packages on the client.
     ///
     /// See [Target::ClientTargetedReliable] for details.
     fn send_client_targeted_reliable(&self, user_id: String) {
@@ -357,7 +415,9 @@ pub trait ModuleMessage: Message {
     }
 
     /// Subscribes to this [Message]. Wrapper around [self::subscribe].
-    fn subscribe<R: CallbackReturn>(callback: impl FnMut(Source, Self) -> R + 'static) -> Listener {
+    fn subscribe<R: CallbackReturn>(
+        callback: impl FnMut(MessageContext, Self) -> R + 'static,
+    ) -> Listener {
         self::subscribe(callback)
     }
 }
@@ -366,7 +426,7 @@ pub trait ModuleMessage: Message {
 pub trait RuntimeMessage: Message {
     /// Subscribes to this [Message]. Wrapper around [self::subscribe].
     fn subscribe<R: CallbackReturn>(mut callback: impl FnMut(Self) -> R + 'static) -> Listener {
-        self::subscribe(move |_source, msg| callback(msg))
+        self::subscribe(move |_ctx, msg| callback(msg))
     }
 }
 

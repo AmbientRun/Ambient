@@ -1,0 +1,185 @@
+[package]
+id = "afps_fpsanim"
+name = "AFPS Animation"
+version = "0.0.1"
+content = { type = "Asset", animations = true, code = true }
+
+[components]
+walk_fd = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_bk = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_lt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_rt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_fd_lt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_fd_rt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_bk_lt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_bk_rt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+
+run_fd = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_bk = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_lt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_rt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_fd_lt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_fd_rt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_bk_lt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_bk_rt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+
+run = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+jump = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+hit = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+death = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+fire = { type = { type = "Vec", element_type = "EntityId" }, name = "fire", description = "fire", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+fd_rt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+fd_lt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+bk_lt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+bk_rt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_fd = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_bk = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_lt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_rt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_fd_lt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_fd_rt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_bk_lt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_bk_rt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_persistant_anim_node = { type = "EntityId", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_output_blend_node = { type = "EntityId", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_anim_blend_weights = { type = { type = "Vec", element_type = "F32" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_anim_blend = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+[dependencies]
+afps_schema = { path = "../../schema", deployment = "3xxxP2nZxCq3jblLOYefNU" }

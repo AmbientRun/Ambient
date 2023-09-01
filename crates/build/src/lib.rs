@@ -10,15 +10,17 @@ use std::{
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_native_std::{asset_url::AbsAssetUrl, AmbientVersion};
 use ambient_package::{
-    BuildMetadata, BuildMetadataError, BuildSettings, Manifest as PackageManifest, Version,
+    BuildMetadata, BuildMetadataError, BuildSettings, Manifest as PackageManifest,
 };
 use ambient_package_semantic::{package_dependency_to_retrievable_file, RetrievableFile, Semantic};
 use ambient_package_semantic_native::add_to_semantic_and_register_components;
+use ambient_shared_types::asset::BuildAsset;
 use ambient_std::path::path_to_unix_string_lossy;
 use anyhow::Context;
 use futures::FutureExt;
 use itertools::Itertools;
-use pipelines::{FileCollection, ProcessCtx, ProcessCtxKey};
+use pipelines::{out_asset::OutAsset, FileCollection, ProcessCtx, ProcessCtxKey};
+use semver::Version;
 use walkdir::WalkDir;
 
 pub mod migrate;
@@ -27,6 +29,7 @@ pub mod pipelines;
 #[derive(Clone, Debug)]
 pub struct BuildResult {
     pub build_path: PathBuf,
+    pub package_name: String,
     pub was_built: bool,
 }
 
@@ -117,7 +120,7 @@ pub async fn build_package(
             deploy: bool,
             dependency: &ambient_package::Dependency,
         ) -> anyhow::Result<Option<chrono::DateTime<chrono::Utc>>> {
-            let metadata_path = package_dependency_to_retrievable_file(&omr, deploy, dependency)?
+            let metadata_path = package_dependency_to_retrievable_file(omr, deploy, dependency)?
                 .map(|p| p.parent_join(Path::new(BuildMetadata::FILENAME)))
                 .transpose()?;
 
@@ -136,7 +139,7 @@ pub async fn build_package(
         }))
         .await?
         .into_iter()
-        .filter_map(|x| x)
+        .flatten()
         .max()
     };
 
@@ -169,6 +172,7 @@ pub async fn build_package(
         );
         return Ok(BuildResult {
             build_path,
+            package_name: package_name.clone(),
             was_built: false,
         });
     }
@@ -183,20 +187,23 @@ pub async fn build_package(
         .await
         .context("Failed to create build directory")?;
 
-    if !settings.wasm_only {
-        build_assets(assets, &assets_path, &build_path, false).await?;
-    }
+    let assets = if !settings.wasm_only {
+        build_assets(assets, &assets_path, &build_path, false).await?
+    } else {
+        vec![]
+    };
 
     build_rust_if_available(&package_path, &manifest, &build_path, settings.release)
         .await
-        .with_context(|| format!("Failed to build Rust {build_path:?}"))?;
+        .with_context(|| format!("Failed to build Rust in {build_path:?}"))?;
 
     tokio::fs::write(&output_manifest_path, toml::to_string(&manifest)?).await?;
 
-    store_metadata(&build_path, settings).await?;
+    store_metadata(&package_path, &build_path, settings, &assets).await?;
 
     Ok(BuildResult {
         build_path,
+        package_name: package_name.clone(),
         was_built: true,
     })
 }
@@ -225,7 +232,7 @@ pub async fn build_assets(
     assets_path: &Path,
     build_path: &Path,
     for_import_only: bool,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Vec<OutAsset>> {
     let files = get_files_in_path(assets_path).map(Into::into).collect_vec();
 
     let has_errored = Arc::new(AtomicBool::new(false));
@@ -281,7 +288,7 @@ pub async fn build_assets(
 
     ProcessCtxKey.insert(&ctx.assets, ctx.clone());
 
-    pipelines::process_pipelines(&ctx)
+    let assets = pipelines::process_pipelines(&ctx)
         .await
         .with_context(|| format!("Failed to process pipelines for {assets_path:?}"))?;
 
@@ -303,7 +310,7 @@ pub async fn build_assets(
         anyhow::bail!("Failed to build assets");
     }
 
-    Ok(())
+    Ok(assets)
 }
 
 pub async fn build_rust_if_available(
@@ -348,17 +355,39 @@ fn get_component_paths(target: &str, build_path: &Path) -> Vec<String> {
 }
 
 async fn store_metadata(
+    package_path: &Path,
     build_path: &Path,
     settings: &BuildSettings,
+    assets: &[OutAsset],
 ) -> anyhow::Result<BuildMetadata> {
+    fn strip_path(path: PathBuf, prefix: &Path) -> PathBuf {
+        path.strip_prefix(prefix)
+            .map(|p| p.to_owned())
+            .unwrap_or(path)
+    }
+
     let AmbientVersion { version, revision } = AmbientVersion::default();
     let metadata = BuildMetadata {
-        ambient_version: Version::new_from_str(&version).expect("Failed to parse version"),
+        ambient_version: Version::parse(&version).expect("Failed to parse version"),
         ambient_revision: revision,
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
         last_build_time: Some(chrono::Utc::now().to_rfc3339()),
         settings: settings.clone(),
+        asset: assets
+            .iter()
+            .flat_map(|a| {
+                Some(BuildAsset {
+                    type_: a.type_,
+                    input: a
+                        .source
+                        .as_ref()
+                        .and_then(|s| s.to_file_path().ok().flatten())
+                        .map(|p| strip_path(p, package_path)),
+                    output: strip_path(a.content.as_content()?.to_file_path().ok()??, build_path),
+                })
+            })
+            .collect(),
     };
     let metadata_path = build_path.join(BuildMetadata::FILENAME);
     tokio::fs::write(&metadata_path, toml::to_string(&metadata)?).await?;

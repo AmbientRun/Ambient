@@ -265,7 +265,7 @@ impl Shader {
         for module in &modules {
             for (group, binding) in &module.bindings {
                 let index = *bind_group_index.get(&**group).with_context(|| {
-                    format!("Failed to resolve bind group: {group} in {}", module.name)
+                    format!("Failed to resolve bind group {group} in {}", module.name)
                 })?;
 
                 let desc = &mut bind_groups[index];

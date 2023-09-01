@@ -72,7 +72,7 @@ impl<'de> Deserialize<'de> for ModuleBytecode {
                 BASE64
                     .decode(v.as_bytes())
                     .map_err(|err| {
-                        E::custom(format!("failed to decode base64-encoded string: {err}"))
+                        E::custom(format!("Failed to decode base64-encoded string: {err}"))
                     })
                     .map(ModuleBytecode)
             }

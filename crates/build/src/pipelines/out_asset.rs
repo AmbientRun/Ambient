@@ -11,6 +11,13 @@ impl OutAssetContent {
     pub fn is_collection(&self) -> bool {
         matches!(self, OutAssetContent::Collection(..))
     }
+
+    pub fn as_content(&self) -> Option<&AbsAssetUrl> {
+        match self {
+            Self::Content(v) => Some(v),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

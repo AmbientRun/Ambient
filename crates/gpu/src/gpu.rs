@@ -1,12 +1,11 @@
 use std::sync::Arc;
 
 use ambient_native_std::asset_cache::SyncAssetKey;
+use ambient_settings::RenderSettings;
 use bytemuck::{Pod, Zeroable};
 use glam::{uvec2, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use wgpu::{InstanceDescriptor, PresentMode, TextureFormat};
 use winit::window::Window;
-
-use crate::settings::Settings;
 
 // #[cfg(debug_assertions)]
 pub const DEFAULT_SAMPLE_COUNT: u32 = 1;
@@ -31,13 +30,13 @@ pub struct Gpu {
 
 impl Gpu {
     pub async fn new(window: Option<&Window>) -> Self {
-        Self::with_config(window, false, &Settings::default()).await
+        Self::with_config(window, false, &RenderSettings::default()).await
     }
     #[tracing::instrument(level = "info")]
     pub async fn with_config(
         window: Option<&Window>,
         will_be_polled: bool,
-        settings: &Settings,
+        settings: &RenderSettings,
     ) -> Self {
         // From: https://github.com/KhronosGroup/Vulkan-Loader/issues/552
         #[cfg(not(target_os = "unknown"))]

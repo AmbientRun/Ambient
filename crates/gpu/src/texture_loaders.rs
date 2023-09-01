@@ -48,11 +48,11 @@ async fn image_from_url(assets: AssetCache, url: AbsAssetUrl) -> Result<DynamicI
                 } else {
                     Ok(image::io::Reader::new(Cursor::new(&*data))
                         .with_guessed_format()
-                        .with_context(|| format!("Failed to guess format, and couldn't find an extension of image with url {}", url))?
+                        .with_context(|| format!("Failed to guess format, and couldn't find an extension of image with URL \"{url}\""))?
                         .decode()?)
                 }
         }})
-        .with_context(|| format!("Failed to load image {url}"))?)
+        .with_context(|| format!("Failed to load image from \"{url}\""))?)
 }
 
 #[derive(Debug, Clone)]
@@ -334,7 +334,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureArrayFromUrls {
                                 .with_guessed_format()
                                 .with_context(|| format!("Failed to guess format of {url}"))?
                                 .decode()
-                                .with_context(|| format!("Failed to decode image {url}"))?
+                                .with_context(|| format!("Failed to decode image from {url}"))?
                                 .into_rgba8())
                         })
                     }

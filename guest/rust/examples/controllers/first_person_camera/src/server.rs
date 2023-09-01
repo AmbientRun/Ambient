@@ -6,9 +6,9 @@ use ambient_api::{
             concepts::make_perspective_infinite_reverse_camera,
         },
         ecs::components::{children, parent},
-        physics::components::{
-            character_controller_height, character_controller_radius, physics_controlled,
-            plane_collider, sphere_collider,
+        physics::{
+            components::{plane_collider, sphere_collider},
+            concepts::make_character_controller,
         },
         player::components::{is_player, user_id},
         primitives::{
@@ -63,12 +63,10 @@ pub fn main() {
                 id,
                 Entity::new()
                     .with_merge(make_transformable())
+                    .with_merge(make_character_controller())
                     .with(cube(), ())
-                    .with(physics_controlled(), ())
                     .with(player_movement_direction(), Vec2::default())
                     .with(color(), Vec4::ONE)
-                    .with(character_controller_height(), 2.)
-                    .with(character_controller_radius(), 0.5)
                     .with(player_head_ref(), head)
                     .with(ball_ref(), ball)
                     .with(children(), vec![head])
@@ -78,8 +76,8 @@ pub fn main() {
         }
     });
 
-    Input::subscribe(move |source, msg| {
-        let Some(player_id) = source.client_entity_id() else {
+    Input::subscribe(move |ctx, msg| {
+        let Some(player_id) = ctx.client_entity_id() else {
             return;
         };
 

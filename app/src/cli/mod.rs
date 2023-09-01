@@ -8,6 +8,7 @@ pub mod assets;
 pub mod build;
 pub mod client;
 pub mod deploy;
+pub mod login;
 pub mod server;
 
 mod package_path;
@@ -63,12 +64,16 @@ pub enum Commands {
     Deploy {
         #[command(flatten)]
         package: PackageCli,
+        /// Additional packages to deploy; this allows you to share deployed dependencies
+        /// between packages when doing a group deploy
+        #[arg(long)]
+        extra_packages: Vec<PathBuf>,
         /// API server endpoint
         #[arg(long, default_value = "https://api.ambient.run")]
         api_server: String,
         /// Authentication token
-        #[arg(short, long, required = true)]
-        token: String,
+        #[arg(short, long)]
+        token: Option<String>,
         /// Don't use differential upload and upload all assets
         #[arg(long)]
         force_upload: bool,
@@ -98,6 +103,8 @@ pub enum Commands {
         #[command(subcommand)]
         command: AssetCommand,
     },
+    /// Log into Ambient and save your API token to settings
+    Login,
 }
 
 #[derive(Subcommand, Clone, Copy, Debug)]
@@ -227,6 +234,10 @@ pub struct HostCli {
     /// Private key for the certificate
     #[arg(long)]
     pub key: Option<PathBuf>,
+
+    /// Shutdown the server after the specified number of seconds of inactivity
+    #[arg(long)]
+    pub shutdown_after_inactivity_seconds: Option<u64>,
 }
 
 impl Cli {
@@ -241,6 +252,7 @@ impl Cli {
             Commands::View { package, .. } => Some(package),
             Commands::Join { .. } => None,
             Commands::Assets { .. } => None,
+            Commands::Login => None,
         }
     }
     pub fn use_release_build(&self) -> bool {
@@ -251,7 +263,7 @@ impl Cli {
             Run { package, .. } | Build { package, .. } | View { package, .. } => {
                 package.is_release().unwrap_or(false)
             }
-            New { .. } | Join { .. } | Assets { .. } => false,
+            New { .. } | Join { .. } | Assets { .. } | Login => false,
         }
     }
 }

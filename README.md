@@ -55,6 +55,13 @@ For alternative installation options, go to the [documentation on installing](ht
 | Custom shaders          | 🚧     | Custom shaders are supported by the renderer, but are not yet exposed in the API. See [this issue](https://github.com/AmbientRun/Ambient/issues/98).                                                                               |
 | Hot-reloading assets    | 🚧     | See [this issue](https://github.com/AmbientRun/Ambient/issues/12).                                                                                                                                                                 |
 | ECS save/load           | 🚧     | For loading, [see this issue](https://github.com/AmbientRun/Ambient/issues/71).                                                                                                                                                    |
+| IDE                     | 🚧     | [#694](https://github.com/AmbientRun/Ambient/issues/694)                                                                                                                                                                           |
+
+In addition to the above the following areas have umbrella issues:
+| Area           | Issue                                                    |
+| -------------- | -------------------------------------------------------- |
+| Networking     | [#764](https://github.com/AmbientRun/Ambient/issues/671) |
+| Asset pipeline | [#764](https://github.com/AmbientRun/Ambient/issues/764) |
 
 ## Examples
 
@@ -63,13 +70,13 @@ Each example in the [examples](./guest/rust/examples/) directory can be run with
 _(Note that ambient needs to match the version that the examples were built for, see ["Running examples"](https://ambientrun.github.io/Ambient/user/running_examples.html) in the docs)_
 
 ```
-ambient run guest/rust/examples/games/tictactoe
+ambient run guest/rust/examples/controllers/first_person_camera
 ```
 
 Every example can also be run server-only. To do so:
 
 ```
-ambient serve guest/rust/examples/games/tictactoe
+ambient serve guest/rust/examples/controllers/first_person_camera
 ```
 
 This will start a server that other people, including yourself, can join. By default, the server will use the Ambient proxy to allow clients to join from outside your local network, and give you a URL to share with others:

@@ -13,11 +13,7 @@ use crate::{
 ///
 /// Returns `spawned_entity_uid`.
 pub fn spawn(components: &Entity) -> EntityId {
-    // the function is too general to be passed in directly
-    #[allow(clippy::redundant_closure)]
-    components
-        .call_with(|data| wit::entity::spawn(data))
-        .from_bindgen()
+    wit::entity::spawn(&components.clone().into_bindgen()).from_bindgen()
 }
 
 /// Waits until `id` has the `component`. If the entity was deleted the method returns None.
@@ -40,7 +36,7 @@ pub fn despawn_recursive(entity: EntityId) {
     if let Some(res) = despawn(entity) {
         if let Some(children) = res.get_ref(children()) {
             for c in children {
-                despawn_recursive(c);
+                despawn_recursive(*c);
             }
         }
     }
@@ -119,7 +115,7 @@ pub fn add_component<T: SupportedValue>(entity: EntityId, component: Component<T
 
 /// Adds the components `components` for `entity` with `value`. Will replace any existing components specified in `components`.
 pub fn add_components(entity: EntityId, components: Entity) {
-    components.call_with(|data| wit::component::add_components(entity.into_bindgen(), data))
+    wit::component::add_components(entity.into_bindgen(), &components.into_bindgen())
 }
 
 /// Sets the component `component` for `entity` with `value`.
@@ -133,7 +129,7 @@ pub fn set_component<T: SupportedValue>(entity: EntityId, component: Component<T
 
 /// Sets the components `components` for `entity` with `value`.
 pub fn set_components(entity: EntityId, components: Entity) {
-    components.call_with(|data| wit::component::set_components(entity.into_bindgen(), data))
+    wit::component::set_components(entity.into_bindgen(), &components.into_bindgen())
 }
 
 /// Checks if the `entity` has a `component`.

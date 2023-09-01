@@ -1,7 +1,9 @@
 interface asset {
+    use types.{entity-id}
+
     variant url-error {
         invalid-url(string),
     }
 
-    url: func(package-id: string, path: string) -> result<string, url-error>
+    url: func(package-id: entity-id, path: string) -> result<string, url-error>
 }

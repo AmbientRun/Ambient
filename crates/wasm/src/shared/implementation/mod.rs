@@ -2,6 +2,7 @@ pub mod asset;
 pub mod component;
 pub mod entity;
 pub mod message;
+pub mod package;
 pub mod player;
 
 pub fn unsupported<T>() -> anyhow::Result<T> {

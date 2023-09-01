@@ -206,7 +206,7 @@ pub(crate) fn get_component(
     index: u32,
 ) -> anyhow::Result<Option<wit::component::Value>> {
     let primitive_component = with_component_registry(|cr| cr.get_primitive_component(index))
-        .with_context(|| format!("the component {index} does not exist"))?;
+        .with_context(|| format!("The component {index} does not exist"))?;
 
     get_component_entity_accessor(
         world,

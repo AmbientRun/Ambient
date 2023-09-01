@@ -1,0 +1,40 @@
+[package]
+id = "editor"
+name = "Editor"
+version = "0.0.1"
+content = { type = "Tool" }
+
+[dependencies]
+editor_schema = { path = "../../schemas/editor" , deployment = "5obuXgbkazoOx3ATjEctJV" }
+
+[components]
+# Player components
+editor_camera = { type = "EntityId", attributes = ["Networked", "Debuggable"] }
+mouseover_position = { type = "Vec3", attributes = ["Networked", "Debuggable"] }
+mouseover_entity = { type = "EntityId", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+selected_entity = { type = "EntityId", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+# Camera components
+camera_angle = { type = "Vec2", description = "X is yaw, Y is pitch", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+[messages.ToggleEditor.fields]
+
+[messages.Input.fields]
+aim_delta = "Vec2"
+movement = "Vec2"
+boost = "Bool"
+
+ray_origin = "Vec3"
+ray_direction = "Vec3"
+select = "Bool"
+freeze = "Bool"
+translate_to = { type = "Option", element_type = "Vec3" }

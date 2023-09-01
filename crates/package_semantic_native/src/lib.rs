@@ -39,6 +39,7 @@ pub type WasmSpawn =
     Cb<dyn Fn(&mut World, WasmSpawnRequest) -> anyhow::Result<WasmSpawnResponse> + Sync + Send>;
 #[derive(Debug)]
 pub struct WasmSpawnRequest {
+    pub package_id: EntityId,
     pub client_modules: Vec<(AbsAssetUrl, bool)>,
     pub server_modules: Vec<(AbsAssetUrl, bool)>,
 }
@@ -120,7 +121,9 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
             let package = semantic.items.get(package_id);
 
             for dependency in package.dependencies.values() {
-                package_id_to_enabled.insert(dependency.id, dependency.enabled);
+                if let Some(enabled) = dependency.enabled {
+                    package_id_to_enabled.insert(dependency.id, enabled);
+                }
             }
         }
 
@@ -153,13 +156,36 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
             .copied()
             .unwrap_or(true);
 
-        let wasm = if let Some(metadata) = &package.build_metadata {
+        let manifest = &package.manifest;
+        let mut entity = Entity::new()
+            .with(app_name(), format!("Package {}", manifest.package.name))
+            .with(self::is_package(), ())
+            .with(self::enabled(), enabled)
+            .with(self::id(), package_id.clone())
+            .with(self::name(), manifest.package.name.clone())
+            .with(self::version(), manifest.package.version.to_string())
+            .with(self::authors(), manifest.package.authors.clone())
+            .with(self::asset_url(), base_asset_url.to_string());
+        if let Some(description) = &manifest.package.description {
+            entity.set(self::description(), description.clone());
+        }
+        if let Some(repository) = &manifest.package.repository {
+            entity.set(self::repository(), repository.clone());
+        }
+        let entity = entity.spawn(world);
+        world
+            .synced_resource_mut(package_id_to_package_entity())
+            .unwrap()
+            .insert(package_id.clone(), entity);
+
+        if let Some(metadata) = &package.build_metadata {
             let asset_url = AbsAssetUrl(base_asset_url.clone());
 
             let wasm_spawn = world.resource(self::wasm_spawn()).clone();
-            (wasm_spawn)(
+            let wasm = (wasm_spawn)(
                 world,
                 WasmSpawnRequest {
+                    package_id: entity,
                     client_modules: metadata
                         .client_component_paths
                         .iter()
@@ -171,35 +197,11 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
                         .map(|m| Ok((asset_url.push(m)?, enabled)))
                         .collect::<Result<Vec<_>, url::ParseError>>()?,
                 },
-            )?
-        } else {
-            WasmSpawnResponse::default()
+            )?;
+
+            world.add_component(entity, self::client_modules(), wasm.client_modules)?;
+            world.add_component(entity, self::server_modules(), wasm.server_modules)?;
         };
-
-        let manifest = &package.manifest;
-        let mut entity = Entity::new()
-            .with(app_name(), format!("Package {}", manifest.package.name))
-            .with(self::is_package(), ())
-            .with(self::enabled(), enabled)
-            .with(self::id(), package_id.clone())
-            .with(self::name(), manifest.package.name.clone())
-            .with(self::version(), manifest.package.version.to_string())
-            .with(self::authors(), manifest.package.authors.clone())
-            .with(self::asset_url(), base_asset_url.to_string())
-            .with(self::client_modules(), wasm.client_modules)
-            .with(self::server_modules(), wasm.server_modules);
-        if let Some(description) = &manifest.package.description {
-            entity.set(self::description(), description.clone());
-        }
-        if let Some(repository) = &manifest.package.repository {
-            entity.set(self::repository(), repository.clone());
-        }
-        let entity = entity.spawn(world);
-
-        world
-            .synced_resource_mut(package_id_to_package_entity())
-            .unwrap()
-            .insert(package_id.clone(), entity);
     }
 
     Ok(package_item_id)
@@ -210,7 +212,7 @@ pub async fn add_to_semantic_and_register_components(
     url: &AbsAssetUrl,
 ) -> anyhow::Result<ItemId<Package>> {
     let id = semantic
-        .add_package(RetrievableFile::Url(url.0.clone()))
+        .add_package(RetrievableFile::Url(url.0.clone()), None)
         .await?;
 
     semantic.resolve()?;
@@ -234,17 +236,10 @@ pub enum FilePathError {
 /// asset will require `assets/` prefixed to the path.
 pub fn file_path(
     world: &World,
-    package_id: &str,
+    package_id: EntityId,
     path: &Path,
 ) -> Result<AbsAssetUrl, FilePathError> {
-    let entity = world
-        .synced_resource(package_id_to_package_entity())
-        .unwrap()
-        .get(package_id)
-        .copied()
-        .ok_or_else(|| FilePathError::PackageNotFound(package_id.to_string()))?;
-
-    if let Ok(url) = world.get_cloned(entity, asset_url()) {
+    if let Ok(url) = world.get_cloned(package_id, asset_url()) {
         Ok(AbsAssetUrl::from_str(&format!("{url}/{}", path.display()))?)
     } else {
         Ok(AbsAssetUrl::from_asset_key(path.to_string_lossy())?)

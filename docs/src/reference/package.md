@@ -85,13 +85,14 @@ Note that `ValueType`s are not themselves values, but rather types of values. Fo
 
 The `package` section contains metadata about the package itself, such as its name and version.
 
-| Property      | Type                  | Description                                                                                   |
-| ------------- | --------------------- | --------------------------------------------------------------------------------------------- |
-| `id`          | `SnakeCaseIdentifier` | _Required_. The package's snake-cased ID.                                                     |
-| `name`        | `String`              | _Optional_. A human-readable name for the package.                                            |
-| `description` | `String`              | _Optional_. A human-readable description of the package.                                      |
-| `version`     | `String`              | _Optional_. The package's version, in `(major, minor, patch)` format. Semantically versioned. |
-| `content`     | `PackageContent`      | A description of the content of this Package. See below.                                      |
+| Property      | Type                  | Description                                                                                       |
+| ------------- | --------------------- | ------------------------------------------------------------------------------------------------- |
+| `id`          | `SnakeCaseIdentifier` | _Required_. The package's snake-cased ID.                                                         |
+| `name`        | `String`              | _Optional_. A human-readable name for the package.                                                |
+| `description` | `String`              | _Optional_. A human-readable description of the package.                                          |
+| `version`     | `String`              | _Optional_. The package's version, in `(major, minor, patch)` format. Semantically versioned.     |
+| `content`     | `PackageContent`      | _Required_. A description of the content of this Package. See below.                              |
+| `public`      | `Bool`                | _Optional_. Indicates if this package will be publicly available when deployed. Defaults to true. |
 
 #### `PackageContent`
 
@@ -229,7 +230,7 @@ components = { cool_component2 = 1 }
 
 ### Messages / `[messages]`
 
-The `messages` section contains custom messages defined by the package. Messages are used to communicate between client and server.
+The `messages` section contains custom messages defined by the package. Messages are used to communicate between client and server, or between packages/modules on the same side.
 
 For an example of how to use messages, see the [messaging example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/intermediate/messaging).
 
@@ -276,6 +277,19 @@ Decorating = "Decorating"
 Done = "Done"
 ```
 
+### Includes / `[includes]`
+
+The `includes` section contains a list of manifests to pull in under a given name. This is useful for splitting up a package into multiple files.
+
+This is a TOML table, where the keys are the name that you want to access this include by (`SnakeCaseIdentifier`), and the location of the package manifest is the value.
+
+#### Example
+
+```toml
+[includes]
+graphics = "graphics/ambient.toml"
+```
+
 ### Dependencies / `[dependencies]`
 
 The `dependencies` section contains a list of package IDs that this package depends on.
@@ -305,4 +319,33 @@ the_basics = { path = "../basics" }
 
 [components]
 my_component = { type = "the_basics::BasicEnum" }
+```
+
+### Runtime access to packages
+
+Packages are represented as entities within the ECS, with their metadata being stored as components. This means that you can access the metadata of a package at runtime. To do so, you can use the `entity()` function inside the generated Rust code for the package:
+
+```rust
+use ambient_api::prelude::*;
+
+#[main]
+fn main() {
+    dbg!(entity::get_all_components(packages::this::entity()));
+}
+```
+
+Or by querying for entities that have the `is_package` component:
+
+```rust
+use ambient_api::{
+    core::package::components::{is_package, name},
+    prelude::*,
+};
+
+#[main]
+fn main() {
+    let q = query((is_package(), name())).build();
+    // List all packages and their names.
+    dbg!(q.evaluate());
+}
 ```

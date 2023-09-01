@@ -183,8 +183,8 @@ There are known situations where a test might fail seemingly randomly, even if t
 1. Run `cargo campfire release update-version new_version_here` to update the Ambient version across the crates and documentation.
 2. Run `cargo campfire doc runtime` to update the documentation from the codebase.
 3. If a new system dependency was added, ensure it is added to `docs/src/installing.md` and `Dockerfile`.
-4. Run `cargo campfire example check-all` and ensure all guest packages build without errors.
-5. Run `cargo campfire example run-all` and visually verify that they work as expected.
+4. Run `cargo campfire package check-all` and ensure all guest packages build without errors.
+5. Run `cargo campfire package run-all` and visually verify that they work as expected.
 6. Use `cargo campfire release check` to check that the release is ready.
 7. Update the `CHANGELOG.md` at the root of the repository. Copy the unreleased block, set the version and date on the copy, and then empty out the unreleased block for the next release.
 8. Make a commit with the above changes, and create a tag `v0.X.Y`.

@@ -47,8 +47,8 @@ pub fn main() {
     Hello::new("Hello, world from the client!", true).send_server_reliable();
 
     // 2
-    Hello::subscribe(|source, data| {
-        println!("{source:?}: {:?}", data);
+    Hello::subscribe(|ctx, data| {
+        println!("{ctx:?}: {:?}", data);
 
         let source_reliable = data.source_reliable;
         Entity::new()
@@ -74,9 +74,9 @@ pub fn main() {
     let handled = Arc::new(AtomicBool::new(false));
     Local::subscribe({
         let handled = handled.clone();
-        move |source, data| {
+        move |ctx, data| {
             handled.store(true, Ordering::SeqCst);
-            println!("{source:?}: {data:?}");
+            println!("{ctx:?}: {data:?}");
         }
     });
 

@@ -21,7 +21,7 @@ fn init() {
 #[test]
 fn from_a_to_b_diff() {
     init();
-    let mut from = World::new("from_a_to_b_diff");
+    let mut from = World::new_unknown("from_a_to_b_diff");
     Entity::new().with(a(), 5.).with(b(), 2.).spawn(&mut from);
     let to = from.clone();
     let diff = WorldDiff::from_a_to_b(WorldStreamFilter::default(), &from, &to);
@@ -34,7 +34,7 @@ fn from_a_to_b_diff() {
 #[test]
 fn from_a_to_b_remove_component() {
     init();
-    let mut from = World::new("from_a_to_b_remove_component");
+    let mut from = World::new_unknown("from_a_to_b_remove_component");
     let x = Entity::new().with(a(), 5.).with(b(), 2.).spawn(&mut from);
     let y = Entity::new().with(a(), 5.).with(b(), 2.).spawn(&mut from);
     let mut to = from.clone();
@@ -50,12 +50,13 @@ fn from_a_to_b_remove_component() {
 #[test]
 fn streaming() {
     init();
-    let mut source = World::new_with_config("streaming_src", true);
+    let mut source =
+        World::new_with_config("streaming_src", ambient_ecs::WorldContext::Unknown, true);
     source.init_shape_change_tracking();
     source
         .add_component(source.resource_entity(), no_sync(), ())
         .ok();
-    let mut dest = World::new("streaming_dst");
+    let mut dest = World::new_unknown("streaming_dst");
     let mut stream = WorldStream::new(WorldStreamFilter::new(
         ArchetypeFilter::new().excl(no_sync()),
         Arc::new(|_, _| true),

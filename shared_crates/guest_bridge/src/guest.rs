@@ -84,8 +84,7 @@ pub mod ecs {
             api::entity::get_component(entity_id, component)
                 .ok_or_else(|| ECSError::EntityDoesntHaveComponent)
         }
-        // TODO: This should actually return &T
-        pub fn get_ref<T: ComponentValue>(
+        pub fn get_cloned<T: ComponentValue>(
             &self,
             entity_id: EntityId,
             component: Component<T>,

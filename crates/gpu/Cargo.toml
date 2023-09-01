@@ -13,6 +13,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 [dependencies]
 ambient_sys = { path = "../sys", version = "0.3.0-dev" }
 ambient_native_std = { path = "../native_std", version = "0.3.0-dev" }
+ambient_settings = { path = "../settings", version = "0.3.0-dev" }
 
 ambient_std = { path = "../../shared_crates/std", version = "0.3.0-dev" }
 
@@ -34,8 +35,6 @@ futures = { workspace = true }
 parking_lot = { workspace = true }
 anyhow = { workspace = true }
 tracing = { workspace = true }
-directories = { workspace = true }
-toml = { workspace = true }
 serde = { workspace = true }
 cfg-if = { workspace = true }
 

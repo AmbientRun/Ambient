@@ -153,7 +153,7 @@ impl Scope {
 
 #[derive(Error, Debug)]
 pub enum ContextGetError<'a> {
-    #[error("failed to find {path} ({type_})")]
+    #[error("Failed to find {path} ({type_})")]
     NotFound { path: ItemPath<'a>, type_: ItemType },
 }
 impl ContextGetError<'_> {
@@ -163,7 +163,7 @@ impl ContextGetError<'_> {
 }
 #[derive(Error, Debug)]
 pub enum ContextGetOwnedError {
-    #[error("failed to find {path} ({type_})")]
+    #[error("Failed to find {path} ({type_})")]
     NotFound { path: ItemPathBuf, type_: ItemType },
 }
 impl From<ContextGetError<'_>> for ContextGetOwnedError {

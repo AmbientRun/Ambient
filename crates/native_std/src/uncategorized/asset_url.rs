@@ -21,6 +21,7 @@ use crate::{
     Cb,
 };
 
+pub use ambient_shared_types::asset::AssetType;
 pub use url::ParseError;
 
 pub const ASSETS_PROTOCOL_SCHEME: &str = "ambient-assets";
@@ -701,29 +702,11 @@ impl<T: GetAssetType> PartialEq for AssetUrlCollection<T> {
 }
 impl<T: GetAssetType> Eq for AssetUrlCollection<T> {}
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
-pub enum AssetType {
-    AssetCrate,
-    Prefab,
-    ScriptBundle,
-    Model,
-    Image,
-    Animation,
-    Material,
-    Collider,
-
-    // These will be replaced by prefabs with components instead
-    TerrainMaterial,
-    Atmosphere,
-    Biomes,
-
-    /// Represents a vorbis backed file
-    VorbisTrack,
-    SoundGraph,
+pub trait AssetTypeExt {
+    fn to_snake_case(&self) -> String;
 }
-
-impl AssetType {
-    pub fn to_snake_case(&self) -> String {
+impl AssetTypeExt for AssetType {
+    fn to_snake_case(&self) -> String {
         format!("{self:?}").to_case(Case::Snake)
     }
 }
