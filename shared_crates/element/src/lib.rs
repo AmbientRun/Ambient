@@ -359,7 +359,7 @@ pub fn render_parented_with_component(
     if !element.has_component(local_to_world()) {
         element = element.init_default(local_to_world());
     }
-    if let Ok(tree) = world.get_ref(id, handle).map(|x| x.clone()) {
+    if let Ok(tree) = world.get_cloned(id, handle) {
         let mut tree = tree.0.lock();
         let prev_root = tree.root_entity();
         tree.migrate_root(world, element);

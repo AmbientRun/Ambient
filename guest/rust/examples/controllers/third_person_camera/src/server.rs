@@ -1,9 +1,9 @@
 use ambient_api::{
     core::{
         app::components::main_scene,
-        physics::components::{
-            character_controller_height, character_controller_radius, physics_controlled,
-            plane_collider, sphere_collider,
+        physics::{
+            components::{plane_collider, sphere_collider},
+            concepts::make_character_controller,
         },
         player::components::is_player,
         primitives::{
@@ -61,21 +61,19 @@ pub fn main() {
                 id,
                 Entity::new()
                     .with_merge(make_transformable())
+                    .with_merge(make_character_controller())
                     .with(player_movement_direction(), Vec2::ZERO)
                     .with(player_mouse_delta_x(), 0.0)
                     .with(player_scroll(), 0.0)
-                    .with(physics_controlled(), ())
                     .with(cube(), ())
                     .with(color(), Vec4::ONE)
-                    .with(character_controller_height(), 2.0)
-                    .with(character_controller_radius(), 0.5)
                     .with(camera_follow_distance(), 4.0),
             );
         }
     });
 
-    Input::subscribe(move |source, msg| {
-        let Some(player_id) = source.client_entity_id() else {
+    Input::subscribe(move |ctx, msg| {
+        let Some(player_id) = ctx.client_entity_id() else {
             return;
         };
 

@@ -172,16 +172,8 @@ impl Semantic {
 
             // If this is not the Ambient package, import the Ambient package
             if !matches!(retrievable_manifest, RetrievableFile::Ambient(_)) {
-                let ambient_package = self.items.get(self.ambient_package_id);
-                scope.imports.insert(
-                    ambient_package
-                        .data()
-                        .id
-                        .as_snake()
-                        .map_err(|e| e.to_owned())?
-                        .clone(),
-                    self.ambient_package_id,
-                );
+                let id = SnakeCaseIdentifier::new("ambient_core")?;
+                scope.imports.insert(id, self.ambient_package_id);
             }
 
             for (name, dependency) in &dependencies {
@@ -248,17 +240,22 @@ impl Semantic {
         manifest: &Manifest,
         source: RetrievableFile,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let includes = manifest.package.includes.clone();
+        let includes = manifest.includes.clone();
         let scope_id =
             self.add_scope_from_manifest_without_includes(parent_id, manifest, source.clone())?;
 
-        for include in &includes {
+        let mut include_names: Vec<_> = includes.keys().collect();
+        include_names.sort();
+
+        for include_name in include_names {
+            let include_path = &includes[include_name];
+
             anyhow::ensure!(
-                include.extension().is_some(),
-                "Include {include:?} for `{source}` must have an extension"
+                include_path.extension().is_some(),
+                "Include `{include_name}` = {include_path:?} for `{source}` must have an extension"
             );
 
-            let include_source = source.parent_join(include)?;
+            let include_source = source.parent_join(include_path)?;
             let include_manifest =
                 Manifest::parse(&include_source.get().await?).with_context(|| {
                     format!("Failed to parse included manifest {source} for {source}")
@@ -270,12 +267,11 @@ impl Semantic {
                     include_source,
                 )
                 .await?;
-            let id = self.items.get(include_scope_id).data().id.clone();
 
-            self.items.get_mut(scope_id).scopes.insert(
-                id.as_snake().map_err(|e| e.to_owned())?.clone(),
-                include_scope_id,
-            );
+            self.items
+                .get_mut(scope_id)
+                .scopes
+                .insert(include_name.clone(), include_scope_id);
         }
 
         Ok(scope_id)
@@ -409,7 +405,7 @@ pub fn create_root_scope(
         name: &str,
     ) -> anyhow::Result<ItemId<Attribute>> {
         let id = PascalCaseIdentifier::new(name)
-            .map_err(anyhow::Error::msg)
+            .map_err(|e| anyhow::Error::msg(e.to_string()))
             .context("standard value was not valid snake-case")?;
         let item_id = items.add(Attribute {
             data: ItemData {

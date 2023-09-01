@@ -7,7 +7,10 @@ pub(crate) mod traits;
 mod entity;
 pub use entity::*;
 
-pub use traits::{get_component as __internal_get_component, SupportedValue};
+pub use traits::{
+    get_component as __internal_get_component, ComponentOptionValue, ComponentValue,
+    ComponentVecValue, SupportedValue, SupportedValueRef,
+};
 
 /// Implemented by all [Component]s.
 pub trait UntypedComponent {

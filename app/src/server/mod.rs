@@ -6,10 +6,10 @@ use std::{
     sync::Arc,
 };
 
-use ambient_core::{asset_cache, main_package_name, name, no_sync, FIXED_SERVER_TICK_TIME};
+use ambient_core::{asset_cache, main_package_name, name, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
-    dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World, WorldContext,
-    WorldEventsSystem, WorldStreamCompEvent,
+    dont_store, generated::network::components::no_sync, world_events, ComponentDesc, Entity,
+    Networked, SystemGroup, World, WorldContext, WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_native_std::{
     ambient_version,

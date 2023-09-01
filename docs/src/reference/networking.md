@@ -10,13 +10,15 @@ The HTTP (TCP) port is `8999`, and the QUIC (UDP) port is `9000`.
 
 ## Entities
 
-The Ambient runtime synchronizes all entities with at least one component marked with the `Networked` attribute. Only components marked as `Networked` will be sent to the client. Most core components are `Networked`, but custom components are not by default; this is something developers have to opt into. It is important to note that this may have unintended ramifications in terms of cheating, especially for hostile clients.
+The Ambient runtime synchronizes all entities by default. Only components marked as `Networked` will be sent to the client. Most core components are `Networked`, but custom components are not by default; this is something developers have to opt into. It is important to note that this may have unintended ramifications in terms of cheating, especially for hostile clients.
+
+To disable syncing an entity to the client, attach the `no_sync` component to it. This will prevent the entity from being sent to the client.
 
 The client is fundamentally designed around runtime flexibility of logic, which is non-ideal for avoiding cheaters. Further research and development are required, but it is likely that there is no silver bullet, and the solution will be game-dependent.
 
 If on 0.2 or above, consult the [clientside](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/intermediate/clientside/ambient.toml) example to see how to define networked components.
 
-### Entities synchronization
+### Entity synchronization
 
 The Ambient runtime synchronizes entities using a diff-based approach. The server sends a `WorldDiff` to the client, which contains a list of entities to spawn and despawn, and components to add, update, and remove. Note that some operations might be batched for performance or not included in the update sent to the clients if they effectively don't change any values. For example adding 0 to a number or changing a boolean to false and back to true within the same frame might not emit an update and might not trigger a `change_query`. We recommend using messaging if such events are important to your game.
 

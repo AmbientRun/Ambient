@@ -5,9 +5,7 @@ use ambient_api::{
     core::{
         animation::components::apply_animation_player,
         ecs::components::{children, parent},
-        physics::components::{
-            character_controller_height, character_controller_radius, physics_controlled,
-        },
+        physics::concepts::make_character_controller,
         player::components::is_player,
         prefab::components::prefab_from_url,
         transform::{
@@ -42,15 +40,13 @@ pub async fn main() {
             entity::add_components(
                 zombie,
                 make_transformable()
-                    .with(character_controller_height(), 2.)
-                    .with(character_controller_radius(), 0.5)
+                    .with_merge(make_character_controller())
                     .with(
                         translation(),
                         vec3(-8.0 * random::<f32>(), -8.0 * random::<f32>(), 1.3),
                     )
                     .with(children(), vec![model])
                     .with(local_to_world(), Default::default())
-                    .with(physics_controlled(), ())
                     .with(components::zombie_model_ref(), model)
                     .with(components::zombie_health(), 100)
                     .with(components::is_zombie(), ()),

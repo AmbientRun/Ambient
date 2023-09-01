@@ -6,8 +6,10 @@ use crate::packages::this::messages::{
 };
 
 pub fn main() {
-    PackageLoad::subscribe(|source, msg| {
-        let Some(user_id) = source.client_user_id() else { return; };
+    PackageLoad::subscribe(|ctx, msg| {
+        let Some(user_id) = ctx.client_user_id() else {
+            return;
+        };
         let url = msg.url.strip_suffix('/').unwrap_or(&msg.url).to_owned();
         run_async(async move {
             match get_manifest_and_metadata(&url).await {

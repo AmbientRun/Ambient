@@ -41,7 +41,7 @@ pub fn main() {
         }
     });
 
-    Shoot::subscribe(move |_source, msg| {
+    Shoot::subscribe(move |_ctx, msg| {
         let result = physics::raycast_first(msg.ray_origin, msg.ray_dir);
 
         if let Some(hit) = result {

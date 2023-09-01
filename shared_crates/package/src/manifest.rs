@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, fmt::Display, path::PathBuf};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -36,6 +36,8 @@ pub struct Manifest {
     #[serde(alias = "enum")]
     pub enums: IndexMap<PascalCaseIdentifier, Enum>,
     #[serde(default)]
+    pub includes: HashMap<SnakeCaseIdentifier, PathBuf>,
+    #[serde(default)]
     pub dependencies: IndexMap<SnakeCaseIdentifier, Dependency>,
 }
 impl Manifest {
@@ -53,9 +55,23 @@ impl Manifest {
     }
 }
 
+#[derive(Deserialize, Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Default, Serialize)]
+#[serde(transparent)]
+pub struct PackageId(pub(crate) String);
+impl PackageId {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+impl Display for PackageId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Package {
-    pub id: SnakeCaseIdentifier,
+    pub id: PackageId,
     pub name: String,
     pub version: Version,
     pub description: Option<String>,
@@ -66,8 +82,6 @@ pub struct Package {
     pub content: PackageContent,
     #[serde(default = "return_true")]
     pub public: bool,
-    #[serde(default)]
-    pub includes: Vec<PathBuf>,
 }
 impl Default for Package {
     fn default() -> Self {
@@ -81,7 +95,6 @@ impl Default for Package {
             authors: Default::default(),
             content: Default::default(),
             public: true,
-            includes: Default::default(),
         }
     }
 }
@@ -230,8 +243,8 @@ mod tests {
 
     use crate::{
         Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Enum,
-        Identifier, ItemPathBuf, Manifest, ManifestParseError, Package, PascalCaseIdentifier,
-        SnakeCaseIdentifier,
+        Identifier, ItemPathBuf, Manifest, ManifestParseError, Package, PackageId,
+        PascalCaseIdentifier, SnakeCaseIdentifier,
     };
     use semver::Version;
 
@@ -265,7 +278,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: SnakeCaseIdentifier::new("test").unwrap(),
+                    id: PackageId("test".to_string()),
                     name: "Test".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -313,7 +326,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: sci("tictactoe"),
+                    id: PackageId("tictactoe".to_string()),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -344,6 +357,7 @@ mod tests {
                 )]),
                 messages: Default::default(),
                 enums: Default::default(),
+                includes: Default::default(),
                 dependencies: Default::default(),
             })
         )
@@ -366,7 +380,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: sci("tictactoe"),
+                    id: PackageId("tictactoe".to_string()),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -414,7 +428,7 @@ mod tests {
             manifest,
             Manifest {
                 package: Package {
-                    id: sci("my_package"),
+                    id: PackageId("my_package".to_string()),
                     name: "My Package".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -503,6 +517,7 @@ mod tests {
                 )]),
                 messages: Default::default(),
                 enums: Default::default(),
+                includes: Default::default(),
                 dependencies: Default::default(),
             }
         );
@@ -544,7 +559,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: sci("tictactoe"),
+                    id: PackageId("tictactoe".to_string()),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -563,6 +578,7 @@ mod tests {
                         ])
                     }
                 )]),
+                includes: Default::default(),
                 dependencies: Default::default(),
             })
         )
@@ -588,7 +604,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: sci("test"),
+                    id: PackageId("test".to_string()),
                     name: "Test".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -639,6 +655,7 @@ mod tests {
                 concepts: Default::default(),
                 messages: Default::default(),
                 enums: Default::default(),
+                includes: Default::default(),
                 dependencies: Default::default(),
             })
         )
@@ -666,7 +683,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: sci("dependencies"),
+                    id: PackageId("dependencies".to_string()),
                     name: "dependencies".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -676,6 +693,7 @@ mod tests {
                 concepts: Default::default(),
                 messages: Default::default(),
                 enums: Default::default(),
+                includes: Default::default(),
                 dependencies: IndexMap::from_iter([
                     (
                         sci("deps_assets"),

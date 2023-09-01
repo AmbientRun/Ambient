@@ -6,9 +6,7 @@ use ambient_api::{
             concepts::make_perspective_infinite_reverse_camera,
         },
         ecs::components::{children, parent},
-        physics::components::{
-            character_controller_height, character_controller_radius, physics_controlled,
-        },
+        physics::concepts::make_character_controller,
         player::components::{is_player, user_id},
         prefab::components::prefab_from_url,
         transform::{
@@ -65,11 +63,7 @@ pub async fn main() {
                     id,
                     Entity::new()
                         .with_merge(make_transformable())
-                        // with the following three comp, you can move the player
-                        // with physics::move_character
-                        .with(character_controller_height(), 2.0)
-                        .with(character_controller_radius(), 0.3)
-                        .with(physics_controlled(), ())
+                        .with_merge(make_character_controller())
                         // adjust the initial position
                         .with(local_to_world(), Default::default())
                         .with(

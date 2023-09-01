@@ -6,13 +6,13 @@ use packages::this::{
 
 #[main]
 pub async fn main() {
-    NewItem::subscribe(|_source, data| {
+    NewItem::subscribe(|_ctx, data| {
         Entity::new()
             .with(todo_item(), data.description)
             .with(todo_time(), game_time())
             .spawn();
     });
-    DeleteItem::subscribe(|_source, data| {
+    DeleteItem::subscribe(|_ctx, data| {
         entity::despawn(data.id);
     });
 }

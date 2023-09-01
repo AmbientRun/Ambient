@@ -21,7 +21,7 @@ pub fn main() {
         .with(cube(), ())
         .spawn();
 
-    Input::subscribe(move |_source, msg| {
+    Input::subscribe(move |_ctx, msg| {
         if let Some(hit) = physics::raycast_first(msg.ray_origin, msg.ray_dir) {
             // Set position of cube to the raycast hit position
             entity::set_component(cube_id, translation(), hit.position);

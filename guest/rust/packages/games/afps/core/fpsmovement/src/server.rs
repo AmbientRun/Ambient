@@ -29,9 +29,9 @@ pub fn main() {
     });
 
     let mut last_walk = game_time();
-    Input::subscribe(move |source, msg| {
+    Input::subscribe(move |ctx, msg| {
         // receive movement and send this for further processing
-        let player_id = source.client_entity_id();
+        let player_id = ctx.client_entity_id();
         if player_id.is_none() {
             return;
         }

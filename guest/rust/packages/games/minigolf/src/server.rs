@@ -250,8 +250,8 @@ pub fn main() {
         }
     });
 
-    Input::subscribe(|source, msg| {
-        let Some(user_id) = source.client_entity_id() else {
+    Input::subscribe(|ctx, msg| {
+        let Some(user_id) = ctx.client_entity_id() else {
             return;
         };
 

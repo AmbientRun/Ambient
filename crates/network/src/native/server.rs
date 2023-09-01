@@ -6,10 +6,10 @@ use std::{
     time::Duration,
 };
 
-use ambient_core::{asset_cache, no_sync, FIXED_SERVER_TICK_TIME};
+use ambient_core::{asset_cache, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
-    ArchetypeFilter, ComponentDesc, System, SystemGroup, World, WorldStream, WorldStreamCompEvent,
-    WorldStreamFilter,
+    generated::network::components::no_sync, ArchetypeFilter, ComponentDesc, System, SystemGroup,
+    World, WorldStream, WorldStreamCompEvent, WorldStreamFilter,
 };
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},

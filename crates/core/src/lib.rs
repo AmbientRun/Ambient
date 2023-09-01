@@ -60,10 +60,6 @@ components!("app", {
     frame_index: usize,
     @[Debuggable, Store]
     remove_at_game_time: Duration,
-
-    /// Generic component that indicates the entity shouldn't be sent over network
-    @[Debuggable, Networked, Store]
-    no_sync: (),
 });
 
 pub fn init_all_components() {

@@ -100,8 +100,8 @@ pub fn main() {
         }
     });
 
-    Input::subscribe(|source, msg| {
-        let Some(player_id) = source.client_entity_id() else {
+    Input::subscribe(|ctx, msg| {
+        let Some(player_id) = ctx.client_entity_id() else {
             return;
         };
 

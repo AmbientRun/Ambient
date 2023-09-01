@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::{
     global::{CallbackReturn, EntityId},
     internal::{conversion::FromBindgen, executor::EXECUTOR, wit},
@@ -240,15 +242,65 @@ pub fn send<T: Message>(target: Target, data: &T) {
 pub struct Listener(String, u128);
 impl Listener {
     /// Stops listening.
-    pub fn stop(self) {
+    pub fn stop(&self) {
         EXECUTOR.unregister_callback(&self.0, self.1);
     }
 }
 
+/// Message context.
+pub struct MessageContext {
+    /// Where the message came from.
+    pub source: Source,
+    /// The listener that can be used to stop listening.
+    pub listener: Listener,
+}
+impl MessageContext {
+    /// Is this message from the runtime?
+    pub fn runtime(&self) -> bool {
+        self.source.runtime()
+    }
+
+    #[cfg(feature = "client")]
+    /// Is this message from the corresponding serverside package?
+    pub fn server(&self) -> bool {
+        self.source.server()
+    }
+
+    #[cfg(feature = "server")]
+    /// The user that sent this message, if any.
+    pub fn client_user_id(&self) -> Option<String> {
+        self.source.client_user_id()
+    }
+
+    #[cfg(feature = "server")]
+    /// The entity ID of the player that sent this message, if any.
+    pub fn client_entity_id(&self) -> Option<EntityId> {
+        self.source.client_entity_id()
+    }
+
+    /// The module on this side that sent this message, if any.
+    pub fn local(&self) -> Option<EntityId> {
+        self.source.local()
+    }
+
+    /// Stops listening.
+    pub fn stop(&self) {
+        self.listener.stop()
+    }
+}
+impl Debug for MessageContext {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.source.fmt(f)
+    }
+}
+
 /// Subscribes to a message.
+///
+/// To unsubscribe from a message, call [Listener::stop] on the returned [Listener],
+/// or on the [MessageContext] that is passed to the callback.
 #[allow(clippy::collapsible_else_if)]
 pub fn subscribe<R: CallbackReturn, T: Message>(
-    mut callback: impl FnMut(Source, T) -> R + 'static,
+    mut callback: impl FnMut(MessageContext, T) -> R + 'static,
 ) -> Listener {
     let id = T::id();
     wit::message::subscribe(id);
@@ -256,9 +308,15 @@ pub fn subscribe<R: CallbackReturn, T: Message>(
         id.to_string(),
         EXECUTOR.register_callback(
             id.to_string(),
-            Box::new(move |source, data| {
-                callback(source.clone().from_bindgen(), T::deserialize_message(data)?)
-                    .into_result()?;
+            Box::new(move |source, listener_id, data| {
+                callback(
+                    MessageContext {
+                        source: source.clone().from_bindgen(),
+                        listener: Listener(id.to_string(), listener_id),
+                    },
+                    T::deserialize_message(data)?,
+                )
+                .into_result()?;
                 Ok(())
             }),
         ),
@@ -357,7 +415,9 @@ pub trait ModuleMessage: Message {
     }
 
     /// Subscribes to this [Message]. Wrapper around [self::subscribe].
-    fn subscribe<R: CallbackReturn>(callback: impl FnMut(Source, Self) -> R + 'static) -> Listener {
+    fn subscribe<R: CallbackReturn>(
+        callback: impl FnMut(MessageContext, Self) -> R + 'static,
+    ) -> Listener {
         self::subscribe(callback)
     }
 }
@@ -366,7 +426,7 @@ pub trait ModuleMessage: Message {
 pub trait RuntimeMessage: Message {
     /// Subscribes to this [Message]. Wrapper around [self::subscribe].
     fn subscribe<R: CallbackReturn>(mut callback: impl FnMut(Self) -> R + 'static) -> Listener {
-        self::subscribe(move |_source, msg| callback(msg))
+        self::subscribe(move |_ctx, msg| callback(msg))
     }
 }
 

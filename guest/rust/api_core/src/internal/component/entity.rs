@@ -5,13 +5,13 @@ use crate::internal::{
     wit,
 };
 
-use super::{Component, SupportedValue, UntypedComponent};
+use super::{Component, ComponentValue, SupportedValue, SupportedValueRef, UntypedComponent};
 
 /// An [Entity] is a collection of components and associated values.
 ///
 /// Use the [spawn](Entity::spawn) method to insert the [Entity] into the world.
 #[derive(Clone, Default)]
-pub struct Entity(pub(crate) HashMap<u32, wit::component::Value>);
+pub struct Entity(pub(crate) HashMap<u32, ComponentValue>);
 impl Entity {
     /// Creates a new `Entity`.
     pub fn new() -> Self {
@@ -25,18 +25,17 @@ impl Entity {
 
     /// Gets the data for `component` in this, if it exists.
     pub fn get<T: SupportedValue>(&self, component: Component<T>) -> Option<T> {
-        T::from_result(self.0.get(&component.index())?.clone())
+        T::from_value(self.0.get(&component.index())?.clone())
     }
 
-    /// TODO: Temporary fix to get UI working, as UI requires get_ref for String components, which exists for the native Entity
-    #[doc(hidden)]
-    pub fn get_ref<T: SupportedValue>(&self, component: Component<T>) -> Option<T> {
-        T::from_result(self.0.get(&component.index())?.clone())
+    /// Gets a reference to the data for `component` in this, if it exists.
+    pub fn get_ref<T: SupportedValueRef>(&self, component: Component<T>) -> Option<&T> {
+        T::from_value_ref(self.0.get(&component.index())?)
     }
 
     /// Adds `component` to this with `value`. It will replace an existing component if present.
     pub fn set<T: SupportedValue>(&mut self, component: Component<T>, value: T) {
-        self.0.insert(component.index(), value.into_result());
+        self.0.insert(component.index(), value.into_value());
     }
 
     /// Sets the `component` in this to the default value for `T`.
@@ -58,7 +57,7 @@ impl Entity {
 
     /// Removes the specified component from this, and returns the value if it was present.
     pub fn remove<T: SupportedValue>(&mut self, component: Component<T>) -> Option<T> {
-        T::from_result(self.0.remove(&component.index())?)
+        T::from_value(self.0.remove(&component.index())?)
     }
 
     /// Merges in the `other` Entity; any fields that were present in both will be replaced by `other`'s.
@@ -72,28 +71,26 @@ impl Entity {
     pub fn spawn(&self) -> crate::prelude::EntityId {
         crate::entity::spawn(self)
     }
-
-    pub(crate) fn call_with<R>(&self, callback: impl FnOnce(&wit::component::Entity) -> R) -> R {
-        let data = self
-            .0
-            .iter()
-            .map(|(idx, val)| (*idx, val.clone()))
-            .collect::<Vec<_>>();
-        callback(&data)
-    }
 }
 impl FromBindgen for wit::component::Entity {
     type Item = Entity;
 
     fn from_bindgen(self) -> Self::Item {
-        Entity(self.into_iter().collect())
+        Entity(
+            self.into_iter()
+                .map(|(k, v)| (k, v.from_bindgen()))
+                .collect(),
+        )
     }
 }
 impl IntoBindgen for Entity {
     type Item = wit::component::Entity;
 
     fn into_bindgen(self) -> Self::Item {
-        self.0.into_iter().collect()
+        self.0
+            .into_iter()
+            .map(|(k, v)| (k, v.into_bindgen()))
+            .collect()
     }
 }
 impl std::fmt::Debug for Entity {
@@ -101,7 +98,7 @@ impl std::fmt::Debug for Entity {
         f.debug_map()
             .entries(self.0.iter().map(|(k, v)| {
                 (
-                    wit::component::get_id(*k).unwrap_or_else(|| format!("[unknown component {k}")),
+                    wit::component::get_id(*k).unwrap_or_else(|| format!("unknown component {k}")),
                     v,
                 )
             }))

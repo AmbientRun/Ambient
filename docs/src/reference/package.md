@@ -276,6 +276,19 @@ Decorating = "Decorating"
 Done = "Done"
 ```
 
+### Includes / `[includes]`
+
+The `includes` section contains a list of manifests to pull in under a given name. This is useful for splitting up a package into multiple files.
+
+This is a TOML table, where the keys are the name that you want to access this include by (`SnakeCaseIdentifier`), and the location of the package manifest is the value.
+
+#### Example
+
+```toml
+[includes]
+graphics = "graphics/ambient.toml"
+```
+
 ### Dependencies / `[dependencies]`
 
 The `dependencies` section contains a list of package IDs that this package depends on.

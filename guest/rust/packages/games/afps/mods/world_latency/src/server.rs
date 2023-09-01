@@ -23,8 +23,8 @@ pub fn main() {
         mutate_component(server_entity_id, server_frame(), |frame| *frame += 1);
     });
 
-    FrameSeen::subscribe(move |source, msg| {
-        let Some(player_entity_id) = source.client_entity_id() else {
+    FrameSeen::subscribe(move |ctx, msg| {
+        let Some(player_entity_id) = ctx.client_entity_id() else {
             eprintln!("Received message from unknown client");
             return;
         };

@@ -33,8 +33,8 @@ pub fn main() {
 
     ConsoleServerOutput::subscribe({
         let console = console.clone();
-        move |source, msg| {
-            if !source.server() {
+        move |ctx, msg| {
+            if !ctx.server() {
                 return;
             }
 

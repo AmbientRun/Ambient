@@ -75,6 +75,16 @@ pub fn generate(context: Context, items: &ItemMap, scope: &Scope) -> anyhow::Res
                             use #ecs_prefix EnumComponent;
                             self.to_u32().into_result()
                         }
+
+                        fn from_value(value: #guest_api_path::ecs::ComponentValue) -> Option<Self> {
+                            use #ecs_prefix EnumComponent;
+                            u32::from_value(value).and_then(Self::from_u32)
+                        }
+
+                        fn into_value(self) -> #guest_api_path::ecs::ComponentValue {
+                            use #ecs_prefix EnumComponent;
+                            self.to_u32().into_value()
+                        }
                     }
                     // Code generation for Vec/Option is disabled as you cannot implement foreign traits on foreign types
                     // Need to think about how to best solve this
