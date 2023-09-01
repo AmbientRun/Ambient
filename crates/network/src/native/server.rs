@@ -54,14 +54,14 @@ pub struct Crypto {
 pub struct GameServer {
     endpoint: Endpoint,
     /// Shuts down the server if there are no players
-    pub use_inactivity_shutdown: bool,
+    pub inactivity_shutdown: Option<Duration>,
     proxy_settings: Option<ProxySettings>,
 }
 
 impl GameServer {
     pub async fn new_with_port(
         server_addr: SocketAddr,
-        use_inactivity_shutdown: bool,
+        inactivity_shutdown: Option<Duration>,
         proxy_settings: Option<ProxySettings>,
         crypto: &Crypto,
     ) -> anyhow::Result<Self> {
@@ -70,7 +70,7 @@ impl GameServer {
         tracing::debug!("GameServer listening on port {}", server_addr.port());
         Ok(Self {
             endpoint,
-            use_inactivity_shutdown,
+            inactivity_shutdown,
             proxy_settings,
         })
     }
@@ -78,14 +78,14 @@ impl GameServer {
     pub async fn new_with_port_in_range(
         bind_addr: IpAddr,
         port_range: Range<u16>,
-        use_inactivity_shutdown: bool,
+        inactivity_shutdown: Option<Duration>,
         proxy_settings: Option<ProxySettings>,
         crypto: &Crypto,
     ) -> anyhow::Result<Self> {
         for port in port_range {
             match Self::new_with_port(
                 SocketAddr::new(bind_addr, port),
-                use_inactivity_shutdown,
+                inactivity_shutdown,
                 proxy_settings.clone(),
                 crypto,
             )
@@ -186,9 +186,9 @@ impl GameServer {
                         }
                     });
                 }
-                _ = inactivity_interval.tick(), if self.use_inactivity_shutdown => {
+                _ = inactivity_interval.tick(), if self.inactivity_shutdown.is_some() => {
                     if state.lock().player_count() == 0 {
-                        if Instant::now().duration_since(last_active).as_secs_f32() > 2. * 60. {
+                        if Instant::now().duration_since(last_active) > self.inactivity_shutdown.unwrap() {
                             tracing::info!("Shutting down due to inactivity");
                             break;
                         }

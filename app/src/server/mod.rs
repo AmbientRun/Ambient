@@ -4,6 +4,7 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
     sync::Arc,
+    time::Duration,
 };
 
 use ambient_core::{asset_cache, main_package_name, name, FIXED_SERVER_TICK_TIME};
@@ -19,7 +20,10 @@ use ambient_native_std::{
 };
 use ambient_network::{
     is_persistent_resources, is_synced_resources,
-    native::server::{Crypto, GameServer},
+    native::{
+        client::ResolvedAddr,
+        server::{Crypto, GameServer},
+    },
     server::{ForkingEvent, ProxySettings, ShutdownEvent},
 };
 use ambient_prefab::PrefabFromUrl;
@@ -37,6 +41,20 @@ use crate::{cli::HostCli, shared};
 
 pub mod wasm;
 
+pub struct ServerHandle {
+    addr: SocketAddr,
+    join_handle: tokio::task::JoinHandle<()>,
+}
+impl ServerHandle {
+    pub async fn join(self) -> Result<(), tokio::task::JoinError> {
+        self.join_handle.await
+    }
+
+    pub fn resolve_as_localhost(&self) -> ResolvedAddr {
+        ResolvedAddr::localhost_with_port(self.addr.port())
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 pub async fn start(
     assets: AssetCache,
@@ -47,7 +65,7 @@ pub async fn start(
     working_directory: PathBuf,
     manifest: ambient_package::Manifest,
     crypto: Crypto,
-) -> SocketAddr {
+) -> ServerHandle {
     let quic_interface_port = host_cli.quic_interface_port;
 
     let proxy_settings = (!host_cli.no_proxy).then(|| ProxySettings {
@@ -64,7 +82,9 @@ pub async fn start(
     let server = if let Some(port) = quic_interface_port {
         GameServer::new_with_port(
             SocketAddr::new(host_cli.bind_address, port),
-            false,
+            host_cli
+                .shutdown_after_inactivity_seconds
+                .map(Duration::from_secs),
             proxy_settings,
             &crypto,
         )
@@ -76,7 +96,9 @@ pub async fn start(
         GameServer::new_with_port_in_range(
             host_cli.bind_address,
             port_range.clone(),
-            false,
+            host_cli
+                .shutdown_after_inactivity_seconds
+                .map(Duration::from_secs),
             proxy_settings,
             &crypto,
         )
@@ -119,7 +141,7 @@ pub async fn start(
         start_http_interface(None, http_interface_port);
     }
 
-    tokio::task::spawn(async move {
+    let join_handle = tokio::task::spawn(async move {
         let mut server_world = World::new_with_config("server", WorldContext::Server, true);
         server_world.init_shape_change_tracking();
 
@@ -188,7 +210,7 @@ pub async fn start(
             .await;
     });
 
-    addr
+    ServerHandle { addr, join_handle }
 }
 
 fn systems(_world: &mut World) -> SystemGroup {
