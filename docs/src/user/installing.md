@@ -14,7 +14,7 @@ rustup target add --toolchain stable wasm32-wasi
 
 Ambient can be installed through `cargo install`.
 
-This will automatically download the source, compile and install Ambient from your system. Our minimum supported Rust version is <!-- rust-version-begin -->1.67.0<!-- rust-version-end -->.
+This will automatically download the source, compile and install Ambient from your system. Our minimum supported Rust version is <!-- rust-version-begin -->1.70.0<!-- rust-version-end -->.
 
 ### Installing the latest published release
 

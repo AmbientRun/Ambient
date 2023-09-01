@@ -72,7 +72,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-rust-version = "1.67.0"
+rust-version = "1.70.0"
 version = "0.3.0-dev"
 
 [workspace.dependencies]
