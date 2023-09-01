@@ -76,7 +76,7 @@ pub struct Package {
     pub version: Version,
     pub description: Option<String>,
     pub repository: Option<String>,
-    pub ambient_version: Option<AmbientRuntimeVersion>,
+    pub ambient_version: Option<VersionReq>,
     #[serde(default)]
     pub authors: Vec<String>,
     pub content: PackageContent,
@@ -101,48 +101,6 @@ impl Default for Package {
 
 fn return_true() -> bool {
     true
-}
-
-#[derive(
-    Clone,
-    Debug,
-    PartialEq,
-    parse_display::Display,
-    parse_display::FromStr,
-    serde_with::SerializeDisplay,
-    serde_with::DeserializeFromStr,
-)]
-pub enum AmbientRuntimeVersion {
-    #[display("{0}")]
-    Stable(VersionReq),
-    #[display("nightly-{date}")]
-    Nightly { date: String },
-}
-#[test]
-fn test_ambient_runtime_version() {
-    assert_eq!(
-        "1.2.3".parse(),
-        Ok(AmbientRuntimeVersion::Stable(
-            VersionReq::parse("1.2.3").unwrap()
-        ))
-    );
-    assert_eq!(
-        "nightly-2021-01-01".parse(),
-        Ok(AmbientRuntimeVersion::Nightly {
-            date: "2021-01-01".to_string()
-        })
-    );
-    assert_eq!(
-        AmbientRuntimeVersion::Stable(VersionReq::parse("1.2.3").unwrap()).to_string(),
-        "^1.2.3"
-    );
-    assert_eq!(
-        AmbientRuntimeVersion::Nightly {
-            date: "2021-01-01".to_string()
-        }
-        .to_string(),
-        "nightly-2021-01-01"
-    );
 }
 
 // ----- NOTE: Update docs/reference/package.md when changing this ----
@@ -371,6 +329,7 @@ mod tests {
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
+        ambient_version = "0.3.0-nightly-2023-08-31"
 
         [build.rust]
         feature-multibuild = ["client"]
@@ -383,6 +342,9 @@ mod tests {
                     id: PackageId("tictactoe".to_string()),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
+                    ambient_version: Some(
+                        semver::VersionReq::parse("0.3.0-nightly-2023-08-31").unwrap()
+                    ),
                     ..Default::default()
                 },
                 build: Build {
