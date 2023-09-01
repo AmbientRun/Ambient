@@ -8,6 +8,7 @@ tests = [
     "examples/controllers/first_person_camera",
     "examples/controllers/third_person_camera",
 
+    "examples/assets/models",
     "examples/assets/unity",
 
     "examples/rendering/decals",

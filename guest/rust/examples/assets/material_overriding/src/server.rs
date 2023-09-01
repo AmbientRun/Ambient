@@ -1,5 +1,3 @@
-use std::f32::consts::TAU;
-
 use ambient_api::{
     core::{
         app::components::main_scene,
@@ -7,7 +5,6 @@ use ambient_api::{
             components::aspect_ratio_from_window,
             concepts::make_perspective_infinite_reverse_camera,
         },
-        messages::Frame,
         prefab::components::{prefab_from_url, spawned},
         primitives::components::quad,
         rendering::components::{cast_shadows, light_ambient, light_diffuse, sun},
@@ -16,7 +13,6 @@ use ambient_api::{
             concepts::make_transformable,
         },
     },
-    glam::EulerRot,
     prelude::*,
 };
 
@@ -38,8 +34,6 @@ pub async fn main() {
         .with(scale(), Vec3::ONE * 2.0)
         .spawn();
 
-    println!("Hello, Ambient!");
-
     Entity::new()
         .with_merge(make_transformable())
         .with(sun(), 0.0)
@@ -57,15 +51,4 @@ pub async fn main() {
         .spawn();
 
     entity::wait_for_component(model, spawned()).await;
-
-    println!("Entity components: {:?}", entity::get_all_components(model));
-
-    Frame::subscribe(move |_| {
-        let t = game_time().as_secs_f32();
-        entity::set_component(
-            model,
-            rotation(),
-            Quat::from_euler(EulerRot::ZXY, t % TAU, (t * 2.0).sin() * 0.5, 0.0),
-        );
-    });
 }

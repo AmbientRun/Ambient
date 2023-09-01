@@ -218,13 +218,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_example_asset_loading"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "ambient_example_async"
 version = "0.3.0-dev"
 dependencies = [
@@ -240,6 +233,13 @@ dependencies = [
 
 [[package]]
 name = "ambient_example_auto_editor"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_basic_model"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
@@ -339,6 +339,13 @@ dependencies = [
 
 [[package]]
 name = "ambient_example_instancing"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_material_overriding"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_api",

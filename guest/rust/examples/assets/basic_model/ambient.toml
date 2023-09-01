@@ -1,0 +1,8 @@
+[package]
+id = "ambient_example_basic_model"
+name = "Model loading"
+description = "Load and render a glb model."
+version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/basic_model"
+type = "Game"
+content = { type = "Playable", example = true }

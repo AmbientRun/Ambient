@@ -55,13 +55,13 @@ sources = [ "ghosts/*.glb" ]
 `sources` accepts a list of glob patterns, so you can target a single file or a pattern to select all files in a
 directory (`*.glb`) or sub-tree (`**/test.glb`).
 
-#### A more complex model example
+#### Combining a model with textures
 
-The following example is the asset pipeline for the [`asset_loading` example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/asset_loading). It applies a custom material to
+The following example is the asset pipeline for the [`material_overrinding` example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/material_overrinding). It applies a custom material to
 the imported mesh.
 
 ```toml
-{{ #include ../../../guest/rust/examples/basics/asset_loading/assets/pipeline.toml }}
+{{ #include ../../../guest/rust/examples/basics/material_overrinding/assets/pipeline.toml }}
 ```
 
 ### Notes

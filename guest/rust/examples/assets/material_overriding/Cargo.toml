@@ -1,5 +1,5 @@
 [package]
-name = "ambient_example_asset_loading"
+name = "ambient_example_material_overriding"
 
 edition = "2021"
 publish = false
@@ -10,13 +10,13 @@ version = { workspace = true }
 ambient_api = { workspace = true }
 
 [[bin]]
-name = "asset_loading_client"
+name = "material_overriding_client"
 path = "src/client.rs"
 required-features = ["client"]
 
 
 [[bin]]
-name = "asset_loading_server"
+name = "material_overriding_server"
 path = "src/server.rs"
 required-features = ["server"]
 

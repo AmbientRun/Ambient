@@ -4,7 +4,6 @@ members = [
     "api_core",
     "api_core/api_macros",
     # Basics
-    "examples/basics/asset_loading",
     "examples/basics/input",
     "examples/basics/multiplayer",
     "examples/basics/physics",
@@ -24,6 +23,8 @@ members = [
     "examples/controllers/third_person_camera",
 
     # Assets
+    "examples/assets/basic_model",
+    "examples/assets/material_overriding",
     "examples/assets/unity",
 
     # Rendering
