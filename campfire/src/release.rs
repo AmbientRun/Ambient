@@ -257,8 +257,8 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
     })?;
 
     edit_file(INSTALLING_DOCS, |document| {
-        let begin = "<!-- rust-version-begin !-->";
-        let end = "<!-- rust-version-end !-->";
+        let begin = "<!-- rust-version-begin -->";
+        let end = "<!-- rust-version-end -->";
         let begin_index = document.find(begin).expect("no begin") + begin.len();
         let end_index = document.find(end).expect("no end");
 
