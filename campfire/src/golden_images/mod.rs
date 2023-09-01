@@ -55,7 +55,16 @@ pub async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
 
     // Get tests.
     let tests = if let Mode::Update = gi.mode {
+        // The base path is stripped as `get_all_packages` returns
+        // paths relative to the current working directory.
         get_all_packages(true, false)?
+            .into_iter()
+            .map(|p| {
+                p.strip_prefix(TEST_BASE_PATH)
+                    .map(|p| p.to_owned())
+                    .unwrap_or(p)
+            })
+            .collect_vec()
     } else {
         tokio::spawn(parse_tests_from_manifest()).await??
     };
