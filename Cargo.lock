@@ -8149,7 +8149,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#3e20b2ed13cca243af84da421ed147e61ccff89f"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#840476f49b48cdb93f4ae2d7f8c735af4abffb9e"
 dependencies = [
  "async-trait",
  "wasm-bridge-js",
@@ -8161,9 +8161,10 @@ dependencies = [
 [[package]]
 name = "wasm-bridge-js"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#3e20b2ed13cca243af84da421ed147e61ccff89f"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#840476f49b48cdb93f4ae2d7f8c735af4abffb9e"
 dependencies = [
  "anyhow",
+ "getrandom 0.2.10",
  "heck",
  "js-component-bindgen",
  "js-sys",
@@ -8177,7 +8178,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge-macros"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#3e20b2ed13cca243af84da421ed147e61ccff89f"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-13#840476f49b48cdb93f4ae2d7f8c735af4abffb9e"
 dependencies = [
  "anyhow",
  "heck",
@@ -8185,9 +8186,9 @@ dependencies = [
  "quote",
  "regex",
  "syn 1.0.109",
- "wasmtime-component-util 11.0.1",
- "wasmtime-wit-bindgen 11.0.1",
- "wit-parser 0.8.0",
+ "wasmtime-component-util 12.0.1",
+ "wasmtime-wit-bindgen 12.0.1",
+ "wit-parser 0.9.2",
 ]
 
 [[package]]
@@ -8381,9 +8382,9 @@ checksum = "f20a5135ec5ef01080e674979b02d6fa5eebaa2b0c2d6660513ee9956a1bf624"
 
 [[package]]
 name = "wasmtime-component-util"
-version = "11.0.1"
+version = "12.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0928fe66c22bf8887e2fb524b7647308b8ce836a333af8504e4f1d80b8ea849f"
+checksum = "b54327f9ce6a46c6841c43d93c4fa366cd0beb0f075743b120d31a3d6afe34fd"
 
 [[package]]
 name = "wasmtime-component-util"
@@ -8647,13 +8648,14 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-wit-bindgen"
-version = "11.0.1"
+version = "12.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84a4a005a6a2d5faa7cd953d389da8ae979cb571fe40edec7769649d8c98d874"
+checksum = "bbd55caadebae32cf18541e5077b3f042a171bb9988ea0040d0569f26a63227d"
 dependencies = [
  "anyhow",
  "heck",
- "wit-parser 0.8.0",
+ "indexmap 2.0.0",
+ "wit-parser 0.9.2",
 ]
 
 [[package]]

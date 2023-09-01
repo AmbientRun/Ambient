@@ -40,6 +40,7 @@ impl std::fmt::Display for ModuleBytecode {
         write!(f, "ModuleBytecode({} bytes)", self.0.len())
     }
 }
+
 impl Serialize for ModuleBytecode {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -48,6 +49,7 @@ impl Serialize for ModuleBytecode {
         serializer.serialize_str(&BASE64.encode(&self.0))
     }
 }
+
 impl<'de> Deserialize<'de> for ModuleBytecode {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -197,7 +199,7 @@ impl ModuleStateBehavior for ModuleState {
 #[cfg(target_os = "unknown")]
 use wasm_bridge_js::{
     component::{self, Instance},
-    wasi::preview2::wasi::command::add_to_linker,
+    wasi::preview2::command::add_to_linker,
 };
 
 #[cfg(not(target_os = "unknown"))]
@@ -240,8 +242,8 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
         let mut table = Table::new();
         let mut wasi = WasiCtxBuilder::new();
 
-        wasi.stdout(stdout_output, IsATTY::Yes)
-            .stderr(stderr_output, IsATTY::Yes);
+        wasi.stdout(stdout_output, IsATTY::No)
+            .stderr(stderr_output, IsATTY::No);
 
         #[cfg(not(target_os = "unknown"))]
         if let Some(dir) = args.preopened_dir {
@@ -271,7 +273,7 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
             wasm_bridge::component::Linker::<BindingContext<Bindings>>::new(engine.inner());
 
         #[cfg(target_os = "unknown")]
-        preview2::wasi::command::add_to_linker(&mut linker)?;
+        preview2::command::add_to_linker(&mut linker)?;
 
         #[cfg(not(target_os = "unknown"))]
         preview2::command::sync::add_to_linker(&mut linker)?;
@@ -426,12 +428,12 @@ impl wasm_bridge_js::wasi::preview2::OutputStream for WasiOutputStream {
         Ok(())
     }
 
-    fn write(&mut self, buf: &[u8]) -> wasm_bridge::Result<u64> {
+    fn write(&mut self, buf: &[u8]) -> wasm_bridge::Result<(usize, preview2::StreamStatus)> {
         let msg =
             std::str::from_utf8(buf).context("Non UTF-8 output is not currently supported")?;
 
         match self.0.try_send(msg.into()) {
-            Ok(()) => Ok(msg.len() as u64),
+            Ok(()) => Ok((msg.len(), preview2::StreamStatus::Open)),
             Err(TrySendError::Disconnected(_)) => {
                 Err(io::Error::new(io::ErrorKind::BrokenPipe, "stdio disconnected").into())
             }
