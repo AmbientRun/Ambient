@@ -104,6 +104,12 @@
       "RUST_LOG": "ambient_network=debug,info"
     }
   },
+  "serve-third-person-camera": {
+    "cmd": "cargo run serve ./guest/rust/examples/controllers/third_person_camera/ --clean-build",
+    "env": {
+      "RUST_LOG": "info"
+    }
+  },
   "samplers": {
     "cmd": [
       "cargo",

@@ -17,19 +17,15 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
     let messenger = Arc::new(
         |world: &World, id: EntityId, type_: MessageType, message: &str| {
             let name = world.get_cloned(id, module_name()).unwrap_or_default();
-            let (prefix, level) = match type_ {
-                MessageType::Info => ("info", Level::INFO),
-                MessageType::Warn => ("warn", Level::WARN),
-                MessageType::Error => ("error", Level::ERROR),
-                MessageType::Stdout => ("stdout", Level::INFO),
-                MessageType::Stderr => ("stderr", Level::INFO),
-            };
+            let message = message.trim();
 
-            tracing::event!(
-                Level::INFO,
-                "{prefix}: {}",
-                message.strip_suffix('\n').unwrap_or(message)
-            );
+            match type_ {
+                MessageType::Info => tracing::info!("{}", message),
+                MessageType::Warn => tracing::warn!("{}", message),
+                MessageType::Error => tracing::error!("{}", message),
+                MessageType::Stdout => tracing::info!("stdout {}", message),
+                MessageType::Stderr => tracing::info!("stderr: {}", message),
+            };
         },
     );
 
