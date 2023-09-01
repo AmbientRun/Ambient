@@ -1,0 +1,4 @@
+[[pipelines]]
+type = "Models"
+[pipelines.importer.UnityModels]
+use_prefabs = true

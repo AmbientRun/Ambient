@@ -23,6 +23,9 @@ members = [
     "examples/controllers/first_person_camera",
     "examples/controllers/third_person_camera",
 
+    # Assets
+    "examples/assets/unity",
+
     # Rendering
     "examples/rendering/decals",
     "examples/rendering/fog",
