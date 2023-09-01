@@ -9,6 +9,7 @@ use std::{
     str::FromStr,
 };
 
+use ambient_native_std::RUNTIME_USER_AGENT;
 use ambient_package::Manifest;
 use md5::Digest;
 use tokio_stream::StreamExt;
@@ -220,7 +221,8 @@ async fn create_client(
 
     // set up the endpoint and connect
     let channel = {
-        let mut endpoint = Channel::from_shared(api_server.to_owned())?;
+        let mut endpoint =
+            Channel::from_shared(api_server.to_owned())?.user_agent(RUNTIME_USER_AGENT)?;
         if let Some(tls) = tls {
             endpoint = endpoint.tls_config(tls)?
         }

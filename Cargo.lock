@@ -536,6 +536,7 @@ dependencies = [
 name = "ambient_deploy"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_native_std",
  "ambient_package",
  "ambient_std",
  "ambient_sys",
