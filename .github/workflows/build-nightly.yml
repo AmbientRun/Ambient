@@ -49,7 +49,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Rust cache
         uses: Leafwing-Studios/cargo-cache@v1.1.0
-      
+
       - name: Build
         run: cargo build --release -p ambient --target ${{ matrix.target }}
         env:
@@ -61,7 +61,7 @@ jobs:
       #   env:
       #     CARGO_INCREMENTAL: 0
       #     RUSTFLAGS: "-C debuginfo=0"
-          
+
       - name: Install certificate (OSX)
         if: matrix.os == 'macos-latest'
         uses: apple-actions/import-codesign-certs@v1
@@ -95,6 +95,7 @@ jobs:
       #     path: |
       #       target/release/ambient
       #       target/release/ambient.exe
+
       - id: auth
         name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v0

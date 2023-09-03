@@ -14,6 +14,7 @@
 - [API](user/api.md)
 - [Debugging](user/debugging.md)
 - [Profiling](user/profiling.md)
+- [Settings](user/settings.md)
 
 # Reference Guide
 

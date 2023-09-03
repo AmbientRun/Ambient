@@ -13,16 +13,16 @@ use directories::ProjectDirs;
 mod render;
 pub use render::*;
 
+mod general;
+pub use general::*;
+
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct Settings {
     #[serde(default)]
     pub general: GeneralSettings,
     pub render: RenderSettings,
 }
-#[derive(Serialize, Deserialize, Clone, Default, Debug)]
-pub struct GeneralSettings {
-    pub api_token: Option<String>,
-}
+
 #[cfg(not(target_os = "unknown"))]
 impl Settings {
     pub fn load_from_file() -> anyhow::Result<Settings> {
