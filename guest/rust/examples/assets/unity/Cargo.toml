@@ -1,5 +1,5 @@
 [package]
-name = "ambient_example_asset_loading"
+name = "unity"
 
 edition = "2021"
 publish = false
@@ -10,13 +10,7 @@ version = { workspace = true }
 ambient_api = { workspace = true }
 
 [[bin]]
-name = "asset_loading_client"
-path = "src/client.rs"
-required-features = ["client"]
-
-
-[[bin]]
-name = "asset_loading_server"
+name = "server_unity"
 path = "src/server.rs"
 required-features = ["server"]
 

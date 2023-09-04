@@ -241,7 +241,10 @@ impl UnityMaterials {
         guid_lookup: &HashMap<String, AbsAssetUrl>,
         unity_ref: &UnityRef,
     ) -> anyhow::Result<PbrMaterialDesc> {
-        let material_path = guid_lookup.get(unity_ref.guid.as_ref().unwrap()).unwrap();
+        let material_guid = unity_ref.guid.as_ref().unwrap();
+        let material_path = guid_lookup
+            .get(material_guid)
+            .with_context(|| format!("Failed to find material with guid: {}", material_guid))?;
         if unity_ref.type_ == Some(2) {
             self.get_unity_material(
                 config,
@@ -390,7 +393,7 @@ impl UnityMaterials {
                 double_sided: Some(true), // TODO: Double sided is configured in the shader in unity, so hard to know. Maybe make user configureable
                 metallic: 1.,
                 roughness: 1.,
-                sampler: Some(SamplerKey::LINEAR_CLAMP_TO_EDGE),
+                sampler: Some(SamplerKey::LINEAR_REPEAT),
             };
             self.materials.insert(name.to_string(), mat.clone());
             Ok(mat)
@@ -593,7 +596,11 @@ async fn primitives_from_unity_mesh_renderer(
         .get_component::<unity_parser::prefab::MeshFilter>(prefab)
         .unwrap();
     let mesh_guid = mesh_filter.mesh.guid.as_ref().unwrap().clone();
-    let mesh_url = ctx.guid_lookup.get(&mesh_guid).unwrap().clone();
+    let mesh_url = ctx
+        .guid_lookup
+        .get(&mesh_guid)
+        .with_context(|| format!("Failed to find mesh with guid: {}", mesh_guid))?
+        .clone();
     let mesh_meta_url = ctx
         .ctx
         .get_downloadable_url(&mesh_url.add_extension("meta"))
