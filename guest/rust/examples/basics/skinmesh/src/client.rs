@@ -1,5 +1,5 @@
 use ambient_api::{
-    animation::{self, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
+    animation::{self, AnimationPlayerRef, BindId, BlendNodeRef, PlayClipFromUrlNodeRef, PlayMode},
     core::{
         animation::components::apply_animation_player,
         app::components::{main_scene, name},
@@ -45,12 +45,13 @@ pub async fn main() {
         .with(name(), "Peasant".to_string())
         .spawn();
 
-    let capoeira = PlayClipFromUrlNode::new(assets::url("Capoeira.fbx/animations/mixamo.com.anim"));
-    let robot = PlayClipFromUrlNode::new(assets::url(
+    let capoeira =
+        PlayClipFromUrlNodeRef::new(assets::url("Capoeira.fbx/animations/mixamo.com.anim"));
+    let robot = PlayClipFromUrlNodeRef::new(assets::url(
         "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
     ));
-    let blend = BlendNode::new(&capoeira, &robot, 0.);
-    let anim_player = AnimationPlayer::new(&blend);
+    let blend = BlendNodeRef::new(&capoeira, &robot, 0.);
+    let anim_player = AnimationPlayerRef::new(&blend);
     entity::add_component(unit_id, apply_animation_player(), anim_player.0);
 
     println!("Robot duration: {} sec", robot.clip_duration().await);
@@ -69,11 +70,21 @@ pub async fn main() {
         .spawn();
     entity::add_child(left_foot, ball);
 
-    App::el(blend, anim_player).spawn_interactive()
+    let robot = PlayClipFromUrlNodeRef::new(assets::url(
+        "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+    ));
+    robot.looping(false);
+
+    App::el(blend, anim_player, robot).spawn_interactive()
 }
 
 #[element_component]
-fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -> Element {
+fn App(
+    hooks: &mut Hooks,
+    blend_node: BlendNodeRef,
+    anim_player: AnimationPlayerRef,
+    robot: PlayClipFromUrlNodeRef,
+) -> Element {
     let (blend, set_blend) = hooks.use_state(0.0f32);
     let (masked, set_masked) = hooks.use_state(false);
 
@@ -126,10 +137,8 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
         ]),
         FlowRow::el([
             Button::new("Play single animation", move |_| {
-                let robot = PlayClipFromUrlNode::new(assets::url(
-                    "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
-                ));
-                robot.looping(false);
+                robot.looping(true);
+                robot.restart();
                 anim_player.play(robot);
             })
             .el(),
@@ -138,11 +147,8 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
             })
             .el(),
             Button::new("Freeze animation", move |_| {
-                let robot = PlayClipFromUrlNode::new(assets::url(
-                    "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
-                ));
                 robot.looping(false);
-                robot.freeze_at_percentage(0.5);
+                robot.set_play_mode(PlayMode::FreezeAtPercentage { percentage: 0.5 });
                 anim_player.play(robot);
             })
             .el(),

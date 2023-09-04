@@ -35,16 +35,16 @@ use packages::ambient_example_skinmesh::assets;
 
 ## Animation player
 
-An `AnimationPlayer` is used to play animations. The player executes a graph of animation nodes; at present,
-the two nodes that exist are `PlayClipFromUrlNode` and `BlendNode`.
+An `AnimationPlayerRef` is used to play animations. The player executes a graph of animation nodes; at present,
+the two nodes that exist are `PlayClipFromUrlNodeRef` and `BlendNodeRef`.
 
 Here's an example of how to set up a graph and play it for a single animation:
 
 ```rust
-let clip = PlayClipFromUrlNode::new(
+let clip = PlayClipFromUrlNodeRef::new(
     assets::url("Capoeira.fbx/animations/mixamo.com.anim")
 );
-let player = AnimationPlayer::new(&clip);
+let player = AnimationPlayerRef::new(&clip);
 
 // Let's load a character model to apply the animation to.
 Entity::new()
@@ -58,17 +58,17 @@ The same animation player can be attached to multiple models.
 
 ### Blending animations together
 
-A `BlendNode` can be used to blend two animations together:
+A `BlendNodeRef` can be used to blend two animations together:
 
 ```rust
-let capoeira = PlayClipFromUrlNode::new(
+let capoeira = PlayClipFromUrlNodeRef::new(
     assets::url("Capoeira.fbx/animations/mixamo.com.anim")
 );
-let robot = PlayClipFromUrlNode::new(
+let robot = PlayClipFromUrlNodeRef::new(
     assets::url("Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
 );
-let blend = BlendNode::new(&capoeira, &robot, 0.3);
-let anim_player = AnimationPlayer::new(&blend);
+let blend = BlendNodeRef::new(&capoeira, &robot, 0.3);
+let anim_player = AnimationPlayerRef::new(&blend);
 ```
 
 This will blend `capoeira` (30%) and `robot` (70%) together to form one output animation.
@@ -80,17 +80,17 @@ this is achieved using masking. Here's an example of how to blend two animations
 body:
 
 ```rust
-let capoeira = PlayClipFromUrlNode::new(
+let capoeira = PlayClipFromUrlNodeRef::new(
     assets::url("Capoeira.fbx/animations/mixamo.com.anim")
 );
-let robot = PlayClipFromUrlNode::new(
+let robot = PlayClipFromUrlNodeRef::new(
     assets::url("Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
 );
 
-let blend = BlendNode::new(&capoeira, &robot, 0.0);
+let blend = BlendNodeRef::new(&capoeira, &robot, 0.0);
 blend.set_mask_humanoid_lower_body(1.0);
 
-let anim_player = AnimationPlayer::new(&blend);
+let anim_player = AnimationPlayerRef::new(&blend);
 ```
 
 This will play the `capoeira` at the upper body, and the `robot` dance for the lower body.
@@ -98,7 +98,7 @@ The `set_mask_humanoid_lower_body` and `set_mask_humanoid_upper_body` functions 
 functions for setting the mask for the upper and lower body.
 
 The blend node's weight is still relevant when used with masking, but can also be set per-bone using the mask.
-Setting `BlendNode::new(&capoeira, &robot, 0.3)` and then `blend.set_mask_humanoid_lower_body(0.9)` will play all
+Setting `BlendNodeRef::new(&capoeira, &robot, 0.3)` and then `blend.set_mask_humanoid_lower_body(0.9)` will play all
 nodes in the `capoeira` animation at 30%, except for the lower body, which will play it at 90%. If no mask is set,
 the weight is used for all bones.
 
@@ -126,10 +126,10 @@ This will spawn a ball and attach it to the left foot of the character.
 
 ### Pre-loading animations
 
-Animations can be pre-loaded by creating a `PlayClipFromUrlNode` node and waiting for it to load:
+Animations can be pre-loaded by creating a `PlayClipFromUrlNodeRef` node and waiting for it to load:
 
 ```rust
-let capoeira = PlayClipFromUrlNode::new(
+let capoeira = PlayClipFromUrlNodeRef::new(
     assets::url("Capoeira.fbx/animations/mixamo.com.anim")
 );
 capoeira.wait_for_load().await;
@@ -143,18 +143,14 @@ It is possible to play an animation that was made for one character on another c
 Retargeting may be necessary to remap the animation from the original character's skeleton to your target
 character's skeleton.
 
-To do this, `PlayClipFromUrlNode::set_retargeting` can be used to configure the retargeting for a given clip.
-Additionally, `PlayClipFromUrlNode::apply_base_pose` may be necessary to change the origin of the animation
+To do this, `PlayClipFromUrlNodeRef::set_retargeting` can be used to configure the retargeting for a given clip.
+Additionally, `PlayClipFromUrlNodeRef::apply_base_pose` may be necessary to change the origin of the animation
 for correctness.
 
 If you're using Mixamo for animations, you can do retargeting through Mixamo itself to get the best results.
 
 ### Animation nodes lifetimes and ownership
 
-The animation player and nodes all live in the ECS. The `AnimationPlayer`, `PlayClipFromUrlNode` and other nodes
-are wrappers around an `EntityId`. To remove an animation player, call `player.despawn()` on it.
-
-The animation nodes are ref-counted, so they will survive while at least one of the following is true:
-
-- they are either being played by an animation player
-- they are being referenced by your code (i.e. you have an `PlayClipFromUrlNode`).
+The animation player and nodes all live in the ECS. The `AnimationPlayerRef`, `PlayClipFromUrlNodeRef` and other nodes
+are wrappers around an `EntityId`. You are responsible for despawning them when you're done with them, by calling
+`.despawn()`, which will remove the node and all the children.

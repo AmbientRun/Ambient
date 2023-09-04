@@ -1,7 +1,7 @@
 use std::f32::consts::FRAC_PI_2;
 
 use ambient_api::{
-    animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
+    animation::{AnimationPlayerRef, BlendNodeRef, PlayClipFromUrlNodeRef},
     core::{
         animation::components::apply_animation_player,
         ecs::components::{children, parent},
@@ -52,11 +52,12 @@ pub async fn main() {
                     .with(components::is_zombie(), ()),
             );
 
-            let run =
-                PlayClipFromUrlNode::new(assets::url("Zombie Run.fbx/animations/mixamo.com.anim"));
+            let run = PlayClipFromUrlNodeRef::new(assets::url(
+                "Zombie Run.fbx/animations/mixamo.com.anim",
+            ));
 
-            let blend = BlendNode::new(&run, &run, 0.);
-            let anim_player = AnimationPlayer::new(&blend);
+            let blend = BlendNodeRef::new(&run, &run, 0.);
+            let anim_player = AnimationPlayerRef::new(&blend);
             entity::add_component(model, apply_animation_player(), anim_player.0);
 
             sleep(random::<f32>()).await;

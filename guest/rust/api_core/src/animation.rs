@@ -5,21 +5,25 @@ use crate::{
             freeze_at_time, is_animation_player, looping, mask_bind_ids, mask_weights,
             play_clip_from_url, retarget_animation_scaled, retarget_model_from_url, start_time,
         },
-        app::components::{name, ref_count},
+        app::components::name,
         ecs::components::{children, parent},
     },
     entity,
     prelude::{epoch_time, Entity, EntityId},
 };
+use std::time::Duration;
 
 /// This plays animations, and can handle blending and masking of animations together to create
 /// complex effects. A single animation player can be attached to multiple entities in the scene.
+///
+/// This is just a reference to an entity which lives in the ecs. You need to call `despawn` to
+/// remove it.
 #[derive(Debug, Clone, Copy)]
-pub struct AnimationPlayer(pub EntityId);
-impl AnimationPlayer {
+pub struct AnimationPlayerRef(pub EntityId);
+impl AnimationPlayerRef {
     /// Create a new animation player, with `root` as the currently playing node
-    pub fn new(root: impl AsRef<AnimationNode>) -> Self {
-        let root: &AnimationNode = root.as_ref();
+    pub fn new(root: impl AsRef<AnimationNodeRef>) -> Self {
+        let root: &AnimationNodeRef = root.as_ref();
         let player = Entity::new()
             .with(is_animation_player(), ())
             .with(children(), vec![root.0])
@@ -28,64 +32,87 @@ impl AnimationPlayer {
         entity::add_component(root.0, parent(), player);
         Self(player)
     }
-    fn root(&self) -> Option<EntityId> {
+    fn root(&self) -> Option<AnimationNodeRef> {
         if let Some(children) = entity::get_component(self.0, children()) {
-            children.get(0).copied()
+            children.get(0).copied().map(|id| AnimationNodeRef(id))
         } else {
             None
         }
     }
-    fn free_root(&self) {
-        if let Some(root) = self.root() {
-            entity::remove_component(root, parent());
-        }
-    }
     /// Replaces the current root node of the animation player with a new node
-    pub fn play(&self, node: impl AsRef<AnimationNode>) {
-        self.free_root();
-        let new_root: &AnimationNode = node.as_ref();
+    pub fn play(&self, node: impl AsRef<AnimationNodeRef>) -> Option<AnimationNodeRef> {
+        let old_root = self.root();
+        let new_root: &AnimationNodeRef = node.as_ref();
         entity::add_component(self.0, children(), vec![new_root.0]);
         entity::add_component(new_root.0, parent(), self.0);
+        old_root
     }
     /// Despawn this animation player.
     /// Note that dropping this player won't despawn it automatically; only call this method will despawn it.
     pub fn despawn(self) {
-        self.free_root();
+        if let Some(root) = self.root() {
+            root.despawn();
+        }
         entity::despawn(self.0);
     }
 }
 
-/// An animation node. Used in the animation player. It keeps an internal ref count.
-#[derive(Debug)]
-pub struct AnimationNode(EntityId);
-impl AnimationNode {
+/// An animation node. Used in the animation player.
+#[derive(Debug, Clone, Copy)]
+pub struct AnimationNodeRef(EntityId);
+impl AnimationNodeRef {
     /// Get the entity id of this node
     pub fn get_entity_id(&self) -> EntityId {
         self.0
     }
     /// Use an existing node
     pub fn from_entity(entity: EntityId) -> Self {
-        entity::mutate_component(entity, ref_count(), |x| *x += 1);
         Self(entity)
     }
-}
-impl Clone for AnimationNode {
-    fn clone(&self) -> Self {
-        entity::mutate_component(self.0, ref_count(), |x| *x += 1);
-        Self(self.0)
+    /// Delete this node and its children
+    pub fn despawn(self) {
+        for c in entity::get_component(self.0, children()).unwrap_or_default() {
+            Self::from_entity(c).despawn();
+        }
+        entity::despawn(self.0);
     }
 }
-impl Drop for AnimationNode {
-    fn drop(&mut self) {
-        entity::mutate_component(self.0, ref_count(), |x| *x -= 1);
+
+/// Play mode for animation nodes
+pub enum PlayMode {
+    /// Play the animation
+    Play {
+        /// Global time for the start of the animation
+        start_time: Duration,
+    },
+    /// Freeze the animation at time
+    FreezeAtTime {
+        /// Time in the animation we want to freeze at
+        time: f32,
+    },
+    /// Freeze the animation at time = percentage * duration
+    FreezeAtPercentage {
+        /// Percentage into the animation that we want to freeze at
+        percentage: f32,
+    },
+}
+impl PlayMode {
+    /// Play an animation
+    pub fn play() -> Self {
+        Self::Play {
+            start_time: epoch_time(),
+        }
     }
 }
 
 /// Play clip from url animation node.
 /// This is an animation node which can be plugged into an animation player or other animation nodes.
-#[derive(Debug)]
-pub struct PlayClipFromUrlNode(pub AnimationNode);
-impl PlayClipFromUrlNode {
+///
+/// This is just a reference to an entity which lives in the ecs. You need to call `despawn` to
+/// remove it.
+#[derive(Debug, Clone, Copy)]
+pub struct PlayClipFromUrlNodeRef(pub AnimationNodeRef);
+impl PlayClipFromUrlNodeRef {
     /// Create a new node.
     pub fn new(url: impl Into<String>) -> Self {
         let node = Entity::new()
@@ -93,25 +120,42 @@ impl PlayClipFromUrlNode {
             .with(name(), "Play clip from URL".to_string())
             .with(looping(), true)
             .with(start_time(), epoch_time())
-            .with(ref_count(), 1)
             .spawn();
-        Self(AnimationNode(node))
+        Self(AnimationNodeRef(node))
     }
     /// Use an existing node
     pub fn from_entity(entity: EntityId) -> Self {
-        Self(AnimationNode::from_entity(entity))
+        Self(AnimationNodeRef::from_entity(entity))
     }
     /// Set if the animation should loop or not
     pub fn looping(&self, value: bool) {
         entity::add_component(self.0 .0, looping(), value);
     }
-    /// Freeze the animation at time
-    pub fn freeze_at_time(&self, time: f32) {
-        entity::add_component(self.0 .0, freeze_at_time(), time);
+    /// Set how the animation is played
+    pub fn set_play_mode(&self, mode: PlayMode) {
+        match mode {
+            PlayMode::Play { start_time: time } => {
+                entity::add_component(self.0 .0, start_time(), time);
+                entity::remove_component(self.0 .0, freeze_at_time());
+                entity::remove_component(self.0 .0, freeze_at_percentage());
+            }
+            PlayMode::FreezeAtTime { time } => {
+                entity::add_component(self.0 .0, freeze_at_time(), time);
+                entity::remove_component(self.0 .0, start_time());
+                entity::remove_component(self.0 .0, freeze_at_percentage());
+            }
+            PlayMode::FreezeAtPercentage { percentage } => {
+                entity::add_component(self.0 .0, freeze_at_percentage(), percentage);
+                entity::remove_component(self.0 .0, start_time());
+                entity::remove_component(self.0 .0, freeze_at_time());
+            }
+        }
     }
-    /// Freeze the animation at time = percentage * duration
-    pub fn freeze_at_percentage(&self, percentage: f32) {
-        entity::add_component(self.0 .0, freeze_at_percentage(), percentage);
+    /// Start playing the animation from the beginning
+    pub fn restart(&self) {
+        self.set_play_mode(PlayMode::Play {
+            start_time: epoch_time(),
+        });
     }
     /// Set up retargeting
     pub fn set_retargeting(&self, retargeting: AnimationRetargeting) {
@@ -174,42 +218,44 @@ impl PlayClipFromUrlNode {
         self.clip_duration().await;
     }
 }
-impl AsRef<AnimationNode> for PlayClipFromUrlNode {
-    fn as_ref(&self) -> &AnimationNode {
+impl AsRef<AnimationNodeRef> for PlayClipFromUrlNodeRef {
+    fn as_ref(&self) -> &AnimationNodeRef {
         &self.0
     }
 }
 
 /// Blend animation node.
 /// This is an animation node which can be plugged into an animation player or other animation nodes.
-#[derive(Debug, Clone)]
-pub struct BlendNode(pub AnimationNode);
-impl BlendNode {
+///
+/// This is just a reference to an entity which lives in the ecs. You need to call `despawn` to
+/// remove it.
+#[derive(Debug, Clone, Copy)]
+pub struct BlendNodeRef(pub AnimationNodeRef);
+impl BlendNodeRef {
     /// Create a new blend animation node.
     ///
     /// If the weight is 0, only the left animation will play.
     /// If the weight is 1, only the right animation will play.
     /// Values in between blend between the two animations.
     pub fn new(
-        left: impl AsRef<AnimationNode>,
-        right: impl AsRef<AnimationNode>,
+        left: impl AsRef<AnimationNodeRef>,
+        right: impl AsRef<AnimationNodeRef>,
         weight: f32,
     ) -> Self {
-        let left: &AnimationNode = left.as_ref();
-        let right: &AnimationNode = right.as_ref();
+        let left: &AnimationNodeRef = left.as_ref();
+        let right: &AnimationNodeRef = right.as_ref();
         let node = Entity::new()
             .with(blend(), weight)
             .with(name(), "Blend".to_string())
             .with(children(), vec![left.0, right.0])
-            .with(ref_count(), 1)
             .spawn();
         entity::add_component(left.0, parent(), node);
         entity::add_component(right.0, parent(), node);
-        Self(AnimationNode(node))
+        Self(AnimationNodeRef(node))
     }
     /// Use an existing node
     pub fn from_entity(entity: EntityId) -> Self {
-        Self(AnimationNode::from_entity(entity))
+        Self(AnimationNodeRef::from_entity(entity))
     }
     /// Set the weight of this blend node.
     ///
@@ -250,8 +296,8 @@ impl BlendNode {
         );
     }
 }
-impl AsRef<AnimationNode> for BlendNode {
-    fn as_ref(&self) -> &AnimationNode {
+impl AsRef<AnimationNodeRef> for BlendNodeRef {
+    fn as_ref(&self) -> &AnimationNodeRef {
         &self.0
     }
 }

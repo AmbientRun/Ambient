@@ -1,5 +1,5 @@
 use ambient_api::{
-    animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
+    animation::{AnimationPlayerRef, BlendNodeRef, PlayClipFromUrlNodeRef},
     core::{
         animation::components::apply_animation_player,
         ecs::components::{children, parent},
@@ -51,23 +51,23 @@ fn add_anim_clip_and_blend_to_player(id: EntityId) {
     let run_bk_rt = make_node("Run Backward Right.fbx");
 
     let idle = make_node("Rifle Aiming Idle.fbx");
-    let blend1 = BlendNode::new(&walk_fd, &walk_bk, 0.0);
-    let blend2 = BlendNode::new(&blend1, &walk_lt, 0.0);
-    let blend3 = BlendNode::new(&blend2, &walk_rt, 0.0);
-    let blend4 = BlendNode::new(&blend3, &walk_fd_lt, 0.0);
-    let blend5 = BlendNode::new(&blend4, &walk_fd_rt, 0.0);
-    let blend6 = BlendNode::new(&blend5, &walk_bk_lt, 0.0);
-    let blend7 = BlendNode::new(&blend6, &walk_bk_rt, 0.0);
-    let blend8 = BlendNode::new(&blend7, &run_fd, 0.0);
-    let blend9 = BlendNode::new(&blend8, &run_bk, 0.0);
-    let blend10 = BlendNode::new(&blend9, &run_lt, 0.0);
-    let blend11 = BlendNode::new(&blend10, &run_rt, 0.0);
-    let blend12 = BlendNode::new(&blend11, &run_fd_lt, 0.0);
-    let blend13 = BlendNode::new(&blend12, &run_fd_rt, 0.0);
-    let blend14 = BlendNode::new(&blend13, &run_bk_lt, 0.0);
-    let blend15 = BlendNode::new(&blend14, &run_bk_rt, 0.0);
-    let blend16 = BlendNode::new(&blend15, &idle, 0.0);
-    let output = BlendNode::new(&blend16, &blend16, 0.0); // the right one is dummy
+    let blend1 = BlendNodeRef::new(&walk_fd, &walk_bk, 0.0);
+    let blend2 = BlendNodeRef::new(&blend1, &walk_lt, 0.0);
+    let blend3 = BlendNodeRef::new(&blend2, &walk_rt, 0.0);
+    let blend4 = BlendNodeRef::new(&blend3, &walk_fd_lt, 0.0);
+    let blend5 = BlendNodeRef::new(&blend4, &walk_fd_rt, 0.0);
+    let blend6 = BlendNodeRef::new(&blend5, &walk_bk_lt, 0.0);
+    let blend7 = BlendNodeRef::new(&blend6, &walk_bk_rt, 0.0);
+    let blend8 = BlendNodeRef::new(&blend7, &run_fd, 0.0);
+    let blend9 = BlendNodeRef::new(&blend8, &run_bk, 0.0);
+    let blend10 = BlendNodeRef::new(&blend9, &run_lt, 0.0);
+    let blend11 = BlendNodeRef::new(&blend10, &run_rt, 0.0);
+    let blend12 = BlendNodeRef::new(&blend11, &run_fd_lt, 0.0);
+    let blend13 = BlendNodeRef::new(&blend12, &run_fd_rt, 0.0);
+    let blend14 = BlendNodeRef::new(&blend13, &run_bk_lt, 0.0);
+    let blend15 = BlendNodeRef::new(&blend14, &run_bk_rt, 0.0);
+    let blend16 = BlendNodeRef::new(&blend15, &idle, 0.0);
+    let output = BlendNodeRef::new(&blend16, &blend16, 0.0); // the right one is dummy
     entity::add_component(
         id,
         components::player_output_blend_node(),
@@ -104,14 +104,14 @@ fn add_anim_clip_and_blend_to_player(id: EntityId) {
     );
 }
 
-fn get_blend_node_for_playing(id: EntityId, index: usize) -> Option<BlendNode> {
+fn get_blend_node_for_playing(id: EntityId, index: usize) -> Option<BlendNodeRef> {
     let node = entity::get_component(id, components::player_anim_blend())?;
     if node.len() <= index {
         return None;
     }
     let init_node = node[index];
     // let node = AnimationNode::from_entity(init_node);
-    let blend_node = BlendNode::from_entity(init_node);
+    let blend_node = BlendNodeRef::from_entity(init_node);
     Some(blend_node)
 }
 
@@ -129,8 +129,8 @@ pub fn main() {
             add_anim_clip_and_blend_to_player(id);
             let output_blend_node =
                 entity::get_component(id, components::player_output_blend_node()).unwrap();
-            let blend_node = BlendNode::from_entity(output_blend_node);
-            let anim_player = AnimationPlayer::new(blend_node);
+            let blend_node = BlendNodeRef::from_entity(output_blend_node);
+            let anim_player = AnimationPlayerRef::new(blend_node);
             entity::add_component(model, apply_animation_player(), anim_player.0);
             entity::add_component(id, player_jumping(), false);
         }
@@ -269,6 +269,6 @@ pub fn main() {
     });
 }
 
-fn make_node(url: &str) -> PlayClipFromUrlNode {
-    PlayClipFromUrlNode::new(assets::url(&format!("{url}/animations/mixamo.com.anim")))
+fn make_node(url: &str) -> PlayClipFromUrlNodeRef {
+    PlayClipFromUrlNodeRef::new(assets::url(&format!("{url}/animations/mixamo.com.anim")))
 }
