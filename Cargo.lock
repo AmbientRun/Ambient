@@ -2175,6 +2175,7 @@ dependencies = [
  "anyhow",
  "cargo_toml",
  "clap 4.4.0",
+ "dunce",
  "flume",
  "futures",
  "guppy",

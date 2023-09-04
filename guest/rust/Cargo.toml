@@ -64,7 +64,8 @@ members = [
     "packages/tools/package_manager",
 
     # Packages (games)
-    "packages/games/tangent",
+    "packages/games/tangent/core",
+    "packages/games/tangent/mods/*",
     "packages/games/minigolf",
     "packages/games/music_sequencer",
     "packages/games/pong",

@@ -93,6 +93,19 @@ fn spawn(spki: &str, url: &str) -> anyhow::Result<()> {
 }
 
 #[cfg(target_os = "windows")]
-fn spawn(_spki: &str, _url: &str) -> anyhow::Result<()> {
-    anyhow::bail!("Launching the browser for windows is not yet supported.")
+fn spawn(_spki: &str, url: &str) -> anyhow::Result<()> {
+    // Chrome needs to be completely closed for arguments to be passed correctly
+    let status = std::process::Command::new("cmd")
+        .args(["/C", "start", "chrome", url])
+        .arg(format!("--ignore-certificate-errors"))
+        .spawn()
+        .context("Failed to open Google Chrome")?
+        .wait()
+        .context("Failed to wait for launch command to exit")?;
+
+    if !status.success() {
+        anyhow::bail!("Failed to launch browser. Process exited with {status:?}");
+    }
+
+    Ok(())
 }

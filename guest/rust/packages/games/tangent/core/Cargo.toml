@@ -1,20 +1,20 @@
 [package]
-name = "tangent"
+name = "tangent_core"
 
 edition = "2021"
 publish = false
 version = "0.0.1"
 
 [dependencies]
-ambient_api = { path = "../../../api" }
+ambient_api = { workspace = true }
 
 [[bin]]
-name = "client_tangent"
+name = "client_tangent_core"
 path = "src/client.rs"
 required-features = ["client"]
 
 [[bin]]
-name = "server_tangent"
+name = "server_tangent_core"
 path = "src/server.rs"
 required-features = ["server"]
 

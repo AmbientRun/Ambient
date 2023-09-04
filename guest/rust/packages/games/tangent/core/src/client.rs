@@ -21,10 +21,11 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::this::{
-    components::{debug_lines, debug_messages, player_vehicle, vehicle, vehicle_hud},
+use packages::tangent_schema::{
+    components::{player_vehicle, vehicle, vehicle_hud},
     messages::Input,
 };
+use packages::this::components::{debug_lines, debug_messages};
 
 const CAMERA_OFFSET: Vec3 = vec3(0.5, 1.8, 0.6);
 const RENDER_DEBUG: bool = false;

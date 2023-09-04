@@ -1,0 +1,8 @@
+[package]
+id = "tangent_scene"
+name = "Tangent Scene"
+version = "0.0.1"
+content = { type = "Asset", models = true, code = true }
+
+[dependencies]
+tangent_schema = { path = "../../schema" , deployment = "o0DltxPY72fAqXy9A9uV9" }
