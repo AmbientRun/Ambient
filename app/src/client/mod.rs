@@ -221,7 +221,7 @@ fn GoldenImageTest(
 
                     // Capture current frame.
                     let render_target = render_target_ref.lock().clone();
-                    let new = render_target
+                    let mut new = render_target
                         .0
                         .color_buffer
                         .reader(&gpu)
@@ -229,6 +229,10 @@ fn GoldenImageTest(
                         .await
                         .unwrap()
                         .into_rgba8();
+
+                    for p in new.pixels_mut() {
+                        p.0[3] = 255;
+                    }
 
                     // Save to disk.
                     new.save(&screenshot_path).unwrap();
@@ -266,7 +270,7 @@ fn GoldenImageTest(
                         interval.tick().await;
 
                         // Capture current frame.
-                        let new = render_target
+                        let mut new = render_target
                             .0
                             .color_buffer
                             .reader(&gpu)
@@ -274,6 +278,10 @@ fn GoldenImageTest(
                             .await
                             .unwrap()
                             .into_rgba8();
+
+                        for p in new.pixels_mut() {
+                            p.0[3] = 255;
+                        }
 
                         // Handle timeout.
                         if start_time.elapsed().as_secs_f32() > timeout_seconds {
