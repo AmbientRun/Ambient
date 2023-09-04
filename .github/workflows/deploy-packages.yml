@@ -1,4 +1,4 @@
-name: Deploy examples
+name: Deploy packages
 
 on:
   workflow_dispatch:
@@ -35,4 +35,4 @@ jobs:
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev vulkan-validationlayers-dev mesa-vulkan-drivers libasound2-dev
       - name: Deploy all packages
-        run: cargo campfire-slim deploy-all --token ${{ secrets.AMBIENT_CLOUD_DEPLOY_TOKEN }} --include-examples
+        run: cargo campfire-slim package deploy-all --token ${{ secrets.AMBIENT_CLOUD_DEPLOY_TOKEN }} --include-examples
