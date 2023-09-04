@@ -4,11 +4,14 @@ Ambient supports a number of settings that can be configured using the `settings
 
 ## Settings
 
-[general]\
-sentry = [bool, String] # [enabled, DSN]
+```toml
+[general.sentry]
+enabled = bool
+dsn = String
 
-[render]\
-resolution = [int, int]\
-vsync = bool\
-render_mode = String\ # "MultiIndirect", "Indirect", "Direct"\
+[render]
+resolution = [int, int]
+vsync = bool
+render_mode = String # "MultiIndirect", "Indirect", "Direct"
 software_culling = bool
+```

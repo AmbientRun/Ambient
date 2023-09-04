@@ -37,8 +37,8 @@ fn main() -> anyhow::Result<()> {
     // _guard and _handle need to be kept around for the lifetime of the application
     let _guard;
     let _handle;
-    if settings.general.is_sentry_enabled() {
-        let sentry_dsn = settings.general.sentry_dsn();
+    if settings.general.sentry.enabled {
+        let sentry_dsn = settings.general.sentry.dsn;
         _guard = init_sentry(&sentry_dsn);
         _handle = sentry_rust_minidump::init(&_guard);
         log::debug!("Initialized Sentry with DSN: {:?}", sentry_dsn);
