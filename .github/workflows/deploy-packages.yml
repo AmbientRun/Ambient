@@ -36,3 +36,7 @@ jobs:
           sudo apt install -y libxcb-xfixes0-dev vulkan-validationlayers-dev mesa-vulkan-drivers libasound2-dev
       - name: Deploy all packages
         run: cargo campfire-slim package deploy-all --token ${{ secrets.AMBIENT_CLOUD_DEPLOY_TOKEN }} --include-examples
+      - name: Commit and push changed files
+        run: |
+          git commit -a -m "Update deployed packages for ${{ github.sha }}"
+          git push
