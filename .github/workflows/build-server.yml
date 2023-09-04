@@ -9,6 +9,7 @@ on:
     tags: [v*]
     branches:
       - main
+      - kuba/fix-upload-paths
 
 env:
   CARGO_TERM_COLOR: always
