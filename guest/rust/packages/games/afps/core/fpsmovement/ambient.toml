@@ -5,6 +5,6 @@ version = "0.0.1"
 content = { type = "Asset", code = true }
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "oplAyTtnAZYKsROZk6Soe" }
-input_schema = { path = "../../../../schemas/input", deployment = "6eTXoFaQnRcu6EkvJ5Kdue" }
-editor_schema = { path = "../../../../schemas/editor", deployment = "3BnQTvTRNMd7dh8akJHqiN" }
+afps_schema = { path = "../../schema", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+input_schema = { path = "../../../../schemas/input", deployment = "6P6gdIumjzNGN0AJxZ4SWz" }
+editor_schema = { path = "../../../../schemas/editor", deployment = "54YGceglfzsT4whQGeT3Pd" }
