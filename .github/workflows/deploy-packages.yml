@@ -41,5 +41,5 @@ jobs:
           git config --global user.name "Moose Jobs"
           git config --global user.email "moose-jobs@users.noreply.github.com"
           git commit -a -m "Update deployed packages for ${{ github.sha }}"
-          git pull
+          git pull --no-rebase
           git push
