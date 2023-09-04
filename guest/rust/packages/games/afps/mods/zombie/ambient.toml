@@ -24,4 +24,4 @@ zombie_model_ref = { type = "EntityId", attributes = [
 id = "EntityId"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "3xxxP2nZxCq3jblLOYefNU" }
+afps_schema = { path = "../../schema", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
