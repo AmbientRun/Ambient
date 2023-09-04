@@ -1,12 +1,5 @@
-use ambient_api::{
-    core::{layout::components::space_between_items, messages::Frame},
-    prelude::*,
-};
-use packages::this::{
-    assets,
-    components::{ball_ref, player_head_ref},
-    messages::Input,
-};
+use ambient_api::{core::messages::Frame, prelude::*};
+use packages::this::messages::Input;
 
 #[main]
 fn main() {
