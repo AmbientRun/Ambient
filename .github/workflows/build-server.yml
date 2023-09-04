@@ -64,6 +64,7 @@ jobs:
         run: |
           raw_image_name="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}"
           container_id=$(docker create "${raw_image_name,,}")
+          mkdir -p "${{ env.BUILD_DIR }}"
           docker cp "$container_id:/app/ambient" "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}"
           docker rm "$container_id"
 
