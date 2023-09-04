@@ -393,7 +393,7 @@ impl UnityMaterials {
                 double_sided: Some(true), // TODO: Double sided is configured in the shader in unity, so hard to know. Maybe make user configureable
                 metallic: 1.,
                 roughness: 1.,
-                sampler: Some(SamplerKey::LINEAR_CLAMP_TO_EDGE),
+                sampler: Some(SamplerKey::LINEAR_REPEAT),
             };
             self.materials.insert(name.to_string(), mat.clone());
             Ok(mat)
