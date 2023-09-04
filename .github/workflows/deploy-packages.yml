@@ -39,7 +39,7 @@ jobs:
       - name: Commit and push changed files
         run: |
           git config --global user.name "Moose Jobs"
-          git config --global user.email "username@users.noreply.github.com"
+          git config --global user.email "moose-jobs@users.noreply.github.com"
           git commit -a -m "Update deployed packages for ${{ github.sha }}"
           git pull
           git push
