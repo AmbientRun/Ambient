@@ -15,6 +15,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   SERVER_BINARY_NAME: ambient-${{ github.sha }}
+  CANARY_SERVER_BINARY_NAME: ambient-0.3.0-dev
 
 jobs:
   build-and-push:
@@ -78,3 +79,35 @@ jobs:
         with:
           path: ${{ env.SERVER_BINARY_NAME }}
           destination: ambient-artifacts/ambient-server-builds
+
+      - name: Upload Canary to Google Cloud
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: ${{ env.SERVER_BINARY_NAME }}
+          destination: "ambient-artifacts/ambient-server-builds/${{ env.CANARY_SERVER_BINARY_NAME }}"
+          parent: false
+
+      - name: Set version
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        shell: bash
+      - name: Upload version to Google Cloud
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: ${{ env.SERVER_BINARY_NAME }}
+          destination: "ambient-artifacts/ambient-server-builds/ambient-${{ env.version }}"
+          parent: false
+
+      - name: Set date suffix
+        if: github.event_name == 'schedule'
+        run: echo "date_suffix=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+        shell: bash
+      - name: Upload nightly to Google Cloud
+        if: github.event_name == 'schedule'
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: ${{ env.SERVER_BINARY_NAME }}
+          destination: "ambient-artifacts/ambient-server-builds/ambient-nightly-${{ env.date_suffix }}"
+          parent: false
