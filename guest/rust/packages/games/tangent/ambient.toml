@@ -7,3 +7,4 @@ content = { type = "Playable" }
 [dependencies]
 tangent_core = { path = "core" , deployment = "623aCyj71IR7D07tTJEmLV" }
 tangent_scene = { path = "mods/scene" , deployment = "WAXdRZ6B018UFYu37ttjh" }
+tangent_modness = { path = "mods/modness" , deployment = "3fNi7QhTpcJkgHrsgh8mlq" }
