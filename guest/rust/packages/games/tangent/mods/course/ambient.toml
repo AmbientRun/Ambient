@@ -1,0 +1,17 @@
+[package]
+id = "tangent_course"
+name = "Tangent Course"
+version = "0.0.1"
+content = { type = "Asset", models = true, code = true }
+
+[dependencies]
+tangent_schema = { deployment = "o0DltxPY72fAqXy9A9uV9" }
+
+[components]
+score = { type = "I32", attributes = ["Networked"] }
+obstacle = { type = "Empty", attributes = ["Networked"] }
+visited_checkpoint_ids = { type = { container_type = "Vec", element_type = "EntityId" }, attributes = [
+    "Networked",
+] }
+
+[messages.CheckpointHit.fields]

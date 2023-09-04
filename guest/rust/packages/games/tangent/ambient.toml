@@ -1,9 +1,13 @@
 [package]
-id = "tangent"
-name = "Tangent"
+id = "tangent_plus"
+name = "Tangent+"
 version = "0.0.1"
 content = { type = "Playable" }
 
 [dependencies]
-tangent_core = { path = "core" , deployment = "623aCyj71IR7D07tTJEmLV" }
-tangent_scene = { path = "mods/scene" , deployment = "WAXdRZ6B018UFYu37ttjh" }
+tangent_core = { deployment = "623aCyj71IR7D07tTJEmLV" }
+tangent_scene = { deployment = "WAXdRZ6B018UFYu37ttjh" }
+# tangent_course = { path = "mods/course" }
+tangent_course = { deployment = "7ai07xpXFSnKvvrP7v0my0" }
+tangent_modness = { deployment = "3fNi7QhTpcJkgHrsgh8mlq" }
+tangent_tron = { deployment = "GHRom1luR6lIRsNRSigWI" }
