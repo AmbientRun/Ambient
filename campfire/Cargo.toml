@@ -32,6 +32,7 @@ notify-debouncer-full = { version = "0.2", optional = true, default-features = f
 
 [target.'cfg(target_os="windows")'.dependencies]
 openssl = { version = "0.10", features = ["vendored"], optional = true }
+dunce = "1.0"
 
 [target.'cfg(target_os="linux")'.dependencies]
 nix = "0.26"
