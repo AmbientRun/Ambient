@@ -3,7 +3,7 @@ use anyhow::Context as AnyhowContext;
 
 use crate::{
     Attribute, Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
-    ResolvableValue, ResolveClone, StandardDefinitions, Type,
+    ResolvableValue, Resolve, StandardDefinitions, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -42,8 +42,8 @@ impl Item for Component {
         &self.data
     }
 }
-impl ResolveClone for Component {
-    fn resolve_clone(
+impl Resolve for Component {
+    fn resolve(
         mut self,
         items: &mut ItemMap,
         context: &Context,

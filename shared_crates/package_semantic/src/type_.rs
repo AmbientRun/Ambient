@@ -2,7 +2,7 @@ use ambient_package::{ComponentType, PascalCaseIdentifier};
 use indexmap::IndexMap;
 
 use crate::{
-    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, PrimitiveType, ResolveClone,
+    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, PrimitiveType, Resolve,
     StandardDefinitions,
 };
 
@@ -88,8 +88,8 @@ impl Item for Type {
         &self.data
     }
 }
-impl ResolveClone for Type {
-    fn resolve_clone(
+impl Resolve for Type {
+    fn resolve(
         self,
         _items: &mut ItemMap,
         _context: &Context,

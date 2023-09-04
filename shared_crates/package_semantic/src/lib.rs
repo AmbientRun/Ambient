@@ -19,7 +19,7 @@ mod package;
 pub use package::{Dependency, LocalOrRemote, Package, PackageLocator, RetrievableFile};
 
 mod item;
-use item::ResolveClone;
+use item::Resolve;
 pub use item::{
     Item, ItemData, ItemId, ItemMap, ItemSource, ItemType, ItemValue, ResolvableItemId,
 };
@@ -212,7 +212,7 @@ impl Semantic {
         }
 
         for package_id in self.packages.values().copied() {
-            self.items.resolve_clone(
+            self.items.resolve(
                 &Context::new(self.root_scope_id),
                 &self.standard_definitions,
                 package_id,

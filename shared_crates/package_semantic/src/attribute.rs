@@ -1,8 +1,7 @@
 use ambient_package::ItemPathBuf;
 
 use crate::{
-    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolveClone,
-    StandardDefinitions,
+    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Resolve, StandardDefinitions,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -35,8 +34,8 @@ impl Item for Attribute {
         &self.data
     }
 }
-impl ResolveClone for Attribute {
-    fn resolve_clone(
+impl Resolve for Attribute {
+    fn resolve(
         self,
         _items: &mut ItemMap,
         _context: &Context,

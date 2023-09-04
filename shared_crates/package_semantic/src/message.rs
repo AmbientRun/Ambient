@@ -3,7 +3,7 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, ResolveClone,
+    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, Resolve,
     StandardDefinitions, Type,
 };
 
@@ -41,8 +41,8 @@ impl Item for Message {
         &self.data
     }
 }
-impl ResolveClone for Message {
-    fn resolve_clone(
+impl Resolve for Message {
+    fn resolve(
         mut self,
         items: &mut ItemMap,
         context: &Context,

@@ -95,14 +95,14 @@ impl ItemMap {
     }
 
     /// Resolve the item with the given id by cloning it, avoiding borrowing issues.
-    pub(crate) fn resolve_clone<T: ResolveClone>(
+    pub(crate) fn resolve<T: Resolve>(
         &mut self,
         context: &Context,
         definitions: &StandardDefinitions,
         id: ItemId<T>,
     ) -> anyhow::Result<&mut T> {
         let item = self.get(id).clone();
-        let new_item = item.resolve_clone(self, context, definitions, id)?;
+        let new_item = item.resolve(self, context, definitions, id)?;
         self.insert(id, new_item);
         Ok(self.get_mut(id))
     }
@@ -318,8 +318,8 @@ pub trait Item: Clone {
 }
 
 /// This item supports being resolved by cloning.
-pub(crate) trait ResolveClone: Item {
-    fn resolve_clone(
+pub(crate) trait Resolve: Item {
+    fn resolve(
         self,
         items: &mut ItemMap,
         context: &Context,
