@@ -4,6 +4,7 @@ use ambient_native_std::{
     download_asset::{AssetsCacheOnDisk, ReqwestClientKey},
 };
 use ambient_network::native::client::ResolvedAddr;
+use ambient_settings::SettingsKey;
 use clap::Parser;
 
 mod cli;
@@ -19,6 +20,9 @@ use serde::Deserialize;
 use server::{ServerHandle, QUIC_INTERFACE_PORT};
 use std::path::{Path, PathBuf};
 
+pub const GIT_VERSION: &str = git_version::git_version!();
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 fn main() -> anyhow::Result<()> {
     let rt = ambient_sys::task::make_native_multithreaded_runtime()?;
 
@@ -28,6 +32,18 @@ fn main() -> anyhow::Result<()> {
 
     let runtime = rt.handle();
     let assets = AssetCache::new(runtime.clone());
+    let settings = SettingsKey.get(&assets);
+
+    // _guard and _handle need to be kept around for the lifetime of the application
+    let _guard;
+    let _handle;
+    if settings.general.is_sentry_enabled() {
+        let sentry_dsn = settings.general.sentry_dsn();
+        _guard = init_sentry(&sentry_dsn);
+        _handle = sentry_rust_minidump::init(&_guard);
+        log::debug!("Initialized Sentry with DSN: {:?}", sentry_dsn);
+    }
+
     PhysicsKey.get(&assets); // Load physics
     AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/AmbientRun/Ambient/issues/81
 
@@ -331,4 +347,25 @@ fn setup_logging() -> anyhow::Result<()> {
 
         Ok(())
     }
+}
+
+fn init_sentry(sentry_dsn: &String) -> sentry::ClientInitGuard {
+    std::env::set_var("RUST_BACKTRACE", "1"); // This is needed for anyhow errors captured by sentry to get backtraces
+
+    // https://stackoverflow.com/questions/66790155/what-is-the-recommended-way-to-propagate-panics-in-rust-tokio-code
+    // The "sentry" panic handler will call this
+    // This is instead of using panic=abort, which doesn't work with workspace projects: https://github.com/rust-lang/cargo/issues/8264
+    let default_panic = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        default_panic(info);
+        std::process::exit(1);
+    }));
+
+    sentry::init((
+        sentry_dsn.to_owned(),
+        sentry::ClientOptions {
+            release: Some(format!("{VERSION}_{GIT_VERSION}").into()),
+            ..Default::default()
+        },
+    ))
 }
