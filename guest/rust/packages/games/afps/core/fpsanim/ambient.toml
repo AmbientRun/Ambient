@@ -182,4 +182,4 @@ player_anim_blend = { type = { type = "Vec", element_type = "EntityId" }, attrib
 ] }
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+afps_schema = { path = "../../schema", deployment = "oplAyTtnAZYKsROZk6Soe" }
