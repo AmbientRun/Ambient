@@ -18,7 +18,13 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::this::{assets, components, messages::Input};
+use packages::{
+    tangent_schema::{components, messages::Input},
+    this::{
+        assets,
+        components::{debug_lines, debug_messages},
+    },
+};
 
 const X_DISTANCE: f32 = 0.1;
 const Y_DISTANCE: f32 = 0.4;
@@ -50,7 +56,7 @@ const SLOWDOWN_STRENGTH: f32 = 0.8;
 const ANGULAR_SLOWDOWN_DELAY: f32 = 0.25;
 const ANGULAR_SLOWDOWN_STRENGTH: f32 = 0.4;
 
-const SPAWN_POSITION: Vec3 = vec3(800., -670., 5.);
+const SPAWN_POSITION: Vec3 = vec3(0., 0., 5.);
 const SPAWN_RADIUS: f32 = 20.0;
 
 #[main]
@@ -109,8 +115,8 @@ fn vehicle_creation_and_destruction() {
                 )
                 .with(density(), DENSITY)
                 .with(components::last_distances(), OFFSETS.map(|_| 0.0).to_vec())
-                .with(components::debug_messages(), vec![])
-                .with(components::debug_lines(), vec![])
+                .with(debug_messages(), vec![])
+                .with(debug_lines(), vec![])
                 .with(components::last_jump_time(), game_time())
                 .with(components::last_slowdown_time(), game_time())
                 .with(

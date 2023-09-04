@@ -1,0 +1,34 @@
+[package]
+id = "tangent_schema"
+name = "Tangent Schema"
+version = "0.0.1"
+content = { type = "Asset", schema = true }
+
+[components]
+player_vehicle = { type = "EntityId", name = "Player's Vehicle", description = "The player's vehicle. Attached to each player.", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+last_distances = { type = { type = "Vec", element_type = "F32" }, name = "Last Distances", description = "Distances from the ground for each vehicle probe", attributes = [
+    "Networked",
+] }
+last_jump_time = { type = "Duration", name = "Last Jump Time", description = "The last time the player jumped", attributes = [
+    "Networked",
+] }
+last_slowdown_time = { type = "Duration", name = "Last Slowdown Time", description = "The last time the player's vehicle was slowed down", attributes = [
+    "Networked",
+] }
+
+vehicle = { type = "EntityId", name = "Vehicle", description = "A vehicle (and its driver)", attributes = [
+    "Networked",
+] }
+vehicle_hud = { type = "EntityId", name = "Vehicle's HUD", description = "The HUD for a vehicle. Attached to each vehicle.", attributes = [
+    "Debuggable",
+] }
+
+input_direction = { type = "Vec2", name = "Input Direction", description = "Input direction" }
+input_jump = { type = "Bool", name = "Jump", description = "Jump" }
+
+[messages]
+Input = { name = "Input", description = "Input", fields = { direction = "Vec2", jump = "Bool" } }

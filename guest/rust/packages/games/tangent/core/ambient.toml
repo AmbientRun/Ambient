@@ -1,0 +1,16 @@
+[package]
+id = "tangent_core"
+name = "Tangent Core"
+version = "0.0.1"
+content = { type = "Playable" }
+
+[components]
+debug_lines = { type = { type = "Vec", element_type = "Vec3" }, name = "Debug Lines", description = "Debug lines (orig, dest)", attributes = [
+    "Networked",
+] }
+debug_messages = { type = { type = "Vec", element_type = "String" }, name = "Debug Messages", description = "Debug messages", attributes = [
+    "Networked",
+] }
+
+[dependencies]
+tangent_schema = { path = "../schema" }

@@ -1,23 +1,9 @@
 [package]
 id = "tangent"
-name = "tangent"
+name = "Tangent"
 version = "0.0.1"
 content = { type = "Playable" }
 
-[components]
-debug_lines = {type = {type = "Vec", element_type = "Vec3"}, name = "Debug Lines", description = "Debug lines (orig, dest)", attributes = ["Networked"]}
-debug_messages = {type = {type = "Vec", element_type = "String"}, name = "Debug Messages", description = "Debug messages", attributes = ["Networked"]}
-
-player_vehicle = {type = "EntityId", name = "Player Vehicle", description = "The player's vehicle", attributes = ["Networked", "Debuggable"]}
-
-last_distances = {type = {type = "Vec", element_type = "F32"}, name = "Last Distances", description = "Distances from the ground for each vehicle probe", attributes = ["Networked"]}
-last_jump_time = {type = "Duration", name = "Last Jump Time", description = "The last time the player jumped", attributes = ["Networked"]}
-last_slowdown_time = {type = "Duration", name = "Last Slowdown Time", description = "The last time the player's vehicle was slowed down", attributes = ["Networked"]}
-vehicle = {type = "EntityId", name = "Vehicle", description = "A vehicle (and its driver)", attributes = ["Networked"]}
-vehicle_hud = {type = "EntityId", name = "Vehicle HUD", description = "The HUD for a vehicle", attributes = ["Debuggable"]}
-
-input_direction = {type = "Vec2", name = "Input Direction", description = "Input direction"}
-input_jump = {type = "Bool", name = "Jump", description = "Jump"}
-
-[messages]
-Input = {name = "Input", description = "Input", fields = {direction = "Vec2", jump = "Bool"}}
+[dependencies]
+tangent_core = { path = "core" }
+tangent_scene = { path = "mods/scene" }
