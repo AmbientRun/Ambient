@@ -6,7 +6,7 @@ use thiserror::Error;
 
 use crate::{
     Attribute, Component, Concept, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Message,
-    Package, Resolve, ResolveClone, StandardDefinitions, Type,
+    Package, ResolveClone, StandardDefinitions, Type,
 };
 
 #[derive(Clone, PartialEq)]
@@ -85,14 +85,14 @@ impl ResolveClone for Scope {
         definitions: &StandardDefinitions,
         self_id: ItemId<Self>,
     ) -> anyhow::Result<Self> {
-        fn resolve<T: Resolve, U>(
-            items: &ItemMap,
+        fn resolve<T: ResolveClone, U>(
+            items: &mut ItemMap,
             context: &Context,
             definitions: &StandardDefinitions,
             item_ids: &IndexMap<U, ItemId<T>>,
         ) -> anyhow::Result<()> {
             for id in item_ids.values().copied() {
-                items.resolve(context, definitions, id)?;
+                items.resolve_clone(context, definitions, id)?;
             }
 
             Ok(())

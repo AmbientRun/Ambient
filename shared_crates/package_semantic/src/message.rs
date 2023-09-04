@@ -3,7 +3,7 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, Resolve,
+    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, ResolveClone,
     StandardDefinitions, Type,
 };
 
@@ -41,14 +41,14 @@ impl Item for Message {
         &self.data
     }
 }
-impl Resolve for Message {
-    fn resolve(
-        &mut self,
-        items: &ItemMap,
+impl ResolveClone for Message {
+    fn resolve_clone(
+        mut self,
+        items: &mut ItemMap,
         context: &Context,
         _definitions: &StandardDefinitions,
         _self_id: ItemId<Self>,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<Self> {
         let mut fields = IndexMap::new();
         for (name, type_) in &self.fields {
             fields.insert(
@@ -66,7 +66,7 @@ impl Resolve for Message {
         }
         self.fields = fields;
 
-        Ok(())
+        Ok(self)
     }
 }
 

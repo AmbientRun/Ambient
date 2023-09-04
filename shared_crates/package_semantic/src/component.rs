@@ -3,7 +3,7 @@ use anyhow::Context as AnyhowContext;
 
 use crate::{
     Attribute, Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
-    ResolvableValue, Resolve, StandardDefinitions, Type,
+    ResolvableValue, ResolveClone, StandardDefinitions, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -42,14 +42,14 @@ impl Item for Component {
         &self.data
     }
 }
-impl Resolve for Component {
-    fn resolve(
-        &mut self,
-        items: &ItemMap,
+impl ResolveClone for Component {
+    fn resolve_clone(
+        mut self,
+        items: &mut ItemMap,
         context: &Context,
         definitions: &StandardDefinitions,
         _self_id: ItemId<Self>,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<Self> {
         let type_id = match &self.type_ {
             ResolvableItemId::Unresolved(ty) => {
                 context.get_type_id(items, ty).with_context(|| {
@@ -92,7 +92,7 @@ impl Resolve for Component {
             default.resolve(items, type_id)?;
         }
 
-        Ok(())
+        Ok(self)
     }
 }
 impl Component {

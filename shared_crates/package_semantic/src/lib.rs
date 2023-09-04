@@ -1,5 +1,4 @@
 use std::{
-    cell::Ref,
     collections::HashMap,
     path::{Path, PathBuf},
     sync::OnceLock,
@@ -20,10 +19,10 @@ mod package;
 pub use package::{Dependency, LocalOrRemote, Package, PackageLocator, RetrievableFile};
 
 mod item;
+use item::ResolveClone;
 pub use item::{
     Item, ItemData, ItemId, ItemMap, ItemSource, ItemType, ItemValue, ResolvableItemId,
 };
-use item::{Resolve, ResolveClone};
 
 mod component;
 pub use component::Component;
@@ -168,7 +167,7 @@ impl Semantic {
         }
 
         {
-            let mut scope = self.items.get_mut(scope_id);
+            let scope = self.items.get_mut(scope_id);
 
             // If this is not the Ambient package, import the Ambient package
             if !matches!(retrievable_manifest, RetrievableFile::Ambient(_)) {
@@ -223,7 +222,7 @@ impl Semantic {
         Ok(())
     }
 
-    pub fn root_scope(&self) -> Ref<'_, Scope> {
+    pub fn root_scope(&self) -> &Scope {
         self.items.get(self.root_scope_id)
     }
 
