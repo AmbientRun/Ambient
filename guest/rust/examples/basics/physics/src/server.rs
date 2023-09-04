@@ -56,7 +56,7 @@ pub async fn main() {
 
     Collision::subscribe(move |msg| {
         println!("Bonk! {:?} collided", msg.ids);
-        Bonk::new(cube, camera).send_client_broadcast_unreliable();
+        Bonk {emitter: cube, listener: camera}.send_client_broadcast_unreliable();
     });
 
     Frame::subscribe(move |_| {

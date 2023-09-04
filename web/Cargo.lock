@@ -618,6 +618,7 @@ dependencies = [
 name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_friendly_id",
  "ambient_shared_types",
  "chrono",
  "convert_case 0.6.0",
@@ -625,6 +626,7 @@ dependencies = [
  "once_cell",
  "proc-macro2",
  "quote",
+ "semver 1.0.17",
  "serde",
  "syn 1.0.109",
  "thiserror",
@@ -671,6 +673,7 @@ dependencies = [
  "indexmap 2.0.0",
  "paste",
  "reqwest",
+ "semver 1.0.17",
  "thiserror",
  "toml",
  "ulid",
@@ -4786,6 +4789,9 @@ name = "semver"
 version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bebd363326d05ec3e2f532ab7660680f3b02130d780c299bca73469d521bc0ed"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "semver-parser"
