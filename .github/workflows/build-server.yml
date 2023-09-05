@@ -74,13 +74,13 @@ jobs:
           access_token_lifetime: 1800s
 
       - name: Prepare canary
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         shell: bash
         run:
           cp "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}" "${{ env.BUILD_DIR }}/${{ env.CANARY_SERVER_BINARY_NAME }}"
 
       - name: Prepare versioned
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
         run:
           cp "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}" "${{ env.BUILD_DIR }}/ambient-${GITHUB_REF#refs/tags/v}"
