@@ -161,6 +161,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **UI**: Layout-related properties, like alignment and fit, did not work correctly for certain values. This has been fixed with the introduction of enums.
 - **Build**: Rust compilation errors are now more readable with more colors and fewer unused warnings.
 - **ECS**: The `transformable` concept now includes `local_to_world` to ensure that the world transform is always available.
+- **Physics**: The `physics::raycast[_first]` functions will now validate the direction to ensure that they are non-zero, non-NaN and normalized.
 
 ### Community PRs to internals
 
