@@ -50,8 +50,8 @@ pub async fn main() {
     let robot = PlayClipFromUrlNodeRef::new(assets::url(
         "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
     ));
-    let blend = BlendNodeRef::new(&capoeira, &robot, 0.);
-    let anim_player = AnimationPlayerRef::new(&blend);
+    let blend = BlendNodeRef::new(capoeira, robot, 0.);
+    let anim_player = AnimationPlayerRef::new(blend);
     entity::add_component(unit_id, apply_animation_player(), anim_player.0);
 
     println!("Robot duration: {} sec", robot.clip_duration().await);
@@ -143,7 +143,7 @@ fn App(
             })
             .el(),
             Button::new("Play blend animation", move |_| {
-                anim_player.play(blend_node.clone());
+                anim_player.play(blend_node);
             })
             .el(),
             Button::new("Freeze animation", move |_| {

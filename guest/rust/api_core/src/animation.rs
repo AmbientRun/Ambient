@@ -34,7 +34,7 @@ impl AnimationPlayerRef {
     }
     fn root(&self) -> Option<AnimationNodeRef> {
         if let Some(children) = entity::get_component(self.0, children()) {
-            children.get(0).copied().map(|id| AnimationNodeRef(id))
+            children.get(0).copied().map(AnimationNodeRef)
         } else {
             None
         }

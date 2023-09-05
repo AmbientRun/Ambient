@@ -56,8 +56,8 @@ pub async fn main() {
                 "Zombie Run.fbx/animations/mixamo.com.anim",
             ));
 
-            let blend = BlendNodeRef::new(&run, &run, 0.);
-            let anim_player = AnimationPlayerRef::new(&blend);
+            let blend = BlendNodeRef::new(run, run, 0.);
+            let anim_player = AnimationPlayerRef::new(blend);
             entity::add_component(model, apply_animation_player(), anim_player.0);
 
             sleep(random::<f32>()).await;

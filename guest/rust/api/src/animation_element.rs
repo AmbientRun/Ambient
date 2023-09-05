@@ -29,7 +29,7 @@ pub fn PlayClipFromUrl(
     looping: bool,
 ) -> Element {
     Element::new()
-        .with(play_clip_from_url(), url.into())
+        .with(play_clip_from_url(), url)
         .with(name(), "Play clip from URL".to_string())
         .with(animation::components::looping(), looping)
         .init(start_time(), epoch_time())
@@ -98,7 +98,7 @@ impl BlendNode {
     /// b is first blended with c, using 20% of b and 80% of b
     /// The result if that is then blended with a, using 50% of the result and 50% of a
     pub fn multiblend(mut items: Vec<(Element, f32)>) -> Element {
-        if items.len() == 0 {
+        if items.is_empty() {
             Element::new()
         } else if items.len() == 1 {
             items.pop().unwrap().0

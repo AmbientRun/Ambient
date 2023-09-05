@@ -74,7 +74,7 @@ fn Walk(hooks: &mut Hooks, running: bool, direction: Vec2) -> Element {
     fn walkblend(items: &[(&str, f32)]) -> Element {
         BlendNode::normalize_multiblend(
             items
-                .into_iter()
+                .iter()
                 .map(|(a, w)| {
                     (
                         PlayClipFromUrl {
