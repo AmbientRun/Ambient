@@ -30,10 +30,6 @@ fn UnitAnimation(
     jumping: bool,
     health: i32,
 ) -> Element {
-    println!(
-        "UnitAnimation running: {running}, jumping: {jumping}, health: {health} direction: {:?}",
-        direction
-    );
     AnimationPlayer {
         root: Transition {
             animations: vec![
