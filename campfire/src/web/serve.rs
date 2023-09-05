@@ -155,52 +155,61 @@ impl Serve {
 
             let mut needs_rebuild = false;
             for event in events {
-                match event.event.kind {
-                    EventKind::Create(CreateKind::File) => {
-                        for path in &event.paths {
-                            log::info!("File created: {path:?}");
-                            watcher.add(path)?;
-                        }
-                        needs_rebuild = true;
-                    }
-                    EventKind::Create(CreateKind::Folder) => {
-                        for path in &event.paths {
-                            log::debug!("Folder created: {path:?}");
-
-                            let dirs = find_watched_dirs(path).collect::<Result<Vec<_>, _>>()?;
-                            tokio::task::block_in_place(|| {
-                                for dir in &dirs {
-                                    watcher.add(dir.path()).unwrap();
-                                }
-                            });
-                        }
-                        needs_rebuild = true;
-                    }
-
-                    EventKind::Modify(v) => {
-                        log::debug!("Modified {v:?}");
-                        needs_rebuild = true;
-                    }
-                    EventKind::Remove(RemoveKind::Folder) => {
-                        for path in &event.paths {
-                            watcher.remove(path)?;
-                        }
-                        needs_rebuild = true;
-                    }
-                    v => {
-                        log::debug!("Other event: {v:?}");
-                    }
+                log::info!("event: {event:?}");
+                for path in &event.paths {
+                    log::info!("Path: {path:?}");
+                    needs_rebuild = true
                 }
+
+                // match event.event.kind {
+                //     EventKind::Create(CreateKind::File) => {
+                //         for path in &event.paths {
+                //             log::info!("File created: {path:?}");
+                //             watcher.add(path)?;
+                //         }
+                //         needs_rebuild = true;
+                //     }
+                //     EventKind::Create(CreateKind::Folder) => {
+                //         for path in &event.paths {
+                //             log::info!("Folder created: {path:?}");
+
+                //             let dirs = find_watched_dirs(path).collect::<Result<Vec<_>, _>>()?;
+                //             tokio::task::block_in_place(|| {
+                //                 for dir in &dirs {
+                //                     watcher.add(dir.path()).unwrap();
+                //                 }
+                //             });
+                //         }
+                //         needs_rebuild = true;
+                //     }
+
+                //     EventKind::Modify(v) => {
+                //         log::info!("Modified {v:?}");
+                //         // needs_rebuild = true;
+                //     }
+                //     EventKind::Remove(RemoveKind::Folder) => {
+                //         for path in &event.paths {
+                //             log::info!("Folder removed {path:?}");
+                //             // ersnt
+                //             watcher.remove(path)?;
+                //         }
+
+                //         needs_rebuild = true;
+                //     }
+                //     v => {
+                //         log::info!("Other event: {v:?}");
+                //     }
+                // }
             }
 
             if needs_rebuild {
-                log::debug!("Rebuilding...");
+                log::info!("Rebuilding...");
                 if let Err(err) = self.build.build().await {
                     log::error!("Failed to build: {err}");
                     tokio::time::sleep(Duration::from_secs(2)).await;
                 }
 
-                log::debug!("Finished building the web client");
+                log::info!("Finished building the web client");
             }
         }
 

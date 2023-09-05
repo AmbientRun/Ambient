@@ -154,7 +154,7 @@ pub async fn ensure_wasm_pack() -> anyhow::Result<()> {
             Ok(())
         }
         Ok(path) => {
-            eprintln!("Found installation of wasm pack at {path:?}");
+            eprintln!("Found installation of wasm-pack at {path:?}");
             Ok(())
         }
     }

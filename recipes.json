@@ -245,7 +245,10 @@
     "cmd": "cargo cf web check"
   },
   "serve-web": {
-    "cmd": "cargo cf web serve"
+    "cmd": "cargo cf web serve",
+    "env": {
+      "RUST_LOG": "info"
+    }
   },
   "run": {
     "cmd": "npm run dev",
@@ -266,23 +269,6 @@
     "env": {
       "RUST_LOG": "ambient_build=info"
     }
-  },
-  "serve": {
-    "cmd": "npm run dev",
-    "cwd": "web/www",
-    "components": {
-      "qf": false
-    },
-    "env": {
-      "RUST_LOG": "info"
-    }
-  },
-  "serve-bundle": {
-    "depends_on": [
-      "build-web",
-      "serve-primitives",
-      "serve"
-    ]
   },
   "instancing": {
     "cmd": [
