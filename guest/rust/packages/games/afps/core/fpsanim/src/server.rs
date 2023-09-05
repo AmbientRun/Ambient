@@ -1,8 +1,8 @@
 use ambient_api::{
-    animation::{AnimationPlayerRef, BlendNodeRef, PlayClipFromUrlNodeRef},
+    animation::PlayClipFromUrlNodeRef,
+    animation_element::{AnimationPlayer, BlendNode, PlayClipFromUrl, Transition},
     core::{
-        animation::components::apply_animation_player,
-        ecs::components::{children, parent},
+        animation::components::{apply_animation_player, start_time},
         player::components::is_player,
     },
     prelude::*,
@@ -11,196 +11,163 @@ use packages::{
     afps_schema::components::{
         player_direction, player_health, player_jumping, player_model_ref, player_running,
     },
-    this::{assets, components},
+    this::assets,
+};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
 };
 
-fn calculate_blend_from_weight(weights: &[f32]) -> Vec<f32> {
-    assert!(weights.len() >= 2);
-    let mut blend = Vec::with_capacity(weights.len() - 1);
-    let total = weights.iter().sum::<f32>();
-    // left weight is used to compare left and right
-    let mut left_weight = weights[0] / total;
-    for i in 0..weights.len() - 1 {
-        left_weight += weights[i + 1] / total;
-        let b: f32 = if left_weight != 0.0 {
-            weights[i + 1] / left_weight
-        } else {
-            0.0
-        };
-        blend.push(b);
-    }
-    blend
+fn anim_url(name: &str) -> String {
+    assets::url(&format!("{name}/animations/mixamo.com.anim"))
 }
 
-fn add_anim_clip_and_blend_to_player(id: EntityId) {
-    let walk_fd = make_node("Walk Forward.fbx");
-    let walk_bk = make_node("Walk Backward.fbx");
-    let walk_lt = make_node("Walk Left.fbx");
-    let walk_rt = make_node("Walk Right.fbx");
-    let walk_fd_lt = make_node("Walk Forward Left.fbx");
-    let walk_fd_rt = make_node("Walk Forward Right.fbx");
-    let walk_bk_lt = make_node("Walk Backward Left.fbx");
-    let walk_bk_rt = make_node("Walk Backward Right.fbx");
-    let run_fd = make_node("Run Forward.fbx");
-    let run_bk = make_node("Run Backward.fbx");
-    let run_lt = make_node("Run Left.fbx");
-    let run_rt = make_node("Run Right.fbx");
-    let run_fd_lt = make_node("Run Forward Left.fbx");
-    let run_fd_rt = make_node("Run Forward Right.fbx");
-    let run_bk_lt = make_node("Run Backward Left.fbx");
-    let run_bk_rt = make_node("Run Backward Right.fbx");
-
-    let idle = make_node("Rifle Aiming Idle.fbx");
-    let blend1 = BlendNodeRef::new(&walk_fd, &walk_bk, 0.0);
-    let blend2 = BlendNodeRef::new(&blend1, &walk_lt, 0.0);
-    let blend3 = BlendNodeRef::new(&blend2, &walk_rt, 0.0);
-    let blend4 = BlendNodeRef::new(&blend3, &walk_fd_lt, 0.0);
-    let blend5 = BlendNodeRef::new(&blend4, &walk_fd_rt, 0.0);
-    let blend6 = BlendNodeRef::new(&blend5, &walk_bk_lt, 0.0);
-    let blend7 = BlendNodeRef::new(&blend6, &walk_bk_rt, 0.0);
-    let blend8 = BlendNodeRef::new(&blend7, &run_fd, 0.0);
-    let blend9 = BlendNodeRef::new(&blend8, &run_bk, 0.0);
-    let blend10 = BlendNodeRef::new(&blend9, &run_lt, 0.0);
-    let blend11 = BlendNodeRef::new(&blend10, &run_rt, 0.0);
-    let blend12 = BlendNodeRef::new(&blend11, &run_fd_lt, 0.0);
-    let blend13 = BlendNodeRef::new(&blend12, &run_fd_rt, 0.0);
-    let blend14 = BlendNodeRef::new(&blend13, &run_bk_lt, 0.0);
-    let blend15 = BlendNodeRef::new(&blend14, &run_bk_rt, 0.0);
-    let blend16 = BlendNodeRef::new(&blend15, &idle, 0.0);
-    let output = BlendNodeRef::new(&blend16, &blend16, 0.0); // the right one is dummy
-    entity::add_component(
-        id,
-        components::player_output_blend_node(),
-        output.0.get_entity_id(),
+#[element_component]
+fn UnitAnimation(
+    _hooks: &mut Hooks,
+    direction: Vec2,
+    running: bool,
+    jumping: bool,
+    health: i32,
+) -> Element {
+    println!(
+        "UnitAnimation running: {running}, jumping: {jumping}, health: {health} direction: {:?}",
+        direction
     );
-
-    entity::add_component(
-        id,
-        components::player_persistant_anim_node(),
-        blend16.0.get_entity_id(),
-    );
-
-    entity::add_component(
-        id,
-        components::player_anim_blend(),
-        vec![
-            blend1.0.get_entity_id(),
-            blend2.0.get_entity_id(),
-            blend3.0.get_entity_id(),
-            blend4.0.get_entity_id(),
-            blend5.0.get_entity_id(),
-            blend6.0.get_entity_id(),
-            blend7.0.get_entity_id(),
-            blend8.0.get_entity_id(),
-            blend9.0.get_entity_id(),
-            blend10.0.get_entity_id(),
-            blend11.0.get_entity_id(),
-            blend12.0.get_entity_id(),
-            blend13.0.get_entity_id(),
-            blend14.0.get_entity_id(),
-            blend15.0.get_entity_id(),
-            blend16.0.get_entity_id(),
-        ],
-    );
+    AnimationPlayer {
+        root: Transition {
+            animations: vec![
+                PlayClipFromUrl {
+                    url: anim_url("Rifle Death.fbx"),
+                    looping: false,
+                }
+                .el()
+                .key("death"),
+                PlayClipFromUrl {
+                    url: anim_url("Rifle Jump.fbx"),
+                    looping: false,
+                }
+                .el()
+                .key("jump"),
+                Walk { direction, running }.el(),
+            ],
+            active: if health <= 0 {
+                0
+            } else if jumping {
+                1
+            } else {
+                2
+            },
+            speed: 0.3,
+        }
+        .el(),
+    }
+    .el()
 }
 
-fn get_blend_node_for_playing(id: EntityId, index: usize) -> Option<BlendNodeRef> {
-    let node = entity::get_component(id, components::player_anim_blend())?;
-    if node.len() <= index {
-        return None;
-    }
-    let init_node = node[index];
-    // let node = AnimationNode::from_entity(init_node);
-    let blend_node = BlendNodeRef::from_entity(init_node);
-    Some(blend_node)
-}
+#[element_component]
+fn Walk(hooks: &mut Hooks, running: bool, direction: Vec2) -> Element {
+    let lagging_direction = hooks.use_ref_with(|_| Vec3::ZERO);
+    let mut lag_dir = lagging_direction.lock();
+    *lag_dir = lag_dir.lerp(direction.extend(if running { 1. } else { 0. }), 0.1);
 
-fn set_blend_weights_on_entity(id: EntityId, blend_weights: Vec<f32>) {
-    for (i, weight) in blend_weights.iter().enumerate() {
-        let blend_node = get_blend_node_for_playing(id, i).unwrap();
-        blend_node.set_weight(*weight);
+    fn walkblend(items: &[(&str, f32)]) -> Element {
+        BlendNode::normalize_multiblend(
+            items
+                .into_iter()
+                .map(|(a, w)| {
+                    (
+                        PlayClipFromUrl {
+                            url: anim_url(a),
+                            looping: true,
+                        }
+                        .el()
+                        .with(start_time(), Duration::ZERO),
+                        1. - w.clamp(0., 1.),
+                    )
+                })
+                .collect(),
+        )
     }
+    walkblend(&[
+        ("Rifle Aiming Idle.fbx", lag_dir.xy().distance(Vec2::ZERO)),
+        ("Walk Forward.fbx", lag_dir.distance(vec3(0., -1., 0.))),
+        (
+            "Walk Forward Left.fbx",
+            lag_dir.distance(vec3(-1., -1., 0.)),
+        ),
+        (
+            "Walk Forward Right.fbx",
+            lag_dir.distance(vec3(1., -1., 0.)),
+        ),
+        ("Walk Backward.fbx", lag_dir.distance(vec3(0., 1., 0.))),
+        (
+            "Walk Backward Left.fbx",
+            lag_dir.distance(vec3(-1., 1., 0.)),
+        ),
+        (
+            "Walk Backward Right.fbx",
+            lag_dir.distance(vec3(1., 1., 0.)),
+        ),
+        ("Walk Left.fbx", lag_dir.distance(vec3(-1., 0., 0.))),
+        ("Walk Right.fbx", lag_dir.distance(vec3(1., 0., 0.))),
+        ("Run Forward.fbx", lag_dir.distance(vec3(0., -1., 1.))),
+        ("Run Forward Left.fbx", lag_dir.distance(vec3(-1., -1., 1.))),
+        ("Run Forward Right.fbx", lag_dir.distance(vec3(1., -1., 1.))),
+        ("Run Backward.fbx", lag_dir.distance(vec3(0., 1., 1.))),
+        ("Run Backward Left.fbx", lag_dir.distance(vec3(-1., 1., 1.))),
+        ("Run Backward Right.fbx", lag_dir.distance(vec3(1., 1., 1.))),
+        ("Run Left.fbx", lag_dir.distance(vec3(-1., 0., 1.))),
+        ("Run Right.fbx", lag_dir.distance(vec3(1., 0., 1.))),
+    ])
 }
 
 #[main]
 pub fn main() {
-    spawn_query((is_player(), player_model_ref())).bind(move |v| {
-        for (id, (_, model)) in v {
-            add_anim_clip_and_blend_to_player(id);
-            let output_blend_node =
-                entity::get_component(id, components::player_output_blend_node()).unwrap();
-            let blend_node = BlendNodeRef::from_entity(output_blend_node);
-            let anim_player = AnimationPlayerRef::new(blend_node);
-            entity::add_component(model, apply_animation_player(), anim_player.0);
-            entity::add_component(id, player_jumping(), false);
-        }
-    });
+    fn preload(name: &str) {
+        PlayClipFromUrlNodeRef::new(anim_url(name));
+    }
+    preload("Walk Forward.fbx");
+    preload("Walk Backward.fbx");
+    preload("Walk Left.fbx");
+    preload("Walk Right.fbx");
+    preload("Walk Forward Left.fbx");
+    preload("Walk Forward Right.fbx");
+    preload("Walk Backward Left.fbx");
+    preload("Walk Backward Right.fbx");
+    preload("Run Forward.fbx");
+    preload("Run Backward.fbx");
+    preload("Run Left.fbx");
+    preload("Run Right.fbx");
+    preload("Run Forward Left.fbx");
+    preload("Run Forward Right.fbx");
+    preload("Run Backward Left.fbx");
+    preload("Run Backward Right.fbx");
+    preload("Rifle Aiming Idle.fbx");
 
-    change_query((
-        is_player(),
-        player_health(),
-        components::player_output_blend_node(),
-        components::player_persistant_anim_node(),
-    ))
-    .track_change(player_health())
-    .bind(move |res| {
-        for (_, (_, health, output_node, persistant_node)) in res {
-            if health <= 0 {
-                let clip = make_node("Rifle Death.fbx");
-                clip.looping(false);
+    let anims = Arc::new(Mutex::new(HashMap::<EntityId, ElementTree>::new()));
 
-                entity::mutate_component(output_node, children(), |v| {
-                    v.clear();
-                    v.push(clip.0.get_entity_id());
-                    v.push(clip.0.get_entity_id());
-                });
-                entity::add_component(clip.0.get_entity_id(), parent(), output_node);
+    spawn_query((is_player(), player_model_ref())).bind({
+        let anims = anims.clone();
+        move |v| {
+            let mut anims = anims.lock().unwrap();
+            for (id, (_, model)) in v {
+                let tree = UnitAnimation {
+                    direction: Vec2::ZERO,
+                    running: false,
+                    jumping: false,
+                    health: 100,
+                }
+                .el()
+                .spawn_tree();
+                entity::add_component(model, apply_animation_player(), tree.root_entity().unwrap());
+                anims.insert(id, tree);
 
-                run_async(async move {
-                    let clip = make_node("Rifle Death.fbx");
-                    clip.looping(false);
-                    let dur = clip.clip_duration().await;
-                    sleep(dur).await;
-                    // after death animation, play the blend node again
-                    entity::mutate_component(output_node, children(), |v| {
-                        v.clear();
-                        v.push(persistant_node);
-                        v.push(persistant_node);
-                    });
-                    entity::add_component(persistant_node, parent(), output_node);
-                });
-            };
-        }
-    });
-
-    change_query((
-        is_player(),
-        player_jumping(),
-        components::player_output_blend_node(),
-        components::player_persistant_anim_node(),
-    ))
-    .track_change(player_jumping())
-    .bind(move |res| {
-        for (_, (_, is_jumping, output_node, persistant_node)) in res {
-            if is_jumping {
-                let clip = make_node("Rifle Jump.fbx");
-                clip.looping(false);
-                entity::mutate_component(output_node, children(), |v| {
-                    v.clear();
-                    v.push(clip.0.get_entity_id());
-                    v.push(clip.0.get_entity_id());
-                });
-                entity::add_component(clip.0.get_entity_id(), parent(), output_node);
-            } else {
-                entity::mutate_component(output_node, children(), |v| {
-                    v.clear();
-                    v.push(persistant_node);
-                    v.push(persistant_node); // we had to add the second one for blend node to work
-                });
-                entity::add_component(persistant_node, parent(), output_node);
+                entity::add_component(id, player_jumping(), false);
             }
         }
     });
+
     query((
         is_player(),
         player_model_ref(),
@@ -210,65 +177,20 @@ pub fn main() {
         player_jumping(),
     ))
     .each_frame(move |res| {
+        let mut anims = anims.lock().unwrap();
         for (player_id, (_, _model, dir, is_running, health, jump)) in res {
-            if health <= 0 {
-                continue;
-            }
-            if jump {
-                continue;
-            }
-            let mut weights = vec![0.0; 17];
-
-            let fd = dir.y == -1.0;
-            let bk = dir.y == 1.0;
-            let lt = dir.x == -1.0;
-            let rt = dir.x == 1.0;
-
-            if !is_running {
-                if fd && !lt && !rt {
-                    weights[0] = 1.0;
-                } else if bk && !lt && !rt {
-                    weights[1] = 1.0;
-                } else if lt && !fd && !bk {
-                    weights[2] = 1.0;
-                } else if rt && !fd && !bk {
-                    weights[3] = 1.0;
-                } else if fd && lt {
-                    weights[4] = 1.0;
-                } else if fd && rt {
-                    weights[5] = 1.0;
-                } else if bk && lt {
-                    weights[6] = 1.0;
-                } else if bk && rt {
-                    weights[7] = 1.0;
-                } else {
-                    weights[16] = 1.0;
+            let tree = anims.get_mut(&player_id).unwrap();
+            tree.migrate_root(
+                &mut World,
+                UnitAnimation {
+                    direction: dir,
+                    running: is_running,
+                    jumping: jump,
+                    health,
                 }
-            } else if fd && !lt && !rt {
-                weights[8] = 1.0;
-            } else if bk && !lt && !rt {
-                weights[9] = 1.0;
-            } else if lt && !fd && !bk {
-                weights[10] = 1.0;
-            } else if rt && !fd && !bk {
-                weights[11] = 1.0;
-            } else if fd && lt {
-                weights[12] = 1.0;
-            } else if fd && rt {
-                weights[13] = 1.0;
-            } else if bk && lt {
-                weights[14] = 1.0;
-            } else if bk && rt {
-                weights[15] = 1.0;
-            } else {
-                weights[16] = 1.0;
-            }
-            let blend_weight = calculate_blend_from_weight(&weights);
-            set_blend_weights_on_entity(player_id, blend_weight);
+                .el(),
+            );
+            tree.update(&mut World);
         }
     });
-}
-
-fn make_node(url: &str) -> PlayClipFromUrlNodeRef {
-    PlayClipFromUrlNodeRef::new(assets::url(&format!("{url}/animations/mixamo.com.anim")))
 }
