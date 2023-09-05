@@ -210,7 +210,7 @@ fn update_tests(i: usize, ambient_path: &str, name: &str) -> (String, Vec<String
         // eliminates the need for timeouts and reduces test
         // flakiness.
         "--wait-seconds".to_string(),
-        "30.0".to_string(),
+        "60.0".to_string(),
     ];
 
     (ambient_path.to_string(), args)
@@ -235,7 +235,7 @@ fn check_tests(i: usize, ambient_path: &str, name: &str) -> (String, Vec<String>
         "golden-image-check".to_string(),
         // Todo: See notes on --wait-seconds from above.
         "--timeout-seconds".to_string(),
-        "30.0".to_string(),
+        "60.0".to_string(),
     ];
 
     (ambient_path.to_string(), args.to_vec())
