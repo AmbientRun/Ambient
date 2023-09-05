@@ -16,86 +16,92 @@ mod raw {
                 static IS_ANIMATION_PLAYER: Lazy<Component<()>> = Lazy::new(|| {
                     __internal_get_component("ambient_core::animation::is_animation_player")
                 });
-                #[doc = "**Is animation player**: This entity is treated as an animation player. Attach an animation node as a child for it to play.\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
+                #[doc = "**Is animation player**: This entity is treated as an animation player. Attach an animation node as a child for it to play.\n\n*Attributes*: Debuggable, Networked"]
                 pub fn is_animation_player() -> Component<()> {
                     *IS_ANIMATION_PLAYER
                 }
                 static ANIMATION_ERRORS: Lazy<Component<Vec<String>>> = Lazy::new(|| {
                     __internal_get_component("ambient_core::animation::animation_errors")
                 });
-                #[doc = "**Animation errors**: A list of errors that were produced trying to play the animation.\n\n*Attributes*: MaybeResource, Debuggable"]
+                #[doc = "**Animation errors**: A list of errors that were produced trying to play the animation.\n\n*Attributes*: Debuggable"]
                 pub fn animation_errors() -> Component<Vec<String>> {
                     *ANIMATION_ERRORS
                 }
                 static APPLY_ANIMATION_PLAYER: Lazy<Component<EntityId>> = Lazy::new(|| {
                     __internal_get_component("ambient_core::animation::apply_animation_player")
                 });
-                #[doc = "**Apply animation player**: Apply the designated animation player to this entity and its sub-tree.\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
+                #[doc = "**Apply animation player**: Apply the designated animation player to this entity and its sub-tree.\n\n*Attributes*: Debuggable, Networked"]
                 pub fn apply_animation_player() -> Component<EntityId> {
                     *APPLY_ANIMATION_PLAYER
                 }
                 static PLAY_CLIP_FROM_URL: Lazy<Component<String>> = Lazy::new(|| {
                     __internal_get_component("ambient_core::animation::play_clip_from_url")
                 });
-                #[doc = "**Play clip from URL**: Make this entity a 'play animation clip' node. The value is the URL to the clip we'd like to play.\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
+                #[doc = "**Play clip from URL**: Make this entity a 'play animation clip' node. The value is the URL to the clip we'd like to play.\n\n*Attributes*: Debuggable, Networked"]
                 pub fn play_clip_from_url() -> Component<String> {
                     *PLAY_CLIP_FROM_URL
                 }
                 static LOOPING: Lazy<Component<bool>> =
                     Lazy::new(|| __internal_get_component("ambient_core::animation::looping"));
-                #[doc = "**Looping**: When this is true, the animation clip will repeat infinitely.\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
+                #[doc = "**Looping**: When this is true, the animation clip will repeat infinitely.\n\n*Attributes*: Debuggable, Networked"]
                 pub fn looping() -> Component<bool> {
                     *LOOPING
                 }
                 static SPEED: Lazy<Component<f32>> =
                     Lazy::new(|| __internal_get_component("ambient_core::animation::speed"));
-                #[doc = "**Speed**: Animation playback speed. Default is 1, higher values speeds up the animation.\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
+                #[doc = "**Speed**: Animation playback speed. Default is 1, higher values speeds up the animation.\n\n*Attributes*: Debuggable, Networked"]
                 pub fn speed() -> Component<f32> {
                     *SPEED
                 }
                 static START_TIME: Lazy<Component<Duration>> =
                     Lazy::new(|| __internal_get_component("ambient_core::animation::start_time"));
-                #[doc = "**Start time**: Start time of an animation node.\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
+                #[doc = "**Start time**: Start time of an animation node.\n\n*Attributes*: Debuggable, Networked"]
                 pub fn start_time() -> Component<Duration> {
                     *START_TIME
                 }
                 static FREEZE_AT_PERCENTAGE: Lazy<Component<f32>> = Lazy::new(|| {
                     __internal_get_component("ambient_core::animation::freeze_at_percentage")
                 });
-                #[doc = "**Freeze at percentage**: Sample the input animation at a certain percentage of the animation track length.\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
+                #[doc = "**Freeze at percentage**: Sample the input animation at a certain percentage of the animation track length.\n\n*Attributes*: Debuggable, Networked"]
                 pub fn freeze_at_percentage() -> Component<f32> {
                     *FREEZE_AT_PERCENTAGE
                 }
                 static FREEZE_AT_TIME: Lazy<Component<f32>> = Lazy::new(|| {
                     __internal_get_component("ambient_core::animation::freeze_at_time")
                 });
-                #[doc = "**Freeze at time**: Sample the input animation at a certain time (in seconds).\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
+                #[doc = "**Freeze at time**: Sample the input animation at a certain time (in seconds).\n\n*Attributes*: Debuggable, Networked"]
                 pub fn freeze_at_time() -> Component<f32> {
                     *FREEZE_AT_TIME
                 }
                 static CLIP_DURATION: Lazy<Component<f32>> = Lazy::new(|| {
                     __internal_get_component("ambient_core::animation::clip_duration")
                 });
-                #[doc = "**Clip duration**: The clip duration is loaded from the clip, and then applied to the entity.\n\n*Attributes*: MaybeResource, Debuggable"]
+                #[doc = "**Clip duration**: The clip duration is loaded from the clip, and then applied to the entity.\n\n*Attributes*: Debuggable"]
                 pub fn clip_duration() -> Component<f32> {
                     *CLIP_DURATION
                 }
+                static CLIP_LOADED: Lazy<Component<()>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::animation::clip_loaded"));
+                #[doc = "**Clip loaded**: The clip has been loaded.\n\n*Attributes*: Debuggable"]
+                pub fn clip_loaded() -> Component<()> {
+                    *CLIP_LOADED
+                }
                 static BLEND: Lazy<Component<f32>> =
                     Lazy::new(|| __internal_get_component("ambient_core::animation::blend"));
-                #[doc = "**Blend**: Blend two animations together. The values is the blend weight. Use `children` to set the animations. Blend 0 means we only sample from the first animation, 1 means only the second one, and values in between blend between them.\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
+                #[doc = "**Blend**: Blend two animations together. The values is the blend weight. Use `children` to set the animations. Blend 0 means we only sample from the first animation, 1 means only the second one, and values in between blend between them.\n\n*Attributes*: Debuggable, Networked"]
                 pub fn blend() -> Component<f32> {
                     *BLEND
                 }
                 static MASK_BIND_IDS: Lazy<Component<Vec<String>>> = Lazy::new(|| {
                     __internal_get_component("ambient_core::animation::mask_bind_ids")
                 });
-                #[doc = "**Mask bind ids**: List of bind ids that will be masked.\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
+                #[doc = "**Mask bind ids**: List of bind ids that will be masked.\n\n*Attributes*: Debuggable, Networked"]
                 pub fn mask_bind_ids() -> Component<Vec<String>> {
                     *MASK_BIND_IDS
                 }
                 static MASK_WEIGHTS: Lazy<Component<Vec<f32>>> =
                     Lazy::new(|| __internal_get_component("ambient_core::animation::mask_weights"));
-                #[doc = "**Mask weights**: Weights for each bind id in `mask_bind_ids`.\n\n*Attributes*: MaybeResource, Debuggable, Networked"]
+                #[doc = "**Mask weights**: Weights for each bind id in `mask_bind_ids`.\n\n*Attributes*: Debuggable, Networked"]
                 pub fn mask_weights() -> Component<Vec<f32>> {
                     *MASK_WEIGHTS
                 }
