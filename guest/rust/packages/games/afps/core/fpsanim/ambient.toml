@@ -1,8 +1,0 @@
-[package]
-id = "afps_fpsanim"
-name = "AFPS Animation"
-version = "0.0.1"
-content = { type = "Asset", animations = true, code = true }
-
-[dependencies]
-afps_schema = { path = "../../schema", deployment = "4qcnuQpcxcMDogPdNsKl6s" }

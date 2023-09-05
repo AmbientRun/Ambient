@@ -10,13 +10,12 @@ use ambient_api::{
 use packages::{
     afps_schema::{
         components::player_name,
-        components::{
-            kill_log, player_deathcount, player_health, player_killcount, player_last_frame,
-        },
+        components::{kill_log, player_deathcount, player_killcount, player_last_frame},
         messages::StartGame,
     },
     input_schema::messages::{InputRelease, InputRequest},
     this::assets,
+    unit_schema::components::health,
 };
 
 #[main]
@@ -123,7 +122,7 @@ fn Crosshair(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn Hud(hooks: &mut Hooks) -> Element {
-    let (local_health, _) = hooks.use_entity_component(player::get_local(), player_health());
+    let (local_health, _) = hooks.use_entity_component(player::get_local(), health());
 
     WindowSized::el([Dock::el([Text::el(format!(
         "health: {:?}",
