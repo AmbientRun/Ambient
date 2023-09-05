@@ -29,7 +29,7 @@ use packages::{
 
 pub fn main() {
     Spraypaint::subscribe(move |_ctx, msg| {
-        if let Some(hit) = physics::raycast_first(msg.origin, msg.dir) {
+        if let Some(hit) = physics::raycast_first(msg.origin, msg.dir, None) {
             let player_pos = entity::get_component(msg.source, translation()).unwrap();
             let distance = (player_pos - hit.position).length();
             if distance > 12. {

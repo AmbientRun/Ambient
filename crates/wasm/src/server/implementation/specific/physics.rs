@@ -174,11 +174,13 @@ impl shared::wit::server_physics::Host for Bindings {
         &mut self,
         origin: wit::types::Vec3,
         direction: wit::types::Vec3,
+        max_distance: Option<f32>,
     ) -> anyhow::Result<Option<(wit::types::EntityId, f32)>> {
         let direction = get_raycast_direction(direction)?;
         let result = ambient_physics::intersection::raycast_first(
             self.world(),
             Ray::new(origin.from_bindgen(), direction),
+            max_distance,
         )
         .map(|t| (t.0.into_bindgen(), t.1.into_bindgen()));
 
@@ -189,11 +191,13 @@ impl shared::wit::server_physics::Host for Bindings {
         &mut self,
         origin: wit::types::Vec3,
         direction: wit::types::Vec3,
+        max_distance: Option<f32>,
     ) -> anyhow::Result<Vec<(wit::types::EntityId, f32)>> {
         let direction = get_raycast_direction(direction)?;
         let result = ambient_physics::intersection::raycast(
             self.world(),
             Ray::new(origin.from_bindgen(), direction),
+            max_distance,
         )
         .into_iter()
         .map(|t| (t.0.into_bindgen(), t.1.into_bindgen()))

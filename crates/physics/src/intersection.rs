@@ -29,17 +29,23 @@ pub fn get_entities_in_radius(world: &World, center: Vec3, radius: f32) -> Vec<E
         .collect_vec()
 }
 
-pub fn raycast_first(world: &World, ray: Ray) -> Option<(EntityId, f32)> {
-    raycast_first_px(world, ray).and_then(|(shape, dist)| {
+pub fn raycast_first(
+    world: &World,
+    ray: Ray,
+    max_distance: Option<f32>,
+) -> Option<(EntityId, f32)> {
+    raycast_first_px(world, ray, max_distance).and_then(|(shape, dist)| {
         shape
             .get_user_data::<PxShapeUserData>()
             .map(|ud| (ud.entity, dist))
     })
 }
 
-fn raycast_first_px(world: &World, ray: Ray) -> Option<(PxShape, f32)> {
+fn raycast_first_px(world: &World, ray: Ray, max_distance: Option<f32>) -> Option<(PxShape, f32)> {
     (0..3)
-        .filter_map(|i| raycast_first_collider_type_px(world, ColliderScene::from_usize(i), ray))
+        .filter_map(|i| {
+            raycast_first_collider_type_px(world, ColliderScene::from_usize(i), ray, max_distance)
+        })
         .sorted_by_key(|x| OrderedFloat(x.1))
         .next()
 }
@@ -48,22 +54,33 @@ pub fn raycast_first_collider_type(
     world: &World,
     collider_type: ColliderScene,
     ray: Ray,
+    max_distance: Option<f32>,
 ) -> Option<(EntityId, f32)> {
-    raycast_first_collider_type_px(world, collider_type, ray).and_then(|(shape, dist)| {
-        shape
-            .get_user_data::<PxShapeUserData>()
-            .map(|ud| (ud.entity, dist))
-    })
+    raycast_first_collider_type_px(world, collider_type, ray, max_distance).and_then(
+        |(shape, dist)| {
+            shape
+                .get_user_data::<PxShapeUserData>()
+                .map(|ud| (ud.entity, dist))
+        },
+    )
 }
 pub fn raycast_first_collider_type_px(
     world: &World,
     collider_type: ColliderScene,
     ray: Ray,
+    max_distance: Option<f32>,
 ) -> Option<(PxShape, f32)> {
     let mut hit = PxRaycastCallback::new(0);
     let scene = collider_type.get_scene(world);
     let filter_data = PxQueryFilterData::new();
-    if scene.raycast(ray.origin, ray.dir, f32::MAX, &mut hit, None, &filter_data) {
+    if scene.raycast(
+        ray.origin,
+        ray.dir,
+        get_max_distance(max_distance),
+        &mut hit,
+        None,
+        &filter_data,
+    ) {
         let block = hit.block().unwrap();
         if let Some(shape) = block.shape {
             return Some((shape, block.distance));
@@ -72,8 +89,8 @@ pub fn raycast_first_collider_type_px(
     None
 }
 
-pub fn raycast(world: &World, ray: Ray) -> Vec<(EntityId, f32)> {
-    raycast_px(world, ray)
+pub fn raycast(world: &World, ray: Ray, max_distance: Option<f32>) -> Vec<(EntityId, f32)> {
+    raycast_px(world, ray, max_distance)
         .into_iter()
         .flat_map(|(shape, dist)| {
             shape
@@ -83,10 +100,11 @@ pub fn raycast(world: &World, ray: Ray) -> Vec<(EntityId, f32)> {
         .collect_vec()
 }
 
-fn raycast_px(world: &World, ray: Ray) -> Vec<(PxShape, f32)> {
+fn raycast_px(world: &World, ray: Ray, max_distance: Option<f32>) -> Vec<(PxShape, f32)> {
     (0..3)
         .flat_map(|i| {
-            raycast_collider_type_px(world, ColliderScene::from_usize(i), ray).into_iter()
+            raycast_collider_type_px(world, ColliderScene::from_usize(i), ray, max_distance)
+                .into_iter()
         })
         .sorted_by_key(|x| OrderedFloat(x.1))
         .collect_vec()
@@ -96,8 +114,9 @@ pub fn raycast_collider_type(
     world: &World,
     collider_type: ColliderScene,
     ray: Ray,
+    max_distance: Option<f32>,
 ) -> Vec<(EntityId, f32)> {
-    raycast_collider_type_px(world, collider_type, ray)
+    raycast_collider_type_px(world, collider_type, ray, max_distance)
         .into_iter()
         .filter_map(|(shape, dist)| {
             shape
@@ -110,11 +129,19 @@ pub fn raycast_collider_type_px(
     world: &World,
     collider_type: ColliderScene,
     ray: Ray,
+    max_distance: Option<f32>,
 ) -> Vec<(PxShape, f32)> {
     let mut hit = PxRaycastCallback::new(100);
     let scene = collider_type.get_scene(world);
     let filter_data = PxQueryFilterData::new();
-    if scene.raycast(ray.origin, ray.dir, f32::MAX, &mut hit, None, &filter_data) {
+    if scene.raycast(
+        ray.origin,
+        ray.dir,
+        get_max_distance(max_distance),
+        &mut hit,
+        None,
+        &filter_data,
+    ) {
         return hit
             .touches()
             .into_iter()
@@ -122,6 +149,10 @@ pub fn raycast_collider_type_px(
             .collect_vec();
     }
     Vec::new()
+}
+
+fn get_max_distance(max_distance: Option<f32>) -> f32 {
+    max_distance.unwrap_or(f32::MAX)
 }
 
 pub fn intersect_frustum(world: &World, frustum_corners: &[Vec3; 8]) -> Vec<EntityId> {
@@ -170,14 +201,19 @@ pub async fn rpc_pick(
     (ray, filter): (Ray, RaycastFilter),
 ) -> Option<(EntityId, f32)> {
     let state = args.state.lock();
-    raycast_filtered(state.get_player_world(&args.user_id)?, filter, ray)
+    raycast_filtered(state.get_player_world(&args.user_id)?, filter, ray, None)
 }
 
-pub fn raycast_filtered(world: &World, filter: RaycastFilter, ray: Ray) -> Option<(EntityId, f32)> {
+pub fn raycast_filtered(
+    world: &World,
+    filter: RaycastFilter,
+    ray: Ray,
+    max_distance: Option<f32>,
+) -> Option<(EntityId, f32)> {
     let hits = if let Some(collider_type) = filter.collider_type {
-        raycast_collider_type(world, collider_type, ray)
+        raycast_collider_type(world, collider_type, ray, max_distance)
     } else {
-        raycast(world, ray)
+        raycast(world, ray, max_distance)
     };
     if let Some(filter) = &filter.entities {
         hits.into_iter()

@@ -56,11 +56,15 @@ pub async fn main() {
 
     Collision::subscribe(move |msg| {
         println!("Bonk! {:?} collided", msg.ids);
-        Bonk {emitter: cube, listener: camera}.send_client_broadcast_unreliable();
+        Bonk {
+            emitter: cube,
+            listener: camera,
+        }
+        .send_client_broadcast_unreliable();
     });
 
     Frame::subscribe(move |_| {
-        for hit in physics::raycast(Vec3::Z * 20., -Vec3::Z) {
+        for hit in physics::raycast(Vec3::Z * 20., -Vec3::Z, Some(10.)) {
             if hit.entity == cube {
                 println!("The raycast hit the cube: {hit:?}");
             }

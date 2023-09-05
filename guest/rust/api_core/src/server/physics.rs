@@ -156,18 +156,36 @@ pub struct RaycastHit {
 /// Casts a ray from `origin` in `direction`, and returns the [RaycastHit]s along the way.
 ///
 /// `direction` must be normalized.
-pub fn raycast(origin: Vec3, direction: Vec3) -> Vec<RaycastHit> {
-    wit::server_physics::raycast(origin.into_bindgen(), direction.into_bindgen())
-        .into_iter()
-        .map(|(entity, distance)| raycast_result_to_hit(origin, direction, entity, distance))
-        .collect()
+///
+/// If `max_distance` is specified, the ray will stop after travelling that distance. Otherwise, it will
+/// travel infinitely.
+pub fn raycast(origin: Vec3, direction: Vec3, max_distance: Option<f32>) -> Vec<RaycastHit> {
+    wit::server_physics::raycast(
+        origin.into_bindgen(),
+        direction.into_bindgen(),
+        max_distance,
+    )
+    .into_iter()
+    .map(|(entity, distance)| raycast_result_to_hit(origin, direction, entity, distance))
+    .collect()
 }
 /// Casts a ray from `origin` in `direction`, and returns the first [RaycastHit] if it hits.
 ///
 /// `direction` must be normalized.
-pub fn raycast_first(origin: Vec3, direction: Vec3) -> Option<RaycastHit> {
-    wit::server_physics::raycast_first(origin.into_bindgen(), direction.into_bindgen())
-        .map(|(entity, distance)| raycast_result_to_hit(origin, direction, entity, distance))
+///
+/// If `max_distance` is specified, the ray will stop after travelling that distance. Otherwise, it will
+/// travel infinitely.
+pub fn raycast_first(
+    origin: Vec3,
+    direction: Vec3,
+    max_distance: Option<f32>,
+) -> Option<RaycastHit> {
+    wit::server_physics::raycast_first(
+        origin.into_bindgen(),
+        direction.into_bindgen(),
+        max_distance,
+    )
+    .map(|(entity, distance)| raycast_result_to_hit(origin, direction, entity, distance))
 }
 fn raycast_result_to_hit(
     origin: Vec3,
