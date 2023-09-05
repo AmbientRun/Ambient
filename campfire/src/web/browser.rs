@@ -93,11 +93,12 @@ fn spawn(spki: &str, url: &str) -> anyhow::Result<()> {
 }
 
 #[cfg(target_os = "windows")]
-fn spawn(_spki: &str, url: &str) -> anyhow::Result<()> {
+fn spawn(spki: &str, url: &str) -> anyhow::Result<()> {
     // Chrome needs to be completely closed for arguments to be passed correctly
     let status = std::process::Command::new("cmd")
         .args(["/C", "start", "chrome", url])
-        .arg(format!("--ignore-certificate-errors"))
+        .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
+        .arg("--origin-to-force-quic-on=127.0.0.1:4433")
         .spawn()
         .context("Failed to open Google Chrome")?
         .wait()
