@@ -14,7 +14,6 @@ zombie_hit_reaction_count = { type = "I32", attributes = [
     "Networked",
     "Debuggable",
 ] }
-zombie_health = { type = "I32", attributes = ["Networked", "Debuggable"] }
 zombie_model_ref = { type = "EntityId", attributes = [
     "Networked",
     "Debuggable",
@@ -25,3 +24,5 @@ id = "EntityId"
 
 [dependencies]
 afps_schema = { path = "../../schema", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+basic_character_animation = { path = "../../../../std/basic_character_animation", deployment = "7GO4bqu6dZAbZqezzD4dbb" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "7GO4bqu6dZAbZqezzD4dbb" }
