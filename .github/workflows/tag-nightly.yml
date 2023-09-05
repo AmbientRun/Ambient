@@ -1,0 +1,48 @@
+name: Tag nightly build
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
+  # for testing only
+  push:
+    branches:
+      - kuba/nightly-builds
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+      # - name: Install build dependencies
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install --no-install-recommends -y tree libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
+      #       libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev clang nodejs
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Rust cache
+        uses: Leafwing-Studios/cargo-cache@v1.1.0
+
+      - name: Update version and tag
+        shell: bash
+        run: |
+          version_majminpat=$(cargo cf --version | sed -E -e 's/campfire ([0-9]+\.[0-9]+\.[0-9]+).*$/\1/')
+          date_suffix=$(date +%Y-%m-%d)
+          version="${version_majminpat}-nightly-${date_suffix}"
+          tag="v${version}"
+          tag="kuba-test-v${version}" # for testing only
+          cargo cf release update-version ${version}
+          git config --global user.name "Moose Jobs"
+          git config --global user.email "username@users.noreply.github.com"
+          git commit -a -m "Update version to ${version}"
+          git tag ${tag}
+          git push ${tag}
