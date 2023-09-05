@@ -216,11 +216,11 @@ impl TreeRenderer {
         gpu.queue.submit(Some(encoder.finish()));
 
         for (subbuffer, primitives) in primitive_writes {
-            tracing::debug!(
-                "Writing {} primitives to subbuffer {}",
-                primitives.len(),
-                subbuffer
-            );
+            // tracing::debug!(
+            //     "write {} primitives to subbuffer {}",
+            //     primitives.len(),
+            //     subbuffer
+            // );
 
             self.collect_primitives
                 .insert(subbuffer, primitives.clone());
@@ -596,7 +596,7 @@ impl TreeRenderer {
                             .unwrap_or(0);
 
                         // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
-                        tracing::debug!(?count, ?offset, "Drawing primitives for node");
+                        tracing::trace!(?count, ?offset, "draw node primitives");
                         for i in 0..count {
                             render_pass.draw_indexed_indirect(
                                 collect_state.commands.buffer(),
