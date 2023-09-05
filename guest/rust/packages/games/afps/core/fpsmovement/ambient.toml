@@ -8,3 +8,4 @@ content = { type = "Asset", code = true }
 afps_schema = { path = "../../schema", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
 input_schema = { path = "../../../../schemas/input", deployment = "6P6gdIumjzNGN0AJxZ4SWz" }
 editor_schema = { path = "../../../../schemas/editor", deployment = "54YGceglfzsT4whQGeT3Pd" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "4qcnuQpcxcMDogPdNsKl6s" }

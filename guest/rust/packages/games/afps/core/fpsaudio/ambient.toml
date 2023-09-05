@@ -6,3 +6,4 @@ content = { type = "Asset", audio = true, code = true }
 
 [dependencies]
 afps_schema = { path = "../../schema", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "4qcnuQpcxcMDogPdNsKl6s" }

@@ -1,0 +1,11 @@
+[package]
+id = "basic_character_animation"
+name = "Basic character animation"
+version = "0.0.1"
+content = { type = "Asset", animations = true, code = true }
+
+[dependencies]
+unit_schema = { path = "../../schemas/unit", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+
+[components]
+basic_character_animations = { type = "EntityId", description = "Apply animations to the model this points to. Parameters such as health etc. is read from the entity this component is attached to." }

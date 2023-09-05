@@ -1,17 +1,14 @@
+use crate::packages::this::components::basic_character_animations;
 use ambient_api::{
     animation::PlayClipFromUrlNodeRef,
     animation_element::{AnimationPlayer, BlendNode, PlayClipFromUrl, Transition},
-    core::{
-        animation::components::{apply_animation_player, start_time},
-        player::components::is_player,
-    },
+    core::animation::components::{apply_animation_player, start_time},
+    entity::get_component,
     prelude::*,
 };
 use packages::{
-    afps_schema::components::{
-        player_direction, player_health, player_jumping, player_model_ref, player_running,
-    },
     this::assets,
+    unit_schema::components::{health, jumping, run_direction, running},
 };
 use std::{
     collections::HashMap,
@@ -22,13 +19,13 @@ fn anim_url(name: &str) -> String {
     assets::url(&format!("{name}/animations/mixamo.com.anim"))
 }
 
-#[element_component]
+#[element_component(without_el)]
 fn UnitAnimation(
     _hooks: &mut Hooks,
     direction: Vec2,
     running: bool,
     jumping: bool,
-    health: i32,
+    health: f32,
 ) -> Element {
     AnimationPlayer {
         root: Transition {
@@ -47,7 +44,7 @@ fn UnitAnimation(
                 .key("jump"),
                 Walk { direction, running }.el(),
             ],
-            active: if health <= 0 {
+            active: if health <= 0. {
                 0
             } else if jumping {
                 1
@@ -59,6 +56,16 @@ fn UnitAnimation(
         .el(),
     }
     .el()
+}
+impl UnitAnimation {
+    fn from_entity(entity: EntityId) -> Self {
+        Self {
+            direction: get_component(entity, run_direction()).unwrap_or_default(),
+            running: get_component(entity, running()).unwrap_or_default(),
+            jumping: get_component(entity, jumping()).unwrap_or_default(),
+            health: get_component(entity, health()).unwrap_or(100.),
+        }
+    }
 }
 
 #[element_component]
@@ -143,49 +150,27 @@ pub fn main() {
 
     let anims = Arc::new(Mutex::new(HashMap::<EntityId, ElementTree>::new()));
 
-    spawn_query((is_player(), player_model_ref())).bind({
+    spawn_query(basic_character_animations()).bind({
         let anims = anims.clone();
         move |v| {
             let mut anims = anims.lock().unwrap();
-            for (id, (_, model)) in v {
-                let tree = UnitAnimation {
-                    direction: Vec2::ZERO,
-                    running: false,
-                    jumping: false,
-                    health: 100,
-                }
-                .el()
-                .spawn_tree();
-                entity::add_component(model, apply_animation_player(), tree.root_entity().unwrap());
+            for (id, target) in v {
+                let tree = UnitAnimation::from_entity(id).el().spawn_tree();
+                entity::add_component(
+                    target,
+                    apply_animation_player(),
+                    tree.root_entity().unwrap(),
+                );
                 anims.insert(id, tree);
-
-                entity::add_component(id, player_jumping(), false);
             }
         }
     });
 
-    query((
-        is_player(),
-        player_model_ref(),
-        player_direction(),
-        player_running(),
-        player_health(),
-        player_jumping(),
-    ))
-    .each_frame(move |res| {
+    query(basic_character_animations()).each_frame(move |res| {
         let mut anims = anims.lock().unwrap();
-        for (player_id, (_, _model, dir, is_running, health, jump)) in res {
-            let tree = anims.get_mut(&player_id).unwrap();
-            tree.migrate_root(
-                &mut World,
-                UnitAnimation {
-                    direction: dir,
-                    running: is_running,
-                    jumping: jump,
-                    health,
-                }
-                .el(),
-            );
+        for (id, _) in res {
+            let tree = anims.get_mut(&id).unwrap();
+            tree.migrate_root(&mut World, UnitAnimation::from_entity(id).el());
             tree.update(&mut World);
         }
     });

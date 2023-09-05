@@ -5,11 +5,12 @@ use ambient_api::{
 
 use packages::afps_schema::{
     components::{
-        player_cam_ref, player_direction, player_jumping, player_name, player_pitch,
-        player_running, player_shooting_status, player_vspeed, player_yaw, player_zoomed,
+        player_cam_ref, player_name, player_pitch, player_shooting_status, player_vspeed,
+        player_yaw, player_zoomed,
     },
     messages::{FootOnGround, Input, Shoot},
 };
+use packages::unit_schema::components::{jumping, run_direction, running};
 
 const INIT_JUMP_VSPEED: f32 = 0.10;
 const FALLING_VSPEED: f32 = 0.4;
@@ -54,21 +55,21 @@ pub fn main() {
         }
 
         if msg.jump {
-            entity::add_component(player_id, player_jumping(), true);
+            entity::add_component(player_id, jumping(), true);
             entity::add_component(player_id, player_vspeed(), INIT_JUMP_VSPEED);
         }
 
         if msg.running {
-            entity::add_component(player_id, player_running(), true);
+            entity::add_component(player_id, running(), true);
         } else {
-            entity::add_component(player_id, player_running(), false);
+            entity::add_component(player_id, running(), false);
         }
 
         // temporary fix pos for shooting
         if !msg.is_shooting {
-            entity::add_component(player_id, player_direction(), direction);
+            entity::add_component(player_id, run_direction(), direction);
         } else {
-            entity::add_component(player_id, player_direction(), Vec2::ZERO);
+            entity::add_component(player_id, run_direction(), Vec2::ZERO);
         }
 
         entity::add_component(player_id, player_shooting_status(), msg.is_shooting);
@@ -116,10 +117,10 @@ pub fn main() {
 
     query((
         is_player(),
-        player_direction(),
+        run_direction(),
         rotation(),
         player_vspeed(),
-        player_running(),
+        running(),
     ))
     .each_frame(move |list| {
         for (player_id, (_, direction, rot, vspeed, running)) in list {
@@ -128,9 +129,9 @@ pub fn main() {
             let displace = rot * (direction.normalize_or_zero() * speed).extend(vspeed);
             let collision = physics::move_character(player_id, displace, 0.01, delta_time());
             if collision.down {
-                if let Some(is_jumping) = entity::get_component(player_id, player_jumping()) {
+                if let Some(is_jumping) = entity::get_component(player_id, jumping()) {
                     if is_jumping {
-                        entity::add_component(player_id, player_jumping(), false);
+                        entity::add_component(player_id, jumping(), false);
                     }
                 }
 

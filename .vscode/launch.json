@@ -23,7 +23,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/basics/skinmesh",
+                "guest/rust/packages/games/afps",
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

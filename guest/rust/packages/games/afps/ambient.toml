@@ -5,7 +5,7 @@ version = "0.0.1"
 content = { type = "Playable" }
 
 [dependencies]
-fpsanim = { path = "core/fpsanim", deployment = "7GO4bqu6dZAbZqezzD4dbb" }
+basic_character_animation = { path = "../../std/basic_character_animation", deployment = "7GO4bqu6dZAbZqezzD4dbb" }
 fpsaudio = { path = "core/fpsaudio", deployment = "1yBMSFSb0cFIQKJFemhBhE" }
 fpsmodel = { path = "core/fpsmodel", deployment = "34OOxq63m3dt8quszQCJn2" }
 fpsmovement = { path = "core/fpsmovement", deployment = "15tAcObvE1rX55R5NgEedP" }
