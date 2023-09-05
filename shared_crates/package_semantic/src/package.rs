@@ -10,8 +10,8 @@ use anyhow::Context as AnyhowContext;
 use url::Url;
 
 use crate::{
-    item::ResolveClone, schema, util::read_file, Context, Item, ItemData, ItemId, ItemMap,
-    ItemType, ItemValue, Scope, StandardDefinitions,
+    item::Resolve, schema, util::read_file, Context, Item, ItemData, ItemId, ItemMap, ItemType,
+    ItemValue, Scope, StandardDefinitions,
 };
 use semver::Version;
 
@@ -181,15 +181,15 @@ impl Item for Package {
         &self.data
     }
 }
-impl ResolveClone for Package {
-    fn resolve_clone(
+impl Resolve for Package {
+    fn resolve(
         self,
         items: &mut ItemMap,
         context: &Context,
         definitions: &StandardDefinitions,
         _self_id: ItemId<Self>,
     ) -> anyhow::Result<Self> {
-        items.resolve_clone(context, definitions, self.scope_id)?;
+        items.resolve(context, definitions, self.scope_id)?;
         Ok(self)
     }
 }

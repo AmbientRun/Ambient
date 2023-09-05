@@ -1,5 +1,3 @@
-use std::cell::Ref;
-
 use ambient_package_semantic::{Item, ItemData, ItemId, ItemMap, ItemSource, ItemType};
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -29,7 +27,7 @@ impl Context {
         &self,
         items: &'a ItemMap,
         id: ItemId<T>,
-    ) -> Option<Ref<'a, T>> {
+    ) -> Option<&'a T> {
         let item = items.get(id);
         if *self == Context::GuestUser && item.data().source != ItemSource::User {
             return None;

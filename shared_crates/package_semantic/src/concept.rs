@@ -44,12 +44,12 @@ impl Item for Concept {
 }
 impl Resolve for Concept {
     fn resolve(
-        &mut self,
-        items: &ItemMap,
+        mut self,
+        items: &mut ItemMap,
         context: &Context,
         definitions: &StandardDefinitions,
         _self_id: ItemId<Self>,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<Self> {
         let mut extends = vec![];
         for extend in &self.extends {
             extends.push(match extend {
@@ -101,7 +101,7 @@ impl Resolve for Concept {
         }
         self.components = components;
 
-        Ok(())
+        Ok(self)
     }
 }
 impl Concept {

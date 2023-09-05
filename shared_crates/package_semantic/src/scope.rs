@@ -6,7 +6,7 @@ use thiserror::Error;
 
 use crate::{
     Attribute, Component, Concept, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Message,
-    Package, Resolve, ResolveClone, StandardDefinitions, Type,
+    Package, Resolve, StandardDefinitions, Type,
 };
 
 #[derive(Clone, PartialEq)]
@@ -77,8 +77,8 @@ impl Item for Scope {
 }
 /// Scope uses `ResolveClone` because scopes can be accessed during resolution
 /// of their children, so we need to clone the scope to avoid a double-borrow.
-impl ResolveClone for Scope {
-    fn resolve_clone(
+impl Resolve for Scope {
+    fn resolve(
         self,
         items: &mut ItemMap,
         context: &Context,
@@ -86,7 +86,7 @@ impl ResolveClone for Scope {
         self_id: ItemId<Self>,
     ) -> anyhow::Result<Self> {
         fn resolve<T: Resolve, U>(
-            items: &ItemMap,
+            items: &mut ItemMap,
             context: &Context,
             definitions: &StandardDefinitions,
             item_ids: &IndexMap<U, ItemId<T>>,
@@ -102,7 +102,7 @@ impl ResolveClone for Scope {
         context.push(self_id);
 
         for id in self.scopes.values() {
-            items.resolve_clone(&context, definitions, *id)?;
+            items.resolve(&context, definitions, *id)?;
         }
         resolve(items, &context, definitions, &self.components)?;
         resolve(items, &context, definitions, &self.concepts)?;
