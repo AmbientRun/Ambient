@@ -7,6 +7,7 @@ use std::{
 use anyhow::Context;
 use clap::Args;
 use futures::StreamExt;
+use itertools::Itertools;
 use notify::{
     event::{CreateKind, RemoveKind},
     EventKind, RecursiveMode, Watcher,
@@ -58,7 +59,7 @@ impl<W: Watcher> WatcherState<W> {
 
     pub fn _update_subdir(&mut self, dir: impl AsRef<Path>) -> anyhow::Result<()> {
         let dir = dir.as_ref();
-        for entry in find_watched_dirs(dir) {
+        for entry in find_top_level_dirs(dir) {
             let entry = entry?;
 
             self.add(entry.path())?;
@@ -92,10 +93,8 @@ impl Serve {
                 .context("Failed to run npm install")?;
         }
 
-        self.build.build().await?;
-
-        let watch = self.watch_and_build();
         let serve = self.serve();
+        let watch = self.watch_and_build();
 
         select! {
             v = serve => v?,
@@ -126,91 +125,48 @@ impl Serve {
 
         Ok(())
     }
+
     pub async fn watch_and_build(&self) -> anyhow::Result<()> {
         let (tx, rx) = flume::unbounded();
 
-        let watcher = notify_debouncer_full::new_debouncer(
-            Duration::from_millis(500),
-            None,
-            move |event: DebounceEventResult| {
-                tx.send(event).unwrap();
-            },
-        )?;
+        log::info!("Setting up watcher");
 
-        let mut watcher = WatcherState::new(watcher);
+        // Kick off initial build
+        tx.send(());
+        let mut watcher =
+            notify::recommended_watcher(move |event: notify::Result<notify::Event>| {
+                if let Ok(event) = event {
+                    let mut found = false;
+                    for path in event.paths.iter() {
+                        if filter_path(path) {
+                            log::info!("Event: {path:?}");
+                            found = true;
+                        }
+                    }
 
-        log::debug!("Created watcher");
-
-        let dirs = find_watched_dirs(".").collect::<Result<Vec<_>, _>>()?;
-
-        tokio::task::block_in_place(|| {
-            for dir in &dirs {
-                watcher.add(dir.path()).unwrap();
-            }
-        });
-
-        let mut rx = rx.into_stream();
-        while let Some(events) = rx.next().await {
-            let events = events.map_err(|v| anyhow::anyhow!("File watch error: {v:?}"))?;
-
-            let mut needs_rebuild = false;
-            for event in events {
-                log::info!("event: {event:?}");
-                for path in &event.paths {
-                    log::info!("Path: {path:?}");
-                    needs_rebuild = true
+                    if found {
+                        let _ = tx.send(());
+                    }
                 }
+            })?;
 
-                // match event.event.kind {
-                //     EventKind::Create(CreateKind::File) => {
-                //         for path in &event.paths {
-                //             log::info!("File created: {path:?}");
-                //             watcher.add(path)?;
-                //         }
-                //         needs_rebuild = true;
-                //     }
-                //     EventKind::Create(CreateKind::Folder) => {
-                //         for path in &event.paths {
-                //             log::info!("Folder created: {path:?}");
+        for entry in find_top_level_dirs(".") {
+            let entry = entry?;
+            log::info!("Watching entry {entry:?}");
+            watcher.watch(&entry.path(), RecursiveMode::Recursive)?;
+        }
 
-                //             let dirs = find_watched_dirs(path).collect::<Result<Vec<_>, _>>()?;
-                //             tokio::task::block_in_place(|| {
-                //                 for dir in &dirs {
-                //                     watcher.add(dir.path()).unwrap();
-                //                 }
-                //             });
-                //         }
-                //         needs_rebuild = true;
-                //     }
+        while let Ok(events) = rx.recv_async().await {
+            tokio::time::sleep(Duration::from_millis(1000)).await;
+            rx.drain();
 
-                //     EventKind::Modify(v) => {
-                //         log::info!("Modified {v:?}");
-                //         // needs_rebuild = true;
-                //     }
-                //     EventKind::Remove(RemoveKind::Folder) => {
-                //         for path in &event.paths {
-                //             log::info!("Folder removed {path:?}");
-                //             // ersnt
-                //             watcher.remove(path)?;
-                //         }
-
-                //         needs_rebuild = true;
-                //     }
-                //     v => {
-                //         log::info!("Other event: {v:?}");
-                //     }
-                // }
+            log::info!("Rebuilding...");
+            if let Err(err) = self.build.build().await {
+                log::error!("Failed to build: {err}");
+                tokio::time::sleep(Duration::from_secs(2)).await;
             }
 
-            if needs_rebuild {
-                log::info!("Rebuilding...");
-                if let Err(err) = self.build.build().await {
-                    log::error!("Failed to build: {err}");
-                    tokio::time::sleep(Duration::from_secs(2)).await;
-                }
-
-                log::info!("Finished building the web client");
-            }
+            log::info!("Finished building the web client");
         }
 
         Ok(())
@@ -235,28 +191,35 @@ impl Serve {
 //     Ok(())
 // }
 
-pub fn find_watched_dirs(
-    dir: impl AsRef<Path>,
-) -> impl Iterator<Item = Result<walkdir::DirEntry, walkdir::Error>> {
-    let dir = dir.as_ref();
-    log::info!("Walking directory {dir:?}");
+fn filter_path(path: impl AsRef<Path>) -> bool {
+    let path = path.as_ref();
 
-    walkdir::WalkDir::new(dir).into_iter().filter_entry(|v| {
-        let path = v.path();
-        let fname = v.file_name();
-
-        // if  path.starts_with(".") {
-        //     log::debug!("Ignoring hidden path: {path:?}");
-        //     return false;
-        // }
-
-        match fname.to_str() {
+    path.components().into_iter().all(|seg| {
+        let seg: &Path = seg.as_ref();
+        match seg.to_str() {
             None => {
                 log::error!("Path is not UTF-8: {path:?}");
                 false
             }
             Some("node_modules" | "target" | ".git" | "build" | "tmp" | "pkg") => false,
             Some(_) => true,
+        }
+    })
+}
+
+pub fn find_top_level_dirs(
+    dir: impl AsRef<Path>,
+) -> impl Iterator<Item = Result<std::fs::DirEntry, std::io::Error>> {
+    let dir = dir.as_ref();
+    log::info!("Walking directory {dir:?}");
+
+    std::fs::read_dir(dir).unwrap().filter_map_ok(|entry| {
+        let path = entry.path();
+
+        if filter_path(path) {
+            Some(entry)
+        } else {
+            None
         }
     })
 }
