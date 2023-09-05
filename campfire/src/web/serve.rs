@@ -13,7 +13,6 @@ use notify::{
     EventKind, RecursiveMode, Watcher,
 };
 use notify_debouncer_full::{DebounceEventResult, Debouncer, FileIdMap};
-use tokio::select;
 
 use super::build::BuildOptions;
 
@@ -96,7 +95,7 @@ impl Serve {
         let serve = self.serve();
         let watch = self.watch_and_build();
 
-        select! {
+        tokio::select! {
             v = serve => v?,
             v = watch => v?,
         }
@@ -132,7 +131,7 @@ impl Serve {
         log::info!("Setting up watcher");
 
         // Kick off initial build
-        tx.send(());
+        let _ = tx.send(());
         let mut watcher =
             notify::recommended_watcher(move |event: notify::Result<notify::Event>| {
                 if let Ok(event) = event {
@@ -158,7 +157,6 @@ impl Serve {
 
         while let Ok(events) = rx.recv_async().await {
             tokio::time::sleep(Duration::from_millis(1000)).await;
-            rx.drain();
 
             log::info!("Rebuilding...");
             if let Err(err) = self.build.build().await {
@@ -166,6 +164,7 @@ impl Serve {
                 tokio::time::sleep(Duration::from_secs(2)).await;
             }
 
+            rx.drain();
             log::info!("Finished building the web client");
         }
 

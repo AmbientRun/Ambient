@@ -122,12 +122,19 @@ impl wit::client_input::Host for Bindings {
 
     fn set_cursor_lock(&mut self, lock: bool) -> anyhow::Result<()> {
         let grab_mode = if lock {
-            if cfg!(target_os = "windows") || cfg!(target_os = "linux") {
+            #[cfg(any(target_os = "windows", target_os = "linux"))]
+            {
                 CursorGrabMode::Confined
-            } else if cfg!(target_os = "macos") {
+            }
+
+            #[cfg(target_os = "macos")]
+            {
                 CursorGrabMode::Locked
-            } else {
-                anyhow::bail!("Unsupported platform for cursor lock.")
+            }
+
+            #[cfg(target_os = "unknown")]
+            {
+                CursorGrabMode::Confined
             }
         } else {
             CursorGrabMode::None

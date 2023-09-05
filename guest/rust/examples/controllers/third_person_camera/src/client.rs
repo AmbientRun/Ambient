@@ -79,6 +79,9 @@ fn main() {
             displace.y += 1.0;
         }
 
-        Input::new(displace, delta.mouse_position.x, input.mouse_wheel).send_server_reliable();
+        let input = Input::new(displace, delta.mouse_position.x, input.mouse_wheel);
+        println!("sending input {input:?}");
+
+        input.send_server_reliable();
     });
 }
