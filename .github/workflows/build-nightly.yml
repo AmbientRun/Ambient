@@ -1,9 +1,9 @@
 name: "build-nightly"
 
 on:
-  schedule:
-    - cron: '0 2 * * *'
   workflow_dispatch:
+  push:
+    tags: [v*]
 
 env:
   CARGO_TERM_COLOR: always
@@ -84,9 +84,20 @@ jobs:
           cd ${{ env.EXE_DIR }}
           xcrun notarytool store-credentials "notarytool-profile" --apple-id "${{ secrets.APPLE_DEVELOPER_EMAIL }}" --team-id="${{ secrets.APPLE_TEAM_ID }}" --password "${{ secrets.APPLE_DEVELOPER_PASSWORD }}"
           xcrun notarytool submit "ambient-${{ matrix.target }}.zip" --keychain-profile "notarytool-profile" --wait
-      - name: Set date suffix
-        run: echo "date_suffix=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+
+      - name: Get date suffix
+        # ref example: refs/tags/v0.3.0-nightly-2023-09-05
+        if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-nightly-')
         shell: bash
+        run: |
+          date_suffix=$(echo "${GITHUB_REF}" | sed -E -e 's/^.*-nightly-([0-9]{4}-[0-9]{2}-[0-9]{2})$/\1/')
+          echo "date_suffix=${date_suffix}" >> $GITHUB_ENV
+
+      - name: Generate date suffix
+        # negation syntax and YAML don't blend well together :( hence "true != ..."
+        if: true != (startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-nightly-'))
+        shell: bash
+        run: echo "date_suffix=$(date +%Y-%m-%d)" >> $GITHUB_ENV
 
       # - name: Upload ambient executable artifact
       #   uses: actions/upload-artifact@v3
