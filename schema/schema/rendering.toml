@@ -3,7 +3,7 @@ id = "rendering"
 name = "Rendering"
 description = "Rendering-related state, including global rendering parameters and per-entity state."
 content = { type = "Asset", schema = true }
-version = "0.3.0-dev"
+version = "0.3.0-nightly-2023-09-05"
 
 [components.cast_shadows]
 type = "Empty"
