@@ -52,7 +52,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            for (const workflow_id of ['deploy-server.yml', 'build-nightly.yml', 'deploy-web.yml', 'deploy-packages.yml']) {
+            for (const workflow_id of ['build-server.yml', 'build-nightly.yml', 'deploy-web.yml', 'deploy-packages.yml']) {
               github.rest.actions.createWorkflowDispatch({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
