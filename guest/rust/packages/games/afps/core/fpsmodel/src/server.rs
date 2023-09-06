@@ -33,7 +33,10 @@ pub async fn main() {
     spawn_query((is_player(), user_id())).bind(move |players| {
         for (id, (_, uid)) in players {
             run_async(async move {
-                entity::wait_for_component(id, player_name()).await;
+                if entity::wait_for_component(id, player_name()).await.is_none() {
+                    // entity deleted
+                    return;
+                }
 
                 // refer to the first person example in Ambient repo
                 let cam = Entity::new()
