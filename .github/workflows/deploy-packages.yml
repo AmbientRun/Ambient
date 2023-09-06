@@ -37,6 +37,8 @@ jobs:
       - name: Deploy all packages
         run: cargo campfire-slim package deploy-all --token ${{ secrets.AMBIENT_CLOUD_DEPLOY_TOKEN }} --include-examples
       - name: Commit and push changed files
+        # only commit and push if this is running in a branch
+        if: startsWith(github.ref, 'refs/heads/')
         run: |
           git config --global user.name "Moose Jobs"
           git config --global user.email "username@users.noreply.github.com"
