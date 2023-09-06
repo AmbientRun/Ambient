@@ -35,6 +35,7 @@ ambient_ui_native = { workspace = true }
 ambient_wasm = { workspace = true }
 ambient_water = { workspace = true }
 ambient_world_audio = { workspace = true }
+cpal = { version = "0.14", features = ["wasm-bindgen"]}
 
 url = { workspace = true }
 anyhow = { workspace = true }

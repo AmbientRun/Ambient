@@ -1142,6 +1142,7 @@ dependencies = [
  "ambient_world_audio",
  "anyhow",
  "chrono",
+ "cpal",
  "futures",
  "getrandom 0.2.10",
  "glam",
@@ -1891,6 +1892,7 @@ dependencies = [
  "parking_lot",
  "stdweb",
  "thiserror",
+ "wasm-bindgen",
  "web-sys",
  "windows 0.37.0",
 ]
