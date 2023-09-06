@@ -2,6 +2,7 @@ use std::f32::consts::FRAC_PI_2;
 
 use ambient_api::{
     core::{
+        app::components::name,
         ecs::components::{children, parent},
         physics::concepts::make_character_controller,
         player::components::is_player,
@@ -14,7 +15,10 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::packages::basic_character_animation;
+use crate::packages::{
+    basic_character_animation,
+    unit_schema::components::{running, speed, vertical_velocity},
+};
 use packages::unit_schema::components::{health, run_direction};
 use packages::{
     basic_character_animation::components::basic_character_animations,
@@ -51,11 +55,15 @@ pub async fn main() {
                         translation(),
                         vec3(-8.0 * random::<f32>(), -8.0 * random::<f32>(), 1.3),
                     )
+                    .with(name(), "Zombie".to_string())
                     .with(children(), vec![model])
                     .with(local_to_world(), Default::default())
                     .with(components::zombie_model_ref(), model)
                     .with(health(), 100.)
                     .with(run_direction(), -Vec2::Y)
+                    .with(vertical_velocity(), 0.)
+                    .with(speed(), 0.03)
+                    .with(running(), false)
                     .with(components::is_zombie(), ())
                     .with(basic_character_animations(), model)
                     .with(
@@ -100,25 +108,12 @@ pub async fn main() {
             }
 
             if let Some(nearest_player_pos) = nearest_player_pos {
-                let displace = nearest_player_pos - zombie_pos;
-                // if displace.length() > 5.0 {
-                //     break;
-                // }
-                let zb_speed = 0.03;
-                // If you want the zombie to move at a constant speed regardless of distance to the player,
-                // you may want to normalize the displacement vector before feeding it to `move_character`
-                let displace = displace.normalize_or_zero() * zb_speed; // normalize to get a unit vector
+                let dir = (nearest_player_pos - zombie_pos).normalize_or_zero();
 
-                let angle = displace.y.atan2(displace.x);
+                let angle = dir.y.atan2(dir.x);
                 let rot = Quat::from_rotation_z(angle);
-                let _collision = physics::move_character(
-                    zombie,
-                    vec3(displace.x, displace.y, -0.1),
-                    0.01,
-                    delta_time(),
-                );
                 entity::set_component(zombie, rotation(), rot);
-                entity::set_component(zombie, run_direction(), -Vec2::Y);
+                entity::set_component(zombie, run_direction(), Vec2::X);
                 // println!("collision: {} {} {}", collision.up, collision.down, collision.side);
             } else {
                 entity::set_component(zombie, run_direction(), Vec2::ZERO);

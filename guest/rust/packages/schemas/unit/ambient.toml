@@ -7,6 +7,18 @@ content = { type = "Asset", schema = true }
 
 [components]
 run_direction = { type = "Vec2", attributes = ["Debuggable", "Networked"] }
+speed = { type = "F32", description = "The speed the unit can walk at", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_speed_multiplier = { type = "F32", description = "The speed the unit can run at", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+strafe_speed_multiplier = { type = "F32", description = "The speed the unit can strafe at", attributes = [
+    "Debuggable",
+    "Networked",
+] }
 health = { type = "F32", attributes = ["Debuggable", "Networked"] }
 jumping = { type = "Bool", attributes = ["Debuggable", "Networked"] }
 running = { type = "Bool", attributes = ["Debuggable", "Networked"] }

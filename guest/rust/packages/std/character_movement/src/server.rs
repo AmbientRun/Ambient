@@ -1,5 +1,8 @@
-use ambient_api::{core::transform::components::rotation, prelude::*};
-use packages::unit_schema::components::{jumping, run_direction, running, vertical_velocity};
+use ambient_api::{core::transform::components::rotation, entity::get_component, prelude::*};
+use packages::unit_schema::components::{
+    jumping, run_direction, run_speed_multiplier, running, speed, strafe_speed_multiplier,
+    vertical_velocity,
+};
 
 const FALLING_VSPEED: f32 = 0.4;
 
@@ -7,8 +10,16 @@ const FALLING_VSPEED: f32 = 0.4;
 pub fn main() {
     query((run_direction(), rotation(), vertical_velocity(), running())).each_frame(move |list| {
         for (unit_id, (direction, rot, vert_speed, running)) in list {
-            let scale_factor = if running { 1.5 } else { 1.0 };
-            let speed = scale_factor * vec2(0.04, 0.06);
+            let scale_factor = if running {
+                get_component(unit_id, run_speed_multiplier()).unwrap_or(1.5)
+            } else {
+                1.
+            } * get_component(unit_id, speed()).unwrap_or(0.06);
+            let speed = scale_factor
+                * vec2(
+                    get_component(unit_id, strafe_speed_multiplier()).unwrap_or(0.8),
+                    1.,
+                );
             let displace = rot * (direction.normalize_or_zero() * speed).extend(vert_speed);
             let collision = physics::move_character(unit_id, displace, 0.01, delta_time());
             if collision.down {
