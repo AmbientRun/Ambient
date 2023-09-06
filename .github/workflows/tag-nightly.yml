@@ -30,6 +30,7 @@ jobs:
       - name: Rust cache
         uses: Leafwing-Studios/cargo-cache@v1.1.0
       - name: Update version and tag
+        id: tag
         run: |
           version_majminpat=$(cargo cf --version | sed -E -e 's/campfire ([0-9]+\.[0-9]+\.[0-9]+).*$/\1/')
           date_suffix=$(date +%Y-%m-%d)
@@ -41,3 +42,16 @@ jobs:
           git commit -a -m "Update version to ${version}"
           git tag ${tag}
           git push origin ${tag}
+          echo tag=${tag} >> $GITHUB_OUTPUT
+      - name: Trigger build jobs
+        uses: actions/github-script@v6
+        with:
+          script: |
+            for (const workflow_id of ['build-server.yml', 'build-nightly.yml', 'deploy-web.yml', 'deploy-packages.yml']) {
+              github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: workflow_id,
+                ref: '${{ steps.tag.outputs.tag }}',
+              })
+            }
