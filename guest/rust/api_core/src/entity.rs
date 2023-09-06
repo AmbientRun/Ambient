@@ -16,7 +16,10 @@ pub fn spawn(components: &Entity) -> EntityId {
     wit::entity::spawn(&components.clone().into_bindgen()).from_bindgen()
 }
 
-/// Waits until `id` has the `component`. If the entity was deleted the method returns None.
+/// Waits until `id` has the `component`. If the entity was deleted, the method returns `None`.
+///
+/// As the entity may have been despawned, you must handle the return value and not assume that the entity exists.
+#[must_use]
 pub async fn wait_for_component<T: SupportedValue>(
     entity: EntityId,
     component: Component<T>,

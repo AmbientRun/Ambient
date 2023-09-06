@@ -20,7 +20,10 @@ pub fn main() {
     spawn_query(is_player()).bind(|results| {
         for (id, ()) in results {
             run_async(async move {
-                entity::wait_for_component(id, player_name()).await;
+                if entity::wait_for_component(id, player_name()).await.is_none() {
+                    // entity deleted
+                    return;
+                }
                 entity::add_component(id, player_yaw(), 0.0);
                 entity::add_component(id, player_pitch(), 0.0);
                 entity::add_component(id, player_zoomed(), false);
