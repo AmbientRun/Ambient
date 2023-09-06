@@ -14,9 +14,6 @@ use ambient_ecs::{generated::messages::HttpResponse, query, EntityId, Message, W
 use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::server::player_transport;
 
-use anyhow::Context;
-use wasm_bridge::async_trait;
-
 use super::super::Bindings;
 
 use crate::shared::{

@@ -67,6 +67,7 @@ impl Serve {
 
         Ok(())
     }
+
     #[cfg(not(target_os = "windows"))]
     pub async fn serve(&self) -> anyhow::Result<()> {
         let dir = Path::new("web/www")
@@ -102,17 +103,11 @@ impl Serve {
                     let paths = event
                         .paths
                         .into_iter()
-                        .filter(|v| filter_path(v))
+                        .filter(|v| filter_path(v) && v.is_file())
                         .collect_vec();
 
-                    // for path in event.paths.iter() {
-                    //     if filter_path(path) {
-                    //         log::info!("Event: {path:?}");
-                    //         found = true;
-                    //     }
-                    // }
-
                     if !paths.is_empty() {
+                        log::info!("Event: {:#?}", event.kind);
                         let _ = tx.send(paths);
                     }
                 }
@@ -127,7 +122,7 @@ impl Serve {
         while let Ok(mut paths) = rx.recv_async().await {
             tokio::time::sleep(Duration::from_millis(1000)).await;
 
-            paths.extend(rx.drain().into_iter().flatten());
+            paths.extend(rx.drain().flatten());
             log::info!("Changed paths: {paths:?}");
             log::info!("Rebuilding...");
             #[cfg(not(target_os = "windows"))]
@@ -165,7 +160,7 @@ impl Serve {
 fn filter_path(path: impl AsRef<Path>) -> bool {
     let path = path.as_ref();
 
-    path.components().into_iter().all(|seg| {
+    path.components().all(|seg| {
         let seg: &Path = seg.as_ref();
         match seg.to_str() {
             None => {

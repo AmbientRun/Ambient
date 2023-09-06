@@ -77,6 +77,7 @@ async fn init(app: &mut App, server_url: String) {
 
     Group(vec![
         UICamera.el().with(active_camera(), 0.),
+        ambient_client_shared::player::PlayerRawInputHandler.el(),
         FocusRoot(vec![WindowSized::el([
             MainApp::el(server_url).with(padding(), Borders::even(10.).into())
         ])])

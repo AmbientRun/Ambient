@@ -250,6 +250,12 @@
       "RUST_LOG": "info"
     }
   },
+  "serve-web-release": {
+    "cmd": "cargo cf web serve --profile=release",
+    "env": {
+      "RUST_LOG": "info"
+    }
+  },
   "run": {
     "cmd": "npm run dev",
     "cwd": "web/www",
