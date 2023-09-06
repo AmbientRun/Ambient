@@ -140,6 +140,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **API**: Removed `Entity::with_default` due to its confusing behaviour (Rust defaults are not necessarily the same as component or concept defaults). You will now have to explicitly specify a value for each component.
 - **Messaging**: Messages without empty fields now generate a unit struct, instead of a struct with no fields. That is, they generate `struct MyMessage;` instead of `struct MyMessage {}`.
 - **Examples**: The games have been moved to `guest/rust/packages/games`. This is to make it clearer that they are packages, not examples.
+- **API**: `entity::wait_for_component` is now marked as `must_use` to ensure users consider the possibility of the entity being despawned.
 
 #### Non-breaking
 

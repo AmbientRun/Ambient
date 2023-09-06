@@ -56,7 +56,7 @@ pub async fn main() {
 
     println!("Robot duration: {} sec", robot.clip_duration().await);
 
-    entity::wait_for_component(unit_id, model_loaded()).await;
+    let _ = entity::wait_for_component(unit_id, model_loaded()).await;
 
     // This demonstrates how to attach an entity to a bone
     let left_foot = animation::get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
