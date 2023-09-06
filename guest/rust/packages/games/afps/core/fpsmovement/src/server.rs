@@ -10,7 +10,7 @@ use packages::afps_schema::{
     },
     messages::{FootOnGround, Input, Shoot},
 };
-use packages::unit_schema::components::{jumping, run_direction, running, vspeed};
+use packages::unit_schema::components::{jumping, run_direction, running, vertical_velocity};
 
 const INIT_JUMP_VSPEED: f32 = 0.10;
 
@@ -26,7 +26,7 @@ pub fn main() {
                 entity::add_component(id, player_yaw(), 0.0);
                 entity::add_component(id, player_pitch(), 0.0);
                 entity::add_component(id, player_zoomed(), false);
-                entity::add_component(id, vspeed(), 0.0);
+                entity::add_component(id, vertical_velocity(), 0.0);
             });
         }
     });
@@ -47,7 +47,7 @@ pub fn main() {
             } else {
                 Duration::from_millis(600)
             };
-            let is_jumping = entity::get_component(player_id, vspeed()).unwrap_or(0.0);
+            let is_jumping = entity::get_component(player_id, vertical_velocity()).unwrap_or(0.0);
             if is_jumping <= 0.0 && game_time() - last_walk > dur {
                 last_walk = game_time();
                 if msg.running {
@@ -58,7 +58,7 @@ pub fn main() {
 
         if msg.jump {
             entity::add_component(player_id, jumping(), true);
-            entity::add_component(player_id, vspeed(), INIT_JUMP_VSPEED);
+            entity::add_component(player_id, vertical_velocity(), INIT_JUMP_VSPEED);
         }
 
         if msg.running {

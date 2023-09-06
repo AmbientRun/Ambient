@@ -1,11 +1,11 @@
 use ambient_api::{core::transform::components::rotation, prelude::*};
-use packages::unit_schema::components::{jumping, run_direction, running, vspeed};
+use packages::unit_schema::components::{jumping, run_direction, running, vertical_velocity};
 
 const FALLING_VSPEED: f32 = 0.4;
 
 #[main]
 pub fn main() {
-    query((run_direction(), rotation(), vspeed(), running())).each_frame(move |list| {
+    query((run_direction(), rotation(), vertical_velocity(), running())).each_frame(move |list| {
         for (unit_id, (direction, rot, vert_speed, running)) in list {
             let scale_factor = if running { 1.5 } else { 1.0 };
             let speed = scale_factor * vec2(0.04, 0.06);
@@ -18,10 +18,10 @@ pub fn main() {
                     }
                 }
 
-                entity::set_component(unit_id, vspeed(), 0.0);
+                entity::set_component(unit_id, vertical_velocity(), 0.0);
             } else {
-                entity::mutate_component(unit_id, vspeed(), |vspeed| {
-                    *vspeed -= FALLING_VSPEED * delta_time(); // 1/60 second for example
+                entity::mutate_component(unit_id, vertical_velocity(), |vertical_velocity| {
+                    *vertical_velocity -= FALLING_VSPEED * delta_time(); // 1/60 second for example
                 });
             }
         }

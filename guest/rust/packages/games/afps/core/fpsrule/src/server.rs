@@ -25,7 +25,7 @@ use packages::afps_schema::{
     },
     messages::{Explosion, Shoot},
 };
-use packages::unit_schema::components::{health, vspeed};
+use packages::unit_schema::components::{health, vertical_velocity};
 
 #[main]
 pub fn main() {
@@ -136,7 +136,7 @@ pub fn main() {
 
                 entity::set_component(hit.entity, rotation(), rot);
 
-                entity::set_component(hit.entity, vspeed(), 0.04);
+                entity::set_component(hit.entity, vertical_velocity(), 0.04);
 
                 let new_health = (old_health - 30.).max(0.);
                 entity::set_component(hit.entity, health(), new_health);
