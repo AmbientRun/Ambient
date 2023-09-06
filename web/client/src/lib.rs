@@ -33,6 +33,7 @@ pub fn init_ambient(logging: bool, panic: bool) {
 
     ambient_ecs::init_components();
     ambient_core::init_all_components();
+    // ambient_water::init_components();
     ambient_network::init_all_components();
     ambient_world_audio::init_components();
     ambient_wasm::shared::init_all_components();
