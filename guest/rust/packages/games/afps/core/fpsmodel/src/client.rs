@@ -21,7 +21,13 @@ pub fn main() {
     spawn_query((is_player(), components::player_model_ref())).bind(move |results| {
         for (_, (_, model)) in results {
             run_async(async move {
-                entity::wait_for_component(model, model_loaded()).await;
+                if entity::wait_for_component(model, model_loaded())
+                    .await
+                    .is_none()
+                {
+                    return;
+                }
+
                 println!("___model loaded___waiting for binding__");
                 let hand = animation::get_bone_by_bind_id(model, &BindId::RightHand);
                 if hand.is_none() {

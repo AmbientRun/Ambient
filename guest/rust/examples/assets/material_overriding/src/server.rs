@@ -50,5 +50,5 @@ pub async fn main() {
         .with(is_the_best(), true)
         .spawn();
 
-    entity::wait_for_component(model, spawned()).await;
+    let _ = entity::wait_for_component(model, spawned()).await;
 }
