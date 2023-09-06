@@ -199,13 +199,18 @@ impl wit::client_camera::Host for Bindings {
 
 impl wit::client_clipboard::Host for Bindings {
     fn get(&mut self) -> anyhow::Result<Option<String>> {
+        Err(anyhow::anyhow!("Clipboard is not yet supported"))
         // Ok(ambient_sys::clipboard::get().await)
-        todo!()
     }
 
     fn set(&mut self, text: String) -> anyhow::Result<()> {
-        // ambient_sys::clipboard::set(&text).await
-        todo!()
+        ambient_sys::clipboard::set_background(text, |res| {
+            if let Err(err) = res {
+                tracing::error!("Failed to set clipboard: {:?}", err);
+            }
+        });
+
+        Ok(())
     }
 }
 

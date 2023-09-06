@@ -41,9 +41,7 @@ mod internal {
         components, Debuggable, Description, EntityId, Networked, Resource, Store, World,
     };
 
-    use super::{
-        MessageType, ModuleBytecode, ModuleErrors, ModuleState, ModuleStateArgs, ModuleStateMaker,
-    };
+    use super::{MessageType, ModuleBytecode, ModuleErrors, ModuleState, ModuleStateMaker};
 
     components!("wasm::shared", {
         module_state: ModuleState,

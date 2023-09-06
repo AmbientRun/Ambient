@@ -6,11 +6,9 @@ use super::{engine::EngineKey, Source};
 use ambient_ecs::{EntityId, World};
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_sys::task::PlatformBoxFuture;
-use anyhow::Context;
 use bytes::Bytes;
 use data_encoding::BASE64;
 use flume::TrySendError;
-use futures::SinkExt;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::io;
@@ -202,8 +200,6 @@ use wasm_bridge_js::{
     wasi::preview2::command::add_to_linker,
 };
 
-#[cfg(not(target_os = "unknown"))]
-use preview2::command::add_to_linker;
 #[cfg(not(target_os = "unknown"))]
 use wasmtime::component::{self, Instance};
 
@@ -429,6 +425,7 @@ impl wasm_bridge_js::wasi::preview2::OutputStream for WasiOutputStream {
     }
 
     fn write(&mut self, buf: &[u8]) -> wasm_bridge::Result<(usize, preview2::StreamStatus)> {
+        use anyhow::Context;
         let msg =
             std::str::from_utf8(buf).context("Non UTF-8 output is not currently supported")?;
 
