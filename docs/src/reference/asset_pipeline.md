@@ -57,7 +57,7 @@ directory (`*.glb`) or sub-tree (`**/test.glb`).
 
 #### Combining a model with textures
 
-The following example is the asset pipeline for the [`material_overrinding` example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/material_overrinding). It applies a custom material to
+The following example is the asset pipeline for the [`material_overrinding` example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/assets/material_overrinding). It applies a custom material to
 the imported mesh.
 
 ```toml
