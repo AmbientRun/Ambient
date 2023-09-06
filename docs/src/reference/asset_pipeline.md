@@ -61,7 +61,7 @@ The following example is the asset pipeline for the [`material_overrinding` exam
 the imported mesh.
 
 ```toml
-{{ #include ../../../guest/rust/examples/basics/material_overrinding/assets/pipeline.toml }}
+{{ #include ../../../guest/rust/examples/assets/material_overrinding/assets/pipeline.toml }}
 ```
 
 ### Notes
