@@ -119,6 +119,7 @@ dependencies = [
  "futures",
  "glam",
  "once_cell",
+ "ordered-float",
  "rand 0.8.5",
 ]
 
@@ -218,13 +219,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_example_asset_loading"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "ambient_example_async"
 version = "0.3.0-dev"
 dependencies = [
@@ -240,6 +234,13 @@ dependencies = [
 
 [[package]]
 name = "ambient_example_auto_editor"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_basic_model"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
@@ -339,6 +340,13 @@ dependencies = [
 
 [[package]]
 name = "ambient_example_instancing"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_material_overriding"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
@@ -2319,7 +2327,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "tangent"
+name = "tangent_core"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "tangent_scene"
 version = "0.0.1"
 dependencies = [
  "ambient_api",
@@ -2573,6 +2588,13 @@ name = "unicode-xid"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f962df74c8c05a667b5ee8bcf162993134c104e96440b663c8daa176dc772d8c"
+
+[[package]]
+name = "unity"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
 
 [[package]]
 name = "untrusted"

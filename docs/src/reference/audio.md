@@ -15,7 +15,6 @@ Audio should be loaded and played in clientside WASM/`client.rs` (the API is not
 # Examples with audio
 
 - `./guest/rust/examples/basics/physics` (spatial audio)
-- `./guest/rust/examples/basics/first_person_camera` (spatial audio)
 - `./guest/rust/examples/ui/audio_ctrl`
 - `./guest/rust/packages/games/music_sequencer`
 

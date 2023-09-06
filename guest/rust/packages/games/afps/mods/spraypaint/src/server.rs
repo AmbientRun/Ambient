@@ -18,6 +18,7 @@ use ambient_api::{
     prelude::*,
 };
 
+use crate::packages::unit_schema::components::health;
 use packages::afps_schema::components;
 use packages::{
     afps_schema::messages::Explosion,
@@ -76,7 +77,7 @@ pub fn main() {
                     Explosion::new(cm_pos).send_local_broadcast(false);
                     entity::despawn(e);
                     entity::add_component(player, components::hit_freeze(), 180);
-                    entity::set_component(player, components::player_health(), 0);
+                    entity::set_component(player, health(), 0.);
                     entity::set_component(player, components::player_vspeed(), 0.8);
 
                     entity::mutate_component(source_id, components::player_killcount(), |count| {
@@ -125,7 +126,7 @@ pub fn main() {
                             translation(),
                             vec3(random::<f32>() * 10.0, random::<f32>() * 60.0 - 30., 2.0),
                         );
-                        entity::set_component(player, components::player_health(), 100);
+                        entity::set_component(player, health(), 100.);
                         entity::set_component(player, components::hit_freeze(), 0);
                     });
                 }

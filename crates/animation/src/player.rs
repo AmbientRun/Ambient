@@ -10,9 +10,9 @@ use ambient_ecs::{
     children, components,
     generated::animation::components::{
         animation_errors, apply_animation_player, apply_base_pose, bind_ids, blend, clip_duration,
-        freeze_at_percentage, freeze_at_time, is_animation_player, looping, mask_bind_ids,
-        mask_weights, play_clip_from_url, retarget_animation_scaled, retarget_model_from_url,
-        speed, start_time,
+        clip_loaded, freeze_at_percentage, freeze_at_time, is_animation_player, looping,
+        mask_bind_ids, mask_weights, play_clip_from_url, retarget_animation_scaled,
+        retarget_model_from_url, speed, start_time,
     },
     query, ComponentDesc, Debuggable, EntityId, SystemGroup, World,
 };
@@ -20,6 +20,7 @@ use ambient_model::{animation_binder, ModelFromUrl};
 use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt},
     asset_url::{AnimationAssetType, TypedAssetUrl},
+    download_asset::AssetResult,
 };
 use anyhow::Context;
 use glam::{Quat, Vec3};
@@ -202,6 +203,7 @@ pub fn animation_player_systems() -> SystemGroup {
             query(play_clip_from_url().changed()).to_system(|q, world, qs, _| {
                 let runtime = world.resource(runtime()).clone();
                 for (id, url) in q.collect_cloned(world, qs) {
+                    world.remove_component(id, clip_loaded()).ok();
                     let async_run = world.resource(async_run()).clone();
                     let assets = world.resource(asset_cache()).clone();
                     let url = match TypedAssetUrl::<AnimationAssetType>::from_str(&url) {
@@ -226,35 +228,40 @@ pub fn animation_player_systems() -> SystemGroup {
                     } else {
                         AnimationRetargeting::None
                     };
-                    runtime.spawn(async move {
-                        let clip = AnimationClipRetargetedFromModel {
-                            clip: url,
-                            translation_retargeting: retargeting,
-                            retarget_model,
-                        }
-                        .get(&assets)
-                        .await;
-                        let duration = clip.as_ref().map(|clip| clip.duration()).unwrap_or(0.);
-                        let binders = clip
-                            .as_ref()
-                            .map(|clip| {
-                                clip.tracks
+                    let clip_ref = AnimationClipRetargetedFromModel {
+                        clip: url,
+                        translation_retargeting: retargeting,
+                        retarget_model,
+                    };
+                    let apply_clip =
+                        move |world: &mut World, clip: AssetResult<Arc<AnimationClip>>| {
+                            if let Ok(clip) = clip {
+                                world
+                                    .add_component(id, clip_duration(), clip.duration())
+                                    .ok();
+                                let binders = clip
+                                    .tracks
                                     .iter()
                                     .filter_map(|x| match &x.target {
                                         AnimationTarget::BinderId(binder) => Some(binder.clone()),
                                         AnimationTarget::Entity(_entity) => None,
                                     })
-                                    .collect::<Vec<_>>()
-                            })
-                            .unwrap_or_default();
-                        async_run.run(move |world| {
-                            world.add_component(id, clip_duration(), duration).ok();
-                            world.add_component(id, bind_ids(), binders).ok();
-                            if let Ok(clip) = clip {
+                                    .collect::<Vec<_>>();
+                                world.add_component(id, bind_ids(), binders).ok();
                                 world.add_component(id, play_clip(), clip).ok();
                             }
+                            world.add_component(id, clip_loaded(), ()).ok();
+                        };
+                    if let Some(clip) = clip_ref.peek(&assets) {
+                        apply_clip(world, clip);
+                    } else {
+                        runtime.spawn(async move {
+                            let clip = clip_ref.get(&assets).await;
+                            async_run.run(move |world| {
+                                apply_clip(world, clip);
+                            });
                         });
-                    });
+                    }
                 }
             }),
             query(play_clip_from_url().changed())

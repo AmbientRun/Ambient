@@ -4,7 +4,6 @@ members = [
     "api_core",
     "api_core/api_macros",
     # Basics
-    "examples/basics/asset_loading",
     "examples/basics/input",
     "examples/basics/multiplayer",
     "examples/basics/physics",
@@ -22,6 +21,11 @@ members = [
     # Controllers
     "examples/controllers/first_person_camera",
     "examples/controllers/third_person_camera",
+
+    # Assets
+    "examples/assets/basic_model",
+    "examples/assets/material_overriding",
+    "examples/assets/unity",
 
     # Rendering
     "examples/rendering/decals",
@@ -54,13 +58,17 @@ members = [
     # Test cases
     "testcases/588-prefab-despawn-panic",
 
+    # Packages (std)
+    "packages/std/basic_character_animation",
+
     # Packages (tools)
     "packages/tools/console",
     "packages/tools/editor",
     "packages/tools/package_manager",
 
     # Packages (games)
-    "packages/games/tangent",
+    "packages/games/tangent/core",
+    "packages/games/tangent/mods/*",
     "packages/games/minigolf",
     "packages/games/music_sequencer",
     "packages/games/pong",
@@ -72,7 +80,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-rust-version = "1.67.0"
+rust-version = "1.70.0"
 version = "0.3.0-dev"
 
 [workspace.dependencies]
@@ -110,3 +118,4 @@ wit-bindgen = { version = "0.9.0", features = ["realloc"] }
 ulid = { version = "1.0.0", features = ["serde"] }
 indexmap = { version = "2.0", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
+ordered-float = "3.9.1"

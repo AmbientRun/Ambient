@@ -64,6 +64,9 @@ tracing = { workspace = true }
 image_hasher = { workspace = true }
 toml_edit = { workspace = true }
 rpassword = { workspace = true }
+git-version = { workspace = true }
+sentry = { workspace = true }
+sentry-rust-minidump = { workspace = true }
 
 [dev-dependencies]
 glam = { workspace = true }

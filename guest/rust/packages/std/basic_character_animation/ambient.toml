@@ -1,0 +1,34 @@
+[package]
+id = "basic_character_animation"
+name = "Basic character animation"
+version = "0.0.1"
+content = { type = "Asset", animations = true, code = true }
+
+[dependencies]
+unit_schema = { path = "../../schemas/unit", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+
+[components]
+basic_character_animations = { type = "EntityId", description = "Apply animations to the model this points to. Parameters such as health etc. is read from the entity this component is attached to." }
+
+# Overrides for the default animations
+walk_forward = { type = "String", description = "Url to animation" }
+walk_backward = { type = "String", description = "Url to animation" }
+walk_left = { type = "String", description = "Url to animation" }
+walk_right = { type = "String", description = "Url to animation" }
+walk_forward_left = { type = "String", description = "Url to animation" }
+walk_forward_right = { type = "String", description = "Url to animation" }
+walk_backward_left = { type = "String", description = "Url to animation" }
+walk_backward_right = { type = "String", description = "Url to animation" }
+
+run_forward = { type = "String", description = "Url to animation" }
+run_backward = { type = "String", description = "Url to animation" }
+run_left = { type = "String", description = "Url to animation" }
+run_right = { type = "String", description = "Url to animation" }
+run_forward_left = { type = "String", description = "Url to animation" }
+run_forward_right = { type = "String", description = "Url to animation" }
+run_backward_left = { type = "String", description = "Url to animation" }
+run_backward_right = { type = "String", description = "Url to animation" }
+
+idle = { type = "String", description = "Url to animation" }
+death = { type = "String", description = "Url to animation" }
+jump = { type = "String", description = "Url to animation" }

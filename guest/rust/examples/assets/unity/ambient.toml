@@ -1,0 +1,6 @@
+[package]
+id = "ambient_example_unity"
+name = "Unity"
+description = "Load and spawn a Unity prefab"
+version = "0.0.1"
+content = { type = "Playable", example = true }

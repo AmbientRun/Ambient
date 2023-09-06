@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 
-use packages::afps_schema::{components, messages::*};
+use packages::{afps_schema::messages::*, unit_schema::components::jumping};
 
 #[main]
 pub fn main() {
@@ -9,7 +9,7 @@ pub fn main() {
     });
 
     FootOnGround::subscribe(move |_, msg| {
-        if !entity::get_component(msg.source, components::player_jumping()).unwrap_or_default() {
+        if !entity::get_component(msg.source, jumping()).unwrap_or_default() {
             WalkSound::new(msg.source).send_client_broadcast_unreliable();
         }
     });

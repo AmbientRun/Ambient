@@ -1,0 +1,25 @@
+[package]
+name = "ambient_example_material_overriding"
+
+edition = "2021"
+publish = false
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+ambient_api = { workspace = true }
+
+[[bin]]
+name = "material_overriding_client"
+path = "src/client.rs"
+required-features = ["client"]
+
+
+[[bin]]
+name = "material_overriding_server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

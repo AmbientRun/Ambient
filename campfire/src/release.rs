@@ -75,8 +75,8 @@ pub fn main(args: &Release) -> anyhow::Result<()> {
 }
 
 const DOCKERFILE: &str = "Dockerfile";
-const AMBIENT_MANIFEST: &str = "shared_crates/schema/src/ambient.toml";
-const AMBIENT_MANIFEST_INCLUDES: &str = "shared_crates/schema/src/schema";
+const AMBIENT_MANIFEST: &str = "schema/ambient.toml";
+const AMBIENT_MANIFEST_INCLUDES: &str = "schema/schema";
 const ROOT_CARGO: &str = "Cargo.toml";
 const WEB_CARGO: &str = "web/Cargo.toml";
 const GUEST_RUST_CARGO: &str = "guest/rust/Cargo.toml";
@@ -257,8 +257,8 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
     })?;
 
     edit_file(INSTALLING_DOCS, |document| {
-        let begin = "<!-- rust-version-begin !-->";
-        let end = "<!-- rust-version-end !-->";
+        let begin = "<!-- rust-version-begin -->";
+        let end = "<!-- rust-version-end -->";
         let begin_index = document.find(begin).expect("no begin") + begin.len();
         let end_index = document.find(end).expect("no end");
 
@@ -368,12 +368,16 @@ fn edit_file(path: impl AsRef<Path>, f: impl Fn(&str) -> String) -> anyhow::Resu
     Ok(())
 }
 
-fn edit_toml(path: impl AsRef<Path>, f: impl Fn(&mut toml_edit::Document)) -> anyhow::Result<()> {
-    edit_file(path, |input| {
+fn edit_toml(
+    path: impl AsRef<Path> + Clone,
+    f: impl Fn(&mut toml_edit::Document),
+) -> anyhow::Result<()> {
+    edit_file(path.clone(), |input| {
         let mut toml = input.parse::<toml_edit::Document>().unwrap();
         f(&mut toml);
         toml.to_string()
     })
+    .with_context(|| format!("Failed to edit file {:?}", path.as_ref()))
 }
 
 fn check_docker_build() -> anyhow::Result<()> {

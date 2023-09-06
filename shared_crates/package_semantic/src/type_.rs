@@ -90,13 +90,13 @@ impl Item for Type {
 }
 impl Resolve for Type {
     fn resolve(
-        &mut self,
-        _items: &ItemMap,
+        self,
+        _items: &mut ItemMap,
         _context: &Context,
         _definitions: &StandardDefinitions,
         _self_id: ItemId<Self>,
-    ) -> anyhow::Result<()> {
-        Ok(())
+    ) -> anyhow::Result<Self> {
+        Ok(self)
     }
 }
 

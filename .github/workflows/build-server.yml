@@ -2,9 +2,6 @@ name: Build and upload server (Docker image and binary)
 
 on:
   workflow_dispatch:
-  schedule:
-    # every day at 2am UTC
-    - cron: '0 2 * * *'
   push:
     tags: [v*]
     branches:
@@ -14,7 +11,9 @@ env:
   CARGO_TERM_COLOR: always
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  BUILD_DIR: build-${{ github.sha }}
   SERVER_BINARY_NAME: ambient-${{ github.sha }}
+  CANARY_SERVER_BINARY_NAME: ambient-0.3.0-dev
 
 jobs:
   build-and-push:
@@ -61,7 +60,8 @@ jobs:
         run: |
           raw_image_name="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}"
           container_id=$(docker create "${raw_image_name,,}")
-          docker cp "$container_id:/app/ambient" "${{ env.SERVER_BINARY_NAME }}"
+          mkdir -p "${{ env.BUILD_DIR }}"
+          docker cp "$container_id:/app/ambient" "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}"
           docker rm "$container_id"
 
       - name: Authenticate with Google Cloud
@@ -73,8 +73,21 @@ jobs:
           service_account: github@ambient-733e7.iam.gserviceaccount.com
           access_token_lifetime: 1800s
 
+      - name: Prepare canary
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        run:
+          cp "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}" "${{ env.BUILD_DIR }}/${{ env.CANARY_SERVER_BINARY_NAME }}"
+
+      - name: Prepare versioned
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run:
+          cp "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}" "${{ env.BUILD_DIR }}/ambient-${GITHUB_REF#refs/tags/v}"
+
       - name: Upload ambient server binary
         uses: google-github-actions/upload-cloud-storage@v1
         with:
-          path: ${{ env.SERVER_BINARY_NAME }}
+          path: ${{ env.BUILD_DIR }}
           destination: ambient-artifacts/ambient-server-builds
+          parent: false

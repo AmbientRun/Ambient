@@ -60,10 +60,10 @@ jobs:
           destination: "ambient-artifacts/ambient-web-clients"
 
       - name: Upload Canary to Google Cloud
+        # Only upload canary builds on pushes to main
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main')
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: "./web/${{ env.PACKAGE_NAME }}"
           destination: "ambient-artifacts/ambient-web-clients/ambient-canary"
           parent: false
-
-

@@ -44,12 +44,12 @@ impl Item for Component {
 }
 impl Resolve for Component {
     fn resolve(
-        &mut self,
-        items: &ItemMap,
+        mut self,
+        items: &mut ItemMap,
         context: &Context,
         definitions: &StandardDefinitions,
         _self_id: ItemId<Self>,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<Self> {
         let type_id = match &self.type_ {
             ResolvableItemId::Unresolved(ty) => {
                 context.get_type_id(items, ty).with_context(|| {
@@ -92,7 +92,7 @@ impl Resolve for Component {
             default.resolve(items, type_id)?;
         }
 
-        Ok(())
+        Ok(self)
     }
 }
 impl Component {

@@ -1,6 +1,6 @@
 # Basic Dockerfile to build and run the server in a Linux environment.
 # The official Rust base Docker image uses Debian.
-FROM rust:1.67.0
+FROM rust:1.70.0
 WORKDIR /app
 
 RUN apt-get update && \

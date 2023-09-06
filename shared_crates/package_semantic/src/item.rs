@@ -1,5 +1,4 @@
 use std::{
-    cell::{Ref, RefCell, RefMut},
     collections::HashMap,
     fmt::{self, Debug, Display},
     marker::PhantomData,
@@ -29,7 +28,7 @@ pub enum GetScopeError {
 
 #[derive(Clone, PartialEq, Debug, Default)]
 pub struct ItemMap {
-    items: HashMap<Ulid, RefCell<ItemValue>>,
+    items: HashMap<Ulid, ItemValue>,
     vec_items: HashMap<ItemId<Type>, ItemId<Type>>,
     option_items: HashMap<ItemId<Type>, ItemId<Type>>,
 }
@@ -68,61 +67,44 @@ impl ItemMap {
         }
     }
 
-    // TEMP: allow disallowed methods for development for now
+    // We use ULID creation as this code is only run on the server, where randomness is available.
+    // If this runs on the client, then yes, it should panic!
     #[allow(clippy::disallowed_methods)]
     fn add_raw<T: Item>(&mut self, value: T) -> ItemId<T> {
         let ulid = ulid::Ulid::new();
-        self.items
-            .insert(ulid, RefCell::new(value.into_item_value()));
+        self.items.insert(ulid, value.into_item_value());
         ItemId(ulid, PhantomData)
     }
 
     /// Returns a reference to the item with the given id.
     ///
     /// Does not resolve the item.
-    pub fn get<T: Item>(&self, id: ItemId<T>) -> Ref<T> {
-        Ref::map(self.items.get(&id.0).unwrap().borrow(), |r| {
-            T::from_item_value(r).unwrap()
-        })
+    pub fn get<T: Item>(&self, id: ItemId<T>) -> &T {
+        T::from_item_value(self.items.get(&id.0).unwrap()).unwrap()
     }
 
     /// Returns a mutable reference to the item with the given id.
     ///
     /// Does not resolve the item.
-    pub fn get_mut<T: Item>(&self, id: ItemId<T>) -> RefMut<T> {
-        RefMut::map(self.items.get(&id.0).unwrap().borrow_mut(), |r| {
-            T::from_item_value_mut(r).unwrap()
-        })
+    pub fn get_mut<T: Item>(&mut self, id: ItemId<T>) -> &mut T {
+        T::from_item_value_mut(self.items.get_mut(&id.0).unwrap()).unwrap()
     }
 
     pub fn insert<T: Item>(&mut self, id: ItemId<T>, item: T) {
-        self.items
-            .insert(id.0, RefCell::new(item.into_item_value()));
-    }
-
-    /// Resolve the item with the given id in-place, and return a mutable reference to it.
-    pub(crate) fn resolve<T: Resolve>(
-        &self,
-        context: &Context,
-        definitions: &StandardDefinitions,
-        id: ItemId<T>,
-    ) -> anyhow::Result<RefMut<T>> {
-        let mut item = self.get_mut(id);
-        item.resolve(self, context, definitions, id)?;
-        Ok(item)
+        self.items.insert(id.0, item.into_item_value());
     }
 
     /// Resolve the item with the given id by cloning it, avoiding borrowing issues.
-    pub(crate) fn resolve_clone<T: ResolveClone>(
+    pub(crate) fn resolve<T: Resolve>(
         &mut self,
         context: &Context,
         definitions: &StandardDefinitions,
         id: ItemId<T>,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<&mut T> {
         let item = self.get(id).clone();
-        let new_item = item.resolve_clone(self, context, definitions, id)?;
+        let new_item = item.resolve(self, context, definitions, id)?;
         self.insert(id, new_item);
-        Ok(())
+        Ok(self.get_mut(id))
     }
 
     pub fn get_vec_id(&self, id: ItemId<Type>) -> ItemId<Type> {
@@ -168,7 +150,7 @@ impl ItemMap {
         &self,
         start_scope_id: ItemId<Scope>,
         path: &[SnakeCaseIdentifier],
-    ) -> anyhow::Result<Ref<Scope>> {
+    ) -> anyhow::Result<&Scope> {
         Ok(self.get(self.get_scope_id(start_scope_id, path)?))
     }
 
@@ -176,7 +158,7 @@ impl ItemMap {
         &mut self,
         start_scope_id: ItemId<Scope>,
         path: &[SnakeCaseIdentifier],
-    ) -> RefMut<Scope> {
+    ) -> &mut Scope {
         let mut scope_id = start_scope_id;
         for segment in path.iter() {
             let existing_id = self.get(scope_id).scopes.get(segment).copied();
@@ -335,20 +317,9 @@ pub trait Item: Clone {
     fn data(&self) -> &ItemData;
 }
 
-/// This item supports being resolved in-place.
+/// This item supports being resolved by cloning.
 pub(crate) trait Resolve: Item {
     fn resolve(
-        &mut self,
-        items: &ItemMap,
-        context: &Context,
-        definitions: &StandardDefinitions,
-        self_id: ItemId<Self>,
-    ) -> anyhow::Result<()>;
-}
-
-/// This item supports being resolved by cloning.
-pub(crate) trait ResolveClone: Item {
-    fn resolve_clone(
         self,
         items: &mut ItemMap,
         context: &Context,

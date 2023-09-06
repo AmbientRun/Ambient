@@ -20,11 +20,12 @@ use ambient_api::{
 
 use packages::afps_schema::{
     components::{
-        self, heal_timeout, hit_freeze, player_deathcount, player_health, player_killcount,
-        player_name, player_team, player_vspeed,
+        self, heal_timeout, hit_freeze, player_deathcount, player_killcount, player_name,
+        player_team, player_vspeed,
     },
     messages::{Explosion, Shoot},
 };
+use packages::unit_schema::components::health;
 
 #[main]
 pub fn main() {
@@ -32,7 +33,7 @@ pub fn main() {
         for (id, ()) in results {
             run_async(async move {
                 entity::wait_for_component(id, player_name()).await;
-                entity::add_component(id, player_health(), 100);
+                entity::add_component(id, health(), 100.);
                 entity::add_component(id, hit_freeze(), 0);
                 entity::add_component(id, player_killcount(), 0);
                 entity::add_component(id, player_deathcount(), 0);
@@ -115,8 +116,8 @@ pub fn main() {
                 });
             }
 
-            if let Some(old_health) = entity::get_component(hit.entity, player_health()) {
-                if old_health <= 0 {
+            if let Some(old_health) = entity::get_component(hit.entity, health()) {
+                if old_health <= 0. {
                     return;
                 }
 
@@ -134,10 +135,10 @@ pub fn main() {
 
                 entity::set_component(hit.entity, player_vspeed(), 0.04);
 
-                let new_health = (old_health - 30).max(0);
-                entity::set_component(hit.entity, components::player_health(), new_health);
+                let new_health = (old_health - 30.).max(0.);
+                entity::set_component(hit.entity, health(), new_health);
 
-                if old_health > 0 && new_health <= 0 {
+                if old_health > 0. && new_health <= 0. {
                     println!("player dead, waiting for respawn");
                     // 114 is the death anim frame count
                     entity::set_component(hit.entity, components::hit_freeze(), 180);
@@ -198,7 +199,7 @@ pub fn main() {
                             translation(),
                             vec3(random::<f32>() * 10.0, random::<f32>() * 60.0 - 30., 2.0),
                         );
-                        entity::set_component(hit.entity, player_health(), 100);
+                        entity::set_component(hit.entity, health(), 100.);
                         entity::set_component(hit.entity, hit_freeze(), 0);
                     });
                 } else {
@@ -254,7 +255,7 @@ pub fn main() {
         }
     });
 
-    let healables = query((is_player(), player_health())).build();
+    let healables = query((is_player(), health())).build();
     run_async(async move {
         loop {
             sleep(1.0).await;
@@ -270,9 +271,9 @@ pub fn main() {
                     }
                 }
 
-                let new_health = old_health + 1;
-                if new_health <= 100 {
-                    entity::set_component(e, player_health(), new_health);
+                let new_health = old_health + 1.;
+                if new_health <= 100. {
+                    entity::set_component(e, health(), new_health);
                 }
             }
         }

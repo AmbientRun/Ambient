@@ -43,12 +43,12 @@ impl Item for Message {
 }
 impl Resolve for Message {
     fn resolve(
-        &mut self,
-        items: &ItemMap,
+        mut self,
+        items: &mut ItemMap,
         context: &Context,
         _definitions: &StandardDefinitions,
         _self_id: ItemId<Self>,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<Self> {
         let mut fields = IndexMap::new();
         for (name, type_) in &self.fields {
             fields.insert(
@@ -66,7 +66,7 @@ impl Resolve for Message {
         }
         self.fields = fields;
 
-        Ok(())
+        Ok(self)
     }
 }
 

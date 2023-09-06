@@ -18,6 +18,8 @@ pub use ambient_editor_derive as editor_derive;
 pub use ambient_element as element;
 pub use ambient_ui as ui;
 
+pub mod animation_element;
+
 pub mod prelude {
     pub use ambient_api_core::prelude::*;
     pub use ambient_editor_derive::ElementEditor;

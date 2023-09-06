@@ -103,6 +103,32 @@ impl Serve {
         Ok(())
     }
 
+    #[cfg(target_os = "windows")]
+    pub async fn serve(&self) -> anyhow::Result<()> {
+        let dir = Path::new("web/www")
+            .canonicalize()
+            .context("Web server directory does not exist")?;
+
+        // De-UNC the path.
+        let working_dir = dunce::simplified(&dir).to_owned();
+
+        let status = tokio::process::Command::new("cmd")
+            .args(["/C", "npm", "run", "dev"])
+            .current_dir(working_dir)
+            .kill_on_drop(true)
+            .spawn()
+            .context("Failed to spawn npm")?
+            .wait()
+            .await
+            .context("Failed to run dev web server")?;
+
+        if !status.success() {
+            anyhow::bail!("Web server exited with non-zero status: {status:?}")
+        }
+
+        Ok(())
+    }
+    #[cfg(not(target_os = "windows"))]
     pub async fn serve(&self) -> anyhow::Result<()> {
         let dir = Path::new("web/www")
             .canonicalize()

@@ -24,6 +24,14 @@ impl SamplerKey {
         min_filter: wgpu::FilterMode::Linear,
         mipmap_filter: wgpu::FilterMode::Linear,
     };
+    pub const LINEAR_REPEAT: SamplerKey = SamplerKey {
+        address_mode_u: wgpu::AddressMode::Repeat,
+        address_mode_v: wgpu::AddressMode::Repeat,
+        address_mode_w: wgpu::AddressMode::Repeat,
+        mag_filter: wgpu::FilterMode::Linear,
+        min_filter: wgpu::FilterMode::Linear,
+        mipmap_filter: wgpu::FilterMode::Linear,
+    };
 }
 
 impl SyncAssetKey<Arc<wgpu::Sampler>> for SamplerKey {

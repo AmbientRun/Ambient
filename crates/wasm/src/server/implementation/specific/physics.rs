@@ -170,9 +170,10 @@ impl shared::wit::server_physics::Host for Bindings {
         origin: wit::types::Vec3,
         direction: wit::types::Vec3,
     ) -> anyhow::Result<Option<(wit::types::EntityId, f32)>> {
+        let direction = get_raycast_direction(direction)?;
         let result = ambient_physics::intersection::raycast_first(
             self.world(),
-            Ray::new(origin.from_bindgen(), direction.from_bindgen()),
+            Ray::new(origin.from_bindgen(), direction),
         )
         .map(|t| (t.0.into_bindgen(), t.1.into_bindgen()));
 
@@ -184,9 +185,10 @@ impl shared::wit::server_physics::Host for Bindings {
         origin: wit::types::Vec3,
         direction: wit::types::Vec3,
     ) -> anyhow::Result<Vec<(wit::types::EntityId, f32)>> {
+        let direction = get_raycast_direction(direction)?;
         let result = ambient_physics::intersection::raycast(
             self.world(),
-            Ray::new(origin.from_bindgen(), direction.from_bindgen()),
+            Ray::new(origin.from_bindgen(), direction),
         )
         .into_iter()
         .map(|t| (t.0.into_bindgen(), t.1.into_bindgen()))
@@ -249,4 +251,19 @@ impl shared::wit::server_physics::Host for Bindings {
             .set_foot_position(position.from_bindgen().as_dvec3());
         Ok(())
     }
+}
+
+/// Returns an error if the direction is non-normalized.
+fn get_raycast_direction(direction: wit::types::Vec3) -> anyhow::Result<glam::Vec3> {
+    let direction = direction.from_bindgen();
+    if direction.length_squared() < 0.0001 {
+        anyhow::bail!("Raycast direction must be non-zero");
+    }
+    if direction.is_nan() {
+        anyhow::bail!("Raycast direction must not be NaN");
+    }
+    if !direction.is_normalized() {
+        anyhow::bail!("Raycast direction must be normalized");
+    }
+    Ok(direction)
 }

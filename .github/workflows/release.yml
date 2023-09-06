@@ -43,17 +43,27 @@ jobs:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             exe_name: ambient
+            symbol_path: ambient
           - os: macos-latest
             target: aarch64-apple-darwin
             exe_name: ambient
+            symbol_path: ambient
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             exe_name: ambient.exe
+            symbol_path: ambient.pdb
+
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       EXE_DIR: target/${{ matrix.target }}/release
     steps:
+      - name: Setup Sentry CLI
+        uses: mathieu-bour/setup-sentry-cli@v1.3.0
+        with:
+          token: ${{ secrets.SENTRY }}
+          organization: dims
+          project: native-client
       - uses: actions/checkout@v3
       - name: Install build dependencies
         if: matrix.os == 'ubuntu-22.04'
@@ -90,6 +100,8 @@ jobs:
           cd ${{ env.EXE_DIR }}
           xcrun notarytool store-credentials "notarytool-profile" --apple-id "${{ secrets.APPLE_DEVELOPER_EMAIL }}" --team-id="${{ secrets.APPLE_TEAM_ID }}" --password "${{ secrets.APPLE_DEVELOPER_PASSWORD }}"
           xcrun notarytool submit "ambient-${{ matrix.target }}.zip" --keychain-profile "notarytool-profile" --wait
+      - name: Upload debug symbols
+        run: sentry-cli upload-dif -o dims -p client ${{ env.EXE_DIR }}/${{ matrix.exe_name }} ${{ env.EXE_DIR }}/${{ matrix.symbol_path }}
       - name: Upload
         run: gh release upload ${{ needs.create-release.outputs.tag }} ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
 

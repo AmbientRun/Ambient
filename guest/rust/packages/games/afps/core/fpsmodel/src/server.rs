@@ -19,6 +19,7 @@ use ambient_api::{
 
 use packages::{
     afps_schema::components::{player_cam_ref, player_model_ref, player_name, player_zoomed},
+    basic_character_animation::components::basic_character_animations,
     this::assets,
 };
 
@@ -64,6 +65,7 @@ pub async fn main() {
                     Entity::new()
                         .with_merge(make_transformable())
                         .with_merge(make_character_controller())
+                        .with(basic_character_animations(), model)
                         // adjust the initial position
                         .with(local_to_world(), Default::default())
                         .with(

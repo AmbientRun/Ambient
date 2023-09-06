@@ -1,0 +1,19 @@
+[package]
+name = "ambient_example_basic_model"
+
+edition = "2021"
+publish = false
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+ambient_api = { workspace = true }
+
+[[bin]]
+name = "basic_model_server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

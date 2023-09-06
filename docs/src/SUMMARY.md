@@ -14,6 +14,7 @@
 - [API](user/api.md)
 - [Debugging](user/debugging.md)
 - [Profiling](user/profiling.md)
+- [Settings](user/settings.md)
 
 # Reference Guide
 
@@ -26,6 +27,7 @@
 - [Asset pipeline](reference/asset_pipeline.md)
 - [Networking](reference/networking.md)
 - [Animations](reference/animations.md)
+- [Physics](reference/physics.md)
 - [Audio](reference/audio.md)
 - [UI](reference/ui.md)
 - [Distributing](reference/distributing.md)
