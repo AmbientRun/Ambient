@@ -1,72 +1,11 @@
-use std::{
-    collections::BTreeSet,
-    path::{Path, PathBuf},
-    time::Duration,
-};
+use std::{path::Path, time::Duration};
 
 use anyhow::Context;
 use clap::Args;
-use futures::StreamExt;
 use itertools::Itertools;
-use notify::{
-    event::{CreateKind, RemoveKind},
-    EventKind, RecursiveMode, Watcher,
-};
-use notify_debouncer_full::{DebounceEventResult, Debouncer, FileIdMap};
+use notify::{RecursiveMode, Watcher};
 
 use super::build::BuildOptions;
-
-pub struct WatcherState<W: Watcher> {
-    watcher: Debouncer<W, FileIdMap>,
-    watching: BTreeSet<PathBuf>,
-}
-
-impl<W: Watcher> WatcherState<W> {
-    pub fn new(watcher: Debouncer<W, FileIdMap>) -> Self {
-        Self {
-            watcher,
-            watching: BTreeSet::new(),
-        }
-    }
-
-    pub fn add(&mut self, path: impl AsRef<Path>) -> anyhow::Result<()> {
-        let path = path
-            .as_ref()
-            .canonicalize()
-            .context("Failed to canonicalize path")?;
-
-        if self.watching.insert(path.to_path_buf()) {
-            log::debug!("Watching new entry: {path:?}");
-            self.watcher
-                .watcher()
-                .watch(&path, RecursiveMode::NonRecursive)?;
-        }
-
-        Ok(())
-    }
-
-    pub fn remove(&mut self, path: impl AsRef<Path>) -> anyhow::Result<()> {
-        let path = path.as_ref().canonicalize()?;
-
-        if self.watching.remove(&path) {
-            log::debug!("Watching new entry: {path:?}");
-            self.watcher.watcher().unwatch(&path)?;
-        }
-
-        Ok(())
-    }
-
-    pub fn _update_subdir(&mut self, dir: impl AsRef<Path>) -> anyhow::Result<()> {
-        let dir = dir.as_ref();
-        for entry in find_top_level_dirs(dir) {
-            let entry = entry?;
-
-            self.add(entry.path())?;
-        }
-
-        Ok(())
-    }
-}
 
 #[derive(Debug, Args, Clone)]
 pub struct Serve {
@@ -154,23 +93,27 @@ impl Serve {
     pub async fn watch_and_build(&self) -> anyhow::Result<()> {
         let (tx, rx) = flume::unbounded();
 
-        log::info!("Setting up watcher");
-
         // Kick off initial build
-        let _ = tx.send(());
+        let _ = tx.send(vec![]);
+
         let mut watcher =
             notify::recommended_watcher(move |event: notify::Result<notify::Event>| {
                 if let Ok(event) = event {
-                    let mut found = false;
-                    for path in event.paths.iter() {
-                        if filter_path(path) {
-                            log::info!("Event: {path:?}");
-                            found = true;
-                        }
-                    }
+                    let paths = event
+                        .paths
+                        .into_iter()
+                        .filter(|v| filter_path(v))
+                        .collect_vec();
 
-                    if found {
-                        let _ = tx.send(());
+                    // for path in event.paths.iter() {
+                    //     if filter_path(path) {
+                    //         log::info!("Event: {path:?}");
+                    //         found = true;
+                    //     }
+                    // }
+
+                    if !paths.is_empty() {
+                        let _ = tx.send(paths);
                     }
                 }
             })?;
@@ -181,17 +124,20 @@ impl Serve {
             watcher.watch(&entry.path(), RecursiveMode::Recursive)?;
         }
 
-        while let Ok(events) = rx.recv_async().await {
+        while let Ok(mut paths) = rx.recv_async().await {
             tokio::time::sleep(Duration::from_millis(1000)).await;
 
+            paths.extend(rx.drain().into_iter().flatten());
+            log::info!("Changed paths: {paths:?}");
             log::info!("Rebuilding...");
+            #[cfg(not(target_os = "windows"))]
             if let Err(err) = self.build.build().await {
                 log::error!("Failed to build: {err}");
-                tokio::time::sleep(Duration::from_secs(2)).await;
+                log::info!("Finished building the web client");
             }
 
-            rx.drain();
-            log::info!("Finished building the web client");
+            #[cfg(target_os = "windows")]
+            log::info!("Rebuild is disabled on windows");
         }
 
         Ok(())
@@ -226,7 +172,11 @@ fn filter_path(path: impl AsRef<Path>) -> bool {
                 log::error!("Path is not UTF-8: {path:?}");
                 false
             }
-            Some("node_modules" | "target" | ".git" | "build" | "tmp" | "pkg") => false,
+            Some(
+                "node_modules" | "target" | ".git" | "build" | "tmp" | "pkg" | "generated.rs"
+                | "bindings.rs",
+            ) => false,
+            Some(v) if v.contains("timestamp") => false,
             Some(_) => true,
         }
     })

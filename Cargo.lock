@@ -2173,7 +2173,6 @@ dependencies = [
  "log",
  "nix 0.26.4",
  "notify",
- "notify-debouncer-full",
  "num_cpus",
  "openssl",
  "rustdoc-json",
@@ -2184,7 +2183,6 @@ dependencies = [
  "tokio",
  "toml 0.7.6",
  "toml_edit",
- "walkdir",
  "which",
 ]
 
@@ -3345,15 +3343,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d329bdeac514ee06249dabc27877490f17f5d371ec693360768b838e19f3ae10"
 dependencies = [
  "simd-adler32",
-]
-
-[[package]]
-name = "file-id"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e13be71e6ca82e91bc0cb862bebaac0b2d1924a5a1d970c822b2f98b63fda8c3"
-dependencies = [
- "winapi-util",
 ]
 
 [[package]]
@@ -5525,18 +5514,6 @@ dependencies = [
  "mio",
  "walkdir",
  "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "notify-debouncer-full"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "416969970ec751a5d702a88c6cd19ac1332abe997fce43f96db0418550426241"
-dependencies = [
- "file-id",
- "notify",
- "parking_lot",
- "walkdir",
 ]
 
 [[package]]
