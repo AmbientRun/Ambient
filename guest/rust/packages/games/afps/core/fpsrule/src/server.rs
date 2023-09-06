@@ -21,11 +21,11 @@ use ambient_api::{
 use packages::afps_schema::{
     components::{
         self, heal_timeout, hit_freeze, player_deathcount, player_killcount, player_name,
-        player_team, player_vspeed,
+        player_team,
     },
     messages::{Explosion, Shoot},
 };
-use packages::unit_schema::components::health;
+use packages::unit_schema::components::{health, vspeed};
 
 #[main]
 pub fn main() {
@@ -136,7 +136,7 @@ pub fn main() {
 
                 entity::set_component(hit.entity, rotation(), rot);
 
-                entity::set_component(hit.entity, player_vspeed(), 0.04);
+                entity::set_component(hit.entity, vspeed(), 0.04);
 
                 let new_health = (old_health - 30.).max(0.);
                 entity::set_component(hit.entity, health(), new_health);
