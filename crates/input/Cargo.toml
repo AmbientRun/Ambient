@@ -17,3 +17,4 @@ ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
 winit = { workspace = true }
 glam = { workspace = true }
 serde = { workspace = true }
+tracing = { workspace = true }

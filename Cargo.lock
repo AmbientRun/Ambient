@@ -793,6 +793,7 @@ dependencies = [
  "ambient_shared_types",
  "glam 0.24.1",
  "serde",
+ "tracing",
  "winit",
 ]
 

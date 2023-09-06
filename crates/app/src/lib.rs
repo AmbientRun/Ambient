@@ -751,6 +751,7 @@ impl App {
                     *control_flow = ControlFlow::Exit;
                 }
                 WindowEvent::KeyboardInput { input, .. } => {
+                    // tracing::info!(?input, "keyboard input");
                     if let Some(keycode) = input.virtual_keycode {
                         if input.state == ElementState::Pressed {
                             if let VirtualKeyCode::Q = keycode {

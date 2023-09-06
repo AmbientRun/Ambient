@@ -491,6 +491,7 @@ dependencies = [
  "ambient_shared_types",
  "glam",
  "serde",
+ "tracing",
  "winit",
 ]
 
