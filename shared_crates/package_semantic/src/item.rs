@@ -123,7 +123,7 @@ impl ItemMap {
                     .copied()
                     .ok_or_else(|| GetScopeError::NotFound {
                         segment: segment.clone(),
-                        scope_path: self.fully_qualified_display_path(&*scope, None, None),
+                        scope_path: self.fully_qualified_display_path(scope, None, None),
                         path: path.to_vec(),
                     })?;
         }

@@ -134,7 +134,7 @@ impl Scope {
             visitor(scope)?;
 
             for scope in scope.scopes.values().copied() {
-                visit_recursive_inner(&items.get(scope), items, visitor)?;
+                visit_recursive_inner(items.get(scope), items, visitor)?;
             }
 
             Ok(())

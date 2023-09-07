@@ -206,8 +206,8 @@ impl Semantic {
 
                 anyhow::bail!(
                     "package conflict found:\n  - {present}{}\n\n  - {locator}{}\n\n{}",
-                    imported_by(&self.items, &present_package),
-                    imported_by(&self.items, &locator_package),
+                    imported_by(&self.items, present_package),
+                    imported_by(&self.items, locator_package),
                     "the system does not currently support multiple versions of the same package in the dependency tree"
                 );
             }
@@ -287,7 +287,7 @@ impl Semantic {
         self.get_contextual(start_scope, |scope_id| {
             get_attribute_id(&self.items, scope_id, path)
         })
-        .ok_or_else(|| ContextGetError::NotFound {
+        .ok_or(ContextGetError::NotFound {
             path,
             type_: ItemType::Attribute,
         })
@@ -302,7 +302,7 @@ impl Semantic {
         self.get_contextual(start_scope, |scope_id| {
             get_concept_id(&self.items, scope_id, path)
         })
-        .ok_or_else(|| ContextGetError::NotFound {
+        .ok_or(ContextGetError::NotFound {
             path,
             type_: ItemType::Concept,
         })
@@ -317,7 +317,7 @@ impl Semantic {
         self.get_contextual(start_scope, |scope_id| {
             get_component_id(&self.items, scope_id, path)
         })
-        .ok_or_else(|| ContextGetError::NotFound {
+        .ok_or(ContextGetError::NotFound {
             path,
             type_: ItemType::Component,
         })
