@@ -101,9 +101,12 @@ impl ItemMap {
         definitions: &StandardDefinitions,
         id: ItemId<T>,
     ) -> anyhow::Result<&mut T> {
-        let item = self.get(id).clone();
-        let new_item = item.resolve(self, context, definitions, id)?;
-        self.insert(id, new_item);
+        let item = self.get(id);
+        if !item.already_resolved() {
+            let item = item.clone();
+            let new_item = item.resolve(self, context, definitions, id)?;
+            self.insert(id, new_item);
+        }
         Ok(self.get_mut(id))
     }
 
@@ -326,6 +329,8 @@ pub(crate) trait Resolve: Item {
         definitions: &StandardDefinitions,
         self_id: ItemId<Self>,
     ) -> anyhow::Result<Self>;
+
+    fn already_resolved(&self) -> bool;
 }
 
 pub struct ItemId<T: Item>(Ulid, PhantomData<T>);

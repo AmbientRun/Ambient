@@ -12,6 +12,7 @@ type ComponentMap = IndexMap<ResolvableItemId<Component>, ConceptValue>;
 #[derive(Clone, PartialEq, Debug)]
 pub struct Concept {
     data: ItemData,
+    resolved: bool,
 
     pub name: Option<String>,
     pub description: Option<String>,
@@ -55,21 +56,18 @@ impl Resolve for Concept {
     ) -> anyhow::Result<Self> {
         let mut extends = vec![];
         for extend in &self.extends {
-            extends.push(match extend {
-                ResolvableItemId::Unresolved(path) => {
-                    let id = context
-                        .get_concept_id(items, path.as_path())
-                        .map_err(|e| e.into_owned())
-                        .with_context(|| {
-                            format!(
-                                "Failed to resolve concept `{}` for concept `{}",
-                                path, self.data.id
-                            )
-                        })?;
-                    ResolvableItemId::Resolved(id)
-                }
-                t => t.clone(),
-            });
+            extends.push(ResolvableItemId::Resolved(match extend {
+                ResolvableItemId::Unresolved(path) => context
+                    .get_concept_id(items, path.as_path())
+                    .map_err(|e| e.into_owned())
+                    .with_context(|| {
+                        format!(
+                            "Failed to resolve concept `{}` for concept `{}`",
+                            path, self.data.id
+                        )
+                    })?,
+                ResolvableItemId::Resolved(id) => *id,
+            }));
         }
         self.extends = extends;
 
@@ -78,7 +76,13 @@ impl Resolve for Concept {
                 resolve_components(&self.data.id, items, context, definitions, components)?;
         }
 
+        self.resolved = true;
+
         Ok(self)
+    }
+
+    fn already_resolved(&self) -> bool {
+        self.resolved
     }
 }
 impl Concept {
@@ -114,6 +118,7 @@ impl Concept {
                     )
                 })
                 .collect(),
+            resolved: false,
         }
     }
 }

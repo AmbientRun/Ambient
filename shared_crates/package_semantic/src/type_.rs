@@ -98,6 +98,10 @@ impl Resolve for Type {
     ) -> anyhow::Result<Self> {
         Ok(self)
     }
+
+    fn already_resolved(&self) -> bool {
+        true
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]

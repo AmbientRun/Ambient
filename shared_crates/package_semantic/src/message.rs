@@ -13,6 +13,8 @@ pub struct Message {
 
     pub description: Option<String>,
     pub fields: IndexMap<SnakeCaseIdentifier, ResolvableItemId<Type>>,
+
+    resolved: bool,
 }
 
 impl Item for Message {
@@ -65,8 +67,13 @@ impl Resolve for Message {
             );
         }
         self.fields = fields;
+        self.resolved = true;
 
         Ok(self)
+    }
+
+    fn already_resolved(&self) -> bool {
+        self.resolved
     }
 }
 
@@ -80,6 +87,7 @@ impl Message {
                 .iter()
                 .map(|(k, v)| (k.clone(), ResolvableItemId::Unresolved(v.clone())))
                 .collect(),
+            resolved: false,
         }
     }
 }

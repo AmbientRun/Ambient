@@ -153,6 +153,8 @@ pub struct Package {
     pub scope_id: ItemId<Scope>,
     /// The package that this package was imported from, if any
     pub dependent_package_id: Option<ItemId<Package>>,
+
+    pub(super) resolved: bool,
 }
 impl Item for Package {
     const TYPE: ItemType = ItemType::Package;
@@ -183,14 +185,19 @@ impl Item for Package {
 }
 impl Resolve for Package {
     fn resolve(
-        self,
+        mut self,
         items: &mut ItemMap,
         context: &Context,
         definitions: &StandardDefinitions,
         _self_id: ItemId<Self>,
     ) -> anyhow::Result<Self> {
         items.resolve(context, definitions, self.scope_id)?;
+        self.resolved = true;
         Ok(self)
+    }
+
+    fn already_resolved(&self) -> bool {
+        self.resolved
     }
 }
 

@@ -44,4 +44,8 @@ impl Resolve for Attribute {
     ) -> anyhow::Result<Self> {
         Ok(self)
     }
+
+    fn already_resolved(&self) -> bool {
+        true
+    }
 }

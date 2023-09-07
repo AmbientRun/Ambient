@@ -20,6 +20,8 @@ pub struct Scope {
     pub messages: IndexMap<PascalCaseIdentifier, ItemId<Message>>,
     pub types: IndexMap<PascalCaseIdentifier, ItemId<Type>>,
     pub attributes: IndexMap<PascalCaseIdentifier, ItemId<Attribute>>,
+
+    resolved: bool,
 }
 impl std::fmt::Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -79,7 +81,7 @@ impl Item for Scope {
 /// of their children, so we need to clone the scope to avoid a double-borrow.
 impl Resolve for Scope {
     fn resolve(
-        self,
+        mut self,
         items: &mut ItemMap,
         context: &Context,
         definitions: &StandardDefinitions,
@@ -101,16 +103,20 @@ impl Resolve for Scope {
         let mut context = context.clone();
         context.push(self_id);
 
-        for id in self.scopes.values() {
-            items.resolve(&context, definitions, *id)?;
-        }
+        resolve(items, &context, definitions, &self.scopes)?;
         resolve(items, &context, definitions, &self.components)?;
         resolve(items, &context, definitions, &self.concepts)?;
         resolve(items, &context, definitions, &self.messages)?;
         resolve(items, &context, definitions, &self.types)?;
         resolve(items, &context, definitions, &self.attributes)?;
 
+        self.resolved = true;
+
         Ok(self)
+    }
+
+    fn already_resolved(&self) -> bool {
+        self.resolved
     }
 }
 impl Scope {
@@ -125,6 +131,7 @@ impl Scope {
             messages: Default::default(),
             types: Default::default(),
             attributes: Default::default(),
+            resolved: false,
         }
     }
 

@@ -15,6 +15,8 @@ pub struct Component {
     pub type_: ResolvableItemId<Type>,
     pub attributes: Vec<ResolvableItemId<Attribute>>,
     pub default: Option<ResolvableValue>,
+
+    resolved: bool,
 }
 impl Item for Component {
     const TYPE: ItemType = ItemType::Component;
@@ -92,7 +94,13 @@ impl Resolve for Component {
             default.resolve_in_place(items, type_id)?;
         }
 
+        self.resolved = true;
+
         Ok(self)
+    }
+
+    fn already_resolved(&self) -> bool {
+        self.resolved
     }
 }
 impl Component {
@@ -111,6 +119,7 @@ impl Component {
                 .default
                 .as_ref()
                 .map(|v| ResolvableValue::Unresolved(v.clone())),
+            resolved: false,
         }
     }
 }

@@ -135,6 +135,7 @@ impl Semantic {
             dependencies: HashMap::new(),
             scope_id,
             dependent_package_id,
+            resolved: false,
         };
 
         let id = self.items.add(package);
