@@ -1,0 +1,7 @@
+[[pipelines]]
+type = "Models"
+sources = ["*"]
+
+[[pipelines.transforms]]
+type = "RotateZ"
+deg = 90.0

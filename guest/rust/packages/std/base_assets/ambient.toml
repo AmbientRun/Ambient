@@ -1,5 +1,5 @@
 [package]
-id = "dummy_character"
-name = "dummy_character"
+id = "base_assets"
+name = "base_assets"
 version = "0.0.1"
 content = { type = "Asset", models = true }

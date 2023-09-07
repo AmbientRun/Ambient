@@ -8,32 +8,5 @@ type = "Game"
 content = { type = "Playable", example = true }
 
 [dependencies]
-dummy_character = { path = "../../../packages/std/dummy_character", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
-
-
-[components]
-player_camera_ref = { type = "EntityId", name = "Player camera ref", description = "The player's camera.", attributes = [
-    "Debuggable",
-] }
-player_movement_direction = { type = "Vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
-    "Debuggable",
-] }
-player_mouse_delta_x = { type = "F32", name = "Player mouse delta X", description = "The player's mouse delta X.", attributes = [
-    "Debuggable",
-] }
-
-camera_follow_distance = { type = "F32", name = "Camera follow distance", description = "The distance the camera follows the player.", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-
-player_scroll = { type = "F32", name = "Player mouse scroll", description = "The player's mouse scroll.", attributes = [
-    "Debuggable",
-] }
-
-[messages.Input]
-description = "Describes the input state of the player."
-[messages.Input.fields]
-direction = "Vec2"
-mouse_delta_x = "F32"
-scroll = "F32"
+base_assets = { path = "../../../packages/std/base_assets", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+fps_controller = { path = "../../../packages/std/fps_controller", deployment = "4qcnuQpcxcMDogPdNsKl6s" }

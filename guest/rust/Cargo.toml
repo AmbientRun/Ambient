@@ -61,6 +61,7 @@ members = [
     # Packages (std)
     "packages/std/basic_character_animation",
     "packages/std/character_movement",
+    "packages/std/fps_controller",
 
     # Packages (tools)
     "packages/tools/console",
