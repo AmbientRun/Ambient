@@ -5,5 +5,5 @@ version = "0.0.1"
 content = { type = "Asset", models = true, code = true }
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "6hnZNdYwHeAc0Ao4U8b12s" }
-basic_character_animation = { path = "../../../../std/basic_character_animation", deployment = "7AAhbI24gyHFVGTwzQlpD5" }
+afps_schema = { path = "../../schema", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+basic_character_animation = { path = "../../../../std/basic_character_animation", deployment = "4qcnuQpcxcMDogPdNsKl6s" }

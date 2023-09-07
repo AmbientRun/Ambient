@@ -1,0 +1,23 @@
+[package]
+name = "character_movement"
+
+edition = "2021"
+publish = false
+version = "0.0.1"
+
+[dependencies]
+ambient_api = { workspace = true }
+
+[[bin]]
+name = "client_character_movement"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server_character_movement"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

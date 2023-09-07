@@ -5,7 +5,7 @@ version = "0.0.1"
 content = { type = "Asset", code = true }
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "6hnZNdYwHeAc0Ao4U8b12s" }
-input_schema = { path = "../../../../schemas/input", deployment = "19YnTqCmlXkRNCVF1AnJwN" }
-editor_schema = { path = "../../../../schemas/editor", deployment = "1IV7IuE5rc6WEKpAtu0M1V" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "7eDM2HMZZFFbWN0LsdUo48" }
+afps_schema = { path = "../../schema", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+input_schema = { path = "../../../../schemas/input", deployment = "6P6gdIumjzNGN0AJxZ4SWz" }
+editor_schema = { path = "../../../../schemas/editor", deployment = "54YGceglfzsT4whQGeT3Pd" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
