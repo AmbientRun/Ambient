@@ -6,4 +6,5 @@ content = { type = "Asset", models = true, code = true }
 
 [dependencies]
 afps_schema = { path = "../../schema", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
 basic_character_animation = { path = "../../../../std/basic_character_animation", deployment = "4qcnuQpcxcMDogPdNsKl6s" }

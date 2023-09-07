@@ -26,10 +26,6 @@ player_pitch = { type = "F32", name = "Player pitch", description = "The player'
     "Debuggable",
     "Networked",
 ] }
-player_vspeed = { type = "F32", name = "Player vertical speed", description = "The player's vertical speed.", attributes = [
-    "Debuggable",
-    "Networked",
-] }
 
 player_shooting_status = { type = "Bool", description = "True when the player is in shooting", attributes = [
     "Debuggable",
