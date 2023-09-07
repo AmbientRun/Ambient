@@ -88,8 +88,8 @@
       }
     }
   },
-  "asset-loading": {
-    "cmd": "cargo run -- run ./guest/rust/examples/basics/asset_loading --clean-build --debugger",
+  "material overriding": {
+    "cmd": "cargo run -- run ./guest/rust/examples/assets/material_overriding --clean-build",
     "env": {
       "RUST_LOG": "ambient_renderer=debug,info"
     }
