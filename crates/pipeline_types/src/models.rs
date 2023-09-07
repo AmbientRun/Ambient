@@ -48,8 +48,8 @@ pub struct ModelsPipeline {
     ///
     /// prefab_components = "{ \"health\": 5 }"
     #[serde(default)]
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub prefab_components: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prefab_components: Option<String>,
     /// If specified, a list of overrides to use for the materials for the mesh.
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
