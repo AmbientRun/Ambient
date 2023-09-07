@@ -587,7 +587,6 @@ impl App {
                         control_flow,
                     );
                 } else if let Some(event) = event.to_static() {
-                    // assert!(tokio::runtime::Handle::try_current().is_err());
                     self.handle_static_event(&event, control_flow);
                 }
             });
@@ -751,7 +750,6 @@ impl App {
                     *control_flow = ControlFlow::Exit;
                 }
                 WindowEvent::KeyboardInput { input, .. } => {
-                    // tracing::info!(?input, "keyboard input");
                     if let Some(keycode) = input.virtual_keycode {
                         if input.state == ElementState::Pressed {
                             if let VirtualKeyCode::Q = keycode {

@@ -140,12 +140,10 @@ async fn handle_webtransport_session(
                 server.process_control(&data, frame?)?;
             }
             stream = conn.accept_uni() => {
-                tracing::debug!("accept_uni");
                 let (_, stream) = stream?.ok_or(NetworkError::ConnectionClosed)?;
                 connected.process_uni(&data, stream);
             }
             stream = conn.accept_bi() => {
-                tracing::debug!("accept_bi");
                 if let AcceptedBi::BidiStream(_, stream) = stream?.ok_or(NetworkError::ConnectionClosed)? {
                     let (send, recv) = stream.split();
 

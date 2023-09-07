@@ -100,8 +100,6 @@ impl System<Event<'static, ()>> for InputSystem {
                 }
 
                 WindowEvent::KeyboardInput { input, .. } => {
-                    tracing::info!("player input: {:?}", input);
-
                     let keycode = input
                         .virtual_keycode
                         .map(|key| ambient_shared_types::VirtualKeyCode::from(key).to_string());

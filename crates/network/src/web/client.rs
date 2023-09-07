@@ -402,11 +402,8 @@ async fn handle_request(
             runtime.spawn_local(async move {
                 log_network_result!(
                     async {
-                        tracing::debug!("write_u32");
                         send.write_u32(id).await?;
-                        tracing::debug!(?data, "write_all_buf");
                         send.write_all_buf(&mut data).await?;
-                        tracing::info!("finished sending request");
 
                         Ok(()) as Result<(), NetworkError>
                     }
