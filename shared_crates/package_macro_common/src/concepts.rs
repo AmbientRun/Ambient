@@ -21,8 +21,10 @@ pub fn generate(
         .filter_map(|c| context.extract_item_if_relevant(items, *c))
         .map(|concept| {
             let concept = &*concept;
+            let new = new::generate(items, type_printer, context, concept)?;
             let old = old::generate(items, type_printer, context, concept)?;
             Ok(quote! {
+                #new
                 #old
             })
         })
@@ -41,6 +43,78 @@ pub fn generate(
             #(#concepts)*
         }
     })
+}
+
+mod new {
+    use super::*;
+
+    pub(super) fn generate(
+        items: &ItemMap,
+        type_printer: &TypePrinter,
+        context: Context,
+        concept: &Concept,
+    ) -> anyhow::Result<TokenStream> {
+        use std::fmt::Write;
+
+        let name = &concept.data().id;
+
+        let required_components = concept
+            .required_components
+            .iter()
+            .map(|(id, value)| {
+                let component_item_id = id.as_resolved().unwrap();
+
+                let component = items.get(component_item_id);
+                let component_id = &component.data.id;
+
+                let component_ty = type_printer.get(
+                    context,
+                    items,
+                    None,
+                    component.type_.as_resolved().unwrap(),
+                )?;
+
+                let mut doc_comment = String::new();
+
+                writeln!(
+                    doc_comment,
+                    "**Component**: `{}`",
+                    items.fully_qualified_display_path(component, None, None)
+                )?;
+                writeln!(doc_comment)?;
+
+                if let Some(value) = value.suggested.as_ref().and_then(|v| v.as_resolved()) {
+                    writeln!(
+                        doc_comment,
+                        "**Suggested value**: `{}`",
+                        SemiprettyTokenStream(value_to_token_stream(items, value)?)
+                    )?;
+                    writeln!(doc_comment)?;
+                }
+
+                if let Some(description) = &value.description {
+                    writeln!(doc_comment, "**Description**: {description}")?;
+                    writeln!(doc_comment)?;
+                }
+
+                if let Some(description) = &component.description {
+                    writeln!(doc_comment, "**Component description**: {}", description)?;
+                    writeln!(doc_comment)?;
+                }
+
+                Ok(quote! {
+                    #[doc = #doc_comment]
+                    #component_id: #component_ty
+                })
+            })
+            .collect::<anyhow::Result<Vec<_>>>()?;
+
+        Ok(quote! {
+            pub struct #name {
+                #(#required_components),*
+            }
+        })
+    }
 }
 
 mod old {
