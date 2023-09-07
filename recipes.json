@@ -2,6 +2,14 @@
   "check": {
     "cmd": "cargo check"
   },
+  "clippy web": {
+    "cmd": [
+      "cargo",
+      "clippy",
+      "--workspace"
+    ],
+    "cwd": "web"
+  },
   "client": {
     "cmd": "cargo run -p ambient"
   },
