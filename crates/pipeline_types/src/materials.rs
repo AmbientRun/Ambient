@@ -1,4 +1,3 @@
-use ambient_native_std::asset_url::{AbsAssetUrl, AssetUrl};
 use glam::Vec4;
 use serde::{Deserialize, Serialize};
 
@@ -36,16 +35,16 @@ pub struct PipelinePbrMaterial {
     pub source: Option<String>,
 
     /// The base color map (i.e. texture) of this material.
-    pub base_color: Option<AssetUrl>,
+    pub base_color: Option<String>,
     /// The opacity map of this material.
-    pub opacity: Option<AssetUrl>,
+    pub opacity: Option<String>,
     /// The normal map of this material.
-    pub normalmap: Option<AssetUrl>,
+    pub normalmap: Option<String>,
     /// The metallic roughness map of this material.
     ///
     /// r: metallic
     /// g: roughness
-    pub metallic_roughness: Option<AssetUrl>,
+    pub metallic_roughness: Option<String>,
 
     /// The color that this material should be multiplied by. Defaults to white for PBR.
     pub base_color_factor: Option<Vec4>,
@@ -66,7 +65,7 @@ pub struct PipelinePbrMaterial {
 
     // Non-PBR properties that get translated to PBR.
     /// The non-PBR specular map of this material. If specified, it will be translated to a PBR equivalent.
-    pub specular: Option<AssetUrl>,
+    pub specular: Option<String>,
     /// The non-PBR specular exponent of this material. If specified alongside `specular`, it will be translated to a PBR equivalent.
     pub specular_exponent: Option<f32>,
 
@@ -79,10 +78,10 @@ pub struct PipelinePbrMaterial {
 /// Imports a quixel-style surface definition
 #[derive(Clone, Debug, Default)]
 pub struct QuixelSurfaceDef {
-    pub albedo: Option<AbsAssetUrl>,
-    pub ao: Option<AbsAssetUrl>,
-    pub normal: Option<AbsAssetUrl>,
-    pub opacity: Option<AbsAssetUrl>,
+    pub albedo: Option<String>,
+    pub ao: Option<String>,
+    pub normal: Option<String>,
+    pub opacity: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]

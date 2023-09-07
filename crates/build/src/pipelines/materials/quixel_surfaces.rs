@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
 use ambient_model_import::{dotdot_path, model_crate::ModelCrate};
 use ambient_native_std::{
@@ -83,9 +83,14 @@ pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutA
     .await
 }
 
-async fn download_image(assets: &AssetCache, url: Option<AbsAssetUrl>) -> Option<image::RgbaImage> {
+async fn download_image(assets: &AssetCache, url: Option<String>) -> Option<image::RgbaImage> {
     if let Some(url) = url {
-        Some(super::download_image(assets, &url).await.ok()?.into_rgba8())
+        Some(
+            super::download_image(assets, &AbsAssetUrl::from_str(&url).unwrap())
+                .await
+                .ok()?
+                .into_rgba8(),
+        )
     } else {
         None
     }
@@ -173,10 +178,10 @@ fn from_quixel_json(
                                     &in_root_url.push(format["uri"].as_str().unwrap()).unwrap(),
                                 ) {
                                     match comp_type {
-                                        "albedo" => res.albedo = Some(url.clone()),
-                                        "ao" => res.ao = Some(url.clone()),
-                                        "normal" => res.normal = Some(url.clone()),
-                                        "opacity" => res.opacity = Some(url.clone()),
+                                        "albedo" => res.albedo = Some(url.to_string()),
+                                        "ao" => res.ao = Some(url.to_string()),
+                                        "normal" => res.normal = Some(url.to_string()),
+                                        "opacity" => res.opacity = Some(url.to_string()),
                                         _ => {}
                                     }
                                 }
@@ -198,10 +203,10 @@ fn from_quixel_json(
                     .get_downloadable_url(&in_root_url.push(map["uri"].as_str().unwrap()).unwrap())
                 {
                     match map["type"].as_str().unwrap() {
-                        "albedo" => res.albedo = Some(url.clone()),
-                        "ao" => res.ao = Some(url.clone()),
-                        "normal" => res.normal = Some(url.clone()),
-                        "opacity" => res.opacity = Some(url.clone()),
+                        "albedo" => res.albedo = Some(url.to_string()),
+                        "ao" => res.ao = Some(url.to_string()),
+                        "normal" => res.normal = Some(url.to_string()),
+                        "opacity" => res.opacity = Some(url.to_string()),
                         _ => {}
                     }
                 }

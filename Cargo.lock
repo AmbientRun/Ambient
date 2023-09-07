@@ -1174,7 +1174,6 @@ name = "ambient_pipeline_types"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_ecs",
- "ambient_native_std",
  "glam 0.24.1",
  "serde",
  "toml 0.7.6",
