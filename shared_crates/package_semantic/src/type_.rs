@@ -1,10 +1,7 @@
 use ambient_package::{ComponentType, PascalCaseIdentifier};
 use indexmap::IndexMap;
 
-use crate::{
-    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, PrimitiveType, Resolve,
-    StandardDefinitions,
-};
+use crate::{Item, ItemData, ItemId, ItemType, ItemValue, PrimitiveType, Resolve, Semantic};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Type {
@@ -89,13 +86,7 @@ impl Item for Type {
     }
 }
 impl Resolve for Type {
-    fn resolve(
-        self,
-        _items: &mut ItemMap,
-        _context: &Context,
-        _definitions: &StandardDefinitions,
-        _self_id: ItemId<Self>,
-    ) -> anyhow::Result<Self> {
+    fn resolve(self, _semantic: &mut Semantic, _self_id: ItemId<Self>) -> anyhow::Result<Self> {
         Ok(self)
     }
 

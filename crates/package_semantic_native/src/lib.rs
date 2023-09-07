@@ -215,7 +215,7 @@ pub async fn add_to_semantic_and_register_components(
         .add_package(RetrievableFile::Url(url.0.clone()), None)
         .await?;
 
-    semantic.resolve()?;
+    semantic.resolve_all()?;
     ComponentRegistry::get_mut().add_external(all_defined_components(semantic)?);
 
     Ok(id)

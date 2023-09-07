@@ -2,8 +2,8 @@ use ambient_package::ItemPathBuf;
 use anyhow::Context as AnyhowContext;
 
 use crate::{
-    Attribute, Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
-    ResolvableValue, Resolve, StandardDefinitions, Type,
+    Attribute, Item, ItemData, ItemId, ItemType, ItemValue, ResolvableItemId, ResolvableValue,
+    Resolve, Semantic, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -45,22 +45,18 @@ impl Item for Component {
     }
 }
 impl Resolve for Component {
-    fn resolve(
-        mut self,
-        items: &mut ItemMap,
-        context: &Context,
-        definitions: &StandardDefinitions,
-        _self_id: ItemId<Self>,
-    ) -> anyhow::Result<Self> {
+    fn resolve(mut self, semantic: &mut Semantic, _self_id: ItemId<Self>) -> anyhow::Result<Self> {
+        let parent_id = self.data.parent_id.unwrap();
+
         let type_id = match &self.type_ {
-            ResolvableItemId::Unresolved(ty) => {
-                context.get_type_id(items, ty).with_context(|| {
+            ResolvableItemId::Unresolved(ty) => semantic
+                .get_contextual_type_id(parent_id, ty)
+                .with_context(|| {
                     format!(
                         "Failed to resolve type `{ty:?}` for component `{}`",
                         self.data.id
                     )
-                })?
-            }
+                })?,
             ResolvableItemId::Resolved(id) => *id,
         };
         self.type_ = ResolvableItemId::Resolved(type_id);
@@ -69,8 +65,8 @@ impl Resolve for Component {
         for attribute in &self.attributes {
             attributes.push(match attribute {
                 ResolvableItemId::Unresolved(path) => {
-                    let id = context
-                        .get_attribute_id(items, path.as_path())
+                    let id = semantic
+                        .get_contextual_attribute_id(parent_id, path.as_path())
                         .map_err(|e| e.into_owned())
                         .with_context(|| {
                             format!(
@@ -85,13 +81,15 @@ impl Resolve for Component {
         }
 
         // If this is an enum, emit the `Enum` attribute
-        if items.get(type_id).inner.as_enum().is_some() {
-            attributes.push(ResolvableItemId::Resolved(definitions.attributes.enum_));
+        if semantic.items.get(type_id).inner.as_enum().is_some() {
+            attributes.push(ResolvableItemId::Resolved(
+                semantic.standard_definitions.attributes.enum_,
+            ));
         }
         self.attributes = attributes;
 
         if let Some(default) = &mut self.default {
-            default.resolve_in_place(items, type_id)?;
+            default.resolve_in_place(&semantic.items, type_id)?;
         }
 
         self.resolved = true;

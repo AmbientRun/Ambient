@@ -3,8 +3,7 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, Resolve,
-    StandardDefinitions, Type,
+    Item, ItemData, ItemId, ItemType, ItemValue, ResolvableItemId, Resolve, Semantic, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -44,20 +43,16 @@ impl Item for Message {
     }
 }
 impl Resolve for Message {
-    fn resolve(
-        mut self,
-        items: &mut ItemMap,
-        context: &Context,
-        _definitions: &StandardDefinitions,
-        _self_id: ItemId<Self>,
-    ) -> anyhow::Result<Self> {
+    fn resolve(mut self, semantic: &mut Semantic, _self_id: ItemId<Self>) -> anyhow::Result<Self> {
+        let parent_id = self.data.parent_id.unwrap();
+
         let mut fields = IndexMap::new();
         for (name, type_) in &self.fields {
             fields.insert(
                 name.clone(),
                 match type_ {
                     ResolvableItemId::Unresolved(path) => {
-                        let id = context.get_type_id(items, path).with_context(|| {
+                        let id = semantic.get_contextual_type_id(parent_id, path).with_context(|| {
                             format!("Failed to resolve type `{path:?}` for field `{name}` of message `{}`", self.data.id)
                         })?;
                         ResolvableItemId::Resolved(id)

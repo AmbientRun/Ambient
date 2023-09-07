@@ -10,8 +10,7 @@ use anyhow::Context as AnyhowContext;
 use url::Url;
 
 use crate::{
-    item::Resolve, schema, util::read_file, Context, Item, ItemData, ItemId, ItemMap, ItemType,
-    ItemValue, Scope, StandardDefinitions,
+    schema, util::read_file, Item, ItemData, ItemId, ItemType, ItemValue, Resolve, Scope, Semantic,
 };
 use semver::Version;
 
@@ -184,20 +183,14 @@ impl Item for Package {
     }
 }
 impl Resolve for Package {
-    fn resolve(
-        mut self,
-        items: &mut ItemMap,
-        context: &Context,
-        definitions: &StandardDefinitions,
-        _self_id: ItemId<Self>,
-    ) -> anyhow::Result<Self> {
+    fn resolve(mut self, semantic: &mut Semantic, _self_id: ItemId<Self>) -> anyhow::Result<Self> {
         // Ensure all dependencies are resolved first, so that we can use them
         // when resolving ourselves
         for dependency in self.dependencies.values_mut() {
-            items.resolve(context, definitions, dependency.id)?;
+            semantic.resolve(dependency.id)?;
         }
 
-        items.resolve(context, definitions, self.scope_id)?;
+        semantic.resolve(self.scope_id)?;
         self.resolved = true;
         Ok(self)
     }

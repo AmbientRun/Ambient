@@ -3,8 +3,8 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Component, Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
-    ResolvableValue, Resolve, StandardDefinitions,
+    Component, Item, ItemData, ItemId, ItemType, ItemValue, ResolvableItemId, ResolvableValue,
+    Resolve, Scope, Semantic,
 };
 
 type ComponentMap = IndexMap<ResolvableItemId<Component>, ConceptValue>;
@@ -47,18 +47,14 @@ impl Item for Concept {
     }
 }
 impl Resolve for Concept {
-    fn resolve(
-        mut self,
-        items: &mut ItemMap,
-        context: &Context,
-        definitions: &StandardDefinitions,
-        _self_id: ItemId<Self>,
-    ) -> anyhow::Result<Self> {
+    fn resolve(mut self, semantic: &mut Semantic, _self_id: ItemId<Self>) -> anyhow::Result<Self> {
+        let parent_id = self.data.parent_id.unwrap();
+
         let mut extends = vec![];
         for extend in &self.extends {
             extends.push(ResolvableItemId::Resolved(match extend {
-                ResolvableItemId::Unresolved(path) => context
-                    .get_concept_id(items, path.as_path())
+                ResolvableItemId::Unresolved(path) => semantic
+                    .get_contextual_concept_id(parent_id, path.as_path())
                     .map_err(|e| e.into_owned())
                     .with_context(|| {
                         format!(
@@ -72,8 +68,7 @@ impl Resolve for Concept {
         self.extends = extends;
 
         for components in [&mut self.required_components, &mut self.optional_components] {
-            *components =
-                resolve_components(&self.data.id, items, context, definitions, components)?;
+            *components = resolve_components(parent_id, &self.data.id, semantic, components)?;
         }
 
         self.resolved = true;
@@ -138,17 +133,16 @@ impl ConceptValue {
 }
 
 fn resolve_components(
+    parent_id: ItemId<Scope>,
     concept_id: &Identifier,
-    items: &mut ItemMap,
-    context: &Context,
-    definitions: &StandardDefinitions,
+    semantic: &mut Semantic,
     unresolved_components: &ComponentMap,
 ) -> anyhow::Result<ComponentMap> {
     let mut components = IndexMap::new();
     for (resolvable_component, resolvable_value) in unresolved_components {
         let component_id = match resolvable_component {
-            ResolvableItemId::Unresolved(path) => context
-                .get_component_id(items, path.as_path())
+            ResolvableItemId::Unresolved(path) => semantic
+                .get_contextual_component_id(parent_id, path.as_path())
                 .map_err(|e| e.into_owned())
                 .with_context(|| {
                     format!(
@@ -159,7 +153,7 @@ fn resolve_components(
             ResolvableItemId::Resolved(id) => *id,
         };
         let component_type = {
-            let component = items.resolve(context, definitions, component_id)?;
+            let component = semantic.resolve(component_id)?;
             component.type_.as_resolved().with_context(|| {
                 format!(
                     "Failed to get type for component `{}` for concept `{}`",
@@ -171,7 +165,7 @@ fn resolve_components(
 
         let mut value = resolvable_value.clone();
         if let Some(suggested) = value.suggested.as_mut() {
-            suggested.resolve_in_place(items, component_type)?;
+            suggested.resolve_in_place(&semantic.items, component_type)?;
         }
         components.insert(ResolvableItemId::Resolved(component_id), value);
     }

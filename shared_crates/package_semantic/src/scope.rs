@@ -1,12 +1,9 @@
-use ambient_package::{
-    ComponentType, ItemPath, ItemPathBuf, PascalCaseIdentifier, SnakeCaseIdentifier,
-};
+use ambient_package::{PascalCaseIdentifier, SnakeCaseIdentifier};
 use indexmap::IndexMap;
-use thiserror::Error;
 
 use crate::{
     Attribute, Component, Concept, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Message,
-    Package, Resolve, StandardDefinitions, Type,
+    Package, Resolve, Semantic, Type,
 };
 
 #[derive(Clone, PartialEq)]
@@ -80,35 +77,24 @@ impl Item for Scope {
 /// Scope uses `ResolveClone` because scopes can be accessed during resolution
 /// of their children, so we need to clone the scope to avoid a double-borrow.
 impl Resolve for Scope {
-    fn resolve(
-        mut self,
-        items: &mut ItemMap,
-        context: &Context,
-        definitions: &StandardDefinitions,
-        self_id: ItemId<Self>,
-    ) -> anyhow::Result<Self> {
+    fn resolve(mut self, semantic: &mut Semantic, _self_id: ItemId<Self>) -> anyhow::Result<Self> {
         fn resolve<T: Resolve, U>(
-            items: &mut ItemMap,
-            context: &Context,
-            definitions: &StandardDefinitions,
+            semantic: &mut Semantic,
             item_ids: &IndexMap<U, ItemId<T>>,
         ) -> anyhow::Result<()> {
             for id in item_ids.values().copied() {
-                items.resolve(context, definitions, id)?;
+                semantic.resolve(id)?;
             }
 
             Ok(())
         }
 
-        let mut context = context.clone();
-        context.push(self_id);
-
-        resolve(items, &context, definitions, &self.scopes)?;
-        resolve(items, &context, definitions, &self.components)?;
-        resolve(items, &context, definitions, &self.concepts)?;
-        resolve(items, &context, definitions, &self.messages)?;
-        resolve(items, &context, definitions, &self.types)?;
-        resolve(items, &context, definitions, &self.attributes)?;
+        resolve(semantic, &self.scopes)?;
+        resolve(semantic, &self.components)?;
+        resolve(semantic, &self.concepts)?;
+        resolve(semantic, &self.messages)?;
+        resolve(semantic, &self.types)?;
+        resolve(semantic, &self.attributes)?;
 
         self.resolved = true;
 
@@ -156,174 +142,4 @@ impl Scope {
 
         visit_recursive_inner(self, items, &mut visitor)
     }
-}
-
-#[derive(Error, Debug)]
-pub enum ContextGetError<'a> {
-    #[error("Failed to find {path} ({type_})")]
-    NotFound { path: ItemPath<'a>, type_: ItemType },
-}
-impl ContextGetError<'_> {
-    pub fn into_owned(self) -> ContextGetOwnedError {
-        self.into()
-    }
-}
-#[derive(Error, Debug)]
-pub enum ContextGetOwnedError {
-    #[error("Failed to find {path} ({type_})")]
-    NotFound { path: ItemPathBuf, type_: ItemType },
-}
-impl From<ContextGetError<'_>> for ContextGetOwnedError {
-    fn from(error: ContextGetError) -> Self {
-        match error {
-            ContextGetError::NotFound { path, type_ } => Self::NotFound {
-                path: path.to_owned(),
-                type_,
-            },
-        }
-    }
-}
-
-#[derive(Clone, PartialEq, Debug)]
-pub struct Context(Vec<ItemId<Scope>>);
-impl Context {
-    pub(crate) fn new(root_scope: ItemId<Scope>) -> Self {
-        Self(vec![root_scope])
-    }
-
-    fn push(&mut self, scope: ItemId<Scope>) {
-        self.0.push(scope);
-    }
-
-    pub(crate) fn get_type_id(
-        &self,
-        items: &ItemMap,
-        component_type: &ComponentType,
-    ) -> Option<ItemId<Type>> {
-        for &scope_id in self.0.iter().rev() {
-            match component_type {
-                ComponentType::Item(id) => {
-                    if let Some(id) = get_type_id(items, scope_id, id.as_path()) {
-                        return Some(id);
-                    }
-                }
-                ComponentType::Contained {
-                    type_,
-                    element_type,
-                } => {
-                    if let Some(id) = get_type_id(items, scope_id, element_type.as_path()) {
-                        return Some(match type_ {
-                            ambient_package::ContainerType::Vec => items.get_vec_id(id),
-                            ambient_package::ContainerType::Option => items.get_option_id(id),
-                        });
-                    }
-                }
-            }
-        }
-        None
-    }
-
-    pub(crate) fn get_attribute_id<'a>(
-        &self,
-        items: &ItemMap,
-        path: ItemPath<'a>,
-    ) -> Result<ItemId<Attribute>, ContextGetError<'a>> {
-        for &scope_id in self.0.iter().rev() {
-            if let Some(id) = get_attribute_id(items, scope_id, path) {
-                return Ok(id);
-            }
-        }
-        Err(ContextGetError::NotFound {
-            path,
-            type_: ItemType::Attribute,
-        })
-    }
-
-    pub(crate) fn get_concept_id<'a>(
-        &self,
-        items: &ItemMap,
-        path: ItemPath<'a>,
-    ) -> Result<ItemId<Concept>, ContextGetError<'a>> {
-        for &scope_id in self.0.iter().rev() {
-            if let Some(id) = get_concept_id(items, scope_id, path) {
-                return Ok(id);
-            }
-        }
-        Err(ContextGetError::NotFound {
-            path,
-            type_: ItemType::Concept,
-        })
-    }
-
-    pub(crate) fn get_component_id<'a>(
-        &self,
-        items: &ItemMap,
-        path: ItemPath<'a>,
-    ) -> Result<ItemId<Component>, ContextGetError<'a>> {
-        for &scope_id in self.0.iter().rev() {
-            if let Some(id) = get_component_id(items, scope_id, path) {
-                return Ok(id);
-            }
-        }
-        Err(ContextGetError::NotFound {
-            path,
-            type_: ItemType::Component,
-        })
-    }
-}
-
-fn get_type_id(
-    items: &ItemMap,
-    self_scope_id: ItemId<Scope>,
-    path: ItemPath,
-) -> Option<ItemId<Type>> {
-    let (scope, item) = path.scope_and_item();
-    items
-        .get_scope(self_scope_id, scope)
-        .ok()?
-        .types
-        .get(item.as_pascal().ok()?)
-        .copied()
-}
-
-fn get_attribute_id(
-    items: &ItemMap,
-    self_scope_id: ItemId<Scope>,
-    path: ItemPath,
-) -> Option<ItemId<Attribute>> {
-    let (scope, item) = path.scope_and_item();
-    items
-        .get_scope(self_scope_id, scope)
-        .ok()?
-        .attributes
-        .get(item.as_pascal().ok()?)
-        .copied()
-}
-
-fn get_concept_id(
-    items: &ItemMap,
-    self_scope_id: ItemId<Scope>,
-    path: ItemPath,
-) -> Option<ItemId<Concept>> {
-    let (scope, item) = path.scope_and_item();
-    items
-        .get_scope(self_scope_id, scope)
-        .ok()?
-        .concepts
-        .get(item.as_pascal().ok()?)
-        .copied()
-}
-
-fn get_component_id(
-    items: &ItemMap,
-    self_scope_id: ItemId<Scope>,
-    path: ItemPath,
-) -> Option<ItemId<Component>> {
-    let (scope, item) = path.scope_and_item();
-    items
-        .get_scope(self_scope_id, scope)
-        .ok()?
-        .components
-        .get(item.as_snake().ok()?)
-        .copied()
 }

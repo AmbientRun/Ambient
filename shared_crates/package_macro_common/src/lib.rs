@@ -27,7 +27,7 @@ pub async fn generate_code(
         None
     };
 
-    semantic.resolve()?;
+    semantic.resolve_all()?;
 
     let items = &semantic.items;
     let root_scope = &*semantic.root_scope();

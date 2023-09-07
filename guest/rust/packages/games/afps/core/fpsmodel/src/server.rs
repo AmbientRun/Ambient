@@ -55,7 +55,7 @@ pub async fn main() {
                     .spawn();
 
                 let head = Entity::new()
-                    .with_merge(make_transformable())
+                    .with_merge(make_Transformable())
                     .with(local_to_parent(), Default::default())
                     .with(parent(), id)
                     .with(translation(), Vec3::Z * 2.)
