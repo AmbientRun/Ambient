@@ -13,6 +13,7 @@ use super::{
     download_image,
     out_asset::{asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview},
 };
+use ambient_ecs::Entity;
 
 pub mod quixel;
 pub mod regular;
@@ -103,6 +104,7 @@ async fn apply(
     );
     let world = model_crate.prefab_world_mut();
     let obj = world.resource(children())[0];
+    let prefab_components: Entity = serde_json::from_str(&pipeline.prefab_components).unwrap();
     world
         .add_components(obj, pipeline.prefab_components.clone())
         .unwrap();
