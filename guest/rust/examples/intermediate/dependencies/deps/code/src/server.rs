@@ -3,7 +3,7 @@ use ambient_api::{
         prefab::components::prefab_from_url,
         transform::{
             components::{rotation, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -20,7 +20,7 @@ use packages::{
 pub fn main() {
     Spawn::subscribe(|_, msg| {
         Entity::new()
-            .with_merge(make_transformable())
+            .with_merge(make_Transformable())
             .with(spawned_by_us(), ())
             .with(prefab_from_url(), assets::url("Teapot.glb"))
             .with(spin_direction(), msg.spin_direction)

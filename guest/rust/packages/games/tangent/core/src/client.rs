@@ -3,7 +3,7 @@ use ambient_api::{
         app::components::{main_scene, name},
         camera::{
             components::{aspect_ratio_from_window, fog, fovy},
-            concepts::make_perspective_infinite_reverse_camera,
+            concepts::make_PerspectiveInfiniteReverseCamera,
         },
         ecs::components::{children, parent},
         messages::Frame,
@@ -16,7 +16,7 @@ use ambient_api::{
                 local_to_parent, local_to_world, lookat_target, mesh_to_local, mesh_to_world,
                 rotation, scale, translation,
             },
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -33,7 +33,7 @@ const RENDER_DEBUG: bool = false;
 #[main]
 pub fn main() {
     let camera_id = Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
+        .with_merge(make_PerspectiveInfiniteReverseCamera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with(main_scene(), ())
         .with(fog(), ())
@@ -44,7 +44,7 @@ pub fn main() {
     spawn_query(vehicle()).bind(move |vehicles| {
         for (id, _) in vehicles {
             let hud_id = Entity::new()
-                .with_merge(make_transformable())
+                .with_merge(make_Transformable())
                 .with(local_to_world(), Default::default())
                 .with(local_to_parent(), Default::default())
                 .with(mesh_to_local(), Default::default())

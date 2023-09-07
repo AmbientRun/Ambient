@@ -4,14 +4,13 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
         },
         prefab::components::prefab_from_url,
         rendering::components::{cast_shadows, light_ambient, light_diffuse, sun},
         transform::{
             components::{lookat_target, rotation, scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     entity::set_component,
@@ -24,7 +23,7 @@ use packages::this::{assets, components::instance_index};
 #[main]
 pub async fn main() {
     Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
+        .with_merge(make_PerspectiveInfiniteReverseCamera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with(main_scene(), ())
         .with(translation(), Vec3::ONE * 5.)
@@ -49,7 +48,7 @@ pub async fn main() {
                 };
 
                 Entity::new()
-                    .with_merge(make_transformable())
+                    .with_merge(make_Transformable())
                     .with(translation(), (vec3(x, y, z) - 0.5) * 7.0)
                     .with(instance_index(), uvec3(i, j, k))
                     .with(scale(), Vec3::ONE * 0.2)
@@ -61,7 +60,7 @@ pub async fn main() {
     }
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-1.))
         .with(main_scene(), ())

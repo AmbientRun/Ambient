@@ -2,8 +2,7 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
         },
         primitives::components::{cube, quad},
         rendering::components::{color, decal_from_url, transparency_group},
@@ -21,7 +20,7 @@ use core::f32::consts::PI;
 pub fn main() {
     // Camera.
     Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
+        .with_merge(make_PerspectiveInfiniteReverseCamera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with(translation(), vec3(1.0, 1.0, 2.0))
         .with(lookat_target(), vec3(0.0, 0.0, 0.0))

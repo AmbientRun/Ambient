@@ -5,7 +5,7 @@ use ambient_api::{
         app::components::{main_scene, name},
         camera::{
             components::{active_camera, aspect_ratio_from_window},
-            concepts::make_perspective_infinite_reverse_camera,
+            concepts::make_PerspectiveInfiniteReverseCamera,
         },
         physics::components::dynamic,
         player::components::user_id,
@@ -58,7 +58,7 @@ pub fn main() {
                 .unwrap_or_else(|| vec2(0.0, PI / 2.));
 
             let camera_id = Entity::new()
-                .with_merge(make_perspective_infinite_reverse_camera())
+                .with_merge(make_PerspectiveInfiniteReverseCamera())
                 .with(aspect_ratio_from_window(), EntityId::resources())
                 .with(main_scene(), ())
                 .with(user_id(), player_user_id)

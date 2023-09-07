@@ -2,23 +2,22 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
         },
         ecs::components::{children, parent},
         physics::{
             components::{plane_collider, sphere_collider},
-            concepts::make_character_controller,
+            concepts::make_CharacterController,
         },
         player::components::{is_player, user_id},
         primitives::{
             components::{cube, quad},
-            concepts::make_sphere,
+            concepts::make_Sphere,
         },
         rendering::components::color,
         transform::{
             components::{local_to_parent, rotation, scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -33,7 +32,7 @@ use std::f32::consts::{PI, TAU};
 #[main]
 pub fn main() {
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(1., 0., 0., 1.))
@@ -41,8 +40,8 @@ pub fn main() {
         .spawn();
 
     let ball = Entity::new()
-        .with_merge(make_transformable())
-        .with_merge(make_sphere())
+        .with_merge(make_Transformable())
+        .with_merge(make_Sphere())
         .with(sphere_collider(), 0.5)
         .with(translation(), vec3(5., 5., 1.))
         .spawn();
@@ -50,7 +49,7 @@ pub fn main() {
     spawn_query((is_player(), user_id())).bind(move |players| {
         for (id, (_, uid)) in players {
             let head = Entity::new()
-                .with_merge(make_perspective_infinite_reverse_camera())
+                .with_merge(make_PerspectiveInfiniteReverseCamera())
                 .with(aspect_ratio_from_window(), EntityId::resources())
                 .with(main_scene(), ())
                 .with(user_id(), uid)
@@ -62,8 +61,8 @@ pub fn main() {
             entity::add_components(
                 id,
                 Entity::new()
-                    .with_merge(make_transformable())
-                    .with_merge(make_character_controller())
+                    .with_merge(make_Transformable())
+                    .with_merge(make_CharacterController())
                     .with(cube(), ())
                     .with(player_movement_direction(), Vec2::default())
                     .with(color(), Vec4::ONE)

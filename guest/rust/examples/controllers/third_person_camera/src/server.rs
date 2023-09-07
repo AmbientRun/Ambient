@@ -3,17 +3,17 @@ use ambient_api::{
         app::components::main_scene,
         physics::{
             components::{plane_collider, sphere_collider},
-            concepts::make_character_controller,
+            concepts::make_CharacterController,
         },
         player::components::is_player,
         primitives::{
             components::{cube, quad},
-            concepts::make_sphere,
+            concepts::make_Sphere,
         },
         rendering::components::{color, fog_density, light_diffuse, sky, sun},
         transform::{
             components::{rotation, scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -28,7 +28,7 @@ use packages::this::{
 #[main]
 pub fn main() {
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 10.0)
         .with(color(), vec4(1.0, 0.0, 0.0, 1.0))
@@ -36,15 +36,15 @@ pub fn main() {
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
-        .with_merge(make_sphere())
+        .with_merge(make_Transformable())
+        .with_merge(make_Sphere())
         .with(color(), vec4(0.5, 0.0, 1.0, 1.0))
         .with(sphere_collider(), 0.5)
         .with(translation(), vec3(5.0, 5.0, 1.0))
         .spawn();
 
     // Spawn a sun
-    make_transformable()
+    make_Transformable()
         .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-1.0))
         .with(light_diffuse(), Vec3::ONE)
@@ -53,15 +53,15 @@ pub fn main() {
         .spawn();
 
     // And an atmosphere to go with id
-    make_transformable().with(sky(), ()).spawn();
+    make_Transformable().with(sky(), ()).spawn();
 
     spawn_query(is_player()).bind(move |players| {
         for (id, _) in players {
             entity::add_components(
                 id,
                 Entity::new()
-                    .with_merge(make_transformable())
-                    .with_merge(make_character_controller())
+                    .with_merge(make_Transformable())
+                    .with_merge(make_CharacterController())
                     .with(player_movement_direction(), Vec2::ZERO)
                     .with(player_mouse_delta_x(), 0.0)
                     .with(player_scroll(), 0.0)

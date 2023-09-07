@@ -3,7 +3,7 @@ use ambient_api::{
         app::components::main_scene,
         camera::{
             components::{aspect_ratio_from_window, fog},
-            concepts::make_perspective_infinite_reverse_camera,
+            concepts::make_PerspectiveInfiniteReverseCamera,
         },
         primitives::components::{cube, quad},
         rendering::components::{
@@ -12,7 +12,7 @@ use ambient_api::{
         },
         transform::{
             components::{lookat_target, rotation, scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -21,7 +21,7 @@ use ambient_api::{
 #[main]
 fn main() {
     Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
+        .with_merge(make_PerspectiveInfiniteReverseCamera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with(main_scene(), ())
         .with(fog(), ())
@@ -30,7 +30,7 @@ fn main() {
         .spawn();
 
     let sun = Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-1.))
         .with(main_scene(), ())
@@ -41,12 +41,12 @@ fn main() {
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(sky(), ())
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 1000.)
         .with(color(), vec4(1., 0., 0., 1.))
@@ -54,7 +54,7 @@ fn main() {
 
     for i in 0..10 {
         Entity::new()
-            .with_merge(make_transformable())
+            .with_merge(make_Transformable())
             .with(cube(), ())
             .with(translation(), vec3(0., 1. * (2f32).powi(i), 1.))
             .with(scale(), Vec3::ONE * 2.)

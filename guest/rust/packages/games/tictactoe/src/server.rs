@@ -2,15 +2,14 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
         },
         player::components::is_player,
         primitives::components::cube,
         rendering::components::color,
         transform::{
             components::{lookat_target, scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -27,7 +26,7 @@ use packages::this::{
 #[main]
 pub fn main() {
     Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
+        .with_merge(make_PerspectiveInfiniteReverseCamera())
         .with(aspect_ratio_from_window(), entity::resources())
         .with(main_scene(), ())
         .with(translation(), vec3(SIZE as f32, SIZE as f32, SIZE as f32))
@@ -42,7 +41,7 @@ pub fn main() {
         for y in 0..SIZE {
             for x in 0..SIZE {
                 let id = Entity::new()
-                    .with_merge(make_transformable())
+                    .with_merge(make_Transformable())
                     .with(cube(), ())
                     .with(translation(), vec3(x as f32, y as f32, 0.))
                     .with(scale(), vec3(0.6, 0.6, 0.6))

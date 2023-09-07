@@ -5,7 +5,7 @@ use ambient_api::{
             components::{
                 orthographic_bottom, orthographic_left, orthographic_right, orthographic_top,
             },
-            concepts::make_orthographic_camera,
+            concepts::make_OrthographicCamera,
         },
         messages::Frame,
     },
@@ -35,7 +35,7 @@ async fn main() {
         bgm_player.play(url_from_server.clone());
     });
 
-    let camera_id = make_orthographic_camera().with(main_scene(), ()).spawn();
+    let camera_id = make_OrthographicCamera().with(main_scene(), ()).spawn();
 
     Frame::subscribe(move |_| {
         let input = input::get();

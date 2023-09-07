@@ -5,12 +5,12 @@ use ambient_api::{
         // prefab::components::prefab_from_url,
         primitives::{
             components::{cube, quad},
-            concepts::make_sphere,
+            concepts::make_Sphere,
         },
         rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun},
         transform::{
             components::{rotation, scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -26,7 +26,7 @@ pub async fn main() {
         .with(scale(), Vec3::ONE * 1000.)
         .spawn();
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(sky(), ())
         .spawn();
     // Entity::new()
@@ -37,7 +37,7 @@ pub async fn main() {
     //     .with(dynamic(), true)
     //     .spawn();
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(sun(), Default::default())
         .with(rotation(), Quat::from_rotation_y(-0.6))
         .with(main_scene(), ())
@@ -48,7 +48,7 @@ pub async fn main() {
     for _ in 0..40 {
         let pos = random::<Vec2>() * 100. - 50.;
         Entity::new()
-            .with_merge(make_sphere())
+            .with_merge(make_Sphere())
             .with(cast_shadows(), ())
             .with(cube(), ())
             .with(translation(), vec3(pos.x, pos.y, 0.0))
@@ -70,7 +70,7 @@ pub async fn main() {
     for _ in 0..60 {
         let pos = random::<Vec2>() * 100. - 50.;
         Entity::new()
-            .with_merge(make_sphere())
+            .with_merge(make_Sphere())
             .with(cast_shadows(), ())
             .with(cube(), ())
             .with(translation(), vec3(pos.x, pos.y, 0.0))

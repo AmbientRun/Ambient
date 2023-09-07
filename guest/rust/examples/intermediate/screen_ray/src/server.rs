@@ -2,7 +2,7 @@ use ambient_api::{
     core::{
         physics::components::plane_collider,
         primitives::components::{cube, quad},
-        transform::{components::translation, concepts::make_transformable},
+        transform::{components::translation, concepts::make_Transformable},
     },
     prelude::*,
 };
@@ -11,13 +11,13 @@ use packages::this::messages::{Input, WorldPosition};
 #[main]
 pub fn main() {
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(quad(), ())
         .with(plane_collider(), ())
         .spawn();
 
     let cube_id = Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(cube(), ())
         .spawn();
 

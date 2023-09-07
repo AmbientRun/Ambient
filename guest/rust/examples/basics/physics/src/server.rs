@@ -2,8 +2,7 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
         },
         messages::{Collision, Frame},
         physics::components::{
@@ -15,7 +14,7 @@ use ambient_api::{
         rendering::components::{cast_shadows, color},
         transform::{
             components::{lookat_target, rotation, scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -26,7 +25,7 @@ use packages::this::{assets, messages::Bonk};
 #[main]
 pub async fn main() {
     let camera = Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
+        .with_merge(make_PerspectiveInfiniteReverseCamera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with(main_scene(), ())
         .with(translation(), vec3(5., 5., 4.))
@@ -34,7 +33,7 @@ pub async fn main() {
         .spawn();
 
     let cube = Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(cube(), ())
         .with(visualize_collider(), ())
         .with(physics_controlled(), ())
@@ -50,13 +49,17 @@ pub async fn main() {
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(prefab_from_url(), assets::url("shape.glb"))
         .spawn();
 
     Collision::subscribe(move |msg| {
         println!("Bonk! {:?} collided", msg.ids);
-        Bonk {emitter: cube, listener: camera}.send_client_broadcast_unreliable();
+        Bonk {
+            emitter: cube,
+            listener: camera,
+        }
+        .send_client_broadcast_unreliable();
     });
 
     Frame::subscribe(move |_| {

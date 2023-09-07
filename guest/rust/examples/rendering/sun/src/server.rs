@@ -2,18 +2,17 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
         },
         messages::Frame,
         primitives::{
             components::{quad, sphere_radius},
-            concepts::make_sphere,
+            concepts::make_Sphere,
         },
         rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun, water},
         transform::{
             components::{lookat_target, rotation, scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -22,7 +21,7 @@ use ambient_api::{
 #[main]
 pub fn main() {
     Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
+        .with_merge(make_PerspectiveInfiniteReverseCamera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with(main_scene(), ())
         .with(translation(), vec3(5., 5., 2.))
@@ -30,7 +29,7 @@ pub fn main() {
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 20.)
         .with(color(), vec4(1., 0., 0., 1.))
@@ -38,18 +37,18 @@ pub fn main() {
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(water(), ())
         .with(scale(), Vec3::ONE * 2000.)
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(sky(), ())
         .spawn();
 
     Entity::new()
-        .with_merge(make_sphere())
+        .with_merge(make_Sphere())
         .with(cast_shadows(), ())
         .with(sphere_radius(), 1.)
         .with(translation(), vec3(0., 0., 1.))
@@ -57,7 +56,7 @@ pub fn main() {
         .spawn();
 
     let sun = Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(sun(), 0.0)
         .with(rotation(), Quat::IDENTITY)
         .with(main_scene(), ())

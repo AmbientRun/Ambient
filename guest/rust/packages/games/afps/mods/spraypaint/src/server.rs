@@ -1,6 +1,6 @@
 // use ambient_api::{
 //     components::core::{primitives::cube, transform::translation},
-//     concepts::make_transformable,
+//     concepts::make_Transformable,
 //     physics,
 //     prelude::*,
 // };
@@ -12,7 +12,7 @@ use ambient_api::{
         rendering::components::decal_from_url,
         transform::{
             components::{scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -47,13 +47,13 @@ pub fn main() {
             let decal_url = assets::url("pipeline.toml/0/mat.json");
 
             Entity::new()
-                .with_merge(make_transformable())
+                .with_merge(make_Transformable())
                 .with(translation(), hit.position)
                 .with(decal_from_url(), decal_url)
                 .spawn();
 
             Entity::new()
-                .with_merge(make_transformable())
+                .with_merge(make_Transformable())
                 .with(prefab_from_url(), assets::url("claymore.glb"))
                 .with(claymore(), msg.source)
                 .with(translation(), hit.position + vec3(0., 0., 0.15))

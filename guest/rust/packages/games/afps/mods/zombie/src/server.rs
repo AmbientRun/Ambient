@@ -4,12 +4,12 @@ use ambient_api::{
     core::{
         app::components::name,
         ecs::components::{children, parent},
-        physics::concepts::make_character_controller,
+        physics::concepts::make_CharacterController,
         player::components::is_player,
         prefab::components::prefab_from_url,
         transform::{
             components::{local_to_parent, local_to_world, rotation, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -40,7 +40,7 @@ pub async fn main() {
         for character_url in chars {
             let zombie = Entity::new().spawn();
 
-            let model = make_transformable()
+            let model = make_Transformable()
                 .with(prefab_from_url(), character_url)
                 .with(parent(), zombie)
                 .with(local_to_parent(), Default::default())
@@ -49,8 +49,8 @@ pub async fn main() {
 
             entity::add_components(
                 zombie,
-                make_transformable()
-                    .with_merge(make_character_controller())
+                make_Transformable()
+                    .with_merge(make_CharacterController())
                     .with(
                         translation(),
                         vec3(-8.0 * random::<f32>(), -8.0 * random::<f32>(), 1.3),

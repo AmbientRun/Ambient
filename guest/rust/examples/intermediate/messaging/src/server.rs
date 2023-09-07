@@ -9,7 +9,7 @@ use ambient_api::{
         rendering::components::color,
         transform::{
             components::{scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -58,7 +58,7 @@ pub fn main() {
         .send_client_broadcast_reliable();
 
         Entity::new()
-            .with_merge(make_transformable())
+            .with_merge(make_Transformable())
             .with(cube(), ())
             .with(
                 translation(),

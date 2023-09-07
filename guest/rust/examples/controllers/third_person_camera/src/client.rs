@@ -2,8 +2,7 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
         },
         messages::Frame,
         player::components::{is_player, local_user_id, user_id},
@@ -29,7 +28,7 @@ fn main() {
             if user == local_user_id {
                 eprintln!("Attaching camera to player {}", user);
                 let camera = Entity::new()
-                    .with_merge(make_perspective_infinite_reverse_camera())
+                    .with_merge(make_PerspectiveInfiniteReverseCamera())
                     .with(aspect_ratio_from_window(), EntityId::resources())
                     .with(main_scene(), ())
                     .with(user_id(), user)

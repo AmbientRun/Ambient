@@ -4,17 +4,16 @@ use ambient_api::{
         animation::components::apply_animation_player,
         app::components::{main_scene, name},
         camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
         },
         layout::components::space_between_items,
         model::components::model_loaded,
         prefab::components::prefab_from_url,
-        primitives::{components::quad, concepts::make_sphere},
+        primitives::{components::quad, concepts::make_Sphere},
         rendering::components::color,
         transform::{
             components::{local_to_parent, lookat_target, reset_scale, scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -24,7 +23,7 @@ use packages::this::assets;
 #[main]
 pub async fn main() {
     Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
+        .with_merge(make_PerspectiveInfiniteReverseCamera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with(main_scene(), ())
         .with(translation(), vec3(2., 2., 3.0))
@@ -32,7 +31,7 @@ pub async fn main() {
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(0.5, 0.5, 0.5, 1.))
@@ -40,7 +39,7 @@ pub async fn main() {
         .spawn();
 
     let unit_id = Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(prefab_from_url(), assets::url("Peasant Man.fbx"))
         .with(name(), "Peasant".to_string())
         .spawn();
@@ -61,8 +60,8 @@ pub async fn main() {
     // This demonstrates how to attach an entity to a bone
     let left_foot = animation::get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
     let ball = Entity::new()
-        .with_merge(make_transformable())
-        .with_merge(make_sphere())
+        .with_merge(make_Transformable())
+        .with_merge(make_Sphere())
         .with(scale(), vec3(0.3, 0.3, 0.3))
         .with(color(), vec4(0.0, 1.0, 0.0, 1.0))
         .with(local_to_parent(), Default::default())

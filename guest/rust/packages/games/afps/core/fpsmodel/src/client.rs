@@ -8,7 +8,7 @@ use ambient_api::{
         rendering::components::color, //pbr_material_from_url
         transform::{
             components::{local_to_parent, reset_scale, rotation, scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -35,7 +35,7 @@ pub fn main() {
                 }
                 let hand = hand.unwrap();
                 let gun = Entity::new()
-                    .with_merge(make_transformable())
+                    .with_merge(make_Transformable())
                     .with(prefab_from_url(), assets::url("red.glb"))
                     .with(translation(), vec3(-0.06, 0.2, 0.0))
                     .with(

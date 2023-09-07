@@ -3,15 +3,15 @@ use ambient_api::{
         app::components::main_scene,
         camera::{
             components::{aspect_ratio_from_window, fovy},
-            concepts::make_perspective_infinite_reverse_camera,
+            concepts::make_PerspectiveInfiniteReverseCamera,
         },
         ecs::components::{children, parent},
-        physics::concepts::make_character_controller,
+        physics::concepts::make_CharacterController,
         player::components::{is_player, user_id},
         prefab::components::prefab_from_url,
         transform::{
             components::{local_to_parent, local_to_world, rotation, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     entity::set_component,
@@ -36,13 +36,16 @@ pub async fn main() {
     spawn_query((is_player(), user_id())).bind(move |players| {
         for (id, (_, uid)) in players {
             run_async(async move {
-                if entity::wait_for_component(id, player_name()).await.is_none() {
+                if entity::wait_for_component(id, player_name())
+                    .await
+                    .is_none()
+                {
                     // entity deleted
                     return;
                 }
 
                 let cam = Entity::new()
-                    .with_merge(make_perspective_infinite_reverse_camera())
+                    .with_merge(make_PerspectiveInfiniteReverseCamera())
                     .with(aspect_ratio_from_window(), EntityId::resources())
                     .with(main_scene(), ())
                     .with(translation(), -Vec3::Z * 4.)
@@ -65,7 +68,7 @@ pub async fn main() {
                 set_component(cam, parent(), head);
 
                 let model = Entity::new()
-                    .with_merge(make_transformable())
+                    .with_merge(make_Transformable())
                     .with(prefab_from_url(), assets::url("Y Bot.fbx"))
                     .with(
                         rotation(),
@@ -77,8 +80,8 @@ pub async fn main() {
                 entity::add_components(
                     id,
                     Entity::new()
-                        .with_merge(make_transformable())
-                        .with_merge(make_character_controller())
+                        .with_merge(make_Transformable())
+                        .with_merge(make_CharacterController())
                         .with(basic_character_animations(), model)
                         // adjust the initial position
                         .with(local_to_world(), Default::default())

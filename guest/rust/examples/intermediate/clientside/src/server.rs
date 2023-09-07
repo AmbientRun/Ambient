@@ -2,7 +2,7 @@ use ambient_api::{
     core::{
         primitives::components::cube,
         rendering::components::color,
-        transform::{components::translation, concepts::make_transformable},
+        transform::{components::translation, concepts::make_Transformable},
     },
     prelude::*,
 };
@@ -20,7 +20,7 @@ pub fn main() {
     for y in 0..2 * side_length + 1 {
         for x in 0..2 * side_length + 1 {
             Entity::new()
-                .with_merge(make_transformable())
+                .with_merge(make_Transformable())
                 .with(cube(), ())
                 .with(grid_position(), IVec2::new(x, y))
                 .with(color(), Vec4::ONE)

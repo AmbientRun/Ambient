@@ -3,18 +3,17 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
         },
         primitives::{
             components::{cube, quad, sphere_radius},
-            concepts::make_sphere,
+            concepts::make_Sphere,
         },
         procedurals::components::{procedural_material, procedural_mesh},
         rendering::components::{cast_shadows, color, light_diffuse, sun},
         transform::{
             components::{lookat_target, rotation, scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -35,7 +34,7 @@ const WAVE_FREQUENCY: f32 = 0.5 * TAU;
 
 fn make_camera() {
     Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
+        .with_merge(make_PerspectiveInfiniteReverseCamera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with(main_scene(), ())
         .with(translation(), vec3(0.0, 3.0, 4.0) * 2.0)
@@ -59,7 +58,7 @@ fn App(_hooks: &mut Hooks, sun_id: EntityId) -> Element {
 
 fn make_lighting() {
     let sun_id = Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(sun(), 0.0)
         .with(
             rotation(),
@@ -89,7 +88,7 @@ fn make_lighting() {
 
 fn make_simple_cube(t: Vec3, s: Vec3, c: Vec4) {
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(cube(), ())
         .with(translation(), t)
         .with(scale(), s)
@@ -100,8 +99,8 @@ fn make_simple_cube(t: Vec3, s: Vec3, c: Vec4) {
 
 fn make_simple_sphere(t: Vec3, r: f32, c: Vec4) {
     Entity::new()
-        .with_merge(make_transformable())
-        .with_merge(make_sphere())
+        .with_merge(make_Transformable())
+        .with_merge(make_Sphere())
         .with(translation(), t)
         .with(sphere_radius(), r)
         .with(color(), c)
@@ -122,7 +121,7 @@ fn make_coordinate_system() {
 
 fn make_ground() {
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(quad(), ())
         .with(color(), vec4(0.25, 1.0, 0.25, 1.0))
         .with(translation(), vec3(0.0, 0.0, -0.5))
@@ -257,7 +256,7 @@ fn make_procedural<BaseColorFn, NormalFn, MetallicRoughnessFn, SamplerFn>(
         transparent,
     });
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(procedural_mesh(), mesh)
         .with(procedural_material(), material)
         .with(translation(), world_translation)

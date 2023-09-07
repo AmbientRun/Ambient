@@ -2,8 +2,7 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
         },
         rendering::components::color,
         text::components::text,
@@ -11,7 +10,7 @@ use ambient_api::{
             components::{
                 local_to_world, lookat_target, mesh_to_local, mesh_to_world, scale, translation,
             },
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -20,7 +19,7 @@ use ambient_api::{
 #[main]
 pub fn main() {
     Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
+        .with_merge(make_PerspectiveInfiniteReverseCamera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with(main_scene(), ())
         .with(translation(), vec3(5., 5., 4.))
@@ -28,7 +27,7 @@ pub fn main() {
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with_merge(make_Transformable())
         .with(text(), "Hello world".to_string())
         .with(color(), vec4(1., 1., 1., 1.))
         .with(translation(), vec3(0., 0., 0.01))

@@ -3,7 +3,7 @@ use ambient_api::{
         app::components::main_scene,
         camera::{
             components::{active_camera, aspect_ratio_from_window},
-            concepts::make_perspective_infinite_reverse_camera,
+            concepts::make_PerspectiveInfiniteReverseCamera,
         },
         ecs::components::children,
         messages::Collision,
@@ -21,7 +21,7 @@ use ambient_api::{
                 inv_local_to_world, local_to_parent, local_to_world, mesh_to_local, mesh_to_world,
                 rotation, scale, spherical_billboard, translation,
             },
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     entity::resources,
@@ -34,7 +34,7 @@ use packages::this::{
         player_indicator, player_indicator_arrow, player_restore_point, player_shoot_requested,
         player_stroke_count, player_text, player_text_container,
     },
-    concepts::{make_player_camera_state, make_player_state},
+    concepts::{make_PlayerCameraState, make_PlayerState},
     messages::{Bonk, Hit, Input},
 };
 use utils::CameraState;
@@ -44,12 +44,12 @@ mod utils;
 const BALL_RADIUS: f32 = 0.34;
 
 fn create_environment() {
-    make_transformable()
+    make_Transformable()
         .with(water(), ())
         .with(scale(), Vec3::ONE * 2000.)
         .spawn();
 
-    make_transformable()
+    make_Transformable()
         .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-45_f32.to_radians()))
         .with(light_diffuse(), Vec3::ONE)
@@ -57,14 +57,14 @@ fn create_environment() {
         .with(main_scene(), ())
         .spawn();
 
-    make_transformable().with(sky(), ()).spawn();
+    make_Transformable().with(sky(), ()).spawn();
 
-    make_transformable()
+    make_Transformable()
         .with(prefab_from_url(), assets::url("level.glb"))
         .with(translation(), Vec3::Z * -0.25)
         .spawn();
 
-    make_transformable()
+    make_Transformable()
         .with(model_from_url(), assets::url("fan.glb"))
         .with(collider_from_url(), assets::url("fan.glb"))
         .with(kinematic(), ())
@@ -76,7 +76,7 @@ fn create_environment() {
 }
 
 fn make_golf_ball() -> Entity {
-    make_transformable()
+    make_Transformable()
         .with(is_ball(), ())
         .with(physics_controlled(), ())
         .with(dynamic(), true)
@@ -119,12 +119,12 @@ pub fn main() {
                 // 80 + 22.5; pseudo random color, with 16 being unique
                 entity::mutate_component(resources(), next_player_hue(), |h| *h += 102.5);
 
-                entity::add_components(player, make_player_state());
+                entity::add_components(player, make_PlayerState());
 
-                let camera_state = make_player_camera_state().spawn();
+                let camera_state = make_PlayerCameraState().spawn();
                 entity::add_component(player, player_camera_state(), camera_state);
 
-                make_perspective_infinite_reverse_camera()
+                make_PerspectiveInfiniteReverseCamera()
                     .with(aspect_ratio_from_window(), EntityId::resources())
                     .with(user_id(), player_user_id.clone())
                     .with(player_camera_state(), camera_state)
@@ -148,7 +148,7 @@ pub fn main() {
                 entity::add_component(
                     player,
                     player_text_container(),
-                    make_transformable()
+                    make_Transformable()
                         .with(main_scene(), ())
                         .with(local_to_world(), Default::default())
                         .with(spherical_billboard(), ())
@@ -170,7 +170,7 @@ pub fn main() {
                 entity::add_component(
                     player,
                     player_indicator(),
-                    make_transformable()
+                    make_Transformable()
                         .with(color(), next_color)
                         .with(user_id(), player_user_id.clone())
                         .with(model_from_url(), assets::url("indicator.glb"))
@@ -180,7 +180,7 @@ pub fn main() {
                 entity::add_component(
                     player,
                     player_indicator_arrow(),
-                    make_transformable()
+                    make_Transformable()
                         .with(color(), next_color)
                         .with(user_id(), player_user_id.clone())
                         .with(model_from_url(), assets::url("indicator_arrow.glb"))
@@ -191,7 +191,7 @@ pub fn main() {
             }
         });
 
-    let flag = make_transformable()
+    let flag = make_Transformable()
         .with(model_from_url(), assets::url("flag.glb"))
         .with(collider_from_url(), assets::url("flag.glb"))
         .with(dynamic(), true)

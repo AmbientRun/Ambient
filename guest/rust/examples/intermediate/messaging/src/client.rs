@@ -7,14 +7,13 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
         },
         primitives::components::cube,
         rendering::components::color,
         transform::{
             components::{lookat_target, scale, translation},
-            concepts::make_transformable,
+            concepts::make_Transformable,
         },
     },
     prelude::*,
@@ -35,7 +34,7 @@ pub fn main() {
 
     // 0
     Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
+        .with_merge(make_PerspectiveInfiniteReverseCamera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with(main_scene(), ())
         .with(translation(), Vec3::ONE * 5.)
@@ -52,7 +51,7 @@ pub fn main() {
 
         let source_reliable = data.source_reliable;
         Entity::new()
-            .with_merge(make_transformable())
+            .with_merge(make_Transformable())
             .with(cube(), ())
             .with(
                 translation(),
