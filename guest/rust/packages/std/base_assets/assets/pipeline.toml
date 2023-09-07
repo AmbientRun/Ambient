@@ -4,4 +4,4 @@ sources = ["*"]
 
 [[pipelines.transforms]]
 type = "RotateZ"
-deg = 90.0
+deg = -90.0

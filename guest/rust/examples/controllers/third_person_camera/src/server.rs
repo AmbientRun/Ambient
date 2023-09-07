@@ -2,15 +2,9 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         model::components::model_from_url,
-        physics::{
-            components::{plane_collider, sphere_collider},
-            concepts::make_character_controller,
-        },
+        physics::components::{plane_collider, sphere_collider},
         player::components::is_player,
-        primitives::{
-            components::{cube, quad},
-            concepts::make_sphere,
-        },
+        primitives::{components::quad, concepts::make_sphere},
         rendering::components::{color, fog_density, light_diffuse, sky, sun},
         transform::{
             components::{rotation, scale, translation},
@@ -19,7 +13,10 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::{base_assets, fps_controller::components::use_fps_controller};
+use packages::{
+    base_assets, basic_character_animation::components::basic_character_animations,
+    fps_controller::components::use_fps_controller,
+};
 
 #[main]
 pub fn main() {
@@ -57,23 +54,9 @@ pub fn main() {
                 id,
                 Entity::new()
                     .with(use_fps_controller(), ())
-                    .with(model_from_url(), base_assets::assets::url("Y Bot.fbx")),
+                    .with(model_from_url(), base_assets::assets::url("Y Bot.fbx"))
+                    .with(basic_character_animations(), id),
             );
         }
     });
-
-    // query((
-    //     is_player(),
-    //     player_movement_direction(),
-    //     player_mouse_delta_x(),
-    //     player_scroll(),
-    //     rotation(),
-    // ))
-    // .each_frame(move |players| {
-    //     for (player_id, (_, direction, mouse_delta_x, scroll, rot)) in players {
-    //         entity::add_component(player_id, camera_follow_distance(), {
-    //             ((scroll * 0.005) + 5.0).max(1.0)
-    //         });
-    //     }
-    // });
 }
