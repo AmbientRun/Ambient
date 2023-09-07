@@ -10,6 +10,11 @@ pub fn generate(
     type_printer: &TypePrinter,
     scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
+    let Some(guest_api_path) = context.guest_api_path() else {
+        // Concept generation is not supported on the host.
+        return Ok(quote! {});
+    };
+
     let concepts = scope
         .concepts
         .values()
@@ -31,28 +36,13 @@ pub fn generate(
         return Ok(quote! {});
     }
 
-    let inner = match context {
-        Context::Host => quote! {
-            use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, IVec2, IVec3, IVec4, Mat4, Quat};
-            use crate::{EntityId, Entity, Component};
-            #(#concepts)*
-        },
-
-        Context::GuestApi | Context::GuestUser => {
-            let api_path = context.guest_api_path().unwrap();
-            quote! {
-                use #api_path::prelude::*;
-                #(#concepts)*
-            }
-        }
-    };
-
     Ok(quote! {
         /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
         ///
         /// They do not have any runtime representation outside of the components that compose them.
         pub mod concepts {
-            #inner
+            use #guest_api_path::prelude::*;
+            #(#concepts)*
         }
     })
 }
