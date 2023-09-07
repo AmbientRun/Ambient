@@ -97,12 +97,12 @@ attributes = ["Debuggable", "Networked", "Store"]
 
 # Concepts
 
-[concepts.transformable]
+[concepts.Transformable]
 name = "Transformable"
 description = "Can be translated, rotated and scaled."
 
-[concepts.transformable.components]
-translation = [0.0, 0.0, 0.0]
-rotation = [0.0, 0.0, 0.0, 1.0]
-scale = [1.0, 1.0, 1.0]
-local_to_world = "Identity"
+[concepts.Transformable.components.required]
+translation = { suggested = [0.0, 0.0, 0.0] }
+rotation = { suggested = [0.0, 0.0, 0.0, 1.0] }
+scale = { suggested = [1.0, 1.0, 1.0] }
+local_to_world = { suggested = "Identity" }

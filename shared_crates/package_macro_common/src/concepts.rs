@@ -75,17 +75,26 @@ fn generate_make(
         .collect::<anyhow::Result<_>>()?;
 
     let components = concept
-        .components
+        .required_components
         .iter()
         .map(|(id, default)| {
             let path = context.get_path(items, None, id.as_resolved().unwrap())?;
-            let default = value_to_token_stream(items, default.as_resolved().unwrap())?;
+            let default = value_to_token_stream(
+                items,
+                default
+                    .suggested
+                    .as_ref()
+                    .expect("TEMP: suggested required")
+                    .as_resolved()
+                    .unwrap(),
+            )?;
             Ok(quote! { with(#path(), #default) })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
     Ok(quote! {
         #[allow(clippy::approx_constant)]
+        #[allow(non_snake_case)]
         #[doc = #make_comment]
         pub fn #make_ident() -> Entity {
             Entity::new()
@@ -117,7 +126,7 @@ fn generate_is(
         .collect::<anyhow::Result<_>>()?;
 
     let components = concept
-        .components
+        .required_components
         .iter()
         .map(|(id, _)| {
             let path = context.get_path(items, None, id.as_resolved().unwrap())?;
@@ -128,6 +137,7 @@ fn generate_is(
     Ok(match context {
         Context::Host => quote! {
             #[doc = #is_comment]
+            #[allow(non_snake_case)]
             pub fn #is_ident(world: &crate::World, id: EntityId) -> bool {
                 #(#extends(world, id) && )* world.has_components(id, &{
                     let mut set = crate::ComponentSet::new();
@@ -138,6 +148,7 @@ fn generate_is(
         },
         Context::GuestApi | Context::GuestUser => quote! {
             #[doc = #is_comment]
+            #[allow(non_snake_case)]
             pub fn #is_ident(id: EntityId) -> bool {
                 #(#extends(id) && )* entity::has_components(id, &[
                     #(&#components),*
@@ -164,7 +175,7 @@ fn generate_concept(
 
     // TODO: include extends in component list
     let components = concept
-        .components
+        .required_components
         .iter()
         .map(|(id, _)| {
             let path = context.get_path(items, None, id.as_resolved().unwrap())?;
@@ -173,7 +184,7 @@ fn generate_concept(
         .collect::<anyhow::Result<Vec<_>>>()?;
 
     let fn_ret = concept
-        .components
+        .required_components
         .iter()
         .map(|(id, _)| {
             let component = &*items.get(id.as_resolved().unwrap());
@@ -184,6 +195,7 @@ fn generate_concept(
     Ok(quote! {
         #[doc = #fn_comment]
         #[allow(clippy::type_complexity)]
+        #[allow(non_snake_case)]
         pub fn #fn_ident() -> (#(Component<#fn_ret>),*) {
            (#(#components),*)
         }
@@ -210,7 +222,7 @@ pub fn generate_component_list_doc_comment(
         use std::fmt::Write;
 
         let padding = " ".repeat(level * 2);
-        for (id, value) in &concept.components {
+        for (id, value) in &concept.required_components {
             let component = &*items.get(id.as_resolved().unwrap());
             let component_path = items.fully_qualified_display_path(component, None, None);
 
@@ -223,7 +235,12 @@ pub fn generate_component_list_doc_comment(
                         .unwrap()
                         .clone()
                 ),
-                value.as_resolved().unwrap()
+                value
+                    .suggested
+                    .as_ref()
+                    .expect("TEMP: suggested required")
+                    .as_resolved()
+                    .unwrap()
             )?;
         }
         for concept_id in &concept.extends {

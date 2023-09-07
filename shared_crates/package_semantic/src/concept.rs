@@ -1,4 +1,4 @@
-use ambient_package::ItemPathBuf;
+use ambient_package::{Identifier, ItemPathBuf};
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
@@ -7,6 +7,8 @@ use crate::{
     ResolvableValue, Resolve, StandardDefinitions,
 };
 
+type ComponentMap = IndexMap<ResolvableItemId<Component>, ConceptValue>;
+
 #[derive(Clone, PartialEq, Debug)]
 pub struct Concept {
     data: ItemData,
@@ -14,7 +16,8 @@ pub struct Concept {
     pub name: Option<String>,
     pub description: Option<String>,
     pub extends: Vec<ResolvableItemId<Concept>>,
-    pub components: IndexMap<ResolvableItemId<Component>, ResolvableValue>,
+    pub required_components: ComponentMap,
+    pub optional_components: ComponentMap,
 }
 impl Item for Concept {
     const TYPE: ItemType = ItemType::Concept;
@@ -70,36 +73,10 @@ impl Resolve for Concept {
         }
         self.extends = extends;
 
-        let mut components = IndexMap::new();
-        for (resolvable_component, resolvable_value) in &self.components {
-            let component_id = match resolvable_component {
-                ResolvableItemId::Unresolved(path) => context
-                    .get_component_id(items, path.as_path())
-                    .map_err(|e| e.into_owned())
-                    .with_context(|| {
-                        format!(
-                            "Failed to get component `{}` for concept `{}",
-                            path, self.data.id
-                        )
-                    })?,
-                ResolvableItemId::Resolved(id) => *id,
-            };
-            let component_type = {
-                let component = items.resolve(context, definitions, component_id)?;
-                component.type_.as_resolved().with_context(|| {
-                    format!(
-                        "Failed to get type for component `{}` for concept `{}`",
-                        component.data().id,
-                        self.data.id
-                    )
-                })?
-            };
-
-            let mut value = resolvable_value.clone();
-            value.resolve(items, component_type)?;
-            components.insert(ResolvableItemId::Resolved(component_id), value);
+        for components in [&mut self.required_components, &mut self.optional_components] {
+            *components =
+                resolve_components(&self.data.id, items, context, definitions, components)?;
         }
-        self.components = components;
 
         Ok(self)
     }
@@ -115,16 +92,84 @@ impl Concept {
                 .iter()
                 .map(|v| ResolvableItemId::Unresolved(v.clone()))
                 .collect(),
-            components: value
+            required_components: value
                 .components
+                .required
                 .iter()
                 .map(|(k, v)| {
                     (
                         ResolvableItemId::Unresolved(k.clone()),
-                        ResolvableValue::Unresolved(v.clone()),
+                        ConceptValue::from_package(v),
+                    )
+                })
+                .collect(),
+            optional_components: value
+                .components
+                .optional
+                .iter()
+                .map(|(k, v)| {
+                    (
+                        ResolvableItemId::Unresolved(k.clone()),
+                        ConceptValue::from_package(v),
                     )
                 })
                 .collect(),
         }
     }
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct ConceptValue {
+    pub description: Option<String>,
+    pub suggested: Option<ResolvableValue>,
+}
+impl ConceptValue {
+    pub(crate) fn from_package(value: &ambient_package::ConceptValue) -> Self {
+        ConceptValue {
+            description: value.description.clone(),
+            suggested: value.suggested.clone().map(ResolvableValue::Unresolved),
+        }
+    }
+}
+
+fn resolve_components(
+    concept_id: &Identifier,
+    items: &mut ItemMap,
+    context: &Context,
+    definitions: &StandardDefinitions,
+    unresolved_components: &ComponentMap,
+) -> anyhow::Result<ComponentMap> {
+    let mut components = IndexMap::new();
+    for (resolvable_component, resolvable_value) in unresolved_components {
+        let component_id = match resolvable_component {
+            ResolvableItemId::Unresolved(path) => context
+                .get_component_id(items, path.as_path())
+                .map_err(|e| e.into_owned())
+                .with_context(|| {
+                    format!(
+                        "Failed to get component `{}` for concept `{}",
+                        path, concept_id
+                    )
+                })?,
+            ResolvableItemId::Resolved(id) => *id,
+        };
+        let component_type = {
+            let component = items.resolve(context, definitions, component_id)?;
+            component.type_.as_resolved().with_context(|| {
+                format!(
+                    "Failed to get type for component `{}` for concept `{}`",
+                    component.data().id,
+                    concept_id
+                )
+            })?
+        };
+
+        let mut value = resolvable_value.clone();
+        if let Some(suggested) = value.suggested.as_mut() {
+            suggested.resolve_in_place(items, component_type)?;
+        }
+        components.insert(ResolvableItemId::Resolved(component_id), value);
+    }
+
+    Ok(components)
 }

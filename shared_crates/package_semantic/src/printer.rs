@@ -192,10 +192,22 @@ impl Printer {
             println!();
 
             p.print_indent();
-            println!("components:");
+            println!("required components:");
 
             p.with_indent(|p| {
-                for (component, value) in concept.components.iter() {
+                for (component, value) in concept.required_components.iter() {
+                    p.print_indent();
+                    println!("{}: {:?}", write_resolvable_id(items, component)?, value,);
+                }
+
+                Ok(())
+            })?;
+
+            p.print_indent();
+            println!("optional components:");
+
+            p.with_indent(|p| {
+                for (component, value) in concept.optional_components.iter() {
                     p.print_indent();
                     println!("{}: {:?}", write_resolvable_id(items, component)?, value,);
                 }

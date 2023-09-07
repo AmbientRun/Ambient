@@ -320,7 +320,7 @@ impl Semantic {
             items
                 .get_or_create_scope_mut(scope_id, scope_path)
                 .concepts
-                .insert(item.as_snake().map_err(|e| e.to_owned())?.clone(), value);
+                .insert(item.as_pascal().map_err(|e| e.to_owned())?.clone(), value);
         }
 
         for (path, message) in manifest.messages.iter() {

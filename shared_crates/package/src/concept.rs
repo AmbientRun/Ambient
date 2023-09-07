@@ -9,7 +9,22 @@ pub struct Concept {
     pub description: Option<String>,
     #[serde(default)]
     pub extends: Vec<ItemPathBuf>,
-    pub components: IndexMap<ItemPathBuf, toml::Value>,
+    pub components: Components,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq, Serialize)]
+pub struct Components {
+    pub required: IndexMap<ItemPathBuf, ConceptValue>,
+    #[serde(default)]
+    pub optional: IndexMap<ItemPathBuf, ConceptValue>,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq, Serialize, Default)]
+pub struct ConceptValue {
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub suggested: Option<toml::Value>,
 }
 
 #[cfg(test)]
@@ -19,8 +34,8 @@ mod tests {
     #[test]
     fn cannot_use_optional_as_component_name() {
         let concept = r#"
-        [components]
-        optional = "lol"
+        [components.required]
+        optional = {}
         "#;
 
         assert_eq!(

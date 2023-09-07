@@ -89,7 +89,7 @@ impl Resolve for Component {
         self.attributes = attributes;
 
         if let Some(default) = &mut self.default {
-            default.resolve(items, type_id)?;
+            default.resolve_in_place(items, type_id)?;
         }
 
         Ok(self)

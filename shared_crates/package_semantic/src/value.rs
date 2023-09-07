@@ -23,7 +23,11 @@ pub enum ResolvableValue {
     Resolved(Value),
 }
 impl ResolvableValue {
-    pub(crate) fn resolve(&mut self, items: &ItemMap, id: ItemId<Type>) -> anyhow::Result<()> {
+    pub(crate) fn resolve_in_place(
+        &mut self,
+        items: &ItemMap,
+        id: ItemId<Type>,
+    ) -> anyhow::Result<()> {
         if let Self::Unresolved(value) = self {
             *self = Self::Resolved(Value::from_toml(value, items, id)?);
         }

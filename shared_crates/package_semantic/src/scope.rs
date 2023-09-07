@@ -16,7 +16,7 @@ pub struct Scope {
     pub imports: IndexMap<SnakeCaseIdentifier, ItemId<Package>>,
     pub scopes: IndexMap<SnakeCaseIdentifier, ItemId<Scope>>,
     pub components: IndexMap<SnakeCaseIdentifier, ItemId<Component>>,
-    pub concepts: IndexMap<SnakeCaseIdentifier, ItemId<Concept>>,
+    pub concepts: IndexMap<PascalCaseIdentifier, ItemId<Concept>>,
     pub messages: IndexMap<PascalCaseIdentifier, ItemId<Message>>,
     pub types: IndexMap<PascalCaseIdentifier, ItemId<Type>>,
     pub attributes: IndexMap<PascalCaseIdentifier, ItemId<Attribute>>,
@@ -303,7 +303,7 @@ fn get_concept_id(
         .get_scope(self_scope_id, scope)
         .ok()?
         .concepts
-        .get(item.as_snake().ok()?)
+        .get(item.as_pascal().ok()?)
         .copied()
 }
 
