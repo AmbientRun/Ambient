@@ -116,7 +116,7 @@ pub async fn deploy(
                     }
                     Some(Message::Warning(msg)) => {
                         // warning from the server -> just log it
-                        log::warn!("Received warning message from server: {:?}", msg);
+                        log::warn!("Received warning message from server: {}", msg);
                     }
                     Some(Message::AcceptedPath(path)) => {
                         // uploaded file has been accepted (either after MD5 or contents)
