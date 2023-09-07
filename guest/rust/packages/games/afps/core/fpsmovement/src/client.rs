@@ -33,36 +33,7 @@ pub async fn main() {
             return;
         }
         let mouse_delta = input.mouse_delta;
-        let mut direction = Vec2::ZERO;
         let mut shoot = false;
-        let mut running = false;
-        let mut jump = false;
-        let mut duck = false;
-
-        if input.keys.contains(&KeyCode::W) {
-            direction.x += 1.0;
-        }
-        if input.keys.contains(&KeyCode::S) {
-            direction.x -= 1.0;
-        }
-        if input.keys.contains(&KeyCode::A) {
-            direction.y -= 1.0;
-        }
-        if input.keys.contains(&KeyCode::D) {
-            direction.y += 1.0;
-        }
-
-        if delta.keys.contains(&KeyCode::Space) {
-            jump = true;
-        }
-
-        if input.keys.contains(&KeyCode::LControl) {
-            duck = true;
-        }
-
-        if input.keys.contains(&KeyCode::LShift) {
-            running = true;
-        }
 
         if input.mouse_buttons.contains(&MouseButton::Left) {
             if is_shooting {
@@ -101,14 +72,10 @@ pub async fn main() {
         );
 
         Input {
-            direction,
             mouse_delta,
             shoot,
             toggle_zoom,
             is_shooting,
-            duck,
-            jump,
-            running,
             ray_origin: ray.origin,
             ray_dir: ray.dir,
         }

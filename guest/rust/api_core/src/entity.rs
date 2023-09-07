@@ -130,6 +130,18 @@ pub fn set_component<T: SupportedValue>(entity: EntityId, component: Component<T
     )
 }
 
+/// Sets the component `component` for `entity` with `value` if the new value is different from the current value
+pub fn set_component_if_changed<T: SupportedValue + PartialEq>(
+    entity: EntityId,
+    component: Component<T>,
+    value: T,
+) {
+    let old = get_component(entity, component).expect("Component must exist on entity");
+    if old != value {
+        set_component(entity, component, value)
+    }
+}
+
 /// Sets the components `components` for `entity` with `value`.
 pub fn set_components(entity: EntityId, components: Entity) {
     wit::component::set_components(entity.into_bindgen(), &components.into_bindgen())

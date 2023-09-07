@@ -18,15 +18,6 @@ player_cam_ref = { type = "EntityId", name = "Player cam ref", description = "Th
 ] }
 
 
-player_yaw = { type = "F32", name = "Player yaw", description = "The player's yaw.", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-player_pitch = { type = "F32", name = "Player pitch", description = "The player's pitch.", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-
 player_shooting_status = { type = "Bool", description = "True when the player is in shooting", attributes = [
     "Debuggable",
     "Networked",
@@ -63,16 +54,12 @@ kill_log = { type = { type = "Vec", element_type = "String" }, description = "ki
 
 [messages]
 [messages.Input.fields]
-direction = "Vec2"
 mouse_delta = "Vec2"
 shoot = "Bool"
 toggle_zoom = "Bool"
 is_shooting = "Bool"
 ray_origin = "Vec3"
 ray_dir = "Vec3"
-duck = "Bool"
-jump = "Bool"
-running = "Bool"
 
 [messages.StartGame.fields]
 name = "String"

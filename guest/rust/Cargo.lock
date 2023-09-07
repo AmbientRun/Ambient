@@ -1084,6 +1084,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fps_controller"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "futures"
 version = "0.3.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -1,15 +1,10 @@
 use ambient_api::{
     core::{
         app::components::main_scene,
-        physics::{
-            components::{plane_collider, sphere_collider},
-            concepts::make_character_controller,
-        },
+        model::components::model_from_url,
+        physics::components::{plane_collider, sphere_collider},
         player::components::is_player,
-        primitives::{
-            components::{cube, quad},
-            concepts::make_sphere,
-        },
+        primitives::{components::quad, concepts::make_sphere},
         rendering::components::{color, fog_density, light_diffuse, sky, sun},
         transform::{
             components::{rotation, scale, translation},
@@ -18,11 +13,9 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::this::{
-    components::{
-        camera_follow_distance, player_mouse_delta_x, player_movement_direction, player_scroll,
-    },
-    messages::Input,
+use packages::{
+    base_assets, character_animation::components::basic_character_animations,
+    fps_controller::components::use_fps_controller,
 };
 
 #[main]
@@ -60,50 +53,10 @@ pub fn main() {
             entity::add_components(
                 id,
                 Entity::new()
-                    .with_merge(make_transformable())
-                    .with_merge(make_character_controller())
-                    .with(player_movement_direction(), Vec2::ZERO)
-                    .with(player_mouse_delta_x(), 0.0)
-                    .with(player_scroll(), 0.0)
-                    .with(cube(), ())
-                    .with(color(), Vec4::ONE)
-                    .with(camera_follow_distance(), 4.0),
+                    .with(use_fps_controller(), ())
+                    .with(model_from_url(), base_assets::assets::url("Y Bot.fbx"))
+                    .with(basic_character_animations(), id),
             );
-        }
-    });
-
-    Input::subscribe(move |ctx, msg| {
-        let Some(player_id) = ctx.client_entity_id() else {
-            return;
-        };
-
-        entity::set_component(player_id, player_movement_direction(), msg.direction);
-        entity::set_component(player_id, player_mouse_delta_x(), msg.mouse_delta_x);
-        entity::set_component(player_id, player_scroll(), msg.scroll);
-    });
-
-    query((
-        is_player(),
-        player_movement_direction(),
-        player_mouse_delta_x(),
-        player_scroll(),
-        rotation(),
-    ))
-    .each_frame(move |players| {
-        for (player_id, (_, direction, mouse_delta_x, scroll, rot)) in players {
-            let speed = 0.1;
-
-            let displace = rot * (direction.normalize_or_zero() * speed).extend(-0.1);
-            physics::move_character(player_id, displace, 0.01, delta_time());
-
-            entity::mutate_component(player_id, rotation(), |x| {
-                *x *= Quat::from_rotation_z(mouse_delta_x * 0.01)
-            })
-            .unwrap_or_default();
-
-            entity::add_component(player_id, camera_follow_distance(), {
-                ((scroll * 0.005) + 5.0).max(1.0)
-            });
         }
     });
 }

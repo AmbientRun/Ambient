@@ -1,5 +1,5 @@
 [package]
-id = "basic_character_animation"
+id = "character_animation"
 name = "Basic character animation"
 version = "0.0.1"
 content = { type = "Asset", animations = true, code = true }
