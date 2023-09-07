@@ -40,16 +40,16 @@ pub async fn main() {
         let mut duck = false;
 
         if input.keys.contains(&KeyCode::W) {
-            direction.y -= 1.0;
+            direction.x += 1.0;
         }
         if input.keys.contains(&KeyCode::S) {
-            direction.y += 1.0;
-        }
-        if input.keys.contains(&KeyCode::A) {
             direction.x -= 1.0;
         }
+        if input.keys.contains(&KeyCode::A) {
+            direction.y -= 1.0;
+        }
         if input.keys.contains(&KeyCode::D) {
-            direction.x += 1.0;
+            direction.y += 1.0;
         }
 
         if delta.keys.contains(&KeyCode::Space) {

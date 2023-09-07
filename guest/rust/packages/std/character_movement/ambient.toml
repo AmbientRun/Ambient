@@ -1,0 +1,8 @@
+[package]
+id = "character_movement"
+name = "character_movement"
+version = "0.0.1"
+content = { type = "Asset", code = true }
+
+[dependencies]
+unit_schema = { path = "../../schemas/unit", deployment = "4qcnuQpcxcMDogPdNsKl6s" }

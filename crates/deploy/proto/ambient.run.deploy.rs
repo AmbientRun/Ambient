@@ -39,7 +39,7 @@ pub struct Deployment {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeployAssetResponse {
-    #[prost(oneof = "deploy_asset_response::Message", tags = "1, 2, 3, 4")]
+    #[prost(oneof = "deploy_asset_response::Message", tags = "1, 2, 3, 4, 5")]
     pub message: ::core::option::Option<deploy_asset_response::Message>,
 }
 /// Nested message and enum types in `DeployAssetResponse`.
@@ -60,6 +60,9 @@ pub mod deploy_asset_response {
         /// Client should send the missing AssetContent with contents.
         #[prost(string, tag = "4")]
         MissingPath(::prost::alloc::string::String),
+        /// Warning message, not critical to the deployment but should be presented to the user as a warning
+        #[prost(string, tag = "5")]
+        Warning(::prost::alloc::string::String),
     }
 }
 /// Generated client implementations.
