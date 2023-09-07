@@ -21,7 +21,7 @@ use ambient_api::{
 use packages::{
     afps_schema::components::{player_cam_ref, player_model_ref, player_name, player_zoomed},
     basic_character_animation::components::basic_character_animations,
-    this::assets,
+    dummy_character,
     unit_schema::components::head_ref,
 };
 use std::f32::consts::PI;
@@ -36,7 +36,10 @@ pub async fn main() {
     spawn_query((is_player(), user_id())).bind(move |players| {
         for (id, (_, uid)) in players {
             run_async(async move {
-                if entity::wait_for_component(id, player_name()).await.is_none() {
+                if entity::wait_for_component(id, player_name())
+                    .await
+                    .is_none()
+                {
                     // entity deleted
                     return;
                 }
@@ -66,7 +69,7 @@ pub async fn main() {
 
                 let model = Entity::new()
                     .with_merge(make_transformable())
-                    .with(prefab_from_url(), assets::url("Y Bot.fbx"))
+                    .with(prefab_from_url(), dummy_character::assets::url("Y Bot.fbx"))
                     .with(
                         rotation(),
                         Quat::from_rotation_z(-std::f32::consts::PI / 2.),

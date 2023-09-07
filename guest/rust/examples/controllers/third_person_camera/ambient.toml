@@ -7,6 +7,10 @@ repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/example
 type = "Game"
 content = { type = "Playable", example = true }
 
+[dependencies]
+dummy_character = { path = "../../../packages/std/dummy_character", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+
+
 [components]
 player_camera_ref = { type = "EntityId", name = "Player camera ref", description = "The player's camera.", attributes = [
     "Debuggable",

@@ -60,12 +60,12 @@ pub fn main() {
             entity::add_components(
                 id,
                 Entity::new()
-                    .with_merge(make_transformable())
+                    // .with_merge(make_transformable())
                     .with_merge(make_character_controller())
                     .with(player_movement_direction(), Vec2::ZERO)
                     .with(player_mouse_delta_x(), 0.0)
                     .with(player_scroll(), 0.0)
-                    .with(cube(), ())
+                    // .with(cube(), ())
                     .with(color(), Vec4::ONE)
                     .with(camera_follow_distance(), 4.0),
             );

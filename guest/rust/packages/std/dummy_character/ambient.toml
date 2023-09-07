@@ -1,0 +1,5 @@
+[package]
+id = "dummy_character"
+name = "dummy_character"
+version = "0.0.1"
+content = { type = "Asset", models = true }

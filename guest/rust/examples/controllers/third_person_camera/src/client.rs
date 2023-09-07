@@ -6,12 +6,15 @@ use ambient_api::{
             concepts::make_perspective_infinite_reverse_camera,
         },
         messages::Frame,
+        model::components::model_from_url,
         player::components::{is_player, local_user_id, user_id},
         transform::components::{lookat_target, rotation, translation},
     },
+    entity::add_component,
     prelude::*,
 };
 
+use packages::dummy_character;
 use packages::this::{
     components::{camera_follow_distance, player_camera_ref},
     messages::Input,
@@ -24,6 +27,11 @@ fn main() {
         for (id, (_, user)) in players {
             let local_user_id =
                 entity::get_component(entity::resources(), local_user_id()).unwrap();
+            add_component(
+                id,
+                model_from_url(),
+                dummy_character::assets::url("Y Bot.fbx"),
+            );
             eprintln!("Player joined {user}\nlocal_user_id: {local_user_id:?}");
             // First, we check if this player is the "local" player, and only then do we attach a camera
             if user == local_user_id {
