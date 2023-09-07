@@ -34,6 +34,8 @@ message DeployAssetResponse {
     // Path of an asset with missing contents. Only sent as a response to MD5 requests.
     // Client should send the missing AssetContent with contents.
     string missingPath = 4;
+    // Warning message, not critical to the deployment but should be presented to the user as a warning
+    string warning = 5;
   }
 }
 

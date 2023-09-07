@@ -114,6 +114,10 @@ pub async fn deploy(
                         log::error!("Received error message: {:?}", err);
                         handle.abort();
                     }
+                    Some(Message::Warning(msg)) => {
+                        // warning from the server -> just log it
+                        log::warn!("Received warning message from server: {:?}", msg);
+                    }
                     Some(Message::AcceptedPath(path)) => {
                         // uploaded file has been accepted (either after MD5 or contents)
                         file_request_tx
