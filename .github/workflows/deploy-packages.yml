@@ -9,6 +9,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   CACHE_KEY: ambient-${{ github.sha }}
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   deploy-packages:
@@ -36,7 +37,8 @@ jobs:
           sudo apt install -y libxcb-xfixes0-dev vulkan-validationlayers-dev mesa-vulkan-drivers libasound2-dev
       - name: Deploy all packages
         run: cargo campfire-slim package deploy-all --token ${{ secrets.AMBIENT_CLOUD_DEPLOY_TOKEN }} --include-examples
-      - name: Commit and push changed files
+
+      - name: Commit and push changed files (for branches)
         # only commit and push if this is running in a branch
         if: startsWith(github.ref, 'refs/heads/')
         run: |
@@ -46,6 +48,28 @@ jobs:
           git config --global user.email "username@users.noreply.github.com"
           git checkout -b ${branch}
           git commit -a -m "Update deployed packages for ${{ github.sha }}"
+          git push --set-upstream origin ${branch}
+          pr_url=$(gh pr create --title "Update deployed packages for ${{ github.sha }}" --body "Deployed packages for ${{ github.sha }}" --base ${base_branch} --head ${branch})
+          gh pr merge --auto --squash --delete-branch ${pr_url}
+
+      - name: Commit and push changed files (for nightly builds)
+        # only commit and push if this is running in a nightly build tag
+        if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-nightly-')
+        run: |
+          base_branch=main
+          tag=${GITHUB_REF#refs/tags/}
+          branch=${tag}-deployed-${{ github.sha }}
+          git config --global user.name "Moose Jobs"
+          git config --global user.email "username@users.noreply.github.com"
+          git checkout -b ${branch}
+          git commit -a -m "Update deployed packages for ${{ github.sha }}"
+
+          # switch back to the main branch version
+          version_majminpat=$(echo ${tag} | sed -E -e 's/^v([0-9]+\.[0-9]+\.[0-9]+).*$/\1/')
+          version=${version_majminpat}-dev
+          cargo cf release update-version ${version}
+          git commit -a -m "Revert version back to ${version}"
+
           git push --set-upstream origin ${branch}
           pr_url=$(gh pr create --title "Update deployed packages for ${{ github.sha }}" --body "Deployed packages for ${{ github.sha }}" --base ${base_branch} --head ${branch})
           gh pr merge --auto --squash --delete-branch ${pr_url}
