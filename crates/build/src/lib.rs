@@ -20,7 +20,6 @@ use anyhow::Context;
 use futures::FutureExt;
 use itertools::Itertools;
 use pipelines::{out_asset::OutAsset, FileCollection, ProcessCtx, ProcessCtxKey};
-use semver::Version;
 use walkdir::WalkDir;
 
 pub mod migrate;
@@ -368,7 +367,7 @@ async fn store_metadata(
 
     let AmbientVersion { version, revision } = AmbientVersion::default();
     let metadata = BuildMetadata {
-        ambient_version: Version::parse(&version).expect("Failed to parse version"),
+        ambient_version: version,
         ambient_revision: revision,
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
