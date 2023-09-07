@@ -1,4 +1,3 @@
-use ambient_ecs::Entity;
 use serde::{Deserialize, Serialize};
 
 use crate::{is_default, is_false, is_true, materials::PipelinePbrMaterial, true_value};
@@ -44,9 +43,13 @@ pub struct ModelsPipeline {
     /// This is a great way to specify additional information about your prefab that can be used by gameplay logic.
     /// Note that these components should have static data (i.e. statistics), not dynamic state, as any such state could be
     /// replaced by this prefab being reloaded.
+    ///
+    /// This is a json string of a serialized entity, i.e.:
+    ///
+    /// prefab_components = "{ \"health\": 5 }"
     #[serde(default)]
-    #[serde(skip_serializing_if = "Entity::is_empty")]
-    pub prefab_components: Entity,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prefab_components: Option<String>,
     /// If specified, a list of overrides to use for the materials for the mesh.
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]

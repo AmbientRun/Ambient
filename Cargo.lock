@@ -1173,12 +1173,10 @@ dependencies = [
 name = "ambient_pipeline_types"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_ecs",
- "ambient_gpu",
- "ambient_native_std",
  "glam 0.24.1",
  "serde",
- "wgpu 0.16.3",
+ "toml 0.7.6",
+ "wgpu-types 0.16.1",
 ]
 
 [[package]]

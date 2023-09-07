@@ -5,6 +5,7 @@ pub use audio::AudioPipeline;
 pub use materials::MaterialsPipeline;
 pub use models::{Collider, ModelImporter, ModelsPipeline};
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 
 fn is_false(value: &bool) -> bool {
     !*value
@@ -29,6 +30,14 @@ fn is_default<T: PartialEq + Default>(value: &T) -> bool {
 #[serde(deny_unknown_fields)]
 pub struct PipelinesFile {
     pub pipelines: Vec<Pipeline>,
+}
+impl PipelinesFile {
+    pub fn to_toml(&self) -> String {
+        toml::to_string_pretty(self).unwrap()
+    }
+    pub fn save_to_file(&self, path: impl AsRef<Path>) -> std::io::Result<()> {
+        std::fs::write(path, self.to_toml())
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
