@@ -14,6 +14,7 @@ use ambient_api::{
             concepts::make_transformable,
         },
     },
+    entity::set_component,
     prelude::*,
 };
 
@@ -21,7 +22,9 @@ use packages::{
     afps_schema::components::{player_cam_ref, player_model_ref, player_name, player_zoomed},
     basic_character_animation::components::basic_character_animations,
     this::assets,
+    unit_schema::components::head_ref,
 };
+use std::f32::consts::PI;
 
 #[main]
 pub async fn main() {
@@ -38,28 +41,36 @@ pub async fn main() {
                     return;
                 }
 
-                // refer to the first person example in Ambient repo
                 let cam = Entity::new()
                     .with_merge(make_perspective_infinite_reverse_camera())
                     .with(aspect_ratio_from_window(), EntityId::resources())
                     .with(main_scene(), ())
-                    .with(parent(), id)
-                    .with(user_id(), uid)
-                    // this is FPS
-                    // .with(translation(), vec3(0.0, 0.2, 2.0))
-                    // third person
-                    .with(translation(), vec3(0.0, 4.0, 3.0))
+                    .with(translation(), -Vec3::Z * 4.)
+                    .with(parent(), EntityId::null())
                     .with(local_to_parent(), Default::default())
-                    // .with(local_to_world(), Default::default())
+                    .with(user_id(), uid)
+                    .spawn();
+
+                let head = Entity::new()
+                    .with_merge(make_transformable())
+                    .with(local_to_parent(), Default::default())
+                    .with(parent(), id)
+                    .with(translation(), Vec3::Z * 2.)
                     .with(
                         rotation(),
-                        Quat::from_rotation_x(std::f32::consts::FRAC_PI_2),
+                        Quat::from_rotation_z(PI / 2.) * Quat::from_rotation_x(PI / 2.),
                     )
+                    .with(children(), vec![cam])
                     .spawn();
+                set_component(cam, parent(), head);
+
                 let model = Entity::new()
                     .with_merge(make_transformable())
                     .with(prefab_from_url(), assets::url("Y Bot.fbx"))
-                    .with(rotation(), Quat::from_rotation_z(-std::f32::consts::PI))
+                    .with(
+                        rotation(),
+                        Quat::from_rotation_z(-std::f32::consts::PI / 2.),
+                    )
                     .with(local_to_parent(), Default::default())
                     .with(parent(), id)
                     .spawn();
@@ -75,9 +86,10 @@ pub async fn main() {
                             translation(),
                             vec3(random::<f32>() * 20., random::<f32>() * 20., 2.0),
                         )
-                        .with(children(), vec![model, cam])
+                        .with(children(), vec![model, head])
                         .with(player_cam_ref(), cam)
-                        .with(player_model_ref(), model),
+                        .with(player_model_ref(), model)
+                        .with(head_ref(), head),
                 );
             });
         }

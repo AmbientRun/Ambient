@@ -60,6 +60,7 @@ members = [
 
     # Packages (std)
     "packages/std/basic_character_animation",
+    "packages/std/character_movement",
 
     # Packages (tools)
     "packages/tools/console",

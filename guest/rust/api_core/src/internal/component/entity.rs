@@ -55,6 +55,12 @@ impl Entity {
         self
     }
 
+    /// Removes `component` to this with `value`, and returns `self` to allow for easy chaining.
+    pub fn without<T: SupportedValue>(mut self, component: Component<T>) -> Self {
+        self.0.remove(&component.index());
+        self
+    }
+
     /// Removes the specified component from this, and returns the value if it was present.
     pub fn remove<T: SupportedValue>(&mut self, component: Component<T>) -> Option<T> {
         T::from_value(self.0.remove(&component.index())?)

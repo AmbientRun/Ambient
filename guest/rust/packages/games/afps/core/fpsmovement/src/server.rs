@@ -3,17 +3,19 @@ use ambient_api::{
     prelude::*,
 };
 
-use packages::afps_schema::{
-    components::{
-        player_cam_ref, player_name, player_pitch, player_shooting_status, player_vspeed,
-        player_yaw, player_zoomed,
+use packages::unit_schema::components::{jumping, run_direction, running, vertical_velocity};
+use packages::{
+    afps_schema::{
+        components::{
+            player_name, player_pitch, player_shooting_status, player_yaw, player_zoomed,
+        },
+        messages::{FootOnGround, Input, Shoot},
     },
-    messages::{FootOnGround, Input, Shoot},
+    unit_schema::components::head_ref,
 };
-use packages::unit_schema::components::{jumping, run_direction, running};
+use std::f32::consts::PI;
 
 const INIT_JUMP_VSPEED: f32 = 0.10;
-const FALLING_VSPEED: f32 = 0.4;
 
 #[main]
 pub fn main() {
@@ -27,7 +29,7 @@ pub fn main() {
                 entity::add_component(id, player_yaw(), 0.0);
                 entity::add_component(id, player_pitch(), 0.0);
                 entity::add_component(id, player_zoomed(), false);
-                entity::add_component(id, player_vspeed(), 0.0);
+                entity::add_component(id, vertical_velocity(), 0.0);
             });
         }
     });
@@ -48,7 +50,7 @@ pub fn main() {
             } else {
                 Duration::from_millis(600)
             };
-            let is_jumping = entity::get_component(player_id, player_vspeed()).unwrap_or(0.0);
+            let is_jumping = entity::get_component(player_id, vertical_velocity()).unwrap_or(0.0);
             if is_jumping <= 0.0 && game_time() - last_walk > dur {
                 last_walk = game_time();
                 if msg.running {
@@ -59,7 +61,7 @@ pub fn main() {
 
         if msg.jump {
             entity::add_component(player_id, jumping(), true);
-            entity::add_component(player_id, player_vspeed(), INIT_JUMP_VSPEED);
+            entity::add_component(player_id, vertical_velocity(), INIT_JUMP_VSPEED);
         }
 
         if msg.running {
@@ -94,11 +96,13 @@ pub fn main() {
         })
         .unwrap_or_default();
 
-        if let Some(cam_id) = entity::get_component(player_id, player_cam_ref()) {
+        if let Some(head_id) = entity::get_component(player_id, head_ref()) {
             entity::set_component(
-                cam_id,
+                head_id,
                 rotation(),
-                Quat::from_rotation_x(std::f32::consts::FRAC_PI_2 + pitch),
+                Quat::from_rotation_y(pitch)
+                    * Quat::from_rotation_z(PI / 2.)
+                    * Quat::from_rotation_x(PI / 2.),
             );
         }
 
@@ -115,35 +119,6 @@ pub fn main() {
                 *pitch -= recoil;
             })
             .unwrap_or_default();
-        }
-    });
-
-    query((
-        is_player(),
-        run_direction(),
-        rotation(),
-        player_vspeed(),
-        running(),
-    ))
-    .each_frame(move |list| {
-        for (player_id, (_, direction, rot, vspeed, running)) in list {
-            let scale_factor = if running { 1.5 } else { 1.0 };
-            let speed = scale_factor * vec2(0.04, 0.06);
-            let displace = rot * (direction.normalize_or_zero() * speed).extend(vspeed);
-            let collision = physics::move_character(player_id, displace, 0.01, delta_time());
-            if collision.down {
-                if let Some(is_jumping) = entity::get_component(player_id, jumping()) {
-                    if is_jumping {
-                        entity::add_component(player_id, jumping(), false);
-                    }
-                }
-
-                entity::set_component(player_id, player_vspeed(), 0.0);
-            } else {
-                entity::mutate_component(player_id, player_vspeed(), |vspeed| {
-                    *vspeed -= FALLING_VSPEED * delta_time(); // 1/60 second for example
-                });
-            }
         }
     });
 }

@@ -108,6 +108,9 @@ fn Walk(hooks: &mut Hooks, owner_id: EntityId, running: bool, direction: Vec2) -
                 .collect(),
         )
     }
+    let f = Vec3::X;
+    let r = Vec3::Y;
+    let run = Vec3::Z;
     walkblend(&[
         (
             clip(owner_id, idle(), "Rifle Aiming Idle"),
@@ -115,67 +118,67 @@ fn Walk(hooks: &mut Hooks, owner_id: EntityId, running: bool, direction: Vec2) -
         ),
         (
             clip(owner_id, walk_forward(), "Walk Forward"),
-            lag_dir.distance(vec3(0., -1., 0.)),
+            lag_dir.distance(f),
         ),
         (
             clip(owner_id, walk_forward_left(), "Walk Forward Left"),
-            lag_dir.distance(vec3(-1., -1., 0.)),
+            lag_dir.distance(f - r),
         ),
         (
             clip(owner_id, walk_forward_right(), "Walk Forward Right"),
-            lag_dir.distance(vec3(1., -1., 0.)),
+            lag_dir.distance(f + r),
         ),
         (
             clip(owner_id, walk_backward(), "Walk Backward"),
-            lag_dir.distance(vec3(0., 1., 0.)),
+            lag_dir.distance(-f),
         ),
         (
             clip(owner_id, walk_backward_left(), "Walk Backward Left"),
-            lag_dir.distance(vec3(-1., 1., 0.)),
+            lag_dir.distance(-f - r),
         ),
         (
             clip(owner_id, walk_backward_right(), "Walk Backward Right"),
-            lag_dir.distance(vec3(1., 1., 0.)),
+            lag_dir.distance(-f + r),
         ),
         (
             clip(owner_id, walk_left(), "Walk Left"),
-            lag_dir.distance(vec3(-1., 0., 0.)),
+            lag_dir.distance(-r),
         ),
         (
             clip(owner_id, walk_right(), "Walk Right"),
-            lag_dir.distance(vec3(1., 0., 0.)),
+            lag_dir.distance(r),
         ),
         (
             clip(owner_id, run_forward(), "Run Forward"),
-            lag_dir.distance(vec3(0., -1., 1.)),
+            lag_dir.distance(f + run),
         ),
         (
             clip(owner_id, run_forward_left(), "Run Forward Left"),
-            lag_dir.distance(vec3(-1., -1., 1.)),
+            lag_dir.distance(f - r + run),
         ),
         (
             clip(owner_id, run_forward_right(), "Run Forward Right"),
-            lag_dir.distance(vec3(1., -1., 1.)),
+            lag_dir.distance(f + r + run),
         ),
         (
             clip(owner_id, run_backward(), "Run Backward"),
-            lag_dir.distance(vec3(0., 1., 1.)),
+            lag_dir.distance(-f + run),
         ),
         (
             clip(owner_id, run_backward_left(), "Run Backward Left"),
-            lag_dir.distance(vec3(-1., 1., 1.)),
+            lag_dir.distance(-f - r + run),
         ),
         (
             clip(owner_id, run_backward_right(), "Run Backward Right"),
-            lag_dir.distance(vec3(1., 1., 1.)),
+            lag_dir.distance(-f + r + run),
         ),
         (
             clip(owner_id, run_left(), "Run Left"),
-            lag_dir.distance(vec3(-1., 0., 1.)),
+            lag_dir.distance(-r + run),
         ),
         (
             clip(owner_id, run_right(), "Run Right"),
-            lag_dir.distance(vec3(1., 0., 1.)),
+            lag_dir.distance(r + run),
         ),
     ])
 }
