@@ -5,6 +5,7 @@ use std::{
 
 #[cfg(feature = "uncategorized")]
 mod uncategorized;
+use semver::Version;
 #[cfg(feature = "uncategorized")]
 pub use uncategorized::*;
 
@@ -164,14 +165,25 @@ pub fn git_revision_full() -> Option<String> {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, PartialOrd, Eq, Ord)]
 pub struct AmbientVersion {
-    pub version: String,
+    pub version: Version,
     pub revision: String,
+}
+
+impl AmbientVersion {
+    /// Returns git tag for this version, if any. Currently only available for releases and nightly builds.
+    pub fn tag(&self) -> Option<String> {
+        if !self.version.build.is_empty() {
+            return None;
+        }
+        (self.version.pre.is_empty() || self.version.pre.starts_with("nightly-"))
+            .then(|| format!("v{}", self.version))
+    }
 }
 
 impl Default for AmbientVersion {
     fn default() -> Self {
         Self {
-            version: RUNTIME_VERSION.to_string(),
+            version: Version::parse(RUNTIME_VERSION).expect("Failed to parse version"),
             revision: git_revision_full().unwrap_or_default(),
         }
     }
@@ -237,4 +249,40 @@ fn test_git_revision_full() {
     )
     .expect("Invalid encoding");
     assert_eq!(git_revision_full().as_deref(), Some(revision.trim()));
+}
+
+#[test]
+fn test_ambient_version_tag() {
+    assert_eq!(
+        AmbientVersion {
+            version: Version::parse("0.2.0").unwrap(),
+            revision: "".to_string()
+        }
+        .tag(),
+        Some("v0.2.0".to_string())
+    );
+    assert_eq!(
+        AmbientVersion {
+            version: Version::parse("0.3.0-dev").unwrap(),
+            revision: "".to_string()
+        }
+        .tag(),
+        None
+    );
+    assert_eq!(
+        AmbientVersion {
+            version: Version::parse("0.3.0+meta").unwrap(),
+            revision: "".to_string()
+        }
+        .tag(),
+        None
+    );
+    assert_eq!(
+        AmbientVersion {
+            version: Version::parse("0.3.0-nightly-2023-09-07").unwrap(),
+            revision: "".to_string()
+        }
+        .tag(),
+        Some("v0.3.0-nightly-2023-09-07".to_string())
+    );
 }

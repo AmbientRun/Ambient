@@ -55,4 +55,3 @@ symphonia = { workspace = true }
 vorbis_rs = { workspace = true }
 rand = { workspace = true }
 chrono = { workspace = true }
-semver = { workspace = true }
