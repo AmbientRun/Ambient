@@ -14,7 +14,7 @@ use ambient_api::{
     prelude::*,
 };
 use packages::{
-    base_assets, basic_character_animation::components::basic_character_animations,
+    base_assets, character_animation::components::basic_character_animations,
     fps_controller::components::use_fps_controller,
 };
 

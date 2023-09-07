@@ -21,7 +21,7 @@ use ambient_api::{
 use packages::{
     afps_schema::components::{player_cam_ref, player_model_ref, player_name, player_zoomed},
     base_assets,
-    basic_character_animation::components::basic_character_animations,
+    character_animation::components::basic_character_animations,
     unit_schema::components::head_ref,
 };
 use std::f32::consts::PI;
