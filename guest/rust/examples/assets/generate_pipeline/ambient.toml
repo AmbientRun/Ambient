@@ -1,0 +1,8 @@
+[package]
+id = "ambient_example_generate_pipeline"
+name = "Generating pipeline toml"
+description = "Use code to generate an asset pipeline.toml file"
+version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/basic_model"
+type = "Game"
+content = { type = "Playable", example = true }

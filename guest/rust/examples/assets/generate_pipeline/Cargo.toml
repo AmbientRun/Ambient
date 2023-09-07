@@ -1,0 +1,22 @@
+[package]
+name = "ambient_example_generate_pipeline"
+
+edition = "2021"
+publish = false
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+ambient_api = { workspace = true }
+
+[[bin]]
+name = "generate_pipeline"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]
+
+[build-dependencies]
+ambient_pipeline_types = { workspace = true }

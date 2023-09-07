@@ -13,3 +13,4 @@ ambient_gpu = { path = "../gpu", version = "0.3.0-dev" }
 serde.workspace = true
 glam.workspace = true
 wgpu.workspace = true
+toml.workspace = true

@@ -25,6 +25,7 @@ members = [
     # Assets
     "examples/assets/basic_model",
     "examples/assets/material_overriding",
+    "examples/assets/generate_pipeline",
     "examples/assets/unity",
 
     # Rendering
@@ -100,6 +101,8 @@ ambient_element = { path = "../../shared_crates/element", version = "0.3.0-dev",
 ] }
 ambient_editor_derive = { path = "../../shared_crates/editor_derive", version = "0.3.0-dev" }
 ambient_schema = { path = "../../shared_crates/schema", version = "0.3.0-dev" }
+
+ambient_pipeline_types = { path = "../../crates/pipeline_types", version = "0.3.0-dev" }
 
 ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.3.0-dev" }
 ambient_cb = { path = "../../libs/cb", version = "0.3.0-dev" }

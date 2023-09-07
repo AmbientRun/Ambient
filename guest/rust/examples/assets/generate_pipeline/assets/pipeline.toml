@@ -1,0 +1,8 @@
+[[pipelines]]
+type = "Models"
+output_prefabs = false
+output_animations = false
+sources = ["*"]
+
+[pipelines.cap_texture_sizes]
+Custom = 2

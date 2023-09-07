@@ -1178,6 +1178,7 @@ dependencies = [
  "ambient_native_std",
  "glam 0.24.1",
  "serde",
+ "toml 0.7.6",
  "wgpu 0.16.3",
 ]
 
