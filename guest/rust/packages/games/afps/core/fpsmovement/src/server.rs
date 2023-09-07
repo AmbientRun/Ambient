@@ -3,14 +3,17 @@ use ambient_api::{
     prelude::*,
 };
 
-use packages::afps_schema::{
-    components::{
-        player_cam_ref, player_name, player_pitch, player_shooting_status, player_yaw,
-        player_zoomed,
-    },
-    messages::{FootOnGround, Input, Shoot},
-};
 use packages::unit_schema::components::{jumping, run_direction, running, vertical_velocity};
+use packages::{
+    afps_schema::{
+        components::{
+            player_name, player_pitch, player_shooting_status, player_yaw, player_zoomed,
+        },
+        messages::{FootOnGround, Input, Shoot},
+    },
+    unit_schema::components::head_ref,
+};
+use std::f32::consts::PI;
 
 const INIT_JUMP_VSPEED: f32 = 0.10;
 
@@ -93,11 +96,13 @@ pub fn main() {
         })
         .unwrap_or_default();
 
-        if let Some(cam_id) = entity::get_component(player_id, player_cam_ref()) {
+        if let Some(head_id) = entity::get_component(player_id, head_ref()) {
             entity::set_component(
-                cam_id,
+                head_id,
                 rotation(),
-                Quat::from_rotation_x(std::f32::consts::FRAC_PI_2 + pitch),
+                Quat::from_rotation_y(pitch)
+                    * Quat::from_rotation_z(PI / 2.)
+                    * Quat::from_rotation_x(PI / 2.),
             );
         }
 

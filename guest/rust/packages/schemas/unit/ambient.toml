@@ -26,3 +26,4 @@ vertical_velocity = { type = "F32", name = "Unit vertical speed", description = 
     "Debuggable",
     "Networked",
 ] }
+head_ref = { type = "EntityId", attributes = ["Debuggable", "Networked"] }
