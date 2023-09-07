@@ -6,3 +6,7 @@ sources = ["*"]
 
 [pipelines.cap_texture_sizes]
 Custom = 2
+
+[[pipelines.transforms]]
+type = "RotateZ"
+deg = 90.0
