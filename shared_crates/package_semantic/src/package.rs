@@ -191,6 +191,12 @@ impl Resolve for Package {
         definitions: &StandardDefinitions,
         _self_id: ItemId<Self>,
     ) -> anyhow::Result<Self> {
+        // Ensure all dependencies are resolved first, so that we can use them
+        // when resolving ourselves
+        for dependency in self.dependencies.values_mut() {
+            items.resolve(context, definitions, dependency.id)?;
+        }
+
         items.resolve(context, definitions, self.scope_id)?;
         self.resolved = true;
         Ok(self)
