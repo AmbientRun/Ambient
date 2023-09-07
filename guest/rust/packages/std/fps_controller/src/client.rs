@@ -43,11 +43,16 @@ pub fn main() {
         let rot = mutate_component_with_default(
             player::get_local(),
             player_intermediate_rotation(),
-            0.,
-            |x| *x += delta.mouse_position.x * 0.01,
+            Vec2::ZERO,
+            |rot| *rot += delta.mouse_position * 0.01,
         );
 
-        Input::new(displace, rot, input.mouse_wheel).send_server_reliable();
+        Input {
+            direction: displace,
+            body_yaw: rot.x,
+            head_pitch: rot.y,
+        }
+        .send_server_reliable();
     });
 
     spawn_query((is_player(), user_id(), head_ref())).bind(move |players| {

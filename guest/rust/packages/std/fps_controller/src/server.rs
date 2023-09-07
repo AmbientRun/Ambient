@@ -7,7 +7,7 @@ use ambient_api::{
             concepts::make_transformable,
         },
     },
-    entity::{add_child, add_component},
+    entity::{add_child, add_component, get_component, set_component},
     prelude::*,
 };
 use packages::{
@@ -55,6 +55,15 @@ pub fn main() {
         };
 
         entity::set_component(player_id, run_direction(), msg.direction);
-        entity::set_component(player_id, rotation(), Quat::from_rotation_z(msg.rotation_z));
+        entity::set_component(player_id, rotation(), Quat::from_rotation_z(msg.body_yaw));
+        if let Some(head) = get_component(player_id, head_ref()) {
+            set_component(
+                head,
+                rotation(),
+                Quat::from_rotation_y(msg.head_pitch)
+                    * Quat::from_rotation_z(PI / 2.)
+                    * Quat::from_rotation_x(PI / 2.),
+            );
+        }
     });
 }

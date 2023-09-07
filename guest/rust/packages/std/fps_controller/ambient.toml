@@ -14,23 +14,15 @@ player_camera_ref = { type = "EntityId", name = "Player camera ref", description
     "Debuggable",
 ] }
 
-camera_follow_distance = { type = "F32", name = "Camera follow distance", description = "The distance the camera follows the player.", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-
-player_scroll = { type = "F32", name = "Player mouse scroll", description = "The player's mouse scroll.", attributes = [
-    "Debuggable",
-] }
 
 # Internal
 
-player_intermediate_rotation = { type = "F32", attributes = ["Debuggable"] }
+player_intermediate_rotation = { type = "Vec2", attributes = ["Debuggable"] }
 
 
 [messages.Input]
 description = "Describes the input state of the player."
 [messages.Input.fields]
 direction = "Vec2"
-rotation_z = "F32"
-scroll = "F32"
+body_yaw = "F32"
+head_pitch = "F32"
