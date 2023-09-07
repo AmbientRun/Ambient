@@ -23,6 +23,6 @@ zombie_model_ref = { type = "EntityId", attributes = [
 id = "EntityId"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
-basic_character_animation = { path = "../../../../std/basic_character_animation", deployment = "7GO4bqu6dZAbZqezzD4dbb" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "7GO4bqu6dZAbZqezzD4dbb" }
+afps_schema = { path = "../../schema", deployment = "6hnZNdYwHeAc0Ao4U8b12s" }
+basic_character_animation = { path = "../../../../std/basic_character_animation", deployment = "7AAhbI24gyHFVGTwzQlpD5" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "7eDM2HMZZFFbWN0LsdUo48" }
