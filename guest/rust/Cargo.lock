@@ -2814,6 +2814,7 @@ checksum = "d0c153280bb108c2979eb5c7391cb18c56642dd3c072e55f52065e13e2a1252a"
 dependencies = [
  "bitflags 2.3.3",
  "js-sys",
+ "serde",
  "web-sys",
 ]
 
