@@ -318,6 +318,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_example_generate_pipeline"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+ "ambient_pipeline_types",
+]
+
+[[package]]
 name = "ambient_example_image"
 version = "0.3.0-dev"
 dependencies = [
@@ -605,6 +613,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_pipeline_types"
+version = "0.3.0-dev"
+dependencies = [
+ "glam",
+ "serde",
+ "toml 0.7.5",
+ "wgpu-types",
+]
+
+[[package]]
 name = "ambient_schema"
 version = "0.3.0-dev"
 
@@ -793,6 +811,13 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
+name = "character_movement"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
 
 [[package]]
 name = "chrono"
@@ -2780,6 +2805,18 @@ name = "weezl"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9193164d4de03a926d909d3bc7c30543cecb35400c02114792c2cae20d5e2dbb"
+
+[[package]]
+name = "wgpu-types"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d0c153280bb108c2979eb5c7391cb18c56642dd3c072e55f52065e13e2a1252a"
+dependencies = [
+ "bitflags 2.3.3",
+ "js-sys",
+ "serde",
+ "web-sys",
+]
 
 [[package]]
 name = "winapi"
