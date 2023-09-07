@@ -47,5 +47,5 @@ jobs:
           git checkout -b ${branch}
           git commit -a -m "Update deployed packages for ${{ github.sha }}"
           git push --set-upstream origin ${branch}
-          gh pr create --title "Update deployed packages for ${{ github.sha }}" --body "Deployed packages for ${{ github.sha }}" --base ${base_branch} --head ${branch}
-          gh pr merge --auto --squash --delete-branch
+          pr_url=$(gh pr create --title "Update deployed packages for ${{ github.sha }}" --body "Deployed packages for ${{ github.sha }}" --base ${base_branch} --head ${branch})
+          gh pr merge --auto --squash --delete-branch ${pr_url}
