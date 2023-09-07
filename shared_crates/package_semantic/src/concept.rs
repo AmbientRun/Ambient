@@ -52,7 +52,7 @@ impl Resolve for Concept {
 
         let mut extends = vec![];
         for extend in &self.extends {
-            extends.push(ResolvableItemId::Resolved(match extend {
+            extends.push(match extend {
                 ResolvableItemId::Unresolved(path) => semantic
                     .get_contextual_concept_id(parent_id, path.as_path())
                     .map_err(|e| e.into_owned())
@@ -63,12 +63,41 @@ impl Resolve for Concept {
                         )
                     })?,
                 ResolvableItemId::Resolved(id) => *id,
-            }));
+            });
         }
-        self.extends = extends;
+        self.extends = extends
+            .iter()
+            .copied()
+            .map(ResolvableItemId::Resolved)
+            .collect();
 
-        for components in [&mut self.required_components, &mut self.optional_components] {
-            *components = resolve_components(parent_id, &self.data.id, semantic, components)?;
+        let component_extractors: [fn(&mut Concept) -> &mut ComponentMap; 2] = [
+            |c| &mut c.required_components,
+            |c| &mut c.optional_components,
+        ];
+
+        let our_id = self.data.id.clone();
+        for extractor in component_extractors {
+            let mut new_components = ComponentMap::new();
+
+            // Add all components from our extended concepts
+            for extend_id in &extends {
+                let extend = semantic.resolve(*extend_id)?;
+                let extend_components = extractor(extend);
+                new_components.extend(
+                    extend_components
+                        .iter()
+                        .map(|(k, v)| (k.clone(), v.clone())),
+                );
+            }
+
+            let components = extractor(&mut self);
+
+            // Add our components
+            new_components.extend(components.iter().map(|(k, v)| (k.clone(), v.clone())));
+
+            // Resolve anything that needs to be resolved
+            *components = resolve_components(parent_id, &our_id, semantic, &new_components)?;
         }
 
         self.resolved = true;

@@ -62,18 +62,6 @@ fn generate_make(
     );
     let make_ident = quote::format_ident!("make_{}", name);
 
-    let extends: Vec<_> = concept
-        .extends
-        .iter()
-        .map(|id| {
-            let path = context.get_path(items, Some("make_"), id.as_resolved().unwrap())?;
-
-            Ok(quote! {
-                with_merge(#path())
-            })
-        })
-        .collect::<anyhow::Result<_>>()?;
-
     let components = concept
         .required_components
         .iter()
@@ -98,7 +86,6 @@ fn generate_make(
         #[doc = #make_comment]
         pub fn #make_ident() -> Entity {
             Entity::new()
-                #(.#extends)*
                 #(.#components)*
         }
     })
@@ -119,12 +106,6 @@ fn generate_is(
     );
     let is_ident = quote::format_ident!("is_{}", name);
 
-    let extends: Vec<_> = concept
-        .extends
-        .iter()
-        .map(|id| context.get_path(items, Some("is_"), id.as_resolved().unwrap()))
-        .collect::<anyhow::Result<_>>()?;
-
     let components = concept
         .required_components
         .iter()
@@ -139,7 +120,7 @@ fn generate_is(
             #[doc = #is_comment]
             #[allow(non_snake_case)]
             pub fn #is_ident(world: &crate::World, id: EntityId) -> bool {
-                #(#extends(world, id) && )* world.has_components(id, &{
+                world.has_components(id, &{
                     let mut set = crate::ComponentSet::new();
                     #(set.insert(#components.desc());)*
                     set
@@ -150,7 +131,7 @@ fn generate_is(
             #[doc = #is_comment]
             #[allow(non_snake_case)]
             pub fn #is_ident(id: EntityId) -> bool {
-                #(#extends(id) && )* entity::has_components(id, &[
+                entity::has_components(id, &[
                     #(&#components),*
                 ])
             }
@@ -173,7 +154,6 @@ fn generate_concept(
     );
     let fn_ident = quote::format_ident!("{}", name);
 
-    // TODO: include extends in component list
     let components = concept
         .required_components
         .iter()
@@ -208,55 +188,31 @@ pub fn generate_component_list_doc_comment(
     context: Context,
     concept: &Concept,
 ) -> anyhow::Result<String> {
+    use std::fmt::Write;
+
     let mut output = "*Definition*:\n\n```ignore\n{\n".to_string();
 
-    fn write_level(
-        items: &ItemMap,
+    for (id, value) in &concept.required_components {
+        let component = &*items.get(id.as_resolved().unwrap());
+        let component_path = items.fully_qualified_display_path(component, None, None);
 
-        type_printer: &TypePrinter,
-        context: Context,
-        concept: &Concept,
-        output: &mut String,
-        level: usize,
-    ) -> anyhow::Result<()> {
-        use std::fmt::Write;
-
-        let padding = " ".repeat(level * 2);
-        for (id, value) in &concept.required_components {
-            let component = &*items.get(id.as_resolved().unwrap());
-            let component_path = items.fully_qualified_display_path(component, None, None);
-
-            writeln!(
-                output,
-                "{padding}\"{component_path}\": {} = {},",
-                SemiprettyTokenStream(
-                    type_printer
-                        .get(context, items, None, component.type_.as_resolved().unwrap())
-                        .unwrap()
-                        .clone()
-                ),
-                value
-                    .suggested
-                    .as_ref()
-                    .expect("TEMP: suggested required")
-                    .as_resolved()
+        writeln!(
+            output,
+            "  \"{component_path}\": {} = {},",
+            SemiprettyTokenStream(
+                type_printer
+                    .get(context, items, None, component.type_.as_resolved().unwrap())
                     .unwrap()
-            )?;
-        }
-        for concept_id in &concept.extends {
-            let concept_id = concept_id.as_resolved().unwrap();
-            let concept = &*items.get(concept_id);
-            let concept_path = items.fully_qualified_display_path(concept, None, None);
-
-            writeln!(output, "{padding}\"{concept_path}\": {{ // Concept.")?;
-            write_level(items, type_printer, context, concept, output, level + 1)?;
-            writeln!(output, "{padding}}},")?;
-        }
-
-        Ok(())
+                    .clone()
+            ),
+            value
+                .suggested
+                .as_ref()
+                .expect("TEMP: suggested required")
+                .as_resolved()
+                .unwrap()
+        )?;
     }
-
-    write_level(items, type_printer, context, concept, &mut output, 1)?;
 
     output += "}\n```\n";
 

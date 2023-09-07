@@ -499,10 +499,28 @@ mod raw {
                 use crate::prelude::*;
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Camera*.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::transform::Transformable\": { // Concept.\n    \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n    \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n    \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n    \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  },\n}\n```\n"]
+                #[doc = "Makes a *Camera*.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
                 pub fn make_Camera() -> Entity {
                     Entity::new()
-                        .with_merge(crate::ambient_core::transform::concepts::make_Transformable())
+                        .with(
+                            crate::ambient_core::transform::components::translation(),
+                            Vec3::new(0f32, 0f32, 0f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::rotation(),
+                            Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::scale(),
+                            Vec3::new(1f32, 1f32, 1f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::local_to_world(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
                         .with(crate::ambient_core::camera::components::near(), 0.1f32)
                         .with(
                             crate::ambient_core::camera::components::projection(),
@@ -523,11 +541,99 @@ mod raw {
                             0f32,
                         )
                         .with(
+                            crate::ambient_core::transform::components::inv_local_to_world(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                }
+                #[doc = "Checks if the entity is a *Camera*.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
+                #[allow(non_snake_case)]
+                pub fn is_Camera(id: EntityId) -> bool {
+                    entity::has_components(
+                        id,
+                        &[
+                            &crate::ambient_core::transform::components::translation(),
+                            &crate::ambient_core::transform::components::rotation(),
+                            &crate::ambient_core::transform::components::scale(),
+                            &crate::ambient_core::transform::components::local_to_world(),
+                            &crate::ambient_core::camera::components::near(),
+                            &crate::ambient_core::camera::components::projection(),
+                            &crate::ambient_core::camera::components::projection_view(),
+                            &crate::ambient_core::camera::components::active_camera(),
+                            &crate::ambient_core::transform::components::inv_local_to_world(),
+                        ],
+                    )
+                }
+                #[doc = "Returns the components that comprise *Camera* as a tuple.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
+                #[allow(clippy::type_complexity)]
+                #[allow(non_snake_case)]
+                pub fn Camera() -> (
+                    Component<Vec3>,
+                    Component<Quat>,
+                    Component<Vec3>,
+                    Component<Mat4>,
+                    Component<f32>,
+                    Component<Mat4>,
+                    Component<Mat4>,
+                    Component<f32>,
+                    Component<Mat4>,
+                ) {
+                    (
+                        crate::ambient_core::transform::components::translation(),
+                        crate::ambient_core::transform::components::rotation(),
+                        crate::ambient_core::transform::components::scale(),
+                        crate::ambient_core::transform::components::local_to_world(),
+                        crate::ambient_core::camera::components::near(),
+                        crate::ambient_core::camera::components::projection(),
+                        crate::ambient_core::camera::components::projection_view(),
+                        crate::ambient_core::camera::components::active_camera(),
+                        crate::ambient_core::transform::components::inv_local_to_world(),
+                    )
+                }
+                #[allow(clippy::approx_constant)]
+                #[allow(non_snake_case)]
+                #[doc = "Makes a *Perspective Common Camera*.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n}\n```\n"]
+                pub fn make_PerspectiveCommonCamera() -> Entity {
+                    Entity::new()
+                        .with(
+                            crate::ambient_core::transform::components::translation(),
+                            Vec3::new(0f32, 0f32, 0f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::rotation(),
+                            Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::scale(),
+                            Vec3::new(1f32, 1f32, 1f32),
+                        )
+                        .with(
                             crate::ambient_core::transform::components::local_to_world(),
                             Mat4::from_cols_array(&[
                                 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
                                 0f32, 0f32, 0f32, 0f32, 1f32,
                             ]),
+                        )
+                        .with(crate::ambient_core::camera::components::near(), 0.1f32)
+                        .with(
+                            crate::ambient_core::camera::components::projection(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(
+                            crate::ambient_core::camera::components::projection_view(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(
+                            crate::ambient_core::camera::components::active_camera(),
+                            0f32,
                         )
                         .with(
                             crate::ambient_core::transform::components::inv_local_to_world(),
@@ -536,138 +642,340 @@ mod raw {
                                 0f32, 0f32, 0f32, 0f32, 1f32,
                             ]),
                         )
-                }
-                #[doc = "Checks if the entity is a *Camera*.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::transform::Transformable\": { // Concept.\n    \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n    \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n    \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n    \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  },\n}\n```\n"]
-                #[allow(non_snake_case)]
-                pub fn is_Camera(id: EntityId) -> bool {
-                    crate::ambient_core::transform::concepts::is_Transformable(id)
-                        && entity::has_components(
-                            id,
-                            &[
-                                &crate::ambient_core::camera::components::near(),
-                                &crate::ambient_core::camera::components::projection(),
-                                &crate::ambient_core::camera::components::projection_view(),
-                                &crate::ambient_core::camera::components::active_camera(),
-                                &crate::ambient_core::transform::components::local_to_world(),
-                                &crate::ambient_core::transform::components::inv_local_to_world(),
-                            ],
-                        )
-                }
-                #[doc = "Returns the components that comprise *Camera* as a tuple.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::transform::Transformable\": { // Concept.\n    \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n    \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n    \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n    \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  },\n}\n```\n"]
-                #[allow(clippy::type_complexity)]
-                #[allow(non_snake_case)]
-                pub fn Camera() -> (
-                    Component<f32>,
-                    Component<Mat4>,
-                    Component<Mat4>,
-                    Component<f32>,
-                    Component<Mat4>,
-                    Component<Mat4>,
-                ) {
-                    (
-                        crate::ambient_core::camera::components::near(),
-                        crate::ambient_core::camera::components::projection(),
-                        crate::ambient_core::camera::components::projection_view(),
-                        crate::ambient_core::camera::components::active_camera(),
-                        crate::ambient_core::transform::components::local_to_world(),
-                        crate::ambient_core::transform::components::inv_local_to_world(),
-                    )
-                }
-                #[allow(clippy::approx_constant)]
-                #[allow(non_snake_case)]
-                #[doc = "Makes a *Perspective Common Camera*.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::Camera\": { // Concept.\n    \"ambient_core::camera::near\": f32 = 0.1,\n    \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::active_camera\": f32 = 0.0,\n    \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::Transformable\": { // Concept.\n      \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    },\n  },\n}\n```\n"]
-                pub fn make_PerspectiveCommonCamera() -> Entity {
-                    Entity::new()
-                        .with_merge(crate::ambient_core::camera::concepts::make_Camera())
                         .with(crate::ambient_core::camera::components::fovy(), 1f32)
                         .with(
                             crate::ambient_core::camera::components::aspect_ratio(),
                             1f32,
                         )
                 }
-                #[doc = "Checks if the entity is a *Perspective Common Camera*.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::Camera\": { // Concept.\n    \"ambient_core::camera::near\": f32 = 0.1,\n    \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::active_camera\": f32 = 0.0,\n    \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::Transformable\": { // Concept.\n      \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    },\n  },\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Perspective Common Camera*.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_PerspectiveCommonCamera(id: EntityId) -> bool {
-                    crate::ambient_core::camera::concepts::is_Camera(id)
-                        && entity::has_components(
-                            id,
-                            &[
-                                &crate::ambient_core::camera::components::fovy(),
-                                &crate::ambient_core::camera::components::aspect_ratio(),
-                            ],
-                        )
+                    entity::has_components(
+                        id,
+                        &[
+                            &crate::ambient_core::transform::components::translation(),
+                            &crate::ambient_core::transform::components::rotation(),
+                            &crate::ambient_core::transform::components::scale(),
+                            &crate::ambient_core::transform::components::local_to_world(),
+                            &crate::ambient_core::camera::components::near(),
+                            &crate::ambient_core::camera::components::projection(),
+                            &crate::ambient_core::camera::components::projection_view(),
+                            &crate::ambient_core::camera::components::active_camera(),
+                            &crate::ambient_core::transform::components::inv_local_to_world(),
+                            &crate::ambient_core::camera::components::fovy(),
+                            &crate::ambient_core::camera::components::aspect_ratio(),
+                        ],
+                    )
                 }
-                #[doc = "Returns the components that comprise *Perspective Common Camera* as a tuple.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::Camera\": { // Concept.\n    \"ambient_core::camera::near\": f32 = 0.1,\n    \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::active_camera\": f32 = 0.0,\n    \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::Transformable\": { // Concept.\n      \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    },\n  },\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Perspective Common Camera* as a tuple.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
-                pub fn PerspectiveCommonCamera() -> (Component<f32>, Component<f32>) {
+                pub fn PerspectiveCommonCamera() -> (
+                    Component<Vec3>,
+                    Component<Quat>,
+                    Component<Vec3>,
+                    Component<Mat4>,
+                    Component<f32>,
+                    Component<Mat4>,
+                    Component<Mat4>,
+                    Component<f32>,
+                    Component<Mat4>,
+                    Component<f32>,
+                    Component<f32>,
+                ) {
                     (
+                        crate::ambient_core::transform::components::translation(),
+                        crate::ambient_core::transform::components::rotation(),
+                        crate::ambient_core::transform::components::scale(),
+                        crate::ambient_core::transform::components::local_to_world(),
+                        crate::ambient_core::camera::components::near(),
+                        crate::ambient_core::camera::components::projection(),
+                        crate::ambient_core::camera::components::projection_view(),
+                        crate::ambient_core::camera::components::active_camera(),
+                        crate::ambient_core::transform::components::inv_local_to_world(),
                         crate::ambient_core::camera::components::fovy(),
                         crate::ambient_core::camera::components::aspect_ratio(),
                     )
                 }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Perspective Camera*.\n\nA perspective camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n  \"ambient_core::camera::PerspectiveCommonCamera\": { // Concept.\n    \"ambient_core::camera::fovy\": f32 = 1.0,\n    \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n    \"ambient_core::camera::Camera\": { // Concept.\n      \"ambient_core::camera::near\": f32 = 0.1,\n      \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::active_camera\": f32 = 0.0,\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::Transformable\": { // Concept.\n        \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n        \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      },\n    },\n  },\n}\n```\n"]
+                #[doc = "Makes a *Perspective Camera*.\n\nA perspective camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n}\n```\n"]
                 pub fn make_PerspectiveCamera() -> Entity {
                     Entity::new()
-                        .with_merge(
-                            crate::ambient_core::camera::concepts::make_PerspectiveCommonCamera(),
+                        .with(
+                            crate::ambient_core::transform::components::translation(),
+                            Vec3::new(0f32, 0f32, 0f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::rotation(),
+                            Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::scale(),
+                            Vec3::new(1f32, 1f32, 1f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::local_to_world(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(crate::ambient_core::camera::components::near(), 0.1f32)
+                        .with(
+                            crate::ambient_core::camera::components::projection(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(
+                            crate::ambient_core::camera::components::projection_view(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(
+                            crate::ambient_core::camera::components::active_camera(),
+                            0f32,
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::inv_local_to_world(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(crate::ambient_core::camera::components::fovy(), 1f32)
+                        .with(
+                            crate::ambient_core::camera::components::aspect_ratio(),
+                            1f32,
                         )
                         .with(crate::ambient_core::camera::components::perspective(), ())
                         .with(crate::ambient_core::camera::components::far(), 1000f32)
                 }
-                #[doc = "Checks if the entity is a *Perspective Camera*.\n\nA perspective camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n  \"ambient_core::camera::PerspectiveCommonCamera\": { // Concept.\n    \"ambient_core::camera::fovy\": f32 = 1.0,\n    \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n    \"ambient_core::camera::Camera\": { // Concept.\n      \"ambient_core::camera::near\": f32 = 0.1,\n      \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::active_camera\": f32 = 0.0,\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::Transformable\": { // Concept.\n        \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n        \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      },\n    },\n  },\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Perspective Camera*.\n\nA perspective camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_PerspectiveCamera(id: EntityId) -> bool {
-                    crate::ambient_core::camera::concepts::is_PerspectiveCommonCamera(id)
-                        && entity::has_components(
-                            id,
-                            &[
-                                &crate::ambient_core::camera::components::perspective(),
-                                &crate::ambient_core::camera::components::far(),
-                            ],
-                        )
+                    entity::has_components(
+                        id,
+                        &[
+                            &crate::ambient_core::transform::components::translation(),
+                            &crate::ambient_core::transform::components::rotation(),
+                            &crate::ambient_core::transform::components::scale(),
+                            &crate::ambient_core::transform::components::local_to_world(),
+                            &crate::ambient_core::camera::components::near(),
+                            &crate::ambient_core::camera::components::projection(),
+                            &crate::ambient_core::camera::components::projection_view(),
+                            &crate::ambient_core::camera::components::active_camera(),
+                            &crate::ambient_core::transform::components::inv_local_to_world(),
+                            &crate::ambient_core::camera::components::fovy(),
+                            &crate::ambient_core::camera::components::aspect_ratio(),
+                            &crate::ambient_core::camera::components::perspective(),
+                            &crate::ambient_core::camera::components::far(),
+                        ],
+                    )
                 }
-                #[doc = "Returns the components that comprise *Perspective Camera* as a tuple.\n\nA perspective camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n  \"ambient_core::camera::PerspectiveCommonCamera\": { // Concept.\n    \"ambient_core::camera::fovy\": f32 = 1.0,\n    \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n    \"ambient_core::camera::Camera\": { // Concept.\n      \"ambient_core::camera::near\": f32 = 0.1,\n      \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::active_camera\": f32 = 0.0,\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::Transformable\": { // Concept.\n        \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n        \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      },\n    },\n  },\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Perspective Camera* as a tuple.\n\nA perspective camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
-                pub fn PerspectiveCamera() -> (Component<()>, Component<f32>) {
+                pub fn PerspectiveCamera() -> (
+                    Component<Vec3>,
+                    Component<Quat>,
+                    Component<Vec3>,
+                    Component<Mat4>,
+                    Component<f32>,
+                    Component<Mat4>,
+                    Component<Mat4>,
+                    Component<f32>,
+                    Component<Mat4>,
+                    Component<f32>,
+                    Component<f32>,
+                    Component<()>,
+                    Component<f32>,
+                ) {
                     (
+                        crate::ambient_core::transform::components::translation(),
+                        crate::ambient_core::transform::components::rotation(),
+                        crate::ambient_core::transform::components::scale(),
+                        crate::ambient_core::transform::components::local_to_world(),
+                        crate::ambient_core::camera::components::near(),
+                        crate::ambient_core::camera::components::projection(),
+                        crate::ambient_core::camera::components::projection_view(),
+                        crate::ambient_core::camera::components::active_camera(),
+                        crate::ambient_core::transform::components::inv_local_to_world(),
+                        crate::ambient_core::camera::components::fovy(),
+                        crate::ambient_core::camera::components::aspect_ratio(),
                         crate::ambient_core::camera::components::perspective(),
                         crate::ambient_core::camera::components::far(),
                     )
                 }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Perspective-Infinite-Reverse Camera*.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n  \"ambient_core::camera::PerspectiveCommonCamera\": { // Concept.\n    \"ambient_core::camera::fovy\": f32 = 1.0,\n    \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n    \"ambient_core::camera::Camera\": { // Concept.\n      \"ambient_core::camera::near\": f32 = 0.1,\n      \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::active_camera\": f32 = 0.0,\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::Transformable\": { // Concept.\n        \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n        \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      },\n    },\n  },\n}\n```\n"]
+                #[doc = "Makes a *Perspective-Infinite-Reverse Camera*.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n}\n```\n"]
                 pub fn make_PerspectiveInfiniteReverseCamera() -> Entity {
                     Entity::new()
-                        .with_merge(
-                            crate::ambient_core::camera::concepts::make_PerspectiveCommonCamera(),
+                        .with(
+                            crate::ambient_core::transform::components::translation(),
+                            Vec3::new(0f32, 0f32, 0f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::rotation(),
+                            Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::scale(),
+                            Vec3::new(1f32, 1f32, 1f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::local_to_world(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(crate::ambient_core::camera::components::near(), 0.1f32)
+                        .with(
+                            crate::ambient_core::camera::components::projection(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(
+                            crate::ambient_core::camera::components::projection_view(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(
+                            crate::ambient_core::camera::components::active_camera(),
+                            0f32,
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::inv_local_to_world(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(crate::ambient_core::camera::components::fovy(), 1f32)
+                        .with(
+                            crate::ambient_core::camera::components::aspect_ratio(),
+                            1f32,
                         )
                         .with(
                             crate::ambient_core::camera::components::perspective_infinite_reverse(),
                             (),
                         )
                 }
-                #[doc = "Checks if the entity is a *Perspective-Infinite-Reverse Camera*.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n  \"ambient_core::camera::PerspectiveCommonCamera\": { // Concept.\n    \"ambient_core::camera::fovy\": f32 = 1.0,\n    \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n    \"ambient_core::camera::Camera\": { // Concept.\n      \"ambient_core::camera::near\": f32 = 0.1,\n      \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::active_camera\": f32 = 0.0,\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::Transformable\": { // Concept.\n        \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n        \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      },\n    },\n  },\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Perspective-Infinite-Reverse Camera*.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_PerspectiveInfiniteReverseCamera(id: EntityId) -> bool {
-                    crate :: ambient_core :: camera :: concepts :: is_PerspectiveCommonCamera (id) && entity :: has_components (id , & [& crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()])
+                    entity::has_components(
+                        id,
+                        &[
+                            &crate::ambient_core::transform::components::translation(),
+                            &crate::ambient_core::transform::components::rotation(),
+                            &crate::ambient_core::transform::components::scale(),
+                            &crate::ambient_core::transform::components::local_to_world(),
+                            &crate::ambient_core::camera::components::near(),
+                            &crate::ambient_core::camera::components::projection(),
+                            &crate::ambient_core::camera::components::projection_view(),
+                            &crate::ambient_core::camera::components::active_camera(),
+                            &crate::ambient_core::transform::components::inv_local_to_world(),
+                            &crate::ambient_core::camera::components::fovy(),
+                            &crate::ambient_core::camera::components::aspect_ratio(),
+                            &crate::ambient_core::camera::components::perspective_infinite_reverse(
+                            ),
+                        ],
+                    )
                 }
-                #[doc = "Returns the components that comprise *Perspective-Infinite-Reverse Camera* as a tuple.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n  \"ambient_core::camera::PerspectiveCommonCamera\": { // Concept.\n    \"ambient_core::camera::fovy\": f32 = 1.0,\n    \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n    \"ambient_core::camera::Camera\": { // Concept.\n      \"ambient_core::camera::near\": f32 = 0.1,\n      \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::active_camera\": f32 = 0.0,\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::Transformable\": { // Concept.\n        \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n        \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      },\n    },\n  },\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Perspective-Infinite-Reverse Camera* as a tuple.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
-                pub fn PerspectiveInfiniteReverseCamera() -> (Component<()>) {
-                    (crate::ambient_core::camera::components::perspective_infinite_reverse())
+                pub fn PerspectiveInfiniteReverseCamera() -> (
+                    Component<Vec3>,
+                    Component<Quat>,
+                    Component<Vec3>,
+                    Component<Mat4>,
+                    Component<f32>,
+                    Component<Mat4>,
+                    Component<Mat4>,
+                    Component<f32>,
+                    Component<Mat4>,
+                    Component<f32>,
+                    Component<f32>,
+                    Component<()>,
+                ) {
+                    (
+                        crate::ambient_core::transform::components::translation(),
+                        crate::ambient_core::transform::components::rotation(),
+                        crate::ambient_core::transform::components::scale(),
+                        crate::ambient_core::transform::components::local_to_world(),
+                        crate::ambient_core::camera::components::near(),
+                        crate::ambient_core::camera::components::projection(),
+                        crate::ambient_core::camera::components::projection_view(),
+                        crate::ambient_core::camera::components::active_camera(),
+                        crate::ambient_core::transform::components::inv_local_to_world(),
+                        crate::ambient_core::camera::components::fovy(),
+                        crate::ambient_core::camera::components::aspect_ratio(),
+                        crate::ambient_core::camera::components::perspective_infinite_reverse(),
+                    )
                 }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Orthographic Camera*.\n\nAn orthographic camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n  \"ambient_core::camera::Camera\": { // Concept.\n    \"ambient_core::camera::near\": f32 = 0.1,\n    \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::active_camera\": f32 = 0.0,\n    \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::Transformable\": { // Concept.\n      \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    },\n  },\n}\n```\n"]
+                #[doc = "Makes a *Orthographic Camera*.\n\nAn orthographic camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n}\n```\n"]
                 pub fn make_OrthographicCamera() -> Entity {
                     Entity::new()
-                        .with_merge(crate::ambient_core::camera::concepts::make_Camera())
+                        .with(
+                            crate::ambient_core::transform::components::translation(),
+                            Vec3::new(0f32, 0f32, 0f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::rotation(),
+                            Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::scale(),
+                            Vec3::new(1f32, 1f32, 1f32),
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::local_to_world(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(crate::ambient_core::camera::components::near(), -1f32)
+                        .with(
+                            crate::ambient_core::camera::components::projection(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(
+                            crate::ambient_core::camera::components::projection_view(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
+                        .with(
+                            crate::ambient_core::camera::components::active_camera(),
+                            0f32,
+                        )
+                        .with(
+                            crate::ambient_core::transform::components::inv_local_to_world(),
+                            Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                        )
                         .with(crate::ambient_core::camera::components::orthographic(), ())
                         .with(
                             crate::ambient_core::camera::components::orthographic_left(),
@@ -685,32 +993,46 @@ mod raw {
                             crate::ambient_core::camera::components::orthographic_bottom(),
                             -1f32,
                         )
-                        .with(crate::ambient_core::camera::components::near(), -1f32)
                         .with(crate::ambient_core::camera::components::far(), 1f32)
                 }
-                #[doc = "Checks if the entity is a *Orthographic Camera*.\n\nAn orthographic camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n  \"ambient_core::camera::Camera\": { // Concept.\n    \"ambient_core::camera::near\": f32 = 0.1,\n    \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::active_camera\": f32 = 0.0,\n    \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::Transformable\": { // Concept.\n      \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    },\n  },\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Orthographic Camera*.\n\nAn orthographic camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_OrthographicCamera(id: EntityId) -> bool {
-                    crate::ambient_core::camera::concepts::is_Camera(id)
-                        && entity::has_components(
-                            id,
-                            &[
-                                &crate::ambient_core::camera::components::orthographic(),
-                                &crate::ambient_core::camera::components::orthographic_left(),
-                                &crate::ambient_core::camera::components::orthographic_right(),
-                                &crate::ambient_core::camera::components::orthographic_top(),
-                                &crate::ambient_core::camera::components::orthographic_bottom(),
-                                &crate::ambient_core::camera::components::near(),
-                                &crate::ambient_core::camera::components::far(),
-                            ],
-                        )
+                    entity::has_components(
+                        id,
+                        &[
+                            &crate::ambient_core::transform::components::translation(),
+                            &crate::ambient_core::transform::components::rotation(),
+                            &crate::ambient_core::transform::components::scale(),
+                            &crate::ambient_core::transform::components::local_to_world(),
+                            &crate::ambient_core::camera::components::near(),
+                            &crate::ambient_core::camera::components::projection(),
+                            &crate::ambient_core::camera::components::projection_view(),
+                            &crate::ambient_core::camera::components::active_camera(),
+                            &crate::ambient_core::transform::components::inv_local_to_world(),
+                            &crate::ambient_core::camera::components::orthographic(),
+                            &crate::ambient_core::camera::components::orthographic_left(),
+                            &crate::ambient_core::camera::components::orthographic_right(),
+                            &crate::ambient_core::camera::components::orthographic_top(),
+                            &crate::ambient_core::camera::components::orthographic_bottom(),
+                            &crate::ambient_core::camera::components::far(),
+                        ],
+                    )
                 }
-                #[doc = "Returns the components that comprise *Orthographic Camera* as a tuple.\n\nAn orthographic camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n  \"ambient_core::camera::Camera\": { // Concept.\n    \"ambient_core::camera::near\": f32 = 0.1,\n    \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::active_camera\": f32 = 0.0,\n    \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::Transformable\": { // Concept.\n      \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    },\n  },\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Orthographic Camera* as a tuple.\n\nAn orthographic camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
                 pub fn OrthographicCamera() -> (
-                    Component<()>,
+                    Component<Vec3>,
+                    Component<Quat>,
+                    Component<Vec3>,
+                    Component<Mat4>,
                     Component<f32>,
+                    Component<Mat4>,
+                    Component<Mat4>,
+                    Component<f32>,
+                    Component<Mat4>,
+                    Component<()>,
                     Component<f32>,
                     Component<f32>,
                     Component<f32>,
@@ -718,12 +1040,20 @@ mod raw {
                     Component<f32>,
                 ) {
                     (
+                        crate::ambient_core::transform::components::translation(),
+                        crate::ambient_core::transform::components::rotation(),
+                        crate::ambient_core::transform::components::scale(),
+                        crate::ambient_core::transform::components::local_to_world(),
+                        crate::ambient_core::camera::components::near(),
+                        crate::ambient_core::camera::components::projection(),
+                        crate::ambient_core::camera::components::projection_view(),
+                        crate::ambient_core::camera::components::active_camera(),
+                        crate::ambient_core::transform::components::inv_local_to_world(),
                         crate::ambient_core::camera::components::orthographic(),
                         crate::ambient_core::camera::components::orthographic_left(),
                         crate::ambient_core::camera::components::orthographic_right(),
                         crate::ambient_core::camera::components::orthographic_top(),
                         crate::ambient_core::camera::components::orthographic_bottom(),
-                        crate::ambient_core::camera::components::near(),
                         crate::ambient_core::camera::components::far(),
                     )
                 }
