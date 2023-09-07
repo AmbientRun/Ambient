@@ -72,6 +72,12 @@ By using a build script, you can also generate a `pipeline.toml` using Rust code
 {{ #include ../../../guest/rust/examples/assets/generate_pipeline/build.rs }}
 ```
 
+Which will generate the following toml:
+
+```toml
+{{ #include ../../../guest/rust/examples/assets/generate_pipeline/assets/pipeline.toml }}
+```
+
 See the [generate pipeline example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/assets/generate_pipeline) for a full example.
 
 ### Notes
