@@ -21,13 +21,9 @@ pub fn generate(
         .filter_map(|c| context.extract_item_if_relevant(items, *c))
         .map(|concept| {
             let concept = &*concept;
-            let make_concept = generate_make(items, type_printer, context, concept)?;
-            let is_concept = generate_is(items, type_printer, context, concept)?;
-            let concept_fn = generate_concept(items, type_printer, context, concept)?;
+            let old = old::generate(items, type_printer, context, concept)?;
             Ok(quote! {
-                #make_concept
-                #is_concept
-                #concept_fn
+                #old
             })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
@@ -47,139 +43,159 @@ pub fn generate(
     })
 }
 
-fn generate_make(
-    items: &ItemMap,
-    type_printer: &TypePrinter,
-    context: Context,
-    concept: &Concept,
-) -> anyhow::Result<TokenStream> {
-    let name = concept.data().id.as_str();
-    let make_comment = format!(
-        "Makes a *{}*.\n\n{}\n\n{}",
-        concept.name.as_deref().unwrap_or(name),
-        concept.description.as_ref().unwrap_or(&"".to_string()),
-        generate_component_list_doc_comment(items, type_printer, context, concept)?
-    );
-    let make_ident = quote::format_ident!("make_{}", name);
+mod old {
+    use super::*;
 
-    let components = concept
-        .required_components
-        .iter()
-        .map(|(id, default)| {
-            let path = context.get_path(items, None, id.as_resolved().unwrap())?;
-            let default = value_to_token_stream(
-                items,
-                default
-                    .suggested
-                    .as_ref()
-                    .expect("TEMP: suggested required")
-                    .as_resolved()
-                    .unwrap(),
-            )?;
-            Ok(quote! { with(#path(), #default) })
+    pub(super) fn generate(
+        items: &ItemMap,
+        type_printer: &TypePrinter,
+        context: Context,
+        concept: &Concept,
+    ) -> anyhow::Result<TokenStream> {
+        let make_concept = generate_make(items, type_printer, context, concept)?;
+        let is_concept = generate_is(items, type_printer, context, concept)?;
+        let concept_fn = generate_concept(items, type_printer, context, concept)?;
+        Ok(quote! {
+            #make_concept
+            #is_concept
+            #concept_fn
         })
-        .collect::<anyhow::Result<Vec<_>>>()?;
+    }
 
-    Ok(quote! {
-        #[allow(clippy::approx_constant)]
-        #[allow(non_snake_case)]
-        #[doc = #make_comment]
-        pub fn #make_ident() -> Entity {
-            Entity::new()
-                #(.#components)*
-        }
-    })
-}
+    fn generate_make(
+        items: &ItemMap,
+        type_printer: &TypePrinter,
+        context: Context,
+        concept: &Concept,
+    ) -> anyhow::Result<TokenStream> {
+        let name = concept.data().id.as_str();
+        let make_comment = format!(
+            "Makes a *{}*.\n\n{}\n\n{}",
+            concept.name.as_deref().unwrap_or(name),
+            concept.description.as_ref().unwrap_or(&"".to_string()),
+            generate_component_list_doc_comment(items, type_printer, context, concept)?
+        );
+        let make_ident = quote::format_ident!("make_{}", name);
 
-fn generate_is(
-    items: &ItemMap,
-    type_printer: &TypePrinter,
-    context: Context,
-    concept: &Concept,
-) -> anyhow::Result<TokenStream> {
-    let name = concept.data().id.as_str();
-    let is_comment = format!(
-        "Checks if the entity is a *{}*.\n\n{}\n\n{}",
-        concept.name.as_deref().unwrap_or(name),
-        concept.description.as_ref().unwrap_or(&"".to_string()),
-        generate_component_list_doc_comment(items, type_printer, context, concept)?,
-    );
-    let is_ident = quote::format_ident!("is_{}", name);
+        let components = concept
+            .required_components
+            .iter()
+            .map(|(id, default)| {
+                let path = context.get_path(items, None, id.as_resolved().unwrap())?;
+                let default = value_to_token_stream(
+                    items,
+                    default
+                        .suggested
+                        .as_ref()
+                        .expect("TEMP: suggested required")
+                        .as_resolved()
+                        .unwrap(),
+                )?;
+                Ok(quote! { with(#path(), #default) })
+            })
+            .collect::<anyhow::Result<Vec<_>>>()?;
 
-    let components = concept
-        .required_components
-        .iter()
-        .map(|(id, _)| {
-            let path = context.get_path(items, None, id.as_resolved().unwrap())?;
-            Ok(quote! { #path() })
-        })
-        .collect::<anyhow::Result<Vec<_>>>()?;
-
-    Ok(match context {
-        Context::Host => quote! {
-            #[doc = #is_comment]
+        Ok(quote! {
+            #[allow(clippy::approx_constant)]
             #[allow(non_snake_case)]
-            pub fn #is_ident(world: &crate::World, id: EntityId) -> bool {
-                world.has_components(id, &{
-                    let mut set = crate::ComponentSet::new();
-                    #(set.insert(#components.desc());)*
-                    set
-                })
+            #[doc = #make_comment]
+            pub fn #make_ident() -> Entity {
+                Entity::new()
+                    #(.#components)*
             }
-        },
-        Context::GuestApi | Context::GuestUser => quote! {
-            #[doc = #is_comment]
+        })
+    }
+
+    fn generate_is(
+        items: &ItemMap,
+        type_printer: &TypePrinter,
+        context: Context,
+        concept: &Concept,
+    ) -> anyhow::Result<TokenStream> {
+        let name = concept.data().id.as_str();
+        let is_comment = format!(
+            "Checks if the entity is a *{}*.\n\n{}\n\n{}",
+            concept.name.as_deref().unwrap_or(name),
+            concept.description.as_ref().unwrap_or(&"".to_string()),
+            generate_component_list_doc_comment(items, type_printer, context, concept)?,
+        );
+        let is_ident = quote::format_ident!("is_{}", name);
+
+        let components = concept
+            .required_components
+            .iter()
+            .map(|(id, _)| {
+                let path = context.get_path(items, None, id.as_resolved().unwrap())?;
+                Ok(quote! { #path() })
+            })
+            .collect::<anyhow::Result<Vec<_>>>()?;
+
+        Ok(match context {
+            Context::Host => quote! {
+                #[doc = #is_comment]
+                #[allow(non_snake_case)]
+                pub fn #is_ident(world: &crate::World, id: EntityId) -> bool {
+                    world.has_components(id, &{
+                        let mut set = crate::ComponentSet::new();
+                        #(set.insert(#components.desc());)*
+                        set
+                    })
+                }
+            },
+            Context::GuestApi | Context::GuestUser => quote! {
+                #[doc = #is_comment]
+                #[allow(non_snake_case)]
+                pub fn #is_ident(id: EntityId) -> bool {
+                    entity::has_components(id, &[
+                        #(&#components),*
+                    ])
+                }
+            },
+        })
+    }
+
+    fn generate_concept(
+        items: &ItemMap,
+        type_printer: &TypePrinter,
+        context: Context,
+        concept: &Concept,
+    ) -> anyhow::Result<TokenStream> {
+        let name = concept.data().id.as_str();
+        let fn_comment = format!(
+            "Returns the components that comprise *{}* as a tuple.\n\n{}\n\n{}",
+            concept.name.as_deref().unwrap_or(name),
+            concept.description.as_ref().unwrap_or(&"".to_string()),
+            generate_component_list_doc_comment(items, type_printer, context, concept)?,
+        );
+        let fn_ident = quote::format_ident!("tuple_{}", name);
+
+        let components = concept
+            .required_components
+            .iter()
+            .map(|(id, _)| {
+                let path = context.get_path(items, None, id.as_resolved().unwrap())?;
+                Ok(quote! { #path() })
+            })
+            .collect::<anyhow::Result<Vec<_>>>()?;
+
+        let fn_ret = concept
+            .required_components
+            .iter()
+            .map(|(id, _)| {
+                let component = &*items.get(id.as_resolved().unwrap());
+                type_printer.get(context, items, None, component.type_.as_resolved().unwrap())
+            })
+            .collect::<anyhow::Result<Vec<_>>>()?;
+
+        Ok(quote! {
+            #[doc = #fn_comment]
+            #[allow(clippy::type_complexity)]
             #[allow(non_snake_case)]
-            pub fn #is_ident(id: EntityId) -> bool {
-                entity::has_components(id, &[
-                    #(&#components),*
-                ])
+            pub fn #fn_ident() -> (#(Component<#fn_ret>),*) {
+               (#(#components),*)
             }
-        },
-    })
-}
-
-fn generate_concept(
-    items: &ItemMap,
-    type_printer: &TypePrinter,
-    context: Context,
-    concept: &Concept,
-) -> anyhow::Result<TokenStream> {
-    let name = concept.data().id.as_str();
-    let fn_comment = format!(
-        "Returns the components that comprise *{}* as a tuple.\n\n{}\n\n{}",
-        concept.name.as_deref().unwrap_or(name),
-        concept.description.as_ref().unwrap_or(&"".to_string()),
-        generate_component_list_doc_comment(items, type_printer, context, concept)?,
-    );
-    let fn_ident = quote::format_ident!("{}", name);
-
-    let components = concept
-        .required_components
-        .iter()
-        .map(|(id, _)| {
-            let path = context.get_path(items, None, id.as_resolved().unwrap())?;
-            Ok(quote! { #path() })
         })
-        .collect::<anyhow::Result<Vec<_>>>()?;
-
-    let fn_ret = concept
-        .required_components
-        .iter()
-        .map(|(id, _)| {
-            let component = &*items.get(id.as_resolved().unwrap());
-            type_printer.get(context, items, None, component.type_.as_resolved().unwrap())
-        })
-        .collect::<anyhow::Result<Vec<_>>>()?;
-
-    Ok(quote! {
-        #[doc = #fn_comment]
-        #[allow(clippy::type_complexity)]
-        #[allow(non_snake_case)]
-        pub fn #fn_ident() -> (#(Component<#fn_ret>),*) {
-           (#(#components),*)
-        }
-    })
+    }
 }
 
 pub fn generate_component_list_doc_comment(
