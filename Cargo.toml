@@ -195,10 +195,7 @@ http = { version = "0.2.9" }
 #
 # WASM
 #
-wasmtime = { version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime", features = ["component-model"] }
-wasmtime-wasi = {version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
 wasi-cap-std-sync = { version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
-wasi-common = { version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
 wit-bindgen-core = "0.9.0"
 wit-bindgen-rust = "0.9.0"
 wit-component = "0.11.0"
@@ -211,9 +208,9 @@ wit-component = "0.11.0"
 # js-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 # wasm-bindgen-futures = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 # wasm-bindgen-shared = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-wasmtime = { git = "https://github.com/bytecodealliance/wasmtime" }
-wasmtime-wasi = { git = "https://github.com/bytecodealliance/wasmtime" }
-wasi-common = { version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
+wasmtime = { git = "https://github.com/bytecodealliance/wasmtime" , rev = "4274a3d264910172c1af5c103bdc663cf595cf49" }
+wasmtime-wasi = { git = "https://github.com/bytecodealliance/wasmtime", rev = "4274a3d264910172c1af5c103bdc663cf595cf49" }
+wasi-common = { version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime", rev = "4274a3d264910172c1af5c103bdc663cf595cf49" }
 
 [profile.release]
 incremental = true

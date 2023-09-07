@@ -33,7 +33,7 @@ impl SyncAssetKey<Result<Engine, Arc<anyhow::Error>>> for EngineKey {
         #[cfg(not(target_os = "unknown"))]
         {
             config.debug_info(true);
-            config.wasm_backtrace_details(wasmtime::WasmBacktraceDetails::Enable);
+            config.wasm_backtrace_details(wasm_bridge::WasmBacktraceDetails::Enable);
         }
 
         config.wasm_component_model(true);

@@ -72,9 +72,6 @@ wasm-bridge-js = { git = "https://github.com/AmbientRun/wasm-bridge", branch = "
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 # NOTE: accessible through `wasm-bridge`. This is used to enforce specific features on the `wasmtime` crate
-wasmtime = { workspace = true  }
-wasmtime-wasi = { workspace = true, features = [ "sync" ] }
-wasi-common = { workspace = true }
 wasi-cap-std-sync = { workspace = true }
 
 wasm-bindgen = { workspace = true }

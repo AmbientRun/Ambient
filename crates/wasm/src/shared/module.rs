@@ -21,7 +21,7 @@ use wasm_bridge::{
 // use wasmtime_wasi::preview2 as wasi_preview2;
 
 #[cfg(not(target_os = "unknown"))]
-use wasmtime_wasi::preview2::{DirPerms, FilePerms};
+use wasm_bridge::wasi::preview2::{DirPerms, FilePerms};
 
 #[derive(Clone)]
 pub struct ModuleBytecode(pub Vec<u8>);
@@ -200,7 +200,7 @@ use wasm_bridge_js::{
 };
 
 #[cfg(not(target_os = "unknown"))]
-use wasmtime::component::{self, Instance};
+use wasm_bridge::component::{self, Instance};
 
 /// Stores the execution context and store
 struct InstanceState<Bindings: BindingsBound> {
@@ -442,7 +442,7 @@ impl wasm_bridge_js::wasi::preview2::OutputStream for WasiOutputStream {
 
 #[cfg(not(target_os = "unknown"))]
 #[async_trait::async_trait]
-impl wasmtime_wasi::preview2::HostOutputStream for WasiOutputStream {
+impl wasm_bridge::wasi::preview2::HostOutputStream for WasiOutputStream {
     async fn ready(&mut self) -> anyhow::Result<()> {
         Ok(())
     }
