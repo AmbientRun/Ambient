@@ -29,6 +29,7 @@ use super::{
     ProcessCtxKey,
 };
 use crate::pipelines::download_image;
+use ambient_gpu::sampler::SamplerKey;
 
 pub mod quixel_surfaces;
 
@@ -197,7 +198,14 @@ pub async fn to_mat(
         double_sided: pipeline.double_sided,
         metallic: pipeline.metallic.unwrap_or(1.),
         roughness: pipeline.roughness.unwrap_or(1.),
-        sampler: pipeline.sampler,
+        sampler: pipeline.sampler.map(|sampler| SamplerKey {
+            address_mode_u: sampler.address_mode_u,
+            address_mode_v: sampler.address_mode_v,
+            address_mode_w: sampler.address_mode_w,
+            mag_filter: sampler.mag_filter,
+            min_filter: sampler.min_filter,
+            mipmap_filter: sampler.mipmap_filter,
+        }),
     }
     .relative_path_from(out_root))
 }

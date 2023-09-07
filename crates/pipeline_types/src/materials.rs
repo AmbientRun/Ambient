@@ -1,4 +1,3 @@
-use ambient_gpu::sampler::SamplerKey;
 use ambient_native_std::asset_url::{AbsAssetUrl, AssetUrl};
 use glam::Vec4;
 use serde::{Deserialize, Serialize};
@@ -84,4 +83,14 @@ pub struct QuixelSurfaceDef {
     pub ao: Option<AbsAssetUrl>,
     pub normal: Option<AbsAssetUrl>,
     pub opacity: Option<AbsAssetUrl>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SamplerKey {
+    pub address_mode_u: wgpu_types::AddressMode,
+    pub address_mode_v: wgpu_types::AddressMode,
+    pub address_mode_w: wgpu_types::AddressMode,
+    pub mag_filter: wgpu_types::FilterMode,
+    pub min_filter: wgpu_types::FilterMode,
+    pub mipmap_filter: wgpu_types::FilterMode,
 }
