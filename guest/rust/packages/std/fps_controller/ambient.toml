@@ -23,6 +23,12 @@ player_intermediate_rotation = { type = "Vec2", attributes = ["Debuggable"] }
 [messages.Input]
 description = "Describes the input state of the player."
 [messages.Input.fields]
-direction = "Vec2"
+run_direction = "Vec2"
 body_yaw = "F32"
 head_pitch = "F32"
+shooting = "Bool"
+ducking = "Bool"
+running = "Bool"
+
+[messages.Jump]
+fields = {}

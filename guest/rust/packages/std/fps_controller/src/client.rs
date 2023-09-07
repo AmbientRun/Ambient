@@ -14,7 +14,10 @@ use ambient_api::{
     prelude::*,
 };
 use packages::{
-    this::{components::player_intermediate_rotation, messages::Input},
+    this::{
+        components::player_intermediate_rotation,
+        messages::{Input, Jump},
+    },
     unit_schema::components::head_ref,
 };
 
@@ -47,12 +50,19 @@ pub fn main() {
             |rot| *rot += delta.mouse_position * 0.01,
         );
 
+        if input.keys.contains(&KeyCode::Space) {
+            Jump {}.send_server_reliable();
+        }
+
         Input {
-            direction: displace,
+            run_direction: displace,
             body_yaw: rot.x,
             head_pitch: rot.y,
+            running: input.keys.contains(&KeyCode::LShift),
+            ducking: input.keys.contains(&KeyCode::LControl),
+            shooting: input.mouse_buttons.contains(&MouseButton::Left),
         }
-        .send_server_reliable();
+        .send_server_unreliable();
     });
 
     spawn_query((is_player(), user_id(), head_ref())).bind(move |players| {

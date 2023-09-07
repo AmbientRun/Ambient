@@ -20,10 +20,15 @@ strafe_speed_multiplier = { type = "F32", description = "The speed the unit can 
     "Networked",
 ] }
 health = { type = "F32", attributes = ["Debuggable", "Networked"] }
+
 jumping = { type = "Bool", attributes = ["Debuggable", "Networked"] }
 running = { type = "Bool", attributes = ["Debuggable", "Networked"] }
+shooting = { type = "Bool", attributes = ["Debuggable", "Networked"] }
+
 vertical_velocity = { type = "F32", name = "Unit vertical speed", description = "The units's vertical speed.", attributes = [
     "Debuggable",
     "Networked",
 ] }
+is_on_ground = { type = "Bool", attributes = ["Debuggable", "Networked"] }
+
 head_ref = { type = "EntityId", attributes = ["Debuggable", "Networked"] }

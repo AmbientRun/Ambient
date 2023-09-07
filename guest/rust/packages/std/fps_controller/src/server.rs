@@ -11,8 +11,13 @@ use ambient_api::{
     prelude::*,
 };
 use packages::{
-    this::{components::use_fps_controller, messages::Input},
-    unit_schema::components::{head_ref, run_direction, running, vertical_velocity},
+    this::{
+        components::use_fps_controller,
+        messages::{Input, Jump},
+    },
+    unit_schema::components::{
+        head_ref, is_on_ground, jumping, run_direction, running, shooting, vertical_velocity,
+    },
 };
 use std::f32::consts::PI;
 
@@ -26,7 +31,8 @@ pub fn main() {
                     .with_merge(make_character_controller())
                     .with(run_direction(), Vec2::ZERO)
                     .with(vertical_velocity(), 0.)
-                    .with(running(), false),
+                    .with(running(), false)
+                    .with(jumping(), false),
             );
         }
     });
@@ -54,8 +60,10 @@ pub fn main() {
             return;
         };
 
-        entity::set_component(player_id, run_direction(), msg.direction);
-        entity::set_component(player_id, rotation(), Quat::from_rotation_z(msg.body_yaw));
+        entity::add_component(player_id, run_direction(), msg.run_direction);
+        entity::add_component(player_id, running(), msg.running);
+        entity::add_component(player_id, shooting(), msg.shooting);
+        entity::add_component(player_id, rotation(), Quat::from_rotation_z(msg.body_yaw));
         if let Some(head) = get_component(player_id, head_ref()) {
             set_component(
                 head,
@@ -64,6 +72,17 @@ pub fn main() {
                     * Quat::from_rotation_z(PI / 2.)
                     * Quat::from_rotation_x(PI / 2.),
             );
+        }
+    });
+
+    Jump::subscribe(move |ctx, _msg| {
+        let Some(player_id) = ctx.client_entity_id() else {
+            return;
+        };
+
+        if get_component(player_id, is_on_ground()).unwrap_or_default() {
+            entity::add_component(player_id, vertical_velocity(), 0.1);
+            entity::add_component(player_id, jumping(), true);
         }
     });
 }
