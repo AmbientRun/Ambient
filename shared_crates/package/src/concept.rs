@@ -11,3 +11,21 @@ pub struct Concept {
     pub extends: Vec<ItemPathBuf>,
     pub components: IndexMap<ItemPathBuf, toml::Value>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cannot_use_optional_as_component_name() {
+        let concept = r#"
+        [components]
+        optional = "lol"
+        "#;
+
+        assert_eq!(
+            toml::from_str::<Concept>(concept).unwrap_err().message(),
+            "the item identifier `optional` is not a valid snake_case identifier (identifier `optional` is reserved) or a valid PascalCase identifier (identifier `optional` must start with an uppercase ASCII character)"
+        );
+    }
+}
