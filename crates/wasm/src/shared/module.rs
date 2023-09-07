@@ -6,7 +6,6 @@ use super::{engine::EngineKey, Source};
 use ambient_ecs::{EntityId, World};
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_sys::task::PlatformBoxFuture;
-use bytes::Bytes;
 use data_encoding::BASE64;
 use flume::TrySendError;
 use parking_lot::RwLock;
@@ -448,7 +447,7 @@ impl wasmtime_wasi::preview2::HostOutputStream for WasiOutputStream {
         Ok(())
     }
 
-    fn write(&mut self, buf: Bytes) -> anyhow::Result<(usize, preview2::StreamState)> {
+    fn write(&mut self, buf: bytes::Bytes) -> anyhow::Result<(usize, preview2::StreamState)> {
         let msg = std::str::from_utf8(&buf)?;
 
         match self.0.try_send(msg.into()) {

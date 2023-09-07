@@ -195,10 +195,10 @@ http = { version = "0.2.9" }
 #
 # WASM
 #
-wasmtime = { version = "13.0.0", git = "https://github.com/bytecodealliance/wasmtime", features = ["component-model"] }
-wasmtime-wasi = {version = "13.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
-wasi-cap-std-sync = { version = "13.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
-wasi-common = { version = "13.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
+wasmtime = { version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime", features = ["component-model"] }
+wasmtime-wasi = {version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
+wasi-cap-std-sync = { version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
+wasi-common = { version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
 wit-bindgen-core = "0.9.0"
 wit-bindgen-rust = "0.9.0"
 wit-component = "0.11.0"
@@ -213,7 +213,7 @@ wit-component = "0.11.0"
 # wasm-bindgen-shared = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 wasmtime = { git = "https://github.com/bytecodealliance/wasmtime" }
 wasmtime-wasi = { git = "https://github.com/bytecodealliance/wasmtime" }
-wasi-common = { version = "13.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
+wasi-common = { version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime" }
 
 [profile.release]
 incremental = true

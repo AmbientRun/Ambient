@@ -245,7 +245,7 @@ pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
     assets: &AssetCache,
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
     bindings: fn(EntityId) -> Bindings,
-    preopened_dir_path: Option<&'a Path>,
+    _preopened_dir_path: Option<&'a Path>,
 ) -> anyhow::Result<()> {
     world.add_resource(self::messenger(), messenger);
     world.add_resource(
@@ -256,7 +256,7 @@ pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
     world.add_resource(message::pending_messages(), vec![]);
 
     #[cfg(not(target_os = "unknown"))]
-    if let Some(preopened_dir_path) = preopened_dir_path {
+    if let Some(preopened_dir_path) = _preopened_dir_path {
         std::fs::create_dir_all(preopened_dir_path)?;
         world.add_resource(
             preopened_dir(),
