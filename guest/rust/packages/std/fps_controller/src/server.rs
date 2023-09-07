@@ -29,6 +29,7 @@ pub fn main() {
                 id,
                 Entity::new()
                     .with_merge(make_character_controller())
+                    .with_merge(make_transformable())
                     .with(run_direction(), Vec2::ZERO)
                     .with(vertical_velocity(), 0.)
                     .with(running(), false)

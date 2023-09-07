@@ -7,15 +7,15 @@ use ambient_api::{
             concepts::make_perspective_infinite_reverse_camera,
         },
         messages::Frame,
-        player::components::{is_player, local_user_id, user_id},
+        player::components::is_player,
         transform::components::{local_to_parent, translation},
     },
-    entity::{add_child, mutate_component_with_default},
+    entity::{add_child, get_component, mutate_component_with_default, set_component},
     prelude::*,
 };
 use packages::{
     this::{
-        components::player_intermediate_rotation,
+        components::{camera_distance, player_intermediate_rotation},
         messages::{Input, Jump},
     },
     unit_schema::components::head_ref,
@@ -65,17 +65,17 @@ pub fn main() {
         .send_server_unreliable();
     });
 
-    spawn_query((is_player(), user_id(), head_ref())).bind(move |players| {
-        for (id, (_, user, head)) in players {
-            let local_user_id =
-                entity::get_component(entity::resources(), local_user_id()).unwrap();
-            if user == local_user_id {
-                eprintln!("Attaching camera to player {}", user);
+    spawn_query((is_player(), head_ref())).bind(move |players| {
+        for (id, (_, head)) in players {
+            if id == player::get_local() {
                 let camera = Entity::new()
                     .with_merge(make_perspective_infinite_reverse_camera())
                     .with(aspect_ratio_from_window(), EntityId::resources())
                     .with(main_scene(), ())
-                    .with(translation(), -Vec3::Z * 4.)
+                    .with(
+                        translation(),
+                        -Vec3::Z * get_component(id, camera_distance()).unwrap_or(4.),
+                    )
                     .with(local_to_parent(), Default::default())
                     .with(name(), "Camera".to_string())
                     .spawn();
@@ -85,4 +85,11 @@ pub fn main() {
             }
         }
     });
+    change_query((camera_distance(), player_camera_ref()))
+        .track_change(camera_distance())
+        .bind(|entries| {
+            for (_id, (dist, cam)) in entries {
+                set_component(cam, translation(), -Vec3::Z * dist);
+            }
+        });
 }
