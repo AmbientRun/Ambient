@@ -40,7 +40,7 @@ use crate::{
     dropdown::Tooltip,
     layout::{FlowColumn, FlowRow},
     text::Text,
-    HooksExt, UIBase, UIElement, UIExt,
+    use_keyboard_input, UIBase, UIElement, UIExt,
 };
 
 #[derive(Clone, Debug)]
@@ -502,7 +502,7 @@ impl ElementComponent for Hotkey {
             on_invoke,
         } = *self;
         let (is_pressed, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
-        hooks.use_keyboard_input({
+        use_keyboard_input(hooks, {
             let is_pressed = is_pressed.clone();
             move |world, keycode, modifiers, pressed| {
                 if let Some(virtual_keycode) = keycode {

@@ -7,6 +7,7 @@ use ambient_api::{
         text::{components::font_style, types::FontStyle},
     },
     prelude::*,
+    ui::use_keyboard_input,
 };
 use shared::*;
 
@@ -55,7 +56,7 @@ pub fn main() {
 #[element_component]
 pub fn App(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
     let (toggle, set_toggle) = hooks.use_state(false);
-    hooks.use_keyboard_input(move |_, keycode, modifiers, pressed| {
+    use_keyboard_input(hooks, move |_, keycode, modifiers, pressed| {
         if modifiers == ModifiersState::empty() && keycode == Some(VirtualKeyCode::F1) && !pressed {
             set_toggle(!toggle);
         }

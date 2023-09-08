@@ -21,8 +21,8 @@ use ambient_shared_types::VirtualKeyCode;
 use ambient_ui_native::{
     command_modifier,
     layout::{docking, width, Docking},
-    margin, padding, space_between_items, Borders, Button, ButtonStyle, Dock, FlowRow, HooksExt,
-    Hotkey, ScreenContainer, Separator, StylesExt, STREET,
+    margin, padding, space_between_items, use_keyboard_input, Borders, Button, ButtonStyle, Dock,
+    FlowRow, Hotkey, ScreenContainer, Separator, StylesExt, STREET,
 };
 use tokio::time::sleep;
 
@@ -181,7 +181,7 @@ impl ElementComponent for EditorBuildMode {
                 update_targets,
             );
         }
-        hooks.use_keyboard_input(move |_world, keycode, _modifiers, pressed| {
+        use_keyboard_input(hooks, move |_world, keycode, _modifiers, pressed| {
             if let Some(keycode) = keycode {
                 match keycode {
                     VirtualKeyCode::LShift => {
