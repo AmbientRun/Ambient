@@ -48,7 +48,7 @@ pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {
             }))
         }),
         create_rpc_registry: cb(create_server_rpc_registry),
-        inner: Dock::el(vec![GameView { show_debug: true }.el()]),
+        inner: Dock::el(vec![GameView { show_debug: false }.el()]),
     }
     .el()
 }
