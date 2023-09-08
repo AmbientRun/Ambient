@@ -1,5 +1,6 @@
 use ambient_audio::AudioMixer;
 use ambient_ecs::{EntityId, SystemGroup, World};
+use ambient_native_std::asset_cache::AssetCache;
 use ambient_wasm::shared::{module_name, MessageType};
 
 use std::sync::Arc;
@@ -8,7 +9,11 @@ pub fn systems() -> SystemGroup {
     ambient_wasm::client::systems()
 }
 
-pub fn initialize(world: &mut World, mixer: Option<AudioMixer>) -> anyhow::Result<()> {
+pub fn initialize(
+    world: &mut World,
+    assets: &AssetCache,
+    mixer: Option<AudioMixer>,
+) -> anyhow::Result<()> {
     let messenger = Arc::new(
         |world: &World, id: EntityId, type_: MessageType, message: &str| {
             let name = world.get_cloned(id, module_name()).unwrap_or_default();
@@ -32,7 +37,7 @@ pub fn initialize(world: &mut World, mixer: Option<AudioMixer>) -> anyhow::Resul
         world.add_resource(ambient_world_audio::audio_mixer(), mixer);
     }
 
-    ambient_wasm::client::initialize(world, messenger)?;
+    ambient_wasm::client::initialize(world, assets, messenger)?;
 
     Ok(())
 }

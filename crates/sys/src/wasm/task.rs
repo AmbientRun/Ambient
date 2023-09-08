@@ -66,20 +66,20 @@ impl RuntimeHandle {
     }
 }
 
-pub struct PlatformBoxFutureImpl<T>(Pin<Box<dyn Future<Output = T>>>);
+pub struct PlatformBoxFutureImpl<'a, T>(Pin<Box<dyn Future<Output = T> + 'a>>);
 
-impl<T> PlatformBoxFutureImpl<T> {
-    pub fn from_boxed(fut: Pin<Box<dyn Future<Output = T>>>) -> Self {
+impl<'a, T> PlatformBoxFutureImpl<'a, T> {
+    pub fn from_boxed(fut: Pin<Box<dyn Future<Output = T> + 'a>>) -> Self {
         Self(fut)
     }
 
     #[inline]
-    pub fn into_local(self) -> Pin<Box<dyn Future<Output = T>>> {
+    pub fn into_local(self) -> Pin<Box<dyn Future<Output = T> + 'a>> {
         self.0
     }
 }
 
-impl<T> Future for PlatformBoxFutureImpl<T> {
+impl<'a, T> Future for PlatformBoxFutureImpl<'a, T> {
     type Output = T;
 
     #[inline]

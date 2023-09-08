@@ -69,7 +69,11 @@ fn main() {
 
             let mut generator = wit_bindgen_rust::Opts::default().build();
             let mut resolve = Resolve::new();
-            let pkg = resolve.push_dir(Path::new("wit")).unwrap().0;
+
+            let pkg = resolve
+                .push_dir(Path::new("wit"))
+                .expect("Failed to parse wit package")
+                .0;
 
             let mut files = Files::default();
             let world = resolve.select_world(pkg, None).unwrap();

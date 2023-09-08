@@ -246,9 +246,15 @@ impl<'de> serde::Deserialize<'de> for WorldChangeTag {
 /// let mut deserializer = DiffSerializer::default();
 /// assert!(deserializer.deserialize(new_serialized).is_err());
 /// ```
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct DiffSerializer {
     known_component_paths: HashMap<u32, String>,
+}
+
+impl std::fmt::Debug for DiffSerializer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DiffSerializer").finish_non_exhaustive()
+    }
 }
 impl DiffSerializer {
     pub fn serialize(&mut self, diff: &WorldDiffView) -> Result<Bytes, bincode::Error> {

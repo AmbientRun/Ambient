@@ -25,6 +25,7 @@ pub trait IntoBindgen {
 /// Implemented on the WIT type to convert to a Rust type.
 #[allow(clippy::wrong_self_convention)]
 pub trait FromBindgen {
+    /// The Rust representation
     type Item;
     fn from_bindgen(self) -> Self::Item;
 }
@@ -274,6 +275,20 @@ impl FromBindgen for wit::types::Duration {
     }
 }
 
+impl FromBindgen for wit::types::Empty {
+    type Item = ();
+
+    fn from_bindgen(self) -> Self::Item {}
+}
+
+impl IntoBindgen for () {
+    type Item = wit::types::Empty;
+
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::Empty { dummy: 0 }
+    }
+}
+
 macro_rules! bindgen_passthrough {
     ($type:ty) => {
         impl IntoBindgen for $type {
@@ -291,7 +306,10 @@ macro_rules! bindgen_passthrough {
     };
 }
 
-bindgen_passthrough!(());
+// Empty types are at the moment no longer supported by the ABI as it is not handled well
+// by languages such as C++.
+// See: <https://github.com/WebAssembly/component-model/commit/e6d50af577a2fc28ed93c18afedef6d3729d98f4>
+// bindgen_passthrough!(());
 bindgen_passthrough!(bool);
 bindgen_passthrough!(f32);
 bindgen_passthrough!(f64);

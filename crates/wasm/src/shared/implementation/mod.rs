@@ -1,14 +1,8 @@
-#[cfg(feature = "wit")]
 pub mod asset;
-#[cfg(feature = "wit")]
 pub mod component;
-#[cfg(feature = "wit")]
 pub mod entity;
-#[cfg(feature = "wit")]
 pub mod message;
-#[cfg(feature = "wit")]
 pub mod package;
-#[cfg(feature = "wit")]
 pub mod player;
 
 pub fn unsupported<T>() -> anyhow::Result<T> {

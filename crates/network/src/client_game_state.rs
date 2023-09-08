@@ -107,6 +107,9 @@ impl ClientGameState {
         }
     }
     #[profiling::function]
+    /// Executes a frame of the client
+    ///
+    /// **Note**: must not execute in a tokio context
     pub fn on_frame(&mut self, gpu: &Gpu, target: &RenderTarget) {
         let _span = debug_span!("ClientGameState.on_frame").entered();
 

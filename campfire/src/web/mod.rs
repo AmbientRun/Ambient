@@ -12,6 +12,7 @@ mod serve;
 pub enum Web {
     /// Build the web client to WebAssembly
     Build(BuildOptions),
+    Check(BuildOptions),
     /// Launches chrome with the correct flags to explicitly trust
     /// the self-signed certificate
     OpenBrowser,
@@ -21,7 +22,11 @@ pub enum Web {
 
 pub async fn run(command: Web) -> anyhow::Result<()> {
     match command {
-        Web::Build(args) => build::run(&args).await,
+        Web::Build(args) => {
+            args.build().await?;
+            Ok(())
+        }
+        Web::Check(args) => args.check().await,
         Web::OpenBrowser => {
             #[cfg(feature = "openssl")]
             {

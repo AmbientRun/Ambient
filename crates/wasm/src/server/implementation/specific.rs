@@ -23,22 +23,19 @@ use crate::shared::{
     message::{Source, Target},
 };
 
-#[cfg(all(feature = "wit", feature = "physics"))]
 mod physics;
 
-#[cfg(feature = "wit")]
 #[async_trait::async_trait]
 impl shared::wit::server_asset::Host for Bindings {}
 
-#[cfg(feature = "wit")]
 #[async_trait::async_trait]
 impl shared::wit::server_message::Host for Bindings {
-    async fn send(
+    fn send(
         &mut self,
         target: shared::wit::server_message::Target,
         name: String,
         data: Vec<u8>,
-    ) -> anyhow::Result<()> {
+    ) -> wasm_bridge::Result<()> {
         use shared::wit::server_message::Target as WitTarget;
         let module_id = self.id;
         let world = self.world_mut();
@@ -77,7 +74,7 @@ fn send_networked(
     name: String,
     data: Vec<u8>,
     reliable: bool,
-) -> anyhow::Result<()> {
+) -> wasm_bridge::Result<()> {
     let connections: Vec<_> = query((user_id(), player_transport()))
         .incl(is_player())
         .iter(world, None)
@@ -97,16 +94,15 @@ fn send_networked(
     Ok(())
 }
 
-#[async_trait::async_trait]
 impl shared::wit::server_http::Host for Bindings {
-    async fn get(&mut self, url: String) -> anyhow::Result<()> {
+    fn get(&mut self, url: String) -> wasm_bridge::Result<()> {
         let id = self.id;
         let world = self.world_mut();
         let assets = world.resource(asset_cache());
         let runtime = world.resource(runtime());
         let async_run = world.resource(async_run()).clone();
 
-        async fn make_request(url: String) -> anyhow::Result<(u32, Vec<u8>)> {
+        async fn make_request(url: String) -> wasm_bridge::Result<(u32, Vec<u8>)> {
             let response = reqwest::get(url).await?;
             Ok((
                 response.status().as_u16() as u32,

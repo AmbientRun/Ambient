@@ -10,6 +10,7 @@ use crate::{
         wit,
     },
 };
+
 use ambient_shared_types::primitive_component_definitions;
 use std::time::Duration;
 

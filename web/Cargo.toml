@@ -30,6 +30,7 @@ ambient_ecs_editor = { path = "../crates/ecs_editor" }
 ambient_debugger = { path = "../crates/debugger" }
 ambient_primitives = { path = "../crates/primitives" }
 ambient_client_shared = { path = "../crates/client_shared/" }
+ambient_water = { path = "../crates/water/" }
 ambient_package_semantic_native = { path = "../crates/package_semantic_native/" }
 
 url = "2.3"

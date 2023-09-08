@@ -39,7 +39,7 @@ web-sys = { version = "0.3", features = [
 js-sys = "0.3"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
-gloo = { version = "0.8", features = ["futures"] }
+gloo = { version = "0.9", features = ["futures"] }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 # Note: not a workspace dependency. The goal is to not use tokio outside of this `sys` abstraction at all
