@@ -35,7 +35,6 @@ pub fn send(
     data: Vec<u8>,
 ) {
     if matches!(target, Target::All { .. }) {
-        println!("SENDING LOLO: {:?} {}", name, data.len());
         world
             .resource_mut(world_events())
             .add_event((source, name.clone(), data.clone()));

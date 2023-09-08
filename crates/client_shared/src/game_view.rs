@@ -23,8 +23,8 @@ use ambient_layout::Docking;
 use ambient_network::client::{ClientState, GameClientRenderTarget, GameClientWorld};
 use ambient_shared_types::CursorIcon;
 use ambient_ui_native::{
-    cb, docking, padding, set_focus, width, Borders, Button, Dock, MeasureSize, ScrollArea,
-    ScrollAreaSizing, UIExt, STREET,
+    cb, docking, padding, width, Borders, Button, Dock, MeasureSize, ScrollArea, ScrollAreaSizing,
+    UIExt, STREET,
 };
 use glam::{uvec2, vec4, Vec2};
 
@@ -204,11 +204,9 @@ fn SyncFocus(hooks: &mut Hooks) -> Element {
     let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
     use_module_message::<FocusChanged>(hooks, {
         to_owned!(client_state);
-        move |world, _, msg| {
+        move |_world, _, msg| {
             let mut state = client_state.game_state.lock();
-            println!("-> Got host to guest focus: {:?}", msg);
             if !msg.from_external {
-                println!("Syncing focus: {}", world.resource(focus()));
                 *state.world.resource_mut(focus()) = msg.focus.clone();
                 state
                     .world
@@ -234,8 +232,6 @@ fn SyncFocus(hooks: &mut Hooks) -> Element {
         let messages =
             read_messages::<FocusChanged>(&mut reader, state.world.resource_mut(world_events()));
         if let Some(msg) = messages.into_iter().next() {
-            println!("<- Got guest to host focus: {:?}", msg);
-            // println!("readback: {}", messages.len());
             if !msg.from_external {
                 *world.resource_mut(focus()) = msg.focus.clone();
                 world

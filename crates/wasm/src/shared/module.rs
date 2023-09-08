@@ -1,10 +1,10 @@
 use crate::shared;
 
+use super::engine::EngineKey;
 #[cfg(feature = "wit")]
 use super::ModuleStateMaker;
-use super::WorldEventSource;
 use super::{bindings::BindingsBound, conversion::IntoBindgen};
-use super::{engine::EngineKey, Source};
+use super::{ModuleStateMaker, WorldEventSource};
 use ambient_ecs::{EntityId, World};
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_sys::task::PlatformBoxFuture;
