@@ -12,9 +12,7 @@ pub mod wit;
 
 pub use ambient_ecs::generated::wasm::components::*;
 use ambient_sys::task::PlatformBoxFuture;
-pub use internal::{
-    messenger, module_bytecode, module_errors, module_state, module_state_maker, remote_paired_id,
-};
+pub use internal::{messenger, module_bytecode, module_errors, module_state, module_state_maker};
 pub use module::*;
 
 use std::{path::Path, str::FromStr, sync::Arc};

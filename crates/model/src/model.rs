@@ -212,7 +212,11 @@ impl Model {
                 );
                 for (transform, root) in transform_roots.iter().zip(roots.iter()) {
                     world.set(*transform, parent(), *root).unwrap();
-                    world.set(*root, children(), vec![*transform]).unwrap();
+                    if let Ok(childs) = world.get_mut(*root, children()) {
+                        childs.push(*transform);
+                    } else {
+                        world.set(*root, children(), vec![*transform]).unwrap();
+                    }
                 }
                 transform_roots
             } else {

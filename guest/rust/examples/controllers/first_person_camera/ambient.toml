@@ -7,27 +7,8 @@ repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/example
 type = "Game"
 content = { type = "Playable", example = true }
 
-[components]
-ball_ref = { type = "EntityId", name = "Ball ref", description = "The ball entity.", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-player_head_ref = { type = "EntityId", name = "Player head ref", description = "The player's head.", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-player_movement_direction = { type = "Vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
-    "Debuggable",
-] }
-player_yaw = { type = "F32", name = "Player yaw", description = "The player's yaw.", attributes = [
-    "Debuggable",
-] }
-player_pitch = { type = "F32", name = "Player pitch", description = "The player's pitch.", attributes = [
-    "Debuggable",
-] }
 
-[messages.Input]
-description = "Describes the input state of the player."
-[messages.Input.fields]
-direction = "Vec2"
-mouse_delta = "Vec2"
+[dependencies]
+base_assets = { path = "../../../packages/std/base_assets", deployment = "5rkoJAVgqZjLupp2OQbIsW" }
+fps_controller = { path = "../../../packages/std/fps_controller", deployment = "AUB6aEaSzFVi2H20HQo17" }
+character_animation = { path = "../../../packages/std/character_animation", deployment = "126RuLU9V6r5acXZVH91R4" }

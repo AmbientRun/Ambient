@@ -4,7 +4,7 @@ use ambient_api::{
     core::player::components::is_player,
     core::rect::components::{background_color, line_from, line_to, line_width},
     prelude::*,
-    ui::ImageFromUrl,
+    ui::{use_keyboard_input, use_window_logical_resolution, ImageFromUrl},
 };
 
 use packages::{
@@ -74,15 +74,15 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
             url: assets::url("afps.png"),
         }
         .el()
-        .with(width(), hooks.use_window_logical_resolution().x as f32)
-        .with(height(), hooks.use_window_logical_resolution().y as f32),
+        .with(width(), use_window_logical_resolution(hooks).x as f32)
+        .with(height(), use_window_logical_resolution(hooks).y as f32),
     ])
 }
 
 #[element_component]
 fn GameUI(hooks: &mut Hooks) -> Element {
     let (scoreboard_open, set_scoreboard_open) = hooks.use_state(false);
-    hooks.use_keyboard_input(move |_, keycode, _, pressed| {
+    use_keyboard_input(hooks, move |_, keycode, _, pressed| {
         if keycode == Some(VirtualKeyCode::Tab) {
             set_scoreboard_open(pressed);
         }
@@ -102,7 +102,7 @@ fn GameUI(hooks: &mut Hooks) -> Element {
 // TODO: there is *definitely* a better way to put the crosshair in the centre of the screen
 #[element_component]
 fn Crosshair(hooks: &mut Hooks) -> Element {
-    let size = hooks.use_window_logical_resolution();
+    let size = use_window_logical_resolution(hooks);
     let center_x = size.x as f32 / 2.;
     let center_y = size.y as f32 / 2.;
 

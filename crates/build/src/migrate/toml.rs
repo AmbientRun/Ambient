@@ -284,7 +284,7 @@ impl From<json_pipeline::ModelsPipeline> for ModelsPipeline {
             collection_of_variants: value.collection_of_variants,
             output_prefabs: value.output_prefabs,
             output_animations: value.output_animations,
-            prefab_components: value.prefab_components,
+            prefab_components: None,
             material_overrides: value.material_overrides,
             transforms: value.transforms,
         }

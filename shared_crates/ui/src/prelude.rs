@@ -3,7 +3,7 @@
 pub use crate::{
     button::*, clickarea::*, default_theme::*, dropdown::*, editor::*, layout::*, prompt::*,
     screens::*, scroll_area::*, select::*, tabs::*, text::*, throbber::*, window::*, with_rect,
-    Focus, FocusRoot, HooksExt, Line, Rectangle, UIBase, UIElement, UIExt,
+    Focus, FocusRoot, Line, Rectangle, UIBase, UIElement, UIExt,
 };
 pub use ambient_cb::{cb, Cb};
 pub use ambient_element::{

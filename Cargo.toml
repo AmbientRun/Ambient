@@ -22,6 +22,7 @@ tracing-subscriber = { version = "0.3.16", features = [
 ] }
 tracing-log = { version = "0.1" }
 wgpu = { version = "0.16.0", features = ["serde", "trace", "replay"] }
+wgpu-types = { version = "0.16", features = ["serde"] }
 winit = { version = "0.28.1", features = ["serde"] }
 futures = { version = "0.3", default-features = false, features = ["std"] }
 tokio = { version = "1.20", features = ["parking_lot"] }

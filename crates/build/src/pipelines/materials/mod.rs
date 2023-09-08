@@ -1,4 +1,4 @@
-use std::{io::Cursor, sync::Arc};
+use std::{io::Cursor, str::FromStr, sync::Arc};
 
 use ambient_asset_cache::{
     AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt,
@@ -29,6 +29,7 @@ use super::{
     ProcessCtxKey,
 };
 use crate::pipelines::download_image;
+use ambient_gpu::sampler::SamplerKey;
 
 pub mod quixel_surfaces;
 
@@ -139,16 +140,22 @@ pub async fn to_mat(
     source_root: &AbsAssetUrl,
     out_root: &AbsAssetUrl,
 ) -> anyhow::Result<PbrMaterialDesc> {
-    let pipe_image = |path: &Option<AssetUrl>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
+    let pipe_image = |path: &Option<String>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
         let source_root = source_root.clone();
         let path = path.clone();
         let ctx = ctx.clone();
         async move {
             if let Some(path) = path {
                 Ok(Some(AssetUrl::from(
-                    PipeImage::resolve(&ctx, path.resolve(&source_root).unwrap())
-                        .get(ctx.assets())
-                        .await?,
+                    PipeImage::resolve(
+                        &ctx,
+                        AssetUrl::from_str(&path)
+                            .unwrap()
+                            .resolve(&source_root)
+                            .unwrap(),
+                    )
+                    .get(ctx.assets())
+                    .await?,
                 )))
             } else {
                 Ok(None)
@@ -164,27 +171,39 @@ pub async fn to_mat(
         normalmap: pipe_image(&pipeline.normalmap).await?,
         metallic_roughness: if let Some(url) = &pipeline.metallic_roughness {
             Some(
-                PipeImage::resolve(ctx, url.resolve(source_root).unwrap())
-                    .get(ctx.assets())
-                    .await?
-                    .into(),
+                PipeImage::resolve(
+                    ctx,
+                    AssetUrl::from_str(url)
+                        .unwrap()
+                        .resolve(source_root)
+                        .unwrap(),
+                )
+                .get(ctx.assets())
+                .await?
+                .into(),
             )
         } else if let Some(specular) = &pipeline.specular {
             let specular_exponent = pipeline.specular_exponent.unwrap_or(1.);
             Some(
-                PipeImage::resolve(ctx, specular.resolve(source_root).unwrap())
-                    .transform("mr_from_s", move |image, _| {
-                        for p in image.pixels_mut() {
-                            let specular = 1. - (1. - p[1] as f32 / 255.).powf(specular_exponent);
-                            p[0] = (specular * 255.) as u8;
-                            p[1] = ((1. - specular) * 255.) as u8;
-                            p[2] = 0;
-                            p[3] = 255;
-                        }
-                    })
-                    .get(ctx.assets())
-                    .await?
-                    .into(),
+                PipeImage::resolve(
+                    ctx,
+                    AssetUrl::from_str(specular)
+                        .unwrap()
+                        .resolve(source_root)
+                        .unwrap(),
+                )
+                .transform("mr_from_s", move |image, _| {
+                    for p in image.pixels_mut() {
+                        let specular = 1. - (1. - p[1] as f32 / 255.).powf(specular_exponent);
+                        p[0] = (specular * 255.) as u8;
+                        p[1] = ((1. - specular) * 255.) as u8;
+                        p[2] = 0;
+                        p[3] = 255;
+                    }
+                })
+                .get(ctx.assets())
+                .await?
+                .into(),
             )
         } else {
             None
@@ -197,7 +216,14 @@ pub async fn to_mat(
         double_sided: pipeline.double_sided,
         metallic: pipeline.metallic.unwrap_or(1.),
         roughness: pipeline.roughness.unwrap_or(1.),
-        sampler: pipeline.sampler,
+        sampler: pipeline.sampler.map(|sampler| SamplerKey {
+            address_mode_u: sampler.address_mode_u,
+            address_mode_v: sampler.address_mode_v,
+            address_mode_w: sampler.address_mode_w,
+            mag_filter: sampler.mag_filter,
+            min_filter: sampler.min_filter,
+            mipmap_filter: sampler.mipmap_filter,
+        }),
     }
     .relative_path_from(out_root))
 }

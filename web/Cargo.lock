@@ -580,6 +580,7 @@ dependencies = [
  "relative-path",
  "reqwest",
  "ring",
+ "semver 1.0.18",
  "sentry-anyhow",
  "serde",
  "serde_json",

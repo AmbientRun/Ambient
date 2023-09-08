@@ -382,7 +382,6 @@ dependencies = [
  "parking_lot",
  "rand 0.8.5",
  "relative-path",
- "semver 1.0.18",
  "serde",
  "serde_json",
  "serde_path_to_error",
@@ -950,6 +949,7 @@ dependencies = [
  "relative-path",
  "reqwest",
  "ring",
+ "semver 1.0.18",
  "sentry-anyhow",
  "serde",
  "serde_json",
@@ -1165,12 +1165,10 @@ dependencies = [
 name = "ambient_pipeline_types"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_ecs",
- "ambient_gpu",
- "ambient_native_std",
  "glam 0.24.1",
  "serde",
- "wgpu 0.16.3",
+ "toml 0.7.7",
+ "wgpu-types 0.16.1",
 ]
 
 [[package]]

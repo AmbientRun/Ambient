@@ -49,6 +49,7 @@ url = { workspace = true, optional = true }
 relative-path = { workspace = true, optional = true }
 toml = { workspace = true, optional = true }
 percent-encoding = { workspace = true, optional = true }
+semver = { workspace = true }
 
 [features]
 # This package was very quickly partitioned to allow its use in build scripts

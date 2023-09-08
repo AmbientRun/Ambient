@@ -5,7 +5,7 @@ version = "0.0.1"
 content = { type = "Asset", schema = true }
 
 [dependencies]
-unit_schema = { path = "../../../schemas/unit", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+unit_schema = { path = "../../../schemas/unit", deployment = "5FztSL9BEnUFEd9S3lKFfi" }
 
 [components]
 player_model_ref = { type = "EntityId", description = "The player's whole body model id.", attributes = [
@@ -17,15 +17,6 @@ player_cam_ref = { type = "EntityId", name = "Player cam ref", description = "Th
     "Networked",
 ] }
 
-
-player_yaw = { type = "F32", name = "Player yaw", description = "The player's yaw.", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-player_pitch = { type = "F32", name = "Player pitch", description = "The player's pitch.", attributes = [
-    "Debuggable",
-    "Networked",
-] }
 
 player_shooting_status = { type = "Bool", description = "True when the player is in shooting", attributes = [
     "Debuggable",
@@ -63,16 +54,12 @@ kill_log = { type = { type = "Vec", element_type = "String" }, description = "ki
 
 [messages]
 [messages.Input.fields]
-direction = "Vec2"
 mouse_delta = "Vec2"
 shoot = "Bool"
 toggle_zoom = "Bool"
 is_shooting = "Bool"
 ray_origin = "Vec3"
 ray_dir = "Vec3"
-duck = "Bool"
-jump = "Bool"
-running = "Bool"
 
 [messages.StartGame.fields]
 name = "String"

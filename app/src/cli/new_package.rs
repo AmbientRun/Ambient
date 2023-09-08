@@ -77,6 +77,9 @@ pub(crate) fn handle(
                         if let Some(api_path) = api_path {
                             log::info!("Ambient path: {}", api_path);
                             format!("ambient_api = {{ path = {:?} }}", api_path)
+                        } else if let Some(tag) = version.tag() {
+                            log::info!("Ambient tag: {}", tag);
+                            format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", tag = \"{}\" }}", tag)
                         } else if !version.revision.is_empty() {
                             log::info!("Ambient revision: {}", version.revision);
                             format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", version.revision)

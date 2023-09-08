@@ -126,7 +126,7 @@ jobs:
       - name: Rust cache
         uses: Leafwing-Studios/cargo-cache@v1.1.0
         with:
-          cargo-target-dir: "web"
+          cargo-target-dir: "web/target"
 
       - name: "Build campfire"
         uses: actions-rs/cargo@v1
@@ -201,7 +201,7 @@ jobs:
       - name: Rust cache
         uses: Leafwing-Studios/cargo-cache@v1.1.0
         with:
-          cargo-target-dir: "guest/rust"
+          cargo-target-dir: "guest/rust/target"
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace
 
