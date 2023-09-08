@@ -9,6 +9,6 @@ content = { type = "Playable", example = true }
 
 
 [dependencies]
-base_assets = { path = "../../../packages/std/base_assets", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
-fps_controller = { path = "../../../packages/std/fps_controller", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
-character_animation = { path = "../../../packages/std/character_animation", deployment = "4qcnuQpcxcMDogPdNsKl6s" }
+base_assets = { path = "../../../packages/std/base_assets", deployment = "5rkoJAVgqZjLupp2OQbIsW" }
+fps_controller = { path = "../../../packages/std/fps_controller", deployment = "AUB6aEaSzFVi2H20HQo17" }
+character_animation = { path = "../../../packages/std/character_animation", deployment = "126RuLU9V6r5acXZVH91R4" }
