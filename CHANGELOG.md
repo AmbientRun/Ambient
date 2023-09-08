@@ -54,6 +54,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **ECS**: All integer types from 8-bit to 64-bit are now supported as component types, including signed and unsigned variants. Additionally, all signed and unsigned integer vector types are now supported. This includes `U16`, `IVec2`, `UVec3`, etc.
 - **Docs**: The IDE documentation has been improved, including information on how to set up Emacs for Ambient development (thanks to [@kevzettler](https://github.com/kevzettler) in [#505](https://github.com/AmbientRun/Ambient/pull/505)).
 - **Assets**: `ambient assets import` can be used to import assets one by one. This will create or modify the `pipeline.toml` file for you.
+- **Packages**: A new fps_controller package to easily get started with a fps or tps camera
 
 #### Examples
 
@@ -141,6 +142,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Messaging**: Messages without empty fields now generate a unit struct, instead of a struct with no fields. That is, they generate `struct MyMessage;` instead of `struct MyMessage {}`.
 - **Examples**: The games have been moved to `guest/rust/packages/games`. This is to make it clearer that they are packages, not examples.
 - **API**: `entity::wait_for_component` is now marked as `must_use` to ensure users consider the possibility of the entity being despawned.
+- **Elements**: All hooks are now free functions (i.e. `use_state(hooks, ..)` instead of `hooks.use_state(..)`)
 
 #### Non-breaking
 
