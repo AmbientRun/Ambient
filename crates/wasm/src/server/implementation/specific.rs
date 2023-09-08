@@ -20,7 +20,7 @@ use crate::shared::{
     self,
     conversion::FromBindgen,
     implementation::message,
-    message::{Source, Target},
+    message::{Target, WorldEventSource},
 };
 
 #[cfg(all(feature = "wit", feature = "physics"))]
@@ -139,7 +139,7 @@ impl shared::wit::server_http::Host for Bindings {
                 shared::message::send(
                     world,
                     Target::PackageOrModule(id),
-                    Source::Runtime,
+                    WorldEventSource::Runtime,
                     HttpResponse::id().to_string(),
                     response.serialize_message().unwrap(),
                 );

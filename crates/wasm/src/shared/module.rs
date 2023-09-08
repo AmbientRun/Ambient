@@ -1,6 +1,6 @@
 use crate::shared;
 
-use super::Source;
+use super::WorldEventSource;
 #[cfg(feature = "wit")]
 use super::{bindings::BindingsBound, conversion::IntoBindgen};
 use ambient_ecs::{EntityId, World};
@@ -103,7 +103,7 @@ pub trait ModuleStateBehavior: Sync + Send {
     fn run(
         &mut self,
         world: &mut World,
-        message_source: &Source,
+        message_source: &WorldEventSource,
         message_name: &str,
         message_data: &[u8],
     ) -> anyhow::Result<()>;
@@ -151,7 +151,7 @@ impl ModuleStateBehavior for ModuleState {
     fn run(
         &mut self,
         world: &mut World,
-        message_source: &Source,
+        message_source: &WorldEventSource,
         message_name: &str,
         message_data: &[u8],
     ) -> anyhow::Result<()> {
@@ -264,7 +264,7 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
     fn run(
         &mut self,
         world: &mut World,
-        message_source: &Source,
+        message_source: &WorldEventSource,
         message_name: &str,
         message_data: &[u8],
     ) -> anyhow::Result<()> {
@@ -274,10 +274,14 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
         let result = pollster::block_on(guest.call_exec(
             &mut self.store,
             &match message_source {
-                Source::Runtime => shared::wit::guest::Source::Runtime,
-                Source::Server => shared::wit::guest::Source::Server,
-                Source::Client(user_id) => shared::wit::guest::Source::Client(user_id.clone()),
-                Source::Local(module) => shared::wit::guest::Source::Local(module.into_bindgen()),
+                WorldEventSource::Runtime => shared::wit::guest::Source::Runtime,
+                WorldEventSource::Server => shared::wit::guest::Source::Server,
+                WorldEventSource::Client(user_id) => {
+                    shared::wit::guest::Source::Client(user_id.clone())
+                }
+                WorldEventSource::Local(module) => {
+                    shared::wit::guest::Source::Local(module.into_bindgen())
+                }
             },
             message_name,
             message_data,

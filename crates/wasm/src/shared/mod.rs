@@ -69,7 +69,7 @@ mod internal_wit {
 
 #[cfg(feature = "wit")]
 use self::internal_wit::preopened_dir;
-use self::message::Source;
+use self::message::WorldEventSource;
 use crate::shared::message::{MessageExt, Target};
 
 pub fn init_all_components() {
@@ -199,12 +199,12 @@ pub fn systems() -> SystemGroup {
                     .map(|(_, event)| event.clone())
                     .collect_vec();
 
-                for (name, data) in events {
+                for (source, name, data) in events {
                     message::run(
                         world,
                         message::SerializedMessage {
                             target: Target::All { include_self: true },
-                            source: message::Source::Runtime,
+                            source,
                             name,
                             data,
                         },
@@ -366,7 +366,7 @@ fn run(
     world: &mut World,
     id: EntityId,
     mut state: ModuleState,
-    message_source: &Source,
+    message_source: &WorldEventSource,
     message_name: &str,
     message_data: &[u8],
 ) {

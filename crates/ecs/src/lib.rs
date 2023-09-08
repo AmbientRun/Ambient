@@ -77,7 +77,9 @@ impl<'a> Debug for DebugWorldArchetypes<'a> {
 mod internal_components {
     use super::Message;
 
-    use crate::{components, Description, Resource, WorldEventReader, WorldEvents};
+    use crate::{
+        components, Description, Resource, WorldEventReader, WorldEventSource, WorldEvents,
+    };
 
     pub trait WorldEventsExt {
         fn add_message<M: Message>(&mut self, message: M);
@@ -85,7 +87,11 @@ mod internal_components {
 
     impl WorldEventsExt for WorldEvents {
         fn add_message<M: Message>(&mut self, message: M) {
-            self.add_event((M::id().to_string(), message.serialize_message().unwrap()));
+            self.add_event((
+                WorldEventSource::Runtime,
+                M::id().to_string(),
+                message.serialize_message().unwrap(),
+            ));
         }
     }
 
@@ -95,8 +101,8 @@ mod internal_components {
     ) -> Vec<M> {
         reader
             .iter(events)
-            .filter(|(_, (name, _))| *name == M::id())
-            .map(|(_, (_, event))| M::deserialize_message(event).unwrap())
+            .filter(|(_, (_, name, _))| *name == M::id())
+            .map(|(_, (_, _, event))| M::deserialize_message(event).unwrap())
             .collect()
     }
 
@@ -1065,8 +1071,16 @@ impl<'de> Deserialize<'de> for ComponentSet {
     }
 }
 
-pub type WorldEvents = FramedEvents<(String, Vec<u8>)>;
-pub type WorldEventReader = FramedEventsReader<(String, Vec<u8>)>;
+#[derive(Clone, PartialEq, Debug)]
+pub enum WorldEventSource {
+    Runtime,
+    Server,
+    Client(String),
+    Local(EntityId),
+}
+
+pub type WorldEvents = FramedEvents<(WorldEventSource, String, Vec<u8>)>;
+pub type WorldEventReader = FramedEventsReader<(WorldEventSource, String, Vec<u8>)>;
 
 #[derive(Debug)]
 pub struct WorldEventsSystem;
