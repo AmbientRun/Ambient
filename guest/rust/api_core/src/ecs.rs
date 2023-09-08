@@ -16,7 +16,7 @@ use crate::prelude::EntityId;
 /// For example, a `Camera` concept might describe a camera in the game world, and have a `near` and `projection` component.
 pub trait Concept {
     /// Creates an entity with the components defined by this concept.
-    fn make(&self) -> Entity;
+    fn make(self) -> Entity;
 
     /// If the entity with `id` exists and has the components defined by this concept, returns this concept with all of the values of the components in the entity.
     ///
@@ -37,28 +37,28 @@ pub trait Concept {
     ///    println!("{}", camera.near);
     /// }
     /// ```
-    fn get_unspawned(entity: Entity) -> Option<Self>
+    fn get_unspawned(entity: &Entity) -> Option<Self>
     where
         Self: Sized;
 
-    /// Returns `Some(id)` if `id` exists and contains the components defined by this concept.
+    /// Returns true if `id` exists and contains the components defined by this concept.
     ///
     /// # Examples
     /// ```
-    /// if let Some(id) = Camera::contained_by_spawned(id) {
+    /// if Camera::contained_by_spawned(id) {
     ///    // ...
     /// }
     /// ```
-    fn contained_by_spawned(id: EntityId) -> Option<EntityId>;
-    /// Returns `Some(entity)` if contains the components defined by this concept.
+    fn contained_by_spawned(id: EntityId) -> bool;
+    /// Returns true if contains the components defined by this concept.
     ///
     /// # Examples
     /// ```
-    /// if let Some(ent) = Camera::contained_by_unspawned(ent) {
+    /// if Camera::contained_by_unspawned(ent) {
     ///    // ...
     /// }
     /// ```
-    fn contained_by_unspawned(entity: Entity) -> Option<Entity>;
+    fn contained_by_unspawned(entity: &Entity) -> bool;
 }
 impl<T: Concept + Sized> From<T> for Entity {
     fn from(concept: T) -> Self {

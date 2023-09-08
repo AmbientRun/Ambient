@@ -526,20 +526,134 @@ mod raw {
                     pub scale: Option<Vec3>,
                 }
                 impl crate::ecs::Concept for Camera {
-                    fn make(&self) -> Entity {
-                        Entity::new()
+                    fn make(self) -> Entity {
+                        let mut entity = Entity::new()
+                            .with(
+                                crate::ambient_core::transform::components::local_to_world(),
+                                self.local_to_world,
+                            )
+                            .with(crate::ambient_core::camera::components::near(), self.near)
+                            .with(
+                                crate::ambient_core::camera::components::projection(),
+                                self.projection,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::projection_view(),
+                                self.projection_view,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::active_camera(),
+                                self.active_camera,
+                            )
+                            .with(
+                                crate::ambient_core::transform::components::inv_local_to_world(),
+                                self.inv_local_to_world,
+                            );
+                        if let Some(translation) = self.optional.translation {
+                            entity.set(
+                                crate::ambient_core::transform::components::translation(),
+                                translation,
+                            );
+                        }
+                        if let Some(rotation) = self.optional.rotation {
+                            entity.set(
+                                crate::ambient_core::transform::components::rotation(),
+                                rotation,
+                            );
+                        }
+                        if let Some(scale) = self.optional.scale {
+                            entity.set(crate::ambient_core::transform::components::scale(), scale);
+                        }
+                        entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        None
+                        Some(Self {
+                            local_to_world: entity::get_component(
+                                id,
+                                crate::ambient_core::transform::components::local_to_world(),
+                            )?,
+                            near: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::near(),
+                            )?,
+                            projection: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::projection(),
+                            )?,
+                            projection_view: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::projection_view(),
+                            )?,
+                            active_camera: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::active_camera(),
+                            )?,
+                            inv_local_to_world: entity::get_component(
+                                id,
+                                crate::ambient_core::transform::components::inv_local_to_world(),
+                            )?,
+                            optional: CameraOptional {
+                                translation: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::translation(),
+                                ),
+                                rotation: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::rotation(),
+                                ),
+                                scale: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::scale(),
+                                ),
+                            },
+                        })
                     }
-                    fn get_unspawned(entity: Entity) -> Option<Self> {
-                        None
+                    fn get_unspawned(entity: &Entity) -> Option<Self> {
+                        Some(Self {
+                            local_to_world: entity
+                                .get(crate::ambient_core::transform::components::local_to_world())?,
+                            near: entity.get(crate::ambient_core::camera::components::near())?,
+                            projection: entity
+                                .get(crate::ambient_core::camera::components::projection())?,
+                            projection_view: entity
+                                .get(crate::ambient_core::camera::components::projection_view())?,
+                            active_camera: entity
+                                .get(crate::ambient_core::camera::components::active_camera())?,
+                            inv_local_to_world: entity.get(
+                                crate::ambient_core::transform::components::inv_local_to_world(),
+                            )?,
+                            optional: CameraOptional {
+                                translation: entity
+                                    .get(crate::ambient_core::transform::components::translation()),
+                                rotation: entity
+                                    .get(crate::ambient_core::transform::components::rotation()),
+                                scale: entity
+                                    .get(crate::ambient_core::transform::components::scale()),
+                            },
+                        })
                     }
-                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
-                        None
+                    fn contained_by_spawned(id: EntityId) -> bool {
+                        entity::has_components(
+                            id,
+                            &[
+                                &crate::ambient_core::transform::components::local_to_world(),
+                                &crate::ambient_core::camera::components::near(),
+                                &crate::ambient_core::camera::components::projection(),
+                                &crate::ambient_core::camera::components::projection_view(),
+                                &crate::ambient_core::camera::components::active_camera(),
+                                &crate::ambient_core::transform::components::inv_local_to_world(),
+                            ],
+                        )
                     }
-                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
-                        None
+                    fn contained_by_unspawned(entity: &Entity) -> bool {
+                        entity.has_components(&[
+                            &crate::ambient_core::transform::components::local_to_world(),
+                            &crate::ambient_core::camera::components::near(),
+                            &crate::ambient_core::camera::components::projection(),
+                            &crate::ambient_core::camera::components::projection_view(),
+                            &crate::ambient_core::camera::components::active_camera(),
+                            &crate::ambient_core::transform::components::inv_local_to_world(),
+                        ])
                     }
                 }
                 #[allow(clippy::approx_constant)]
@@ -649,20 +763,154 @@ mod raw {
                     pub scale: Option<Vec3>,
                 }
                 impl crate::ecs::Concept for PerspectiveCommonCamera {
-                    fn make(&self) -> Entity {
-                        Entity::new()
+                    fn make(self) -> Entity {
+                        let mut entity = Entity::new()
+                            .with(
+                                crate::ambient_core::transform::components::local_to_world(),
+                                self.local_to_world,
+                            )
+                            .with(crate::ambient_core::camera::components::near(), self.near)
+                            .with(
+                                crate::ambient_core::camera::components::projection(),
+                                self.projection,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::projection_view(),
+                                self.projection_view,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::active_camera(),
+                                self.active_camera,
+                            )
+                            .with(
+                                crate::ambient_core::transform::components::inv_local_to_world(),
+                                self.inv_local_to_world,
+                            )
+                            .with(crate::ambient_core::camera::components::fovy(), self.fovy)
+                            .with(
+                                crate::ambient_core::camera::components::aspect_ratio(),
+                                self.aspect_ratio,
+                            );
+                        if let Some(translation) = self.optional.translation {
+                            entity.set(
+                                crate::ambient_core::transform::components::translation(),
+                                translation,
+                            );
+                        }
+                        if let Some(rotation) = self.optional.rotation {
+                            entity.set(
+                                crate::ambient_core::transform::components::rotation(),
+                                rotation,
+                            );
+                        }
+                        if let Some(scale) = self.optional.scale {
+                            entity.set(crate::ambient_core::transform::components::scale(), scale);
+                        }
+                        entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        None
+                        Some(Self {
+                            local_to_world: entity::get_component(
+                                id,
+                                crate::ambient_core::transform::components::local_to_world(),
+                            )?,
+                            near: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::near(),
+                            )?,
+                            projection: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::projection(),
+                            )?,
+                            projection_view: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::projection_view(),
+                            )?,
+                            active_camera: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::active_camera(),
+                            )?,
+                            inv_local_to_world: entity::get_component(
+                                id,
+                                crate::ambient_core::transform::components::inv_local_to_world(),
+                            )?,
+                            fovy: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::fovy(),
+                            )?,
+                            aspect_ratio: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::aspect_ratio(),
+                            )?,
+                            optional: PerspectiveCommonCameraOptional {
+                                translation: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::translation(),
+                                ),
+                                rotation: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::rotation(),
+                                ),
+                                scale: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::scale(),
+                                ),
+                            },
+                        })
                     }
-                    fn get_unspawned(entity: Entity) -> Option<Self> {
-                        None
+                    fn get_unspawned(entity: &Entity) -> Option<Self> {
+                        Some(Self {
+                            local_to_world: entity
+                                .get(crate::ambient_core::transform::components::local_to_world())?,
+                            near: entity.get(crate::ambient_core::camera::components::near())?,
+                            projection: entity
+                                .get(crate::ambient_core::camera::components::projection())?,
+                            projection_view: entity
+                                .get(crate::ambient_core::camera::components::projection_view())?,
+                            active_camera: entity
+                                .get(crate::ambient_core::camera::components::active_camera())?,
+                            inv_local_to_world: entity.get(
+                                crate::ambient_core::transform::components::inv_local_to_world(),
+                            )?,
+                            fovy: entity.get(crate::ambient_core::camera::components::fovy())?,
+                            aspect_ratio: entity
+                                .get(crate::ambient_core::camera::components::aspect_ratio())?,
+                            optional: PerspectiveCommonCameraOptional {
+                                translation: entity
+                                    .get(crate::ambient_core::transform::components::translation()),
+                                rotation: entity
+                                    .get(crate::ambient_core::transform::components::rotation()),
+                                scale: entity
+                                    .get(crate::ambient_core::transform::components::scale()),
+                            },
+                        })
                     }
-                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
-                        None
+                    fn contained_by_spawned(id: EntityId) -> bool {
+                        entity::has_components(
+                            id,
+                            &[
+                                &crate::ambient_core::transform::components::local_to_world(),
+                                &crate::ambient_core::camera::components::near(),
+                                &crate::ambient_core::camera::components::projection(),
+                                &crate::ambient_core::camera::components::projection_view(),
+                                &crate::ambient_core::camera::components::active_camera(),
+                                &crate::ambient_core::transform::components::inv_local_to_world(),
+                                &crate::ambient_core::camera::components::fovy(),
+                                &crate::ambient_core::camera::components::aspect_ratio(),
+                            ],
+                        )
                     }
-                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
-                        None
+                    fn contained_by_unspawned(entity: &Entity) -> bool {
+                        entity.has_components(&[
+                            &crate::ambient_core::transform::components::local_to_world(),
+                            &crate::ambient_core::camera::components::near(),
+                            &crate::ambient_core::camera::components::projection(),
+                            &crate::ambient_core::camera::components::projection_view(),
+                            &crate::ambient_core::camera::components::active_camera(),
+                            &crate::ambient_core::transform::components::inv_local_to_world(),
+                            &crate::ambient_core::camera::components::fovy(),
+                            &crate::ambient_core::camera::components::aspect_ratio(),
+                        ])
                     }
                 }
                 #[allow(clippy::approx_constant)]
@@ -787,20 +1035,174 @@ mod raw {
                     pub scale: Option<Vec3>,
                 }
                 impl crate::ecs::Concept for PerspectiveCamera {
-                    fn make(&self) -> Entity {
-                        Entity::new()
+                    fn make(self) -> Entity {
+                        let mut entity = Entity::new()
+                            .with(
+                                crate::ambient_core::transform::components::local_to_world(),
+                                self.local_to_world,
+                            )
+                            .with(crate::ambient_core::camera::components::near(), self.near)
+                            .with(
+                                crate::ambient_core::camera::components::projection(),
+                                self.projection,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::projection_view(),
+                                self.projection_view,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::active_camera(),
+                                self.active_camera,
+                            )
+                            .with(
+                                crate::ambient_core::transform::components::inv_local_to_world(),
+                                self.inv_local_to_world,
+                            )
+                            .with(crate::ambient_core::camera::components::fovy(), self.fovy)
+                            .with(
+                                crate::ambient_core::camera::components::aspect_ratio(),
+                                self.aspect_ratio,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::perspective(),
+                                self.perspective,
+                            )
+                            .with(crate::ambient_core::camera::components::far(), self.far);
+                        if let Some(translation) = self.optional.translation {
+                            entity.set(
+                                crate::ambient_core::transform::components::translation(),
+                                translation,
+                            );
+                        }
+                        if let Some(rotation) = self.optional.rotation {
+                            entity.set(
+                                crate::ambient_core::transform::components::rotation(),
+                                rotation,
+                            );
+                        }
+                        if let Some(scale) = self.optional.scale {
+                            entity.set(crate::ambient_core::transform::components::scale(), scale);
+                        }
+                        entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        None
+                        Some(Self {
+                            local_to_world: entity::get_component(
+                                id,
+                                crate::ambient_core::transform::components::local_to_world(),
+                            )?,
+                            near: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::near(),
+                            )?,
+                            projection: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::projection(),
+                            )?,
+                            projection_view: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::projection_view(),
+                            )?,
+                            active_camera: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::active_camera(),
+                            )?,
+                            inv_local_to_world: entity::get_component(
+                                id,
+                                crate::ambient_core::transform::components::inv_local_to_world(),
+                            )?,
+                            fovy: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::fovy(),
+                            )?,
+                            aspect_ratio: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::aspect_ratio(),
+                            )?,
+                            perspective: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::perspective(),
+                            )?,
+                            far: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::far(),
+                            )?,
+                            optional: PerspectiveCameraOptional {
+                                translation: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::translation(),
+                                ),
+                                rotation: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::rotation(),
+                                ),
+                                scale: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::scale(),
+                                ),
+                            },
+                        })
                     }
-                    fn get_unspawned(entity: Entity) -> Option<Self> {
-                        None
+                    fn get_unspawned(entity: &Entity) -> Option<Self> {
+                        Some(Self {
+                            local_to_world: entity
+                                .get(crate::ambient_core::transform::components::local_to_world())?,
+                            near: entity.get(crate::ambient_core::camera::components::near())?,
+                            projection: entity
+                                .get(crate::ambient_core::camera::components::projection())?,
+                            projection_view: entity
+                                .get(crate::ambient_core::camera::components::projection_view())?,
+                            active_camera: entity
+                                .get(crate::ambient_core::camera::components::active_camera())?,
+                            inv_local_to_world: entity.get(
+                                crate::ambient_core::transform::components::inv_local_to_world(),
+                            )?,
+                            fovy: entity.get(crate::ambient_core::camera::components::fovy())?,
+                            aspect_ratio: entity
+                                .get(crate::ambient_core::camera::components::aspect_ratio())?,
+                            perspective: entity
+                                .get(crate::ambient_core::camera::components::perspective())?,
+                            far: entity.get(crate::ambient_core::camera::components::far())?,
+                            optional: PerspectiveCameraOptional {
+                                translation: entity
+                                    .get(crate::ambient_core::transform::components::translation()),
+                                rotation: entity
+                                    .get(crate::ambient_core::transform::components::rotation()),
+                                scale: entity
+                                    .get(crate::ambient_core::transform::components::scale()),
+                            },
+                        })
                     }
-                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
-                        None
+                    fn contained_by_spawned(id: EntityId) -> bool {
+                        entity::has_components(
+                            id,
+                            &[
+                                &crate::ambient_core::transform::components::local_to_world(),
+                                &crate::ambient_core::camera::components::near(),
+                                &crate::ambient_core::camera::components::projection(),
+                                &crate::ambient_core::camera::components::projection_view(),
+                                &crate::ambient_core::camera::components::active_camera(),
+                                &crate::ambient_core::transform::components::inv_local_to_world(),
+                                &crate::ambient_core::camera::components::fovy(),
+                                &crate::ambient_core::camera::components::aspect_ratio(),
+                                &crate::ambient_core::camera::components::perspective(),
+                                &crate::ambient_core::camera::components::far(),
+                            ],
+                        )
                     }
-                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
-                        None
+                    fn contained_by_unspawned(entity: &Entity) -> bool {
+                        entity.has_components(&[
+                            &crate::ambient_core::transform::components::local_to_world(),
+                            &crate::ambient_core::camera::components::near(),
+                            &crate::ambient_core::camera::components::projection(),
+                            &crate::ambient_core::camera::components::projection_view(),
+                            &crate::ambient_core::camera::components::active_camera(),
+                            &crate::ambient_core::transform::components::inv_local_to_world(),
+                            &crate::ambient_core::camera::components::fovy(),
+                            &crate::ambient_core::camera::components::aspect_ratio(),
+                            &crate::ambient_core::camera::components::perspective(),
+                            &crate::ambient_core::camera::components::far(),
+                        ])
                     }
                 }
                 #[allow(clippy::approx_constant)]
@@ -931,20 +1333,47 @@ mod raw {
                     pub scale: Option<Vec3>,
                 }
                 impl crate::ecs::Concept for PerspectiveInfiniteReverseCamera {
-                    fn make(&self) -> Entity {
-                        Entity::new()
+                    fn make(self) -> Entity {
+                        let mut entity = Entity :: new () . with (crate :: ambient_core :: transform :: components :: local_to_world () , self . local_to_world) . with (crate :: ambient_core :: camera :: components :: near () , self . near) . with (crate :: ambient_core :: camera :: components :: projection () , self . projection) . with (crate :: ambient_core :: camera :: components :: projection_view () , self . projection_view) . with (crate :: ambient_core :: camera :: components :: active_camera () , self . active_camera) . with (crate :: ambient_core :: transform :: components :: inv_local_to_world () , self . inv_local_to_world) . with (crate :: ambient_core :: camera :: components :: fovy () , self . fovy) . with (crate :: ambient_core :: camera :: components :: aspect_ratio () , self . aspect_ratio) . with (crate :: ambient_core :: camera :: components :: perspective_infinite_reverse () , self . perspective_infinite_reverse) ;
+                        if let Some(translation) = self.optional.translation {
+                            entity.set(
+                                crate::ambient_core::transform::components::translation(),
+                                translation,
+                            );
+                        }
+                        if let Some(rotation) = self.optional.rotation {
+                            entity.set(
+                                crate::ambient_core::transform::components::rotation(),
+                                rotation,
+                            );
+                        }
+                        if let Some(scale) = self.optional.scale {
+                            entity.set(crate::ambient_core::transform::components::scale(), scale);
+                        }
+                        entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        None
+                        Some (Self { local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity :: get_component (id , crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity :: get_component (id , crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity :: get_component (id , crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity :: get_component (id , crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , perspective_infinite_reverse : entity :: get_component (id , crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()) ? , optional : PerspectiveInfiniteReverseCameraOptional { translation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity :: get_component (id , crate :: ambient_core :: transform :: components :: scale ()) , } })
                     }
-                    fn get_unspawned(entity: Entity) -> Option<Self> {
-                        None
+                    fn get_unspawned(entity: &Entity) -> Option<Self> {
+                        Some (Self { local_to_world : entity . get (crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity . get (crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity . get (crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity . get (crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity . get (crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity . get (crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity . get (crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity . get (crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , perspective_infinite_reverse : entity . get (crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()) ? , optional : PerspectiveInfiniteReverseCameraOptional { translation : entity . get (crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity . get (crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity . get (crate :: ambient_core :: transform :: components :: scale ()) , } })
                     }
-                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
-                        None
+                    fn contained_by_spawned(id: EntityId) -> bool {
+                        entity :: has_components (id , & [& crate :: ambient_core :: transform :: components :: local_to_world () , & crate :: ambient_core :: camera :: components :: near () , & crate :: ambient_core :: camera :: components :: projection () , & crate :: ambient_core :: camera :: components :: projection_view () , & crate :: ambient_core :: camera :: components :: active_camera () , & crate :: ambient_core :: transform :: components :: inv_local_to_world () , & crate :: ambient_core :: camera :: components :: fovy () , & crate :: ambient_core :: camera :: components :: aspect_ratio () , & crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()])
                     }
-                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
-                        None
+                    fn contained_by_unspawned(entity: &Entity) -> bool {
+                        entity.has_components(&[
+                            &crate::ambient_core::transform::components::local_to_world(),
+                            &crate::ambient_core::camera::components::near(),
+                            &crate::ambient_core::camera::components::projection(),
+                            &crate::ambient_core::camera::components::projection_view(),
+                            &crate::ambient_core::camera::components::active_camera(),
+                            &crate::ambient_core::transform::components::inv_local_to_world(),
+                            &crate::ambient_core::camera::components::fovy(),
+                            &crate::ambient_core::camera::components::aspect_ratio(),
+                            &crate::ambient_core::camera::components::perspective_infinite_reverse(
+                            ),
+                        ])
                     }
                 }
                 #[allow(clippy::approx_constant)]
@@ -1081,20 +1510,204 @@ mod raw {
                     pub scale: Option<Vec3>,
                 }
                 impl crate::ecs::Concept for OrthographicCamera {
-                    fn make(&self) -> Entity {
-                        Entity::new()
+                    fn make(self) -> Entity {
+                        let mut entity = Entity::new()
+                            .with(
+                                crate::ambient_core::transform::components::local_to_world(),
+                                self.local_to_world,
+                            )
+                            .with(crate::ambient_core::camera::components::near(), self.near)
+                            .with(
+                                crate::ambient_core::camera::components::projection(),
+                                self.projection,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::projection_view(),
+                                self.projection_view,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::active_camera(),
+                                self.active_camera,
+                            )
+                            .with(
+                                crate::ambient_core::transform::components::inv_local_to_world(),
+                                self.inv_local_to_world,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::orthographic(),
+                                self.orthographic,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::orthographic_left(),
+                                self.orthographic_left,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::orthographic_right(),
+                                self.orthographic_right,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::orthographic_top(),
+                                self.orthographic_top,
+                            )
+                            .with(
+                                crate::ambient_core::camera::components::orthographic_bottom(),
+                                self.orthographic_bottom,
+                            )
+                            .with(crate::ambient_core::camera::components::far(), self.far);
+                        if let Some(translation) = self.optional.translation {
+                            entity.set(
+                                crate::ambient_core::transform::components::translation(),
+                                translation,
+                            );
+                        }
+                        if let Some(rotation) = self.optional.rotation {
+                            entity.set(
+                                crate::ambient_core::transform::components::rotation(),
+                                rotation,
+                            );
+                        }
+                        if let Some(scale) = self.optional.scale {
+                            entity.set(crate::ambient_core::transform::components::scale(), scale);
+                        }
+                        entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        None
+                        Some(Self {
+                            local_to_world: entity::get_component(
+                                id,
+                                crate::ambient_core::transform::components::local_to_world(),
+                            )?,
+                            near: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::near(),
+                            )?,
+                            projection: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::projection(),
+                            )?,
+                            projection_view: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::projection_view(),
+                            )?,
+                            active_camera: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::active_camera(),
+                            )?,
+                            inv_local_to_world: entity::get_component(
+                                id,
+                                crate::ambient_core::transform::components::inv_local_to_world(),
+                            )?,
+                            orthographic: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::orthographic(),
+                            )?,
+                            orthographic_left: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::orthographic_left(),
+                            )?,
+                            orthographic_right: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::orthographic_right(),
+                            )?,
+                            orthographic_top: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::orthographic_top(),
+                            )?,
+                            orthographic_bottom: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::orthographic_bottom(),
+                            )?,
+                            far: entity::get_component(
+                                id,
+                                crate::ambient_core::camera::components::far(),
+                            )?,
+                            optional: OrthographicCameraOptional {
+                                translation: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::translation(),
+                                ),
+                                rotation: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::rotation(),
+                                ),
+                                scale: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::scale(),
+                                ),
+                            },
+                        })
                     }
-                    fn get_unspawned(entity: Entity) -> Option<Self> {
-                        None
+                    fn get_unspawned(entity: &Entity) -> Option<Self> {
+                        Some(Self {
+                            local_to_world: entity
+                                .get(crate::ambient_core::transform::components::local_to_world())?,
+                            near: entity.get(crate::ambient_core::camera::components::near())?,
+                            projection: entity
+                                .get(crate::ambient_core::camera::components::projection())?,
+                            projection_view: entity
+                                .get(crate::ambient_core::camera::components::projection_view())?,
+                            active_camera: entity
+                                .get(crate::ambient_core::camera::components::active_camera())?,
+                            inv_local_to_world: entity.get(
+                                crate::ambient_core::transform::components::inv_local_to_world(),
+                            )?,
+                            orthographic: entity
+                                .get(crate::ambient_core::camera::components::orthographic())?,
+                            orthographic_left: entity
+                                .get(crate::ambient_core::camera::components::orthographic_left())?,
+                            orthographic_right: entity.get(
+                                crate::ambient_core::camera::components::orthographic_right(),
+                            )?,
+                            orthographic_top: entity
+                                .get(crate::ambient_core::camera::components::orthographic_top())?,
+                            orthographic_bottom: entity.get(
+                                crate::ambient_core::camera::components::orthographic_bottom(),
+                            )?,
+                            far: entity.get(crate::ambient_core::camera::components::far())?,
+                            optional: OrthographicCameraOptional {
+                                translation: entity
+                                    .get(crate::ambient_core::transform::components::translation()),
+                                rotation: entity
+                                    .get(crate::ambient_core::transform::components::rotation()),
+                                scale: entity
+                                    .get(crate::ambient_core::transform::components::scale()),
+                            },
+                        })
                     }
-                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
-                        None
+                    fn contained_by_spawned(id: EntityId) -> bool {
+                        entity::has_components(
+                            id,
+                            &[
+                                &crate::ambient_core::transform::components::local_to_world(),
+                                &crate::ambient_core::camera::components::near(),
+                                &crate::ambient_core::camera::components::projection(),
+                                &crate::ambient_core::camera::components::projection_view(),
+                                &crate::ambient_core::camera::components::active_camera(),
+                                &crate::ambient_core::transform::components::inv_local_to_world(),
+                                &crate::ambient_core::camera::components::orthographic(),
+                                &crate::ambient_core::camera::components::orthographic_left(),
+                                &crate::ambient_core::camera::components::orthographic_right(),
+                                &crate::ambient_core::camera::components::orthographic_top(),
+                                &crate::ambient_core::camera::components::orthographic_bottom(),
+                                &crate::ambient_core::camera::components::far(),
+                            ],
+                        )
                     }
-                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
-                        None
+                    fn contained_by_unspawned(entity: &Entity) -> bool {
+                        entity.has_components(&[
+                            &crate::ambient_core::transform::components::local_to_world(),
+                            &crate::ambient_core::camera::components::near(),
+                            &crate::ambient_core::camera::components::projection(),
+                            &crate::ambient_core::camera::components::projection_view(),
+                            &crate::ambient_core::camera::components::active_camera(),
+                            &crate::ambient_core::transform::components::inv_local_to_world(),
+                            &crate::ambient_core::camera::components::orthographic(),
+                            &crate::ambient_core::camera::components::orthographic_left(),
+                            &crate::ambient_core::camera::components::orthographic_right(),
+                            &crate::ambient_core::camera::components::orthographic_top(),
+                            &crate::ambient_core::camera::components::orthographic_bottom(),
+                            &crate::ambient_core::camera::components::far(),
+                        ])
                     }
                 }
                 #[allow(clippy::approx_constant)]
@@ -2117,20 +2730,27 @@ mod raw {
                     pub physics_controlled: (),
                 }
                 impl crate::ecs::Concept for CharacterController {
-                    fn make(&self) -> Entity {
-                        Entity::new()
+                    fn make(self) -> Entity {
+                        let mut entity = Entity :: new () . with (crate :: ambient_core :: physics :: components :: character_controller_height () , self . character_controller_height) . with (crate :: ambient_core :: physics :: components :: character_controller_radius () , self . character_controller_radius) . with (crate :: ambient_core :: physics :: components :: physics_controlled () , self . physics_controlled) ;
+                        entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        None
+                        Some (Self { character_controller_height : entity :: get_component (id , crate :: ambient_core :: physics :: components :: character_controller_height ()) ? , character_controller_radius : entity :: get_component (id , crate :: ambient_core :: physics :: components :: character_controller_radius ()) ? , physics_controlled : entity :: get_component (id , crate :: ambient_core :: physics :: components :: physics_controlled ()) ? , })
                     }
-                    fn get_unspawned(entity: Entity) -> Option<Self> {
-                        None
+                    fn get_unspawned(entity: &Entity) -> Option<Self> {
+                        Some (Self { character_controller_height : entity . get (crate :: ambient_core :: physics :: components :: character_controller_height ()) ? , character_controller_radius : entity . get (crate :: ambient_core :: physics :: components :: character_controller_radius ()) ? , physics_controlled : entity . get (crate :: ambient_core :: physics :: components :: physics_controlled ()) ? , })
                     }
-                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
-                        None
+                    fn contained_by_spawned(id: EntityId) -> bool {
+                        entity :: has_components (id , & [& crate :: ambient_core :: physics :: components :: character_controller_height () , & crate :: ambient_core :: physics :: components :: character_controller_radius () , & crate :: ambient_core :: physics :: components :: physics_controlled ()])
                     }
-                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
-                        None
+                    fn contained_by_unspawned(entity: &Entity) -> bool {
+                        entity.has_components(&[
+                            &crate::ambient_core::physics::components::character_controller_height(
+                            ),
+                            &crate::ambient_core::physics::components::character_controller_radius(
+                            ),
+                            &crate::ambient_core::physics::components::physics_controlled(),
+                        ])
                     }
                 }
                 #[allow(clippy::approx_constant)]
@@ -2371,20 +2991,77 @@ mod raw {
                     pub sphere_stacks: u32,
                 }
                 impl crate::ecs::Concept for Sphere {
-                    fn make(&self) -> Entity {
-                        Entity::new()
+                    fn make(self) -> Entity {
+                        let mut entity = Entity::new()
+                            .with(
+                                crate::ambient_core::primitives::components::sphere(),
+                                self.sphere,
+                            )
+                            .with(
+                                crate::ambient_core::primitives::components::sphere_radius(),
+                                self.sphere_radius,
+                            )
+                            .with(
+                                crate::ambient_core::primitives::components::sphere_sectors(),
+                                self.sphere_sectors,
+                            )
+                            .with(
+                                crate::ambient_core::primitives::components::sphere_stacks(),
+                                self.sphere_stacks,
+                            );
+                        entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        None
+                        Some(Self {
+                            sphere: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::sphere(),
+                            )?,
+                            sphere_radius: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::sphere_radius(),
+                            )?,
+                            sphere_sectors: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::sphere_sectors(),
+                            )?,
+                            sphere_stacks: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::sphere_stacks(),
+                            )?,
+                        })
                     }
-                    fn get_unspawned(entity: Entity) -> Option<Self> {
-                        None
+                    fn get_unspawned(entity: &Entity) -> Option<Self> {
+                        Some(Self {
+                            sphere: entity
+                                .get(crate::ambient_core::primitives::components::sphere())?,
+                            sphere_radius: entity
+                                .get(crate::ambient_core::primitives::components::sphere_radius())?,
+                            sphere_sectors: entity.get(
+                                crate::ambient_core::primitives::components::sphere_sectors(),
+                            )?,
+                            sphere_stacks: entity
+                                .get(crate::ambient_core::primitives::components::sphere_stacks())?,
+                        })
                     }
-                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
-                        None
+                    fn contained_by_spawned(id: EntityId) -> bool {
+                        entity::has_components(
+                            id,
+                            &[
+                                &crate::ambient_core::primitives::components::sphere(),
+                                &crate::ambient_core::primitives::components::sphere_radius(),
+                                &crate::ambient_core::primitives::components::sphere_sectors(),
+                                &crate::ambient_core::primitives::components::sphere_stacks(),
+                            ],
+                        )
                     }
-                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
-                        None
+                    fn contained_by_unspawned(entity: &Entity) -> bool {
+                        entity.has_components(&[
+                            &crate::ambient_core::primitives::components::sphere(),
+                            &crate::ambient_core::primitives::components::sphere_radius(),
+                            &crate::ambient_core::primitives::components::sphere_sectors(),
+                            &crate::ambient_core::primitives::components::sphere_stacks(),
+                        ])
                     }
                 }
                 #[allow(clippy::approx_constant)]
@@ -2452,20 +3129,104 @@ mod raw {
                     pub capsule_longitudes: u32,
                 }
                 impl crate::ecs::Concept for Capsule {
-                    fn make(&self) -> Entity {
-                        Entity::new()
+                    fn make(self) -> Entity {
+                        let mut entity = Entity::new()
+                            .with(
+                                crate::ambient_core::primitives::components::capsule(),
+                                self.capsule,
+                            )
+                            .with(
+                                crate::ambient_core::primitives::components::capsule_radius(),
+                                self.capsule_radius,
+                            )
+                            .with(
+                                crate::ambient_core::primitives::components::capsule_half_height(),
+                                self.capsule_half_height,
+                            )
+                            .with(
+                                crate::ambient_core::primitives::components::capsule_rings(),
+                                self.capsule_rings,
+                            )
+                            .with(
+                                crate::ambient_core::primitives::components::capsule_latitudes(),
+                                self.capsule_latitudes,
+                            )
+                            .with(
+                                crate::ambient_core::primitives::components::capsule_longitudes(),
+                                self.capsule_longitudes,
+                            );
+                        entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        None
+                        Some(Self {
+                            capsule: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::capsule(),
+                            )?,
+                            capsule_radius: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::capsule_radius(),
+                            )?,
+                            capsule_half_height: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::capsule_half_height(),
+                            )?,
+                            capsule_rings: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::capsule_rings(),
+                            )?,
+                            capsule_latitudes: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::capsule_latitudes(),
+                            )?,
+                            capsule_longitudes: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::capsule_longitudes(),
+                            )?,
+                        })
                     }
-                    fn get_unspawned(entity: Entity) -> Option<Self> {
-                        None
+                    fn get_unspawned(entity: &Entity) -> Option<Self> {
+                        Some(Self {
+                            capsule: entity
+                                .get(crate::ambient_core::primitives::components::capsule())?,
+                            capsule_radius: entity.get(
+                                crate::ambient_core::primitives::components::capsule_radius(),
+                            )?,
+                            capsule_half_height: entity.get(
+                                crate::ambient_core::primitives::components::capsule_half_height(),
+                            )?,
+                            capsule_rings: entity
+                                .get(crate::ambient_core::primitives::components::capsule_rings())?,
+                            capsule_latitudes: entity.get(
+                                crate::ambient_core::primitives::components::capsule_latitudes(),
+                            )?,
+                            capsule_longitudes: entity.get(
+                                crate::ambient_core::primitives::components::capsule_longitudes(),
+                            )?,
+                        })
                     }
-                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
-                        None
+                    fn contained_by_spawned(id: EntityId) -> bool {
+                        entity::has_components(
+                            id,
+                            &[
+                                &crate::ambient_core::primitives::components::capsule(),
+                                &crate::ambient_core::primitives::components::capsule_radius(),
+                                &crate::ambient_core::primitives::components::capsule_half_height(),
+                                &crate::ambient_core::primitives::components::capsule_rings(),
+                                &crate::ambient_core::primitives::components::capsule_latitudes(),
+                                &crate::ambient_core::primitives::components::capsule_longitudes(),
+                            ],
+                        )
                     }
-                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
-                        None
+                    fn contained_by_unspawned(entity: &Entity) -> bool {
+                        entity.has_components(&[
+                            &crate::ambient_core::primitives::components::capsule(),
+                            &crate::ambient_core::primitives::components::capsule_radius(),
+                            &crate::ambient_core::primitives::components::capsule_half_height(),
+                            &crate::ambient_core::primitives::components::capsule_rings(),
+                            &crate::ambient_core::primitives::components::capsule_latitudes(),
+                            &crate::ambient_core::primitives::components::capsule_longitudes(),
+                        ])
                     }
                 }
                 #[allow(clippy::approx_constant)]
@@ -2545,20 +3306,90 @@ mod raw {
                     pub torus_loops: u32,
                 }
                 impl crate::ecs::Concept for Torus {
-                    fn make(&self) -> Entity {
-                        Entity::new()
+                    fn make(self) -> Entity {
+                        let mut entity = Entity::new()
+                            .with(
+                                crate::ambient_core::primitives::components::torus(),
+                                self.torus,
+                            )
+                            .with(
+                                crate::ambient_core::primitives::components::torus_inner_radius(),
+                                self.torus_inner_radius,
+                            )
+                            .with(
+                                crate::ambient_core::primitives::components::torus_outer_radius(),
+                                self.torus_outer_radius,
+                            )
+                            .with(
+                                crate::ambient_core::primitives::components::torus_slices(),
+                                self.torus_slices,
+                            )
+                            .with(
+                                crate::ambient_core::primitives::components::torus_loops(),
+                                self.torus_loops,
+                            );
+                        entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        None
+                        Some(Self {
+                            torus: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::torus(),
+                            )?,
+                            torus_inner_radius: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::torus_inner_radius(),
+                            )?,
+                            torus_outer_radius: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::torus_outer_radius(),
+                            )?,
+                            torus_slices: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::torus_slices(),
+                            )?,
+                            torus_loops: entity::get_component(
+                                id,
+                                crate::ambient_core::primitives::components::torus_loops(),
+                            )?,
+                        })
                     }
-                    fn get_unspawned(entity: Entity) -> Option<Self> {
-                        None
+                    fn get_unspawned(entity: &Entity) -> Option<Self> {
+                        Some(Self {
+                            torus: entity
+                                .get(crate::ambient_core::primitives::components::torus())?,
+                            torus_inner_radius: entity.get(
+                                crate::ambient_core::primitives::components::torus_inner_radius(),
+                            )?,
+                            torus_outer_radius: entity.get(
+                                crate::ambient_core::primitives::components::torus_outer_radius(),
+                            )?,
+                            torus_slices: entity
+                                .get(crate::ambient_core::primitives::components::torus_slices())?,
+                            torus_loops: entity
+                                .get(crate::ambient_core::primitives::components::torus_loops())?,
+                        })
                     }
-                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
-                        None
+                    fn contained_by_spawned(id: EntityId) -> bool {
+                        entity::has_components(
+                            id,
+                            &[
+                                &crate::ambient_core::primitives::components::torus(),
+                                &crate::ambient_core::primitives::components::torus_inner_radius(),
+                                &crate::ambient_core::primitives::components::torus_outer_radius(),
+                                &crate::ambient_core::primitives::components::torus_slices(),
+                                &crate::ambient_core::primitives::components::torus_loops(),
+                            ],
+                        )
                     }
-                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
-                        None
+                    fn contained_by_unspawned(entity: &Entity) -> bool {
+                        entity.has_components(&[
+                            &crate::ambient_core::primitives::components::torus(),
+                            &crate::ambient_core::primitives::components::torus_inner_radius(),
+                            &crate::ambient_core::primitives::components::torus_outer_radius(),
+                            &crate::ambient_core::primitives::components::torus_slices(),
+                            &crate::ambient_core::primitives::components::torus_loops(),
+                        ])
                     }
                 }
                 #[allow(clippy::approx_constant)]
@@ -3144,20 +3975,74 @@ mod raw {
                     pub scale: Option<Vec3>,
                 }
                 impl crate::ecs::Concept for Transformable {
-                    fn make(&self) -> Entity {
-                        Entity::new()
+                    fn make(self) -> Entity {
+                        let mut entity = Entity::new().with(
+                            crate::ambient_core::transform::components::local_to_world(),
+                            self.local_to_world,
+                        );
+                        if let Some(translation) = self.optional.translation {
+                            entity.set(
+                                crate::ambient_core::transform::components::translation(),
+                                translation,
+                            );
+                        }
+                        if let Some(rotation) = self.optional.rotation {
+                            entity.set(
+                                crate::ambient_core::transform::components::rotation(),
+                                rotation,
+                            );
+                        }
+                        if let Some(scale) = self.optional.scale {
+                            entity.set(crate::ambient_core::transform::components::scale(), scale);
+                        }
+                        entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        None
+                        Some(Self {
+                            local_to_world: entity::get_component(
+                                id,
+                                crate::ambient_core::transform::components::local_to_world(),
+                            )?,
+                            optional: TransformableOptional {
+                                translation: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::translation(),
+                                ),
+                                rotation: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::rotation(),
+                                ),
+                                scale: entity::get_component(
+                                    id,
+                                    crate::ambient_core::transform::components::scale(),
+                                ),
+                            },
+                        })
                     }
-                    fn get_unspawned(entity: Entity) -> Option<Self> {
-                        None
+                    fn get_unspawned(entity: &Entity) -> Option<Self> {
+                        Some(Self {
+                            local_to_world: entity
+                                .get(crate::ambient_core::transform::components::local_to_world())?,
+                            optional: TransformableOptional {
+                                translation: entity
+                                    .get(crate::ambient_core::transform::components::translation()),
+                                rotation: entity
+                                    .get(crate::ambient_core::transform::components::rotation()),
+                                scale: entity
+                                    .get(crate::ambient_core::transform::components::scale()),
+                            },
+                        })
                     }
-                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
-                        None
+                    fn contained_by_spawned(id: EntityId) -> bool {
+                        entity::has_components(
+                            id,
+                            &[&crate::ambient_core::transform::components::local_to_world()],
+                        )
                     }
-                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
-                        None
+                    fn contained_by_unspawned(entity: &Entity) -> bool {
+                        entity.has_components(&[
+                            &crate::ambient_core::transform::components::local_to_world(),
+                        ])
                     }
                 }
                 #[allow(clippy::approx_constant)]

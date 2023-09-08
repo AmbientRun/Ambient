@@ -23,6 +23,13 @@ impl Entity {
         self.0.contains_key(&component.index())
     }
 
+    /// Returns true if this has all of `components`.
+    pub fn has_components(&self, components: &[&dyn UntypedComponent]) -> bool {
+        components
+            .iter()
+            .all(|component| self.0.contains_key(&component.index()))
+    }
+
     /// Gets the data for `component` in this, if it exists.
     pub fn get<T: SupportedValue>(&self, component: Component<T>) -> Option<T> {
         T::from_value(self.0.get(&component.index())?.clone())

@@ -52,7 +52,6 @@ pub fn generate(
 }
 
 mod new {
-
     use super::*;
 
     pub(super) fn generate(
@@ -63,133 +62,263 @@ mod new {
         concept: &Concept,
     ) -> anyhow::Result<TokenStream> {
         let concept_id = &concept.data().id;
+        let concept_optional_id = quote::format_ident!("{}Optional", concept_id.as_str());
 
         let required_components = concept
             .required_components
             .iter()
             .map(|(id, value)| {
-                let component_item_id = id.as_resolved().unwrap();
-                let ComponentField {
-                    doc_comment,
-                    component_id,
-                    component_ty,
-                } = component_to_field(items, type_printer, context, component_item_id, value)?;
-
-                Ok(quote! {
-                    #[doc = #doc_comment]
-                    pub #component_id: #component_ty
-                })
+                component_to_field(
+                    items,
+                    type_printer,
+                    context,
+                    id.as_resolved().unwrap(),
+                    value,
+                )
             })
             .collect::<anyhow::Result<Vec<_>>>()?;
 
-        let mut doc_comment = String::new();
-        write!(
-            doc_comment,
-            "**{}**",
-            concept.name.as_deref().unwrap_or(concept_id.as_str())
-        )?;
-        if let Some(description) = &concept.description {
-            write!(doc_comment, ": {}", description)?;
-        }
-        writeln!(doc_comment)?;
-        writeln!(doc_comment)?;
+        let optional_components = concept
+            .optional_components
+            .iter()
+            .map(|(id, value)| {
+                component_to_field(
+                    items,
+                    type_printer,
+                    context,
+                    id.as_resolved().unwrap(),
+                    value,
+                )
+            })
+            .collect::<anyhow::Result<Vec<_>>>()?;
 
-        if !concept.extends.is_empty() {
-            write!(doc_comment, "**Extends**: ")?;
-            for (i, id) in concept.extends.iter().enumerate() {
-                let extend = items.get(id.as_resolved().unwrap());
-                if i != 0 {
-                    doc_comment.push_str(", ");
-                }
-
+        let struct_def = {
+            let doc_comment = {
+                let mut doc_comment = String::new();
                 write!(
                     doc_comment,
-                    "`{}`",
-                    &items.fully_qualified_display_path(extend, None, None)
+                    "**{}**",
+                    concept.name.as_deref().unwrap_or(concept_id.as_str())
                 )?;
-            }
-            writeln!(doc_comment)?;
-            writeln!(doc_comment)?;
-        }
+                if let Some(description) = &concept.description {
+                    write!(doc_comment, ": {}", description)?;
+                }
+                writeln!(doc_comment)?;
+                writeln!(doc_comment)?;
 
-        let doc_comment = doc_comment.trim();
+                if !concept.extends.is_empty() {
+                    write!(doc_comment, "**Extends**: ")?;
+                    for (i, id) in concept.extends.iter().enumerate() {
+                        let extend = items.get(id.as_resolved().unwrap());
+                        if i != 0 {
+                            doc_comment.push_str(", ");
+                        }
 
-        let (optional_ref, optional_concept_def) = if !concept.optional_components.is_empty() {
-            let concept_optional_id = quote::format_ident!("{}Optional", concept_id.as_str());
+                        write!(
+                            doc_comment,
+                            "`{}`",
+                            &items.fully_qualified_display_path(extend, None, None)
+                        )?;
+                    }
+                    writeln!(doc_comment)?;
+                    writeln!(doc_comment)?;
+                }
+                doc_comment.trim().to_string()
+            };
 
-            let optional_components = concept
-                .optional_components
+            let components = required_components
                 .iter()
-                .map(|(id, value)| {
-                    let component_item_id = id.as_resolved().unwrap();
-                    let ComponentField {
-                        doc_comment,
-                        component_id,
-                        component_ty,
-                    } = component_to_field(items, type_printer, context, component_item_id, value)?;
+                .map(|component| component.to_field_definition(false));
 
-                    Ok(quote! {
-                        #[doc = #doc_comment]
-                        pub #component_id: Option<#component_ty>
-                    })
-                })
-                .collect::<anyhow::Result<Vec<_>>>()?;
-
-            let doc_comment = format!("Optional part of [{}].", concept_id);
-
-            (
+            let optional_ref = if !optional_components.is_empty() {
                 Some(quote! {
                     /// Optional components.
                     pub optional: #concept_optional_id,
-                }),
-                Some(quote! {
-                    #[doc = #doc_comment]
-                    #[derive(Clone, Debug, Default)]
-                    pub struct #concept_optional_id {
-                        #(#optional_components),*
-                    }
-                }),
-            )
+                })
+            } else {
+                None
+            };
+
+            quote! {
+                #[doc = #doc_comment]
+                #[derive(Clone, Debug)]
+                pub struct #concept_id {
+                    #(#components)*
+                    #optional_ref
+                }
+            }
+        };
+
+        let optional_struct_def = if !optional_components.is_empty() {
+            let doc_comment = format!("Optional part of [{}].", concept_id);
+
+            let components = optional_components
+                .iter()
+                .map(|component| component.to_field_definition(true));
+
+            Some(quote! {
+                #[doc = #doc_comment]
+                #[derive(Clone, Debug, Default)]
+                pub struct #concept_optional_id {
+                    #(#components)*
+                }
+            })
         } else {
-            (None, None)
+            None
+        };
+
+        let make = {
+            let required = required_components.iter().map(|c| {
+                let path = &c.path;
+                let field_name = &c.id;
+
+                quote! { with(#path(), self.#field_name) }
+            });
+
+            let optional = optional_components.iter().map(|c| {
+                let path = &c.path;
+                let field_name = &c.id;
+
+                quote! {
+                    if let Some(#field_name) = self.optional.#field_name {
+                        entity.set(#path(), #field_name);
+                    }
+                }
+            });
+
+            quote! {
+                fn make(self) -> Entity {
+                    let mut entity = Entity::new()
+                        #(.#required)*;
+
+                    #(#optional)*
+
+                    entity
+                }
+            }
+        };
+
+        let get_spawned = {
+            let required_components = required_components.iter().map(|c| {
+                c.with_id_and_path(|f, p| quote! { #f: entity::get_component(id, #p())?, })
+            });
+
+            let optional = if optional_components.is_empty() {
+                None
+            } else {
+                let optional_components = optional_components.iter().map(|c| {
+                    c.with_id_and_path(|f, p| quote! { #f: entity::get_component(id, #p()), })
+                });
+
+                Some(quote! {
+                    optional: #concept_optional_id {
+                        #(#optional_components)*
+                    }
+                })
+            };
+
+            quote! {
+                fn get_spawned(id: EntityId) -> Option<Self> {
+                    Some(Self {
+                        #(#required_components)*
+                        #optional
+                    })
+                }
+            }
+        };
+
+        let get_unspawned = {
+            let required_components = required_components
+                .iter()
+                .map(|c| c.with_id_and_path(|f, p| quote! { #f: entity.get(#p())?, }));
+
+            let optional = if optional_components.is_empty() {
+                None
+            } else {
+                let optional_components = optional_components
+                    .iter()
+                    .map(|c| c.with_id_and_path(|f, p| quote! { #f: entity.get(#p()), }));
+
+                Some(quote! {
+                    optional: #concept_optional_id {
+                        #(#optional_components)*
+                    }
+                })
+            };
+
+            quote! {
+                fn get_unspawned(entity: &Entity) -> Option<Self> {
+                    Some(Self {
+                        #(#required_components)*
+                        #optional
+                    })
+                }
+            }
+        };
+
+        let contained_by = {
+            let required_paths = required_components
+                .iter()
+                .map(|c| &c.path)
+                .collect::<Vec<_>>();
+
+            quote! {
+                fn contained_by_spawned(id: EntityId) -> bool {
+                    entity::has_components(id, &[
+                        #(&#required_paths()),*
+                    ])
+                }
+
+                fn contained_by_unspawned(entity: &Entity) -> bool {
+                    entity.has_components(&[
+                        #(&#required_paths()),*
+                    ])
+                }
+            }
         };
 
         Ok(quote! {
-            #[doc = #doc_comment]
-            #[derive(Clone, Debug)]
-            pub struct #concept_id {
-                #(#required_components,)*
-                #optional_ref
-            }
-            #optional_concept_def
+            #struct_def
+            #optional_struct_def
             impl #guest_api_path::ecs::Concept for #concept_id {
-                fn make(&self) -> Entity {
-                    Entity::new()
-                }
-
-                fn get_spawned(id: EntityId) -> Option<Self> {
-                    None
-                }
-
-                fn get_unspawned(entity: Entity) -> Option<Self> {
-                    None
-                }
-
-                fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
-                    None
-                }
-
-                fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
-                    None
-                }
+                #make
+                #get_spawned
+                #get_unspawned
+                #contained_by
             }
         })
     }
 
     struct ComponentField<'a> {
         doc_comment: String,
-        component_id: &'a Identifier,
-        component_ty: TokenStream,
+        id: &'a Identifier,
+        ty: TokenStream,
+        path: TokenStream,
+    }
+    impl ComponentField<'_> {
+        fn to_field_definition(&self, use_option: bool) -> TokenStream {
+            let doc = &self.doc_comment;
+            let id = self.id;
+            let ty = &self.ty;
+
+            let ty = if use_option {
+                quote! { Option<#ty> }
+            } else {
+                ty.clone()
+            };
+
+            quote! {
+                #[doc = #doc]
+                pub #id: #ty,
+            }
+        }
+
+        fn with_id_and_path(
+            &self,
+            f: impl Fn(&Identifier, &TokenStream) -> TokenStream,
+        ) -> TokenStream {
+            f(self.id, &self.path)
+        }
     }
 
     fn component_to_field<'a>(
@@ -233,10 +362,13 @@ mod new {
             writeln!(doc_comment)?;
         }
 
+        let component_path = context.get_path(items, None, component_item_id)?;
+
         Ok(ComponentField {
             doc_comment,
-            component_id,
-            component_ty,
+            id: component_id,
+            ty: component_ty,
+            path: component_path,
         })
     }
 }
