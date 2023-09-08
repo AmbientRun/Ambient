@@ -10,19 +10,19 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
-ambient_sys = { path = "../sys", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
-ambient_rpc = { path = "../rpc", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
-ambient_native_std = { path = "../native_std", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
-ambient_core = { path = "../core", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
-ambient_gizmos = { path = "../gizmos", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
-ambient_gpu = { path = "../gpu", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
-ambient_gpu_ecs = { path = "../gpu_ecs", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
-ambient_ui_native = { path = "../ui_native", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
-ambient_renderer = { path = "../renderer", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
-ambient_element = { path = "../../shared_crates/element", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
-ambient_app = { path = "../app", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
-ambient_world_audio = { path = "../world_audio", version = "0.3.0-nightly-2023-09-08-web-wasm-test" }
+ambient_ecs = { path = "../ecs", version = "0.3.0-dev" }
+ambient_sys = { path = "../sys", version = "0.3.0-dev" }
+ambient_rpc = { path = "../rpc", version = "0.3.0-dev" }
+ambient_native_std = { path = "../native_std", version = "0.3.0-dev" }
+ambient_core = { path = "../core", version = "0.3.0-dev" }
+ambient_gizmos = { path = "../gizmos", version = "0.3.0-dev" }
+ambient_gpu = { path = "../gpu", version = "0.3.0-dev" }
+ambient_gpu_ecs = { path = "../gpu_ecs", version = "0.3.0-dev" }
+ambient_ui_native = { path = "../ui_native", version = "0.3.0-dev" }
+ambient_renderer = { path = "../renderer", version = "0.3.0-dev" }
+ambient_element = { path = "../../shared_crates/element", version = "0.3.0-dev" }
+ambient_app = { path = "../app", version = "0.3.0-dev" }
+ambient_world_audio = { path = "../world_audio", version = "0.3.0-dev" }
 
 
 rustls-native-certs = { workspace = true, optional = true }
