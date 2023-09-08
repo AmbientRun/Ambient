@@ -9,9 +9,9 @@ use ambient_api::{
         messages::Frame,
         player::components::is_player,
         transform::components::{local_to_parent, translation},
-        ui::components::focus,
     },
-    entity::{add_child, get_component, mutate_component_with_default, resources, set_component},
+    entity::{add_child, get_component, mutate_component_with_default, set_component},
+    input::is_game_focused,
     prelude::*,
 };
 use packages::{
@@ -25,10 +25,7 @@ use packages::{
 #[main]
 pub fn main() {
     Frame::subscribe(move |_| {
-        if !get_component(resources(), focus())
-            .unwrap_or_default()
-            .is_empty()
-        {
+        if !is_game_focused() {
             return;
         }
         let (delta, input) = input::get_delta();

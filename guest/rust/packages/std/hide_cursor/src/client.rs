@@ -3,14 +3,13 @@ use ambient_api::{
         messages::Frame,
         ui::{components::focus, messages::FocusChanged},
     },
-    entity::{get_component, resources, set_component},
-    input::{set_cursor_lock, set_cursor_visible},
+    entity::{resources, set_component},
+    input::{is_game_focused, set_cursor_lock, set_cursor_visible},
     prelude::*,
 };
 
 fn update() {
-    let current_focus = get_component(resources(), focus()).unwrap_or_default();
-    if current_focus.is_empty() {
+    if is_game_focused() {
         set_cursor_lock(true);
         set_cursor_visible(false);
     } else {
@@ -22,9 +21,8 @@ fn update() {
 #[main]
 pub fn main() {
     Frame::subscribe(move |_| {
-        let current_focus = get_component(resources(), focus()).unwrap_or_default();
-        if current_focus.is_empty() {
-            let (delta, input) = input::get_delta();
+        if is_game_focused() {
+            let (_, input) = input::get_delta();
             if input.keys.contains(&KeyCode::Escape) {
                 set_component(resources(), focus(), "Nothing".to_string());
                 FocusChanged {
