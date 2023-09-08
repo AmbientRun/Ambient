@@ -7,6 +7,11 @@ use crate::{ComponentType, SnakeCaseIdentifier};
 pub struct Message {
     pub description: Option<String>,
     pub fields: IndexMap<SnakeCaseIdentifier, ComponentType>,
+    /// When set, will generate a `ModuleMessage` instead of a `RuntimeMessage`.
+    ///
+    /// Only applicable to messages defined in the `ambient_core` schema. Intentionally undocumented.
+    #[serde(default)]
+    pub as_module_message: bool,
 }
 
 #[cfg(test)]

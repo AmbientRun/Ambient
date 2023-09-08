@@ -71,11 +71,12 @@ pub fn generate(
                 quote! {}
             };
 
-            let message_impl = if message.data().source == ItemSource::Ambient {
-                quote! { RuntimeMessage }
-            } else {
-                quote! { ModuleMessage }
-            };
+            let message_impl =
+                if message.data().source != ItemSource::Ambient || message.as_module_message {
+                    quote! { ModuleMessage }
+                } else {
+                    quote! { RuntimeMessage }
+                };
 
             let struct_definition = if message.fields.is_empty() {
                 quote! {
