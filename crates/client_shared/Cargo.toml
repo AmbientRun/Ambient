@@ -6,16 +6,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_core = { path = "../core" , version = "0.3.0-nightly-2023-09-08" }
-ambient_ecs = { path = "../ecs" , version = "0.3.0-nightly-2023-09-08" }
-ambient_element = { path = "../../shared_crates/element" , version = "0.3.0-nightly-2023-09-08" }
-ambient_input = { path = "../input" , version = "0.3.0-nightly-2023-09-08" }
-ambient_network = { path = "../network/" , version = "0.3.0-nightly-2023-09-08" }
-ambient_shared_types = { path = "../../shared_crates/shared_types/" , version = "0.3.0-nightly-2023-09-08" }
-ambient_ui_native = { path = "../ui_native/" , version = "0.3.0-nightly-2023-09-08" }
-ambient_layout = { path = "../layout/" , version = "0.3.0-nightly-2023-09-08" }
-ambient_debugger = { path = "../debugger/" , version = "0.3.0-nightly-2023-09-08" }
+ambient_core = { path = "../core" , version = "0.3.0-dev" }
+ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.3.0-dev" }
+ambient_input = { path = "../input" , version = "0.3.0-dev" }
+ambient_network = { path = "../network/" , version = "0.3.0-dev" }
+ambient_shared_types = { path = "../../shared_crates/shared_types/" , version = "0.3.0-dev" }
+ambient_ui_native = { path = "../ui_native/" , version = "0.3.0-dev" }
+ambient_layout = { path = "../layout/" , version = "0.3.0-dev" }
+ambient_debugger = { path = "../debugger/" , version = "0.3.0-dev" }
 
-ambient_ecs_editor = { path = "../ecs_editor/" , version = "0.3.0-nightly-2023-09-08" }
+ambient_ecs_editor = { path = "../ecs_editor/" , version = "0.3.0-dev" }
 
 glam = { workspace = true }

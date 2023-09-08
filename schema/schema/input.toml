@@ -3,7 +3,7 @@ id = "input"
 name = "Input"
 description = "Mouse, keyboard and controller input."
 content = { type = "Asset", schema = true }
-version = "0.3.0-nightly-2023-09-08"
+version = "0.3.0-dev"
 
 [components.mouse_over]
 type = "U32"
