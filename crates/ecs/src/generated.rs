@@ -987,6 +987,58 @@ mod raw {
             }
         }
         #[allow(unused)]
+        pub mod ui {
+            #[doc = r" Auto-generated component definitions."]
+            pub mod components {
+                use crate::{
+                    components, Debuggable, Description, EntityId, Enum, MaybeResource, Name,
+                    Networked, Resource, Store,
+                };
+                use ambient_shared_types::{
+                    ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
+                    ProceduralTextureHandle,
+                };
+                use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+                use std::time::Duration;
+                components ! ("ui" , { # [doc = "**Focus**: Currently focused object.\n\n*Attributes*: Debuggable, Networked, Store, Resource"] @ [Debuggable , Networked , Store , Resource , Name ["Focus"] , Description ["Currently focused object."]] focus : String , });
+            }
+            #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+            #[doc = r" and with other modules."]
+            pub mod messages {
+                use crate::{Entity, EntityId};
+                use ambient_package_rt::message_serde::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                };
+                use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+                #[derive(Clone, Debug)]
+                #[doc = "**FocusChanged**: Focus has been updated"]
+                pub struct FocusChanged;
+                impl FocusChanged {
+                    pub fn new() -> Self {
+                        Self
+                    }
+                }
+                impl Message for FocusChanged {
+                    fn id() -> &'static str {
+                        "FocusChanged"
+                    }
+                    fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                        let mut output = vec![];
+                        Ok(output)
+                    }
+                    fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                        Ok(Self {})
+                    }
+                }
+                impl ModuleMessage for FocusChanged {}
+                impl Default for FocusChanged {
+                    fn default() -> Self {
+                        Self::new()
+                    }
+                }
+            }
+        }
+        #[allow(unused)]
         pub mod wasm {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -1488,6 +1540,7 @@ mod raw {
             crate::generated::raw::ambient_core::rendering::components::init_components();
             crate::generated::raw::ambient_core::text::components::init_components();
             crate::generated::raw::ambient_core::transform::components::init_components();
+            crate::generated::raw::ambient_core::ui::components::init_components();
             crate::generated::raw::ambient_core::wasm::components::init_components();
         }
     }

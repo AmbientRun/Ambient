@@ -4,11 +4,17 @@ use ambient_core::window::{
     cursor_position, set_cursor, window_logical_size, window_physical_size, window_scale_factor,
 };
 use ambient_debugger::Debugger;
-use ambient_ecs::{generated::messages, EntityId};
+use ambient_ecs::{
+    generated::{
+        messages,
+        ui::{components::focus, messages::FocusChanged},
+    },
+    read_messages, world_events, EntityId, WorldEventsExt,
+};
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
 use ambient_element::{
-    consume_context, element_component, use_frame, use_runtime_message, use_state, Element,
-    ElementComponentExt, Hooks,
+    consume_context, element_component, to_owned, use_frame, use_module_message, use_ref_with,
+    use_runtime_message, use_state, Element, ElementComponentExt, Hooks,
 };
 use ambient_layout::Docking;
 use ambient_network::client::{ClientState, GameClientRenderTarget, GameClientWorld};
@@ -178,4 +184,41 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
             GameClientWorld.el()
         },
     ])
+}
+
+#[element_component]
+pub fn SyncFocus(hooks: &mut Hooks) -> Element {
+    let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
+    use_module_message::<FocusChanged>(hooks, {
+        to_owned!(client_state);
+        move |world, _, msg| {
+            let mut state = client_state.game_state.lock();
+            *state.world.resource_mut(focus()) = world.resource(focus()).clone();
+            state
+                .world
+                .resource_mut(world_events())
+                .add_message(FocusChanged {});
+        }
+    });
+    let reader = use_ref_with(hooks, |_| {
+        client_state
+            .game_state
+            .lock()
+            .world
+            .resource_mut(world_events())
+            .reader()
+    });
+    use_frame(hooks, move |world| {
+        let mut state = client_state.game_state.lock();
+        let mut reader = reader.lock();
+        let messages =
+            read_messages::<FocusChanged>(&mut reader, state.world.resource_mut(world_events()));
+        if let Some(msg) = messages.into_iter().next() {
+            *world.resource_mut(focus()) = state.world.resource(focus()).clone();
+            world
+                .resource_mut(world_events())
+                .add_message(FocusChanged {});
+        }
+    });
+    Element::new()
 }

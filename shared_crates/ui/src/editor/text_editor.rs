@@ -61,13 +61,13 @@ pub fn TextEditor(
 
     use_spawn(hooks, {
         to_owned![set_focused];
-        move |_| {
+        move |world| {
             if auto_focus {
-                set_focused(true);
+                set_focused(world, true);
             }
-            move |_| {
+            move |world| {
                 if focused {
-                    set_focused(false);
+                    set_focused(world, false);
                 }
             }
         }
@@ -216,8 +216,8 @@ pub fn TextEditor(
     .with(min_height(), 13.)
     .with(background_color(), vec4(0., 0., 0., 0.5))
     .with_clickarea()
-    .on_mouse_up(move |_, _, _| {
-        set_focused(true);
+    .on_mouse_up(move |world, _, _| {
+        set_focused(world, true);
     })
     .on_mouse_enter(|world, _| {
         set_cursor(world, CursorIcon::Text);

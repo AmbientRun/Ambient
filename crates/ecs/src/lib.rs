@@ -77,7 +77,7 @@ impl<'a> Debug for DebugWorldArchetypes<'a> {
 mod internal_components {
     use super::Message;
 
-    use crate::{components, Description, Resource, WorldEvents};
+    use crate::{components, Description, Resource, WorldEventReader, WorldEvents};
 
     pub trait WorldEventsExt {
         fn add_message<M: Message>(&mut self, message: M);
@@ -89,6 +89,17 @@ mod internal_components {
         }
     }
 
+    pub fn read_messages<M: Message>(
+        reader: &mut WorldEventReader,
+        events: &WorldEvents,
+    ) -> Vec<M> {
+        reader
+            .iter(events)
+            .filter(|(_, (name, _))| *name == M::id())
+            .map(|(_, (_, event))| M::deserialize_message(event).unwrap())
+            .collect()
+    }
+
     components!("ecs", {
         @[
             Resource,
@@ -98,7 +109,7 @@ mod internal_components {
     });
 }
 pub use generated::ecs::components::*;
-pub use internal_components::{world_events, WorldEventsExt};
+pub use internal_components::{read_messages, world_events, WorldEventsExt};
 
 pub fn init_components() {
     generated::init();

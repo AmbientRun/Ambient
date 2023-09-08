@@ -373,8 +373,8 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         ])
         .el()
         .with_clickarea()
-        .on_mouse_down(move |_, _, _| {
-            set_focused(true);
+        .on_mouse_down(move |world, _, _| {
+            set_focused(world, true);
         })
         .el()
         .with(padding(), vec4(STREET, 0., STREET, 0.))

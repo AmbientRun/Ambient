@@ -1,0 +1,17 @@
+[package]
+id = "ui"
+name = "UI"
+description = "User interface components"
+content = { type = "Asset", schema = true }
+version = "0.3.0-dev"
+
+[components.focus]
+type = "String"
+name = "Focus"
+description = "Currently focused object."
+attributes = ["Debuggable", "Networked", "Store", "Resource"]
+
+[messages.FocusChanged]
+description = "Focus has been updated"
+fields = { }
+as_module_message = true

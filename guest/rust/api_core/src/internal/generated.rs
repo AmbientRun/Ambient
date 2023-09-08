@@ -2551,6 +2551,59 @@ mod raw {
             }
         }
         #[allow(unused)]
+        pub mod ui {
+            #[doc = r" Auto-generated component definitions."]
+            pub mod components {
+                use crate::{
+                    ecs::{Component, __internal_get_component},
+                    once_cell::sync::Lazy,
+                    prelude::*,
+                };
+                static FOCUS: Lazy<Component<String>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::ui::focus"));
+                #[doc = "**Focus**: Currently focused object.\n\n*Attributes*: Debuggable, Networked, Store, Resource"]
+                pub fn focus() -> Component<String> {
+                    *FOCUS
+                }
+            }
+            #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+            #[doc = r" and with other modules."]
+            pub mod messages {
+                use crate::{
+                    message::{
+                        Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                    },
+                    prelude::*,
+                };
+                #[derive(Clone, Debug)]
+                #[doc = "**FocusChanged**: Focus has been updated"]
+                pub struct FocusChanged;
+                impl FocusChanged {
+                    pub fn new() -> Self {
+                        Self
+                    }
+                }
+                impl Message for FocusChanged {
+                    fn id() -> &'static str {
+                        "FocusChanged"
+                    }
+                    fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                        let mut output = vec![];
+                        Ok(output)
+                    }
+                    fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                        Ok(Self {})
+                    }
+                }
+                impl ModuleMessage for FocusChanged {}
+                impl Default for FocusChanged {
+                    fn default() -> Self {
+                        Self::new()
+                    }
+                }
+            }
+        }
+        #[allow(unused)]
         pub mod wasm {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {

@@ -18,8 +18,8 @@ use ambient_core::{
     ClientTimeResourcesSystem, RuntimeKey,
 };
 use ambient_ecs::{
-    components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault,
-    MaybeResource, System, SystemGroup, World, WorldEventsSystem,
+    components, generated::ui::components::focus, world_events, Debuggable, DynSystem, Entity,
+    FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World, WorldEventsSystem,
 };
 use ambient_element::ambient_system;
 use ambient_gizmos::{gizmos, Gizmos};
@@ -182,6 +182,7 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         )
         .with(ambient_core::window::window_ctl(), resources.ctl_tx)
         .with(procedural_storage(), ProceduralStorage::new())
+        .with(focus(), Default::default())
 }
 
 pub struct AppBuilder {
