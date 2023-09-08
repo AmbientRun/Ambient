@@ -1,7 +1,7 @@
 use std::f32::consts::TAU;
 
 use ambient_api::{
-    core::{messages::Frame, model::components::model_loaded, transform::components::rotation},
+    core::{model::components::model_loaded, transform::components::rotation},
     glam::EulerRot,
     prelude::*,
 };
