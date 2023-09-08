@@ -7,7 +7,10 @@ use ambient_debugger::Debugger;
 use ambient_ecs::{
     generated::{
         messages,
-        ui::{components::focus, messages::FocusChanged},
+        ui::{
+            components::{focus, focusable},
+            messages::FocusChanged,
+        },
     },
     read_messages, world_events, EntityId, WorldEventsExt,
 };
@@ -105,10 +108,8 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let game_client_world = GameClientWorld
         .el()
         .with_clickarea()
-        .on_mouse_down(|world, _, _| {
-            set_focus(world, "".to_string());
-        })
-        .el();
+        .el()
+        .with(focusable(), "".to_string());
 
     Dock::el([
         SyncFocus.el(),
@@ -194,10 +195,8 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
         },
     ])
     .with_clickarea()
-    .on_mouse_down(|world, _, _| {
-        set_focus(world, "IDE".to_string());
-    })
     .el()
+    .with(focusable(), "IDE".to_string())
 }
 
 #[element_component]

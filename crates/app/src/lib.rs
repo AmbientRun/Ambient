@@ -426,6 +426,7 @@ impl AppBuilder {
             vec![
                 Box::new(assets_camera_systems()),
                 Box::new(ambient_input::event_systems()),
+                Box::new(ambient_focus::systems()),
                 Box::new(renderers::systems()),
             ],
         );

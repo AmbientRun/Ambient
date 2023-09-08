@@ -14,6 +14,7 @@ use ambient_guest_bridge::{
         rendering::components::color,
         text::components::text,
         transform::components::translation,
+        ui::components::focusable,
     },
     window::set_cursor,
 };
@@ -215,10 +216,8 @@ pub fn TextEditor(
     .with(min_width(), 3.)
     .with(min_height(), 13.)
     .with(background_color(), vec4(0., 0., 0., 0.5))
+    .with(focusable(), hooks.instance_id().to_string())
     .with_clickarea()
-    .on_mouse_up(move |world, _, _| {
-        set_focused(world, true);
-    })
     .on_mouse_enter(|world, _| {
         set_cursor(world, CursorIcon::Text);
     })

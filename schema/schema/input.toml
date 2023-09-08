@@ -5,11 +5,23 @@ description = "Mouse, keyboard and controller input."
 content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
 
-[components.mouse_over]
+[components.mouse_over_entity]
+type = "EntityId"
+name = "Mouse over entity"
+description = "The entity the mouse is currently over."
+attributes = ["Debuggable", "Resource"]
+
+[components.mouse_over_distance]
+type = "F32"
+name = "Mouse over distance"
+description = "This distance to the entity that the mouse is currently over."
+attributes = ["Debuggable", "Resource"]
+
+[components.is_mouse_over]
 type = "U32"
 name = "Mouse over"
 description = "The number of mouse cursors that are currently over this entity."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["Debuggable"]
 
 [components.mouse_pickable_max]
 type = "Vec3"

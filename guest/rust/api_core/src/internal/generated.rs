@@ -765,11 +765,25 @@ mod raw {
                     once_cell::sync::Lazy,
                     prelude::*,
                 };
-                static MOUSE_OVER: Lazy<Component<u32>> =
-                    Lazy::new(|| __internal_get_component("ambient_core::input::mouse_over"));
-                #[doc = "**Mouse over**: The number of mouse cursors that are currently over this entity.\n\n*Attributes*: Debuggable, Networked, Store"]
-                pub fn mouse_over() -> Component<u32> {
-                    *MOUSE_OVER
+                static MOUSE_OVER_ENTITY: Lazy<Component<EntityId>> = Lazy::new(|| {
+                    __internal_get_component("ambient_core::input::mouse_over_entity")
+                });
+                #[doc = "**Mouse over entity**: The entity the mouse is currently over.\n\n*Attributes*: Debuggable, Resource"]
+                pub fn mouse_over_entity() -> Component<EntityId> {
+                    *MOUSE_OVER_ENTITY
+                }
+                static MOUSE_OVER_DISTANCE: Lazy<Component<f32>> = Lazy::new(|| {
+                    __internal_get_component("ambient_core::input::mouse_over_distance")
+                });
+                #[doc = "**Mouse over distance**: This distance to the entity that the mouse is currently over.\n\n*Attributes*: Debuggable, Resource"]
+                pub fn mouse_over_distance() -> Component<f32> {
+                    *MOUSE_OVER_DISTANCE
+                }
+                static IS_MOUSE_OVER: Lazy<Component<u32>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::input::is_mouse_over"));
+                #[doc = "**Mouse over**: The number of mouse cursors that are currently over this entity.\n\n*Attributes*: Debuggable"]
+                pub fn is_mouse_over() -> Component<u32> {
+                    *IS_MOUSE_OVER
                 }
                 static MOUSE_PICKABLE_MAX: Lazy<Component<Vec3>> = Lazy::new(|| {
                     __internal_get_component("ambient_core::input::mouse_pickable_max")
@@ -2561,9 +2575,15 @@ mod raw {
                 };
                 static FOCUS: Lazy<Component<String>> =
                     Lazy::new(|| __internal_get_component("ambient_core::ui::focus"));
-                #[doc = "**Focus**: Currently focused object.\n\n*Attributes*: Debuggable, Networked, Store, Resource"]
+                #[doc = "**Focus**: Currently focused object.\n\n*Attributes*: Debuggable, Networked, Resource"]
                 pub fn focus() -> Component<String> {
                     *FOCUS
+                }
+                static FOCUSABLE: Lazy<Component<String>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::ui::focusable"));
+                #[doc = "**Focus**: This entity can be focused. The value is the focus id.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn focusable() -> Component<String> {
+                    *FOCUSABLE
                 }
             }
             #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]

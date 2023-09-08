@@ -9,7 +9,13 @@ version = "0.3.0-dev"
 type = "String"
 name = "Focus"
 description = "Currently focused object."
-attributes = ["Debuggable", "Networked", "Store", "Resource"]
+attributes = ["Debuggable", "Networked", "Resource"]
+
+[components.focusable]
+type = "String"
+name = "Focus"
+description = "This entity can be focused. The value is the focus id."
+attributes = ["Debuggable", "Networked"]
 
 [messages.FocusChanged]
 description = "Focus has been updated"
