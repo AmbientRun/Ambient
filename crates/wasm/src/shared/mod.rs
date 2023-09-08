@@ -49,8 +49,6 @@ mod internal {
         module_bytecode: ModuleBytecode,
         @[Networked, Store, Debuggable]
         module_errors: ModuleErrors,
-        @[Networked, Debuggable, Description["The ID of the module on the \"other side\" of this module, if available. (e.g. serverside module to clientside module)."]]
-        remote_paired_id: EntityId,
 
         @[Resource, Description["Used to signal messages from the WASM host/runtime."]]
         messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,

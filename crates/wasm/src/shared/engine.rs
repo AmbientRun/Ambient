@@ -38,8 +38,6 @@ impl SyncAssetKey<Result<Engine, Arc<anyhow::Error>>> for EngineKey {
 
         config.wasm_component_model(true);
 
-        // config.async_support(true).wasm_component_model(true);
-
         Ok(Engine {
             engine: wasm_bridge::Engine::new(&config)
                 .context("Failed to create wasm execution engine")
