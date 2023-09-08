@@ -6,6 +6,7 @@ content = { type = "Playable" }
 
 [dependencies]
 character_animation = { path = "../../std/character_animation", deployment = "126RuLU9V6r5acXZVH91R4" }
+hide_cursor = { path = "../../std/hide_cursor", deployment = "126RuLU9V6r5acXZVH91R4" }
 fpsaudio = { path = "core/fpsaudio", deployment = "fO5hOUNzMiF4IeB1XB3kn" }
 fpsmodel = { path = "core/fpsmodel", deployment = "1Ki27FR67cNAXfpZU0Nojg" }
 fpsmovement = { path = "core/fpsmovement", deployment = "1A4WvZxIXpzsDv96x5k5W7" }
