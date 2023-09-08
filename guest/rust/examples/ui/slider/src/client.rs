@@ -1,10 +1,10 @@
-use ambient_api::{core::layout::components::space_between_items, prelude::*};
+use ambient_api::{core::layout::components::space_between_items, element::use_state, prelude::*};
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
-    let (f32_value, set_f32_value) = hooks.use_state(0.);
-    let (f32_exp_value, set_f32_exp_value) = hooks.use_state(0.1);
-    let (i32_value, set_i32_value) = hooks.use_state(0);
+    let (f32_value, set_f32_value) = use_state(hooks, 0.);
+    let (f32_exp_value, set_f32_exp_value) = use_state(hooks, 0.1);
+    let (i32_value, set_i32_value) = use_state(hooks, 0);
 
     FocusRoot::el([FlowColumn::el([
         Slider {

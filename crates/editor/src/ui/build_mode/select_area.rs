@@ -5,7 +5,10 @@ use ambient_core::{
     window::{window_logical_size, window_scale_factor},
 };
 use ambient_ecs::generated::messages;
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    consume_context, use_ref_with, use_runtime_message, use_spawn, use_state, Element,
+    ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_native_std::{color::Color, math::interpolate};
 use ambient_network::{client::ClientState, log_network_result};
 use ambient_ui_native::{
@@ -24,15 +27,15 @@ use crate::{
 pub struct SelectArea;
 impl ElementComponent for SelectArea {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (dragging, set_dragging) = hooks.use_state::<Option<Vec2>>(None);
-        let (area_offset, set_area_offset) = hooks.use_state(Vec2::ZERO);
-        let (mouse_pos, set_mouse_pos) = hooks.use_state(Vec2::ZERO);
-        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
-        let (select_mode, _) = hooks.consume_context::<SelectMode>().unwrap();
-        let is_clicking = hooks.use_ref_with(|_| false);
+        let (dragging, set_dragging) = use_state::<Option<Vec2>>(hooks, None);
+        let (area_offset, set_area_offset) = use_state(hooks, Vec2::ZERO);
+        let (mouse_pos, set_mouse_pos) = use_state(hooks, Vec2::ZERO);
+        let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
+        let (select_mode, _) = consume_context::<SelectMode>(hooks).unwrap();
+        let is_clicking = use_ref_with(hooks, |_| false);
 
         let client = client_state.clone();
-        hooks.use_spawn(move |_| {
+        use_spawn(hooks, move |_| {
             move |w| {
                 w.resource(runtime()).spawn(async move {
                     log_network_result!(
@@ -47,12 +50,12 @@ impl ElementComponent for SelectArea {
             }
         });
 
-        hooks.use_runtime_message::<messages::WindowMouseMotion>(move |world, event| {
+        use_runtime_message::<messages::WindowMouseMotion>(hooks, move |world, event| {
             let scl = *world.resource(window_scale_factor()) as f32;
             set_mouse_pos(event.delta / scl);
         });
 
-        hooks.use_runtime_message::<messages::WindowMouseInput>({
+        use_runtime_message::<messages::WindowMouseInput>(hooks, {
             let set_dragging = set_dragging.clone();
             let is_clicking = is_clicking.clone();
             move |world, event| {

@@ -3,6 +3,7 @@
 use ambient_api::{
     core::player::components::is_player,
     core::rect::components::{background_color, line_from, line_to, line_width},
+    element::{use_entity_component, use_module_message_effect, use_query, use_state},
     prelude::*,
     ui::{use_keyboard_input, use_window_logical_resolution, ImageFromUrl},
 };
@@ -25,7 +26,7 @@ pub fn main() {
 
 #[element_component]
 pub fn App(hooks: &mut Hooks) -> Element {
-    let (player_name, _) = hooks.use_entity_component(player::get_local(), player_name());
+    let (player_name, _) = use_entity_component(hooks, player::get_local(), player_name());
 
     if player_name.is_none() {
         JoinScreen::el()
@@ -36,8 +37,8 @@ pub fn App(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn JoinScreen(hooks: &mut Hooks) -> Element {
-    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
-    let (name, set_name) = hooks.use_state("".to_string());
+    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
+    let (name, set_name) = use_state(hooks, "".to_string());
 
     FocusRoot::el([
         WindowSized::el([FlowColumn::el([
@@ -81,7 +82,7 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn GameUI(hooks: &mut Hooks) -> Element {
-    let (scoreboard_open, set_scoreboard_open) = hooks.use_state(false);
+    let (scoreboard_open, set_scoreboard_open) = use_state(hooks, false);
     use_keyboard_input(hooks, move |_, keycode, _, pressed| {
         if keycode == Some(VirtualKeyCode::Tab) {
             set_scoreboard_open(pressed);
@@ -122,7 +123,7 @@ fn Crosshair(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn Hud(hooks: &mut Hooks) -> Element {
-    let (local_health, _) = hooks.use_entity_component(player::get_local(), health());
+    let (local_health, _) = use_entity_component(hooks, player::get_local(), health());
 
     WindowSized::el([Dock::el([Text::el(format!(
         "health: {:?}",
@@ -136,7 +137,7 @@ fn Hud(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn KillHistory(hooks: &mut Hooks) -> Element {
-    let history = hooks.use_query(kill_log());
+    let history = use_query(hooks, kill_log());
     let history = if !history.is_empty() {
         history[0].1.clone()
     } else {
@@ -165,15 +166,18 @@ fn KillHistory(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn Scoreboard(hooks: &mut Hooks) -> Element {
-    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
+    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
 
-    let players = hooks.use_query((
-        is_player(),
-        player_name(),
-        player_killcount(),
-        player_deathcount(),
-        player_last_frame(),
-    ));
+    let players = use_query(
+        hooks,
+        (
+            is_player(),
+            player_name(),
+            player_killcount(),
+            player_deathcount(),
+            player_last_frame(),
+        ),
+    );
 
     let latest_frame = players
         .iter()

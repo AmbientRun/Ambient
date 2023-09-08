@@ -1,7 +1,9 @@
 use std::{collections::HashMap, sync::Arc};
 
 use ambient_core::{asset_cache, transform::translation};
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    use_interval, use_state, Element, ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_native_std::{
     asset_cache::{AssetKey, AssetLifetime, AssetTimeline, AssetsTimeline},
     color::Color,
@@ -22,14 +24,14 @@ pub struct AssetTimelineVisualizer {
 impl ElementComponent for AssetTimelineVisualizer {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let total_count = self.timeline.assets.len();
-        let (limit, set_limit) = hooks.use_state(Some(100));
+        let (limit, set_limit) = use_state(hooks, Some(100));
         #[derive(Debug, Clone, Copy, PartialEq, Eq)]
         enum Sorting {
             CpuSize,
             GpuSize,
             Name,
         }
-        let (sorting, set_sorting) = hooks.use_state(Sorting::CpuSize);
+        let (sorting, set_sorting) = use_state(hooks, Sorting::CpuSize);
         #[derive(Debug, Clone, Copy, PartialEq, Eq)]
         enum Filter {
             Loading,
@@ -37,7 +39,7 @@ impl ElementComponent for AssetTimelineVisualizer {
             Aborted,
             All,
         }
-        let (filter, set_filter) = hooks.use_state(Filter::Loading);
+        let (filter, set_filter) = use_state(hooks, Filter::Loading);
         let mut roots: HashMap<AssetKey, (AssetTimeline, _)> = self
             .timeline
             .assets
@@ -185,7 +187,7 @@ impl ElementComponent for AssetTimelineRow {
             padding,
             total_gpu_size,
         } = *self;
-        let (expanded, set_expanded) = hooks.use_state(false);
+        let (expanded, set_expanded) = use_state(hooks, false);
         let key_text = Text::el(if key.len() > 30 { &key[0..30] } else { &key }).with(
             color(),
             if value.is_alive {
@@ -436,9 +438,9 @@ impl ElementComponent for AssetLifetimeViz {
 pub struct LocalAssetTimelineVisualizer;
 impl ElementComponent for LocalAssetTimelineVisualizer {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (timeline, set_timeline) = hooks.use_state(AssetsTimeline::new());
+        let (timeline, set_timeline) = use_state(hooks, AssetsTimeline::new());
         let assets = hooks.world.resource(asset_cache()).clone();
-        hooks.use_interval(1., move || {
+        use_interval(hooks, 1., move || {
             let timeline = assets.timeline.lock().clone();
             set_timeline(timeline);
         });

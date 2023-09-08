@@ -1,7 +1,9 @@
 use std::{borrow::Cow, sync::Arc};
 
 use ambient_core::{asset_cache, gpu, mesh, transform::*, ui_scene};
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    use_async, use_memo_with, Element, ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_gpu::{
     sampler::SamplerKey,
     std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
@@ -35,7 +37,7 @@ impl ElementComponent for Image {
         let assets = hooks.world.resource(asset_cache()).clone();
         let gpu = hooks.world.resource(gpu()).clone();
         let texture_id = texture.as_ref().map(|x| x.texture.id);
-        let mat = hooks.use_memo_with(texture_id, move |_, _| {
+        let mat = use_memo_with(hooks, texture_id, move |_, _| {
             texture.map(|texture| {
                 SharedMaterial::new(PbrMaterial::new(
                     &gpu,
@@ -88,17 +90,16 @@ impl ElementComponent for ImageFromBytes {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { bytes, label } = *self;
 
-        let texture = hooks
-            .use_async(|w| {
-                let assets = w.resource(asset_cache()).clone();
-                async move {
-                    TextureFromBytes::new(bytes, Some(label))
-                        .get(&assets)
-                        .await
-                        .map(|x| Arc::new(x.create_view(&Default::default())))
-                }
-            })
-            .and_then(Result::ok);
+        let texture = use_async(hooks, |w| {
+            let assets = w.resource(asset_cache()).clone();
+            async move {
+                TextureFromBytes::new(bytes, Some(label))
+                    .get(&assets)
+                    .await
+                    .map(|x| Arc::new(x.create_view(&Default::default())))
+            }
+        })
+        .and_then(Result::ok);
 
         Image { texture }.el()
     }

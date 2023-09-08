@@ -6,6 +6,9 @@ use ambient_api::{
         rendering::components::color,
         text::{components::font_style, types::FontStyle},
     },
+    element::{
+        use_module_message_effect, use_rerender_signal, use_spawn, use_state, use_state_with,
+    },
     prelude::*,
     ui::use_keyboard_input,
 };
@@ -55,7 +58,7 @@ pub fn main() {
 
 #[element_component]
 pub fn App(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
-    let (toggle, set_toggle) = hooks.use_state(false);
+    let (toggle, set_toggle) = use_state(hooks, false);
     use_keyboard_input(hooks, move |_, keycode, modifiers, pressed| {
         if modifiers == ModifiersState::empty() && keycode == Some(VirtualKeyCode::F1) && !pressed {
             set_toggle(!toggle);
@@ -71,10 +74,10 @@ pub fn App(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
 
 #[element_component]
 pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
-    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
+    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
 
-    let render_signal = hooks.use_rerender_signal();
-    hooks.use_spawn({
+    let render_signal = use_rerender_signal(hooks);
+    use_spawn(hooks, {
         let console = console.clone();
         move |_| {
             console.lock().unwrap().on_output(move || render_signal());
@@ -83,7 +86,7 @@ pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
             }
         }
     });
-    let (command, set_command) = hooks.use_state_with(|_| String::new());
+    let (command, set_command) = use_state_with(hooks, |_| String::new());
 
     FocusRoot::el([WindowSized::el([with_rect(Dock::el([
         // text entry

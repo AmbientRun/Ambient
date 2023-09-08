@@ -1,4 +1,4 @@
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks, Memo};
+use ambient_element::{use_state, Element, ElementComponent, ElementComponentExt, Hooks, Memo};
 use ambient_guest_bridge::ecs::query;
 mod common;
 use common::*;
@@ -40,7 +40,7 @@ fn memo_hook_state_update() {
     impl ElementComponent for Inner {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             *hooks.world.resource_mut(n_renders()) += 1;
-            let (state, set_state) = hooks.use_state(0);
+            let (state, set_state) = use_state(hooks, 0);
             Element::new().on_spawned(move |_, _, _| set_state(state + 1))
         }
     }

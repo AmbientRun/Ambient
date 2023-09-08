@@ -6,6 +6,7 @@ use ambient_api::{
         layout::components::{fit_horizontal, fit_vertical, height, space_between_items, width},
         messages::Frame,
     },
+    element::{use_query, use_state, use_state_with},
     entity::synchronized_resources,
     global::game_time,
     prelude::*,
@@ -42,7 +43,7 @@ pub fn main() {
 
 #[element_component]
 fn App(hooks: &mut Hooks, cursor: usize) -> Element {
-    let mut tracks = hooks.use_query((track(), track_note_selection()));
+    let mut tracks = use_query(hooks, (track(), track_note_selection()));
     tracks.sort_by_key(|t| t.1 .0);
 
     FocusRoot::el([FlowColumn::el(
@@ -78,12 +79,13 @@ fn Track(
 ) -> Element {
     let track_name = entity::get_component(track_id, name()).unwrap_or_default();
 
-    let (sound, _) =
-        hooks.use_state_with(|_| entity::get_component(track_id, track_audio_url()).unwrap());
+    let (sound, _) = use_state_with(hooks, |_| {
+        entity::get_component(track_id, track_audio_url()).unwrap()
+    });
 
-    let (audio_player, _) = hooks.use_state(audio::AudioPlayer::new());
+    let (audio_player, _) = use_state(hooks, audio::AudioPlayer::new());
 
-    let (last_cursor, set_last_cursor) = hooks.use_state(0);
+    let (last_cursor, set_last_cursor) = use_state(hooks, 0);
     if cursor != last_cursor {
         if track_selection[cursor] != 0 {
             audio_player.play(sound);

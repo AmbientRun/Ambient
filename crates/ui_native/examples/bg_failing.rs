@@ -1,7 +1,9 @@
 use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::{asset_cache, runtime};
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    use_memo_with, use_state, Element, ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_gpu::std_assets::PixelTextureViewKey;
 use ambient_native_std::{asset_cache::SyncAssetKeyExt, color::Color};
 use ambient_ui_native::{FlowColumn, Image, Text, UIExt};
@@ -10,13 +12,13 @@ use ambient_ui_native::{FlowColumn, Image, Text, UIExt};
 struct Example;
 impl ElementComponent for Example {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (_, set_k) = hooks.use_state(1.0);
+        let (_, set_k) = use_state(hooks, 1.0);
 
         let assets = hooks.world.resource(asset_cache());
 
         let texture = PixelTextureViewKey::white().get(assets);
         let runtime = hooks.world.resource(runtime()).clone();
-        hooks.use_memo_with((), move |_, _| {
+        use_memo_with(hooks, (), move |_, _| {
             runtime.spawn(async move {
                 log::info!("Spawning task");
                 use ambient_native_std::IntoDuration;

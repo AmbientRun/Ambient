@@ -4,7 +4,10 @@ use ambient_core::{
     asset_cache, async_ecs::async_run, runtime, window::get_mouse_clip_space_position,
 };
 use ambient_ecs::{Component, ComponentValue, EntityId};
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    consume_context, provide_context, use_interval_deps, use_ref_with, use_rerender_signal,
+    use_state, Element, ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_intent::{client_push_intent, rpc_undo_head_exact};
 use ambient_network::client::ClientState;
 use ambient_shared_types::MouseButton;
@@ -141,16 +144,16 @@ impl<T: ComponentValue> Drop for EditorAction<T> {
 pub struct EditorBuildMode;
 impl ElementComponent for EditorBuildMode {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
+        let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
         let (selection, set_selection) = use_player_selection(hooks);
         // tracing::info!("Drawing EditorBuildMode: {selection:?}");
 
-        let set_select_mode = hooks.provide_context(|| SelectMode::Set);
-        let set_srt_mode = hooks.provide_context(|| None as Option<TransformMode>);
-        let (screen, set_screen) = hooks.use_state(None);
+        let set_select_mode = provide_context(hooks, || SelectMode::Set);
+        let set_srt_mode = provide_context(hooks, || None as Option<TransformMode>);
+        let (screen, set_screen) = use_state(hooks, None);
 
-        let targets = hooks.use_ref_with::<Arc<[EntityId]>>(|_| Arc::from([]));
-        let rerender = hooks.use_rerender_signal();
+        let targets = use_ref_with::<Arc<[EntityId]>>(hooks, |_| Arc::from([]));
+        let rerender = use_rerender_signal(hooks);
 
         {
             let game_state = client_state.game_state.clone();
@@ -174,7 +177,8 @@ impl ElementComponent for EditorBuildMode {
                 }
             };
 
-            hooks.use_interval_deps(
+            use_interval_deps(
+                hooks,
                 Duration::from_millis(2000),
                 true,
                 selection.clone(),
@@ -363,9 +367,9 @@ impl ElementComponent for TransformControls {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { targets } = *self;
 
-        let (srt_mode, set_srt_mode) = hooks.consume_context::<Option<TransformMode>>().unwrap();
+        let (srt_mode, set_srt_mode) = consume_context::<Option<TransformMode>>(hooks).unwrap();
 
-        let (prefs, set_prefs) = hooks.consume_context::<EditorPrefs>().unwrap();
+        let (prefs, set_prefs) = consume_context::<EditorPrefs>(hooks).unwrap();
         let set = set_prefs.clone();
         let set_snap_mode = move |snap| (set)(EditorPrefs { snap, ..prefs });
         let set_global_coordinates = move |use_global| {

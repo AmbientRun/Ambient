@@ -3,6 +3,7 @@ use ambient_api::{
     animation::PlayClipFromUrlNodeRef,
     animation_element::{AnimationPlayer, BlendNode, PlayClipFromUrl, Transition},
     core::animation::components::{apply_animation_player, start_time},
+    element::use_ref_with,
     entity::get_component,
     prelude::*,
 };
@@ -86,7 +87,7 @@ impl UnitAnimation {
 
 #[element_component]
 fn Walk(hooks: &mut Hooks, owner_id: EntityId, running: bool, direction: Vec2) -> Element {
-    let lagging_direction = hooks.use_ref_with(|_| Vec3::ZERO);
+    let lagging_direction = use_ref_with(hooks, |_| Vec3::ZERO);
     let mut lag_dir = lagging_direction.lock();
     *lag_dir = lag_dir.lerp(direction.extend(if running { 1. } else { 0. }), 0.1);
 

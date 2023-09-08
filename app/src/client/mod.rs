@@ -9,7 +9,10 @@ use ambient_core::{
     window::{window_ctl, ExitStatus, WindowCtl},
 };
 use ambient_ecs::{Entity, SystemGroup};
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_element::{
+    consume_context, element_component, use_effect, use_ref_with, use_spawn, use_state,
+    use_state_with, Element, ElementComponentExt, Hooks,
+};
 use ambient_native_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_network::{
     client::{client_network_stats, GameClientRenderTarget},
@@ -124,7 +127,7 @@ fn MainApp(
     cert: Option<Vec<u8>>,
     mixer: Option<AudioMixer>,
 ) -> Element {
-    let (loaded, set_loaded) = hooks.use_state(false);
+    let (loaded, set_loaded) = use_state(hooks, false);
 
     FocusRoot::el([
         UICamera.el(),
@@ -192,13 +195,13 @@ fn GoldenImageTest(
     golden_image_output_dir: Option<PathBuf>,
     golden_image_cmd: GoldenImageCommand,
 ) -> Element {
-    let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
-    let render_target_ref = hooks.use_ref_with(|_| render_target.clone());
+    let (render_target, _) = consume_context::<GameClientRenderTarget>(hooks).unwrap();
+    let render_target_ref = use_ref_with(hooks, |_| render_target.clone());
     *render_target_ref.lock() = render_target.clone();
     let golden_image_output_dir = golden_image_output_dir.unwrap_or(PathBuf::new());
     let screenshot_path = golden_image_output_dir.join("screenshot.png");
     let fail_screenshot_path = golden_image_output_dir.join("fail_screenshot.png");
-    let (old_screenshot, _) = hooks.use_state_with(|_| {
+    let (old_screenshot, _) = use_state_with(hooks, |_| {
         tracing::info!("Loading screenshot from {:?}", screenshot_path);
         Some(Arc::new(image::open(&screenshot_path).ok()?))
     });
@@ -212,7 +215,7 @@ fn GoldenImageTest(
 
     match golden_image_cmd {
         GoldenImageCommand::Update { wait_seconds } => {
-            hooks.use_spawn(move |world| {
+            use_spawn(hooks, move |world| {
                 let window_ctl = world.resource(window_ctl()).clone();
                 let gpu = world.resource(gpu()).clone();
                 world.resource(runtime()).spawn(async move {
@@ -256,10 +259,10 @@ fn GoldenImageTest(
                 panic!("Existing screenshot must exist");
             };
 
-            // Note: this is basically hooks.use_interval_deps() except its
+            // Note: this is basically use_interval_deps(hooks, ) except its
             // internals are unwrapped in order to access the `world`, which we
             // need for window_ctl().
-            hooks.use_effect(render_target.0.color_buffer.id, move |world, _| {
+            use_effect(hooks, render_target.0.color_buffer.id, move |world, _| {
                 let window_ctl = world.resource(window_ctl()).clone();
                 let gpu = world.resource(gpu()).clone();
                 let start_time = Instant::now();

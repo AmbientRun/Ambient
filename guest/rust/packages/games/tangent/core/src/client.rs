@@ -19,6 +19,7 @@ use ambient_api::{
             concepts::make_transformable,
         },
     },
+    element::use_query,
     prelude::*,
 };
 use packages::tangent_schema::{
@@ -156,7 +157,7 @@ fn speed_kph(linear_velocity: Vec3, rotation: Quat) -> f32 {
 
 #[element_component]
 fn DebugUI(hooks: &mut Hooks) -> Element {
-    let messages = hooks.use_query(debug_messages());
+    let messages = use_query(hooks, debug_messages());
 
     FlowColumn::el(messages.into_iter().map(|(id, msgs)| {
         FlowColumn::el([
@@ -173,7 +174,7 @@ fn DebugUI(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn DebugLines(hooks: &mut Hooks) -> Element {
-    let lines = hooks.use_query(debug_lines());
+    let lines = use_query(hooks, debug_lines());
 
     Group::el(lines.into_iter().flat_map(|(_, lines)| {
         lines

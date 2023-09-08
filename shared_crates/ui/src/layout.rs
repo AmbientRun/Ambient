@@ -7,8 +7,8 @@ use crate::{use_window_logical_resolution, UIBase, UIExt};
 use ambient_cb::Cb;
 use ambient_color::Color;
 use ambient_element::{
-    define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent,
-    ElementComponentExt, Hooks,
+    define_el_function_for_vec_element_newtype, element_component, use_frame, use_state, Element,
+    ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::core::{
     ecs::components::children,
@@ -189,10 +189,10 @@ pub fn MeasureSize(
     /// The callback to call when the size changes.
     on_change: Cb<dyn Fn(Vec2) + Sync + Send + 'static>,
 ) -> Element {
-    let (id, set_id) = hooks.use_state(None);
-    let (current, set_current) = hooks.use_state(Vec2::ZERO);
+    let (id, set_id) = use_state(hooks, None);
+    let (current, set_current) = use_state(hooks, Vec2::ZERO);
 
-    hooks.use_frame(move |world| {
+    use_frame(hooks, move |world| {
         if let Some(id) = id {
             let width = world.get(id, width()).unwrap_or(0.);
             let height = world.get(id, height()).unwrap_or(0.);
@@ -216,9 +216,9 @@ pub fn MeasureAbsolutePosition(
     /// The callback to call when the absolute position changes.
     on_change: Cb<dyn Fn(Vec3) + Sync + Send + 'static>,
 ) -> Element {
-    let (id, set_id) = hooks.use_state(None);
-    let (current, set_current) = hooks.use_state(Vec3::ZERO);
-    hooks.use_frame(move |world| {
+    let (id, set_id) = use_state(hooks, None);
+    let (current, set_current) = use_state(hooks, Vec3::ZERO);
+    use_frame(hooks, move |world| {
         if let Some(id) = id {
             let ltw = world.get(id, local_to_world()).unwrap();
             let (_, _, abs_pos) = Mat4::to_scale_rotation_translation(&ltw);
