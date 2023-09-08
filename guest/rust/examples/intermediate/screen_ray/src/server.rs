@@ -22,7 +22,7 @@ pub fn main() {
         .spawn();
 
     Input::subscribe(move |_ctx, msg| {
-        if let Some(hit) = physics::raycast_first(msg.ray_origin, msg.ray_dir) {
+        if let Some(hit) = physics::raycast_first(msg.ray_origin, msg.ray_dir, None) {
             // Set position of cube to the raycast hit position
             entity::set_component(cube_id, translation(), hit.position);
             WorldPosition::new(hit.position).send_client_broadcast_unreliable();

@@ -112,7 +112,7 @@ pub fn main() {
             *translation += new_rotation * vec3(movement.x, 0.0, -movement.y) * movement_speed;
         });
 
-        if let Some(hit) = physics::raycast_first(msg.ray_origin, msg.ray_direction) {
+        if let Some(hit) = physics::raycast_first(msg.ray_origin, msg.ray_direction, None) {
             entity::add_component(id, mouseover_position(), hit.position);
             entity::add_component(id, mouseover_entity(), hit.entity);
         } else {

@@ -70,6 +70,7 @@ pub async fn rpc_select(args: ServerRpcArgs, (method, mode): (SelectMethod, Sele
                         collider_type: None,
                     },
                     ray,
+                    None,
                 ) {
                     Selection::new([entity])
                 } else {

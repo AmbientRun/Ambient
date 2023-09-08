@@ -98,6 +98,7 @@ impl wit::server_physics::Host for Bindings {
         &mut self,
         _origin: wit::types::Vec3,
         _direction: wit::types::Vec3,
+        _max_distance: Option<f32>,
     ) -> anyhow::Result<Option<(wit::types::EntityId, f32)>> {
         unsupported()
     }
@@ -106,6 +107,7 @@ impl wit::server_physics::Host for Bindings {
         &mut self,
         _origin: wit::types::Vec3,
         _direction: wit::types::Vec3,
+        _max_distance: Option<f32>,
     ) -> anyhow::Result<Vec<(wit::types::EntityId, f32)>> {
         unsupported()
     }

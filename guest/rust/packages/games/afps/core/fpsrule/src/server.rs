@@ -46,7 +46,7 @@ pub fn main() {
     });
 
     Shoot::subscribe(move |_ctx, msg| {
-        let result = physics::raycast_first(msg.ray_origin, msg.ray_dir);
+        let result = physics::raycast_first(msg.ray_origin, msg.ray_dir, None);
 
         if let Some(hit) = result {
             // Laser gun, not used

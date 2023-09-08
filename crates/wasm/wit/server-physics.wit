@@ -19,8 +19,8 @@ interface server-physics {
     start-motor: func(entity: entity-id, velocity: float32)
     stop-motor: func(entity: entity-id)
     create-revolute-joint: func(actor0: entity-id, transform0: mat4, actor1: entity-id, transform1: mat4)
-    raycast-first: func(origin: vec3, direction: vec3) -> option<tuple<entity-id, float32>>
-    raycast: func(origin: vec3, direction: vec3) -> list<tuple<entity-id, float32>>
+    raycast-first: func(origin: vec3, direction: vec3, max-distance: option<float32>) -> option<tuple<entity-id, float32>>
+    raycast: func(origin: vec3, direction: vec3, max-distance: option<float32>) -> list<tuple<entity-id, float32>>
     move-character: func(entity: entity-id, displacement: vec3, min-dist: float32, elapsed-time: float32) -> character-collision
     set-character-position: func(entity: entity-id, position: vec3)
     set-character-foot-position: func(entity: entity-id, position: vec3)
