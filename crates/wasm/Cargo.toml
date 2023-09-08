@@ -46,7 +46,7 @@ ulid = { workspace = true }
 wit-component = { workspace = true }
 futures = { workspace = true }
 
-wasm-bridge = { git = "https://github.com/AmbientRun/wasm-bridge", branch  = "wasmtime-13", version = "0.2", features = [
+wasm-bridge = { git = "https://github.com/AmbientRun/wasm-bridge", branch  = "wasmtime-git", version = "0.2", features = [
     "component-model",
     "sync",
     "wasi",
@@ -65,7 +65,7 @@ wit-bindgen-rust = { workspace = true }
 ambient_prefab = { path = "../prefab" }
 
 [target.'cfg(target_os = "unknown")'.dependencies]
-wasm-bridge-js = { git = "https://github.com/AmbientRun/wasm-bridge", branch = "wasmtime-13", version = "0.2", features = [
+wasm-bridge-js = { git = "https://github.com/AmbientRun/wasm-bridge", branch = "wasmtime-git", version = "0.2", features = [
     "component-model",
     "wasi",
 ] }

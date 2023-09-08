@@ -89,9 +89,9 @@
     }
   },
   "material overriding": {
-    "cmd": "cargo run -- run ./guest/rust/examples/assets/material_overriding --clean-build",
+    "cmd": "cargo run -- run --release ./guest/rust/examples/assets/material_overriding --clean-build",
     "env": {
-      "RUST_LOG": "ambient_renderer=debug,info"
+      "RUST_LOG": "info"
     }
   },
   "serve-primitives": {
