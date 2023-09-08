@@ -35,7 +35,11 @@ pub fn main() {
             let (delta, input) = input::get_delta();
             if input.keys.contains(&KeyCode::Escape) {
                 set_component(resources(), focus(), "Nothing".to_string());
-                FocusChanged {}.send_local_broadcast(true);
+                FocusChanged {
+                    from_external: false,
+                    focus: "Nothing".to_string(),
+                }
+                .send_local_broadcast(true);
             }
         }
     });
