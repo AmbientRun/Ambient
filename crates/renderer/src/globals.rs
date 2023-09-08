@@ -313,12 +313,7 @@ impl ForwardGlobals {
             p.camera_far = world.get(id, far()).unwrap_or(1e3);
             p.fog = world.has_component(id, fog()) as i32;
             p.forward_camera_position = p.camera_position;
-            tracing::debug!(
-                "Found active camera for {} {} {}",
-                world.name(),
-                p.projection_view,
-                p.camera_position
-            );
+            tracing::trace!(world = world.name(), "found active camera",);
         }
 
         if let Some(sun) = get_active_sun(world, self.scene) {

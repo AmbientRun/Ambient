@@ -22,6 +22,7 @@ ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
     "native",
 ] }
 
+tracing = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 byteorder = { workspace = true }
@@ -43,21 +44,16 @@ winit = { workspace = true }
 wgpu = { workspace = true }
 ulid = { workspace = true }
 wit-component = { workspace = true }
-pollster = { workspace = true }
+futures = { workspace = true }
 
-wasmtime = { workspace = true, optional = true }
-wasmtime-wasi = { workspace = true, optional = true }
-wasi-common = { workspace = true, optional = true }
-wasi-cap-std-sync = { workspace = true, optional = true }
+wasm-bridge = { git = "https://github.com/AmbientRun/wasm-bridge", branch  = "wasmtime-git", version = "0.2", features = [
+    "component-model",
+    "sync",
+    "wasi",
+] }
 
-ambient_physics = { path = "../physics", optional = true }
-physxx = { path = "../../libs/physxx", optional = true }
-
-# Uses physx
-ambient_prefab = { path = "../prefab", optional = true }
 
 [target.'cfg(windows)'.build-dependencies]
-tracing = { workspace = true }
 dunce = "1.0"
 
 [build-dependencies]
@@ -66,10 +62,20 @@ ambient_sys = { path = "../sys" }
 ambient_std = { path = "../../shared_crates/std" }
 wit-bindgen-core = { workspace = true }
 wit-bindgen-rust = { workspace = true }
-syn = { workspace = true }
+ambient_prefab = { path = "../prefab" }
 
-[features]
-native = ["wasm-native", "physics", "wit"]
-wasm-native = ["dep:wasmtime", "dep:wasmtime-wasi", "dep:wasi-common", "dep:wasi-cap-std-sync"]
-physics = ["dep:physxx", "dep:ambient_prefab", "dep:ambient_physics"]
-wit = []
+[target.'cfg(target_os = "unknown")'.dependencies]
+wasm-bridge-js = { git = "https://github.com/AmbientRun/wasm-bridge", branch = "wasmtime-git", version = "0.2", features = [
+    "component-model",
+    "wasi",
+] }
+
+[target.'cfg(not(target_os = "unknown"))'.dependencies]
+# NOTE: accessible through `wasm-bridge`. This is used to enforce specific features on the `wasmtime` crate
+wasi-cap-std-sync = { workspace = true }
+
+wasm-bindgen = { workspace = true }
+wasm-bindgen-futures = { workspace = true }
+
+ambient_physics = { path = "../physics" }
+physxx = { path = "../../libs/physxx" }

@@ -267,8 +267,6 @@ impl RendererCollect {
         collect_state.counts.fill(gpu, &counts, |_| {});
         // }
 
-        tracing::debug!("material_layouts: {material_layouts:?}");
-
         collect_state
             .material_layouts
             .fill(gpu, material_layouts, |_| {});
@@ -340,7 +338,7 @@ impl RendererCollect {
 
             // Divide up all the primitives among `x` workgroups
             let x = (primitives_count as f32 / COLLECT_WORKGROUP_SIZE as f32).ceil() as u32;
-            tracing::debug!("Dispatching {x} workgroups");
+            tracing::trace!(count = x, "dispatch workgroups");
 
             cpass.dispatch_workgroups(x, 1, 1);
         }

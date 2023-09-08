@@ -3,14 +3,14 @@
 //
 // To work around this, we just give it its own interface and have functions that use it in the same interface.
 interface component {
-    use types.{entity-id, mat4, quat, vec2, vec3, vec4, uvec2, uvec3, uvec4, ivec2, ivec3, ivec4, duration}
+    use types.{entity-id, mat4, quat, vec2, vec3, vec4, uvec2, uvec3, uvec4, ivec2, ivec3, ivec4, duration, empty}
     use client-mesh.{handle as procedural-mesh-handle}
     use client-texture.{handle as procedural-texture-handle}
     use client-sampler.{handle as procedural-sampler-handle}
     use client-material.{handle as procedural-material-handle}
 
     variant vec-value {
-        type-empty(list<tuple<>>),
+        type-empty(list<empty>),
         type-bool(list<bool>),
         type-entity-id(list<entity-id>),
         type-f32(list<float32>),
@@ -43,7 +43,7 @@ interface component {
     }
 
     variant option-value {
-        type-empty(option<tuple<>>),
+        type-empty(option<empty>),
         type-bool(option<bool>),
         type-entity-id(option<entity-id>),
         type-f32(option<float32>),
@@ -76,7 +76,7 @@ interface component {
     }
 
     variant value {
-        type-empty(tuple<>),
+        type-empty(empty),
         type-bool(bool),
         type-entity-id(entity-id),
         type-f32(float32),

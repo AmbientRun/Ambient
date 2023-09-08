@@ -21,16 +21,80 @@ pub struct BuildOptions {
     target: Target,
 }
 
-pub async fn run(opts: &BuildOptions) -> anyhow::Result<()> {
-    ensure_wasm_pack().await?;
+impl BuildOptions {
+    pub async fn check(&self) -> anyhow::Result<()> {
+        let mut command = Command::new("cargo");
 
-    let output_path = run_cargo_build(opts).await?;
+        command
+            .args(["check", "-p", "ambient_web"])
+            .current_dir("web")
+            .kill_on_drop(true);
 
-    eprintln!("Built package: {:?}", output_path);
+        match &self.profile[..] {
+            "dev" | "debug" => {
+                // default
+            }
+            "release" => {
+                command.arg("--release");
+            }
+            v => anyhow::bail!("Unknown profile: {v:?}"),
+        };
 
-    Ok(())
+        let res = command.spawn()?.wait().await?;
+
+        if !res.success() {
+            anyhow::bail!("checking package failed with status code: {res}");
+        }
+
+        Ok(())
+    }
+
+    pub async fn build(&self) -> anyhow::Result<PathBuf> {
+        ensure_wasm_pack().await?;
+
+        let mut command = Command::new("wasm-pack");
+
+        command
+            .args(["build", "client"])
+            .current_dir("web")
+            .kill_on_drop(true);
+
+        match &self.profile[..] {
+            "dev" | "debug" => command.arg("--dev"),
+            "release" => command.arg("--release"),
+            v => anyhow::bail!("Unknown profile: {v:?}"),
+        };
+
+        match self.target {
+            Target::Bundler => command.args(["--target", "bundler"]),
+            Target::Standalone => command.args(["--target", "web", "--no-pack"]),
+        };
+
+        let mut output_path = ["web"]
+            .iter()
+            .collect::<PathBuf>()
+            .canonicalize()
+            .context("Produced build artifact does not exist")?;
+
+        output_path.push(&self.pkg_name);
+
+        command.arg("--out-dir").arg(output_path.clone());
+
+        eprintln!("Building web client");
+
+        let res = command.spawn()?.wait().await?;
+
+        if !res.success() {
+            anyhow::bail!("Building package failed with status code: {res}");
+        }
+
+        assert!(output_path.exists());
+
+        eprintln!("Built package: {:?}", output_path);
+
+        Ok(output_path)
+    }
 }
-
 #[cfg(not(target_os = "linux"))]
 pub(crate) async fn install_wasm_pack() -> anyhow::Result<()> {
     eprintln!("Installing wasm-pack from source");
@@ -90,50 +154,8 @@ pub async fn ensure_wasm_pack() -> anyhow::Result<()> {
             Ok(())
         }
         Ok(path) => {
-            eprintln!("Found installation of wasm pack at {path:?}");
+            eprintln!("Found installation of wasm-pack at {path:?}");
             Ok(())
         }
     }
-}
-
-pub async fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
-    let mut command = Command::new("wasm-pack");
-
-    command
-        .args(["build", "client"])
-        .current_dir("web")
-        .kill_on_drop(true);
-
-    match &opts.profile[..] {
-        "dev" | "debug" => command.arg("--dev"),
-        "release" => command.arg("--release"),
-        v => anyhow::bail!("Unknown profile: {v:?}"),
-    };
-
-    match opts.target {
-        Target::Bundler => command.args(["--target", "bundler"]),
-        Target::Standalone => command.args(["--target", "web", "--no-pack"]),
-    };
-
-    let mut output_path = ["web"]
-        .iter()
-        .collect::<PathBuf>()
-        .canonicalize()
-        .context("Produced build artifact does not exist")?;
-
-    output_path.push(&opts.pkg_name);
-
-    command.arg("--out-dir").arg(output_path.clone());
-
-    eprintln!("Building web client");
-
-    let res = command.spawn()?.wait().await?;
-
-    if !res.success() {
-        anyhow::bail!("Building package failed with status code: {res}");
-    }
-
-    assert!(output_path.exists());
-
-    Ok(output_path)
 }

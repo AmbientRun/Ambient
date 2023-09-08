@@ -373,7 +373,7 @@ impl Renderer {
         }
 
         self.forward_globals.params.debug_params = self.shader_debug_params;
-        tracing::debug!("Updating forward globals");
+        // tracing::debug!("Updating forward globals");
         self.forward_globals.update(
             gpu,
             world,

@@ -1,6 +1,5 @@
 use anyhow::Context;
 use openssl::hash::MessageDigest;
-use std::process::Command;
 
 pub async fn open() -> anyhow::Result<()> {
     let cert_file = tokio::fs::read("./localhost.crt")

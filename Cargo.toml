@@ -171,7 +171,7 @@ web-sys = { version = "0.3.61", features = [
     "Performance",
     "Window",
 ] }
-js-sys = { version = "0.3.61" }
+js-sys = { version = "0.3.64" }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 
@@ -196,22 +196,10 @@ http = { version = "0.2.9" }
 #
 # WASM
 #
-wasmtime = { version = "11.0.1", default-features = false, features = ["async", "wat", "jitdump", "parallel-compilation", "cranelift", "pooling-allocator", "component-model"] }
-wasmtime-wasi = "11.0.1"
-wasi-cap-std-sync = "11.0.1"
-wasi-common = "11.0.1"
+wasi-cap-std-sync = { version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime", rev = "181d005c45965b580b05df7bdaa29a8a4b4e5827" }
 wit-bindgen-core = "0.9.0"
 wit-bindgen-rust = "0.9.0"
 wit-component = "0.11.0"
-
-# Required since the webtransport stuff is yet on crates.io
-# TODO: use crates.io dependencies
-[patch.crates-io]
-web-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-js-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-wasm-bindgen-futures = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-wasm-bindgen-shared = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 
 [profile.release]
 incremental = true

@@ -252,7 +252,6 @@ macro_rules! bindgen_passthrough {
     };
 }
 
-bindgen_passthrough!(());
 bindgen_passthrough!(bool);
 bindgen_passthrough!(f32);
 bindgen_passthrough!(f64);

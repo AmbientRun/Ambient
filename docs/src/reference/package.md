@@ -4,25 +4,26 @@ All Ambient packages must have an `ambient.toml` manifest that describes their f
 
 ## WebAssembly
 
-All `.wasm` components in the `build/{client, server}` directory will be loaded for the given target, regardless of provenance. The `.wasm` filenames must be snake-case ASCII identifiers, like the `id` in the manifest.
+All `.wasm` components in the `build/{client, server}` directory will be loaded for the given network side. The `.wasm` filenames must be snake-case ASCII identifiers, like the `id` in the manifest.
 
-This means any `.wasm` that implements the Ambient [WIT interface](https://github.com/AmbientRun/Ambient/tree/main/crates/wasm/wit) and targets WASI snapshot 2 (or uses an adapter that targets WASI snapshot 2) should run within Ambient.
+This means any `.wasm` which implements the Ambient [WIT interface](https://github.com/AmbientRun/Ambient/tree/main/crates/wasm/wit) and targets WASI snapshot 2 (or uses an adapter that targets WASI snapshot 2) should run within Ambient.
 
-As a convenience for Rust users, Ambient will automatically build a `Cargo.toml` at the root of your package, if present, as `wasm32-wasi` for the features specified in `build.rust.feature-multibuild` in `ambient.toml` (defaults to `client` and `server`).
+As a convenience for Rust users, Ambient will automatically build a `Cargo.toml` if present at the root of your package, as `wasm32-wasi` for the features specified in `build.rust.feature-multibuild` in `ambient.toml` (defaults to `client` and `server`).
 
-The default new package template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both. The resulting WASM bytecode files are then converted to components and placed in `build/{client, server}`.
+The default new package template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both. The resulting WASM bytecode files are then converted to a *component* and placed in `build/{client, server}`.
 
 The process it takes is equivalent to these commands:
 
 ```sh
 cd your_package
 cargo build --target wasm32-wasi --features client
-wasm-tools component new target/wasm32-wasi/debug/your_package_client.wasm -o build/client/your_package.wasm --adapt wasi_snapshot_preview1.wasm
+wasm-tools component new target/wasm32-wasi/debug/your_package_client.wasm -o build/client/your_package.wasm --adapt wasi_snapshot_preview1.command.wasm
+
 cargo build --target wasm32-wasi --features server
-wasm-tools component new target/wasm32-wasi/debug/your_package_server.wasm -o build/server/your_package.wasm --adapt wasi_snapshot_preview1.wasm
+wasm-tools component new target/wasm32-wasi/debug/your_package_server.wasm -o build/server/your_package.wasm --adapt wasi_snapshot_preview1.command.wasm
 ```
 
-using [wasm-tools](https://github.com/bytecodealliance/wasm-tools) and a bundled version of the [preview2-prototyping WASI adapter](https://github.com/bytecodealliance/preview2-prototyping).
+using [wasm-tools](https://github.com/bytecodealliance/wasm-tools) and a bundled version of the [preview2-prototyping WASI adapter](https://github.com/bytecodealliance/wasmtime/tree/main/crates/wasi-preview1-component-adapter).
 
 ## Rust
 

@@ -91,6 +91,9 @@ import("ambient_web")
       return;
     }
 
-    ambient.start(target, "https://127.0.0.1:9000");
+    const urlParams = new URLSearchParams(window.location.search);
+    const url = urlParams.get('url') || "https://127.0.0.1:9000";
+    
+    ambient.start(target, url);
     // setupAudio();
   });

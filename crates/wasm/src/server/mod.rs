@@ -1,5 +1,6 @@
 use crate::shared::{self, message::MessageExt};
 use ambient_ecs::{generated::messages, query, EntityId, FnSystem, SystemGroup, World};
+use ambient_native_std::asset_cache::AssetCache;
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use std::{path::PathBuf, sync::Arc};
 
@@ -8,11 +9,13 @@ mod network;
 
 pub fn initialize(
     world: &mut World,
+    assets: &AssetCache,
     data_path: PathBuf,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
 ) -> anyhow::Result<()> {
     shared::initialize(
         world,
+        assets,
         messenger,
         |id| Bindings {
             base: Default::default(),
@@ -93,6 +96,7 @@ struct Bindings {
     world_ref: shared::bindings::WorldRef,
     id: EntityId,
 }
+
 impl Bindings {
     pub fn world(&self) -> &World {
         unsafe { self.world_ref.world() }

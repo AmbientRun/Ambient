@@ -12,10 +12,12 @@ pub struct BindingsBase {
     pub query_states: QueryStateMap,
 }
 
-#[cfg(feature = "wit")]
+/// Represents all the bindings for the imported world
 pub trait BindingsBound:
+    // Lifetimes
+    'static
     // Shared
-    super::wit::types::Host
+    + super::wit::types::Host
     + super::wit::asset::Host
     + super::wit::component::Host
     + super::wit::entity::Host

@@ -11,9 +11,10 @@ use tracing_web::MakeConsoleWriter;
 use wasm_bindgen::prelude::*;
 
 mod app;
+mod wasm;
 
-#[wasm_bindgen]
 /// Initialize ambient
+#[wasm_bindgen]
 pub fn init_ambient(logging: bool, panic: bool) {
     if logging {
         let fmt_layer = tracing_subscriber::fmt::layer()
@@ -32,6 +33,7 @@ pub fn init_ambient(logging: bool, panic: bool) {
 
     ambient_ecs::init_components();
     ambient_core::init_all_components();
+    // ambient_water::init_components();
     ambient_network::init_all_components();
     ambient_world_audio::init_components();
     ambient_wasm::shared::init_all_components();
@@ -42,7 +44,7 @@ pub fn init_ambient(logging: bool, panic: bool) {
 #[wasm_bindgen]
 /// Starts execution of the ambient client and connects to the specified URL
 ///
-/// TODO: The MainApp setup will move to an Ambient package and this will only load the runtime
+/// TODO: The `MainApp` setup will move to an Ambient package and this will only load the runtime
 pub async fn start(target: Option<web_sys::HtmlElement>, server_url: String) {
     if let Err(err) = run(target, server_url).await {
         tracing::error!("{err:?}")
@@ -76,6 +78,7 @@ async fn init(app: &mut App, server_url: String) {
 
     Group(vec![
         UICamera.el().with(active_camera(), 0.),
+        ambient_client_shared::player::PlayerRawInputHandler.el(),
         WindowSized::el([
             MainApp::el(server_url).with(padding(), Borders::even(10.).into())
         ])

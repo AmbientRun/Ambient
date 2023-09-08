@@ -25,7 +25,6 @@ ambient_prefab = { path = "../crates/prefab" }
 ambient_physics = { path = "../crates/physics" }
 ambient_primitives = { path = "../crates/primitives" }
 ambient_rpc = { path = "../crates/rpc" }
-ambient_wasm = { path = "../crates/wasm", features = ["native"]}
 ambient_native_std = { path = "../crates/native_std" }
 ambient_ui_native = { path = "../crates/ui_native" }
 ambient_world_audio = { path = "../crates/world_audio" }
@@ -91,3 +90,4 @@ hotload-includes = [
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 axum = { workspace = true }
+ambient_wasm = { path = "../crates/wasm" }
