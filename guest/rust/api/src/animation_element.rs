@@ -8,7 +8,7 @@ use ambient_api_core::{
     },
     prelude::epoch_time,
 };
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_element::{element_component, use_ref_with, Element, ElementComponentExt, Hooks};
 
 /// An animation player
 #[element_component]
@@ -120,7 +120,7 @@ pub fn Transition(
     /// The speed that the transitions happen at
     speed: f32,
 ) -> Element {
-    let weights = hooks.use_ref_with(|_| {
+    let weights = use_ref_with(hooks, |_| { // hello
         animations
             .iter()
             .enumerate()

@@ -1,6 +1,6 @@
 use ambient_core::{gpu, window::window_scale_factor};
 use ambient_ecs::{components, ComponentValueBase, Resource, World};
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_element::{consume_context, element_component, Element, ElementComponentExt, Hooks};
 use ambient_native_std::{asset_cache::AssetCache, cb, friendly_id, to_byte_unit, Cb};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
@@ -198,7 +198,7 @@ pub type LoadedFunc =
 #[element_component]
 pub fn GameClientWorld(hooks: &mut Hooks) -> Element {
     let (render_target, set_render_target) =
-        hooks.consume_context::<GameClientRenderTarget>().unwrap();
+        consume_context::<GameClientRenderTarget>(hooks).unwrap();
 
     let gpu = hooks.world.resource(gpu()).clone();
     let scale_factor = *hooks.world.resource(window_scale_factor());

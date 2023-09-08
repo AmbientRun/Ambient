@@ -1,7 +1,9 @@
 use ambient_core::{name, selectable, tags};
 use ambient_ecs::{query, EntityId};
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    consume_context, use_spawn, use_state, Element, ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_native_std::{cb, Cb};
 use ambient_network::{
     client::{client_state, ClientState},
@@ -21,11 +23,11 @@ pub struct EntityBrowser {
 impl ElementComponent for EntityBrowser {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_select } = *self;
-        let (entities, set_entities) = hooks.use_state(Vec::new());
-        let (all_tags, set_all_tags) = hooks.use_state(Vec::new());
-        let (selected_tag, set_selected_tag) = hooks.use_state(None);
-        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
-        hooks.use_spawn(move |_| {
+        let (entities, set_entities) = use_state(hooks, Vec::new());
+        let (all_tags, set_all_tags) = use_state(hooks, Vec::new());
+        let (selected_tag, set_selected_tag) = use_state(hooks, None);
+        let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
+        use_spawn(hooks, move |_| {
             let state = client_state.game_state.lock();
             let entities = query(selectable())
                 .incl(is_remote_entity())
@@ -112,7 +114,7 @@ pub struct EntityBrowserScreen {
 impl ElementComponent for EntityBrowserScreen {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_select, on_back } = *self;
-        let (advanced, set_advanced) = hooks.use_state(false);
+        let (advanced, set_advanced) = use_state(hooks, false);
         DialogScreen(
             ScrollArea::el(
                 ScrollAreaSizing::FitChildrenWidth,

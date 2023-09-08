@@ -1,7 +1,10 @@
 use ambient_app::{world_instance_resources, AppResources};
 use ambient_core::{asset_cache, gpu, RuntimeKey};
 use ambient_ecs::{world_events, Entity, SystemGroup};
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    consume_context, provide_context, use_frame, use_local_task, use_state, use_state_with,
+    Element, ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     download_asset::ReqwestClientKey,
@@ -67,14 +70,14 @@ impl ElementComponent for GameClientView {
 
         let gpu = hooks.world.resource(gpu()).clone();
 
-        hooks.provide_context(|| {
+        provide_context(hooks, || {
             GameClientRenderTarget(Arc::new(RenderTarget::new(&gpu, uvec2(1, 1), None)))
         });
 
-        let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
+        let (render_target, _) = consume_context::<GameClientRenderTarget>(hooks).unwrap();
 
         // The game client will be set once a connection establishes
-        let (client_state, set_client_state) = hooks.use_state(None as Option<ClientState>);
+        let (client_state, set_client_state) = use_state(hooks, None as Option<ClientState>);
 
         // When the client is connected, run the update logic each frame
         if let Some(client_state) = &client_state {
@@ -87,11 +90,11 @@ impl ElementComponent for GameClientView {
         }
 
         // TODO: allow remote shutdown
-        let ((_control_tx, control_rx), _) = hooks.use_state_with(|_| flume::unbounded());
+        let ((_control_tx, control_rx), _) = use_state_with(hooks, |_| flume::unbounded());
 
-        let (err, set_error) = hooks.use_state(None);
+        let (err, set_error) = use_state(hooks, None);
 
-        hooks.use_local_task(move |ui_world| {
+        use_local_task(hooks, move |ui_world| {
             let local_resources = world_instance_resources(AppResources::from_world(ui_world))
                 .with(game_screen_render_target(), render_target.0.clone());
 
@@ -203,7 +206,7 @@ impl ElementComponent for GameClientView {
 
         if let Some(client_state) = client_state {
             // Provide the context
-            hooks.provide_context(|| client_state.clone());
+            provide_context(hooks, || client_state.clone());
             hooks
                 .world
                 .add_resource(crate::client::client_state(), Some(client_state.clone()));
@@ -229,7 +232,7 @@ fn run_game_logic(
 
     let gpu = hooks.world.resource(gpu()).clone();
 
-    hooks.use_frame(move |app_world| {
+    use_frame(hooks, move |app_world| {
         let mut game_state = game_state.lock();
 
         // Pipe events from app world to game world

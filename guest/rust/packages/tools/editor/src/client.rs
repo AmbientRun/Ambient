@@ -11,6 +11,10 @@ use ambient_api::{
         transform::components::{rotation, scale, translation},
     },
     ecs::SupportedValue,
+    element::{
+        use_entity_component, use_frame, use_module_message, use_rerender_signal, use_spawn,
+        use_state_with,
+    },
     input::CursorLockGuard,
     prelude::*,
     ui::use_keyboard_input,
@@ -152,8 +156,7 @@ pub fn main() {
 
 #[element_component]
 pub fn App(hooks: &mut Hooks) -> Element {
-    let in_editor = hooks
-        .use_entity_component(player::get_local(), in_editor())
+    let in_editor = use_entity_component(hooks, player::get_local(), in_editor())
         .0
         .unwrap_or_default();
 
@@ -163,9 +166,9 @@ pub fn App(hooks: &mut Hooks) -> Element {
         }
     });
 
-    let (menu_bar_items, set_menu_bar_items) = hooks.use_state_with(|_| HashSet::new());
+    let (menu_bar_items, set_menu_bar_items) = use_state_with(hooks, |_| HashSet::new());
 
-    hooks.use_module_message::<EditorMenuBarAdd>({
+    use_module_message::<EditorMenuBarAdd>(hooks, {
         let menu_bar_items = menu_bar_items.clone();
         move |_, source, msg| {
             let Some(id) = source.local() else {
@@ -178,7 +181,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
         }
     });
 
-    hooks.use_spawn(move |_| {
+    use_spawn(hooks, move |_| {
         EditorLoad {}.send_local_broadcast(false);
 
         |_| {}
@@ -226,8 +229,8 @@ fn MenuBar(_hooks: &mut Hooks, menu_bar_items: HashSet<(EntityId, String)>) -> E
 #[element_component]
 fn MouseoverDisplay(hooks: &mut Hooks) -> Element {
     let player_id = player::get_local();
-    let (mouseover_position, _) = hooks.use_entity_component(player_id, mouseover_position());
-    let (camera_id, _) = hooks.use_entity_component(player_id, editor_camera());
+    let (mouseover_position, _) = use_entity_component(hooks, player_id, mouseover_position());
+    let (camera_id, _) = use_entity_component(hooks, player_id, editor_camera());
 
     let Some(mouseover_position) = mouseover_position else {
         return Element::new();
@@ -247,12 +250,12 @@ fn MouseoverDisplay(hooks: &mut Hooks) -> Element {
 #[element_component]
 fn SelectedDisplay(hooks: &mut Hooks) -> Element {
     let player_id = player::get_local();
-    let (selected_entity, _) = hooks.use_entity_component(player_id, selected_entity());
-    let (camera_id, _) = hooks.use_entity_component(player_id, editor_camera());
+    let (selected_entity, _) = use_entity_component(hooks, player_id, selected_entity());
+    let (camera_id, _) = use_entity_component(hooks, player_id, editor_camera());
 
     // TODO: is there a better way to force this element to re-render every frame?
-    let rerender = hooks.use_rerender_signal();
-    hooks.use_frame(move |_| {
+    let rerender = use_rerender_signal(hooks);
+    use_frame(hooks, move |_| {
         rerender();
     });
 

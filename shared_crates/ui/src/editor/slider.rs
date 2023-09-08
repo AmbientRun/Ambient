@@ -1,7 +1,10 @@
 use std::f32::consts::E;
 
 use ambient_cb::{cb, Cb};
-use ambient_element::{to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    to_owned, use_ref_with, use_runtime_message, use_spawn, Element, ElementComponent,
+    ElementComponentExt, Hooks,
+};
 use ambient_guest_bridge::{
     core::{
         app::components::cursor_position,
@@ -67,8 +70,9 @@ impl Slider {
         entity: EntityId,
         component: ambient_guest_bridge::ecs::Component<f32>,
     ) -> Self {
+        use ambient_element::use_rerender_signal;
         use ambient_guest_bridge::api::entity;
-        let rerender = hooks.use_rerender_signal();
+        let rerender = use_rerender_signal(hooks);
         Self::new(
             entity::get_component(entity, component).unwrap_or_default(),
             move |value| {
@@ -106,7 +110,7 @@ impl ElementComponent for Slider {
         }
 
         let value = cleanup_value(value, min, max, round);
-        hooks.use_spawn({
+        use_spawn(hooks, {
             let on_change = self.on_change.clone();
             let old_value = self.value;
             move |_| {
@@ -119,7 +123,7 @@ impl ElementComponent for Slider {
                 |_| {}
             }
         });
-        let block_id = hooks.use_ref_with(|_| EntityId::null());
+        let block_id = use_ref_with(hooks, |_| EntityId::null());
         let is_moveable = self.on_change.is_some();
         // Sets the value with some sanitization
         let on_change_raw = self.on_change.map(|f| -> Cb<dyn Fn(f32) + Sync + Send> {
@@ -143,8 +147,8 @@ impl ElementComponent for Slider {
             block_left_offset
         };
 
-        let dragging = hooks.use_ref_with(|_| false);
-        hooks.use_runtime_message::<messages::WindowMouseInput>({
+        let dragging = use_ref_with(hooks, |_| false);
+        use_runtime_message::<messages::WindowMouseInput>(hooks, {
             let dragging = dragging.clone();
             move |_, event| {
                 if !event.pressed {
@@ -153,7 +157,7 @@ impl ElementComponent for Slider {
             }
         });
 
-        hooks.use_runtime_message::<messages::WindowMouseMotion>({
+        use_runtime_message::<messages::WindowMouseMotion>(hooks, {
             to_owned![dragging, block_id];
             move |world, _event| {
                 if let Some(on_change_factor) = &on_change_factor {

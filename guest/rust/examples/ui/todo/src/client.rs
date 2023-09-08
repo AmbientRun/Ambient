@@ -1,4 +1,8 @@
-use ambient_api::{core::layout::components::space_between_items, prelude::*};
+use ambient_api::{
+    core::layout::components::space_between_items,
+    element::{use_query, use_state},
+    prelude::*,
+};
 use packages::this::{
     components::{todo_item, todo_time},
     messages::{DeleteItem, NewItem},
@@ -13,7 +17,7 @@ fn App(_hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn NewTodoItem(hooks: &mut Hooks) -> Element {
-    let (text, set_text) = hooks.use_state("".to_string());
+    let (text, set_text) = use_state(hooks, "".to_string());
     let text_is_empty = text.is_empty();
 
     FlowColumn::el([
@@ -33,7 +37,7 @@ fn NewTodoItem(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn TodoItems(hooks: &mut Hooks) -> Element {
-    let mut items = hooks.use_query((todo_item(), todo_time()));
+    let mut items = use_query(hooks, (todo_item(), todo_time()));
     items.sort_by_key(|(_, (_, time))| *time);
     FlowColumn::el(items.into_iter().map(|(id, (description, _))| {
         FlowRow::el([

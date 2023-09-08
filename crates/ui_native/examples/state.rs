@@ -3,7 +3,7 @@ use std::sync::Arc;
 use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_ecs::generated::messages;
-use ambient_element::{ElementComponent, ElementComponentExt};
+use ambient_element::{use_runtime_message, use_state, ElementComponent, ElementComponentExt};
 use ambient_ui_native::{
     padding, space_between_items, Borders, Button, Cb, FlowColumn, FlowRow, Text, STREET,
 };
@@ -69,10 +69,10 @@ struct B {
 
 impl ElementComponent for B {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
-        let (shared, _) = hooks.use_state(self.shared.clone());
+        let (shared, _) = use_state(hooks, self.shared.clone());
         let keepalive = DroppedClosure;
 
-        hooks.use_runtime_message::<messages::WindowMouseMotion>(move |_world, _event| {
+        use_runtime_message::<messages::WindowMouseMotion>(hooks, move |_world, _event| {
             let _val = &keepalive;
         });
 
@@ -93,9 +93,9 @@ impl ElementComponent for Main {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let shared = Shared(Arc::new("Hello, World!".to_string()));
 
-        let (value, set_value) = hooks.use_state(0.0);
+        let (value, set_value) = use_state(hooks, 0.0);
 
-        let (show_b, set_show_b) = hooks.use_state(true);
+        let (show_b, set_show_b) = use_state(hooks, true);
         if show_b {
             FlowColumn::el([
                 A { value, set_value }.el(),

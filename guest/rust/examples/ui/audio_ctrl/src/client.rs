@@ -3,16 +3,17 @@ use ambient_api::{
         audio::components::{amplitude, panning, stop_now},
         layout::components::space_between_items,
     },
+    element::{use_frame, use_state},
     prelude::*,
 };
 use packages::this::assets;
 
 #[element_component]
 fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
-    let (f32_value, set_f32_value) = hooks.use_state(100.);
-    let (sound, set_sound) = hooks.use_state(None);
-    let (pan, set_pan) = hooks.use_state(0.);
-    hooks.use_frame({
+    let (f32_value, set_f32_value) = use_state(hooks, 100.);
+    let (sound, set_sound) = use_state(hooks, None);
+    let (pan, set_pan) = use_state(hooks, 0.);
+    use_frame(hooks, {
         let set_sound = set_sound.clone();
         move |_world| {
             if let Some(s) = sound {

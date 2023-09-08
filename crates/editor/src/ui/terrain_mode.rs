@@ -7,7 +7,10 @@ use ambient_core::{
 };
 use ambient_decals::DecalShaderKey;
 use ambient_ecs::{generated::messages, query, ArchetypeFilter};
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
+use ambient_element::{
+    consume_context, use_frame, use_interval, use_runtime_message, use_spawn, use_state, Element,
+    ElementComponent, ElementComponentExt, Group, Hooks,
+};
 use ambient_gpu::{
     gpu::Gpu,
     shader_module::{BindGroupDesc, ShaderModule},
@@ -68,15 +71,15 @@ impl ElementComponent for TerrainRaycastPicker {
             brush_shape,
             erosion_config,
         } = *self;
-        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
-        let (target_position, set_target_position) = hooks.use_state(None);
-        let (mouseover, set_mouseover) = hooks.use_state(false);
-        let (mousedown, set_mousedown) = hooks.use_state::<Option<Vec3>>(None); // start position
+        let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
+        let (target_position, set_target_position) = use_state(hooks, None);
+        let (mouseover, set_mouseover) = use_state(hooks, false);
+        let (mousedown, set_mousedown) = use_state::<Option<Vec3>>(hooks, None); // start position
 
-        let (vis_brush_id, set_vis_brush_id) = hooks.use_state(None);
+        let (vis_brush_id, set_vis_brush_id) = use_state(hooks, None);
 
         let game_state = client_state.game_state.clone();
-        hooks.use_spawn(move |ui_world| {
+        use_spawn(hooks, move |ui_world| {
             let assets = ui_world.resource(asset_cache());
             let gpu = ui_world.resource(gpu());
             let new_vis_brush_id = Cube
@@ -106,7 +109,7 @@ impl ElementComponent for TerrainRaycastPicker {
                 game_state.lock().world.despawn(new_vis_brush_id);
             }
         });
-        hooks.use_runtime_message::<messages::WindowMouseInput>({
+        use_runtime_message::<messages::WindowMouseInput>(hooks, {
             let set_mousedown = set_mousedown.clone();
             move |_world, event| {
                 if !event.pressed && MouseButton::from(event.button) == action_button {
@@ -114,7 +117,7 @@ impl ElementComponent for TerrainRaycastPicker {
                 }
             }
         });
-        hooks.use_frame(move |world| {
+        use_frame(hooks, move |world| {
             let gpu = world.resource(gpu());
             let mouse_clip_pos = get_mouse_clip_space_position(world);
             let mut state = client_state.game_state.lock();
@@ -331,16 +334,15 @@ impl Material for BrushCursorMaterial {
 pub struct EditorTerrainMode;
 impl ElementComponent for EditorTerrainMode {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (brush, set_brush) = hooks.consume_context::<Brush>().unwrap();
-        let (layer, set_layer) = hooks.consume_context::<u32>().unwrap();
-        let (brush_size, set_brush_size) = hooks.consume_context::<BrushSize>().unwrap();
-        let (brush_strength, set_brush_strength) =
-            hooks.consume_context::<BrushStrength>().unwrap();
-        let (brush_shape, set_brush_shape) = hooks.consume_context::<BrushShape>().unwrap();
+        let (brush, set_brush) = consume_context::<Brush>(hooks).unwrap();
+        let (layer, set_layer) = consume_context::<u32>(hooks).unwrap();
+        let (brush_size, set_brush_size) = consume_context::<BrushSize>(hooks).unwrap();
+        let (brush_strength, set_brush_strength) = consume_context::<BrushStrength>(hooks).unwrap();
+        let (brush_shape, set_brush_shape) = consume_context::<BrushShape>(hooks).unwrap();
         let (brush_smoothness, set_brush_smoothness) =
-            hooks.consume_context::<BrushSmoothness>().unwrap();
+            consume_context::<BrushSmoothness>(hooks).unwrap();
         let (erosion_config, _set_erosion_config) =
-            hooks.consume_context::<HydraulicErosionConfig>().unwrap();
+            consume_context::<HydraulicErosionConfig>(hooks).unwrap();
 
         let mut items = vec![
             EditorPlayerInputHandler.el(),
@@ -531,9 +533,9 @@ impl ElementComponent for EditorTerrainMode {
 pub struct GenerateTerrainButton;
 impl ElementComponent for GenerateTerrainButton {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
-        let (has_terrain, set_has_terrain) = hooks.use_state(true);
-        hooks.use_interval(1., {
+        let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
+        let (has_terrain, set_has_terrain) = use_state(hooks, true);
+        use_interval(hooks, 1., {
             let client_state = client_state.clone();
             move || {
                 let state = client_state.game_state.lock();

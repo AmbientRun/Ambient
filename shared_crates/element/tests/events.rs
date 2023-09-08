@@ -1,4 +1,4 @@
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{use_state, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::ecs::query_mut;
 mod common;
 use ambient_cb::cb;
@@ -26,7 +26,7 @@ fn test_outer_init() {
     pub struct Inner;
     impl ElementComponent for Inner {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (count, set_count) = hooks.use_state(0);
+            let (count, set_count) = use_state(hooks, 0);
             if count < 2 {
                 Element::new().with(trigger(), cb(move |_| set_count(count + 1)))
             } else {
@@ -53,7 +53,7 @@ fn update_state_on_replaced_element() {
     pub struct Root;
     impl ElementComponent for Root {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (state, set_state) = hooks.use_state(0);
+            let (state, set_state) = use_state(hooks, 0);
             Element::new().with(
                 trigger(),
                 cb(move |_| {
@@ -81,7 +81,7 @@ fn update_state_on_root_and_child_simultaneously() {
     pub struct Root;
     impl ElementComponent for Root {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (state, set_state) = hooks.use_state(0);
+            let (state, set_state) = use_state(hooks, 0);
             Element::new()
                 .with(
                     trigger(),
@@ -97,7 +97,7 @@ fn update_state_on_root_and_child_simultaneously() {
     pub struct Child;
     impl ElementComponent for Child {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (state, set_state) = hooks.use_state(0);
+            let (state, set_state) = use_state(hooks, 0);
             *hooks.world.resource_mut(counter()) = state;
             Element::new().with(
                 trigger(),
@@ -124,7 +124,7 @@ fn update_state_on_root_and_child_simultaneously() {
 //     pub struct Root;
 //     impl Part for Root {
 //         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-//             let (state, set_state) = hooks.use_state(0);
+//             let (state, set_state) = use_state(hooks,0);
 //             Element::new().listener(trigger(), Arc::new(move |_| {
 //                 set_state(state + 1);
 //              }))

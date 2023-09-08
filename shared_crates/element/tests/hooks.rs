@@ -3,19 +3,22 @@ use std::sync::{
     Arc,
 };
 
-use ambient_element::{Element, ElementComponent, ElementComponentExt, ElementTree, Hooks};
+use ambient_element::{
+    use_effect, use_memo_with, use_state, Element, ElementComponent, ElementComponentExt,
+    ElementTree, Hooks,
+};
 mod common;
 use ambient_cb::cb;
 use common::*;
 
 #[test]
-fn use_state() {
+fn test_use_state() {
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct Inner;
     impl ElementComponent for Inner {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             *hooks.world.resource_mut(n_renders()) += 1;
-            let (state, set_state) = hooks.use_state(0);
+            let (state, set_state) = use_state(hooks, 0);
             Element::new().on_spawned(move |_, _, _| set_state(state + 1))
         }
     }
@@ -35,7 +38,7 @@ fn use_state_inc_should_work() {
     pub struct Inner;
     impl ElementComponent for Inner {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (state, set_state) = hooks.use_state(10);
+            let (state, set_state) = use_state(hooks, 10);
             *hooks.world.resource_mut(n_renders()) += 1;
             *hooks.world.resource_mut(counter()) = state;
             Element::new().with(trigger(), cb(move |_| set_state(state + 1)))
@@ -61,7 +64,7 @@ fn use_state_on_removed_element_should_be_ignored() {
     pub struct Inner;
     impl ElementComponent for Inner {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (state, set_state) = hooks.use_state(0);
+            let (state, set_state) = use_state(hooks, 0);
             Element::new().with(trigger(), cb(move |_| set_state(state + 1)))
         }
     }
@@ -89,7 +92,7 @@ fn use_state_ensure_dropped() {
     pub struct Inner;
     impl ElementComponent for Inner {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (_state, set_state) = hooks.use_state(None);
+            let (_state, set_state) = use_state(hooks, None);
             Element::new().on_spawned(move |_, _, _| set_state(Some(Arc::new(Droppable))))
         }
     }
@@ -109,7 +112,7 @@ fn use_state_shouldnt_survive_between_instances() {
     pub struct Test;
     impl ElementComponent for Test {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (state, set_state) = hooks.use_state(0);
+            let (state, set_state) = use_state(hooks, 0);
             STATE.store(state, Ordering::Relaxed);
             Element::new().with(trigger(), cb(move |_| set_state(state + 1)))
         }
@@ -140,7 +143,7 @@ fn use_memo() {
     }
     impl ElementComponent for Test {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            hooks.use_memo_with(self.deps, |world, _| {
+            use_memo_with(hooks, self.deps, |world, _| {
                 *world.resource_mut(counter()) += 1;
                 "test"
             });
@@ -166,14 +169,14 @@ fn use_memo() {
 }
 
 #[test]
-fn use_effect() {
+fn test_use_effect() {
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct Inner {
         value: String,
     }
     impl ElementComponent for Inner {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            hooks.use_effect(self.value, |world, _| {
+            use_effect(hooks, self.value, |world, _| {
                 *world.resource_mut(counter()) += 1;
                 *world.resource_mut(n_renders()) += 1;
                 |world| {

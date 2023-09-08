@@ -13,7 +13,7 @@ use ambient_ui::prelude::*;
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
-    let (count, set_count) = hooks.use_state(0);
+    let (count, set_count) = use_state(hooks,0);
     FlowColumn::el([
         Text::el(format!("We've counted to {count} now")),
         Button::new("Increase", move |_| set_count(count + 1)).el(),

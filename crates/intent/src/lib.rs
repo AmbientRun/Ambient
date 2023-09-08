@@ -7,7 +7,7 @@ use ambient_ecs::{
     components, index_system, query, ArchetypeFilter, Component, ComponentValue, Debuggable,
     Entity, EntityId, Index, IndexColumns, Networked, QueryState, Resource, Store, SystemGroup,
 };
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{use_state, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_network::{
     client::ClientState,
     hooks::{use_remote_component, use_remote_world_system},
@@ -166,7 +166,7 @@ pub fn common_intent_systems() -> SystemGroup {
 pub struct IntentHistoryVisualizer;
 impl ElementComponent for IntentHistoryVisualizer {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (intents, set_intents) = hooks.use_state(Vec::new());
+        let (intents, set_intents) = use_state(hooks, Vec::new());
         use_remote_world_system(
             hooks,
             query(()).incl(intent_user_id()),
