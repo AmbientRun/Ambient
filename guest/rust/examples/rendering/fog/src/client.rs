@@ -16,10 +16,7 @@ mod default_camera {
                 components::{aspect_ratio_from_window, fog},
                 concepts::make_perspective_infinite_reverse_camera,
             },
-            transform::{
-                components::{lookat_target, translation},
-                concepts::make_transformable,
-            },
+            transform::components::{lookat_target, translation},
         },
         prelude::*,
     };
