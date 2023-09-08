@@ -104,7 +104,7 @@ mod new {
 
                 Ok(quote! {
                     #[doc = #doc_comment]
-                    #component_id: #component_ty
+                    pub #component_id: #component_ty
                 })
             })
             .collect::<anyhow::Result<Vec<_>>>()?;
@@ -280,7 +280,23 @@ pub fn generate_component_list_doc_comment(
 ) -> anyhow::Result<String> {
     use std::fmt::Write;
 
-    let mut output = "*Definition*:\n\n```ignore\n{\n".to_string();
+    let mut output = String::new();
+
+    if !concept.extends.is_empty() {
+        output.push_str("**Extends**: ");
+        for (i, id) in concept.extends.iter().enumerate() {
+            let extend = items.get(id.as_resolved().unwrap());
+            if i != 0 {
+                output.push_str(", ");
+            }
+
+            output.push_str(&items.fully_qualified_display_path(extend, None, None));
+        }
+        writeln!(output)?;
+        writeln!(output)?;
+    }
+
+    output.push_str("**Definition**:\n\n```ignore\n{\n");
 
     for (id, value) in &concept.required_components {
         let component = &*items.get(id.as_resolved().unwrap());
