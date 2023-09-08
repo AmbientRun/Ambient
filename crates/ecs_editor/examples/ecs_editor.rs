@@ -5,7 +5,7 @@ use ambient_ecs::World;
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
 use ambient_element::{element_component, Element, ElementComponentExt, Group, Hooks};
 use ambient_native_std::cb;
-use ambient_ui_native::{FocusRoot, ScrollArea, ScrollAreaSizing, WindowSized};
+use ambient_ui_native::{ScrollArea, ScrollAreaSizing, WindowSized};
 use std::sync::Arc;
 
 #[element_component]
@@ -22,11 +22,10 @@ fn ECSEditorUIWorld(hooks: &mut Hooks) -> Element {
 fn init(world: &mut World) {
     Group(vec![
         UICamera.el(),
-        FocusRoot(vec![WindowSized(vec![ScrollArea::el(
+        WindowSized(vec![ScrollArea::el(
             ScrollAreaSizing::FitChildrenWidth,
             ECSEditorUIWorld.el().memoize_subtree(""),
         )])
-        .el()])
         .el(),
     ])
     .el()

@@ -10,7 +10,7 @@ use ambient_native_std::asset_cache::{
     AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt,
 };
 use ambient_sys::task::JoinHandle;
-use ambient_ui_native::{Button, FocusRoot, WindowSized};
+use ambient_ui_native::{Button, WindowSized};
 use async_trait::async_trait;
 
 #[derive(PartialEq, Eq, Debug)]
@@ -90,7 +90,7 @@ async fn init(app: &mut App) {
     // load_model(world);
     Group(vec![
         UICamera.el(),
-        FocusRoot(vec![WindowSized(vec![
+        WindowSized(vec![
             Button::new("Load asset", |world| {
                 load_asset(world);
             })
@@ -107,7 +107,6 @@ async fn init(app: &mut App) {
             .el(),
             LocalAssetTimelineVisualizer.el(),
         ])
-        .el()])
         .el(),
     ])
     .el()

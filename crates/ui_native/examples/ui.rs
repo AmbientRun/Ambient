@@ -110,7 +110,7 @@ impl ElementComponent for Example {
 async fn init(app: &mut App) {
     let world = &mut app.world;
 
-    FocusRoot::el([Example.el()]).spawn_interactive(world);
+    Example.el().spawn_interactive(world);
     // ElementNode::from(UIRect {
     //     color: vec3(0.5, 0.5, 0.5),
     //     size: vec2(150., 30.),

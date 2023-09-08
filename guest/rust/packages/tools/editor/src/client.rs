@@ -187,7 +187,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
         |_| {}
     });
 
-    FocusRoot::el([if in_editor {
+    if in_editor {
         Group::el([
             MenuBar::el(menu_bar_items),
             MouseoverDisplay::el(),
@@ -195,7 +195,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
         ])
     } else {
         Element::new()
-    }])
+    }
 }
 
 #[element_component]

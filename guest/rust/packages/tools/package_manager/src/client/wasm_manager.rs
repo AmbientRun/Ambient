@@ -20,12 +20,12 @@ use super::use_hotkey_toggle;
 pub fn WasmManager(hooks: &mut Hooks) -> Element {
     let (visible, set_visible) = use_hotkey_toggle(hooks, VirtualKeyCode::F3);
 
-    FocusRoot::el([Window::el(
+    Window::el(
         "WASM Manager".to_string(),
         visible,
         Some(cb(move || set_visible(false))),
         WasmManagerInner::el(),
-    )])
+    )
 }
 
 #[element_component]

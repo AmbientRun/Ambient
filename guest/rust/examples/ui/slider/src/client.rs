@@ -6,7 +6,7 @@ fn App(hooks: &mut Hooks) -> Element {
     let (f32_exp_value, set_f32_exp_value) = use_state(hooks, 0.1);
     let (i32_value, set_i32_value) = use_state(hooks, 0);
 
-    FocusRoot::el([FlowColumn::el([
+    FlowColumn::el([
         Slider {
             value: f32_value,
             on_change: Some(set_f32_value),
@@ -39,7 +39,7 @@ fn App(hooks: &mut Hooks) -> Element {
             suffix: None,
         }
         .el(),
-    ])])
+    ])
     .with(space_between_items(), STREET)
     .with_padding_even(STREET)
 }

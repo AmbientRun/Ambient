@@ -7,7 +7,7 @@ use ambient_friendly_id::friendly_id;
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
     let (screen, set_screen) = use_state(hooks, None);
-    FocusRoot::el([PageScreen::el([
+    PageScreen::el([
         ScreenContainer(screen).el(),
         Text::el("RootScreen"),
         Button::new("Open sub screen", move |_| {
@@ -19,7 +19,7 @@ fn App(hooks: &mut Hooks) -> Element {
             }))))
         })
         .el(),
-    ])])
+    ])
 }
 
 #[element_component]

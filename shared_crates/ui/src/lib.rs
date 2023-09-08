@@ -30,9 +30,8 @@
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{
-    define_el_function_for_vec_element_newtype, element_component, to_owned, use_frame,
-    use_module_message, use_rerender_signal, use_runtime_message, use_state, Element,
-    ElementComponent, ElementComponentExt, Hooks,
+    element_component, use_frame, use_module_message, use_rerender_signal, use_runtime_message,
+    use_state, Element, ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::{
     broadcast_local_message,
@@ -41,7 +40,6 @@ use ambient_guest_bridge::{
         layout::components::{
             gpu_ui_size, height, margin, mesh_to_local_from_size, padding, width,
         },
-        messages,
         rect::components::{background_color, background_url, rect},
         transform::components::{
             local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation,
@@ -131,34 +129,6 @@ pub fn ImageFromUrl(
 pub fn Line(_hooks: &mut Hooks) -> Element {
     with_rect(UIBase.el()).with(background_color(), Vec4::ONE)
 }
-
-#[derive(Debug, Clone)]
-/// Provides a context for focusable UI elements.
-pub struct FocusRoot(pub Vec<Element>);
-define_el_function_for_vec_element_newtype!(FocusRoot);
-impl ElementComponent for FocusRoot {
-    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
-        let mut children = self.0;
-        // children.push(FocusResetter.el());
-        Element::new().children(children)
-    }
-}
-// #[element_component]
-// fn FocusResetter(hooks: &mut Hooks) -> Element {
-//     let focused = use_focus_state(hooks);
-//     let (reset_focus, set_reset_focus) = use_state(hooks, String::new());
-//     use_runtime_message::<messages::WindowMouseInput>(hooks, {
-//         to_owned![focused, set_reset_focus];
-//         move |_world, _event| {
-//             set_reset_focus(focused.clone());
-//         }
-//     });
-//     if focused == reset_focus && !focused.is_empty() {
-//         set_focus(hooks.world, String::new());
-//         set_reset_focus(String::new());
-//     }
-//     Element::new()
-// }
 
 fn use_focus_state(hooks: &mut Hooks) -> String {
     let rerender = use_rerender_signal(hooks);

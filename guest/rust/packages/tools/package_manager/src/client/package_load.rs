@@ -20,7 +20,7 @@ use super::use_hotkey_toggle;
 
 #[element_component]
 pub fn PackageLoad(_hooks: &mut Hooks) -> Element {
-    FocusRoot::el([
+    Group::el([
         PackageLoadDialog::el(),
         PackageView::el(),
         ErrorMessage::el(),

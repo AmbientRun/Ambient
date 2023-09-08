@@ -23,7 +23,7 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
             }
         }
     });
-    FocusRoot::el([FlowColumn::el([
+    FlowColumn::el([
         Text::el("Amplitude:"),
         Slider {
             value: f32_value,
@@ -99,7 +99,7 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
         .disabled(sound.is_none())
         .toggled(true)
         .el(),
-    ])])
+    ])
     .with(space_between_items(), STREET)
     .with_padding_even(STREET)
 }

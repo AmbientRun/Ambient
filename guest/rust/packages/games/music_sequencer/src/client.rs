@@ -46,7 +46,7 @@ fn App(hooks: &mut Hooks, cursor: usize) -> Element {
     let mut tracks = use_query(hooks, (track(), track_note_selection()));
     tracks.sort_by_key(|t| t.1 .0);
 
-    FocusRoot::el([FlowColumn::el(
+    FlowColumn::el(
         std::iter::once(
             IntegerSlider {
                 value: entity::get_component(synchronized_resources(), bpm()).unwrap_or_default()
@@ -67,7 +67,7 @@ fn App(hooks: &mut Hooks, cursor: usize) -> Element {
                 Track::el(track_id, track_selection, cursor)
             }),
         ),
-    )])
+    )
 }
 
 #[element_component]
