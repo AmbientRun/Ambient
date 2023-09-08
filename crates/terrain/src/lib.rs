@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate closure;
+use ambient_element::{use_effect, use_frame, use_memo_with, use_state_with};
 use std::{f32::consts::PI, str::FromStr, sync::Arc};
 
 use ambient_core::{
@@ -16,8 +17,8 @@ use ambient_core::{
 use ambient_ecs::{components, query, Commands, Entity, EntityId, FnSystem, SystemGroup, World};
 use ambient_editor_derive::ElementEditor;
 use ambient_element::{
-    element_tree, render_parented_with_component, Element, ElementComponent, ElementComponentExt,
-    Group, Hooks,
+    element_tree, render_parented_with_component, use_state, Element, ElementComponent,
+    ElementComponentExt, Group, Hooks,
 };
 use ambient_gpu::{
     fill::FillerKey,
@@ -835,8 +836,8 @@ pub fn use_async_asset<T: Asset + Clone + Sync + Send + std::fmt::Debug + 'stati
     hooks: &mut Hooks,
     asset_key: impl AsyncAssetKeyExt<T> + 'static,
 ) -> Option<T> {
-    let (value, set_value) = hooks.use_state(None);
-    hooks.use_effect(asset_key.key(), |world, _| {
+    let (value, set_value) = use_state(hooks, None);
+    use_effect(hooks, asset_key.key(), |world, _| {
         let assets = world.resource(asset_cache()).clone();
         world.resource(runtime()).spawn(async move {
             set_value(Some(asset_key.get(&assets).await));
@@ -856,7 +857,7 @@ impl ElementComponent for Terrain {
         let assets = hooks.world.resource(asset_cache()).clone();
         let gpu = GpuKey.get(&assets);
 
-        let (material_def, set_material_def) = hooks.use_state_with(|world| {
+        let (material_def, set_material_def) = use_state_with(hooks, |world| {
             world
                 .persisted_resource(terrain_material_def())
                 .cloned()
@@ -887,8 +888,8 @@ impl ElementComponent for Terrain {
         .unwrap_or_else(|| PixelTextureKey::white().get(&assets));
 
         // let (ground_textures, set_ground_textures) =
-        //     hooks.use_state_with(|_| Arc::new(Texture::new_single_color_texture_array(gpu.clone(), vec![UVec4::ONE, UVec4::ONE])));
-        // hooks.use_effect(
+        //     use_state_with(hooks, |_| Arc::new(Texture::new_single_color_texture_array(gpu.clone(), vec![UVec4::ONE, UVec4::ONE])));
+        // use_effect(hooks,
         //     world,
         //     material_def.clone(),
         //     closure!(clone material_def, |world| {
@@ -904,20 +905,24 @@ impl ElementComponent for Terrain {
         //         |_| {}
         //     }),
         // );
-        hooks.use_frame(closure!(clone material_def, |world| {
-            if let Some(def) = world.persisted_resource(terrain_material_def()) {
-                if def != &material_def {
-                    set_material_def(def.clone());
+        use_frame(
+            hooks,
+            closure!(clone material_def, |world| {
+                if let Some(def) = world.persisted_resource(terrain_material_def()) {
+                    if def != &material_def {
+                        set_material_def(def.clone());
+                    }
                 }
-            }
-        }));
+            }),
+        );
 
         let size_in_meters = self.state.size.size_in_meters();
 
         let lod_factor = 1. / 12.;
         let cell_diagonal = (size_in_meters * size_in_meters * 2.).sqrt();
         let heightmap_position = self.heightmap_position.extend(0.);
-        let terrain_material = hooks.use_memo_with(
+        let terrain_material = use_memo_with(
+            hooks,
             (
                 self.state.id.clone(),
                 ground_textures.id,

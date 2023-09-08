@@ -1,6 +1,8 @@
 //! Defines elements that can be used to select an item from a list.
 use ambient_cb::Cb;
-use ambient_element::{to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    to_owned, use_runtime_message, use_state, Element, ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_guest_bridge::core::{
     layout::components::margin, messages, rect::components::border_radius,
 };
@@ -35,8 +37,8 @@ impl ElementComponent for DropdownSelect {
             items,
             inline,
         } = *self;
-        let (show, set_show) = hooks.use_state(false);
-        hooks.use_runtime_message::<messages::WindowMouseInput>({
+        let (show, set_show) = use_state(hooks, false);
+        use_runtime_message::<messages::WindowMouseInput>(hooks, {
             to_owned![set_show];
             move |_world, event| {
                 if show && !event.pressed {

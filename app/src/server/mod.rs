@@ -176,7 +176,7 @@ pub async fn start(
             .with(is_persistent_resources(), ())
             .spawn(&mut server_world);
 
-        wasm::initialize(&mut server_world, working_directory.join("data"))
+        wasm::initialize(&mut server_world, &assets, working_directory.join("data"))
             .await
             .unwrap();
 

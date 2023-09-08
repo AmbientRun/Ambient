@@ -3,7 +3,8 @@ use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 use ambient_cb::{cb, Cb};
 use ambient_color::Color;
 use ambient_element::{
-    element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
+    element_component, to_owned, use_runtime_message, use_state, Element, ElementComponent,
+    ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::core::{
     layout::{
@@ -205,9 +206,9 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
             add_title,
             item_editor,
         } = *self;
-        let (add_action, set_add_action) = hooks.use_state(false);
+        let (add_action, set_add_action) = use_state(hooks, false);
         let has_on_change = on_change.is_some();
-        hooks.use_runtime_message::<messages::WindowMouseInput>({
+        use_runtime_message::<messages::WindowMouseInput>(hooks, {
             let set_add_action = set_add_action.clone();
             move |_world, event| {
                 let pressed = event.pressed;

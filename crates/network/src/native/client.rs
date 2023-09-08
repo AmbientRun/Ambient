@@ -13,7 +13,10 @@ use crate::{
 use ambient_app::{window_title, world_instance_resources, AppResources};
 use ambient_core::{asset_cache, gpu};
 use ambient_ecs::{generated::messages, world_events, Entity, SystemGroup};
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    consume_context, provide_context, use_frame, use_runtime_message, use_state, use_state_with,
+    use_task, Element, ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::ContentBaseUrlKey,
@@ -90,21 +93,21 @@ impl ElementComponent for ClientView {
 
         let gpu = hooks.world.resource(gpu()).clone();
 
-        hooks.provide_context(|| {
+        provide_context(hooks, || {
             GameClientRenderTarget(Arc::new(RenderTarget::new(&gpu, uvec2(1, 1), None)))
         });
 
-        let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
+        let (render_target, _) = consume_context::<GameClientRenderTarget>(hooks).unwrap();
 
         let assets = hooks.world.resource(asset_cache()).clone();
 
-        let ((control_tx, control_rx), _) = hooks.use_state_with(|_| flume::unbounded());
+        let ((control_tx, control_rx), _) = use_state_with(hooks, |_| flume::unbounded());
 
         // The game client will be set once a connection establishes
-        let (client_state, set_client_state) = hooks.use_state(None as Option<ClientState>);
+        let (client_state, set_client_state) = use_state(hooks, None as Option<ClientState>);
 
         // Subscribe to window close events
-        hooks.use_runtime_message::<messages::WindowClose>({
+        use_runtime_message::<messages::WindowClose>(hooks, {
             move |_, _| {
                 tracing::debug!("User closed the window");
                 control_tx.send(Control::Disconnect).ok();
@@ -118,7 +121,7 @@ impl ElementComponent for ClientView {
             let world_event_reader = Mutex::new(hooks.world.resource(world_events()).reader());
 
             let client_state = client_state.clone();
-            hooks.use_frame(move |app_world| {
+            use_frame(hooks, move |app_world| {
                 if let Some(client_state) = &client_state {
                     let mut game_state = client_state.game_state.lock();
                     // Pipe events from app world to game world
@@ -140,12 +143,12 @@ impl ElementComponent for ClientView {
         }
 
         // Set the window title to the package name
-        let (window_title_state, set_window_title) = hooks.use_state("Ambient".to_string());
+        let (window_title_state, set_window_title) = use_state(hooks, "Ambient".to_string());
         *hooks.world.resource_mut(window_title()) = window_title_state;
 
-        let (err, set_error) = hooks.use_state(None);
+        let (err, set_error) = use_state(hooks, None);
 
-        hooks.use_task(move |ui_world| {
+        use_task(hooks, move |ui_world| {
             let local_resources = world_instance_resources(AppResources::from_world(ui_world))
                 .with(game_screen_render_target(), render_target.0.clone());
             let task = async move {
@@ -248,7 +251,7 @@ impl ElementComponent for ClientView {
 
         if let Some(client_state) = &client_state {
             // Provide the context
-            hooks.provide_context(|| client_state.clone());
+            provide_context(hooks, || client_state.clone());
             hooks
                 .world
                 .add_resource(crate::client::client_state(), Some(client_state.clone()));

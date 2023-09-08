@@ -1,7 +1,7 @@
 //! Defines several UI prompts, such as [Alert], [Prompt], and [EditorPrompt].
 
 use ambient_cb::{cb, Cb};
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_element::{element_component, use_state, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     core::layout::{
         components::{align_vertical, space_between_items},
@@ -101,7 +101,7 @@ pub fn Prompt(
     /// The callback to run when the user clicks "Cancel".
     on_cancel: Option<Cb<dyn Fn(&mut World) + Sync + Send>>,
 ) -> Element {
-    let (value, set_value) = hooks.use_state("".to_string());
+    let (value, set_value) = use_state(hooks, "".to_string());
     DialogScreen(
         FlowColumn::el([
             Text::el(title).header_style(),
@@ -193,7 +193,7 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>
     /// The validator to run on the value. If the validator returns `false`, the "Ok" button will be disabled.
     validator: Option<Cb<dyn Fn(&T) -> bool + Sync + Send>>,
 ) -> Element {
-    let (value, set_value) = hooks.use_state(value);
+    let (value, set_value) = use_state(hooks, value);
     DialogScreen(ScrollArea::el(
         ScrollAreaSizing::FitParentWidth,
         FlowColumn::el([

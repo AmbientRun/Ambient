@@ -1,4 +1,4 @@
-use ambient_api::{core::layout::components::space_between_items, prelude::*};
+use ambient_api::{core::layout::components::space_between_items, element::use_state, prelude::*};
 
 #[derive(Debug, Clone, Default, ElementEditor)]
 pub struct MyStruct {
@@ -48,7 +48,7 @@ pub struct SubStruct {
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
-    let (state, set_state) = hooks.use_state(MyStruct::new());
+    let (state, set_state) = use_state(hooks, MyStruct::new());
     FocusRoot(vec![WindowSized::el(vec![ScrollArea::el(
         ScrollAreaSizing::FitParentWidth,
         FlowColumn(vec![

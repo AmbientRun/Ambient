@@ -50,4 +50,6 @@ pub async fn main() {
         .spawn();
 
     let _ = entity::wait_for_component(model, spawned()).await;
+
+    println!("Entity components: {:?}", entity::get_all_components(model));
 }

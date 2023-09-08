@@ -122,10 +122,10 @@ pub(super) fn run(
     }
 }
 
-pub trait RuntimeMessageExt {
+pub trait MessageExt {
     fn run(self, world: &mut World, module_id: Option<EntityId>) -> anyhow::Result<()>;
 }
-impl<T: ambient_ecs::RuntimeMessage> RuntimeMessageExt for T {
+impl<T: ambient_ecs::Message> MessageExt for T {
     fn run(self, world: &mut World, module_id: Option<EntityId>) -> anyhow::Result<()> {
         run(
             world,

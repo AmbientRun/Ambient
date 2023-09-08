@@ -8,7 +8,10 @@ use ambient_ecs::{
     generated::animation::components::animation_errors, with_component_registry, Component,
     ComponentDesc, ComponentEntry, ComponentValue, Entity, EntityId, PrimitiveComponentType, World,
 };
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_element::{
+    consume_context, element_component, provide_context, use_interval_deps, use_state, Element,
+    ElementComponentExt, Hooks,
+};
 use ambient_intent::client_push_intent;
 use ambient_native_std::{cb, Cb};
 use ambient_network::{client::ClientState, hooks::use_remote_component};
@@ -30,11 +33,12 @@ use crate::intents::intent_component_change;
 #[element_component]
 pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
     // tracing::info!("Drawing EntityEditor");
-    let (entity, set_entity) = hooks.use_state(None);
-    hooks.provide_context(|| EditingEntityContext(entity_id));
-    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
+    let (entity, set_entity) = use_state(hooks, None);
+    provide_context(hooks, || EditingEntityContext(entity_id));
+    let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
 
-    hooks.use_interval_deps(
+    use_interval_deps(
+        hooks,
         Duration::from_millis(100),
         false,
         entity_id,
@@ -357,7 +361,7 @@ fn ComponentEditor<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync +
     on_change: Cb<dyn Fn(ComponentEntry) + Sync + Send>,
     on_remove: Cb<dyn Fn() + Sync + Send>,
 ) -> Element {
-    let (screen, set_screen) = hooks.use_state(None);
+    let (screen, set_screen) = use_state(hooks, None);
     let remove = Button::new("\u{f6bf}", move |_| {
         on_remove();
     })

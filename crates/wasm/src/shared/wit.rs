@@ -1,6 +1,6 @@
-wasmtime::component::bindgen!({
+wasm_bridge::component::bindgen!({
     path: "wit",
-    async: true,
+    async: false,
 });
 
 pub use ambient::bindings::*;

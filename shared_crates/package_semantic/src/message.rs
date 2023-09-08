@@ -12,6 +12,7 @@ pub struct Message {
 
     pub description: Option<String>,
     pub fields: IndexMap<SnakeCaseIdentifier, ResolvableItemId<Type>>,
+    pub as_module_message: bool,
 
     resolved: bool,
 }
@@ -82,6 +83,7 @@ impl Message {
                 .iter()
                 .map(|(k, v)| (k.clone(), ResolvableItemId::Unresolved(v.clone())))
                 .collect(),
+            as_module_message: value.as_module_message,
             resolved: false,
         }
     }

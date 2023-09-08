@@ -71,11 +71,12 @@ pub fn generate(
                 quote! {}
             };
 
-            let message_impl = if message.data().source == ItemSource::Ambient {
-                quote! { RuntimeMessage }
-            } else {
-                quote! { ModuleMessage }
-            };
+            let message_impl =
+                if message.data().source != ItemSource::Ambient || message.as_module_message {
+                    quote! { ModuleMessage }
+                } else {
+                    quote! { RuntimeMessage }
+                };
 
             let struct_definition = if message.fields.is_empty() {
                 quote! {
@@ -131,7 +132,7 @@ pub fn generate(
 
     let inner = match context {
         Context::Host => quote! {
-            use ambient_package_rt::message_serde::{Message, MessageSerde, MessageSerdeError, RuntimeMessage};
+            use ambient_package_rt::message_serde::{Message, MessageSerde, MessageSerdeError, RuntimeMessage, ModuleMessage};
             use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
             use crate::{EntityId, Entity};
             #(#messages)*

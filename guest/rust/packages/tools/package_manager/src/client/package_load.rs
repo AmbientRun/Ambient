@@ -5,6 +5,9 @@ use ambient_api::{
         text::{components::font_style, types::FontStyle},
         wasm::components::{bytecode_from_url, module_name},
     },
+    element::{
+        use_module_message, use_module_message_effect, use_query, use_state, use_state_with,
+    },
     prelude::*,
 };
 
@@ -38,8 +41,8 @@ fn PackageLoadDialog(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn PackageLoadDialogInner(hooks: &mut Hooks, close: Cb<dyn Fn() + Sync + Send>) -> Element {
-    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
-    let (url, set_url) = hooks.use_state_with(|_| String::new());
+    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
+    let (url, set_url) = use_state_with(hooks, |_| String::new());
 
     FlowColumn::el([
         Text::el("Enter package URL:").with_margin_even(STREET),
@@ -63,8 +66,8 @@ fn PackageLoadDialogInner(hooks: &mut Hooks, close: Cb<dyn Fn() + Sync + Send>) 
 
 #[element_component]
 fn PackageView(hooks: &mut Hooks) -> Element {
-    let (msg, set_msg) = hooks.use_state(None);
-    hooks.use_module_message::<messages::PackageLoadSuccess>({
+    let (msg, set_msg) = use_state(hooks, None);
+    use_module_message::<messages::PackageLoadSuccess>(hooks, {
         let set_msg = set_msg.clone();
         move |_, source, msg| {
             if !source.server() {
@@ -83,9 +86,8 @@ fn PackageView(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn PackageViewInner(hooks: &mut Hooks, msg: Option<messages::PackageLoadSuccess>) -> Element {
-    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
-    let modules_by_name: HashMap<_, _> = hooks
-        .use_query((module_name(), bytecode_from_url()))
+    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
+    let modules_by_name: HashMap<_, _> = use_query(hooks, (module_name(), bytecode_from_url()))
         .into_iter()
         .map(|(id, (name, url))| (name, (id, url)))
         .collect();
@@ -182,8 +184,8 @@ fn PackageViewInner(hooks: &mut Hooks, msg: Option<messages::PackageLoadSuccess>
 
 #[element_component]
 fn ErrorMessage(hooks: &mut Hooks) -> Element {
-    let (reason, set_reason) = hooks.use_state(None);
-    hooks.use_module_message::<messages::ErrorMessage>({
+    let (reason, set_reason) = use_state(hooks, None);
+    use_module_message::<messages::ErrorMessage>(hooks, {
         let set_reason = set_reason.clone();
         move |_, source, msg| {
             if !source.server() {
@@ -207,7 +209,7 @@ fn ErrorMessageInner(
     reason: String,
     close: Cb<dyn Fn() + Send + Sync>,
 ) -> Element {
-    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
+    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
     FlowColumn::el([Text::el(reason), Button::new("OK", move |_| close()).el()])
         .with(space_between_items(), 4.0)
         .with_margin_even(STREET)

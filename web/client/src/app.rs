@@ -1,3 +1,4 @@
+use crate::wasm;
 use ambient_cameras::UICamera;
 use ambient_client_shared::{game_view::GameView, player};
 use ambient_ecs::{Entity, SystemGroup};
@@ -38,8 +39,7 @@ pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {
         on_loaded: cb(move |_, game_state| {
             let world = &mut game_state.world;
 
-            // TODO: client side wasm on the web
-            // wasm::initialize(world).unwrap();
+            wasm::initialize(world).unwrap();
 
             UICamera.el().spawn_static(world);
 
@@ -48,7 +48,7 @@ pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {
             }))
         }),
         create_rpc_registry: cb(create_server_rpc_registry),
-        inner: Dock::el(vec![GameView { show_debug: true }.el()]),
+        inner: Dock::el(vec![GameView { show_debug: false }.el()]),
     }
     .el()
 }
@@ -64,7 +64,7 @@ fn systems() -> SystemGroup {
             // Box::new(ambient_sky::systems()),
             // Box::new(ambient_water::systems()),
             // Box::new(ambient_physics::client_systems()),
-            // Box::new(wasm::systems()),
+            Box::new(wasm::systems()),
             Box::new(player::systems_final()),
         ],
     )

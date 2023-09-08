@@ -10,7 +10,10 @@ use ambient_core::{
     runtime,
 };
 use ambient_ecs::{query, World};
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_element::{
+    consume_context, element_component, use_state, use_state_with, Element, ElementComponentExt,
+    Hooks,
+};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_native_std::{asset_cache::AssetCache, color::Color, Cb};
 use ambient_network::{client::ClientState, server::RpcArgs as ServerRpcArgs};
@@ -76,8 +79,8 @@ fn dump_to_user(_assets: &AssetCache, _label: &'static str, s: String) {
 
 #[element_component]
 pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
-    let (show_shadows, set_show_shadows) = hooks.use_state(false);
-    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
+    let (show_shadows, set_show_shadows) = use_state(hooks, false);
+    let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
 
     FlowColumn::el([
         FlowRow(vec![
@@ -213,7 +216,7 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
 
 #[element_component]
 fn ShadowMapsViz(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
-    let (shadow_cascades, _) = hooks.use_state_with(|_| {
+    let (shadow_cascades, _) = use_state_with(hooks, |_| {
         let mut n_cascades = 0;
         get_state(&mut |renderer, _, _| {
             n_cascades = renderer.config.shadow_cascades;
@@ -237,7 +240,7 @@ fn ShadowMapsViz(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
 
 #[element_component]
 fn ShadowMapViz(hooks: &mut Hooks, get_state: GetDebuggerState, cascade: u32) -> Element {
-    let (texture, _) = hooks.use_state_with(|_| {
+    let (texture, _) = use_state_with(hooks, |_| {
         let mut tex = None;
         get_state(&mut |renderer, _, _| {
             tex = Some(renderer.shadows.as_ref().map(|x| {
@@ -259,9 +262,9 @@ fn ShadowMapViz(hooks: &mut Hooks, get_state: GetDebuggerState, cascade: u32) ->
 
 #[element_component]
 fn ShaderDebug(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
-    let (show, set_show) = hooks.use_state(false);
+    let (show, set_show) = use_state(hooks, false);
 
-    let (_, upd) = hooks.use_state(());
+    let (_, upd) = use_state(hooks, ());
 
     let mut params = Default::default();
     get_state(&mut |renderer, _, _| {

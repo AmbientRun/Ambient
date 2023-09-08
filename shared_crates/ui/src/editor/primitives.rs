@@ -2,7 +2,7 @@ use std::{fmt::Debug, str::FromStr, time::Duration};
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{
-    define_el_function_for_vec_element_newtype, to_owned, Element, ElementComponent,
+    define_el_function_for_vec_element_newtype, to_owned, use_state, Element, ElementComponent,
     ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::core::layout::components::margin;
@@ -41,9 +41,9 @@ impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> Ele
 {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change } = *self;
-        let (text_id, set_text_id) = hooks.use_state(String::new());
+        let (text_id, set_text_id) = use_state(hooks, String::new());
         let (focused, _) = use_focus_for_instance_id(hooks, text_id);
-        let (text, set_text) = hooks.use_state(None);
+        let (text, set_text) = use_state(hooks, None);
         if focused && text.is_none() {
             set_text(Some(value.to_string()));
         } else if !focused && text.is_some() {
@@ -85,9 +85,9 @@ impl<T: Debug + Clone + Sync + Send + 'static> ElementComponent for CustomParseI
             to_string,
         } = *self;
 
-        let (text_id, set_text_id) = hooks.use_state(String::new());
+        let (text_id, set_text_id) = use_state(hooks, String::new());
         let (focused, _) = use_focus_for_instance_id(hooks, text_id);
-        let (text, set_text) = hooks.use_state(None);
+        let (text, set_text) = use_state(hooks, None);
         if focused && text.is_none() {
             set_text(Some(to_string(&value)));
         } else if !focused && text.is_some() {

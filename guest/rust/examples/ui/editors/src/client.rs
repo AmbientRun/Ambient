@@ -1,22 +1,24 @@
 use ambient_api::{
     core::layout::components::{min_width, space_between_items, width},
+    element::use_state,
     prelude::*,
 };
 use indexmap::IndexMap;
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
-    let (text, set_text) = hooks.use_state("Enter some text".to_string());
-    let (float, set_float) = hooks.use_state(0.0);
-    let (vector3, set_vector3) = hooks.use_state(Vec3::ZERO);
-    let (index_map, set_index_map) = hooks.use_state(
+    let (text, set_text) = use_state(hooks, "Enter some text".to_string());
+    let (float, set_float) = use_state(hooks, 0.0);
+    let (vector3, set_vector3) = use_state(hooks, Vec3::ZERO);
+    let (index_map, set_index_map) = use_state(
+        hooks,
         vec![("First".to_string(), "Second".to_string())]
             .into_iter()
             .collect::<IndexMap<String, String>>(),
     );
-    let (list, set_list) = hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
+    let (list, set_list) = use_state(hooks, vec!["First".to_string(), "Second".to_string()]);
     let (minimal_list, set_minimal_list) =
-        hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
+        use_state(hooks, vec!["First".to_string(), "Second".to_string()]);
     let row = |name, editor| FlowRow::el(vec![Text::el(name).with(min_width(), 110.), editor]);
     FocusRoot::el([FlowColumn::el([
         row("TextEditor", TextEditor::new(text, set_text).el()),

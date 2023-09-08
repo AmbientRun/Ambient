@@ -19,7 +19,7 @@ pub struct SendStream {
 
 impl Drop for SendStream {
     fn drop(&mut self) {
-        tracing::info!("Dropping SendStream");
+        tracing::debug!("Dropping SendStream");
         self.stop();
     }
 }

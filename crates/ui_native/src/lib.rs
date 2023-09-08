@@ -50,6 +50,7 @@ pub use throbber::*;
 
 pub use self::image::*;
 use ambient_shared_types::MouseButton;
+use element::{use_ref_with, use_runtime_message, use_spawn};
 
 pub fn init_all_components() {
     layout::init_gpu_components();
@@ -84,11 +85,11 @@ pub fn HighjackMouse(
     on_click: Cb<dyn Fn(MouseButton) + Sync + Send>,
     hide_mouse: bool,
 ) -> Element {
-    // let (window_focused, _) = hooks.use_state(Arc::new(AtomicBool::new(true)));
+    // let (window_focused, _) = use_state(hooks,Arc::new(AtomicBool::new(true)));
     // Assume window has focus
     let focused = Arc::new(AtomicBool::new(true));
-    let position = hooks.use_ref_with(|_| Vec2::ZERO);
-    hooks.use_spawn(move |world| {
+    let position = use_ref_with(hooks, |_| Vec2::ZERO);
+    use_spawn(hooks, move |world| {
         if hide_mouse {
             let ctl = world.resource(window_ctl());
             ctl.send(WindowCtl::GrabCursor(CursorGrabMode::Locked)).ok();
@@ -103,7 +104,7 @@ pub fn HighjackMouse(
         }
     });
 
-    hooks.use_runtime_message::<messages::WindowMouseMotion>({
+    use_runtime_message::<messages::WindowMouseMotion>(hooks, {
         let focused = focused.clone();
         move |world, event| {
             let delta = event.delta;
@@ -119,7 +120,7 @@ pub fn HighjackMouse(
         }
     });
 
-    hooks.use_runtime_message::<messages::WindowFocusChange>(move |world, event| {
+    use_runtime_message::<messages::WindowFocusChange>(hooks, move |world, event| {
         let f = event.focused;
         let ctl = world.resource(window_ctl());
         ctl.send(WindowCtl::ShowCursor(!f)).ok();

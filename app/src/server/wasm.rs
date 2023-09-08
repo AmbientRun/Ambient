@@ -1,6 +1,7 @@
 use std::{fmt::Display, path::PathBuf, sync::Arc};
 
 use ambient_ecs::{Entity, EntityId, SystemGroup, World};
+use ambient_native_std::asset_cache::AssetCache;
 use ambient_package_semantic_native::{WasmSpawnRequest, WasmSpawnResponse};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{
@@ -12,7 +13,11 @@ pub fn systems() -> SystemGroup {
     ambient_wasm::server::systems()
 }
 
-pub async fn initialize(world: &mut World, data_path: PathBuf) -> anyhow::Result<()> {
+pub async fn initialize(
+    world: &mut World,
+    assets: &AssetCache,
+    data_path: PathBuf,
+) -> anyhow::Result<()> {
     let messenger = Arc::new(
         |world: &World, id: EntityId, type_: MessageType, message: &str| {
             let name = world.get_cloned(id, module_name()).unwrap_or_default();
@@ -32,7 +37,7 @@ pub async fn initialize(world: &mut World, data_path: PathBuf) -> anyhow::Result
         },
     );
 
-    ambient_wasm::server::initialize(world, data_path, messenger)?;
+    ambient_wasm::server::initialize(world, assets, data_path, messenger)?;
 
     Ok(())
 }
