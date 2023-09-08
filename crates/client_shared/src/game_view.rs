@@ -191,7 +191,7 @@ pub fn SyncFocus(hooks: &mut Hooks) -> Element {
     let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
     use_module_message::<FocusChanged>(hooks, {
         to_owned!(client_state);
-        move |world, _, msg| {
+        move |world, _, _| {
             let mut state = client_state.game_state.lock();
             *state.world.resource_mut(focus()) = world.resource(focus()).clone();
             state
@@ -213,7 +213,7 @@ pub fn SyncFocus(hooks: &mut Hooks) -> Element {
         let mut reader = reader.lock();
         let messages =
             read_messages::<FocusChanged>(&mut reader, state.world.resource_mut(world_events()));
-        if let Some(msg) = messages.into_iter().next() {
+        if let Some(_) = messages.into_iter().next() {
             *world.resource_mut(focus()) = state.world.resource(focus()).clone();
             world
                 .resource_mut(world_events())
