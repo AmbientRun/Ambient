@@ -1,7 +1,9 @@
 use std::{sync::Arc, time::Duration};
 
 use ambient_core::hierarchy::children;
-use ambient_element::{element_component, Element, ElementComponentExt, ElementTree, Hooks};
+use ambient_element::{
+    element_component, use_state, Element, ElementComponentExt, ElementTree, Hooks,
+};
 mod common;
 use common::*;
 
@@ -87,7 +89,7 @@ fn parent_components_should_stay_after_child_rerenders() {
 
     #[element_component]
     fn Child(hooks: &mut Hooks) -> Element {
-        let (state, set_state) = hooks.use_state(9);
+        let (state, set_state) = use_state(hooks, 9);
         hooks
             .world
             .add_component(
@@ -113,7 +115,7 @@ fn parent_components_should_stay_after_child_rerenders() {
 async fn async_task() {
     #[element_component]
     fn Root(hooks: &mut Hooks) -> Element {
-        let (state, set_state) = hooks.use_state(0);
+        let (state, set_state) = use_state(hooks, 0);
         *hooks.world.resource_mut(n_renders()) += 1;
         Element::new().on_spawned(move |_, _, _| {
             let set_state = set_state.clone();

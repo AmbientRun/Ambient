@@ -17,6 +17,7 @@ use ambient_api::{
             concepts::make_transformable,
         },
     },
+    element::{use_effect, use_state},
     prelude::*,
 };
 use packages::this::assets;
@@ -85,12 +86,12 @@ fn App(
     anim_player: AnimationPlayerRef,
     robot: PlayClipFromUrlNodeRef,
 ) -> Element {
-    let (blend, set_blend) = hooks.use_state(0.0f32);
-    let (masked, set_masked) = hooks.use_state(false);
+    let (blend, set_blend) = use_state(hooks, 0.0f32);
+    let (masked, set_masked) = use_state(hooks, false);
 
     {
         to_owned!(blend_node);
-        hooks.use_effect(masked, move |_, &masked| {
+        use_effect(hooks, masked, move |_, &masked| {
             if masked {
                 blend_node.set_mask_humanoid_lower_body(0.);
             } else {
@@ -102,7 +103,7 @@ fn App(
 
     {
         to_owned!(blend_node);
-        hooks.use_effect(blend, move |_, &blend| {
+        use_effect(hooks, blend, move |_, &blend| {
             blend_node.set_weight(blend);
             |_| {}
         });

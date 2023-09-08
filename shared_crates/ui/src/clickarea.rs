@@ -1,7 +1,9 @@
 //! Defines the [ClickArea] element.
 
 use ambient_cb::{cb, Cb};
-use ambient_element::{to_owned, Element, ElementComponent, Hooks};
+use ambient_element::{
+    to_owned, use_frame, use_ref_with, use_runtime_message, Element, ElementComponent, Hooks,
+};
 use ambient_guest_bridge::{
     core::{
         input::components::{mouse_over, mouse_pickable_max, mouse_pickable_min},
@@ -134,9 +136,9 @@ impl ElementComponent for ClickArea {
             on_mouse_input,
             on_mouse_wheel,
         } = *self;
-        let id = hooks.use_ref_with(|_| None);
-        let mouse_over_count = hooks.use_ref_with(|_| 0);
-        hooks.use_frame({
+        let id = use_ref_with(hooks, |_| None);
+        let mouse_over_count = use_ref_with(hooks, |_| 0);
+        use_frame(hooks, {
             to_owned![id, mouse_over_count];
             move |world| {
                 if let Some(id) = *id.lock() {
@@ -162,7 +164,7 @@ impl ElementComponent for ClickArea {
             }
         });
 
-        hooks.use_runtime_message::<messages::WindowMouseInput>({
+        use_runtime_message::<messages::WindowMouseInput>(hooks, {
             to_owned![id, mouse_over_count];
             move |world, event| {
                 if let Some(id) = *id.lock() {
@@ -175,7 +177,7 @@ impl ElementComponent for ClickArea {
             }
         });
 
-        hooks.use_runtime_message::<messages::WindowMouseWheel>({
+        use_runtime_message::<messages::WindowMouseWheel>(hooks, {
             to_owned![id];
             move |world, event| {
                 if let Some(id) = *id.lock() {

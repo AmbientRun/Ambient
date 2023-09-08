@@ -8,14 +8,15 @@ use ambient_ui_native::{
     layout::{height, width},
     Throbber, *,
 };
+use element::{consume_context, provide_context, use_frame, use_state};
 use glam::*;
 
 #[derive(Debug, Clone)]
 struct WobbleRect;
 impl ElementComponent for WobbleRect {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (state, set_state) = hooks.use_state(0.);
-        hooks.use_frame(move |_| set_state(state + 1.));
+        let (state, set_state) = use_state(hooks, 0.);
+        use_frame(hooks, move |_| set_state(state + 1.));
         UIBase
             .el()
             .with(width(), 150.)
@@ -31,7 +32,7 @@ struct MyContext(String);
 struct ContextUser;
 impl ElementComponent for ContextUser {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (context, _) = hooks.consume_context::<MyContext>().unwrap();
+        let (context, _) = consume_context::<MyContext>(hooks).unwrap();
         Text::el(context.0)
     }
 }
@@ -57,7 +58,7 @@ impl ElementComponent for Two {
 struct InputTest;
 impl ElementComponent for InputTest {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (value, set_value) = hooks.use_state("".to_string());
+        let (value, set_value) = use_state(hooks, "".to_string());
         FlowColumn::el([Throbber.el(), TextEditor::new(value, set_value).el()])
     }
 }
@@ -66,8 +67,8 @@ impl ElementComponent for InputTest {
 struct Example;
 impl ElementComponent for Example {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (count, _set_count) = hooks.use_state(0);
-        hooks.provide_context(|| MyContext(format!("context {count}")));
+        let (count, _set_count) = use_state(hooks, 0);
+        provide_context(hooks, || MyContext(format!("context {count}")));
         eprintln!("Render example {count}");
         if count < 5 {
             Two {

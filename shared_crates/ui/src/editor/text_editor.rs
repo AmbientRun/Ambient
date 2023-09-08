@@ -2,7 +2,10 @@
 use std::time::Instant;
 
 use ambient_cb::{cb, Cb};
-use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
+use ambient_element::{
+    element_component, to_owned, use_frame, use_ref_with, use_rerender_signal, use_runtime_message,
+    use_spawn, use_state, Element, ElementComponentExt, Hooks,
+};
 use ambient_guest_bridge::{
     core::{
         layout::components::{height, min_height, min_width, width},
@@ -43,10 +46,10 @@ pub fn TextEditor(
     auto_focus: bool,
 ) -> Element {
     let (focused, set_focused) = use_focus(hooks);
-    let (command, set_command) = hooks.use_state(false);
-    let intermediate_value = hooks.use_ref_with(|_| value.clone());
-    let cursor_position = hooks.use_ref_with(|_| value.len());
-    let rerender = hooks.use_rerender_signal();
+    let (command, set_command) = use_state(hooks, false);
+    let intermediate_value = use_ref_with(hooks, |_| value.clone());
+    let cursor_position = use_ref_with(hooks, |_| value.len());
+    let rerender = use_rerender_signal(hooks);
     {
         let mut inter = intermediate_value.lock();
         if *inter != value {
@@ -56,7 +59,7 @@ pub fn TextEditor(
         *inter = value.clone();
     }
 
-    hooks.use_spawn({
+    use_spawn(hooks, {
         to_owned![set_focused];
         move |_| {
             if auto_focus {
@@ -72,7 +75,7 @@ pub fn TextEditor(
 
     let on_sumbit_clone = on_submit.clone();
 
-    hooks.use_runtime_message::<messages::WindowKeyboardCharacter>({
+    use_runtime_message::<messages::WindowKeyboardCharacter>(hooks, {
         to_owned![intermediate_value, on_change, cursor_position];
         move |_world, event| {
             let c = event.character.chars().next().unwrap();
@@ -265,8 +268,8 @@ fn Cursor(_hooks: &mut Hooks) -> Element {
 }
 #[element_component]
 fn CursorInner(hooks: &mut Hooks, render_time: Instant) -> Element {
-    let rerender = hooks.use_rerender_signal();
-    hooks.use_frame(move |_| rerender());
+    let rerender = use_rerender_signal(hooks);
+    use_frame(hooks, move |_| rerender());
     let delta = (Instant::now().duration_since(render_time).as_secs_f32() * 2.) as u32;
     if delta % 2 == 0 {
         UIBase.el().children(vec![Rectangle

@@ -1,5 +1,8 @@
 //! Defines a scroll area.
-use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
+use ambient_element::{
+    element_component, to_owned, use_frame, use_ref_with, use_runtime_message, use_state,
+    use_state_with, Element, ElementComponentExt, Hooks,
+};
 use ambient_guest_bridge::core::{
     app::components::window_scale_factor,
     ecs::components::children,
@@ -38,28 +41,28 @@ pub fn ScrollArea(
     /// The child element
     inner: Element,
 ) -> Element {
-    let (scroll, set_scroll) = hooks.use_state(0.);
-    let (ratio, _set_ratio) = hooks.use_state_with(|world| {
+    let (scroll, set_scroll) = use_state(hooks, 0.);
+    let (ratio, _set_ratio) = use_state_with(hooks, |world| {
         #[allow(clippy::clone_on_copy)]
         let r = world.resource(window_scale_factor()).clone();
         r as f32
     });
-    let (outer_size, set_outer_size) = hooks.use_state(Vec2::ZERO);
-    let (inner_size, set_inner_size) = hooks.use_state(Vec2::ZERO);
+    let (outer_size, set_outer_size) = use_state(hooks, Vec2::ZERO);
+    let (inner_size, set_inner_size) = use_state(hooks, Vec2::ZERO);
     // this will be auto-calculated by inner height - outer height
     let scroll_height = if inner_size.y - outer_size.y > 0.0 {
         inner_size.y - outer_size.y
     } else {
         0.0
     };
-    let mouse_over_count = hooks.use_ref_with(|_| 0);
+    let mouse_over_count = use_ref_with(hooks, |_| 0);
     let bar_height = outer_size.y / (outer_size.y + scroll_height) * outer_size.y;
     let offset = scroll / scroll_height * (outer_size.y - bar_height);
-    let id = hooks.use_ref_with(|_| None);
-    let inner_flow_id = hooks.use_ref_with(|_| None);
-    let (canvas_offset, set_canvas_offset) = hooks.use_state(Vec3::ZERO);
+    let id = use_ref_with(hooks, |_| None);
+    let inner_flow_id = use_ref_with(hooks, |_| None);
+    let (canvas_offset, set_canvas_offset) = use_state(hooks, Vec3::ZERO);
 
-    hooks.use_frame({
+    use_frame(hooks, {
         to_owned![id, mouse_over_count, scroll, set_scroll, scroll_height];
         move |world| {
             if let Some(id) = *id.lock() {
@@ -71,7 +74,7 @@ pub fn ScrollArea(
             };
         }
     });
-    hooks.use_runtime_message::<messages::WindowMouseWheel>({
+    use_runtime_message::<messages::WindowMouseWheel>(hooks, {
         to_owned![mouse_over_count];
         move |_world, event| {
             if *mouse_over_count.lock() == 0 {

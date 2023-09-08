@@ -10,6 +10,7 @@ use ambient_ui_native::{
     graph::{Graph, GraphScaleKind, GraphStyle},
     *,
 };
+use element::{use_memo_with, use_state};
 use fixed_vec_deque::FixedVecDeque;
 use glam::{vec2, vec4, Vec2};
 use itertools::Itertools;
@@ -19,10 +20,10 @@ use rand::{prelude::StdRng, Rng, SeedableRng};
 struct Example;
 impl ElementComponent for Example {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (k, set_k) = hooks.use_state(1.0);
+        let (k, set_k) = use_state(hooks, 1.0);
         let max = 256;
 
-        let (history, set_history) = hooks.use_state(FixedVecDeque::<[Vec2; 128]>::new());
+        let (history, set_history) = use_state(hooks, FixedVecDeque::<[Vec2; 128]>::new());
 
         let clock = Clock::new();
         let points: (Vec<_>, Vec<_>, Vec<_>) = (0..max)
@@ -44,7 +45,7 @@ impl ElementComponent for Example {
         let runtime = hooks.world.resource(runtime()).clone();
         {
             let mut history = history.clone();
-            hooks.use_memo_with((), move |_, _| {
+            use_memo_with(hooks, (), move |_, _| {
                 runtime.spawn(async move {
                     log::info!("Spawning task");
                     let mut interval = tokio::time::interval(50.ms());

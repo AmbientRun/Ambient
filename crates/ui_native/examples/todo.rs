@@ -2,13 +2,14 @@ use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_ui_native::*;
+use element::use_state;
 
 #[derive(Debug, Clone)]
 struct TodoList;
 impl ElementComponent for TodoList {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (dishes, set_dishes) = hooks.use_state(false);
-        let (laundry, set_laundry) = hooks.use_state(false);
+        let (dishes, set_dishes) = use_state(hooks, false);
+        let (laundry, set_laundry) = use_state(hooks, false);
         FlowColumn(vec![
             FlowRow(vec![
                 Checkbox {

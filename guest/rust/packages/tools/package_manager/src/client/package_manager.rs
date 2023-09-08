@@ -1,3 +1,5 @@
+use crate::ambient_element::use_module_message;
+use crate::ambient_element::use_spawn;
 use ambient_api::{
     core::{
         package::components::{
@@ -6,6 +8,7 @@ use ambient_api::{
         },
         text::{components::font_style, types::FontStyle},
     },
+    element::{use_module_message_effect, use_query},
     prelude::*,
     ui::ImageFromUrl,
 };
@@ -38,17 +41,20 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn PackageManagerInner(hooks: &mut Hooks) -> Element {
-    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
+    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
 
-    let packages = hooks.use_query((
-        is_package(),
-        enabled(),
-        name(),
-        version(),
-        authors(),
-        client_modules(),
-        server_modules(),
-    ));
+    let packages = use_query(
+        hooks,
+        (
+            is_package(),
+            enabled(),
+            name(),
+            version(),
+            authors(),
+            client_modules(),
+            server_modules(),
+        ),
+    );
 
     struct Package {
         enabled: bool,
@@ -150,19 +156,19 @@ fn use_editor_menu_bar(
         move || EditorMenuBarAdd { name: name.clone() }.send_local_broadcast(false)
     });
 
-    hooks.use_module_message::<EditorLoad>({
+    use_module_message::<EditorLoad>(hooks, {
         let add = add.clone();
         move |_, _, _| {
             add();
         }
     });
 
-    hooks.use_spawn(move |_| {
+    use_spawn(hooks, move |_| {
         add();
         |_| {}
     });
 
-    hooks.use_module_message::<EditorMenuBarClick>(move |_, _, message| {
+    use_module_message::<EditorMenuBarClick>(hooks, move |_, _, message| {
         if message.name == name {
             on_click();
         }

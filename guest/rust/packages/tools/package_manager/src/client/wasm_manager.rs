@@ -5,6 +5,7 @@ use ambient_api::{
             bytecode_from_url, is_module, is_module_on_server, module_enabled, module_name,
         },
     },
+    element::{use_module_message_effect, use_query},
     prelude::*,
 };
 
@@ -29,28 +30,30 @@ pub fn WasmManager(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn WasmManagerInner(hooks: &mut Hooks) -> Element {
-    hooks.use_module_message_effect::<InputRequest, InputRelease>(None);
+    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
 
-    let mut modules: Vec<_> = hooks
-        .use_query((
+    let mut modules: Vec<_> = use_query(
+        hooks,
+        (
             is_module(),
             module_name(),
             module_enabled(),
             bytecode_from_url(),
-        ))
-        .into_iter()
-        .map(|(id, (_, name, enabled, url))| {
+        ),
+    )
+    .into_iter()
+    .map(|(id, (_, name, enabled, url))| {
+        (
+            id,
             (
-                id,
-                (
-                    entity::has_component(id, is_module_on_server()),
-                    name,
-                    enabled,
-                    url,
-                ),
-            )
-        })
-        .collect();
+                entity::has_component(id, is_module_on_server()),
+                name,
+                enabled,
+                url,
+            ),
+        )
+    })
+    .collect();
     modules.sort_by_key(|(_, (is_server, name, _, _))| (*is_server, name.clone()));
 
     let (server_modules, client_modules): (Vec<_>, Vec<_>) = modules

@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{
-    element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
+    element_component, to_owned, use_state, Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::core::layout::{
     components::{align_vertical, space_between_items},
@@ -44,7 +44,7 @@ impl<T: Debug + Clone + Sync + Send + 'static + Editor> ElementComponent for Off
             opts,
         } = *self;
 
-        let (screen, set_screen) = hooks.use_state(None);
+        let (screen, set_screen) = use_state(hooks, None);
 
         FlowRow(vec![
             ScreenContainer(screen).el(),
@@ -93,7 +93,7 @@ fn EditorScreen<T: Debug + Clone + Sync + Send + 'static + Editor>(
     editor: Cb<dyn Fn(T, Option<ChangeCb<T>>, EditorOpts) -> Element + Sync + Send>,
     opts: EditorOpts,
 ) -> Element {
-    let (value, set_value) = hooks.use_state(value);
+    let (value, set_value) = use_state(hooks, value);
     DialogScreen(ScrollArea::el(
         ScrollAreaSizing::FitParentWidth,
         FlowColumn::el([

@@ -2,7 +2,7 @@
 use std::fmt::Debug;
 
 use ambient_cb::{cb, Cb};
-use ambient_element::{to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{to_owned, use_state, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{core::layout::components::space_between_items, ecs::ComponentValue};
 
 use crate::{
@@ -76,7 +76,7 @@ impl<
     > ElementComponent for Tabs<T>
 {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (value, set_value) = hooks.use_state(T::default());
+        let (value, set_value) = use_state(hooks, T::default());
         let selected_tab = self
             .tabs
             .iter()

@@ -71,7 +71,7 @@ mod native_bindings {
 use self::message::Source;
 #[cfg(not(target_os = "unknown"))]
 use self::native_bindings::preopened_dir;
-use crate::shared::message::{RuntimeMessageExt, Target};
+use crate::shared::message::{MessageExt, Target};
 
 pub fn init_all_components() {
     internal::init_components();

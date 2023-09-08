@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use ambient_core::window::cursor_position;
 use ambient_ecs::{generated::messages, query_mut, SystemGroup, World};
-use ambient_element::{element_component, Element, Hooks};
+use ambient_element::{element_component, use_runtime_message, use_state, Element, Hooks};
 use ambient_input::{player_prev_raw_input, player_raw_input, PlayerRawInput};
 use ambient_network::client::client_state;
 use ambient_shared_types::VirtualKeyCode;
@@ -29,8 +29,8 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
     const PIXELS_PER_LINE: f32 = 5.0;
 
     // Assume window has focus
-    let (has_focus, set_has_focus) = hooks.use_state(true);
-    hooks.use_runtime_message::<messages::WindowFocusChange>(move |world, event| {
+    let (has_focus, set_has_focus) = use_state(hooks, true);
+    use_runtime_message::<messages::WindowFocusChange>(hooks, move |world, event| {
         set_has_focus(event.focused);
 
         if !event.focused {
@@ -38,7 +38,7 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
         }
     });
 
-    hooks.use_runtime_message::<messages::WindowKeyboardInput>(move |world, event| {
+    use_runtime_message::<messages::WindowKeyboardInput>(hooks, move |world, event| {
         process_input(world, has_focus, |input, _| {
             if let Some(keycode) = event.keycode.as_deref() {
                 let keycode = VirtualKeyCode::from_str(keycode).unwrap();
@@ -51,7 +51,7 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
         });
     });
 
-    hooks.use_runtime_message::<messages::WindowMouseInput>(move |world, event| {
+    use_runtime_message::<messages::WindowMouseInput>(hooks, move |world, event| {
         process_input(world, has_focus, |input, _| {
             if event.pressed {
                 input.mouse_buttons.insert(event.button.into());
@@ -61,14 +61,14 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
         });
     });
 
-    hooks.use_runtime_message::<messages::WindowMouseMotion>(move |world, msg| {
+    use_runtime_message::<messages::WindowMouseMotion>(hooks, move |world, msg| {
         process_input(world, has_focus, |input, mouse_pos| {
             input.mouse_position = mouse_pos;
             input.mouse_delta += msg.delta;
         });
     });
 
-    hooks.use_runtime_message::<messages::WindowMouseWheel>(move |world, event| {
+    use_runtime_message::<messages::WindowMouseWheel>(hooks, move |world, event| {
         process_input(world, has_focus, |input, _| {
             let delta = event.delta;
             input.mouse_wheel += match event.pixels {
