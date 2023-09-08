@@ -102,7 +102,26 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
         }
     });
 
+    let game_client_world = GameClientWorld
+        .el()
+        .with_clickarea()
+        .on_mouse_down(|world, _, _| {
+            println!("clicked: {}", world.resource(focus()));
+            if !world.resource(focus()).is_empty() {
+                println!("set focus");
+                *world.resource_mut(focus()) = String::new();
+                world
+                    .resource_mut(world_events())
+                    .add_message(FocusChanged {
+                        from_external: false,
+                        focus: String::new(),
+                    });
+            }
+        })
+        .el();
+
     Dock::el([
+        SyncFocus.el(),
         if show_debug {
             MeasureSize::el(
                 Dock::el([
@@ -168,7 +187,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
             Element::new()
         },
         if show_debug {
-            Dock::el([GameClientWorld.el()])
+            Dock::el([game_client_world])
                 .with_background(vec4(0.2, 0.2, 0.2, 1.))
                 .with(
                     padding(),
@@ -181,23 +200,30 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                     .into(),
                 )
         } else {
-            GameClientWorld.el()
+            game_client_world
         },
     ])
 }
 
 #[element_component]
-pub fn SyncFocus(hooks: &mut Hooks) -> Element {
+fn SyncFocus(hooks: &mut Hooks) -> Element {
     let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
     use_module_message::<FocusChanged>(hooks, {
         to_owned!(client_state);
-        move |world, _, _| {
+        move |world, _, msg| {
             let mut state = client_state.game_state.lock();
-            *state.world.resource_mut(focus()) = world.resource(focus()).clone();
-            state
-                .world
-                .resource_mut(world_events())
-                .add_message(FocusChanged {});
+            println!("-> Got host to guest focus: {:?}", msg);
+            if !msg.from_external {
+                println!("Syncing focus: {}", world.resource(focus()));
+                *state.world.resource_mut(focus()) = msg.focus.clone();
+                state
+                    .world
+                    .resource_mut(world_events())
+                    .add_message(FocusChanged {
+                        from_external: true,
+                        focus: msg.focus.clone(),
+                    });
+            }
         }
     });
     let reader = use_ref_with(hooks, |_| {
@@ -213,11 +239,18 @@ pub fn SyncFocus(hooks: &mut Hooks) -> Element {
         let mut reader = reader.lock();
         let messages =
             read_messages::<FocusChanged>(&mut reader, state.world.resource_mut(world_events()));
-        if let Some(_) = messages.into_iter().next() {
-            *world.resource_mut(focus()) = state.world.resource(focus()).clone();
-            world
-                .resource_mut(world_events())
-                .add_message(FocusChanged {});
+        if let Some(msg) = messages.into_iter().next() {
+            println!("<- Got guest to host focus: {:?}", msg);
+            // println!("readback: {}", messages.len());
+            if !msg.from_external {
+                *world.resource_mut(focus()) = msg.focus.clone();
+                world
+                    .resource_mut(world_events())
+                    .add_message(FocusChanged {
+                        from_external: true,
+                        focus: msg.focus.clone(),
+                    });
+            }
         }
     });
     Element::new()

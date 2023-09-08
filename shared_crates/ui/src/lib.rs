@@ -170,11 +170,20 @@ fn use_focus_state(hooks: &mut Hooks) -> (String, FocusStateSetter) {
     (
         current_focus,
         cb(move |world, new_focus| {
-            world
-                .set(EntityId::resources(), focus(), new_focus)
-                .unwrap();
+            let old_focus = world.get_cloned(EntityId::resources(), focus()).unwrap();
+            if old_focus != new_focus {
+                world
+                    .set(EntityId::resources(), focus(), new_focus.clone())
+                    .unwrap();
 
-            broadcast_local_message(world, FocusChanged {});
+                broadcast_local_message(
+                    world,
+                    FocusChanged {
+                        from_external: false,
+                        focus: new_focus,
+                    },
+                );
+            }
         }),
     )
 }

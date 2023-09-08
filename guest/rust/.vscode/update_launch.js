@@ -15,7 +15,8 @@ for (const dir of fs.readdirSync('../examples/')) {
                     "request": "launch",
                     "program": "ambient",
                     "args": [
-                        "run"
+                        "run",
+                        "--debugger"
                     ],
                     "initCommands": [
                         "settings set plugin.jit-loader.gdb.enable on"

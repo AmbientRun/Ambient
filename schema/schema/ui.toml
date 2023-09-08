@@ -13,5 +13,5 @@ attributes = ["Debuggable", "Networked", "Store", "Resource"]
 
 [messages.FocusChanged]
 description = "Focus has been updated"
-fields = { }
+fields = { from_external = "Bool", focus = "String" }
 as_module_message = true

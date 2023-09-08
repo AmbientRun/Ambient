@@ -2577,10 +2577,17 @@ mod raw {
                 };
                 #[derive(Clone, Debug)]
                 #[doc = "**FocusChanged**: Focus has been updated"]
-                pub struct FocusChanged;
+                pub struct FocusChanged {
+                    pub from_external: bool,
+                    pub focus: String,
+                }
                 impl FocusChanged {
-                    pub fn new() -> Self {
-                        Self
+                    #[allow(clippy::too_many_arguments)]
+                    pub fn new(from_external: impl Into<bool>, focus: impl Into<String>) -> Self {
+                        Self {
+                            from_external: from_external.into(),
+                            focus: focus.into(),
+                        }
                     }
                 }
                 impl Message for FocusChanged {
@@ -2589,18 +2596,18 @@ mod raw {
                     }
                     fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                         let mut output = vec![];
+                        self.from_external.serialize_message_part(&mut output)?;
+                        self.focus.serialize_message_part(&mut output)?;
                         Ok(output)
                     }
                     fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                        Ok(Self {})
+                        Ok(Self {
+                            from_external: bool::deserialize_message_part(&mut input)?,
+                            focus: String::deserialize_message_part(&mut input)?,
+                        })
                     }
                 }
                 impl ModuleMessage for FocusChanged {}
-                impl Default for FocusChanged {
-                    fn default() -> Self {
-                        Self::new()
-                    }
-                }
             }
         }
         #[allow(unused)]

@@ -9,8 +9,9 @@ use ambient_api::{
         messages::Frame,
         player::components::is_player,
         transform::components::{local_to_parent, translation},
+        ui::components::focus,
     },
-    entity::{add_child, get_component, mutate_component_with_default, set_component},
+    entity::{add_child, get_component, mutate_component_with_default, resources, set_component},
     prelude::*,
 };
 use packages::{
@@ -23,12 +24,14 @@ use packages::{
 
 #[main]
 pub fn main() {
-    let mut cursor_lock = input::CursorLockGuard::new();
     Frame::subscribe(move |_| {
-        let (delta, input) = input::get_delta();
-        if !cursor_lock.auto_unlock_on_escape(&input) {
+        if !get_component(resources(), focus())
+            .unwrap_or_default()
+            .is_empty()
+        {
             return;
         }
+        let (delta, input) = input::get_delta();
 
         let mut displace = Vec2::ZERO;
         if input.keys.contains(&KeyCode::W) {
