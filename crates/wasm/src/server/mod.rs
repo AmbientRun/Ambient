@@ -1,4 +1,4 @@
-use crate::shared::{self, message::RuntimeMessageExt};
+use crate::shared::{self, message::MessageExt};
 use ambient_ecs::{generated::messages, query, EntityId, FnSystem, SystemGroup, World};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use std::{path::PathBuf, sync::Arc};

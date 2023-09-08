@@ -131,7 +131,7 @@ pub fn generate(
 
     let inner = match context {
         Context::Host => quote! {
-            use ambient_package_rt::message_serde::{Message, MessageSerde, MessageSerdeError, RuntimeMessage};
+            use ambient_package_rt::message_serde::{Message, MessageSerde, MessageSerdeError, RuntimeMessage, ModuleMessage};
             use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
             use crate::{EntityId, Entity};
             #(#messages)*

@@ -70,7 +70,7 @@ mod internal_wit {
 #[cfg(feature = "wit")]
 use self::internal_wit::preopened_dir;
 use self::message::Source;
-use crate::shared::message::{RuntimeMessageExt, Target};
+use crate::shared::message::{MessageExt, Target};
 
 pub fn init_all_components() {
     internal::init_components();
