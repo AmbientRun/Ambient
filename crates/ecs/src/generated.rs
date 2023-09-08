@@ -1008,7 +1008,7 @@ mod raw {
         pub mod messages {
             use crate::{Entity, EntityId};
             use ambient_package_rt::message_serde::{
-                Message, MessageSerde, MessageSerdeError, RuntimeMessage,
+                Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
             };
             use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
             #[derive(Clone, Debug)]

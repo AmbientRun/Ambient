@@ -368,3 +368,6 @@ pub trait Message: Sized {
 
 /// Implemented on all messages that come from the runtime.
 pub trait RuntimeMessage: Message {}
+
+/// Implemented on all messages that can be sent between packages.
+pub trait ModuleMessage: Message {}
