@@ -9,7 +9,11 @@ on:
 env:
   CARGO_TERM_COLOR: always
   CACHE_KEY: ambient-${{ github.sha }}
-  GH_TOKEN: ${{ github.token }}
+  # token for gh command (other operations use GITHUB_TOKEN env var)
+  # we are using bot here so that the PR created by it triggers all the regular CI checks
+  GH_TOKEN: ${{ secrets.MOOSE_JOBS_GH_TOKEN }}
+  BOT_NAME: "Moose Jobs"
+  BOT_EMAIL: ${{ secrets.MOOSE_JOBS_EMAIL }}
 
 jobs:
   deploy-packages:
@@ -44,8 +48,8 @@ jobs:
         run: |
           base_branch=${GITHUB_REF#refs/heads/}
           branch=${base_branch}-deployed-${{ github.sha }}
-          git config --global user.name "Moose Jobs"
-          git config --global user.email "username@users.noreply.github.com"
+          git config --global user.name "${{ env.BOT_NAME }}"
+          git config --global user.email "${{ env.BOT_EMAIL }}"
           git checkout -b ${branch}
           git commit -a -m "Update deployed packages for ${{ github.sha }}"
           git push --set-upstream origin ${branch}
@@ -59,8 +63,8 @@ jobs:
           base_branch=main
           tag=${GITHUB_REF#refs/tags/}
           branch=${tag}-deployed-${{ github.sha }}
-          git config --global user.name "Moose Jobs"
-          git config --global user.email "username@users.noreply.github.com"
+          git config --global user.name "${{ env.BOT_NAME }}"
+          git config --global user.email "${{ env.BOT_EMAIL }}"
           git checkout -b ${branch}
           git commit -a -m "Update deployed packages for ${{ github.sha }}"
 
