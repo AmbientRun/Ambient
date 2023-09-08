@@ -39,7 +39,6 @@ pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {
         on_loaded: cb(move |_, game_state| {
             let world = &mut game_state.world;
 
-            // TODO: client side wasm on the web
             wasm::initialize(world).unwrap();
 
             UICamera.el().spawn_static(world);
