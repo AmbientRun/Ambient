@@ -6,7 +6,10 @@ use ambient_core::window::{
 use ambient_debugger::Debugger;
 use ambient_ecs::{generated::messages, EntityId};
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_element::{
+    consume_context, element_component, use_frame, use_runtime_message, use_state, Element,
+    ElementComponentExt, Hooks,
+};
 use ambient_layout::Docking;
 use ambient_network::client::{ClientState, GameClientRenderTarget, GameClientWorld};
 use ambient_shared_types::CursorIcon;
@@ -18,19 +21,19 @@ use glam::{uvec2, vec4, Vec2};
 
 #[element_component]
 pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
-    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
-    let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
+    let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
+    let (render_target, _) = consume_context::<GameClientRenderTarget>(hooks).unwrap();
 
-    let (show_ecs, set_show_ecs) = hooks.use_state(true);
-    let (ecs_size, set_ecs_size) = hooks.use_state(Vec2::ZERO);
-    let (debugger_size, set_debugger_size) = hooks.use_state(Vec2::ZERO);
+    let (show_ecs, set_show_ecs) = use_state(hooks, true);
+    let (ecs_size, set_ecs_size) = use_state(hooks, Vec2::ZERO);
+    let (debugger_size, set_debugger_size) = use_state(hooks, Vec2::ZERO);
 
-    let (w, set_w) = hooks.use_state(300.0);
-    let (w_memory, set_w_memory) = hooks.use_state(0.0);
-    let (mouse_on_edge, set_mouse_on_edge) = hooks.use_state(false);
-    let (should_track_resize, set_should_track_resize) = hooks.use_state(false);
+    let (w, set_w) = use_state(hooks, 300.0);
+    let (w_memory, set_w_memory) = use_state(hooks, 0.0);
+    let (mouse_on_edge, set_mouse_on_edge) = use_state(hooks, false);
+    let (should_track_resize, set_should_track_resize) = use_state(hooks, false);
 
-    hooks.use_runtime_message::<messages::WindowMouseInput>({
+    use_runtime_message::<messages::WindowMouseInput>(hooks, {
         move |_world, event| {
             let pressed = event.pressed;
             if pressed && mouse_on_edge {
@@ -41,7 +44,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
         }
     });
 
-    hooks.use_frame({
+    use_frame(hooks, {
         let state = client_state.clone();
         let render_target = render_target.clone();
         let set_w = set_w.clone();

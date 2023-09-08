@@ -5,7 +5,9 @@ use ambient_core::{
     transform::{local_to_world, mesh_to_world},
 };
 use ambient_ecs::{Entity, EntityId, World};
-use ambient_element::{Element, ElementComponent};
+use ambient_element::{
+    consume_context, use_effect, use_spawn, use_state_with, Element, ElementComponent,
+};
 use ambient_meshes::QuadMeshKey;
 use ambient_native_std::{asset_cache::SyncAssetKeyExt, cb, shapes::AABB};
 use ambient_network::client::ClientState;
@@ -67,9 +69,9 @@ impl ElementComponent for GridGuide {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let Self { rotation, point } = *self;
 
-        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
+        let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
 
-        let (entity, _) = hooks.use_state_with(|world| {
+        let (entity, _) = use_state_with(hooks, |world| {
             let assets = world.resource(asset_cache());
 
             let mut state = client_state.game_state.lock();
@@ -86,14 +88,14 @@ impl ElementComponent for GridGuide {
 
         {
             let game_state = client_state.game_state.clone();
-            hooks.use_spawn(move |_| {
+            use_spawn(hooks, move |_| {
                 move |_| {
                     game_state.lock().world.despawn(entity);
                 }
             });
         }
 
-        hooks.use_effect((rotation, point), |_, &(rotation, point)| {
+        use_effect(hooks, (rotation, point), |_, &(rotation, point)| {
             let mut state = client_state.game_state.lock();
             let _euler = rotation.to_euler(EulerRot::YXZ);
 
@@ -122,9 +124,9 @@ impl ElementComponent for AxisGuide {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let Self { axis, point } = *self;
 
-        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
+        let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
 
-        let (entity, _) = hooks.use_state_with(|world| {
+        let (entity, _) = use_state_with(hooks, |world| {
             let mut state = client_state.game_state.lock();
             let assets = world.resource(asset_cache());
 
@@ -141,7 +143,7 @@ impl ElementComponent for AxisGuide {
 
         {
             let game_state = client_state.game_state.clone();
-            hooks.use_spawn(move |_| {
+            use_spawn(hooks, move |_| {
                 move |_| {
                     game_state.lock().world.despawn(entity);
                 }

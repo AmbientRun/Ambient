@@ -2,7 +2,9 @@ use std::{sync::Arc, time::Duration};
 
 use ambient_core::name;
 use ambient_ecs::{query, EntityId, World};
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_element::{
+    element_component, use_interval_deps, use_state, Element, ElementComponentExt, Hooks,
+};
 use ambient_layout::{fit_horizontal, max_width, width, Fit};
 use ambient_native_std::{cb, Cb};
 use ambient_renderer::color;
@@ -121,8 +123,8 @@ impl InspectableWorld for InspectableAsyncWorld {
 
 #[element_component]
 pub fn ECSEditor(hooks: &mut Hooks, world: Arc<dyn InspectableWorld>) -> Element {
-    let (comp_filter, set_comp_filter) = hooks.use_state("".to_string());
-    let (entity_filter, set_entity_filter) = hooks.use_state("".to_string());
+    let (comp_filter, set_comp_filter) = use_state(hooks, "".to_string());
+    let (entity_filter, set_entity_filter) = use_state(hooks, "".to_string());
 
     FlowColumn::el([
         {
@@ -157,10 +159,11 @@ fn EntityList(
     filter_entities: String,
     filter_components: String,
 ) -> Element {
-    let (show_all, set_show_all) = hooks.use_state(false);
-    let (entities, set_entities) = hooks.use_state(Vec::new());
+    let (show_all, set_show_all) = use_state(hooks, false);
+    let (entities, set_entities) = use_state(hooks, Vec::new());
     const MAX: usize = 30;
-    hooks.use_interval_deps(
+    use_interval_deps(
+        hooks,
         Duration::from_secs_f32(0.5),
         true,
         filter_entities.clone(),
@@ -213,8 +216,8 @@ fn EntityBlock(
     filter_entities: String,
     filter_components: String,
 ) -> Element {
-    let (expanded, set_expanded) = hooks.use_state(false);
-    let (components, set_components) = hooks.use_state(false);
+    let (expanded, set_expanded) = use_state(hooks, false);
+    let (components, set_components) = use_state(hooks, false);
     FlowColumn::el([
         FlowRow::el([
             Button::new(
@@ -272,8 +275,9 @@ fn EntityComponents(
     entity: EntityId,
     filter_components: String,
 ) -> Element {
-    let (components, set_components) = hooks.use_state(Vec::new());
-    hooks.use_interval_deps(
+    let (components, set_components) = use_state(hooks, Vec::new());
+    use_interval_deps(
+        hooks,
         Duration::from_secs_f32(0.5),
         true,
         filter_components.clone(),

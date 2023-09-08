@@ -8,7 +8,9 @@ use ambient_ecs::{
     query, ArchetypeFilter, Component, ComponentQuery, ComponentValue, ECSError, EntityId,
     FrameEvent, QueryState, TypedReadQuery, World, WorldDiff,
 };
-use ambient_element::{Hooks, Setter};
+use ambient_element::{
+    consume_context, use_frame, use_ref_with, use_state, use_state_with, Hooks, Setter,
+};
 use ambient_native_std::{cb, Cb};
 
 use crate::{
@@ -28,9 +30,9 @@ pub fn use_remote_world_system<
     query: TypedReadQuery<R>,
     run: F,
 ) {
-    if let Some((client_state, _)) = hooks.consume_context::<ClientState>() {
-        let query_state = hooks.use_ref_with(|_| QueryState::new());
-        hooks.use_frame(move |_| {
+    if let Some((client_state, _)) = consume_context::<ClientState>(hooks) {
+        let query_state = use_ref_with(hooks, |_| QueryState::new());
+        use_frame(hooks, move |_| {
             let mut game_state = client_state.game_state.lock();
             let mut qs = query_state.lock();
             run(&query, &mut game_state.world, Some(&mut qs), &FrameEvent);
@@ -43,19 +45,19 @@ pub fn use_remote_component<T: ComponentValue + std::fmt::Debug>(
     entity: EntityId,
     component: Component<T>,
 ) -> Result<T, ECSError> {
-    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
-    let component_version = hooks.use_ref_with(|_| {
+    let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
+    let component_version = use_ref_with(hooks, |_| {
         let game_state = client_state.game_state.lock();
         game_state
             .world
             .get_component_content_version(entity, component.index())
             .ok()
     });
-    let (value, set_value) = hooks.use_state_with(|_| {
+    let (value, set_value) = use_state_with(hooks, |_| {
         let game_state = client_state.game_state.lock();
         game_state.world.get_ref(entity, component).cloned()
     });
-    hooks.use_frame(move |_| {
+    use_frame(hooks, move |_| {
         let game_state = client_state.game_state.lock();
         let mut cv = component_version.lock();
         let version = game_state
@@ -76,14 +78,14 @@ pub fn use_remote_components<T: ComponentValue + std::fmt::Debug>(
     arch_filter: ArchetypeFilter,
     component: Component<T>,
 ) -> Vec<(EntityId, T, Cb<dyn Fn(Option<T>) + Sync + Send>)> {
-    let (values, set_values) = hooks.use_state(HashMap::new());
+    let (values, set_values) = use_state(hooks, HashMap::new());
     let runtime = hooks.world.resource(runtime()).clone();
 
-    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
-    let qs_changed = hooks.use_ref_with(|_| QueryState::new());
-    let qs_despawned = hooks.use_ref_with(|_| QueryState::new());
-    let values_intermediate = hooks.use_ref_with(|_| HashMap::new());
-    hooks.use_frame(move |_| {
+    let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
+    let qs_changed = use_ref_with(hooks, |_| QueryState::new());
+    let qs_despawned = use_ref_with(hooks, |_| QueryState::new());
+    let values_intermediate = use_ref_with(hooks, |_| HashMap::new());
+    use_frame(hooks, move |_| {
         let set_values = set_values.clone();
         let game_state = client_state.game_state.lock();
         let mut qs_changed = qs_changed.lock();
@@ -141,8 +143,8 @@ pub fn use_remote_first_component<T: ComponentValue + std::fmt::Debug>(
     entity_filter: impl 'static + Fn(&World, EntityId) -> bool + Send + Sync,
     component: Component<T>,
 ) -> Option<(Option<T>, Arc<dyn Fn(Option<T>) + Sync + Send>)> {
-    let (value, set_value) = hooks.use_state(None);
-    let (entity_id, set_entity_id) = hooks.use_state(EntityId::null());
+    let (value, set_value) = use_state(hooks, None);
+    let (entity_id, set_entity_id) = use_state(hooks, EntityId::null());
     let f = Arc::new(entity_filter);
     let f2 = f.clone();
 
@@ -168,7 +170,7 @@ pub fn use_remote_first_component<T: ComponentValue + std::fmt::Debug>(
         },
     );
 
-    let (client_state, _) = hooks.consume_context::<ClientState>()?;
+    let (client_state, _) = consume_context::<ClientState>(hooks)?;
     let runtime = hooks.world.resource(runtime()).clone();
     Some((
         value,
@@ -235,8 +237,8 @@ pub fn use_remote_resource<T: ComponentValue + std::fmt::Debug>(
 }
 
 pub fn use_player_id(hooks: &mut Hooks) -> Option<EntityId> {
-    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
-    let (ent, set_ent) = hooks.use_state(None);
+    let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
+    let (ent, set_ent) = use_state(hooks, None);
     use_remote_world_system(
         hooks,
         query(user_id().changed()).incl(is_player()),
@@ -255,7 +257,7 @@ pub fn use_remote_player_component<T: ComponentValue + Default + std::fmt::Debug
     component: Component<T>,
 ) -> (T, Setter<T>) {
     let player_id = use_player_id(hooks);
-    let (value, set_value) = hooks.use_state(T::default());
+    let (value, set_value) = use_state(hooks, T::default());
     use_remote_world_system(
         hooks,
         query((component.changed(),)),
@@ -268,7 +270,7 @@ pub fn use_remote_player_component<T: ComponentValue + Default + std::fmt::Debug
         },
     );
 
-    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
+    let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
     let runtime = hooks.world.resource(runtime()).clone();
     let set_value = cb(move |new_value| {
         let client_state = client_state.clone();

@@ -9,6 +9,7 @@ use ambient_api::{
         rendering::components::color,
         transform::components::{lookat_target, translation},
     },
+    element::{use_module_message, use_state},
     prelude::*,
 };
 use packages::this::messages::{Input, WorldPosition};
@@ -40,8 +41,8 @@ pub fn main() {
 
 #[element_component]
 fn WorldPositionDisplay(hooks: &mut Hooks, camera: EntityId) -> Element {
-    let (position, set_position) = hooks.use_state(None);
-    hooks.use_module_message::<WorldPosition>(move |_, _, msg| {
+    let (position, set_position) = use_state(hooks, None);
+    use_module_message::<WorldPosition>(hooks, move |_, _, msg| {
         set_position(Some(msg.position));
     });
 

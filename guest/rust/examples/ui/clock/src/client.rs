@@ -7,6 +7,7 @@ use ambient_api::{
         },
         transform::components::translation,
     },
+    element::{use_frame, use_state},
     prelude::*,
     ui::use_window_logical_resolution,
 };
@@ -19,11 +20,11 @@ fn App(hooks: &mut Hooks) -> Element {
     let size_info = use_window_logical_resolution(hooks);
     let center_x = size_info.x as f32 / 2.;
     let center_y = size_info.y as f32 / 2.;
-    let (now, set_now) = hooks.use_state(game_time());
-    let (x, set_x) = hooks.use_state(size_info.x as f32 / 2.);
-    let (y, set_y) = hooks.use_state(size_info.y as f32 / 2. - second_r);
-    let (phase, set_phase) = hooks.use_state(PI / 30.);
-    hooks.use_frame(move |_world| {
+    let (now, set_now) = use_state(hooks, game_time());
+    let (x, set_x) = use_state(hooks, size_info.x as f32 / 2.);
+    let (y, set_y) = use_state(hooks, size_info.y as f32 / 2. - second_r);
+    let (phase, set_phase) = use_state(hooks, PI / 30.);
+    use_frame(hooks, move |_world| {
         let latest = game_time();
         if latest - now > Duration::from_secs_f32(1.0) {
             set_now(latest);

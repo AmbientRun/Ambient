@@ -1,4 +1,7 @@
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    consume_context, provide_context, use_state, Element, ElementComponent, ElementComponentExt,
+    Hooks,
+};
 mod common;
 
 use ambient_cb::cb;
@@ -10,7 +13,7 @@ fn basic_context() {
     pub struct Root;
     impl ElementComponent for Root {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            hooks.provide_context(|| 5_u32);
+            provide_context(hooks, || 5_u32);
             Child.el()
         }
     }
@@ -19,7 +22,7 @@ fn basic_context() {
     pub struct Child;
     impl ElementComponent for Child {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let _ = hooks.consume_context::<u32>();
+            let _ = consume_context::<u32>(hooks);
             Element::new()
         }
     }
@@ -34,8 +37,8 @@ fn update_context_on_removed_element() {
     pub struct Root;
     impl ElementComponent for Root {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (state, set_state) = hooks.use_state::<u32>(0);
-            hooks.provide_context(|| state);
+            let (state, set_state) = use_state::<u32>(hooks, 0);
+            provide_context(hooks, || state);
             if state < 3 {
                 Element::new().children(vec![Child.into()]).with(
                     trigger(),
@@ -53,7 +56,7 @@ fn update_context_on_removed_element() {
     pub struct Child;
     impl ElementComponent for Child {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let _ = hooks.consume_context::<u32>();
+            let _ = consume_context::<u32>(hooks);
             Element::new()
         }
     }
@@ -94,7 +97,7 @@ fn two_contexts() {
     }
     impl ElementComponent for ContextRoot {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            hooks.provide_context(|| self.value);
+            provide_context(hooks, || self.value);
             Child { value: self.value }.el()
         }
     }
@@ -105,7 +108,7 @@ fn two_contexts() {
     }
     impl ElementComponent for Child {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (ctx_value, _) = hooks.consume_context::<u32>().unwrap();
+            let (ctx_value, _) = consume_context::<u32>(hooks).unwrap();
             assert_eq!(self.value, ctx_value);
             Element::new()
         }

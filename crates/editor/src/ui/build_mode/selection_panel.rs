@@ -1,4 +1,4 @@
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{consume_context, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_native_std::Cb;
 use ambient_network::{client::ClientState, log_network_result};
 use ambient_ui_native::{
@@ -22,8 +22,8 @@ impl ElementComponent for SelectionPanel {
             selection,
             set_selection: _,
         } = *self;
-        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
-        let (settings, _) = hooks.consume_context::<EditorSettings>().unwrap();
+        let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
+        let (settings, _) = consume_context::<EditorSettings>(hooks).unwrap();
 
         FlowColumn(vec![
             #[allow(clippy::comparison_chain)]

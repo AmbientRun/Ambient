@@ -7,7 +7,8 @@ mod terrain_mode;
 use ambient_core::{game_mode, runtime, transform::translation, GameMode};
 use ambient_ecs::{Entity, EntityId};
 use ambient_element::{
-    element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks, Setter,
+    consume_context, element_component, provide_context, use_effect, use_interval, use_state,
+    Element, ElementComponent, ElementComponentExt, Group, Hooks, Setter,
 };
 use ambient_intent::{rpc_redo, rpc_undo_head, IntentHistoryVisualizer};
 use ambient_native_std::{cb, color::Color, Cb};
@@ -88,24 +89,24 @@ const PLAY_INSTANCE_ID: &str = "play";
 
 #[element_component]
 pub fn EditorUI(hooks: &mut Hooks) -> Element {
-    let (editor_mode, set_editor_mode) = hooks.use_state(EditorMode::Build);
+    let (editor_mode, set_editor_mode) = use_state(hooks, EditorMode::Build);
 
-    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
-    let (hide_ui, set_hide_ui) = hooks.use_state(false);
-    let (user_settings, _) = hooks.consume_context::<EditorSettings>().unwrap();
-    let (screen, _set_screen) = hooks.use_state(None);
+    let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
+    let (hide_ui, set_hide_ui) = use_state(hooks, false);
+    let (user_settings, _) = consume_context::<EditorSettings>(hooks).unwrap();
+    let (screen, _set_screen) = use_state(hooks, None);
 
-    hooks.provide_context(EditorPrefs::default);
+    provide_context(hooks, EditorPrefs::default);
 
-    hooks.provide_context(|| Brush::Raise);
-    hooks.provide_context(|| 0u32);
-    hooks.provide_context(|| BrushSize::SMALL);
-    hooks.provide_context(|| BrushStrength::MEDIUM);
-    hooks.provide_context(|| BrushShape::Circle);
-    hooks.provide_context(|| BrushSmoothness(1.));
-    hooks.provide_context(HydraulicErosionConfig::default);
+    provide_context(hooks, || Brush::Raise);
+    provide_context(hooks, || 0u32);
+    provide_context(hooks, || BrushSize::SMALL);
+    provide_context(hooks, || BrushStrength::MEDIUM);
+    provide_context(hooks, || BrushShape::Circle);
+    provide_context(hooks, || BrushSmoothness(1.));
+    provide_context(hooks, HydraulicErosionConfig::default);
 
-    hooks.use_effect(editor_mode, {
+    use_effect(hooks, editor_mode, {
         let client_state = client_state.clone();
         move |world, _| {
             world.resource(runtime()).spawn(async move {
@@ -253,10 +254,10 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn ServerInstancesInfo(hooks: &mut Hooks) -> Element {
-    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
+    let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
     let runtime = hooks.world.resource(runtime()).clone();
-    let (instances, set_instances) = hooks.use_state(HashMap::new());
-    hooks.use_interval(1., move || {
+    let (instances, set_instances) = use_state(hooks, HashMap::new());
+    use_interval(hooks, 1., move || {
         let client_state = client_state.clone();
         let set_instances = set_instances.clone();
         runtime.spawn(async move {
@@ -425,7 +426,7 @@ pub fn EditorPlayerInputHandler(_hooks: &mut Hooks) -> Element {
     //     return Element::new();
     // }
 
-    // let (_, flag_as_updated) = hooks.use_state(());
+    // let (_, flag_as_updated) = use_state(hooks,());
     // let mouse_hijacked =
     //     hooks.consume_context::<PlayerInputChanges>().unwrap().0.query(|pi| {
     //         [pi.editor_camera_rotate, pi.move_left, pi.move_right, pi.move_forward, pi.move_back, pi.jump].into_iter().any(|b| b)
@@ -521,7 +522,7 @@ pub fn EditorPlayerMovementHandler(
 // fn UploadThumbnailButton(hooks: &mut Hooks) -> Element {
 //     let (client_state, _) = hooks.consume_context::<GameClient>().unwrap();
 //     let (world_instance_config, _) = hooks.consume_context::<Option<WorldInstanceConfig>>().unwrap();
-//     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
+//     let (render_target, _) = consume_context::<GameClientRenderTarget>(hooks,).unwrap();
 //     Button::new_async("\u{f030}", move || {
 //         let client_state = client_state.clone();
 //         let reader = render_target.0.color_buffer.reader();
@@ -560,7 +561,7 @@ fn _image_to_png(image: RgbImage) -> Vec<u8> {
 
 #[element_component]
 pub fn Crosshair(hooks: &mut Hooks) -> Element {
-    let (settings, _) = hooks.consume_context::<EditorSettings>().unwrap();
+    let (settings, _) = consume_context::<EditorSettings>(hooks).unwrap();
     if !settings.show_hud {
         return Element::new();
     }

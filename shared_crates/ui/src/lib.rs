@@ -12,7 +12,7 @@
 //!
 //! #[element_component]
 //! fn App(hooks: &mut Hooks) -> Element {
-//!     let (count, set_count) = hooks.use_state(0);
+//!     let (count, set_count) = use_state(hooks,0);
 //!     FlowColumn::el([
 //!         Text::el(format!("We've counted to {count} now")),
 //!         Button::new("Increase", move |_| set_count(count + 1)).el(),
@@ -30,7 +30,8 @@
 
 use ambient_cb::cb;
 use ambient_element::{
-    define_el_function_for_vec_element_newtype, element_component, to_owned, Element,
+    consume_context, define_el_function_for_vec_element_newtype, element_component,
+    provide_context, to_owned, use_frame, use_runtime_message, use_state, Element,
     ElementComponent, ElementComponentExt, Hooks, Setter,
 };
 use ambient_guest_bridge::{
@@ -145,7 +146,7 @@ pub struct FocusRoot(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(FocusRoot);
 impl ElementComponent for FocusRoot {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        hooks.provide_context(|| Focus::new(None));
+        provide_context(hooks, || Focus::new(None));
         let mut children = self.0;
         children.push(FocusResetter.el());
         Element::new().children(children)
@@ -153,9 +154,9 @@ impl ElementComponent for FocusRoot {
 }
 #[element_component]
 fn FocusResetter(hooks: &mut Hooks) -> Element {
-    let (focused, set_focus) = hooks.consume_context::<Focus>().unwrap();
-    let (reset_focus, set_reset_focus) = hooks.use_state(Focus(None));
-    hooks.use_runtime_message::<messages::WindowMouseInput>({
+    let (focused, set_focus) = consume_context::<Focus>(hooks).unwrap();
+    let (reset_focus, set_reset_focus) = use_state(hooks, Focus(None));
+    use_runtime_message::<messages::WindowMouseInput>(hooks, {
         to_owned![focused, set_reset_focus];
         move |_world, _event| {
             set_reset_focus(focused.clone());
@@ -204,7 +205,8 @@ pub fn use_keyboard_input(
     hooks: &mut Hooks,
     func: impl Fn(&mut World, Option<VirtualKeyCode>, ModifiersState, bool) + Sync + Send + 'static,
 ) {
-    hooks.use_runtime_message(
+    use_runtime_message(
+        hooks,
         move |world, event: &ambient_guest_bridge::core::messages::WindowKeyboardInput| {
             func(
                 world,
@@ -223,8 +225,8 @@ pub fn use_keyboard_input(
 // We need `clone` as resource is a ref on host and a copy on guest
 #[allow(clippy::clone_on_copy)]
 pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {
-    let (res, set_res) = hooks.use_state(hooks.world.resource(window_physical_size()).clone());
-    hooks.use_frame(move |world| {
+    let (res, set_res) = use_state(hooks, hooks.world.resource(window_physical_size()).clone());
+    use_frame(hooks, move |world| {
         let new_res = world.resource(window_physical_size()).clone();
         if new_res != res {
             set_res(new_res);
@@ -237,8 +239,8 @@ pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {
 // We need `clone` as resource is a ref on host and a copy on guest
 #[allow(clippy::clone_on_copy)]
 pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
-    let (res, set_res) = hooks.use_state(hooks.world.resource(window_logical_size()).clone());
-    hooks.use_frame(move |world| {
+    let (res, set_res) = use_state(hooks, hooks.world.resource(window_logical_size()).clone());
+    use_frame(hooks, move |world| {
         let new_res = world.resource(window_logical_size()).clone();
         if new_res != res {
             set_res(new_res);
@@ -254,9 +256,7 @@ pub fn use_focus(hooks: &mut Hooks) -> (bool, Setter<bool>) {
 
 /// A hook that returns the current focus state for this element, given a specific `instance_id`, and a callback to set the focus state.
 pub fn use_focus_for_instance_id(hooks: &mut Hooks, instance_id: String) -> (bool, Setter<bool>) {
-    let (focus, set_focus) = hooks
-        .consume_context::<Focus>()
-        .expect("No FocusRoot available");
+    let (focus, set_focus) = consume_context::<Focus>(hooks).expect("No FocusRoot available");
     let focused = if let Focus(Some((focused, _))) = &focus {
         focused == &instance_id
     } else {

@@ -11,7 +11,8 @@ use std::{
 use ambient_cb::{cb, Callback, Cb};
 use ambient_color::Color;
 use ambient_element::{
-    element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
+    element_component, to_owned, use_effect, use_runtime_message, use_state, use_state_with,
+    Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::{
     core::{
@@ -254,18 +255,18 @@ pub fn Button(
     /// The callback to invoke when the current pressed state changes.
     on_is_pressed_changed: Option<Cb<dyn Fn(&mut World, bool) + Sync + Send>>,
 ) -> Element {
-    let (is_pressed, set_is_pressed) = hooks.use_state(false);
-    let (hover, set_hover) = hooks.use_state(false);
-    let (is_working, set_is_working) = hooks.use_state(false);
-    let (is_pressed_immediate, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
+    let (is_pressed, set_is_pressed) = use_state(hooks, false);
+    let (hover, set_hover) = use_state(hooks, false);
+    let (is_working, set_is_working) = use_state(hooks, false);
+    let (is_pressed_immediate, _) = use_state_with(hooks, |_| Arc::new(AtomicBool::new(false)));
 
-    hooks.use_effect(is_pressed, move |world, _| {
+    use_effect(hooks, is_pressed, move |world, _| {
         if let Some(on_is_pressed_changed) = on_is_pressed_changed {
             on_is_pressed_changed(world, is_pressed);
         }
         |_| {}
     });
-    hooks.use_runtime_message::<messages::WindowMouseInput>({
+    use_runtime_message::<messages::WindowMouseInput>(hooks, {
         to_owned![set_is_pressed, on_invoked, set_is_working];
         move |world, event| {
             let pressed = event.pressed;
@@ -501,7 +502,7 @@ impl ElementComponent for Hotkey {
             hotkey_modifier,
             on_invoke,
         } = *self;
-        let (is_pressed, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
+        let (is_pressed, _) = use_state_with(hooks, |_| Arc::new(AtomicBool::new(false)));
         use_keyboard_input(hooks, {
             let is_pressed = is_pressed.clone();
             move |world, keycode, modifiers, pressed| {
@@ -530,7 +531,7 @@ impl ElementComponent for Hotkey {
                 }
             }
         });
-        hooks.use_runtime_message::<messages::WindowFocusChange>({
+        use_runtime_message::<messages::WindowFocusChange>(hooks, {
             move |_world, _event| {
                 is_pressed.store(false, Ordering::Relaxed);
             }

@@ -1,9 +1,12 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    element::{use_state, use_state_with},
+    prelude::*,
+};
 use ambient_friendly_id::friendly_id;
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
-    let (screen, set_screen) = hooks.use_state(None);
+    let (screen, set_screen) = use_state(hooks, None);
     FocusRoot::el([PageScreen::el([
         ScreenContainer(screen).el(),
         Text::el("RootScreen"),
@@ -21,8 +24,8 @@ fn App(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn SubScreen(hooks: &mut Hooks, on_back: Cb<dyn Fn() + Sync + Send>) -> Element {
-    let (screen, set_screen) = hooks.use_state(None);
-    let (id, _) = hooks.use_state_with(|_| friendly_id());
+    let (screen, set_screen) = use_state(hooks, None);
+    let (id, _) = use_state_with(hooks, |_| friendly_id());
     PageScreen::el([
         ScreenContainer(screen).el(),
         Text::el(format!("SubScreen {id}")),

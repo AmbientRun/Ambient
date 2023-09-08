@@ -1,7 +1,9 @@
 //! Implements a window with a title bar and a child element. Can be moved around.
 
 use ambient_cb::Cb;
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_element::{
+    element_component, use_runtime_message, use_state, Element, ElementComponentExt, Hooks,
+};
 use ambient_guest_bridge::core::{
     layout::{components::fit_horizontal, types::Fit},
     messages::{WindowMouseInput, WindowMouseMotion},
@@ -37,10 +39,10 @@ pub fn Window(
     /// The child element.
     child: Element,
 ) -> Element {
-    let (dragging, set_dragging) = hooks.use_state(false);
-    let (position, set_position) = hooks.use_state(Vec2::ONE * 100.0);
+    let (dragging, set_dragging) = use_state(hooks, false);
+    let (position, set_position) = use_state(hooks, Vec2::ONE * 100.0);
 
-    hooks.use_runtime_message::<WindowMouseInput>({
+    use_runtime_message::<WindowMouseInput>(hooks, {
         let set_dragging = set_dragging.clone();
         move |_world, event| {
             if event.button == u32::from(MouseButton::Left) && !event.pressed {
@@ -49,7 +51,7 @@ pub fn Window(
         }
     });
 
-    hooks.use_runtime_message::<WindowMouseMotion>(move |_world, event| {
+    use_runtime_message::<WindowMouseMotion>(hooks, move |_world, event| {
         if dragging {
             set_position(position + event.delta);
         }

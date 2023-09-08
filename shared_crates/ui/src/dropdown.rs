@@ -1,6 +1,8 @@
 //! Implements a dropdown element.
 
-use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
+use ambient_element::{
+    element_component, to_owned, use_state, Element, ElementComponentExt, Hooks,
+};
 use ambient_guest_bridge::core::{
     layout::components::margin, rect::components::border_radius, transform::components::translation,
 };
@@ -44,7 +46,7 @@ pub fn Tooltip(
     /// The tooltip to show.
     tooltip: Element,
 ) -> Element {
-    let (hover, set_hover) = hooks.use_state(false);
+    let (hover, set_hover) = use_state(hooks, false);
     Dropdown {
         content: inner,
         dropdown: FlowColumn(vec![tooltip])
