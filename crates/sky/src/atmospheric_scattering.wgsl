@@ -34,8 +34,8 @@ fn sphere_intersect(pos: vec3<f32>, dir: vec3<f32>, r: f32) -> vec2<f32> {
 
 const DISTANCE_THRESHOLD: f32 = 0.1;
 
-fn cube_intersect(origin: f32, size: f32, ray_o: vec3<f32>, dir: vec3<f32>) -> f32 {
-    let origin = ray_o - origin;
+fn cube_intersect(orig: f32, size: f32, ray_o: vec3<f32>, dir: vec3<f32>) -> f32 {
+    let origin = ray_o - orig;
     let inv_dir = vec3<f32>(1. / dir.x, 1. / dir.y, 1. / dir.z);
     let t1 = (-size - origin) * inv_dir;
     let t2 = (size - origin) * inv_dir;
@@ -54,14 +54,14 @@ fn node_ray(node: Node, origin: vec3<f32>, dir: vec3<f32>) -> f32 {
     return 1.0;
 }
 
-fn scattering(depth: f32, pos: vec3<f32>, dir: vec3<f32>) -> vec3<f32> {
+fn scattering(depth: f32, pos: vec3<f32>, direction: vec3<f32>) -> vec3<f32> {
     let orig = pos + vec3<f32>(0.0, 0.0, planet_radius);
     // Get atmosphere intersection
-    let ray_l = sphere_intersect(orig, dir, atmo_radius);
+    let ray_l = sphere_intersect(orig, direction, atmo_radius);
 
     let dist = ray_l.y - ray_l.x;
 
-    let dir = normalize(dir);
+    let dir = normalize(direction);
 
     let steps = 16;
     let step_len = dist / f32(steps);

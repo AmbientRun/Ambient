@@ -7,6 +7,8 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  BOT_NAME: "Moose Jobs"
+  BOT_EMAIL: ${{ secrets.MOOSE_JOBS_EMAIL }}
 
 jobs:
   build:
@@ -37,8 +39,8 @@ jobs:
           version="${version_majminpat}-nightly-${date_suffix}"
           tag="v${version}"
           cargo cf release update-version ${version}
-          git config --global user.name "Moose Jobs"
-          git config --global user.email "username@users.noreply.github.com"
+          git config --global user.name "${{ env.BOT_NAME }}"
+          git config --global user.email "${{ env.BOT_EMAIL }}"
           git commit -a -m "Update version to ${version}"
           git tag ${tag}
           git push origin ${tag}

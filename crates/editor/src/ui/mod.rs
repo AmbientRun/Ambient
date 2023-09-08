@@ -31,9 +31,9 @@ use ambient_terrain::{
 use ambient_ui_native::{
     command_modifier, height,
     layout::{docking, space_between_items, width, Borders, Docking},
-    margin, Button, FlowColumn, FlowRow, FontAwesomeIcon, HooksExt, Hotkey, Rectangle,
-    ScreenContainer, ScrollArea, ScrollAreaSizing, Separator, StylesExt, Text, UIExt, WindowSized,
-    STREET,
+    margin, use_window_logical_resolution, Button, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey,
+    Rectangle, ScreenContainer, ScrollArea, ScrollAreaSizing, Separator, StylesExt, Text, UIExt,
+    WindowSized, STREET,
 };
 use build_mode::*;
 use glam::{vec3, Vec3};
@@ -564,7 +564,7 @@ pub fn Crosshair(hooks: &mut Hooks) -> Element {
     if !settings.show_hud {
         return Element::new();
     }
-    let window_size = hooks.use_window_logical_resolution().as_vec2();
+    let window_size = use_window_logical_resolution(hooks).as_vec2();
     Rectangle
         .el()
         .with(width(), 2.)

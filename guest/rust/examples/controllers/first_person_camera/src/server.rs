@@ -1,33 +1,17 @@
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
-        },
-        ecs::components::{children, parent},
-        physics::{
-            components::{plane_collider, sphere_collider},
-            concepts::make_CharacterController,
-        },
-        player::components::{is_player, user_id},
-        primitives::{
-            components::{cube, quad},
-            concepts::make_Sphere,
-        },
+        physics::components::{plane_collider, sphere_collider},
+        player::components::is_player,
+        primitives::{components::quad, concepts::make_Sphere},
         rendering::components::color,
         transform::{
-            components::{local_to_parent, rotation, scale, translation},
+            components::{scale, translation},
             concepts::make_Transformable,
         },
     },
     prelude::*,
 };
-use packages::this::{
-    components::{ball_ref, player_head_ref, player_movement_direction, player_pitch, player_yaw},
-    messages::Input,
-};
-
-use std::f32::consts::{PI, TAU};
+use packages::fps_controller::components::{camera_distance, use_fps_controller};
 
 #[main]
 pub fn main() {
@@ -39,70 +23,21 @@ pub fn main() {
         .with(plane_collider(), ())
         .spawn();
 
-    let ball = Entity::new()
+    Entity::new()
         .with_merge(make_Transformable())
         .with_merge(make_Sphere())
         .with(sphere_collider(), 0.5)
         .with(translation(), vec3(5., 5., 1.))
         .spawn();
 
-    spawn_query((is_player(), user_id())).bind(move |players| {
-        for (id, (_, uid)) in players {
-            let head = Entity::new()
-                .with_merge(make_PerspectiveInfiniteReverseCamera())
-                .with(aspect_ratio_from_window(), EntityId::resources())
-                .with(main_scene(), ())
-                .with(user_id(), uid)
-                .with(translation(), Vec3::Z * 2.)
-                .with(parent(), id)
-                .with(local_to_parent(), Default::default())
-                .with(rotation(), Quat::from_rotation_x(PI / 2.))
-                .spawn();
+    spawn_query(is_player()).bind(move |players| {
+        for (id, _) in players {
             entity::add_components(
                 id,
                 Entity::new()
-                    .with_merge(make_Transformable())
-                    .with_merge(make_CharacterController())
-                    .with(cube(), ())
-                    .with(player_movement_direction(), Vec2::default())
-                    .with(color(), Vec4::ONE)
-                    .with(player_head_ref(), head)
-                    .with(ball_ref(), ball)
-                    .with(children(), vec![head])
-                    .with(player_pitch(), 0.0)
-                    .with(player_yaw(), 0.0),
+                    .with(use_fps_controller(), ())
+                    .with(camera_distance(), 0.0),
             );
-        }
-    });
-
-    Input::subscribe(move |ctx, msg| {
-        let Some(player_id) = ctx.client_entity_id() else {
-            return;
-        };
-
-        entity::set_component(player_id, player_movement_direction(), msg.direction);
-
-        let yaw = entity::mutate_component(player_id, player_yaw(), |yaw| {
-            *yaw = (*yaw + msg.mouse_delta.x * 0.01) % TAU;
-        })
-        .unwrap_or_default();
-        let pitch = entity::mutate_component(player_id, player_pitch(), |pitch| {
-            *pitch = (*pitch + msg.mouse_delta.y * 0.01).clamp(-PI / 3., PI / 3.);
-        })
-        .unwrap_or_default();
-
-        entity::set_component(player_id, rotation(), Quat::from_rotation_z(yaw));
-        if let Some(head_id) = entity::get_component(player_id, player_head_ref()) {
-            entity::set_component(head_id, rotation(), Quat::from_rotation_x(PI / 2. + pitch));
-        }
-    });
-
-    query((is_player(), player_movement_direction(), rotation())).each_frame(move |players| {
-        for (player_id, (_, direction, rot)) in players {
-            let speed = 0.1;
-
-            let displace = rot * (direction.normalize_or_zero() * speed).extend(-0.1);
-            physics::move_character(player_id, displace, 0.01, delta_time());
         }
     });
 }

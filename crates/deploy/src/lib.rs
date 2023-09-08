@@ -29,7 +29,7 @@ use deploy_proto::{
 
 const CHUNK_SIZE: usize = 1024 * 1024 * 3; // 3MB
 const EXTRA_FILES_FROM_PACKAGE_ROOT: &[&str] = &["screenshot.png", "README.md"];
-const REQUIRED_FILES: &[&str] = &["ambient.toml"];
+const REQUIRED_FILES: [&str; 2] = ["ambient.toml", "metadata.toml"];
 
 /// This takes the path to an Ambient package and deploys it. An Ambient package is expected to
 /// be already built.
@@ -60,12 +60,12 @@ pub async fn deploy(
     let mut client = create_client(api_server, auth_token).await?;
 
     // collect all files to deploy
-    let asset_path_to_file_path = collect_files_to_deploy(base_path)?;
+    let mut asset_path_to_file_path = collect_files_to_deploy(base_path)?;
     log::debug!("Found {} files to deploy", asset_path_to_file_path.len());
 
     // check that all required files are present
     for required_file in REQUIRED_FILES {
-        if !asset_path_to_file_path.contains_key(*required_file) {
+        if !asset_path_to_file_path.contains_key(required_file) {
             anyhow::bail!("Missing required file: {}", required_file);
         }
     }
@@ -74,15 +74,24 @@ pub async fn deploy(
     let (file_request_tx, file_request_rx) = flume::unbounded::<FileRequest>();
     let (deploy_asset_request_tx, deploy_asset_request_rx) =
         flume::bounded::<DeployAssetRequest>(16);
+    let (interrupt_tx, interrupt_rx) = tokio::sync::oneshot::channel::<()>();
     let handle = tokio::task::spawn(process_file_requests(
         file_request_rx,
         deploy_asset_request_tx,
+        interrupt_rx,
         package_id.clone(),
         asset_path_to_file_path.clone(),
     ));
 
-    // notify FileSender to send all files to the server (either by MD5 or by contents)
-    for (asset_path, _) in asset_path_to_file_path.iter() {
+    // notify FileSender to send required files contents first
+    for asset_path in REQUIRED_FILES.into_iter() {
+        // remove it so it's not send again
+        asset_path_to_file_path.remove(asset_path);
+        file_request_tx.send(FileRequest::SendContents(asset_path.into()))?;
+    }
+
+    // notify FileSender to send the rest of the files to the server (either by MD5 or by contents)
+    for (asset_path, _) in asset_path_to_file_path.into_iter() {
         let asset_path = asset_path.clone();
         // note: this send shouldn't block as we have an unbounded channel
         file_request_tx.send(if force_upload {
@@ -112,7 +121,8 @@ pub async fn deploy(
                     Some(Message::Error(err)) => {
                         // error from the server -> just log it and abort as we can't continue
                         log::error!("Received error message: {:?}", err);
-                        handle.abort();
+                        let _ = interrupt_tx.send(());
+                        anyhow::bail!("Deployment failed");
                     }
                     Some(Message::Warning(msg)) => {
                         // warning from the server -> just log it
@@ -265,74 +275,84 @@ impl FileRequest {
 async fn process_file_requests(
     rx: flume::Receiver<FileRequest>,
     tx: flume::Sender<DeployAssetRequest>,
+    mut interrupt_rx: tokio::sync::oneshot::Receiver<()>,
     package_id: String,
     mut asset_path_to_file_path: HashMap<String, PathBuf>,
 ) -> anyhow::Result<()> {
-    while let Ok(request) = rx.recv_async().await {
-        // get file path
-        let path = request.path();
-        let Some(file_path) = asset_path_to_file_path.get(path) else {
-            // we do a check here to prevent server from asking for files that it shouldn't ask for
-            log::warn!("Unknown asset path: {:?}", path);
-            continue;
-        };
+    loop {
+        tokio::select! {
+            _ = &mut interrupt_rx => {
+                log::debug!("Interrupted");
+                break;
+            }
+            request = rx.recv_async() => {
+                let request = request?;
+                // get file path
+                let path = request.path();
+                let Some(file_path) = asset_path_to_file_path.get(path) else {
+                    // we do a check here to prevent server from asking for files that it shouldn't ask for
+                    log::warn!("Unknown asset path: {:?}", path);
+                    continue;
+                };
 
-        match request {
-            FileRequest::SendMD5(path) => {
-                // send MD5 hash
-                let content = ambient_sys::fs::read(file_path).await?;
-                let md5_digest = md5::Md5::default()
-                    .chain_update(&content)
-                    .finalize()
-                    .to_vec();
-                log::debug!("Sending MD5 for {:?} = {}", path, hex(&md5_digest));
-                tx.send_async(DeployAssetRequest {
-                    package_id: package_id.clone(),
-                    contents: vec![AssetContent {
-                        path,
-                        total_size: content.len() as u64,
-                        content_description: Some(ContentDescription::Md5(md5_digest)),
-                    }],
-                })
-                .await?;
-            }
-            FileRequest::SendContents(path) => {
-                // send file contents
-                log::debug!("Sending contents for {:?}", path);
-                let requests = asset_requests_from_file_path(&package_id, &path, file_path).await?;
-                let count = requests.len();
-                for (idx, request) in requests.into_iter().enumerate() {
-                    let Some(content) = request.contents.first() else {
-                        unreachable!()
-                    };
-                    let Some(ContentDescription::Chunk(chunk)) =
-                        content.content_description.as_ref()
-                    else {
-                        unreachable!()
-                    };
-                    log::debug!(
-                        "Deploying asset chunk {}/{} {} {}B/{}B",
-                        idx + 1,
-                        count,
-                        path,
-                        chunk.len(),
-                        content.total_size,
-                    );
-                    tx.send_async(request).await?;
-                }
-            }
-            FileRequest::Accepted(path) => {
-                // clear deployed file
-                let removed = asset_path_to_file_path.remove(&path);
-                if removed.is_none() {
-                    log::warn!(
-                        "Received accepted path for unknown (or previously accepted) asset: {:?}",
-                        path
-                    );
-                }
-                if asset_path_to_file_path.is_empty() {
-                    log::debug!("All assets deployed");
-                    break;
+                match request {
+                    FileRequest::SendMD5(path) => {
+                        // send MD5 hash
+                        let content = ambient_sys::fs::read(file_path).await?;
+                        let md5_digest = md5::Md5::default()
+                            .chain_update(&content)
+                            .finalize()
+                            .to_vec();
+                        log::debug!("Sending MD5 for {:?} = {}", path, hex(&md5_digest));
+                        tx.send_async(DeployAssetRequest {
+                            package_id: package_id.clone(),
+                            contents: vec![AssetContent {
+                                path,
+                                total_size: content.len() as u64,
+                                content_description: Some(ContentDescription::Md5(md5_digest)),
+                            }],
+                        })
+                        .await?;
+                    }
+                    FileRequest::SendContents(path) => {
+                        // send file contents
+                        log::debug!("Sending contents for {:?}", path);
+                        let requests = asset_requests_from_file_path(&package_id, &path, file_path).await?;
+                        let count = requests.len();
+                        for (idx, request) in requests.into_iter().enumerate() {
+                            let Some(content) = request.contents.first() else {
+                                unreachable!()
+                            };
+                            let Some(ContentDescription::Chunk(chunk)) =
+                                content.content_description.as_ref()
+                            else {
+                                unreachable!()
+                            };
+                            log::debug!(
+                                "Deploying asset chunk {}/{} {} {}B/{}B",
+                                idx + 1,
+                                count,
+                                path,
+                                chunk.len(),
+                                content.total_size,
+                            );
+                            tx.send_async(request).await?;
+                        }
+                    }
+                    FileRequest::Accepted(path) => {
+                        // clear deployed file
+                        let removed = asset_path_to_file_path.remove(&path);
+                        if removed.is_none() {
+                            log::warn!(
+                                "Received accepted path for unknown (or previously accepted) asset: {:?}",
+                                path
+                            );
+                        }
+                        if asset_path_to_file_path.is_empty() {
+                            log::debug!("All assets deployed");
+                            break;
+                        }
+                    }
                 }
             }
         }

@@ -1,16 +1,20 @@
 [package]
-name = "ambient_example_third_person_camera"
+name = "fps_controller"
 
 edition = "2021"
 publish = false
-rust-version = { workspace = true }
-version = { workspace = true }
+version = "0.0.1"
 
 [dependencies]
 ambient_api = { workspace = true }
 
 [[bin]]
-name = "server_third_person_camera"
+name = "client_fps_controller"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server_fps_controller"
 path = "src/server.rs"
 required-features = ["server"]
 

@@ -1,29 +1,23 @@
-use ambient_api::{core::messages::Frame, prelude::*};
-use packages::this::messages::Input;
+use ambient_api::{
+    core::{model::components::model_from_url, player::components::is_player},
+    entity::add_components,
+    prelude::*,
+};
+use packages::{base_assets, character_animation::components::basic_character_animations};
 
 #[main]
 fn main() {
-    let mut cursor_lock = input::CursorLockGuard::new();
-
-    Frame::subscribe(move |_| {
-        let input = input::get();
-        if !cursor_lock.auto_unlock_on_escape(&input) {
-            return;
+    spawn_query(is_player()).bind(move |players| {
+        for (id, _) in players {
+            // Only attach models to other players
+            if id != player::get_local() {
+                add_components(
+                    id,
+                    Entity::new()
+                        .with(model_from_url(), base_assets::assets::url("Y Bot.fbx"))
+                        .with(basic_character_animations(), id),
+                );
+            }
         }
-        let mut displace = Vec2::ZERO;
-        if input.keys.contains(&KeyCode::W) {
-            displace.y -= 1.0;
-        }
-        if input.keys.contains(&KeyCode::S) {
-            displace.y += 1.0;
-        }
-        if input.keys.contains(&KeyCode::A) {
-            displace.x -= 1.0;
-        }
-        if input.keys.contains(&KeyCode::D) {
-            displace.x += 1.0;
-        }
-
-        Input::new(displace, input.mouse_delta).send_server_unreliable();
     });
 }

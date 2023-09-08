@@ -16,12 +16,12 @@ use ambient_api::{
 };
 
 use crate::packages::{
-    basic_character_animation,
+    character_animation,
     unit_schema::components::{running, speed, vertical_velocity},
 };
 use packages::unit_schema::components::{health, run_direction};
 use packages::{
-    basic_character_animation::components::basic_character_animations,
+    character_animation::components::basic_character_animations,
     this::{assets, components},
 };
 
@@ -67,19 +67,19 @@ pub async fn main() {
                     .with(components::is_zombie(), ())
                     .with(basic_character_animations(), model)
                     .with(
-                        basic_character_animation::components::idle(),
+                        character_animation::components::idle(),
                         anim_url("Zombie Idle"),
                     )
                     .with(
-                        basic_character_animation::components::walk_forward(),
+                        character_animation::components::walk_forward(),
                         anim_url("Zombie Walk"),
                     )
                     .with(
-                        basic_character_animation::components::run_forward(),
+                        character_animation::components::run_forward(),
                         anim_url("Zombie Run"),
                     )
                     .with(
-                        basic_character_animation::components::death(),
+                        character_animation::components::death(),
                         anim_url("Zombie Death"),
                     ),
             );

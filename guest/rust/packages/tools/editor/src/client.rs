@@ -13,6 +13,7 @@ use ambient_api::{
     ecs::SupportedValue,
     input::CursorLockGuard,
     prelude::*,
+    ui::use_keyboard_input,
 };
 use packages::{
     editor_schema::{
@@ -156,7 +157,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
         .0
         .unwrap_or_default();
 
-    hooks.use_keyboard_input(move |_, keycode, modifiers, pressed| {
+    use_keyboard_input(hooks, move |_, keycode, modifiers, pressed| {
         if modifiers == ModifiersState::empty() && keycode == Some(VirtualKeyCode::F5) && !pressed {
             ToggleEditor {}.send_server_reliable();
         }

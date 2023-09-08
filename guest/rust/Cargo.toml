@@ -60,8 +60,9 @@ members = [
     "testcases/588-prefab-despawn-panic",
 
     # Packages (std)
-    "packages/std/basic_character_animation",
+    "packages/std/character_animation",
     "packages/std/character_movement",
+    "packages/std/fps_controller",
 
     # Packages (tools)
     "packages/tools/console",
