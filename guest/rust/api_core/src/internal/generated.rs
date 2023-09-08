@@ -497,13 +497,9 @@ mod raw {
             #[doc = r" They do not have any runtime representation outside of the components that compose them."]
             pub mod concepts {
                 use crate::prelude::*;
+                #[doc = "**Camera**: Base components for a camera. You will need other components to make a fully-functioning camera.\n\n**Extends**: `ambient_core::transform::Transformable`"]
+                #[derive(Clone, Debug)]
                 pub struct Camera {
-                    #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
-                    pub translation: Vec3,
-                    #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
-                    pub rotation: Quat,
-                    #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
-                    pub scale: Vec3,
                     #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
                     pub local_to_world: Mat4,
                     #[doc = "**Component**: `ambient_core::camera::near`\n\n**Suggested value**: `0.1f32`\n\n**Component description**: The near plane of this camera, measured in meters.\n\n"]
@@ -516,24 +512,41 @@ mod raw {
                     pub active_camera: f32,
                     #[doc = "**Component**: `ambient_core::transform::inv_local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Converts a world position to a local position.\nThis is automatically updated.\n\n"]
                     pub inv_local_to_world: Mat4,
+                    #[doc = r" Optional components."]
+                    pub optional: CameraOptional,
+                }
+                #[doc = "Optional part of [Camera]."]
+                #[derive(Clone, Debug, Default)]
+                pub struct CameraOptional {
+                    #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
+                    pub translation: Option<Vec3>,
+                    #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
+                    pub rotation: Option<Quat>,
+                    #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
+                    pub scale: Option<Vec3>,
+                }
+                impl crate::ecs::Concept for Camera {
+                    fn make(&self) -> Entity {
+                        Entity::new()
+                    }
+                    fn get_spawned(id: EntityId) -> Option<Self> {
+                        None
+                    }
+                    fn get_unspawned(entity: Entity) -> Option<Self> {
+                        None
+                    }
+                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
+                        None
+                    }
+                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
+                        None
+                    }
                 }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Camera*.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n**Extends**: ambient_core::transform::Transformable\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
+                #[doc = "Makes a *Camera*.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n**Extends**: ambient_core::transform::Transformable\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
                 pub fn make_Camera() -> Entity {
                     Entity::new()
-                        .with(
-                            crate::ambient_core::transform::components::translation(),
-                            Vec3::new(0f32, 0f32, 0f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::rotation(),
-                            Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::scale(),
-                            Vec3::new(1f32, 1f32, 1f32),
-                        )
                         .with(
                             crate::ambient_core::transform::components::local_to_world(),
                             Mat4::from_cols_array(&[
@@ -568,15 +581,12 @@ mod raw {
                             ]),
                         )
                 }
-                #[doc = "Checks if the entity is a *Camera*.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n**Extends**: ambient_core::transform::Transformable\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Camera*.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n**Extends**: ambient_core::transform::Transformable\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_Camera(id: EntityId) -> bool {
                     entity::has_components(
                         id,
                         &[
-                            &crate::ambient_core::transform::components::translation(),
-                            &crate::ambient_core::transform::components::rotation(),
-                            &crate::ambient_core::transform::components::scale(),
                             &crate::ambient_core::transform::components::local_to_world(),
                             &crate::ambient_core::camera::components::near(),
                             &crate::ambient_core::camera::components::projection(),
@@ -586,13 +596,10 @@ mod raw {
                         ],
                     )
                 }
-                #[doc = "Returns the components that comprise *Camera* as a tuple.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n**Extends**: ambient_core::transform::Transformable\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Camera* as a tuple.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n**Extends**: ambient_core::transform::Transformable\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
                 pub fn tuple_Camera() -> (
-                    Component<Vec3>,
-                    Component<Quat>,
-                    Component<Vec3>,
                     Component<Mat4>,
                     Component<f32>,
                     Component<Mat4>,
@@ -601,9 +608,6 @@ mod raw {
                     Component<Mat4>,
                 ) {
                     (
-                        crate::ambient_core::transform::components::translation(),
-                        crate::ambient_core::transform::components::rotation(),
-                        crate::ambient_core::transform::components::scale(),
                         crate::ambient_core::transform::components::local_to_world(),
                         crate::ambient_core::camera::components::near(),
                         crate::ambient_core::camera::components::projection(),
@@ -612,13 +616,9 @@ mod raw {
                         crate::ambient_core::transform::components::inv_local_to_world(),
                     )
                 }
+                #[doc = "**Perspective Common Camera**: Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n**Extends**: `ambient_core::camera::Camera`"]
+                #[derive(Clone, Debug)]
                 pub struct PerspectiveCommonCamera {
-                    #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
-                    pub translation: Vec3,
-                    #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
-                    pub rotation: Quat,
-                    #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
-                    pub scale: Vec3,
                     #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
                     pub local_to_world: Mat4,
                     #[doc = "**Component**: `ambient_core::camera::near`\n\n**Suggested value**: `0.1f32`\n\n**Component description**: The near plane of this camera, measured in meters.\n\n"]
@@ -635,24 +635,41 @@ mod raw {
                     pub fovy: f32,
                     #[doc = "**Component**: `ambient_core::camera::aspect_ratio`\n\n**Suggested value**: `1f32`\n\n**Component description**: The aspect ratio of this camera.\nIf `aspect_ratio_from_window` is set, this will be automatically updated to match the window.\n\n"]
                     pub aspect_ratio: f32,
+                    #[doc = r" Optional components."]
+                    pub optional: PerspectiveCommonCameraOptional,
+                }
+                #[doc = "Optional part of [PerspectiveCommonCamera]."]
+                #[derive(Clone, Debug, Default)]
+                pub struct PerspectiveCommonCameraOptional {
+                    #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
+                    pub translation: Option<Vec3>,
+                    #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
+                    pub rotation: Option<Quat>,
+                    #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
+                    pub scale: Option<Vec3>,
+                }
+                impl crate::ecs::Concept for PerspectiveCommonCamera {
+                    fn make(&self) -> Entity {
+                        Entity::new()
+                    }
+                    fn get_spawned(id: EntityId) -> Option<Self> {
+                        None
+                    }
+                    fn get_unspawned(entity: Entity) -> Option<Self> {
+                        None
+                    }
+                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
+                        None
+                    }
+                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
+                        None
+                    }
                 }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Perspective Common Camera*.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n**Extends**: ambient_core::camera::Camera\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n}\n```\n"]
+                #[doc = "Makes a *Perspective Common Camera*.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n**Extends**: ambient_core::camera::Camera\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n}\n```\n"]
                 pub fn make_PerspectiveCommonCamera() -> Entity {
                     Entity::new()
-                        .with(
-                            crate::ambient_core::transform::components::translation(),
-                            Vec3::new(0f32, 0f32, 0f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::rotation(),
-                            Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::scale(),
-                            Vec3::new(1f32, 1f32, 1f32),
-                        )
                         .with(
                             crate::ambient_core::transform::components::local_to_world(),
                             Mat4::from_cols_array(&[
@@ -692,15 +709,12 @@ mod raw {
                             1f32,
                         )
                 }
-                #[doc = "Checks if the entity is a *Perspective Common Camera*.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n**Extends**: ambient_core::camera::Camera\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Perspective Common Camera*.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n**Extends**: ambient_core::camera::Camera\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_PerspectiveCommonCamera(id: EntityId) -> bool {
                     entity::has_components(
                         id,
                         &[
-                            &crate::ambient_core::transform::components::translation(),
-                            &crate::ambient_core::transform::components::rotation(),
-                            &crate::ambient_core::transform::components::scale(),
                             &crate::ambient_core::transform::components::local_to_world(),
                             &crate::ambient_core::camera::components::near(),
                             &crate::ambient_core::camera::components::projection(),
@@ -712,13 +726,10 @@ mod raw {
                         ],
                     )
                 }
-                #[doc = "Returns the components that comprise *Perspective Common Camera* as a tuple.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n**Extends**: ambient_core::camera::Camera\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Perspective Common Camera* as a tuple.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n**Extends**: ambient_core::camera::Camera\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
                 pub fn tuple_PerspectiveCommonCamera() -> (
-                    Component<Vec3>,
-                    Component<Quat>,
-                    Component<Vec3>,
                     Component<Mat4>,
                     Component<f32>,
                     Component<Mat4>,
@@ -729,9 +740,6 @@ mod raw {
                     Component<f32>,
                 ) {
                     (
-                        crate::ambient_core::transform::components::translation(),
-                        crate::ambient_core::transform::components::rotation(),
-                        crate::ambient_core::transform::components::scale(),
                         crate::ambient_core::transform::components::local_to_world(),
                         crate::ambient_core::camera::components::near(),
                         crate::ambient_core::camera::components::projection(),
@@ -742,13 +750,9 @@ mod raw {
                         crate::ambient_core::camera::components::aspect_ratio(),
                     )
                 }
+                #[doc = "**Perspective Camera**: A perspective camera.\n\n**Extends**: `ambient_core::camera::PerspectiveCommonCamera`"]
+                #[derive(Clone, Debug)]
                 pub struct PerspectiveCamera {
-                    #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
-                    pub translation: Vec3,
-                    #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
-                    pub rotation: Quat,
-                    #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
-                    pub scale: Vec3,
                     #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
                     pub local_to_world: Mat4,
                     #[doc = "**Component**: `ambient_core::camera::near`\n\n**Suggested value**: `0.1f32`\n\n**Component description**: The near plane of this camera, measured in meters.\n\n"]
@@ -769,24 +773,41 @@ mod raw {
                     pub perspective: (),
                     #[doc = "**Component**: `ambient_core::camera::far`\n\n**Suggested value**: `1000f32`\n\n**Component description**: The far plane of this camera, measured in meters.\n\n"]
                     pub far: f32,
+                    #[doc = r" Optional components."]
+                    pub optional: PerspectiveCameraOptional,
+                }
+                #[doc = "Optional part of [PerspectiveCamera]."]
+                #[derive(Clone, Debug, Default)]
+                pub struct PerspectiveCameraOptional {
+                    #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
+                    pub translation: Option<Vec3>,
+                    #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
+                    pub rotation: Option<Quat>,
+                    #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
+                    pub scale: Option<Vec3>,
+                }
+                impl crate::ecs::Concept for PerspectiveCamera {
+                    fn make(&self) -> Entity {
+                        Entity::new()
+                    }
+                    fn get_spawned(id: EntityId) -> Option<Self> {
+                        None
+                    }
+                    fn get_unspawned(entity: Entity) -> Option<Self> {
+                        None
+                    }
+                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
+                        None
+                    }
+                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
+                        None
+                    }
                 }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Perspective Camera*.\n\nA perspective camera.\n\n**Extends**: ambient_core::camera::PerspectiveCommonCamera\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n}\n```\n"]
+                #[doc = "Makes a *Perspective Camera*.\n\nA perspective camera.\n\n**Extends**: ambient_core::camera::PerspectiveCommonCamera\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n}\n```\n"]
                 pub fn make_PerspectiveCamera() -> Entity {
                     Entity::new()
-                        .with(
-                            crate::ambient_core::transform::components::translation(),
-                            Vec3::new(0f32, 0f32, 0f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::rotation(),
-                            Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::scale(),
-                            Vec3::new(1f32, 1f32, 1f32),
-                        )
                         .with(
                             crate::ambient_core::transform::components::local_to_world(),
                             Mat4::from_cols_array(&[
@@ -828,15 +849,12 @@ mod raw {
                         .with(crate::ambient_core::camera::components::perspective(), ())
                         .with(crate::ambient_core::camera::components::far(), 1000f32)
                 }
-                #[doc = "Checks if the entity is a *Perspective Camera*.\n\nA perspective camera.\n\n**Extends**: ambient_core::camera::PerspectiveCommonCamera\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Perspective Camera*.\n\nA perspective camera.\n\n**Extends**: ambient_core::camera::PerspectiveCommonCamera\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_PerspectiveCamera(id: EntityId) -> bool {
                     entity::has_components(
                         id,
                         &[
-                            &crate::ambient_core::transform::components::translation(),
-                            &crate::ambient_core::transform::components::rotation(),
-                            &crate::ambient_core::transform::components::scale(),
                             &crate::ambient_core::transform::components::local_to_world(),
                             &crate::ambient_core::camera::components::near(),
                             &crate::ambient_core::camera::components::projection(),
@@ -850,13 +868,10 @@ mod raw {
                         ],
                     )
                 }
-                #[doc = "Returns the components that comprise *Perspective Camera* as a tuple.\n\nA perspective camera.\n\n**Extends**: ambient_core::camera::PerspectiveCommonCamera\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Perspective Camera* as a tuple.\n\nA perspective camera.\n\n**Extends**: ambient_core::camera::PerspectiveCommonCamera\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
                 pub fn tuple_PerspectiveCamera() -> (
-                    Component<Vec3>,
-                    Component<Quat>,
-                    Component<Vec3>,
                     Component<Mat4>,
                     Component<f32>,
                     Component<Mat4>,
@@ -869,9 +884,6 @@ mod raw {
                     Component<f32>,
                 ) {
                     (
-                        crate::ambient_core::transform::components::translation(),
-                        crate::ambient_core::transform::components::rotation(),
-                        crate::ambient_core::transform::components::scale(),
                         crate::ambient_core::transform::components::local_to_world(),
                         crate::ambient_core::camera::components::near(),
                         crate::ambient_core::camera::components::projection(),
@@ -884,13 +896,9 @@ mod raw {
                         crate::ambient_core::camera::components::far(),
                     )
                 }
+                #[doc = "**Perspective-Infinite-Reverse Camera**: A perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n**Extends**: `ambient_core::camera::PerspectiveCommonCamera`"]
+                #[derive(Clone, Debug)]
                 pub struct PerspectiveInfiniteReverseCamera {
-                    #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
-                    pub translation: Vec3,
-                    #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
-                    pub rotation: Quat,
-                    #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
-                    pub scale: Vec3,
                     #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
                     pub local_to_world: Mat4,
                     #[doc = "**Component**: `ambient_core::camera::near`\n\n**Suggested value**: `0.1f32`\n\n**Component description**: The near plane of this camera, measured in meters.\n\n"]
@@ -909,24 +917,41 @@ mod raw {
                     pub aspect_ratio: f32,
                     #[doc = "**Component**: `ambient_core::camera::perspective_infinite_reverse`\n\n**Suggested value**: `()`\n\n**Component description**: If attached, this camera will use a perspective-infinite-reverse projection matrix.\nThis is well-suited for rendering large worlds as it has no far plane. Ensure `near` is set.\n\n"]
                     pub perspective_infinite_reverse: (),
+                    #[doc = r" Optional components."]
+                    pub optional: PerspectiveInfiniteReverseCameraOptional,
+                }
+                #[doc = "Optional part of [PerspectiveInfiniteReverseCamera]."]
+                #[derive(Clone, Debug, Default)]
+                pub struct PerspectiveInfiniteReverseCameraOptional {
+                    #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
+                    pub translation: Option<Vec3>,
+                    #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
+                    pub rotation: Option<Quat>,
+                    #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
+                    pub scale: Option<Vec3>,
+                }
+                impl crate::ecs::Concept for PerspectiveInfiniteReverseCamera {
+                    fn make(&self) -> Entity {
+                        Entity::new()
+                    }
+                    fn get_spawned(id: EntityId) -> Option<Self> {
+                        None
+                    }
+                    fn get_unspawned(entity: Entity) -> Option<Self> {
+                        None
+                    }
+                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
+                        None
+                    }
+                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
+                        None
+                    }
                 }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Perspective-Infinite-Reverse Camera*.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n**Extends**: ambient_core::camera::PerspectiveCommonCamera\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n}\n```\n"]
+                #[doc = "Makes a *Perspective-Infinite-Reverse Camera*.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n**Extends**: ambient_core::camera::PerspectiveCommonCamera\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n}\n```\n"]
                 pub fn make_PerspectiveInfiniteReverseCamera() -> Entity {
                     Entity::new()
-                        .with(
-                            crate::ambient_core::transform::components::translation(),
-                            Vec3::new(0f32, 0f32, 0f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::rotation(),
-                            Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::scale(),
-                            Vec3::new(1f32, 1f32, 1f32),
-                        )
                         .with(
                             crate::ambient_core::transform::components::local_to_world(),
                             Mat4::from_cols_array(&[
@@ -970,15 +995,12 @@ mod raw {
                             (),
                         )
                 }
-                #[doc = "Checks if the entity is a *Perspective-Infinite-Reverse Camera*.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n**Extends**: ambient_core::camera::PerspectiveCommonCamera\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Perspective-Infinite-Reverse Camera*.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n**Extends**: ambient_core::camera::PerspectiveCommonCamera\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_PerspectiveInfiniteReverseCamera(id: EntityId) -> bool {
                     entity::has_components(
                         id,
                         &[
-                            &crate::ambient_core::transform::components::translation(),
-                            &crate::ambient_core::transform::components::rotation(),
-                            &crate::ambient_core::transform::components::scale(),
                             &crate::ambient_core::transform::components::local_to_world(),
                             &crate::ambient_core::camera::components::near(),
                             &crate::ambient_core::camera::components::projection(),
@@ -992,13 +1014,10 @@ mod raw {
                         ],
                     )
                 }
-                #[doc = "Returns the components that comprise *Perspective-Infinite-Reverse Camera* as a tuple.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n**Extends**: ambient_core::camera::PerspectiveCommonCamera\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Perspective-Infinite-Reverse Camera* as a tuple.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n**Extends**: ambient_core::camera::PerspectiveCommonCamera\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
                 pub fn tuple_PerspectiveInfiniteReverseCamera() -> (
-                    Component<Vec3>,
-                    Component<Quat>,
-                    Component<Vec3>,
                     Component<Mat4>,
                     Component<f32>,
                     Component<Mat4>,
@@ -1010,9 +1029,6 @@ mod raw {
                     Component<()>,
                 ) {
                     (
-                        crate::ambient_core::transform::components::translation(),
-                        crate::ambient_core::transform::components::rotation(),
-                        crate::ambient_core::transform::components::scale(),
                         crate::ambient_core::transform::components::local_to_world(),
                         crate::ambient_core::camera::components::near(),
                         crate::ambient_core::camera::components::projection(),
@@ -1024,13 +1040,9 @@ mod raw {
                         crate::ambient_core::camera::components::perspective_infinite_reverse(),
                     )
                 }
+                #[doc = "**Orthographic Camera**: An orthographic camera.\n\n**Extends**: `ambient_core::camera::Camera`"]
+                #[derive(Clone, Debug)]
                 pub struct OrthographicCamera {
-                    #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
-                    pub translation: Vec3,
-                    #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
-                    pub rotation: Quat,
-                    #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
-                    pub scale: Vec3,
                     #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
                     pub local_to_world: Mat4,
                     #[doc = "**Component**: `ambient_core::camera::near`\n\n**Suggested value**: `-1f32`\n\n**Component description**: The near plane of this camera, measured in meters.\n\n"]
@@ -1055,24 +1067,41 @@ mod raw {
                     pub orthographic_bottom: f32,
                     #[doc = "**Component**: `ambient_core::camera::far`\n\n**Suggested value**: `1f32`\n\n**Component description**: The far plane of this camera, measured in meters.\n\n"]
                     pub far: f32,
+                    #[doc = r" Optional components."]
+                    pub optional: OrthographicCameraOptional,
+                }
+                #[doc = "Optional part of [OrthographicCamera]."]
+                #[derive(Clone, Debug, Default)]
+                pub struct OrthographicCameraOptional {
+                    #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
+                    pub translation: Option<Vec3>,
+                    #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
+                    pub rotation: Option<Quat>,
+                    #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
+                    pub scale: Option<Vec3>,
+                }
+                impl crate::ecs::Concept for OrthographicCamera {
+                    fn make(&self) -> Entity {
+                        Entity::new()
+                    }
+                    fn get_spawned(id: EntityId) -> Option<Self> {
+                        None
+                    }
+                    fn get_unspawned(entity: Entity) -> Option<Self> {
+                        None
+                    }
+                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
+                        None
+                    }
+                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
+                        None
+                    }
                 }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Orthographic Camera*.\n\nAn orthographic camera.\n\n**Extends**: ambient_core::camera::Camera\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n}\n```\n"]
+                #[doc = "Makes a *Orthographic Camera*.\n\nAn orthographic camera.\n\n**Extends**: ambient_core::camera::Camera\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n}\n```\n"]
                 pub fn make_OrthographicCamera() -> Entity {
                     Entity::new()
-                        .with(
-                            crate::ambient_core::transform::components::translation(),
-                            Vec3::new(0f32, 0f32, 0f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::rotation(),
-                            Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::scale(),
-                            Vec3::new(1f32, 1f32, 1f32),
-                        )
                         .with(
                             crate::ambient_core::transform::components::local_to_world(),
                             Mat4::from_cols_array(&[
@@ -1125,15 +1154,12 @@ mod raw {
                         )
                         .with(crate::ambient_core::camera::components::far(), 1f32)
                 }
-                #[doc = "Checks if the entity is a *Orthographic Camera*.\n\nAn orthographic camera.\n\n**Extends**: ambient_core::camera::Camera\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Orthographic Camera*.\n\nAn orthographic camera.\n\n**Extends**: ambient_core::camera::Camera\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_OrthographicCamera(id: EntityId) -> bool {
                     entity::has_components(
                         id,
                         &[
-                            &crate::ambient_core::transform::components::translation(),
-                            &crate::ambient_core::transform::components::rotation(),
-                            &crate::ambient_core::transform::components::scale(),
                             &crate::ambient_core::transform::components::local_to_world(),
                             &crate::ambient_core::camera::components::near(),
                             &crate::ambient_core::camera::components::projection(),
@@ -1149,13 +1175,10 @@ mod raw {
                         ],
                     )
                 }
-                #[doc = "Returns the components that comprise *Orthographic Camera* as a tuple.\n\nAn orthographic camera.\n\n**Extends**: ambient_core::camera::Camera\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Orthographic Camera* as a tuple.\n\nAn orthographic camera.\n\n**Extends**: ambient_core::camera::Camera\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
                 pub fn tuple_OrthographicCamera() -> (
-                    Component<Vec3>,
-                    Component<Quat>,
-                    Component<Vec3>,
                     Component<Mat4>,
                     Component<f32>,
                     Component<Mat4>,
@@ -1170,9 +1193,6 @@ mod raw {
                     Component<f32>,
                 ) {
                     (
-                        crate::ambient_core::transform::components::translation(),
-                        crate::ambient_core::transform::components::rotation(),
-                        crate::ambient_core::transform::components::scale(),
                         crate::ambient_core::transform::components::local_to_world(),
                         crate::ambient_core::camera::components::near(),
                         crate::ambient_core::camera::components::projection(),
@@ -2086,6 +2106,8 @@ mod raw {
             #[doc = r" They do not have any runtime representation outside of the components that compose them."]
             pub mod concepts {
                 use crate::prelude::*;
+                #[doc = "**Character Controller**: A capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule."]
+                #[derive(Clone, Debug)]
                 pub struct CharacterController {
                     #[doc = "**Component**: `ambient_core::physics::character_controller_height`\n\n**Suggested value**: `2f32`\n\n**Component description**: The height of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_radius`, it will be given a physical character collider.\n\n"]
                     pub character_controller_height: f32,
@@ -2094,9 +2116,26 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::physics::physics_controlled`\n\n**Suggested value**: `()`\n\n**Component description**: If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider.\n\n"]
                     pub physics_controlled: (),
                 }
+                impl crate::ecs::Concept for CharacterController {
+                    fn make(&self) -> Entity {
+                        Entity::new()
+                    }
+                    fn get_spawned(id: EntityId) -> Option<Self> {
+                        None
+                    }
+                    fn get_unspawned(entity: Entity) -> Option<Self> {
+                        None
+                    }
+                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
+                        None
+                    }
+                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
+                        None
+                    }
+                }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Character Controller*.\n\nA capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::physics::character_controller_height\": f32 = 2.0,\n  \"ambient_core::physics::character_controller_radius\": f32 = 0.5,\n  \"ambient_core::physics::physics_controlled\": () = (),\n}\n```\n"]
+                #[doc = "Makes a *Character Controller*.\n\nA capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::physics::character_controller_height\": f32 = 2.0,\n  \"ambient_core::physics::character_controller_radius\": f32 = 0.5,\n  \"ambient_core::physics::physics_controlled\": () = (),\n}\n```\n"]
                 pub fn make_CharacterController() -> Entity {
                     Entity::new()
                         .with(
@@ -2112,7 +2151,7 @@ mod raw {
                             (),
                         )
                 }
-                #[doc = "Checks if the entity is a *Character Controller*.\n\nA capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::physics::character_controller_height\": f32 = 2.0,\n  \"ambient_core::physics::character_controller_radius\": f32 = 0.5,\n  \"ambient_core::physics::physics_controlled\": () = (),\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Character Controller*.\n\nA capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::physics::character_controller_height\": f32 = 2.0,\n  \"ambient_core::physics::character_controller_radius\": f32 = 0.5,\n  \"ambient_core::physics::physics_controlled\": () = (),\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_CharacterController(id: EntityId) -> bool {
                     entity::has_components(
@@ -2126,7 +2165,7 @@ mod raw {
                         ],
                     )
                 }
-                #[doc = "Returns the components that comprise *Character Controller* as a tuple.\n\nA capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::physics::character_controller_height\": f32 = 2.0,\n  \"ambient_core::physics::character_controller_radius\": f32 = 0.5,\n  \"ambient_core::physics::physics_controlled\": () = (),\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Character Controller* as a tuple.\n\nA capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::physics::character_controller_height\": f32 = 2.0,\n  \"ambient_core::physics::character_controller_radius\": f32 = 0.5,\n  \"ambient_core::physics::physics_controlled\": () = (),\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
                 pub fn tuple_CharacterController() -> (Component<f32>, Component<f32>, Component<()>)
@@ -2319,6 +2358,8 @@ mod raw {
             #[doc = r" They do not have any runtime representation outside of the components that compose them."]
             pub mod concepts {
                 use crate::prelude::*;
+                #[doc = "**Sphere**: A primitive sphere."]
+                #[derive(Clone, Debug)]
                 pub struct Sphere {
                     #[doc = "**Component**: `ambient_core::primitives::sphere`\n\n**Suggested value**: `()`\n\n**Component description**: If attached to an entity alongside the other `sphere_*` components, the entity will be converted to a sphere primitive.\nTo easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make_sphere`).\n\n"]
                     pub sphere: (),
@@ -2329,9 +2370,26 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::primitives::sphere_stacks`\n\n**Suggested value**: `18u32`\n\n**Component description**: Set the latitudinal stacks of a `sphere` entity.\n\n"]
                     pub sphere_stacks: u32,
                 }
+                impl crate::ecs::Concept for Sphere {
+                    fn make(&self) -> Entity {
+                        Entity::new()
+                    }
+                    fn get_spawned(id: EntityId) -> Option<Self> {
+                        None
+                    }
+                    fn get_unspawned(entity: Entity) -> Option<Self> {
+                        None
+                    }
+                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
+                        None
+                    }
+                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
+                        None
+                    }
+                }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Sphere*.\n\nA primitive sphere.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::primitives::sphere\": () = (),\n  \"ambient_core::primitives::sphere_radius\": f32 = 0.5,\n  \"ambient_core::primitives::sphere_sectors\": u32 = 36,\n  \"ambient_core::primitives::sphere_stacks\": u32 = 18,\n}\n```\n"]
+                #[doc = "Makes a *Sphere*.\n\nA primitive sphere.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::primitives::sphere\": () = (),\n  \"ambient_core::primitives::sphere_radius\": f32 = 0.5,\n  \"ambient_core::primitives::sphere_sectors\": u32 = 36,\n  \"ambient_core::primitives::sphere_stacks\": u32 = 18,\n}\n```\n"]
                 pub fn make_Sphere() -> Entity {
                     Entity::new()
                         .with(crate::ambient_core::primitives::components::sphere(), ())
@@ -2348,7 +2406,7 @@ mod raw {
                             18u32,
                         )
                 }
-                #[doc = "Checks if the entity is a *Sphere*.\n\nA primitive sphere.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::primitives::sphere\": () = (),\n  \"ambient_core::primitives::sphere_radius\": f32 = 0.5,\n  \"ambient_core::primitives::sphere_sectors\": u32 = 36,\n  \"ambient_core::primitives::sphere_stacks\": u32 = 18,\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Sphere*.\n\nA primitive sphere.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::primitives::sphere\": () = (),\n  \"ambient_core::primitives::sphere_radius\": f32 = 0.5,\n  \"ambient_core::primitives::sphere_sectors\": u32 = 36,\n  \"ambient_core::primitives::sphere_stacks\": u32 = 18,\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_Sphere(id: EntityId) -> bool {
                     entity::has_components(
@@ -2361,7 +2419,7 @@ mod raw {
                         ],
                     )
                 }
-                #[doc = "Returns the components that comprise *Sphere* as a tuple.\n\nA primitive sphere.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::primitives::sphere\": () = (),\n  \"ambient_core::primitives::sphere_radius\": f32 = 0.5,\n  \"ambient_core::primitives::sphere_sectors\": u32 = 36,\n  \"ambient_core::primitives::sphere_stacks\": u32 = 18,\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Sphere* as a tuple.\n\nA primitive sphere.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::primitives::sphere\": () = (),\n  \"ambient_core::primitives::sphere_radius\": f32 = 0.5,\n  \"ambient_core::primitives::sphere_sectors\": u32 = 36,\n  \"ambient_core::primitives::sphere_stacks\": u32 = 18,\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
                 pub fn tuple_Sphere() -> (
@@ -2377,6 +2435,8 @@ mod raw {
                         crate::ambient_core::primitives::components::sphere_stacks(),
                     )
                 }
+                #[doc = "**Capsule**: A primitive capsule. Defined as a cylinder capped by hemispheres."]
+                #[derive(Clone, Debug)]
                 pub struct Capsule {
                     #[doc = "**Component**: `ambient_core::primitives::capsule`\n\n**Suggested value**: `()`\n\n**Component description**: If attached to an entity alongside the other `capsule_*` components, the entity will be converted to a capsule primitive.\nTo easily instantiate a default `capsule`, consider using the `capsule` concept (e.g. `make_capsule`).\n\n"]
                     pub capsule: (),
@@ -2391,9 +2451,26 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::primitives::capsule_longitudes`\n\n**Suggested value**: `32u32`\n\n**Component description**: Set the number of longitudinal sections.\n\n"]
                     pub capsule_longitudes: u32,
                 }
+                impl crate::ecs::Concept for Capsule {
+                    fn make(&self) -> Entity {
+                        Entity::new()
+                    }
+                    fn get_spawned(id: EntityId) -> Option<Self> {
+                        None
+                    }
+                    fn get_unspawned(entity: Entity) -> Option<Self> {
+                        None
+                    }
+                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
+                        None
+                    }
+                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
+                        None
+                    }
+                }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Capsule*.\n\nA primitive capsule. Defined as a cylinder capped by hemispheres.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::primitives::capsule\": () = (),\n  \"ambient_core::primitives::capsule_radius\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_half_height\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_rings\": u32 = 0,\n  \"ambient_core::primitives::capsule_latitudes\": u32 = 16,\n  \"ambient_core::primitives::capsule_longitudes\": u32 = 32,\n}\n```\n"]
+                #[doc = "Makes a *Capsule*.\n\nA primitive capsule. Defined as a cylinder capped by hemispheres.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::primitives::capsule\": () = (),\n  \"ambient_core::primitives::capsule_radius\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_half_height\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_rings\": u32 = 0,\n  \"ambient_core::primitives::capsule_latitudes\": u32 = 16,\n  \"ambient_core::primitives::capsule_longitudes\": u32 = 32,\n}\n```\n"]
                 pub fn make_Capsule() -> Entity {
                     Entity::new()
                         .with(crate::ambient_core::primitives::components::capsule(), ())
@@ -2418,7 +2495,7 @@ mod raw {
                             32u32,
                         )
                 }
-                #[doc = "Checks if the entity is a *Capsule*.\n\nA primitive capsule. Defined as a cylinder capped by hemispheres.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::primitives::capsule\": () = (),\n  \"ambient_core::primitives::capsule_radius\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_half_height\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_rings\": u32 = 0,\n  \"ambient_core::primitives::capsule_latitudes\": u32 = 16,\n  \"ambient_core::primitives::capsule_longitudes\": u32 = 32,\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Capsule*.\n\nA primitive capsule. Defined as a cylinder capped by hemispheres.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::primitives::capsule\": () = (),\n  \"ambient_core::primitives::capsule_radius\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_half_height\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_rings\": u32 = 0,\n  \"ambient_core::primitives::capsule_latitudes\": u32 = 16,\n  \"ambient_core::primitives::capsule_longitudes\": u32 = 32,\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_Capsule(id: EntityId) -> bool {
                     entity::has_components(
@@ -2433,7 +2510,7 @@ mod raw {
                         ],
                     )
                 }
-                #[doc = "Returns the components that comprise *Capsule* as a tuple.\n\nA primitive capsule. Defined as a cylinder capped by hemispheres.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::primitives::capsule\": () = (),\n  \"ambient_core::primitives::capsule_radius\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_half_height\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_rings\": u32 = 0,\n  \"ambient_core::primitives::capsule_latitudes\": u32 = 16,\n  \"ambient_core::primitives::capsule_longitudes\": u32 = 32,\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Capsule* as a tuple.\n\nA primitive capsule. Defined as a cylinder capped by hemispheres.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::primitives::capsule\": () = (),\n  \"ambient_core::primitives::capsule_radius\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_half_height\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_rings\": u32 = 0,\n  \"ambient_core::primitives::capsule_latitudes\": u32 = 16,\n  \"ambient_core::primitives::capsule_longitudes\": u32 = 32,\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
                 pub fn tuple_Capsule() -> (
@@ -2453,6 +2530,8 @@ mod raw {
                         crate::ambient_core::primitives::components::capsule_longitudes(),
                     )
                 }
+                #[doc = "**Torus**: A primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution."]
+                #[derive(Clone, Debug)]
                 pub struct Torus {
                     #[doc = "**Component**: `ambient_core::primitives::torus`\n\n**Suggested value**: `()`\n\n**Component description**: If attached to an entity alongside the other `torus_*` components, the entity will be converted to a torus primitive.\nTo easily instantiate a default `torus`, consider using the `torus` concept (e.g. `make_torus`).\n\n"]
                     pub torus: (),
@@ -2465,9 +2544,26 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::primitives::torus_loops`\n\n**Suggested value**: `16u32`\n\n**Component description**: Set the loops of a `torus` entity, spanning XY-plane.\n\n"]
                     pub torus_loops: u32,
                 }
+                impl crate::ecs::Concept for Torus {
+                    fn make(&self) -> Entity {
+                        Entity::new()
+                    }
+                    fn get_spawned(id: EntityId) -> Option<Self> {
+                        None
+                    }
+                    fn get_unspawned(entity: Entity) -> Option<Self> {
+                        None
+                    }
+                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
+                        None
+                    }
+                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
+                        None
+                    }
+                }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Torus*.\n\nA primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::primitives::torus\": () = (),\n  \"ambient_core::primitives::torus_inner_radius\": f32 = 0.25,\n  \"ambient_core::primitives::torus_outer_radius\": f32 = 0.35,\n  \"ambient_core::primitives::torus_slices\": u32 = 32,\n  \"ambient_core::primitives::torus_loops\": u32 = 16,\n}\n```\n"]
+                #[doc = "Makes a *Torus*.\n\nA primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::primitives::torus\": () = (),\n  \"ambient_core::primitives::torus_inner_radius\": f32 = 0.25,\n  \"ambient_core::primitives::torus_outer_radius\": f32 = 0.35,\n  \"ambient_core::primitives::torus_slices\": u32 = 32,\n  \"ambient_core::primitives::torus_loops\": u32 = 16,\n}\n```\n"]
                 pub fn make_Torus() -> Entity {
                     Entity::new()
                         .with(crate::ambient_core::primitives::components::torus(), ())
@@ -2488,7 +2584,7 @@ mod raw {
                             16u32,
                         )
                 }
-                #[doc = "Checks if the entity is a *Torus*.\n\nA primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::primitives::torus\": () = (),\n  \"ambient_core::primitives::torus_inner_radius\": f32 = 0.25,\n  \"ambient_core::primitives::torus_outer_radius\": f32 = 0.35,\n  \"ambient_core::primitives::torus_slices\": u32 = 32,\n  \"ambient_core::primitives::torus_loops\": u32 = 16,\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Torus*.\n\nA primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::primitives::torus\": () = (),\n  \"ambient_core::primitives::torus_inner_radius\": f32 = 0.25,\n  \"ambient_core::primitives::torus_outer_radius\": f32 = 0.35,\n  \"ambient_core::primitives::torus_slices\": u32 = 32,\n  \"ambient_core::primitives::torus_loops\": u32 = 16,\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_Torus(id: EntityId) -> bool {
                     entity::has_components(
@@ -2502,7 +2598,7 @@ mod raw {
                         ],
                     )
                 }
-                #[doc = "Returns the components that comprise *Torus* as a tuple.\n\nA primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::primitives::torus\": () = (),\n  \"ambient_core::primitives::torus_inner_radius\": f32 = 0.25,\n  \"ambient_core::primitives::torus_outer_radius\": f32 = 0.35,\n  \"ambient_core::primitives::torus_slices\": u32 = 32,\n  \"ambient_core::primitives::torus_loops\": u32 = 16,\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Torus* as a tuple.\n\nA primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::primitives::torus\": () = (),\n  \"ambient_core::primitives::torus_inner_radius\": f32 = 0.25,\n  \"ambient_core::primitives::torus_outer_radius\": f32 = 0.35,\n  \"ambient_core::primitives::torus_slices\": u32 = 32,\n  \"ambient_core::primitives::torus_loops\": u32 = 16,\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
                 pub fn tuple_Torus() -> (
@@ -3029,69 +3125,66 @@ mod raw {
             #[doc = r" They do not have any runtime representation outside of the components that compose them."]
             pub mod concepts {
                 use crate::prelude::*;
+                #[doc = "**Transformable**: Can be translated, rotated and scaled."]
+                #[derive(Clone, Debug)]
                 pub struct Transformable {
-                    #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
-                    pub translation: Vec3,
-                    #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
-                    pub rotation: Quat,
-                    #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
-                    pub scale: Vec3,
                     #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
                     pub local_to_world: Mat4,
+                    #[doc = r" Optional components."]
+                    pub optional: TransformableOptional,
+                }
+                #[doc = "Optional part of [Transformable]."]
+                #[derive(Clone, Debug, Default)]
+                pub struct TransformableOptional {
+                    #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
+                    pub translation: Option<Vec3>,
+                    #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
+                    pub rotation: Option<Quat>,
+                    #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
+                    pub scale: Option<Vec3>,
+                }
+                impl crate::ecs::Concept for Transformable {
+                    fn make(&self) -> Entity {
+                        Entity::new()
+                    }
+                    fn get_spawned(id: EntityId) -> Option<Self> {
+                        None
+                    }
+                    fn get_unspawned(entity: Entity) -> Option<Self> {
+                        None
+                    }
+                    fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
+                        None
+                    }
+                    fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
+                        None
+                    }
                 }
                 #[allow(clippy::approx_constant)]
                 #[allow(non_snake_case)]
-                #[doc = "Makes a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
+                #[doc = "Makes a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
                 pub fn make_Transformable() -> Entity {
-                    Entity::new()
-                        .with(
-                            crate::ambient_core::transform::components::translation(),
-                            Vec3::new(0f32, 0f32, 0f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::rotation(),
-                            Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::scale(),
-                            Vec3::new(1f32, 1f32, 1f32),
-                        )
-                        .with(
-                            crate::ambient_core::transform::components::local_to_world(),
-                            Mat4::from_cols_array(&[
-                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
-                                0f32, 0f32, 0f32, 0f32, 1f32,
-                            ]),
-                        )
+                    Entity::new().with(
+                        crate::ambient_core::transform::components::local_to_world(),
+                        Mat4::from_cols_array(&[
+                            1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32,
+                            0f32, 0f32, 0f32, 1f32,
+                        ]),
+                    )
                 }
-                #[doc = "Checks if the entity is a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
                 #[allow(non_snake_case)]
                 pub fn is_Transformable(id: EntityId) -> bool {
                     entity::has_components(
                         id,
-                        &[
-                            &crate::ambient_core::transform::components::translation(),
-                            &crate::ambient_core::transform::components::rotation(),
-                            &crate::ambient_core::transform::components::scale(),
-                            &crate::ambient_core::transform::components::local_to_world(),
-                        ],
+                        &[&crate::ambient_core::transform::components::local_to_world()],
                     )
                 }
-                #[doc = "Returns the components that comprise *Transformable* as a tuple.\n\nCan be translated, rotated and scaled.\n\n**Definition**:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
+                #[doc = "Returns the components that comprise *Transformable* as a tuple.\n\nCan be translated, rotated and scaled.\n\n**Definition**:\n```ignore\n{\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n}\n```\n"]
                 #[allow(clippy::type_complexity)]
                 #[allow(non_snake_case)]
-                pub fn tuple_Transformable() -> (
-                    Component<Vec3>,
-                    Component<Quat>,
-                    Component<Vec3>,
-                    Component<Mat4>,
-                ) {
-                    (
-                        crate::ambient_core::transform::components::translation(),
-                        crate::ambient_core::transform::components::rotation(),
-                        crate::ambient_core::transform::components::scale(),
-                        crate::ambient_core::transform::components::local_to_world(),
-                    )
+                pub fn tuple_Transformable() -> (Component<Mat4>) {
+                    (crate::ambient_core::transform::components::local_to_world())
                 }
             }
         }

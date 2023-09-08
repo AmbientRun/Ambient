@@ -28,7 +28,7 @@ mod component;
 pub use component::Component;
 
 mod concept;
-pub use concept::Concept;
+pub use concept::{Concept, ConceptValue};
 
 mod attribute;
 pub use attribute::Attribute;

@@ -1,4 +1,10 @@
-use ambient_package_semantic::{Concept, Item, ItemMap, ScalarValue, Scope, Value};
+use std::fmt::Write;
+
+use ambient_package::Identifier;
+use ambient_package_semantic::{
+    Component, Concept, ConceptValue, Item, ItemId, ItemMap, ScalarValue, Scope, Value,
+};
+
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -21,7 +27,7 @@ pub fn generate(
         .filter_map(|c| context.extract_item_if_relevant(items, *c))
         .map(|concept| {
             let concept = &*concept;
-            let new = new::generate(items, type_printer, context, concept)?;
+            let new = new::generate(items, type_printer, context, &guest_api_path, concept)?;
             let old = old::generate(items, type_printer, context, concept)?;
             Ok(quote! {
                 #new
@@ -46,61 +52,28 @@ pub fn generate(
 }
 
 mod new {
+
     use super::*;
 
     pub(super) fn generate(
         items: &ItemMap,
         type_printer: &TypePrinter,
         context: Context,
+        guest_api_path: &TokenStream,
         concept: &Concept,
     ) -> anyhow::Result<TokenStream> {
-        use std::fmt::Write;
-
-        let name = &concept.data().id;
+        let concept_id = &concept.data().id;
 
         let required_components = concept
             .required_components
             .iter()
             .map(|(id, value)| {
                 let component_item_id = id.as_resolved().unwrap();
-
-                let component = items.get(component_item_id);
-                let component_id = &component.data.id;
-
-                let component_ty = type_printer.get(
-                    context,
-                    items,
-                    None,
-                    component.type_.as_resolved().unwrap(),
-                )?;
-
-                let mut doc_comment = String::new();
-
-                writeln!(
+                let ComponentField {
                     doc_comment,
-                    "**Component**: `{}`",
-                    items.fully_qualified_display_path(component, None, None)
-                )?;
-                writeln!(doc_comment)?;
-
-                if let Some(value) = value.suggested.as_ref().and_then(|v| v.as_resolved()) {
-                    writeln!(
-                        doc_comment,
-                        "**Suggested value**: `{}`",
-                        SemiprettyTokenStream(value_to_token_stream(items, value)?)
-                    )?;
-                    writeln!(doc_comment)?;
-                }
-
-                if let Some(description) = &value.description {
-                    writeln!(doc_comment, "**Description**: {description}")?;
-                    writeln!(doc_comment)?;
-                }
-
-                if let Some(description) = &component.description {
-                    writeln!(doc_comment, "**Component description**: {}", description)?;
-                    writeln!(doc_comment)?;
-                }
+                    component_id,
+                    component_ty,
+                } = component_to_field(items, type_printer, context, component_item_id, value)?;
 
                 Ok(quote! {
                     #[doc = #doc_comment]
@@ -109,10 +82,161 @@ mod new {
             })
             .collect::<anyhow::Result<Vec<_>>>()?;
 
-        Ok(quote! {
-            pub struct #name {
-                #(#required_components),*
+        let mut doc_comment = String::new();
+        write!(
+            doc_comment,
+            "**{}**",
+            concept.name.as_deref().unwrap_or(concept_id.as_str())
+        )?;
+        if let Some(description) = &concept.description {
+            write!(doc_comment, ": {}", description)?;
+        }
+        writeln!(doc_comment)?;
+        writeln!(doc_comment)?;
+
+        if !concept.extends.is_empty() {
+            write!(doc_comment, "**Extends**: ")?;
+            for (i, id) in concept.extends.iter().enumerate() {
+                let extend = items.get(id.as_resolved().unwrap());
+                if i != 0 {
+                    doc_comment.push_str(", ");
+                }
+
+                write!(
+                    doc_comment,
+                    "`{}`",
+                    &items.fully_qualified_display_path(extend, None, None)
+                )?;
             }
+            writeln!(doc_comment)?;
+            writeln!(doc_comment)?;
+        }
+
+        let doc_comment = doc_comment.trim();
+
+        let (optional_ref, optional_concept_def) = if !concept.optional_components.is_empty() {
+            let concept_optional_id = quote::format_ident!("{}Optional", concept_id.as_str());
+
+            let optional_components = concept
+                .optional_components
+                .iter()
+                .map(|(id, value)| {
+                    let component_item_id = id.as_resolved().unwrap();
+                    let ComponentField {
+                        doc_comment,
+                        component_id,
+                        component_ty,
+                    } = component_to_field(items, type_printer, context, component_item_id, value)?;
+
+                    Ok(quote! {
+                        #[doc = #doc_comment]
+                        pub #component_id: Option<#component_ty>
+                    })
+                })
+                .collect::<anyhow::Result<Vec<_>>>()?;
+
+            let doc_comment = format!("Optional part of [{}].", concept_id);
+
+            (
+                Some(quote! {
+                    /// Optional components.
+                    pub optional: #concept_optional_id,
+                }),
+                Some(quote! {
+                    #[doc = #doc_comment]
+                    #[derive(Clone, Debug, Default)]
+                    pub struct #concept_optional_id {
+                        #(#optional_components),*
+                    }
+                }),
+            )
+        } else {
+            (None, None)
+        };
+
+        Ok(quote! {
+            #[doc = #doc_comment]
+            #[derive(Clone, Debug)]
+            pub struct #concept_id {
+                #(#required_components,)*
+                #optional_ref
+            }
+            #optional_concept_def
+            impl #guest_api_path::ecs::Concept for #concept_id {
+                fn make(&self) -> Entity {
+                    Entity::new()
+                }
+
+                fn get_spawned(id: EntityId) -> Option<Self> {
+                    None
+                }
+
+                fn get_unspawned(entity: Entity) -> Option<Self> {
+                    None
+                }
+
+                fn contained_by_spawned(id: EntityId) -> Option<EntityId> {
+                    None
+                }
+
+                fn contained_by_unspawned(entity: Entity) -> Option<Entity> {
+                    None
+                }
+            }
+        })
+    }
+
+    struct ComponentField<'a> {
+        doc_comment: String,
+        component_id: &'a Identifier,
+        component_ty: TokenStream,
+    }
+
+    fn component_to_field<'a>(
+        items: &'a ItemMap,
+        type_printer: &TypePrinter,
+        context: Context,
+        component_item_id: ItemId<Component>,
+        value: &ConceptValue,
+    ) -> anyhow::Result<ComponentField<'a>> {
+        let component = items.get(component_item_id);
+        let component_id = &component.data.id;
+
+        let component_ty =
+            type_printer.get(context, items, None, component.type_.as_resolved().unwrap())?;
+
+        let mut doc_comment = String::new();
+
+        writeln!(
+            doc_comment,
+            "**Component**: `{}`",
+            items.fully_qualified_display_path(component, None, None)
+        )?;
+        writeln!(doc_comment)?;
+
+        if let Some(value) = value.suggested.as_ref().and_then(|v| v.as_resolved()) {
+            writeln!(
+                doc_comment,
+                "**Suggested value**: `{}`",
+                SemiprettyTokenStream(value_to_token_stream(items, value)?)
+            )?;
+            writeln!(doc_comment)?;
+        }
+
+        if let Some(description) = &value.description {
+            writeln!(doc_comment, "**Description**: {description}")?;
+            writeln!(doc_comment)?;
+        }
+
+        if let Some(description) = &component.description {
+            writeln!(doc_comment, "**Component description**: {}", description)?;
+            writeln!(doc_comment)?;
+        }
+
+        Ok(ComponentField {
+            doc_comment,
+            component_id,
+            component_ty,
         })
     }
 }
@@ -278,8 +402,6 @@ pub fn generate_component_list_doc_comment(
     context: Context,
     concept: &Concept,
 ) -> anyhow::Result<String> {
-    use std::fmt::Write;
-
     let mut output = String::new();
 
     if !concept.extends.is_empty() {
@@ -296,7 +418,7 @@ pub fn generate_component_list_doc_comment(
         writeln!(output)?;
     }
 
-    output.push_str("**Definition**:\n\n```ignore\n{\n");
+    output.push_str("**Definition**:\n```ignore\n{\n");
 
     for (id, value) in &concept.required_components {
         let component = &*items.get(id.as_resolved().unwrap());
