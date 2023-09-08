@@ -20,8 +20,8 @@ use ambient_layout::Docking;
 use ambient_network::client::{ClientState, GameClientRenderTarget, GameClientWorld};
 use ambient_shared_types::CursorIcon;
 use ambient_ui_native::{
-    cb, docking, padding, width, Borders, Button, Dock, MeasureSize, ScrollArea, ScrollAreaSizing,
-    UIExt, STREET,
+    cb, docking, padding, set_focus, width, Borders, Button, Dock, MeasureSize, ScrollArea,
+    ScrollAreaSizing, UIExt, STREET,
 };
 use glam::{uvec2, vec4, Vec2};
 
@@ -106,17 +106,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
         .el()
         .with_clickarea()
         .on_mouse_down(|world, _, _| {
-            println!("clicked: {}", world.resource(focus()));
-            if !world.resource(focus()).is_empty() {
-                println!("set focus");
-                *world.resource_mut(focus()) = String::new();
-                world
-                    .resource_mut(world_events())
-                    .add_message(FocusChanged {
-                        from_external: false,
-                        focus: String::new(),
-                    });
-            }
+            set_focus(world, "".to_string());
         })
         .el();
 
@@ -203,6 +193,11 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
             game_client_world
         },
     ])
+    .with_clickarea()
+    .on_mouse_down(|world, _, _| {
+        set_focus(world, "IDE".to_string());
+    })
+    .el()
 }
 
 #[element_component]

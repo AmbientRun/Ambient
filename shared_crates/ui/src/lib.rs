@@ -139,53 +139,51 @@ define_el_function_for_vec_element_newtype!(FocusRoot);
 impl ElementComponent for FocusRoot {
     fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         let mut children = self.0;
-        children.push(FocusResetter.el());
+        // children.push(FocusResetter.el());
         Element::new().children(children)
     }
 }
-#[element_component]
-fn FocusResetter(hooks: &mut Hooks) -> Element {
-    let (focused, set_focus) = use_focus_state(hooks);
-    let (reset_focus, set_reset_focus) = use_state(hooks, String::new());
-    use_runtime_message::<messages::WindowMouseInput>(hooks, {
-        to_owned![focused, set_reset_focus];
-        move |_world, _event| {
-            set_reset_focus(focused.clone());
-        }
-    });
-    if focused == reset_focus && !focused.is_empty() {
-        set_focus(hooks.world, String::new());
-        set_reset_focus(String::new());
-    }
-    Element::new()
-}
+// #[element_component]
+// fn FocusResetter(hooks: &mut Hooks) -> Element {
+//     let focused = use_focus_state(hooks);
+//     let (reset_focus, set_reset_focus) = use_state(hooks, String::new());
+//     use_runtime_message::<messages::WindowMouseInput>(hooks, {
+//         to_owned![focused, set_reset_focus];
+//         move |_world, _event| {
+//             set_reset_focus(focused.clone());
+//         }
+//     });
+//     if focused == reset_focus && !focused.is_empty() {
+//         set_focus(hooks.world, String::new());
+//         set_reset_focus(String::new());
+//     }
+//     Element::new()
+// }
 
-type FocusStateSetter = Cb<dyn Fn(&mut World, String) + Sync + Send>;
-fn use_focus_state(hooks: &mut Hooks) -> (String, FocusStateSetter) {
+fn use_focus_state(hooks: &mut Hooks) -> String {
     let rerender = use_rerender_signal(hooks);
     use_module_message::<FocusChanged>(hooks, move |_, _, _| {
         rerender();
     });
-    let current_focus = hooks.world.resource(focus()).clone();
-    (
-        current_focus,
-        cb(move |world, new_focus| {
-            let old_focus = world.get_cloned(EntityId::resources(), focus()).unwrap();
-            if old_focus != new_focus {
-                world
-                    .set(EntityId::resources(), focus(), new_focus.clone())
-                    .unwrap();
+    hooks.world.resource(focus()).clone()
+}
 
-                broadcast_local_message(
-                    world,
-                    FocusChanged {
-                        from_external: false,
-                        focus: new_focus,
-                    },
-                );
-            }
-        }),
-    )
+/// Update the current focus to `new_focus` (if it's different from the current focus)
+pub fn set_focus(world: &mut World, new_focus: String) {
+    let old_focus = world.get_cloned(EntityId::resources(), focus()).unwrap();
+    if old_focus != new_focus {
+        world
+            .set(EntityId::resources(), focus(), new_focus.clone())
+            .unwrap();
+
+        broadcast_local_message(
+            world,
+            FocusChanged {
+                from_external: false,
+                focus: new_focus,
+            },
+        );
+    }
 }
 
 /// A hook that returns the current focus state for this element and a callback to set the focus state.
@@ -198,7 +196,7 @@ pub type FocusSetter = Cb<dyn Fn(&mut World, bool) + Sync + Send>;
 
 /// A hook that returns the current focus state for this element, given a specific `instance_id`, and a callback to set the focus state.
 pub fn use_focus_for_instance_id(hooks: &mut Hooks, instance_id: String) -> (bool, FocusSetter) {
-    let (current_focus, set_focus) = use_focus_state(hooks);
+    let current_focus = use_focus_state(hooks);
     let focused = current_focus == instance_id;
     (
         focused,
