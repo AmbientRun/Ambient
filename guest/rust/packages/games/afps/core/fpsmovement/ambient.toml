@@ -5,8 +5,8 @@ version = "0.0.1"
 content = { type = "Asset", code = true }
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "3GdEezzBAqpV630zcOdC40" }
-input_schema = { path = "../../../../schemas/input", deployment = "6SiDYZjLimMcRgvtxdGsma" }
-editor_schema = { path = "../../../../schemas/editor", deployment = "8tCPLvKX284SUyFY5x66r" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "5FztSL9BEnUFEd9S3lKFfi" }
-character_movement = { path = "../../../../std/character_movement", deployment = "4RC7bcI3pJrxKc3ima6Nu8" }
+afps_schema = { path = "../../schema", deployment = "6ZeHKfihxgZwnmo38iLsT8" }
+input_schema = { path = "../../../../schemas/input", deployment = "6URefT9KFkB0WtdGRv6kIW" }
+editor_schema = { path = "../../../../schemas/editor", deployment = "6vX7Gci4P3LKDFxdw21AGA" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "9RvR6H9ItSOAiUuGtp9CJ" }
+character_movement = { path = "../../../../std/character_movement", deployment = "4zeINy1kJgs0RCfbxYA3oM" }
