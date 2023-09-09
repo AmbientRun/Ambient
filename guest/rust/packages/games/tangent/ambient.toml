@@ -5,5 +5,5 @@ version = "0.0.1"
 content = { type = "Playable" }
 
 [dependencies]
-tangent_core = { path = "core" , deployment = "22VmNwuLUX9NJ9R29zGTmj" }
-tangent_scene = { path = "mods/scene" , deployment = "MZeOtSp5sGuyJVxEb3hKr" }
+tangent_core = { path = "core" , deployment = "1SXhfvoHrRdN0NDHHKoNj9" }
+tangent_scene = { path = "mods/scene" , deployment = "4ZuRmLKkPpQpNSS0BCJ4Cm" }
