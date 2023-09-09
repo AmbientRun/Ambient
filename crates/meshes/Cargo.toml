@@ -11,7 +11,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
-ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
+ambient_native_std = { path = "../native_std" , version = "0.3.0-nightly-2023-09-09" }
+ambient_gpu = { path = "../gpu" , version = "0.3.0-nightly-2023-09-09" }
 glam = { workspace = true }
 serde = { workspace = true }
