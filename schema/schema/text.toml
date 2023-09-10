@@ -3,7 +3,7 @@ id = "text"
 name = "Text"
 description = "Text rendering."
 content = { type = "Asset", schema = true }
-version = "0.3.0-dev"
+version = "0.3.0-nightly-2023-09-10"
 
 [components.font_family]
 type = "String"
