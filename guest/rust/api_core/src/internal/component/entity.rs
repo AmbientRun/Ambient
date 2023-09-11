@@ -57,8 +57,8 @@ impl Entity {
     }
 
     /// Merges in the `other` Entity and returns this; any fields that were present in both will be replaced by `other`'s.
-    pub fn with_merge(mut self, other: Entity) -> Self {
-        self.merge(other);
+    pub fn with_merge(mut self, other: impl Into<Entity>) -> Self {
+        self.merge(other.into());
         self
     }
 
