@@ -78,3 +78,19 @@ jobs:
           path: "./web/${{ env.PACKAGE_NAME }}"
           destination: "ambient-artifacts/ambient-web-clients/ambient-canary"
           parent: false
+
+      - name: Get tagged version
+        # ref example: refs/tags/v0.3.0-nightly-2023-09-05
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run:
+          echo "tagged_version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Upload tagged version to Google Cloud
+        # Only upload if triggered for a tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: "./web/${{ env.PACKAGE_NAME }}"
+          destination: "ambient-artifacts/ambient-web-clients/ambient-web-${{ env.tagged_version }}"
+          parent: false
