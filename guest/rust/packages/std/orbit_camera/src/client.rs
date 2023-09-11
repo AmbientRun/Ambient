@@ -37,7 +37,11 @@ pub fn main() {
                 .make()
                 .with(aspect_ratio_from_window(), EntityId::resources()),
             );
-            entity::add_component_if_required(camera_id, camera_angle(), Vec2::ZERO);
+            entity::add_component_if_required(
+                camera_id,
+                camera_angle(),
+                vec2(0.0, 45f32.to_radians()),
+            );
             entity::add_component_if_required(camera_id, camera_distance(), 1.0);
         }
     });
@@ -60,6 +64,7 @@ pub fn main() {
                 Vec2::ZERO,
                 |rot| {
                     *rot += angle_delta;
+                    rot.y = rot.y.clamp(-89f32.to_radians(), 89f32.to_radians());
                 },
             );
 
@@ -68,7 +73,7 @@ pub fn main() {
                     *dist = f32::max(*dist + distance_delta, 1.0);
                 });
 
-            let quat = Quat::from_euler(glam::EulerRot::ZXY, angle.x, angle.y, 0.0);
+            let quat = Quat::from_euler(glam::EulerRot::ZXY, angle.x, -angle.y, 0.0);
             entity::add_component(camera_id, translation(), quat * vec3(0.0, -distance, 0.0));
         }
     });

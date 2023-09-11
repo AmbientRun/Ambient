@@ -1,10 +1,10 @@
 use ambient_api::{
     core::{
         primitives::{
-            components::cube,
+            components::{cube, quad},
             concepts::{Capsule, Sphere, Torus},
         },
-        rendering::components::color,
+        rendering::components::{color, double_sided},
         transform::concepts::{Transformable, TransformableOptional},
     },
     prelude::*,
@@ -15,9 +15,9 @@ use packages::orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional};
 pub fn main() {
     OrbitCamera {
         is_orbit_camera: (),
-        lookat_target: vec3(0., 0., 2.),
+        lookat_target: vec3(0., 0., 0.),
         optional: OrbitCameraOptional {
-            camera_distance: Some(5.),
+            camera_distance: Some(10.),
             ..default()
         },
     }
@@ -32,6 +32,8 @@ pub fn main() {
                 ..default()
             },
         })
+        .with(quad(), ())
+        .with(double_sided(), true)
         .with(color(), vec4(1., 0., 0., 1.))
         .spawn();
 
