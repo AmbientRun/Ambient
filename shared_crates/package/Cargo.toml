@@ -12,9 +12,9 @@ quote = "1.0"
 syn = "1.0"
 proc-macro2 = "1.0"
 
-ambient_shared_types = { path = "../shared_types", version = "0.3.0-nightly-2023-09-11" }
+ambient_shared_types = { path = "../shared_types", version = "0.3.0-dev" }
 
-ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.3.0-nightly-2023-09-11" }
+ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.3.0-dev" }
 
 serde = { workspace = true }
 toml = { workspace = true }
