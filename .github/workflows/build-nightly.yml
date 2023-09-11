@@ -97,7 +97,9 @@ jobs:
         # negation syntax and YAML don't blend well together :( hence "true != ..."
         if: true != (startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-nightly-'))
         shell: bash
-        run: echo "date_suffix=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+        run: |
+          tag=${GITHUB_REF#refs/tags/v}
+          echo "date_suffix=$(date +%Y-%m-%d)-${tag}" >> $GITHUB_ENV
 
       # - name: Upload ambient executable artifact
       #   uses: actions/upload-artifact@v3
