@@ -34,5 +34,5 @@ id = "EntityId"
 url = "String"
 
 [dependencies]
-input_schema = { path = "../../schemas/input", deployment = "6eQvrLJj7URQwj8jTPoAWD" }
-editor_schema = { path = "../../schemas/editor" , deployment = "x8UYJjnfvfxunoIdJPjuS" }
+input_schema = { path = "../../schemas/input", deployment = "7eSb4rePs2x7HfPTm1FdxB" }
+editor_schema = { path = "../../schemas/editor" , deployment = "5mgamXUawGcn65lJpJ1dyM" }
