@@ -31,12 +31,12 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
         move || set_visible(!visible)
     });
 
-    FocusRoot::el([Window::el(
+    Window::el(
         "Package Manager".to_string(),
         visible,
         Some(cb(move || set_visible(false))),
         PackageManagerInner::el(),
-    )])
+    )
 }
 
 #[element_component]

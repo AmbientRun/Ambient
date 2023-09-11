@@ -6,7 +6,7 @@ use ambient_element::{
 use ambient_guest_bridge::core::{
     app::components::window_scale_factor,
     ecs::components::children,
-    input::components::{mouse_over, mouse_pickable_max, mouse_pickable_min},
+    input::components::{is_mouse_over, mouse_pickable_max, mouse_pickable_min},
     layout::{
         components::{fit_horizontal, fit_vertical, height, width},
         types::Fit,
@@ -66,7 +66,7 @@ pub fn ScrollArea(
         to_owned![id, mouse_over_count, scroll, set_scroll, scroll_height];
         move |world| {
             if let Some(id) = *id.lock() {
-                let number = world.get(id, mouse_over()).unwrap_or(0);
+                let number = world.get(id, is_mouse_over()).unwrap_or(0);
                 *mouse_over_count.lock() = number;
             }
             if scroll_height <= 0.0 && scroll != 0.0 {

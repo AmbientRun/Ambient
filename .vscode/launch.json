@@ -23,7 +23,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/packages/games/afps",
+                "guest/rust/examples/controllers/first_person_camera",
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

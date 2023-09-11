@@ -11,21 +11,21 @@ use std::{
 use ambient_cb::{cb, Cb};
 #[cfg(feature = "native")]
 use ambient_core::runtime;
+#[cfg(feature = "guest")]
+use ambient_guest_bridge::ecs::EntityId;
 #[cfg(feature = "native")]
 use ambient_guest_bridge::ecs::{
-    world_events, ComponentQuery, FrameEvent, QueryState, TypedReadQuery,
+    read_messages, world_events, ComponentQuery, FrameEvent, QueryState, TypedReadQuery,
 };
-use ambient_guest_bridge::ecs::{ComponentValue, World};
-use ambient_guest_bridge::RuntimeMessage;
-#[cfg(feature = "guest")]
-use ambient_guest_bridge::{ecs::EntityId, MessageContext, ModuleMessage};
+use ambient_guest_bridge::{
+    ecs::{ComponentValue, World},
+    MessageContext, ModuleMessage, RuntimeMessage,
+};
 #[cfg(feature = "native")]
 use ambient_sys::task;
 use as_any::Downcast;
 #[cfg(feature = "native")]
 use atomic_refcell::AtomicRefCell;
-#[cfg(feature = "native")]
-use itertools::Itertools;
 use parking_lot::Mutex;
 #[cfg(feature = "native")]
 use tracing::info_span;
@@ -217,17 +217,9 @@ pub fn use_runtime_message<T: RuntimeMessage>(
     #[cfg(feature = "native")]
     {
         let reader = use_ref_with(hooks, |world| world.resource(world_events()).reader());
-        let event_name = T::id().to_string();
         use_frame(hooks, move |world| {
             let mut reader = reader.lock();
-            let events = reader
-                .iter(world.resource(world_events()))
-                .filter(|(_, (name, _))| *name == event_name)
-                .map(|(_, (_, event))| event.clone())
-                .collect_vec();
-
-            for event in events {
-                let event = T::deserialize_message(&event).unwrap();
+            for event in read_messages(&mut reader, world.resource(world_events())) {
                 func(world, &event);
             }
         })
@@ -248,19 +240,31 @@ pub fn use_runtime_message<T: RuntimeMessage>(
 /// Register a function to be called when a [ModuleMessage] is received.
 ///
 /// The subscription will be automatically cancelled when this [Element](crate::Element) is unmounted.
-#[cfg(feature = "guest")]
 pub fn use_module_message<T: ModuleMessage>(
     hooks: &mut Hooks,
     func: impl Fn(&mut World, MessageContext, &T) + Sync + Send + 'static,
 ) {
-    let handler = use_ref_with(hooks, |_| None);
-    *handler.lock() = Some(cb(func));
-    use_effect(hooks, (), move |_, _| {
-        let listener = T::subscribe(move |ctx, event| {
-            (handler.lock().as_ref().unwrap())(&mut World, ctx, &event);
+    #[cfg(feature = "native")]
+    {
+        let reader = use_ref_with(hooks, |world| world.resource(world_events()).reader());
+        use_frame(hooks, move |world| {
+            let mut reader = reader.lock();
+            for event in read_messages(&mut reader, world.resource(world_events())) {
+                func(world, (), &event);
+            }
+        })
+    }
+    #[cfg(feature = "guest")]
+    {
+        let handler = use_ref_with(hooks, |_| None);
+        *handler.lock() = Some(cb(func));
+        use_effect(hooks, (), move |_, _| {
+            let listener = T::subscribe(move |ctx, event| {
+                (handler.lock().as_ref().unwrap())(&mut World, ctx, &event);
+            });
+            move |_| listener.stop()
         });
-        move |_| listener.stop()
-    });
+    }
 }
 
 /// Send the `Enter` message when this `Element` is mounted, and the `Exit` message when it is unmounted.

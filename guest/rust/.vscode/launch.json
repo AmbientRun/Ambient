@@ -7,7 +7,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -15,12 +16,27 @@
             "cwd": "${workspaceFolder}/examples/assets/basic_model"
         },
         {
+            "name": "assets/generate_pipeline",
+            "type": "lldb",
+            "request": "launch",
+            "program": "ambient",
+            "args": [
+                "run",
+                "--debugger"
+            ],
+            "initCommands": [
+                "settings set plugin.jit-loader.gdb.enable on"
+            ],
+            "cwd": "${workspaceFolder}/examples/assets/generate_pipeline"
+        },
+        {
             "name": "assets/material_overriding",
             "type": "lldb",
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -33,7 +49,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -46,7 +63,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -59,7 +77,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -72,7 +91,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -85,7 +105,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -98,7 +119,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -111,7 +133,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -124,7 +147,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -137,7 +161,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -150,7 +175,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -163,7 +189,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -176,7 +203,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -189,7 +217,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -202,7 +231,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -215,7 +245,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -228,7 +259,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -241,7 +273,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -254,7 +287,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -267,7 +301,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -280,7 +315,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -293,7 +329,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -306,7 +343,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -319,7 +357,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -332,7 +371,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -345,7 +385,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -358,7 +399,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -371,7 +413,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -384,7 +427,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -397,7 +441,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -410,7 +455,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -423,7 +469,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -436,7 +483,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -449,7 +497,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -462,7 +511,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -475,7 +525,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -488,7 +539,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"
@@ -501,7 +553,8 @@
             "request": "launch",
             "program": "ambient",
             "args": [
-                "run"
+                "run",
+                "--debugger"
             ],
             "initCommands": [
                 "settings set plugin.jit-loader.gdb.enable on"

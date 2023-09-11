@@ -44,7 +44,7 @@ fn make_camera() {
 
 #[element_component]
 fn App(_hooks: &mut Hooks, sun_id: EntityId) -> Element {
-    FocusRoot::el([FlowColumn::el([FlowRow::el([Button::new(
+    FlowColumn::el([FlowRow::el([Button::new(
         "Toggle sun rotation",
         move |_| {
             entity::mutate_component(sun_id, rotating_sun(), |rotating_sun| {
@@ -53,7 +53,7 @@ fn App(_hooks: &mut Hooks, sun_id: EntityId) -> Element {
         },
     )
     .el()])])
-    .with_padding_even(10.0)])
+    .with_padding_even(10.0)
 }
 
 fn make_lighting() {

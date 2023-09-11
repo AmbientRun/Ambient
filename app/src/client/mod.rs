@@ -11,7 +11,7 @@ use ambient_core::{
 use ambient_ecs::{Entity, SystemGroup};
 use ambient_element::{
     consume_context, element_component, use_effect, use_ref_with, use_spawn, use_state,
-    use_state_with, Element, ElementComponentExt, Hooks,
+    use_state_with, Element, ElementComponentExt, Group, Hooks,
 };
 use ambient_native_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_network::{
@@ -20,7 +20,7 @@ use ambient_network::{
     native::client::{ClientView, ResolvedAddr},
 };
 use ambient_sys::time::Instant;
-use ambient_ui_native::{Dock, FocusRoot, WindowSized};
+use ambient_ui_native::{Dock, WindowSized};
 use glam::uvec2;
 
 use crate::{
@@ -136,7 +136,7 @@ fn MainApp(
 ) -> Element {
     let (loaded, set_loaded) = use_state(hooks, false);
 
-    FocusRoot::el([
+    Group::el([
         UICamera.el(),
         ambient_client_shared::player::PlayerRawInputHandler.el(),
         WindowSized::el([ClientView {

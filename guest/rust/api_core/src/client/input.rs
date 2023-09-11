@@ -1,17 +1,13 @@
-use std::{
-    collections::HashSet,
-    sync::{Arc, Mutex},
-};
+use std::collections::HashSet;
 
 use crate::{
-    core::messages::WindowFocusChange,
+    entity::{get_component, resources},
     global::{CursorIcon, Vec2},
     internal::{
         conversion::{FromBindgen, IntoBindgen},
+        generated::ambient_core::ui::components::focus,
         wit,
     },
-    message::Listener,
-    prelude::RuntimeMessage,
 };
 
 pub use ambient_shared_types::MouseButton;
@@ -49,95 +45,17 @@ pub fn set_cursor_visible(visible: bool) {
 
 /// Sets the cursor's lock state. If set, the cursor will not be able to move outside of the window.
 ///
-/// You may want to combine this with [set_cursor_visible] or use [CursorLockGuard] instead.
+/// You may want to combine this with [set_cursor_visible].
 pub fn set_cursor_lock(locked: bool) {
     wit::client_input::set_cursor_lock(locked);
 }
 
-/// Helper utility that will lock and hide the cursor if necessary.
-///
-/// Will unlock the cursor when dropped.
-pub struct CursorLockGuard {
-    inner: Arc<Mutex<CursorLockGuardInner>>,
-    listener: Listener,
-}
-impl CursorLockGuard {
-    /// Creates a new [CursorLockGuard] with the given lock state.
-    pub fn new() -> Self {
-        let inner = Arc::new(Mutex::new(CursorLockGuardInner::new()));
-        Self {
-            inner: inner.clone(),
-            listener: WindowFocusChange::subscribe(move |msg| {
-                inner.lock().unwrap().set_locked(msg.focused)
-            }),
-        }
-    }
+/// Focus id of the "game"; i.e. 3d world rather than any UI element
+pub const GAME_FOCUS_ID: &str = "Game";
 
-    /// Locks and hides the cursor if necessary.
-    pub fn set_locked(&mut self, locked: bool) {
-        self.inner.lock().unwrap().set_locked(locked);
-    }
-
-    /// Returns whether or not the cursor is currently locked.
-    pub fn is_locked(&self) -> bool {
-        self.inner.lock().unwrap().is_locked()
-    }
-
-    /// Helper that calls [Self::set_locked] with `true`.
-    pub fn lock(&mut self) {
-        self.set_locked(true);
-    }
-
-    /// Helper that calls [Self::set_locked] with `false`.
-    pub fn unlock(&mut self) {
-        self.set_locked(false);
-    }
-
-    /// Helper that will unlock if `Escape` has been pressed, and lock if anything else is pressed.
-    ///
-    /// Returns whether or not the cursor is currently locked.
-    pub fn auto_unlock_on_escape(&mut self, input: &Input) -> bool {
-        if input.keys.contains(&KeyCode::Escape) {
-            self.unlock();
-        } else if !input.keys.is_empty() || !input.mouse_buttons.is_empty() {
-            self.lock();
-        }
-        self.is_locked()
-    }
-}
-impl Default for CursorLockGuard {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl Drop for CursorLockGuard {
-    fn drop(&mut self) {
-        self.set_locked(false);
-        self.listener.stop();
-    }
-}
-
-struct CursorLockGuardInner {
-    locked: bool,
-}
-impl CursorLockGuardInner {
-    fn new() -> Self {
-        Self { locked: false }
-    }
-
-    /// Locks and hides the cursor if necessary.
-    fn set_locked(&mut self, locked: bool) {
-        if locked != self.locked {
-            set_cursor_lock(locked);
-            set_cursor_visible(!locked);
-        }
-        self.locked = locked;
-    }
-
-    /// Returns whether or not the cursor is currently locked.
-    fn is_locked(&self) -> bool {
-        self.locked
-    }
+/// Returns true if the "game" is focused; i.e. no UI element but the playable 3d game world
+pub fn is_game_focused() -> bool {
+    get_component(resources(), focus()).unwrap_or_default() == GAME_FOCUS_ID
 }
 
 #[allow(missing_docs)]

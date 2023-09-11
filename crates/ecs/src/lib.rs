@@ -77,7 +77,9 @@ impl<'a> Debug for DebugWorldArchetypes<'a> {
 mod internal_components {
     use super::Message;
 
-    use crate::{components, Description, Resource, WorldEvents};
+    use crate::{
+        components, Description, Resource, WorldEventReader, WorldEventSource, WorldEvents,
+    };
 
     pub trait WorldEventsExt {
         fn add_message<M: Message>(&mut self, message: M);
@@ -85,8 +87,23 @@ mod internal_components {
 
     impl WorldEventsExt for WorldEvents {
         fn add_message<M: Message>(&mut self, message: M) {
-            self.add_event((M::id().to_string(), message.serialize_message().unwrap()));
+            self.add_event((
+                WorldEventSource::Runtime,
+                M::id().to_string(),
+                message.serialize_message().unwrap(),
+            ));
         }
+    }
+
+    pub fn read_messages<M: Message>(
+        reader: &mut WorldEventReader,
+        events: &WorldEvents,
+    ) -> Vec<M> {
+        reader
+            .iter(events)
+            .filter(|(_, (_, name, _))| *name == M::id())
+            .map(|(_, (_, _, event))| M::deserialize_message(event).unwrap())
+            .collect()
     }
 
     components!("ecs", {
@@ -98,7 +115,7 @@ mod internal_components {
     });
 }
 pub use generated::ecs::components::*;
-pub use internal_components::{world_events, WorldEventsExt};
+pub use internal_components::{read_messages, world_events, WorldEventsExt};
 
 pub fn init_components() {
     generated::init();
@@ -1054,8 +1071,16 @@ impl<'de> Deserialize<'de> for ComponentSet {
     }
 }
 
-pub type WorldEvents = FramedEvents<(String, Vec<u8>)>;
-pub type WorldEventReader = FramedEventsReader<(String, Vec<u8>)>;
+#[derive(Clone, PartialEq, Debug)]
+pub enum WorldEventSource {
+    Runtime,
+    Server,
+    Client(String),
+    Local(EntityId),
+}
+
+pub type WorldEvents = FramedEvents<(WorldEventSource, String, Vec<u8>)>;
+pub type WorldEventReader = FramedEventsReader<(WorldEventSource, String, Vec<u8>)>;
 
 #[derive(Debug)]
 pub struct WorldEventsSystem;

@@ -1,7 +1,8 @@
 use super::module_name;
+pub use ambient_ecs::WorldEventSource;
 use ambient_ecs::{
-    components, generated::wasm::components::is_module, Debuggable, EntityId, Resource, World,
-    WorldContext,
+    components, generated::wasm::components::is_module, world_events, Debuggable, EntityId,
+    Resource, World, WorldContext,
 };
 use ambient_package_semantic_native::{client_modules, is_package, server_modules};
 
@@ -11,17 +12,9 @@ components!("wasm::message", {
 });
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum Source {
-    Runtime,
-    Server,
-    Client(String),
-    Local(EntityId),
-}
-
-#[derive(Clone, PartialEq, Debug)]
 pub struct SerializedMessage {
     pub(super) target: Target,
-    pub(super) source: Source,
+    pub(super) source: WorldEventSource,
     pub(super) name: String,
     pub(super) data: Vec<u8>,
 }
@@ -34,15 +27,27 @@ pub enum Target {
     PackageOrModule(EntityId),
 }
 
-pub fn send(world: &mut World, target: Target, source: Source, name: String, data: Vec<u8>) {
-    world
-        .resource_mut(pending_messages())
-        .push(SerializedMessage {
-            target,
-            source,
-            name,
-            data,
-        });
+pub fn send(
+    world: &mut World,
+    target: Target,
+    source: WorldEventSource,
+    name: String,
+    data: Vec<u8>,
+) {
+    if matches!(target, Target::All { .. }) {
+        world
+            .resource_mut(world_events())
+            .add_event((source, name.clone(), data.clone()));
+    } else {
+        world
+            .resource_mut(pending_messages())
+            .push(SerializedMessage {
+                target,
+                source,
+                name,
+                data,
+            });
+    }
 }
 
 pub(super) fn run(
@@ -57,7 +62,7 @@ pub(super) fn run(
     use super::{messenger, module_state, MessageType};
     use ambient_ecs::query;
 
-    let source_id = if let Source::Local(id) = &source {
+    let source_id = if let WorldEventSource::Local(id) = &source {
         Some(*id)
     } else {
         None
@@ -133,7 +138,7 @@ impl<T: ambient_ecs::Message> MessageExt for T {
                 target: module_id
                     .map(Target::PackageOrModule)
                     .unwrap_or(Target::All { include_self: true }),
-                source: Source::Runtime,
+                source: WorldEventSource::Runtime,
                 name: T::id().to_string(),
                 data: self.serialize_message()?,
             },

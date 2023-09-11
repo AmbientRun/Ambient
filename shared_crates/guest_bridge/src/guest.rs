@@ -28,6 +28,10 @@ pub async fn sleep(seconds: f32) {
     api::prelude::sleep(seconds).await;
 }
 
+pub fn broadcast_local_message(_world: &mut ecs::World, message: impl ModuleMessage) {
+    message.send_local_broadcast(true);
+}
+
 pub mod ecs {
     use super::api;
     pub use api::{

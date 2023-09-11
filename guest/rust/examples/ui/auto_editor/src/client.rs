@@ -49,7 +49,7 @@ pub struct SubStruct {
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
     let (state, set_state) = use_state(hooks, MyStruct::new());
-    FocusRoot(vec![WindowSized::el(vec![ScrollArea::el(
+    WindowSized::el(vec![ScrollArea::el(
         ScrollAreaSizing::FitParentWidth,
         FlowColumn(vec![
             MyStruct::editor(state.clone(), set_state, Default::default()),
@@ -57,8 +57,7 @@ fn App(hooks: &mut Hooks) -> Element {
         ])
         .el()
         .with(space_between_items(), STREET),
-    )])])
-    .el()
+    )])
 }
 
 #[main]

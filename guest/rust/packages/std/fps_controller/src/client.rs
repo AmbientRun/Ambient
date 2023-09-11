@@ -10,6 +10,7 @@ use ambient_api::{
         transform::components::{local_to_parent, translation},
     },
     entity::{add_child, get_component, mutate_component_with_default, set_component},
+    input::is_game_focused,
     prelude::*,
 };
 use packages::{
@@ -22,12 +23,11 @@ use packages::{
 
 #[main]
 pub fn main() {
-    let mut cursor_lock = input::CursorLockGuard::new();
     Frame::subscribe(move |_| {
-        let (delta, input) = input::get_delta();
-        if !cursor_lock.auto_unlock_on_escape(&input) {
+        if !is_game_focused() {
             return;
         }
+        let (delta, input) = input::get_delta();
 
         let mut displace = Vec2::ZERO;
         if input.keys.contains(&KeyCode::W) {

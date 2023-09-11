@@ -1,5 +1,6 @@
 use ambient_api::{
     core::{messages::Frame, physics::components::linear_velocity},
+    input::is_game_focused,
     prelude::*,
 };
 use packages::this::{
@@ -9,12 +10,11 @@ use packages::this::{
 
 #[main]
 fn main() {
-    let mut cursor_lock = input::CursorLockGuard::new();
     Frame::subscribe(move |_| {
-        let (delta, input) = input::get_delta();
-        if !cursor_lock.auto_unlock_on_escape(&input) {
+        if !is_game_focused() {
             return;
         }
+        let (delta, _input) = input::get_delta();
 
         Input {
             camera_rotation: delta.mouse_position,

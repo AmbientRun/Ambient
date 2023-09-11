@@ -12,6 +12,7 @@ use ambient_guest_bridge::core::{
         types::FontStyle,
     },
     transform::components::translation,
+    ui::components::focusable,
 };
 use ambient_shared_types::MouseButton;
 use glam::{vec3, vec4, Vec2};
@@ -76,6 +77,7 @@ pub fn Window(
     ]))
     .with_background(vec4(0.0, 0.0, 0.0, 0.5))
     .with(fit_horizontal(), Fit::Parent)
+    .with(focusable(), hooks.instance_id().to_string())
     .with_clickarea()
     .on_mouse_input(move |_world, _, input, button| {
         if button == MouseButton::Left {

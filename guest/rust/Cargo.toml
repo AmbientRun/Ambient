@@ -64,6 +64,7 @@ members = [
     "packages/std/character_movement",
     "packages/std/fps_controller",
     "packages/std/orbit_camera",
+    "packages/std/hide_cursor",
 
     # Packages (tools)
     "packages/tools/console",

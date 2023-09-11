@@ -143,6 +143,8 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Examples**: The games have been moved to `guest/rust/packages/games`. This is to make it clearer that they are packages, not examples.
 - **API**: `entity::wait_for_component` is now marked as `must_use` to ensure users consider the possibility of the entity being despawned.
 - **Elements**: All hooks are now free functions (i.e. `use_state(hooks, ..)` instead of `hooks.use_state(..)`)
+- **UI**: Focus is now global across different packages, and we've removed the FocusRoot component
+- **API**: CursorLockGuard removed and `hide_cursor` package introduced.
 
 #### Non-breaking
 

@@ -88,7 +88,7 @@ pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
     });
     let (command, set_command) = use_state_with(hooks, |_| String::new());
 
-    FocusRoot::el([WindowSized::el([with_rect(Dock::el([
+    WindowSized::el([with_rect(Dock::el([
         // text entry
         TextEditor::new(command, set_command.clone())
             .auto_focus()
@@ -121,7 +121,7 @@ pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
         .with_margin_even(STREET),
     ]))
     .with_background(vec4(0.0, 0.0, 0.0, 0.5))])
-    .with_padding_even(20.)])
+    .with_padding_even(20.)
 }
 
 fn line_to_text(line: &ConsoleLine) -> Element {

@@ -1,0 +1,18 @@
+[package]
+name = "hide_cursor"
+
+edition = "2021"
+publish = false
+version = "0.0.1"
+
+[dependencies]
+ambient_api = { workspace = true }
+
+[[bin]]
+name = "client_hide_cursor"
+path = "src/client.rs"
+required-features = ["client"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]
