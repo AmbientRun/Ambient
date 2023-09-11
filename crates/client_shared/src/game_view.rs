@@ -6,18 +6,22 @@ use ambient_core::window::{
 use ambient_debugger::Debugger;
 use ambient_ecs::{
     generated::{
+        input::{
+            components::{mouse_over_distance, mouse_over_entity},
+            messages::MouseOverChanged,
+        },
         messages,
         ui::{
             components::{focus, focusable},
             messages::FocusChanged,
         },
     },
-    read_messages, world_events, EntityId, WorldEventsExt,
+    read_messages, world_events, EntityId, ModuleMessage, World, WorldEventsExt,
 };
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
 use ambient_element::{
     consume_context, element_component, to_owned, use_frame, use_module_message, use_ref_with,
-    use_runtime_message, use_state, Element, ElementComponentExt, Hooks,
+    use_runtime_message, use_state, Element, ElementComponentExt, Group, Hooks,
 };
 use ambient_layout::Docking;
 use ambient_network::client::{ClientState, GameClientRenderTarget, GameClientWorld};
@@ -105,14 +109,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
         }
     });
 
-    let game_client_world = GameClientWorld
-        .el()
-        .with_clickarea()
-        .el()
-        .with(focusable(), "".to_string());
-
     Dock::el([
-        SyncFocus.el(),
         if show_debug {
             MeasureSize::el(
                 Dock::el([
@@ -178,7 +175,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
             Element::new()
         },
         if show_debug {
-            Dock::el([game_client_world])
+            Dock::el([GameClientWorld.el()])
                 .with_background(vec4(0.2, 0.2, 0.2, 1.))
                 .with(
                     padding(),
@@ -191,57 +188,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                     .into(),
                 )
         } else {
-            game_client_world
+            GameClientWorld.el()
         },
     ])
-    .with_clickarea()
-    .el()
-    .with(focusable(), "IDE".to_string())
-}
-
-#[element_component]
-fn SyncFocus(hooks: &mut Hooks) -> Element {
-    let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
-    use_module_message::<FocusChanged>(hooks, {
-        to_owned!(client_state);
-        move |_world, _, msg| {
-            let mut state = client_state.game_state.lock();
-            if !msg.from_external {
-                *state.world.resource_mut(focus()) = msg.focus.clone();
-                state
-                    .world
-                    .resource_mut(world_events())
-                    .add_message(FocusChanged {
-                        from_external: true,
-                        focus: msg.focus.clone(),
-                    });
-            }
-        }
-    });
-    let reader = use_ref_with(hooks, |_| {
-        client_state
-            .game_state
-            .lock()
-            .world
-            .resource_mut(world_events())
-            .reader()
-    });
-    use_frame(hooks, move |world| {
-        let mut state = client_state.game_state.lock();
-        let mut reader = reader.lock();
-        let messages =
-            read_messages::<FocusChanged>(&mut reader, state.world.resource_mut(world_events()));
-        if let Some(msg) = messages.into_iter().next() {
-            if !msg.from_external {
-                *world.resource_mut(focus()) = msg.focus.clone();
-                world
-                    .resource_mut(world_events())
-                    .add_message(FocusChanged {
-                        from_external: true,
-                        focus: msg.focus.clone(),
-                    });
-            }
-        }
-    });
-    Element::new()
 }

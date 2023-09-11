@@ -7,8 +7,11 @@ use ambient_core::{
 };
 use ambient_ecs::{
     components,
-    generated::input::components::{mouse_over_distance, mouse_over_entity},
-    query, Debuggable, Entity, EntityId, SystemGroup,
+    generated::input::{
+        components::{mouse_over_distance, mouse_over_entity},
+        messages::MouseOverChanged,
+    },
+    query, world_events, Debuggable, Entity, EntityId, SystemGroup, WorldEventsExt,
 };
 use ambient_native_std::shapes::{RayIntersectable, AABB};
 use glam::Vec2;
@@ -110,13 +113,20 @@ pub fn frame_systems() -> SystemGroup {
                                 )
                                 .unwrap();
                         }
+                        world
+                            .add_component(id, mouse_over_entity(), intersecting_entity)
+                            .unwrap();
+                        world
+                            .add_component(id, mouse_over_distance(), intersecting_dist)
+                            .unwrap();
+                        world
+                            .resource_mut(world_events())
+                            .add_message(MouseOverChanged {
+                                from_external: false,
+                                mouse_over: intersecting_entity,
+                                distance: intersecting_dist,
+                            });
                     }
-                    world
-                        .add_component(id, mouse_over_entity(), intersecting_entity)
-                        .unwrap();
-                    world
-                        .add_component(id, mouse_over_distance(), intersecting_dist)
-                        .unwrap();
                 }
             }),
         ],

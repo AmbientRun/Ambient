@@ -34,3 +34,9 @@ type = "Vec3"
 name = "Mouse pickable min"
 description = "This entity can be clicked by the mouse, and this component defines the min AABB bound of the click area."
 attributes = ["Debuggable", "Networked", "Store"]
+
+
+[messages.MouseOverChanged]
+description = "Mouse over has been updated"
+fields = { from_external = "Bool", mouse_over = "EntityId", distance = "F32" }
+as_module_message = true

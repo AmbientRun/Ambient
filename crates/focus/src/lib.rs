@@ -1,25 +1,24 @@
 use ambient_ecs::{
     generated::{
         input::components::mouse_over_entity,
+        messages::WindowMouseInput,
         ui::{
             components::{focus, focusable},
             messages::FocusChanged,
         },
     },
-    world_events, FnSystem, SystemGroup, WorldEventsExt,
+    read_messages, world_events, FnSystem, SystemGroup, WorldEventReader, WorldEventsExt,
 };
-use winit::event::{Event, MouseButton, WindowEvent};
 
-pub fn systems() -> SystemGroup<Event<'static, ()>> {
+pub fn systems() -> SystemGroup {
+    let mut reader = WorldEventReader::new();
     SystemGroup::new(
         "focus",
-        vec![Box::new(FnSystem::new(|world, event| {
-            if let Event::WindowEvent {
-                event: WindowEvent::MouseInput { button, .. },
-                ..
-            } = event
+        vec![Box::new(FnSystem::new(move |world, _| {
+            for event in
+                read_messages::<WindowMouseInput>(&mut reader, world.resource(world_events()))
             {
-                if *button == MouseButton::Left {
+                if event.button == 0 {
                     let mouse_over = *world.resource(mouse_over_entity());
                     let focus_id = world
                         .get_cloned(mouse_over, focusable())

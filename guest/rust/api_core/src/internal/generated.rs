@@ -800,6 +800,57 @@ mod raw {
                     *MOUSE_PICKABLE_MIN
                 }
             }
+            #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+            #[doc = r" and with other modules."]
+            pub mod messages {
+                use crate::{
+                    message::{
+                        Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                    },
+                    prelude::*,
+                };
+                #[derive(Clone, Debug)]
+                #[doc = "**MouseOverChanged**: Mouse over has been updated"]
+                pub struct MouseOverChanged {
+                    pub from_external: bool,
+                    pub mouse_over: EntityId,
+                    pub distance: f32,
+                }
+                impl MouseOverChanged {
+                    #[allow(clippy::too_many_arguments)]
+                    pub fn new(
+                        from_external: impl Into<bool>,
+                        mouse_over: impl Into<EntityId>,
+                        distance: impl Into<f32>,
+                    ) -> Self {
+                        Self {
+                            from_external: from_external.into(),
+                            mouse_over: mouse_over.into(),
+                            distance: distance.into(),
+                        }
+                    }
+                }
+                impl Message for MouseOverChanged {
+                    fn id() -> &'static str {
+                        "MouseOverChanged"
+                    }
+                    fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                        let mut output = vec![];
+                        self.from_external.serialize_message_part(&mut output)?;
+                        self.mouse_over.serialize_message_part(&mut output)?;
+                        self.distance.serialize_message_part(&mut output)?;
+                        Ok(output)
+                    }
+                    fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                        Ok(Self {
+                            from_external: bool::deserialize_message_part(&mut input)?,
+                            mouse_over: EntityId::deserialize_message_part(&mut input)?,
+                            distance: f32::deserialize_message_part(&mut input)?,
+                        })
+                    }
+                }
+                impl ModuleMessage for MouseOverChanged {}
+            }
         }
         #[allow(unused)]
         pub mod layout {

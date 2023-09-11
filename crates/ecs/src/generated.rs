@@ -242,6 +242,56 @@ mod raw {
                 use std::time::Duration;
                 components ! ("input" , { # [doc = "**Mouse over entity**: The entity the mouse is currently over.\n\n*Attributes*: Debuggable, Resource"] @ [Debuggable , Resource , Name ["Mouse over entity"] , Description ["The entity the mouse is currently over."]] mouse_over_entity : EntityId , # [doc = "**Mouse over distance**: This distance to the entity that the mouse is currently over.\n\n*Attributes*: Debuggable, Resource"] @ [Debuggable , Resource , Name ["Mouse over distance"] , Description ["This distance to the entity that the mouse is currently over."]] mouse_over_distance : f32 , # [doc = "**Mouse over**: The number of mouse cursors that are currently over this entity.\n\n*Attributes*: Debuggable"] @ [Debuggable , Name ["Mouse over"] , Description ["The number of mouse cursors that are currently over this entity."]] is_mouse_over : u32 , # [doc = "**Mouse pickable max**: This entity can be clicked by the mouse, and this component defines the max AABB bound of the click area.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Mouse pickable max"] , Description ["This entity can be clicked by the mouse, and this component defines the max AABB bound of the click area."]] mouse_pickable_max : Vec3 , # [doc = "**Mouse pickable min**: This entity can be clicked by the mouse, and this component defines the min AABB bound of the click area.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Mouse pickable min"] , Description ["This entity can be clicked by the mouse, and this component defines the min AABB bound of the click area."]] mouse_pickable_min : Vec3 , });
             }
+            #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+            #[doc = r" and with other modules."]
+            pub mod messages {
+                use crate::{Entity, EntityId};
+                use ambient_package_rt::message_serde::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                };
+                use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+                #[derive(Clone, Debug)]
+                #[doc = "**MouseOverChanged**: Mouse over has been updated"]
+                pub struct MouseOverChanged {
+                    pub from_external: bool,
+                    pub mouse_over: EntityId,
+                    pub distance: f32,
+                }
+                impl MouseOverChanged {
+                    #[allow(clippy::too_many_arguments)]
+                    pub fn new(
+                        from_external: impl Into<bool>,
+                        mouse_over: impl Into<EntityId>,
+                        distance: impl Into<f32>,
+                    ) -> Self {
+                        Self {
+                            from_external: from_external.into(),
+                            mouse_over: mouse_over.into(),
+                            distance: distance.into(),
+                        }
+                    }
+                }
+                impl Message for MouseOverChanged {
+                    fn id() -> &'static str {
+                        "MouseOverChanged"
+                    }
+                    fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                        let mut output = vec![];
+                        self.from_external.serialize_message_part(&mut output)?;
+                        self.mouse_over.serialize_message_part(&mut output)?;
+                        self.distance.serialize_message_part(&mut output)?;
+                        Ok(output)
+                    }
+                    fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                        Ok(Self {
+                            from_external: bool::deserialize_message_part(&mut input)?,
+                            mouse_over: EntityId::deserialize_message_part(&mut input)?,
+                            distance: f32::deserialize_message_part(&mut input)?,
+                        })
+                    }
+                }
+                impl ModuleMessage for MouseOverChanged {}
+            }
         }
         #[allow(unused)]
         pub mod layout {

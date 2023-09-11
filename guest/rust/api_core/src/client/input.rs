@@ -45,7 +45,7 @@ pub fn set_cursor_visible(visible: bool) {
 
 /// Sets the cursor's lock state. If set, the cursor will not be able to move outside of the window.
 ///
-/// You may want to combine this with [set_cursor_visible] or use [CursorLockGuard] instead.
+/// You may want to combine this with [set_cursor_visible].
 pub fn set_cursor_lock(locked: bool) {
     wit::client_input::set_cursor_lock(locked);
 }

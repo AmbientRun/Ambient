@@ -100,6 +100,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             remove_at_time_system(),
             refcount_system(),
             Box::new(WorldEventsSystem),
+            Box::new(ambient_focus::systems()),
             if full {
                 Box::new(ambient_input::picking::frame_systems())
             } else {
@@ -426,7 +427,6 @@ impl AppBuilder {
             vec![
                 Box::new(assets_camera_systems()),
                 Box::new(ambient_input::event_systems()),
-                Box::new(ambient_focus::systems()),
                 Box::new(renderers::systems()),
             ],
         );
