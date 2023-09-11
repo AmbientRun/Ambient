@@ -30,6 +30,7 @@ pub fn main() {
                     perspective_infinite_reverse: (),
                     optional: PerspectiveInfiniteReverseCameraOptional {
                         translation: Some(Vec3::ZERO),
+                        main_scene: Some(()),
                         ..Default::default()
                     },
                 }

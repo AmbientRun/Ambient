@@ -140,6 +140,9 @@ projection_view = { suggested = "Identity" }
 active_camera = { suggested = 0.0 }
 "transform::local_to_world" = { suggested = "Identity" }
 "transform::inv_local_to_world" = { suggested = "Identity" }
+[concepts.Camera.components.optional]
+"app::main_scene" = { description = "Either the main or UI scene must be specified for this camera to be used." }
+"app::ui_scene" = { description = "Either the main or UI scene must be specified for this camera to be used." }
 
 [concepts.PerspectiveCommonCamera]
 name = "Perspective Common Camera"

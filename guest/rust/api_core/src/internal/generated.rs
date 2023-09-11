@@ -524,6 +524,10 @@ mod raw {
                     pub rotation: Option<Quat>,
                     #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
                     pub scale: Option<Vec3>,
+                    #[doc = "**Component**: `ambient_core::app::main_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the main scene.\n\n"]
+                    pub main_scene: Option<()>,
+                    #[doc = "**Component**: `ambient_core::app::ui_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the UI scene.\n\n"]
+                    pub ui_scene: Option<()>,
                 }
                 impl crate::ecs::Concept for Camera {
                     fn make(self) -> Entity {
@@ -563,6 +567,15 @@ mod raw {
                         }
                         if let Some(scale) = self.optional.scale {
                             entity.set(crate::ambient_core::transform::components::scale(), scale);
+                        }
+                        if let Some(main_scene) = self.optional.main_scene {
+                            entity.set(
+                                crate::ambient_core::app::components::main_scene(),
+                                main_scene,
+                            );
+                        }
+                        if let Some(ui_scene) = self.optional.ui_scene {
+                            entity.set(crate::ambient_core::app::components::ui_scene(), ui_scene);
                         }
                         entity
                     }
@@ -605,6 +618,14 @@ mod raw {
                                     id,
                                     crate::ambient_core::transform::components::scale(),
                                 ),
+                                main_scene: entity::get_component(
+                                    id,
+                                    crate::ambient_core::app::components::main_scene(),
+                                ),
+                                ui_scene: entity::get_component(
+                                    id,
+                                    crate::ambient_core::app::components::ui_scene(),
+                                ),
                             },
                         })
                     }
@@ -629,6 +650,10 @@ mod raw {
                                     .get(crate::ambient_core::transform::components::rotation()),
                                 scale: entity
                                     .get(crate::ambient_core::transform::components::scale()),
+                                main_scene: entity
+                                    .get(crate::ambient_core::app::components::main_scene()),
+                                ui_scene: entity
+                                    .get(crate::ambient_core::app::components::ui_scene()),
                             },
                         })
                     }
@@ -687,6 +712,10 @@ mod raw {
                     pub rotation: Option<Quat>,
                     #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
                     pub scale: Option<Vec3>,
+                    #[doc = "**Component**: `ambient_core::app::main_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the main scene.\n\n"]
+                    pub main_scene: Option<()>,
+                    #[doc = "**Component**: `ambient_core::app::ui_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the UI scene.\n\n"]
+                    pub ui_scene: Option<()>,
                 }
                 impl crate::ecs::Concept for PerspectiveCommonCamera {
                     fn make(self) -> Entity {
@@ -731,6 +760,15 @@ mod raw {
                         }
                         if let Some(scale) = self.optional.scale {
                             entity.set(crate::ambient_core::transform::components::scale(), scale);
+                        }
+                        if let Some(main_scene) = self.optional.main_scene {
+                            entity.set(
+                                crate::ambient_core::app::components::main_scene(),
+                                main_scene,
+                            );
+                        }
+                        if let Some(ui_scene) = self.optional.ui_scene {
+                            entity.set(crate::ambient_core::app::components::ui_scene(), ui_scene);
                         }
                         entity
                     }
@@ -781,6 +819,14 @@ mod raw {
                                     id,
                                     crate::ambient_core::transform::components::scale(),
                                 ),
+                                main_scene: entity::get_component(
+                                    id,
+                                    crate::ambient_core::app::components::main_scene(),
+                                ),
+                                ui_scene: entity::get_component(
+                                    id,
+                                    crate::ambient_core::app::components::ui_scene(),
+                                ),
                             },
                         })
                     }
@@ -808,6 +854,10 @@ mod raw {
                                     .get(crate::ambient_core::transform::components::rotation()),
                                 scale: entity
                                     .get(crate::ambient_core::transform::components::scale()),
+                                main_scene: entity
+                                    .get(crate::ambient_core::app::components::main_scene()),
+                                ui_scene: entity
+                                    .get(crate::ambient_core::app::components::ui_scene()),
                             },
                         })
                     }
@@ -874,6 +924,10 @@ mod raw {
                     pub rotation: Option<Quat>,
                     #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
                     pub scale: Option<Vec3>,
+                    #[doc = "**Component**: `ambient_core::app::main_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the main scene.\n\n"]
+                    pub main_scene: Option<()>,
+                    #[doc = "**Component**: `ambient_core::app::ui_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the UI scene.\n\n"]
+                    pub ui_scene: Option<()>,
                 }
                 impl crate::ecs::Concept for PerspectiveCamera {
                     fn make(self) -> Entity {
@@ -923,6 +977,15 @@ mod raw {
                         }
                         if let Some(scale) = self.optional.scale {
                             entity.set(crate::ambient_core::transform::components::scale(), scale);
+                        }
+                        if let Some(main_scene) = self.optional.main_scene {
+                            entity.set(
+                                crate::ambient_core::app::components::main_scene(),
+                                main_scene,
+                            );
+                        }
+                        if let Some(ui_scene) = self.optional.ui_scene {
+                            entity.set(crate::ambient_core::app::components::ui_scene(), ui_scene);
                         }
                         entity
                     }
@@ -981,6 +1044,14 @@ mod raw {
                                     id,
                                     crate::ambient_core::transform::components::scale(),
                                 ),
+                                main_scene: entity::get_component(
+                                    id,
+                                    crate::ambient_core::app::components::main_scene(),
+                                ),
+                                ui_scene: entity::get_component(
+                                    id,
+                                    crate::ambient_core::app::components::ui_scene(),
+                                ),
                             },
                         })
                     }
@@ -1011,6 +1082,10 @@ mod raw {
                                     .get(crate::ambient_core::transform::components::rotation()),
                                 scale: entity
                                     .get(crate::ambient_core::transform::components::scale()),
+                                main_scene: entity
+                                    .get(crate::ambient_core::app::components::main_scene()),
+                                ui_scene: entity
+                                    .get(crate::ambient_core::app::components::ui_scene()),
                             },
                         })
                     }
@@ -1079,6 +1154,10 @@ mod raw {
                     pub rotation: Option<Quat>,
                     #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
                     pub scale: Option<Vec3>,
+                    #[doc = "**Component**: `ambient_core::app::main_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the main scene.\n\n"]
+                    pub main_scene: Option<()>,
+                    #[doc = "**Component**: `ambient_core::app::ui_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the UI scene.\n\n"]
+                    pub ui_scene: Option<()>,
                 }
                 impl crate::ecs::Concept for PerspectiveInfiniteReverseCamera {
                     fn make(self) -> Entity {
@@ -1098,13 +1177,22 @@ mod raw {
                         if let Some(scale) = self.optional.scale {
                             entity.set(crate::ambient_core::transform::components::scale(), scale);
                         }
+                        if let Some(main_scene) = self.optional.main_scene {
+                            entity.set(
+                                crate::ambient_core::app::components::main_scene(),
+                                main_scene,
+                            );
+                        }
+                        if let Some(ui_scene) = self.optional.ui_scene {
+                            entity.set(crate::ambient_core::app::components::ui_scene(), ui_scene);
+                        }
                         entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        Some (Self { local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity :: get_component (id , crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity :: get_component (id , crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity :: get_component (id , crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity :: get_component (id , crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , perspective_infinite_reverse : entity :: get_component (id , crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()) ? , optional : PerspectiveInfiniteReverseCameraOptional { translation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity :: get_component (id , crate :: ambient_core :: transform :: components :: scale ()) , } })
+                        Some (Self { local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity :: get_component (id , crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity :: get_component (id , crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity :: get_component (id , crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity :: get_component (id , crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , perspective_infinite_reverse : entity :: get_component (id , crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()) ? , optional : PerspectiveInfiniteReverseCameraOptional { translation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity :: get_component (id , crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: ui_scene ()) , } })
                     }
                     fn get_unspawned(entity: &Entity) -> Option<Self> {
-                        Some (Self { local_to_world : entity . get (crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity . get (crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity . get (crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity . get (crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity . get (crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity . get (crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity . get (crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity . get (crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , perspective_infinite_reverse : entity . get (crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()) ? , optional : PerspectiveInfiniteReverseCameraOptional { translation : entity . get (crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity . get (crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity . get (crate :: ambient_core :: transform :: components :: scale ()) , } })
+                        Some (Self { local_to_world : entity . get (crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity . get (crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity . get (crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity . get (crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity . get (crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity . get (crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity . get (crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity . get (crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , perspective_infinite_reverse : entity . get (crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()) ? , optional : PerspectiveInfiniteReverseCameraOptional { translation : entity . get (crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity . get (crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity . get (crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity . get (crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity . get (crate :: ambient_core :: app :: components :: ui_scene ()) , } })
                     }
                     fn contained_by_spawned(id: EntityId) -> bool {
                         entity :: has_components (id , & [& crate :: ambient_core :: transform :: components :: local_to_world () , & crate :: ambient_core :: camera :: components :: near () , & crate :: ambient_core :: camera :: components :: projection () , & crate :: ambient_core :: camera :: components :: projection_view () , & crate :: ambient_core :: camera :: components :: active_camera () , & crate :: ambient_core :: transform :: components :: inv_local_to_world () , & crate :: ambient_core :: camera :: components :: fovy () , & crate :: ambient_core :: camera :: components :: aspect_ratio () , & crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()])
@@ -1163,6 +1251,10 @@ mod raw {
                     pub rotation: Option<Quat>,
                     #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
                     pub scale: Option<Vec3>,
+                    #[doc = "**Component**: `ambient_core::app::main_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the main scene.\n\n"]
+                    pub main_scene: Option<()>,
+                    #[doc = "**Component**: `ambient_core::app::ui_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the UI scene.\n\n"]
+                    pub ui_scene: Option<()>,
                 }
                 impl crate::ecs::Concept for OrthographicCamera {
                     fn make(self) -> Entity {
@@ -1223,6 +1315,15 @@ mod raw {
                         }
                         if let Some(scale) = self.optional.scale {
                             entity.set(crate::ambient_core::transform::components::scale(), scale);
+                        }
+                        if let Some(main_scene) = self.optional.main_scene {
+                            entity.set(
+                                crate::ambient_core::app::components::main_scene(),
+                                main_scene,
+                            );
+                        }
+                        if let Some(ui_scene) = self.optional.ui_scene {
+                            entity.set(crate::ambient_core::app::components::ui_scene(), ui_scene);
                         }
                         entity
                     }
@@ -1289,6 +1390,14 @@ mod raw {
                                     id,
                                     crate::ambient_core::transform::components::scale(),
                                 ),
+                                main_scene: entity::get_component(
+                                    id,
+                                    crate::ambient_core::app::components::main_scene(),
+                                ),
+                                ui_scene: entity::get_component(
+                                    id,
+                                    crate::ambient_core::app::components::ui_scene(),
+                                ),
                             },
                         })
                     }
@@ -1326,6 +1435,10 @@ mod raw {
                                     .get(crate::ambient_core::transform::components::rotation()),
                                 scale: entity
                                     .get(crate::ambient_core::transform::components::scale()),
+                                main_scene: entity
+                                    .get(crate::ambient_core::app::components::main_scene()),
+                                ui_scene: entity
+                                    .get(crate::ambient_core::app::components::ui_scene()),
                             },
                         })
                     }
