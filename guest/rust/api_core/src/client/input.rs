@@ -50,11 +50,12 @@ pub fn set_cursor_lock(locked: bool) {
     wit::client_input::set_cursor_lock(locked);
 }
 
+/// Focus id of the "game"; i.e. 3d world rather than any UI element
+pub const GAME_FOCUS_ID: &str = "Game";
+
 /// Returns true if the "game" is focused; i.e. no UI element but the playable 3d game world
 pub fn is_game_focused() -> bool {
-    get_component(resources(), focus())
-        .unwrap_or_default()
-        .is_empty()
+    get_component(resources(), focus()).unwrap_or_default() == GAME_FOCUS_ID
 }
 
 #[allow(missing_docs)]

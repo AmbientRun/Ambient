@@ -1,10 +1,14 @@
 use ambient_api::{
     core::{
         messages::Frame,
-        ui::{components::focus, messages::FocusChanged},
+        transform::components::translation,
+        ui::{
+            components::{focus, focusable},
+            messages::FocusChanged,
+        },
     },
     entity::{resources, set_component},
-    input::{is_game_focused, set_cursor_lock, set_cursor_visible},
+    input::{is_game_focused, set_cursor_lock, set_cursor_visible, GAME_FOCUS_ID},
     prelude::*,
 };
 
@@ -20,6 +24,12 @@ fn update() {
 
 #[main]
 pub fn main() {
+    WindowSized::el([])
+        .init(translation(), vec3(0., 0., 1.1))
+        .with_clickarea()
+        .el()
+        .with(focusable(), GAME_FOCUS_ID.to_string())
+        .spawn_interactive();
     Frame::subscribe(move |_| {
         if is_game_focused() {
             let (_, input) = input::get_delta();
