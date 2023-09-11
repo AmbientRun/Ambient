@@ -81,8 +81,7 @@ async fn init(app: &mut App, server_url: String) {
         ambient_client_shared::player::PlayerRawInputHandler.el(),
         WindowSized::el([
             MainApp::el(server_url).with(padding(), Borders::even(10.).into())
-        ])
-        .el(),
+        ]),
     ])
     .el()
     .spawn_interactive(world);
