@@ -196,7 +196,8 @@ http = { version = "0.2.9" }
 #
 # WASM
 #
-wasi-cap-std-sync = { version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime", rev = "181d005c45965b580b05df7bdaa29a8a4b4e5827" }
+wasi-cap-std-sync = { version = "14.0.0", git = "https://github.com/bytecodealliance/wasmtime", rev = "9f00198611537c7a9b384c9f9e3db85e0ca15123" }
+
 wit-bindgen-core = "0.9.0"
 wit-bindgen-rust = "0.9.0"
 wit-component = "0.11.0"
