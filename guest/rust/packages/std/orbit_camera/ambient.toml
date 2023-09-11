@@ -1,0 +1,21 @@
+[package]
+id = "orbit_camera"
+name = "Orbit Camera"
+description = "Implements a clientside-only orbit camera."
+version = "0.0.1"
+content = { type = "Asset", code = true }
+
+[components]
+is_orbit_camera = { type = "Empty", attributes = ["Debuggable", "Networked"] }
+camera_angle = { type = "Vec2", attributes = ["Debuggable", "Networked"] }
+camera_distance = { type = "F32", attributes = ["Debuggable", "Networked"] }
+
+[concepts.OrbitCamera]
+name = "Orbit Camera"
+description = "An orbit camera."
+[concepts.OrbitCamera.components.required]
+is_orbit_camera = {}
+"ambient_core::transform::lookat_target" = {}
+[concepts.OrbitCamera.components.optional]
+camera_angle = {}
+camera_distance = {}
