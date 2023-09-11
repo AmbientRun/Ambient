@@ -10,9 +10,9 @@ use packages::this::{
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
-    FocusRoot::el([FlowColumn::el([NewTodoItem.el(), TodoItems.el()])
+    FlowColumn::el([NewTodoItem.el(), TodoItems.el()])
         .with_padding_even(STREET)
-        .with(space_between_items(), 10.)])
+        .with(space_between_items(), 10.)
 }
 
 #[element_component]

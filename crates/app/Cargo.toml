@@ -20,6 +20,7 @@ ambient_renderer = { path = "../renderer" , version = "0.3.0-dev" }
 ambient_cameras = { path = "../cameras" , version = "0.3.0-dev" }
 ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
 ambient_ui_native = { path = "../ui_native" , version = "0.3.0-dev" }
+ambient_focus = { path = "../focus" , version = "0.3.0-dev" }
 ambient_input = { path = "../input" , version = "0.3.0-dev" }
 ambient_model = { path = "../model" , version = "0.3.0-dev" }
 ambient_animation = { path = "../animation" , version = "0.3.0-dev" }

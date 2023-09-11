@@ -1,0 +1,5 @@
+[package]
+id = "hide_cursor"
+name = "hide_cursor"
+version = "0.0.1"
+content = { type = "Asset", code = true }

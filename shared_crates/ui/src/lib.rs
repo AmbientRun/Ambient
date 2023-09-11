@@ -28,25 +28,25 @@
 //! [See all UI examples here](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui).
 #![deny(missing_docs)]
 
-use ambient_cb::cb;
+use ambient_cb::{cb, Cb};
 use ambient_element::{
-    consume_context, define_el_function_for_vec_element_newtype, element_component,
-    provide_context, to_owned, use_frame, use_runtime_message, use_state, Element,
-    ElementComponent, ElementComponentExt, Hooks, Setter,
+    element_component, use_frame, use_module_message, use_rerender_signal, use_runtime_message,
+    use_state, Element, ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::{
+    broadcast_local_message,
     core::{
         app::components::{ui_scene, window_logical_size, window_physical_size},
         layout::components::{
             gpu_ui_size, height, margin, mesh_to_local_from_size, padding, width,
         },
-        messages,
         rect::components::{background_color, background_url, rect},
         transform::components::{
             local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation,
         },
+        ui::{components::focus, messages::FocusChanged},
     },
-    ecs::World,
+    ecs::{EntityId, World},
 };
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
 use clickarea::ClickArea;
@@ -130,43 +130,57 @@ pub fn Line(_hooks: &mut Hooks) -> Element {
     with_rect(UIBase.el()).with(background_color(), Vec4::ONE)
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-/// Keeps track of which element has focus.
-pub struct Focus(Option<(String, u128)>);
-impl Focus {
-    /// Creates a new focus tracker.
-    pub fn new(focus: Option<String>) -> Self {
-        Self(focus.map(|x| (x, rand::random())))
+fn use_focus_state(hooks: &mut Hooks) -> String {
+    let rerender = use_rerender_signal(hooks);
+    use_module_message::<FocusChanged>(hooks, move |_, _, _| {
+        rerender();
+    });
+    hooks.world.resource(focus()).clone()
+}
+
+/// Update the current focus to `new_focus` (if it's different from the current focus)
+pub fn set_focus(world: &mut World, new_focus: String) {
+    let old_focus = world.get_cloned(EntityId::resources(), focus()).unwrap();
+    if old_focus != new_focus {
+        world
+            .set(EntityId::resources(), focus(), new_focus.clone())
+            .unwrap();
+
+        broadcast_local_message(
+            world,
+            FocusChanged {
+                from_external: false,
+                focus: new_focus,
+            },
+        );
     }
 }
 
-#[derive(Debug, Clone)]
-/// Provides a context for focusable UI elements.
-pub struct FocusRoot(pub Vec<Element>);
-define_el_function_for_vec_element_newtype!(FocusRoot);
-impl ElementComponent for FocusRoot {
-    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        provide_context(hooks, || Focus::new(None));
-        let mut children = self.0;
-        children.push(FocusResetter.el());
-        Element::new().children(children)
-    }
+/// A hook that returns the current focus state for this element and a callback to set the focus state.
+pub fn use_focus(hooks: &mut Hooks) -> (bool, FocusSetter) {
+    use_focus_for_instance_id(hooks, hooks.instance_id().to_owned())
 }
-#[element_component]
-fn FocusResetter(hooks: &mut Hooks) -> Element {
-    let (focused, set_focus) = consume_context::<Focus>(hooks).unwrap();
-    let (reset_focus, set_reset_focus) = use_state(hooks, Focus(None));
-    use_runtime_message::<messages::WindowMouseInput>(hooks, {
-        to_owned![focused, set_reset_focus];
-        move |_world, _event| {
-            set_reset_focus(focused.clone());
-        }
-    });
-    if focused == reset_focus && focused.0.is_some() {
-        set_focus(Focus(None));
-        set_reset_focus(Focus(None));
-    }
-    Element::new()
+
+/// Set or unset focus of this element instance
+pub type FocusSetter = Cb<dyn Fn(&mut World, bool) + Sync + Send>;
+
+/// A hook that returns the current focus state for this element, given a specific `instance_id`, and a callback to set the focus state.
+pub fn use_focus_for_instance_id(hooks: &mut Hooks, instance_id: String) -> (bool, FocusSetter) {
+    let current_focus = use_focus_state(hooks);
+    let focused = current_focus == instance_id;
+    (
+        focused,
+        cb(move |world, new_focus| {
+            set_focus(
+                world,
+                if new_focus {
+                    instance_id.clone()
+                } else {
+                    "".to_string()
+                },
+            );
+        }),
+    )
 }
 
 /// A trait that provides helper methods for UI elements.
@@ -247,29 +261,4 @@ pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
         }
     });
     res
-}
-
-/// A hook that returns the current focus state for this element and a callback to set the focus state.
-pub fn use_focus(hooks: &mut Hooks) -> (bool, Setter<bool>) {
-    use_focus_for_instance_id(hooks, hooks.instance_id().to_owned())
-}
-
-/// A hook that returns the current focus state for this element, given a specific `instance_id`, and a callback to set the focus state.
-pub fn use_focus_for_instance_id(hooks: &mut Hooks, instance_id: String) -> (bool, Setter<bool>) {
-    let (focus, set_focus) = consume_context::<Focus>(hooks).expect("No FocusRoot available");
-    let focused = if let Focus(Some((focused, _))) = &focus {
-        focused == &instance_id
-    } else {
-        false
-    };
-    (
-        focused,
-        cb(move |new_focus| {
-            set_focus(Focus::new(if new_focus {
-                Some(instance_id.clone())
-            } else {
-                None
-            }));
-        }),
-    )
 }

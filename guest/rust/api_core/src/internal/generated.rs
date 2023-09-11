@@ -765,11 +765,25 @@ mod raw {
                     once_cell::sync::Lazy,
                     prelude::*,
                 };
-                static MOUSE_OVER: Lazy<Component<u32>> =
-                    Lazy::new(|| __internal_get_component("ambient_core::input::mouse_over"));
-                #[doc = "**Mouse over**: The number of mouse cursors that are currently over this entity.\n\n*Attributes*: Debuggable, Networked, Store"]
-                pub fn mouse_over() -> Component<u32> {
-                    *MOUSE_OVER
+                static MOUSE_OVER_ENTITY: Lazy<Component<EntityId>> = Lazy::new(|| {
+                    __internal_get_component("ambient_core::input::mouse_over_entity")
+                });
+                #[doc = "**Mouse over entity**: The entity the mouse is currently over.\n\n*Attributes*: Debuggable, Resource"]
+                pub fn mouse_over_entity() -> Component<EntityId> {
+                    *MOUSE_OVER_ENTITY
+                }
+                static MOUSE_OVER_DISTANCE: Lazy<Component<f32>> = Lazy::new(|| {
+                    __internal_get_component("ambient_core::input::mouse_over_distance")
+                });
+                #[doc = "**Mouse over distance**: This distance to the entity that the mouse is currently over.\n\n*Attributes*: Debuggable, Resource"]
+                pub fn mouse_over_distance() -> Component<f32> {
+                    *MOUSE_OVER_DISTANCE
+                }
+                static IS_MOUSE_OVER: Lazy<Component<u32>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::input::is_mouse_over"));
+                #[doc = "**Mouse over**: The number of mouse cursors that are currently over this entity.\n\n*Attributes*: Debuggable"]
+                pub fn is_mouse_over() -> Component<u32> {
+                    *IS_MOUSE_OVER
                 }
                 static MOUSE_PICKABLE_MAX: Lazy<Component<Vec3>> = Lazy::new(|| {
                     __internal_get_component("ambient_core::input::mouse_pickable_max")
@@ -785,6 +799,57 @@ mod raw {
                 pub fn mouse_pickable_min() -> Component<Vec3> {
                     *MOUSE_PICKABLE_MIN
                 }
+            }
+            #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+            #[doc = r" and with other modules."]
+            pub mod messages {
+                use crate::{
+                    message::{
+                        Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                    },
+                    prelude::*,
+                };
+                #[derive(Clone, Debug)]
+                #[doc = "**MouseOverChanged**: Mouse over has been updated"]
+                pub struct MouseOverChanged {
+                    pub from_external: bool,
+                    pub mouse_over: EntityId,
+                    pub distance: f32,
+                }
+                impl MouseOverChanged {
+                    #[allow(clippy::too_many_arguments)]
+                    pub fn new(
+                        from_external: impl Into<bool>,
+                        mouse_over: impl Into<EntityId>,
+                        distance: impl Into<f32>,
+                    ) -> Self {
+                        Self {
+                            from_external: from_external.into(),
+                            mouse_over: mouse_over.into(),
+                            distance: distance.into(),
+                        }
+                    }
+                }
+                impl Message for MouseOverChanged {
+                    fn id() -> &'static str {
+                        "MouseOverChanged"
+                    }
+                    fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                        let mut output = vec![];
+                        self.from_external.serialize_message_part(&mut output)?;
+                        self.mouse_over.serialize_message_part(&mut output)?;
+                        self.distance.serialize_message_part(&mut output)?;
+                        Ok(output)
+                    }
+                    fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                        Ok(Self {
+                            from_external: bool::deserialize_message_part(&mut input)?,
+                            mouse_over: EntityId::deserialize_message_part(&mut input)?,
+                            distance: f32::deserialize_message_part(&mut input)?,
+                        })
+                    }
+                }
+                impl ModuleMessage for MouseOverChanged {}
             }
         }
         #[allow(unused)]
@@ -2548,6 +2613,72 @@ mod raw {
                         crate::ambient_core::transform::components::local_to_world(),
                     )
                 }
+            }
+        }
+        #[allow(unused)]
+        pub mod ui {
+            #[doc = r" Auto-generated component definitions."]
+            pub mod components {
+                use crate::{
+                    ecs::{Component, __internal_get_component},
+                    once_cell::sync::Lazy,
+                    prelude::*,
+                };
+                static FOCUS: Lazy<Component<String>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::ui::focus"));
+                #[doc = "**Focus**: Currently focused object.\n\n*Attributes*: Debuggable, Networked, Resource"]
+                pub fn focus() -> Component<String> {
+                    *FOCUS
+                }
+                static FOCUSABLE: Lazy<Component<String>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::ui::focusable"));
+                #[doc = "**Focus**: This entity can be focused. The value is the focus id.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn focusable() -> Component<String> {
+                    *FOCUSABLE
+                }
+            }
+            #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+            #[doc = r" and with other modules."]
+            pub mod messages {
+                use crate::{
+                    message::{
+                        Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                    },
+                    prelude::*,
+                };
+                #[derive(Clone, Debug)]
+                #[doc = "**FocusChanged**: Focus has been updated"]
+                pub struct FocusChanged {
+                    pub from_external: bool,
+                    pub focus: String,
+                }
+                impl FocusChanged {
+                    #[allow(clippy::too_many_arguments)]
+                    pub fn new(from_external: impl Into<bool>, focus: impl Into<String>) -> Self {
+                        Self {
+                            from_external: from_external.into(),
+                            focus: focus.into(),
+                        }
+                    }
+                }
+                impl Message for FocusChanged {
+                    fn id() -> &'static str {
+                        "FocusChanged"
+                    }
+                    fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                        let mut output = vec![];
+                        self.from_external.serialize_message_part(&mut output)?;
+                        self.focus.serialize_message_part(&mut output)?;
+                        Ok(output)
+                    }
+                    fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                        Ok(Self {
+                            from_external: bool::deserialize_message_part(&mut input)?,
+                            focus: String::deserialize_message_part(&mut input)?,
+                        })
+                    }
+                }
+                impl ModuleMessage for FocusChanged {}
             }
         }
         #[allow(unused)]

@@ -15,7 +15,7 @@ use ambient_api::{
         use_entity_component, use_frame, use_module_message, use_rerender_signal, use_spawn,
         use_state_with,
     },
-    input::CursorLockGuard,
+    input::{set_cursor_lock, set_cursor_visible},
     prelude::*,
     ui::use_keyboard_input,
 };
@@ -32,7 +32,6 @@ use packages::{
 
 #[main]
 pub fn main() {
-    let mut input_lock = None;
     let mut fixed_tick_last = game_time();
 
     let mut accumulated_aim_delta = Vec2::ZERO;
@@ -45,6 +44,8 @@ pub fn main() {
     let mut gizmo_original_translation = None;
 
     let player_id = player::get_local();
+
+    let mut cursor_locked = false;
 
     Frame::subscribe(move |_| {
         let fixed_tick_dt = game_time() - fixed_tick_last;
@@ -60,9 +61,13 @@ pub fn main() {
         let (delta, input) = input::get_delta();
 
         if gizmo_active.is_none() && delta.mouse_buttons.contains(&MouseButton::Right) {
-            input_lock = Some(CursorLockGuard::new());
+            set_cursor_lock(true);
+            set_cursor_visible(false);
+            cursor_locked = true;
         } else if delta.mouse_buttons_released.contains(&MouseButton::Right) {
-            input_lock = None;
+            set_cursor_lock(false);
+            set_cursor_visible(true);
+            cursor_locked = false;
         }
         select_pressed |= delta.mouse_buttons.contains(&MouseButton::Left);
         freeze_pressed |= delta.keys_released.contains(&KeyCode::R);
@@ -78,12 +83,10 @@ pub fn main() {
         .fold(Vec2::ZERO, |acc, (_, dir)| acc + *dir);
 
         let mut aiming = false;
-        if let Some(input_lock) = &mut input_lock {
-            if input_lock.auto_unlock_on_escape(&input) {
-                let speed = 4.0 * delta_time();
-                accumulated_aim_delta += delta.mouse_position * speed;
-                aiming = true;
-            }
+        if cursor_locked {
+            let speed = 4.0 * delta_time();
+            accumulated_aim_delta += delta.mouse_position * speed;
+            aiming = true;
         }
 
         if !aiming {
@@ -187,7 +190,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
         |_| {}
     });
 
-    FocusRoot::el([if in_editor {
+    if in_editor {
         Group::el([
             MenuBar::el(menu_bar_items),
             MouseoverDisplay::el(),
@@ -195,7 +198,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
         ])
     } else {
         Element::new()
-    }])
+    }
 }
 
 #[element_component]

@@ -5,30 +5,31 @@ use ambient_core::{
     ui_scene,
     window::{cursor_position, window_logical_size},
 };
-use ambient_ecs::{components, query, Debuggable, Entity, EntityId, MaybeResource, SystemGroup};
+use ambient_ecs::{
+    components,
+    generated::input::{
+        components::{mouse_over_distance, mouse_over_entity},
+        messages::MouseOverChanged,
+    },
+    query, world_events, Debuggable, Entity, EntityId, SystemGroup, WorldEventsExt,
+};
 use ambient_native_std::shapes::{RayIntersectable, AABB};
 use glam::Vec2;
 
 pub use ambient_ecs::generated::input::components::{
-    mouse_over, mouse_pickable_max, mouse_pickable_min,
+    is_mouse_over, mouse_pickable_max, mouse_pickable_min,
 };
 
 components!("input", {
-    @[MaybeResource, Debuggable]
-    picker_intersecting: Option<PickerIntersection>,
 
     @[Debuggable]
     mouse_pickable: AABB,
 });
 
-#[derive(Debug, Clone, Copy)]
-pub struct PickerIntersection {
-    pub entity: EntityId,
-    pub distance: f32,
-}
-
 pub fn resources() -> Entity {
-    Entity::new().with(picker_intersecting(), Default::default())
+    Entity::new()
+        .with(mouse_over_entity(), EntityId::null())
+        .with(mouse_over_distance(), f32::MAX)
 }
 
 pub fn frame_systems() -> SystemGroup {
@@ -65,10 +66,11 @@ pub fn frame_systems() -> SystemGroup {
                     let ray =
                         clip_position_to_world_ray(world, camera, mouse_origin).unwrap_or_default();
 
-                    let prev_intersecting =
-                        world.get(id, picker_intersecting()).unwrap_or_default();
+                    let prev_intersecting_entity =
+                        world.get(id, mouse_over_entity()).unwrap_or_default();
 
-                    let mut intersecting: Option<PickerIntersection> = None;
+                    let mut intersecting_entity = EntityId::null();
+                    let mut intersecting_dist = 0.;
                     for (id2, (pickable, local_to_world)) in
                         query((mouse_pickable(), local_to_world())).iter(world, None)
                     {
@@ -77,38 +79,54 @@ pub fn frame_systems() -> SystemGroup {
                         }
                         let ray = ray.transform(local_to_world.inverse());
                         if let Some(dist) = pickable.ray_intersect(ray) {
-                            if intersecting.is_none()
-                                || dist < intersecting.as_ref().unwrap().distance
-                            {
-                                intersecting = Some(PickerIntersection {
-                                    entity: id2,
-                                    distance: dist,
-                                });
+                            if intersecting_entity.is_null() || dist < intersecting_dist {
+                                intersecting_entity = id2;
+                                intersecting_dist = dist;
                             }
                         }
                     }
-                    let prev_intersecting_entity = prev_intersecting.map(|x| x.entity);
-                    let intersecting_entity = intersecting.map(|x| x.entity);
                     if prev_intersecting_entity != intersecting_entity {
-                        if let Some(prev) = prev_intersecting_entity {
-                            if let Ok(prev_mouse_over) = world.get(prev, mouse_over()) {
+                        if !prev_intersecting_entity.is_null() {
+                            if let Ok(prev_mouse_over) =
+                                world.get(prev_intersecting_entity, is_mouse_over())
+                            {
                                 if prev_mouse_over > 0 {
                                     world
-                                        .add_component(prev, mouse_over(), prev_mouse_over - 1)
+                                        .add_component(
+                                            prev_intersecting_entity,
+                                            is_mouse_over(),
+                                            prev_mouse_over - 1,
+                                        )
                                         .unwrap();
                                 }
                             }
                         }
-                        if let Some(new) = intersecting_entity {
-                            let new_mouse_over = world.get(new, mouse_over()).unwrap_or_default();
+                        if !intersecting_entity.is_null() {
+                            let new_mouse_over = world
+                                .get(intersecting_entity, is_mouse_over())
+                                .unwrap_or_default();
                             world
-                                .add_component(new, mouse_over(), new_mouse_over + 1)
+                                .add_component(
+                                    intersecting_entity,
+                                    is_mouse_over(),
+                                    new_mouse_over + 1,
+                                )
                                 .unwrap();
                         }
+                        world
+                            .add_component(id, mouse_over_entity(), intersecting_entity)
+                            .unwrap();
+                        world
+                            .add_component(id, mouse_over_distance(), intersecting_dist)
+                            .unwrap();
+                        world
+                            .resource_mut(world_events())
+                            .add_message(MouseOverChanged {
+                                from_external: false,
+                                mouse_over: intersecting_entity,
+                                distance: intersecting_dist,
+                            });
                     }
-                    world
-                        .add_component(id, picker_intersecting(), intersecting)
-                        .unwrap();
                 }
             }),
         ],

@@ -1,0 +1,23 @@
+[package]
+id = "ui"
+name = "UI"
+description = "User interface components"
+content = { type = "Asset", schema = true }
+version = "0.3.0-dev"
+
+[components.focus]
+type = "String"
+name = "Focus"
+description = "Currently focused object."
+attributes = ["Debuggable", "Networked", "Resource"]
+
+[components.focusable]
+type = "String"
+name = "Focus"
+description = "This entity can be focused. The value is the focus id."
+attributes = ["Debuggable", "Networked"]
+
+[messages.FocusChanged]
+description = "Focus has been updated"
+fields = { from_external = "Bool", focus = "String" }
+as_module_message = true

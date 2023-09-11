@@ -40,7 +40,7 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
     use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
     let (name, set_name) = use_state(hooks, "".to_string());
 
-    FocusRoot::el([
+    Group::el([
         WindowSized::el([FlowColumn::el([
             Text::el("A Drill").header_style(),
             Separator { vertical: false }.el(),

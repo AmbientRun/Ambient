@@ -6,7 +6,7 @@ use ambient_element::{
 };
 use ambient_guest_bridge::{
     core::{
-        input::components::{mouse_over, mouse_pickable_max, mouse_pickable_min},
+        input::components::{is_mouse_over, mouse_pickable_max, mouse_pickable_min},
         messages,
     },
     ecs::{EntityId, World},
@@ -142,7 +142,7 @@ impl ElementComponent for ClickArea {
             to_owned![id, mouse_over_count];
             move |world| {
                 if let Some(id) = *id.lock() {
-                    let next = world.get(id, mouse_over()).unwrap_or(0);
+                    let next = world.get(id, is_mouse_over()).unwrap_or(0);
                     let mut state = mouse_over_count.lock();
                     if *state == 0 && next > 0 {
                         for handler in &on_mouse_enter {

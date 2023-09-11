@@ -68,7 +68,7 @@ fn main() {
 
 #[element_component]
 fn App(hooks: &mut Hooks, sun: EntityId) -> Element {
-    FocusRoot::el([FlowColumn::el([
+    FlowColumn::el([
         FlowRow::el([
             Text::el("Fog density: "),
             Slider::new_for_entity_component(hooks, sun, fog_density()).el(),
@@ -79,5 +79,5 @@ fn App(hooks: &mut Hooks, sun: EntityId) -> Element {
         ]),
     ])
     .with_background(vec4(0., 0., 0., 0.9))
-    .with_padding_even(10.)])
+    .with_padding_even(10.)
 }

@@ -84,8 +84,8 @@ pub fn process_network_message(
         world,
         Target::PackageOrModule(package_id),
         match user_id {
-            Some(user_id) => message::Source::Client(user_id),
-            None => message::Source::Server,
+            Some(user_id) => message::WorldEventSource::Client(user_id),
+            None => message::WorldEventSource::Server,
         },
         name,
         data,
@@ -107,7 +107,7 @@ pub fn send_local(
     message::send(
         world,
         target,
-        message::Source::Local(source_module_id),
+        message::WorldEventSource::Local(source_module_id),
         name,
         data,
     );

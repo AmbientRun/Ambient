@@ -109,7 +109,7 @@ fn App(
         });
     }
 
-    FocusRoot::el([FlowColumn::el([
+    FlowColumn::el([
         FlowRow::el([
             Text::el("Capeira"),
             Slider {
@@ -154,5 +154,5 @@ fn App(
             })
             .el(),
         ]),
-    ])])
+    ])
 }

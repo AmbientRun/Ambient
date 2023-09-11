@@ -25,6 +25,7 @@ rect = "schema/rect.toml"
 rendering = "schema/rendering.toml"
 text = "schema/text.toml"
 transform = "schema/transform.toml"
+ui = "schema/ui.toml"
 wasm = "schema/wasm.toml"
 
 # Messages

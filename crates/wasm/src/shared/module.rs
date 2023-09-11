@@ -1,8 +1,10 @@
 use crate::shared;
 
+use super::engine::EngineKey;
+#[cfg(feature = "wit")]
 use super::ModuleStateMaker;
 use super::{bindings::BindingsBound, conversion::IntoBindgen};
-use super::{engine::EngineKey, Source};
+use super::{ModuleStateMaker, WorldEventSource};
 use ambient_ecs::{EntityId, World};
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_sys::task::PlatformBoxFuture;
@@ -111,7 +113,7 @@ pub trait ModuleStateBehavior: Send + Sync {
     fn run(
         &mut self,
         world: &mut World,
-        message_source: &Source,
+        message_source: &WorldEventSource,
         message_name: &str,
         message_data: &[u8],
     ) -> anyhow::Result<()>;
@@ -171,7 +173,7 @@ impl ModuleStateBehavior for ModuleState {
     fn run(
         &mut self,
         world: &mut World,
-        message_source: &Source,
+        message_source: &WorldEventSource,
         message_name: &str,
         message_data: &[u8],
     ) -> anyhow::Result<()> {
@@ -345,7 +347,7 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for InstanceState<Bindings> {
     fn run(
         &mut self,
         world: &mut World,
-        message_source: &Source,
+        message_source: &WorldEventSource,
         message_name: &str,
         message_data: &[u8],
     ) -> anyhow::Result<()> {
@@ -355,10 +357,14 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for InstanceState<Bindings> {
         let result = guest.call_exec(
             &mut self.store,
             &match message_source {
-                Source::Runtime => shared::wit::guest::Source::Runtime,
-                Source::Server => shared::wit::guest::Source::Server,
-                Source::Client(user_id) => shared::wit::guest::Source::Client(user_id.clone()),
-                Source::Local(module) => shared::wit::guest::Source::Local(module.into_bindgen()),
+                WorldEventSource::Runtime => shared::wit::guest::Source::Runtime,
+                WorldEventSource::Server => shared::wit::guest::Source::Server,
+                WorldEventSource::Client(user_id) => {
+                    shared::wit::guest::Source::Client(user_id.clone())
+                }
+                WorldEventSource::Local(module) => {
+                    shared::wit::guest::Source::Local(module.into_bindgen())
+                }
             },
             message_name,
             message_data,

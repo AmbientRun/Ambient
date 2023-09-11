@@ -1,8 +1,10 @@
 pub use ambient_ecs as ecs;
+use ambient_ecs::WorldEventsExt;
 use ambient_sys::task::spawn_local;
 use std::{future::Future, time::Duration};
 
-pub use ecs::{generated as core, Message, RuntimeMessage};
+pub use ecs::{generated as core, Message, ModuleMessage, RuntimeMessage};
+use ecs::{world_events, World};
 
 pub fn run_async(world: &ecs::World, future: impl Future<Output = ()> + Send + 'static) {
     world.resource(ambient_core::runtime()).spawn(future);
@@ -22,6 +24,13 @@ where
 pub async fn sleep(seconds: f32) {
     ambient_sys::time::sleep(Duration::from_secs_f32(seconds)).await;
 }
+
+pub fn broadcast_local_message(world: &mut World, message: impl Message) {
+    world.resource_mut(world_events()).add_message(message);
+}
+
+/// TODO: This is only defined on the guest side right now
+pub type MessageContext = ();
 
 pub mod window {
     use ambient_core::window::{window_ctl, WindowCtl};

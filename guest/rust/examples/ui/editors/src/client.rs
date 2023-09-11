@@ -20,7 +20,7 @@ fn App(hooks: &mut Hooks) -> Element {
     let (minimal_list, set_minimal_list) =
         use_state(hooks, vec!["First".to_string(), "Second".to_string()]);
     let row = |name, editor| FlowRow::el(vec![Text::el(name).with(min_width(), 110.), editor]);
-    FocusRoot::el([FlowColumn::el([
+    FlowColumn::el([
         row("TextEditor", TextEditor::new(text, set_text).el()),
         row(
             "F32Input",
@@ -70,7 +70,7 @@ fn App(hooks: &mut Hooks) -> Element {
     ])
     .with(width(), 200.)
     .with(space_between_items(), STREET)
-    .with_padding_even(STREET)])
+    .with_padding_even(STREET)
 }
 
 #[main]

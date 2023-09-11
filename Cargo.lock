@@ -239,6 +239,7 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_element",
+ "ambient_focus",
  "ambient_gizmos",
  "ambient_gpu",
  "ambient_gpu_ecs",
@@ -683,6 +684,14 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "ambient_focus"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_ecs",
+ "winit",
 ]
 
 [[package]]
