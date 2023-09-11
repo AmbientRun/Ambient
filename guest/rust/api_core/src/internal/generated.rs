@@ -528,6 +528,8 @@ mod raw {
                     pub main_scene: Option<()>,
                     #[doc = "**Component**: `ambient_core::app::ui_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the UI scene.\n\n"]
                     pub ui_scene: Option<()>,
+                    #[doc = "**Component**: `ambient_core::camera::aspect_ratio_from_window`\n\n**Component description**: If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component.\n\n"]
+                    pub aspect_ratio_from_window: Option<EntityId>,
                 }
                 impl crate::ecs::Concept for Camera {
                     fn make(self) -> Entity {
@@ -577,85 +579,21 @@ mod raw {
                         if let Some(ui_scene) = self.optional.ui_scene {
                             entity.set(crate::ambient_core::app::components::ui_scene(), ui_scene);
                         }
+                        if let Some(aspect_ratio_from_window) =
+                            self.optional.aspect_ratio_from_window
+                        {
+                            entity.set(
+                                crate::ambient_core::camera::components::aspect_ratio_from_window(),
+                                aspect_ratio_from_window,
+                            );
+                        }
                         entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        Some(Self {
-                            local_to_world: entity::get_component(
-                                id,
-                                crate::ambient_core::transform::components::local_to_world(),
-                            )?,
-                            near: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::near(),
-                            )?,
-                            projection: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::projection(),
-                            )?,
-                            projection_view: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::projection_view(),
-                            )?,
-                            active_camera: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::active_camera(),
-                            )?,
-                            inv_local_to_world: entity::get_component(
-                                id,
-                                crate::ambient_core::transform::components::inv_local_to_world(),
-                            )?,
-                            optional: CameraOptional {
-                                translation: entity::get_component(
-                                    id,
-                                    crate::ambient_core::transform::components::translation(),
-                                ),
-                                rotation: entity::get_component(
-                                    id,
-                                    crate::ambient_core::transform::components::rotation(),
-                                ),
-                                scale: entity::get_component(
-                                    id,
-                                    crate::ambient_core::transform::components::scale(),
-                                ),
-                                main_scene: entity::get_component(
-                                    id,
-                                    crate::ambient_core::app::components::main_scene(),
-                                ),
-                                ui_scene: entity::get_component(
-                                    id,
-                                    crate::ambient_core::app::components::ui_scene(),
-                                ),
-                            },
-                        })
+                        Some (Self { local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity :: get_component (id , crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity :: get_component (id , crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , optional : CameraOptional { translation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity :: get_component (id , crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: ui_scene ()) , aspect_ratio_from_window : entity :: get_component (id , crate :: ambient_core :: camera :: components :: aspect_ratio_from_window ()) , } })
                     }
                     fn get_unspawned(entity: &Entity) -> Option<Self> {
-                        Some(Self {
-                            local_to_world: entity
-                                .get(crate::ambient_core::transform::components::local_to_world())?,
-                            near: entity.get(crate::ambient_core::camera::components::near())?,
-                            projection: entity
-                                .get(crate::ambient_core::camera::components::projection())?,
-                            projection_view: entity
-                                .get(crate::ambient_core::camera::components::projection_view())?,
-                            active_camera: entity
-                                .get(crate::ambient_core::camera::components::active_camera())?,
-                            inv_local_to_world: entity.get(
-                                crate::ambient_core::transform::components::inv_local_to_world(),
-                            )?,
-                            optional: CameraOptional {
-                                translation: entity
-                                    .get(crate::ambient_core::transform::components::translation()),
-                                rotation: entity
-                                    .get(crate::ambient_core::transform::components::rotation()),
-                                scale: entity
-                                    .get(crate::ambient_core::transform::components::scale()),
-                                main_scene: entity
-                                    .get(crate::ambient_core::app::components::main_scene()),
-                                ui_scene: entity
-                                    .get(crate::ambient_core::app::components::ui_scene()),
-                            },
-                        })
+                        Some (Self { local_to_world : entity . get (crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity . get (crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity . get (crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity . get (crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity . get (crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity . get (crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , optional : CameraOptional { translation : entity . get (crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity . get (crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity . get (crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity . get (crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity . get (crate :: ambient_core :: app :: components :: ui_scene ()) , aspect_ratio_from_window : entity . get (crate :: ambient_core :: camera :: components :: aspect_ratio_from_window ()) , } })
                     }
                     fn contained_by_spawned(id: EntityId) -> bool {
                         entity::has_components(
@@ -716,6 +654,8 @@ mod raw {
                     pub main_scene: Option<()>,
                     #[doc = "**Component**: `ambient_core::app::ui_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the UI scene.\n\n"]
                     pub ui_scene: Option<()>,
+                    #[doc = "**Component**: `ambient_core::camera::aspect_ratio_from_window`\n\n**Component description**: If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component.\n\n"]
+                    pub aspect_ratio_from_window: Option<EntityId>,
                 }
                 impl crate::ecs::Concept for PerspectiveCommonCamera {
                     fn make(self) -> Entity {
@@ -770,96 +710,21 @@ mod raw {
                         if let Some(ui_scene) = self.optional.ui_scene {
                             entity.set(crate::ambient_core::app::components::ui_scene(), ui_scene);
                         }
+                        if let Some(aspect_ratio_from_window) =
+                            self.optional.aspect_ratio_from_window
+                        {
+                            entity.set(
+                                crate::ambient_core::camera::components::aspect_ratio_from_window(),
+                                aspect_ratio_from_window,
+                            );
+                        }
                         entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        Some(Self {
-                            local_to_world: entity::get_component(
-                                id,
-                                crate::ambient_core::transform::components::local_to_world(),
-                            )?,
-                            near: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::near(),
-                            )?,
-                            projection: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::projection(),
-                            )?,
-                            projection_view: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::projection_view(),
-                            )?,
-                            active_camera: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::active_camera(),
-                            )?,
-                            inv_local_to_world: entity::get_component(
-                                id,
-                                crate::ambient_core::transform::components::inv_local_to_world(),
-                            )?,
-                            fovy: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::fovy(),
-                            )?,
-                            aspect_ratio: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::aspect_ratio(),
-                            )?,
-                            optional: PerspectiveCommonCameraOptional {
-                                translation: entity::get_component(
-                                    id,
-                                    crate::ambient_core::transform::components::translation(),
-                                ),
-                                rotation: entity::get_component(
-                                    id,
-                                    crate::ambient_core::transform::components::rotation(),
-                                ),
-                                scale: entity::get_component(
-                                    id,
-                                    crate::ambient_core::transform::components::scale(),
-                                ),
-                                main_scene: entity::get_component(
-                                    id,
-                                    crate::ambient_core::app::components::main_scene(),
-                                ),
-                                ui_scene: entity::get_component(
-                                    id,
-                                    crate::ambient_core::app::components::ui_scene(),
-                                ),
-                            },
-                        })
+                        Some (Self { local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity :: get_component (id , crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity :: get_component (id , crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity :: get_component (id , crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity :: get_component (id , crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , optional : PerspectiveCommonCameraOptional { translation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity :: get_component (id , crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: ui_scene ()) , aspect_ratio_from_window : entity :: get_component (id , crate :: ambient_core :: camera :: components :: aspect_ratio_from_window ()) , } })
                     }
                     fn get_unspawned(entity: &Entity) -> Option<Self> {
-                        Some(Self {
-                            local_to_world: entity
-                                .get(crate::ambient_core::transform::components::local_to_world())?,
-                            near: entity.get(crate::ambient_core::camera::components::near())?,
-                            projection: entity
-                                .get(crate::ambient_core::camera::components::projection())?,
-                            projection_view: entity
-                                .get(crate::ambient_core::camera::components::projection_view())?,
-                            active_camera: entity
-                                .get(crate::ambient_core::camera::components::active_camera())?,
-                            inv_local_to_world: entity.get(
-                                crate::ambient_core::transform::components::inv_local_to_world(),
-                            )?,
-                            fovy: entity.get(crate::ambient_core::camera::components::fovy())?,
-                            aspect_ratio: entity
-                                .get(crate::ambient_core::camera::components::aspect_ratio())?,
-                            optional: PerspectiveCommonCameraOptional {
-                                translation: entity
-                                    .get(crate::ambient_core::transform::components::translation()),
-                                rotation: entity
-                                    .get(crate::ambient_core::transform::components::rotation()),
-                                scale: entity
-                                    .get(crate::ambient_core::transform::components::scale()),
-                                main_scene: entity
-                                    .get(crate::ambient_core::app::components::main_scene()),
-                                ui_scene: entity
-                                    .get(crate::ambient_core::app::components::ui_scene()),
-                            },
-                        })
+                        Some (Self { local_to_world : entity . get (crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity . get (crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity . get (crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity . get (crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity . get (crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity . get (crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity . get (crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity . get (crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , optional : PerspectiveCommonCameraOptional { translation : entity . get (crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity . get (crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity . get (crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity . get (crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity . get (crate :: ambient_core :: app :: components :: ui_scene ()) , aspect_ratio_from_window : entity . get (crate :: ambient_core :: camera :: components :: aspect_ratio_from_window ()) , } })
                     }
                     fn contained_by_spawned(id: EntityId) -> bool {
                         entity::has_components(
@@ -928,6 +793,8 @@ mod raw {
                     pub main_scene: Option<()>,
                     #[doc = "**Component**: `ambient_core::app::ui_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the UI scene.\n\n"]
                     pub ui_scene: Option<()>,
+                    #[doc = "**Component**: `ambient_core::camera::aspect_ratio_from_window`\n\n**Component description**: If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component.\n\n"]
+                    pub aspect_ratio_from_window: Option<EntityId>,
                 }
                 impl crate::ecs::Concept for PerspectiveCamera {
                     fn make(self) -> Entity {
@@ -987,107 +854,21 @@ mod raw {
                         if let Some(ui_scene) = self.optional.ui_scene {
                             entity.set(crate::ambient_core::app::components::ui_scene(), ui_scene);
                         }
+                        if let Some(aspect_ratio_from_window) =
+                            self.optional.aspect_ratio_from_window
+                        {
+                            entity.set(
+                                crate::ambient_core::camera::components::aspect_ratio_from_window(),
+                                aspect_ratio_from_window,
+                            );
+                        }
                         entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        Some(Self {
-                            local_to_world: entity::get_component(
-                                id,
-                                crate::ambient_core::transform::components::local_to_world(),
-                            )?,
-                            near: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::near(),
-                            )?,
-                            projection: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::projection(),
-                            )?,
-                            projection_view: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::projection_view(),
-                            )?,
-                            active_camera: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::active_camera(),
-                            )?,
-                            inv_local_to_world: entity::get_component(
-                                id,
-                                crate::ambient_core::transform::components::inv_local_to_world(),
-                            )?,
-                            fovy: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::fovy(),
-                            )?,
-                            aspect_ratio: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::aspect_ratio(),
-                            )?,
-                            perspective: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::perspective(),
-                            )?,
-                            far: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::far(),
-                            )?,
-                            optional: PerspectiveCameraOptional {
-                                translation: entity::get_component(
-                                    id,
-                                    crate::ambient_core::transform::components::translation(),
-                                ),
-                                rotation: entity::get_component(
-                                    id,
-                                    crate::ambient_core::transform::components::rotation(),
-                                ),
-                                scale: entity::get_component(
-                                    id,
-                                    crate::ambient_core::transform::components::scale(),
-                                ),
-                                main_scene: entity::get_component(
-                                    id,
-                                    crate::ambient_core::app::components::main_scene(),
-                                ),
-                                ui_scene: entity::get_component(
-                                    id,
-                                    crate::ambient_core::app::components::ui_scene(),
-                                ),
-                            },
-                        })
+                        Some (Self { local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity :: get_component (id , crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity :: get_component (id , crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity :: get_component (id , crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity :: get_component (id , crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , perspective : entity :: get_component (id , crate :: ambient_core :: camera :: components :: perspective ()) ? , far : entity :: get_component (id , crate :: ambient_core :: camera :: components :: far ()) ? , optional : PerspectiveCameraOptional { translation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity :: get_component (id , crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: ui_scene ()) , aspect_ratio_from_window : entity :: get_component (id , crate :: ambient_core :: camera :: components :: aspect_ratio_from_window ()) , } })
                     }
                     fn get_unspawned(entity: &Entity) -> Option<Self> {
-                        Some(Self {
-                            local_to_world: entity
-                                .get(crate::ambient_core::transform::components::local_to_world())?,
-                            near: entity.get(crate::ambient_core::camera::components::near())?,
-                            projection: entity
-                                .get(crate::ambient_core::camera::components::projection())?,
-                            projection_view: entity
-                                .get(crate::ambient_core::camera::components::projection_view())?,
-                            active_camera: entity
-                                .get(crate::ambient_core::camera::components::active_camera())?,
-                            inv_local_to_world: entity.get(
-                                crate::ambient_core::transform::components::inv_local_to_world(),
-                            )?,
-                            fovy: entity.get(crate::ambient_core::camera::components::fovy())?,
-                            aspect_ratio: entity
-                                .get(crate::ambient_core::camera::components::aspect_ratio())?,
-                            perspective: entity
-                                .get(crate::ambient_core::camera::components::perspective())?,
-                            far: entity.get(crate::ambient_core::camera::components::far())?,
-                            optional: PerspectiveCameraOptional {
-                                translation: entity
-                                    .get(crate::ambient_core::transform::components::translation()),
-                                rotation: entity
-                                    .get(crate::ambient_core::transform::components::rotation()),
-                                scale: entity
-                                    .get(crate::ambient_core::transform::components::scale()),
-                                main_scene: entity
-                                    .get(crate::ambient_core::app::components::main_scene()),
-                                ui_scene: entity
-                                    .get(crate::ambient_core::app::components::ui_scene()),
-                            },
-                        })
+                        Some (Self { local_to_world : entity . get (crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity . get (crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity . get (crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity . get (crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity . get (crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity . get (crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity . get (crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity . get (crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , perspective : entity . get (crate :: ambient_core :: camera :: components :: perspective ()) ? , far : entity . get (crate :: ambient_core :: camera :: components :: far ()) ? , optional : PerspectiveCameraOptional { translation : entity . get (crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity . get (crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity . get (crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity . get (crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity . get (crate :: ambient_core :: app :: components :: ui_scene ()) , aspect_ratio_from_window : entity . get (crate :: ambient_core :: camera :: components :: aspect_ratio_from_window ()) , } })
                     }
                     fn contained_by_spawned(id: EntityId) -> bool {
                         entity::has_components(
@@ -1158,6 +939,8 @@ mod raw {
                     pub main_scene: Option<()>,
                     #[doc = "**Component**: `ambient_core::app::ui_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the UI scene.\n\n"]
                     pub ui_scene: Option<()>,
+                    #[doc = "**Component**: `ambient_core::camera::aspect_ratio_from_window`\n\n**Component description**: If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component.\n\n"]
+                    pub aspect_ratio_from_window: Option<EntityId>,
                 }
                 impl crate::ecs::Concept for PerspectiveInfiniteReverseCamera {
                     fn make(self) -> Entity {
@@ -1186,13 +969,21 @@ mod raw {
                         if let Some(ui_scene) = self.optional.ui_scene {
                             entity.set(crate::ambient_core::app::components::ui_scene(), ui_scene);
                         }
+                        if let Some(aspect_ratio_from_window) =
+                            self.optional.aspect_ratio_from_window
+                        {
+                            entity.set(
+                                crate::ambient_core::camera::components::aspect_ratio_from_window(),
+                                aspect_ratio_from_window,
+                            );
+                        }
                         entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        Some (Self { local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity :: get_component (id , crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity :: get_component (id , crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity :: get_component (id , crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity :: get_component (id , crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , perspective_infinite_reverse : entity :: get_component (id , crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()) ? , optional : PerspectiveInfiniteReverseCameraOptional { translation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity :: get_component (id , crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: ui_scene ()) , } })
+                        Some (Self { local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity :: get_component (id , crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity :: get_component (id , crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity :: get_component (id , crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity :: get_component (id , crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , perspective_infinite_reverse : entity :: get_component (id , crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()) ? , optional : PerspectiveInfiniteReverseCameraOptional { translation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity :: get_component (id , crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: ui_scene ()) , aspect_ratio_from_window : entity :: get_component (id , crate :: ambient_core :: camera :: components :: aspect_ratio_from_window ()) , } })
                     }
                     fn get_unspawned(entity: &Entity) -> Option<Self> {
-                        Some (Self { local_to_world : entity . get (crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity . get (crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity . get (crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity . get (crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity . get (crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity . get (crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity . get (crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity . get (crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , perspective_infinite_reverse : entity . get (crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()) ? , optional : PerspectiveInfiniteReverseCameraOptional { translation : entity . get (crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity . get (crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity . get (crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity . get (crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity . get (crate :: ambient_core :: app :: components :: ui_scene ()) , } })
+                        Some (Self { local_to_world : entity . get (crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity . get (crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity . get (crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity . get (crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity . get (crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity . get (crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , fovy : entity . get (crate :: ambient_core :: camera :: components :: fovy ()) ? , aspect_ratio : entity . get (crate :: ambient_core :: camera :: components :: aspect_ratio ()) ? , perspective_infinite_reverse : entity . get (crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()) ? , optional : PerspectiveInfiniteReverseCameraOptional { translation : entity . get (crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity . get (crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity . get (crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity . get (crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity . get (crate :: ambient_core :: app :: components :: ui_scene ()) , aspect_ratio_from_window : entity . get (crate :: ambient_core :: camera :: components :: aspect_ratio_from_window ()) , } })
                     }
                     fn contained_by_spawned(id: EntityId) -> bool {
                         entity :: has_components (id , & [& crate :: ambient_core :: transform :: components :: local_to_world () , & crate :: ambient_core :: camera :: components :: near () , & crate :: ambient_core :: camera :: components :: projection () , & crate :: ambient_core :: camera :: components :: projection_view () , & crate :: ambient_core :: camera :: components :: active_camera () , & crate :: ambient_core :: transform :: components :: inv_local_to_world () , & crate :: ambient_core :: camera :: components :: fovy () , & crate :: ambient_core :: camera :: components :: aspect_ratio () , & crate :: ambient_core :: camera :: components :: perspective_infinite_reverse ()])
@@ -1255,6 +1046,8 @@ mod raw {
                     pub main_scene: Option<()>,
                     #[doc = "**Component**: `ambient_core::app::ui_scene`\n\n**Description**: Either the main or UI scene must be specified for this camera to be used.\n\n**Component description**: If attached, this entity belongs to the UI scene.\n\n"]
                     pub ui_scene: Option<()>,
+                    #[doc = "**Component**: `ambient_core::camera::aspect_ratio_from_window`\n\n**Component description**: If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component.\n\n"]
+                    pub aspect_ratio_from_window: Option<EntityId>,
                 }
                 impl crate::ecs::Concept for OrthographicCamera {
                     fn make(self) -> Entity {
@@ -1325,122 +1118,21 @@ mod raw {
                         if let Some(ui_scene) = self.optional.ui_scene {
                             entity.set(crate::ambient_core::app::components::ui_scene(), ui_scene);
                         }
+                        if let Some(aspect_ratio_from_window) =
+                            self.optional.aspect_ratio_from_window
+                        {
+                            entity.set(
+                                crate::ambient_core::camera::components::aspect_ratio_from_window(),
+                                aspect_ratio_from_window,
+                            );
+                        }
                         entity
                     }
                     fn get_spawned(id: EntityId) -> Option<Self> {
-                        Some(Self {
-                            local_to_world: entity::get_component(
-                                id,
-                                crate::ambient_core::transform::components::local_to_world(),
-                            )?,
-                            near: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::near(),
-                            )?,
-                            projection: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::projection(),
-                            )?,
-                            projection_view: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::projection_view(),
-                            )?,
-                            active_camera: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::active_camera(),
-                            )?,
-                            inv_local_to_world: entity::get_component(
-                                id,
-                                crate::ambient_core::transform::components::inv_local_to_world(),
-                            )?,
-                            orthographic: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::orthographic(),
-                            )?,
-                            orthographic_left: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::orthographic_left(),
-                            )?,
-                            orthographic_right: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::orthographic_right(),
-                            )?,
-                            orthographic_top: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::orthographic_top(),
-                            )?,
-                            orthographic_bottom: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::orthographic_bottom(),
-                            )?,
-                            far: entity::get_component(
-                                id,
-                                crate::ambient_core::camera::components::far(),
-                            )?,
-                            optional: OrthographicCameraOptional {
-                                translation: entity::get_component(
-                                    id,
-                                    crate::ambient_core::transform::components::translation(),
-                                ),
-                                rotation: entity::get_component(
-                                    id,
-                                    crate::ambient_core::transform::components::rotation(),
-                                ),
-                                scale: entity::get_component(
-                                    id,
-                                    crate::ambient_core::transform::components::scale(),
-                                ),
-                                main_scene: entity::get_component(
-                                    id,
-                                    crate::ambient_core::app::components::main_scene(),
-                                ),
-                                ui_scene: entity::get_component(
-                                    id,
-                                    crate::ambient_core::app::components::ui_scene(),
-                                ),
-                            },
-                        })
+                        Some (Self { local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity :: get_component (id , crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity :: get_component (id , crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity :: get_component (id , crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity :: get_component (id , crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , orthographic : entity :: get_component (id , crate :: ambient_core :: camera :: components :: orthographic ()) ? , orthographic_left : entity :: get_component (id , crate :: ambient_core :: camera :: components :: orthographic_left ()) ? , orthographic_right : entity :: get_component (id , crate :: ambient_core :: camera :: components :: orthographic_right ()) ? , orthographic_top : entity :: get_component (id , crate :: ambient_core :: camera :: components :: orthographic_top ()) ? , orthographic_bottom : entity :: get_component (id , crate :: ambient_core :: camera :: components :: orthographic_bottom ()) ? , far : entity :: get_component (id , crate :: ambient_core :: camera :: components :: far ()) ? , optional : OrthographicCameraOptional { translation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity :: get_component (id , crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity :: get_component (id , crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity :: get_component (id , crate :: ambient_core :: app :: components :: ui_scene ()) , aspect_ratio_from_window : entity :: get_component (id , crate :: ambient_core :: camera :: components :: aspect_ratio_from_window ()) , } })
                     }
                     fn get_unspawned(entity: &Entity) -> Option<Self> {
-                        Some(Self {
-                            local_to_world: entity
-                                .get(crate::ambient_core::transform::components::local_to_world())?,
-                            near: entity.get(crate::ambient_core::camera::components::near())?,
-                            projection: entity
-                                .get(crate::ambient_core::camera::components::projection())?,
-                            projection_view: entity
-                                .get(crate::ambient_core::camera::components::projection_view())?,
-                            active_camera: entity
-                                .get(crate::ambient_core::camera::components::active_camera())?,
-                            inv_local_to_world: entity.get(
-                                crate::ambient_core::transform::components::inv_local_to_world(),
-                            )?,
-                            orthographic: entity
-                                .get(crate::ambient_core::camera::components::orthographic())?,
-                            orthographic_left: entity
-                                .get(crate::ambient_core::camera::components::orthographic_left())?,
-                            orthographic_right: entity.get(
-                                crate::ambient_core::camera::components::orthographic_right(),
-                            )?,
-                            orthographic_top: entity
-                                .get(crate::ambient_core::camera::components::orthographic_top())?,
-                            orthographic_bottom: entity.get(
-                                crate::ambient_core::camera::components::orthographic_bottom(),
-                            )?,
-                            far: entity.get(crate::ambient_core::camera::components::far())?,
-                            optional: OrthographicCameraOptional {
-                                translation: entity
-                                    .get(crate::ambient_core::transform::components::translation()),
-                                rotation: entity
-                                    .get(crate::ambient_core::transform::components::rotation()),
-                                scale: entity
-                                    .get(crate::ambient_core::transform::components::scale()),
-                                main_scene: entity
-                                    .get(crate::ambient_core::app::components::main_scene()),
-                                ui_scene: entity
-                                    .get(crate::ambient_core::app::components::ui_scene()),
-                            },
-                        })
+                        Some (Self { local_to_world : entity . get (crate :: ambient_core :: transform :: components :: local_to_world ()) ? , near : entity . get (crate :: ambient_core :: camera :: components :: near ()) ? , projection : entity . get (crate :: ambient_core :: camera :: components :: projection ()) ? , projection_view : entity . get (crate :: ambient_core :: camera :: components :: projection_view ()) ? , active_camera : entity . get (crate :: ambient_core :: camera :: components :: active_camera ()) ? , inv_local_to_world : entity . get (crate :: ambient_core :: transform :: components :: inv_local_to_world ()) ? , orthographic : entity . get (crate :: ambient_core :: camera :: components :: orthographic ()) ? , orthographic_left : entity . get (crate :: ambient_core :: camera :: components :: orthographic_left ()) ? , orthographic_right : entity . get (crate :: ambient_core :: camera :: components :: orthographic_right ()) ? , orthographic_top : entity . get (crate :: ambient_core :: camera :: components :: orthographic_top ()) ? , orthographic_bottom : entity . get (crate :: ambient_core :: camera :: components :: orthographic_bottom ()) ? , far : entity . get (crate :: ambient_core :: camera :: components :: far ()) ? , optional : OrthographicCameraOptional { translation : entity . get (crate :: ambient_core :: transform :: components :: translation ()) , rotation : entity . get (crate :: ambient_core :: transform :: components :: rotation ()) , scale : entity . get (crate :: ambient_core :: transform :: components :: scale ()) , main_scene : entity . get (crate :: ambient_core :: app :: components :: main_scene ()) , ui_scene : entity . get (crate :: ambient_core :: app :: components :: ui_scene ()) , aspect_ratio_from_window : entity . get (crate :: ambient_core :: camera :: components :: aspect_ratio_from_window ()) , } })
                     }
                     fn contained_by_spawned(id: EntityId) -> bool {
                         entity::has_components(

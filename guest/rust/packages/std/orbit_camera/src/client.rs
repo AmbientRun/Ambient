@@ -1,12 +1,9 @@
 use ambient_api::{
     core::{
-        camera::{
-            components::aspect_ratio_from_window,
-            concepts::{
-                PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
-            },
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
-        transform::components::translation,
+        transform::components::{rotation, translation},
     },
     prelude::*,
 };
@@ -31,11 +28,10 @@ pub fn main() {
                     optional: PerspectiveInfiniteReverseCameraOptional {
                         translation: Some(Vec3::ZERO),
                         main_scene: Some(()),
-                        ..Default::default()
+                        aspect_ratio_from_window: Some(entity::resources()),
+                        ..default()
                     },
-                }
-                .make()
-                .with(aspect_ratio_from_window(), EntityId::resources()),
+                },
             );
             entity::add_component_if_required(
                 camera_id,
@@ -55,7 +51,7 @@ pub fn main() {
             Vec2::ZERO
         };
 
-        let distance_delta = delta.mouse_wheel * 0.1;
+        let distance_delta = delta.mouse_wheel * -0.1;
 
         for (camera_id, _) in cameras {
             let angle = entity::mutate_component_with_default(
@@ -75,6 +71,7 @@ pub fn main() {
 
             let quat = Quat::from_euler(glam::EulerRot::ZXY, angle.x, -angle.y, 0.0);
             entity::add_component(camera_id, translation(), quat * vec3(0.0, -distance, 0.0));
+            entity::add_component(camera_id, rotation(), quat);
         }
     });
 }

@@ -7,8 +7,14 @@ content = { type = "Asset", code = true }
 
 [components]
 is_orbit_camera = { type = "Empty", attributes = ["Debuggable", "Networked"] }
-camera_angle = { type = "Vec2", attributes = ["Debuggable", "Networked"] }
-camera_distance = { type = "F32", attributes = ["Debuggable", "Networked"] }
+camera_angle = { type = "Vec2", description = "Camera angle specified in radians; x = yaw, y = pitch", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+camera_distance = { type = "F32", description = "Camera distance specified in meters", attributes = [
+    "Debuggable",
+    "Networked",
+] }
 
 [concepts.OrbitCamera]
 name = "Orbit Camera"
