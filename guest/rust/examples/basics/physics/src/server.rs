@@ -1,9 +1,5 @@
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
-        },
         messages::{Collision, Frame},
         physics::components::{
             angular_velocity, cube_collider, dynamic, linear_velocity, physics_controlled,
@@ -12,28 +8,31 @@ use ambient_api::{
         prefab::components::prefab_from_url,
         primitives::components::cube,
         rendering::components::{cast_shadows, color},
-        transform::{
-            components::{lookat_target, rotation, scale, translation},
-            concepts::make_Transformable,
-        },
+        transform::components::{rotation, scale, translation},
     },
     prelude::*,
 };
 
-use packages::this::{assets, messages::Bonk};
+use packages::{
+    orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional},
+    this::{assets, messages::Bonk},
+};
 
 #[main]
 pub async fn main() {
-    let camera = Entity::new()
-        .with_merge(make_PerspectiveInfiniteReverseCamera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(translation(), vec3(5., 5., 4.))
-        .with(lookat_target(), vec3(0., 0., 0.))
-        .spawn();
+    let camera = OrbitCamera {
+        is_orbit_camera: (),
+        lookat_target: Vec3::ZERO,
+        optional: OrbitCameraOptional {
+            camera_distance: Some(7.5),
+            camera_angle: Some(vec2(45f32.to_radians(), 45f32.to_radians())),
+            ..default()
+        },
+    }
+    .make()
+    .spawn();
 
     let cube = Entity::new()
-        .with_merge(make_Transformable())
         .with(cube(), ())
         .with(visualize_collider(), ())
         .with(physics_controlled(), ())
@@ -49,7 +48,6 @@ pub async fn main() {
         .spawn();
 
     Entity::new()
-        .with_merge(make_Transformable())
         .with(prefab_from_url(), assets::url("shape.glb"))
         .spawn();
 

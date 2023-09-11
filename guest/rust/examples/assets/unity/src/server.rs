@@ -1,39 +1,40 @@
 use ambient_api::{
     core::{
         app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
-        },
         prefab::components::prefab_from_url,
         primitives::components::quad,
         rendering::components::cast_shadows,
-        transform::{
-            components::{lookat_target, scale, translation},
-            concepts::make_Transformable,
-        },
+        transform::components::{local_to_world, scale},
     },
     prelude::*,
 };
-use packages::this::assets;
+
+use packages::{
+    orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional},
+    this::assets,
+};
 
 #[main]
 pub fn main() {
-    Entity::new()
-        .with_merge(make_PerspectiveInfiniteReverseCamera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(translation(), Vec3::ONE * 5. + Vec3::Z * 1.5)
-        .with(lookat_target(), Vec3::Z * 1.5)
-        .spawn();
+    OrbitCamera {
+        is_orbit_camera: (),
+        lookat_target: Vec3::Z * 1.5,
+        optional: OrbitCameraOptional {
+            camera_distance: Some(10.0),
+            ..default()
+        },
+    }
+    .make()
+    .spawn();
 
     Entity::new()
-        .with_merge(make_Transformable())
+        .with(local_to_world(), Mat4::IDENTITY)
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 100.)
         .spawn();
 
     Entity::new()
-        .with_merge(make_Transformable())
+        .with(local_to_world(), Mat4::IDENTITY)
         .with(cast_shadows(), ())
         .with(
             prefab_from_url(),

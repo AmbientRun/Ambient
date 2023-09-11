@@ -1,9 +1,9 @@
 use crate::packages::this::components::player_camera_ref;
 use ambient_api::{
     core::{
-        app::components::{main_scene, name},
-        camera::{
-            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
+        app::components::name,
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         messages::Frame,
         player::components::is_player,
@@ -68,13 +68,25 @@ pub fn main() {
         for (id, (_, head)) in players {
             if id == player::get_local() {
                 let camera = Entity::new()
-                    .with_merge(make_PerspectiveInfiniteReverseCamera())
-                    .with(aspect_ratio_from_window(), EntityId::resources())
-                    .with(main_scene(), ())
-                    .with(
-                        translation(),
-                        -Vec3::Z * get_component(id, camera_distance()).unwrap_or(4.),
-                    )
+                    .with_merge(PerspectiveInfiniteReverseCamera {
+                        local_to_world: Mat4::IDENTITY,
+                        near: 0.1,
+                        projection: Mat4::IDENTITY,
+                        projection_view: Mat4::IDENTITY,
+                        active_camera: 0.0,
+                        inv_local_to_world: Mat4::IDENTITY,
+                        fovy: 1.0,
+                        aspect_ratio: 1.0,
+                        perspective_infinite_reverse: (),
+                        optional: PerspectiveInfiniteReverseCameraOptional {
+                            translation: Some(
+                                -Vec3::Z * get_component(id, camera_distance()).unwrap_or(4.),
+                            ),
+                            main_scene: Some(()),
+                            aspect_ratio_from_window: Some(entity::resources()),
+                            ..default()
+                        },
+                    })
                     .with(local_to_parent(), Default::default())
                     .with(name(), "Camera".to_string())
                     .spawn();

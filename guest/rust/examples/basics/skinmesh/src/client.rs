@@ -2,37 +2,38 @@ use ambient_api::{
     animation::{self, AnimationPlayerRef, BindId, BlendNodeRef, PlayClipFromUrlNodeRef, PlayMode},
     core::{
         animation::components::apply_animation_player,
-        app::components::{main_scene, name},
-        camera::{
-            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
-        },
+        app::components::name,
         layout::components::space_between_items,
         model::components::model_loaded,
         prefab::components::prefab_from_url,
-        primitives::{components::quad, concepts::make_Sphere},
+        primitives::{components::quad, concepts::Sphere},
         rendering::components::color,
-        transform::{
-            components::{local_to_parent, lookat_target, reset_scale, scale, translation},
-            concepts::make_Transformable,
-        },
+        transform::components::{local_to_parent, reset_scale, scale},
     },
     element::{use_effect, use_state},
     prelude::*,
 };
-use packages::this::assets;
+
+use packages::{
+    orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional},
+    this::assets,
+};
 
 #[main]
 pub async fn main() {
-    Entity::new()
-        .with_merge(make_PerspectiveInfiniteReverseCamera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(translation(), vec3(2., 2., 3.0))
-        .with(lookat_target(), vec3(0., 0., 1.))
-        .spawn();
+    OrbitCamera {
+        is_orbit_camera: (),
+        lookat_target: vec3(0., 0., 1.),
+        optional: OrbitCameraOptional {
+            camera_angle: Some(vec2(-180f32.to_radians(), 45f32.to_radians())),
+            camera_distance: Some(3.0),
+            ..default()
+        },
+    }
+    .make()
+    .spawn();
 
     Entity::new()
-        .with_merge(make_Transformable())
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(0.5, 0.5, 0.5, 1.))
@@ -40,7 +41,6 @@ pub async fn main() {
         .spawn();
 
     let unit_id = Entity::new()
-        .with_merge(make_Transformable())
         .with(prefab_from_url(), assets::url("Peasant Man.fbx"))
         .with(name(), "Peasant".to_string())
         .spawn();
@@ -61,8 +61,12 @@ pub async fn main() {
     // This demonstrates how to attach an entity to a bone
     let left_foot = animation::get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
     let ball = Entity::new()
-        .with_merge(make_Transformable())
-        .with_merge(make_Sphere())
+        .with_merge(Sphere {
+            sphere: (),
+            sphere_radius: 0.5,
+            sphere_sectors: 36,
+            sphere_stacks: 18,
+        })
         .with(scale(), vec3(0.3, 0.3, 0.3))
         .with(color(), vec4(0.0, 1.0, 0.0, 1.0))
         .with(local_to_parent(), Default::default())
