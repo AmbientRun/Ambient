@@ -10,10 +10,7 @@ use ambient_api::{
         player::components::is_player,
         primitives::components::cube,
         rendering::components::{cast_shadows, color},
-        transform::{
-            components::{rotation, scale, translation},
-            concepts::make_Transformable,
-        },
+        transform::components::{rotation, scale, translation},
     },
     prelude::*,
 };
@@ -103,7 +100,6 @@ pub fn main() {
                         let rot = Quat::from_rotation_y(random::<f32>() * PI)
                             * Quat::from_rotation_x(random::<f32>() * PI);
                         Entity::new()
-                            .with_merge(make_Transformable())
                             .with(cube(), ())
                             .with(rotation(), rot)
                             .with(physics_controlled(), ())

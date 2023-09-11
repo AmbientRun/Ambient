@@ -1,27 +1,22 @@
 use ambient_api::{
-    core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
-        },
-        messages::Frame,
-        rendering::components::color,
-        transform::components::{lookat_target, translation},
-    },
+    core::{messages::Frame, rendering::components::color, transform::components::translation},
     element::{use_module_message, use_state},
     prelude::*,
 };
-use packages::this::messages::{Input, WorldPosition};
+use packages::{
+    orbit_camera::concepts::OrbitCamera,
+    this::messages::{Input, WorldPosition},
+};
 
 #[main]
 pub fn main() {
-    let camera = Entity::new()
-        .with_merge(make_PerspectiveInfiniteReverseCamera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(translation(), Vec3::ONE * 5.)
-        .with(lookat_target(), vec3(0., 0., 0.))
-        .spawn();
+    let camera = OrbitCamera {
+        is_orbit_camera: (),
+        lookat_target: Vec3::ZERO,
+        optional: default(),
+    }
+    .make()
+    .spawn();
 
     Frame::subscribe(move |_| {
         let input = input::get();

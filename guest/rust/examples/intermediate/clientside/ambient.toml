@@ -16,3 +16,6 @@ grid_position = { name = "Grid Position", description = "The position of the cel
     "Networked",
     "Debuggable",
 ] }
+
+[dependencies]
+orbit_camera = { path = "../../../packages/std/orbit_camera" }

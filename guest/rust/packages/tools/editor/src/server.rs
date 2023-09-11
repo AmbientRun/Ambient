@@ -5,7 +5,9 @@ use ambient_api::{
         app::components::{main_scene, name},
         camera::{
             components::{active_camera, aspect_ratio_from_window},
-            concepts::make_PerspectiveInfiniteReverseCamera,
+            concepts::{
+                PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
+            },
         },
         physics::components::dynamic,
         player::components::user_id,
@@ -57,16 +59,29 @@ pub fn main() {
                 })
                 .unwrap_or_else(|| vec2(0.0, PI / 2.));
 
-            let camera_id = Entity::new()
-                .with_merge(make_PerspectiveInfiniteReverseCamera())
-                .with(aspect_ratio_from_window(), EntityId::resources())
-                .with(main_scene(), ())
-                .with(user_id(), player_user_id)
-                .with(translation(), new_camera_position)
-                .with(camera_angle(), new_camera_angle)
-                .with(name(), "Editor Camera".to_string())
-                .with(active_camera(), 10.0)
-                .spawn();
+            let camera_id = PerspectiveInfiniteReverseCamera {
+                local_to_world: Mat4::IDENTITY,
+                near: 0.1,
+                projection: Mat4::IDENTITY,
+                projection_view: Mat4::IDENTITY,
+                active_camera: 10.0,
+                inv_local_to_world: Mat4::IDENTITY,
+                fovy: 1.0,
+                aspect_ratio: 1.0,
+                perspective_infinite_reverse: (),
+                optional: PerspectiveInfiniteReverseCameraOptional {
+                    translation: Some(new_camera_position),
+                    rotation: Some(default()),
+                    main_scene: Some(()),
+                    aspect_ratio_from_window: Some(entity::resources()),
+                    ..default()
+                },
+            }
+            .make()
+            .with(user_id(), player_user_id)
+            .with(camera_angle(), new_camera_angle)
+            .with(name(), "Editor Camera".to_string())
+            .spawn();
 
             entity::add_component(id, editor_camera(), camera_id);
         } else {

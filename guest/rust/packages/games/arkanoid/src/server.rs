@@ -6,9 +6,9 @@ use ambient_api::{
         messages::Frame,
         physics::components::linear_velocity,
         player::components::{is_player, user_id},
-        primitives::{components::cube, concepts::make_Sphere},
+        primitives::components::cube,
         rendering::components::color,
-        transform::{components::*, concepts::make_Transformable},
+        transform::components::*,
     },
     prelude::*,
 };

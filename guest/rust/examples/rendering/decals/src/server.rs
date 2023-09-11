@@ -1,31 +1,25 @@
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
-        },
         primitives::components::{cube, quad},
         rendering::components::{color, decal_from_url, transparency_group},
-        transform::components::{lookat_target, rotation, scale, translation},
+        transform::components::{rotation, scale, translation},
     },
     prelude::*,
 };
+use packages::orbit_camera::concepts::OrbitCamera;
 
 use core::f32::consts::PI;
-
-// from discussion at
-// https://discord.com/channels/894505972289134632/1078283561540530216/1096581219925377195
 
 #[main]
 pub fn main() {
     // Camera.
-    Entity::new()
-        .with_merge(make_PerspectiveInfiniteReverseCamera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(translation(), vec3(1.0, 1.0, 2.0))
-        .with(lookat_target(), vec3(0.0, 0.0, 0.0))
-        .with(main_scene(), ())
-        .spawn();
+    OrbitCamera {
+        is_orbit_camera: (),
+        lookat_target: Vec3::ZERO,
+        optional: default(),
+    }
+    .make()
+    .spawn();
 
     // Scene geometry.
     Entity::new()

@@ -6,5 +6,6 @@ version = "0.0.1"
 content = { type = "Playable", example = true }
 
 [dependencies]
-deps_assets = { path = "deps/assets" , deployment = "7L9b3auvm7b5cLdQbMgjxb" }
-deps_code = { path = "deps/code" , deployment = "1WgKMn1p4Ta53cwa9hyw05" }
+deps_assets = { path = "deps/assets", deployment = "7L9b3auvm7b5cLdQbMgjxb" }
+deps_code = { path = "deps/code", deployment = "1WgKMn1p4Ta53cwa9hyw05" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" }

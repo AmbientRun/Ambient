@@ -143,7 +143,6 @@ active_camera = { suggested = 0.0 }
 [concepts.Camera.components.optional]
 "app::main_scene" = { description = "Either the main or UI scene must be specified for this camera to be used." }
 "app::ui_scene" = { description = "Either the main or UI scene must be specified for this camera to be used." }
-aspect_ratio_from_window = {}
 
 [concepts.PerspectiveCommonCamera]
 name = "Perspective Common Camera"
@@ -153,6 +152,8 @@ extends = ["Camera"]
 [concepts.PerspectiveCommonCamera.components.required]
 fovy = { suggested = 1.0 }
 aspect_ratio = { suggested = 1.0 }
+[concepts.PerspectiveCommonCamera.components.optional]
+aspect_ratio_from_window = {}
 
 [concepts.PerspectiveCamera]
 name = "Perspective Camera"

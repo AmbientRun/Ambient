@@ -2,30 +2,42 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         camera::{
-            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
+            components::aspect_ratio_from_window,
+            concepts::{
+                PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
+            },
         },
         primitives::components::quad,
         rendering::components::pbr_material_from_url,
-        transform::{
-            components::{lookat_target, scale, translation},
-            concepts::make_Transformable,
-        },
+        transform::components::{lookat_target, scale, translation},
     },
     prelude::*,
 };
 
 #[main]
 pub fn main() {
-    Entity::new()
-        .with_merge(make_PerspectiveInfiniteReverseCamera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(translation(), vec3(5., 5., 6.))
-        .with(lookat_target(), vec3(0., 0., 2.))
-        .with(main_scene(), ())
-        .spawn();
+    PerspectiveInfiniteReverseCamera {
+        local_to_world: Mat4::IDENTITY,
+        near: 0.1,
+        projection: Mat4::IDENTITY,
+        projection_view: Mat4::IDENTITY,
+        active_camera: 0.0,
+        inv_local_to_world: Mat4::IDENTITY,
+        fovy: 1.0,
+        aspect_ratio: 1.0,
+        perspective_infinite_reverse: (),
+        optional: PerspectiveInfiniteReverseCameraOptional {
+            translation: Some(vec3(5., 5., 6.)),
+            main_scene: Some(()),
+            aspect_ratio_from_window: Some(entity::resources()),
+            ..default()
+        },
+    }
+    .make()
+    .with(lookat_target(), vec3(0., 0., 2.))
+    .spawn();
 
     Entity::new()
-        .with_merge(make_Transformable())
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 10.)
         .with(

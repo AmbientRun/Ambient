@@ -1,17 +1,15 @@
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
-        },
-        messages::Frame,
-        primitives::components::cube,
-        rendering::components::color,
-        transform::components::{lookat_target, translation},
+        messages::Frame, primitives::components::cube, rendering::components::color,
+        transform::components::translation,
     },
     prelude::*,
 };
-use packages::this::components::{grid_position, grid_side_length};
+
+use packages::{
+    orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional},
+    this::components::{grid_position, grid_side_length},
+};
 
 #[main]
 pub async fn main() {
@@ -20,24 +18,18 @@ pub async fn main() {
             .await
             .unwrap();
 
-    let id = Entity::new()
-        .with_merge(make_PerspectiveInfiniteReverseCamera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(translation(), Vec3::ONE * 5.)
-        .with(lookat_target(), vec3(0., 0., 0.))
-        .spawn();
+    OrbitCamera {
+        is_orbit_camera: (),
+        lookat_target: Vec3::ZERO,
+        optional: OrbitCameraOptional {
+            camera_distance: Some(20.0),
+            ..default()
+        },
+    }
+    .make()
+    .spawn();
 
     let start_time = game_time();
-
-    Frame::subscribe(move |_| {
-        let t = game_time() - start_time;
-        entity::set_component(
-            id,
-            translation(),
-            Quat::from_rotation_z(t.as_secs_f32() * 0.2) * Vec3::ONE * 10.,
-        );
-    });
 
     query(grid_position())
         .requires(cube())

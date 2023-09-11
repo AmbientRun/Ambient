@@ -4,12 +4,12 @@ use ambient_api::{
     core::{
         app::components::name,
         ecs::components::{children, parent},
-        physics::concepts::make_CharacterController,
+        physics::concepts::CharacterController,
         player::components::is_player,
         prefab::components::prefab_from_url,
         transform::{
             components::{local_to_parent, local_to_world, rotation, translation},
-            concepts::make_Transformable,
+            concepts::{Transformable, TransformableOptional},
         },
     },
     prelude::*,
@@ -40,7 +40,7 @@ pub async fn main() {
         for character_url in chars {
             let zombie = Entity::new().spawn();
 
-            let model = make_Transformable()
+            let model = Entity::new()
                 .with(prefab_from_url(), character_url)
                 .with(parent(), zombie)
                 .with(local_to_parent(), Default::default())
@@ -49,39 +49,51 @@ pub async fn main() {
 
             entity::add_components(
                 zombie,
-                make_Transformable()
-                    .with_merge(make_CharacterController())
-                    .with(
-                        translation(),
-                        vec3(-8.0 * random::<f32>(), -8.0 * random::<f32>(), 1.3),
-                    )
-                    .with(name(), "Zombie".to_string())
-                    .with(children(), vec![model])
-                    .with(local_to_world(), Default::default())
-                    .with(components::zombie_model_ref(), model)
-                    .with(health(), 100.)
-                    .with(run_direction(), -Vec2::Y)
-                    .with(vertical_velocity(), 0.)
-                    .with(speed(), 0.03)
-                    .with(running(), false)
-                    .with(components::is_zombie(), ())
-                    .with(basic_character_animations(), model)
-                    .with(
-                        character_animation::components::idle(),
-                        anim_url("Zombie Idle"),
-                    )
-                    .with(
-                        character_animation::components::walk_forward(),
-                        anim_url("Zombie Walk"),
-                    )
-                    .with(
-                        character_animation::components::run_forward(),
-                        anim_url("Zombie Run"),
-                    )
-                    .with(
-                        character_animation::components::death(),
-                        anim_url("Zombie Death"),
-                    ),
+                Transformable {
+                    local_to_world: Mat4::IDENTITY,
+                    optional: TransformableOptional {
+                        translation: Some(vec3(
+                            -8.0 * random::<f32>(),
+                            -8.0 * random::<f32>(),
+                            1.3,
+                        )),
+                        rotation: Some(default()),
+                        scale: Some(Vec3::ONE),
+                    },
+                }
+                .make()
+                .with_merge(CharacterController {
+                    character_controller_height: 2.0,
+                    character_controller_radius: 0.5,
+                    physics_controlled: (),
+                })
+                .with(name(), "Zombie".to_string())
+                .with(children(), vec![model])
+                .with(local_to_world(), Default::default())
+                .with(components::zombie_model_ref(), model)
+                .with(health(), 100.)
+                .with(run_direction(), -Vec2::Y)
+                .with(vertical_velocity(), 0.)
+                .with(speed(), 0.03)
+                .with(running(), false)
+                .with(components::is_zombie(), ())
+                .with(basic_character_animations(), model)
+                .with(
+                    character_animation::components::idle(),
+                    anim_url("Zombie Idle"),
+                )
+                .with(
+                    character_animation::components::walk_forward(),
+                    anim_url("Zombie Walk"),
+                )
+                .with(
+                    character_animation::components::run_forward(),
+                    anim_url("Zombie Run"),
+                )
+                .with(
+                    character_animation::components::death(),
+                    anim_url("Zombie Death"),
+                ),
             );
 
             sleep(random::<f32>()).await;

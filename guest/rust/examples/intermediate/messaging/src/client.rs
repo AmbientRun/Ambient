@@ -5,16 +5,12 @@ use std::sync::{
 
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window, concepts::make_PerspectiveInfiniteReverseCamera,
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         primitives::components::cube,
         rendering::components::color,
-        transform::{
-            components::{lookat_target, scale, translation},
-            concepts::make_Transformable,
-        },
+        transform::components::{lookat_target, scale, translation},
     },
     prelude::*,
 };
@@ -33,13 +29,26 @@ pub fn main() {
     // other modules (e.g. `client_two.rs`) until it gets a response (4).
 
     // 0
-    Entity::new()
-        .with_merge(make_PerspectiveInfiniteReverseCamera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(translation(), Vec3::ONE * 5.)
-        .with(lookat_target(), vec3(0., 0., 0.))
-        .spawn();
+    PerspectiveInfiniteReverseCamera {
+        local_to_world: Mat4::IDENTITY,
+        near: 0.1,
+        projection: Mat4::IDENTITY,
+        projection_view: Mat4::IDENTITY,
+        active_camera: 0.0,
+        inv_local_to_world: Mat4::IDENTITY,
+        fovy: 1.0,
+        aspect_ratio: 1.0,
+        perspective_infinite_reverse: (),
+        optional: PerspectiveInfiniteReverseCameraOptional {
+            translation: Some(Vec3::ONE * 5.),
+            main_scene: Some(()),
+            aspect_ratio_from_window: Some(entity::resources()),
+            ..default()
+        },
+    }
+    .make()
+    .with(lookat_target(), vec3(0., 0., 0.))
+    .spawn();
 
     // 1
     Hello::new("Hello, world from the client!", false).send_server_unreliable();
@@ -51,7 +60,6 @@ pub fn main() {
 
         let source_reliable = data.source_reliable;
         Entity::new()
-            .with_merge(make_Transformable())
             .with(cube(), ())
             .with(
                 translation(),

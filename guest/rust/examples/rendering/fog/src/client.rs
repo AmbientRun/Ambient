@@ -1,36 +1,30 @@
 use ambient_api::{
     core::{
         app::components::main_scene,
-        camera::{
-            components::{aspect_ratio_from_window, fog},
-            concepts::make_PerspectiveInfiniteReverseCamera,
-        },
+        camera::components::fog,
         primitives::components::{cube, quad},
         rendering::components::{
             cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky,
             sun,
         },
-        transform::{
-            components::{lookat_target, rotation, scale, translation},
-            concepts::make_Transformable,
-        },
+        transform::components::{rotation, scale, translation},
     },
     prelude::*,
 };
+use packages::orbit_camera::concepts::OrbitCamera;
 
 #[main]
 fn main() {
-    Entity::new()
-        .with_merge(make_PerspectiveInfiniteReverseCamera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(fog(), ())
-        .with(translation(), vec3(0., -5., 3.))
-        .with(lookat_target(), vec3(0., 0., 2.))
-        .spawn();
+    OrbitCamera {
+        is_orbit_camera: (),
+        lookat_target: vec3(0., 0., 2.),
+        optional: default(),
+    }
+    .make()
+    .with(fog(), ())
+    .spawn();
 
     let sun = Entity::new()
-        .with_merge(make_Transformable())
         .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-1.))
         .with(main_scene(), ())
@@ -40,13 +34,9 @@ fn main() {
         .with(fog_height_falloff(), 0.01)
         .spawn();
 
-    Entity::new()
-        .with_merge(make_Transformable())
-        .with(sky(), ())
-        .spawn();
+    Entity::new().with(sky(), ()).spawn();
 
     Entity::new()
-        .with_merge(make_Transformable())
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 1000.)
         .with(color(), vec4(1., 0., 0., 1.))
@@ -54,7 +44,6 @@ fn main() {
 
     for i in 0..10 {
         Entity::new()
-            .with_merge(make_Transformable())
             .with(cube(), ())
             .with(translation(), vec3(0., 1. * (2f32).powi(i), 1.))
             .with(scale(), Vec3::ONE * 2.)

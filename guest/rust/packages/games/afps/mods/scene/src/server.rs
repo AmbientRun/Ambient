@@ -3,15 +3,9 @@ use ambient_api::{
         app::components::main_scene,
         physics::components::{cube_collider, dynamic, physics_controlled, plane_collider},
         // prefab::components::prefab_from_url,
-        primitives::{
-            components::{cube, quad},
-            concepts::make_Sphere,
-        },
+        primitives::components::{cube, quad},
         rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun},
-        transform::{
-            components::{rotation, scale, translation},
-            concepts::make_Transformable,
-        },
+        transform::components::{rotation, scale, translation},
     },
     prelude::*,
 };
@@ -25,10 +19,7 @@ pub async fn main() {
         .with(plane_collider(), ())
         .with(scale(), Vec3::ONE * 1000.)
         .spawn();
-    Entity::new()
-        .with_merge(make_Transformable())
-        .with(sky(), ())
-        .spawn();
+    Entity::new().with(sky(), ()).spawn();
     // Entity::new()
     //     .with(translation(), vec3(10., 10., 0.))
     //     .with(cube(), ())
@@ -37,7 +28,6 @@ pub async fn main() {
     //     .with(dynamic(), true)
     //     .spawn();
     Entity::new()
-        .with_merge(make_Transformable())
         .with(sun(), Default::default())
         .with(rotation(), Quat::from_rotation_y(-0.6))
         .with(main_scene(), ())
@@ -48,7 +38,6 @@ pub async fn main() {
     for _ in 0..40 {
         let pos = random::<Vec2>() * 100. - 50.;
         Entity::new()
-            .with_merge(make_Sphere())
             .with(cast_shadows(), ())
             .with(cube(), ())
             .with(translation(), vec3(pos.x, pos.y, 0.0))
@@ -70,7 +59,6 @@ pub async fn main() {
     for _ in 0..60 {
         let pos = random::<Vec2>() * 100. - 50.;
         Entity::new()
-            .with_merge(make_Sphere())
             .with(cast_shadows(), ())
             .with(cube(), ())
             .with(translation(), vec3(pos.x, pos.y, 0.0))

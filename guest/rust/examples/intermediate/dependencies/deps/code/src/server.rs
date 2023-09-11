@@ -1,10 +1,7 @@
 use ambient_api::{
     core::{
         prefab::components::prefab_from_url,
-        transform::{
-            components::{rotation, translation},
-            concepts::make_Transformable,
-        },
+        transform::components::{rotation, translation},
     },
     prelude::*,
 };
@@ -20,12 +17,12 @@ use packages::{
 pub fn main() {
     Spawn::subscribe(|_, msg| {
         Entity::new()
-            .with_merge(make_Transformable())
             .with(spawned_by_us(), ())
             .with(prefab_from_url(), assets::url("Teapot.glb"))
             .with(spin_direction(), msg.spin_direction)
             .with(spin_speed(), msg.spin_speed)
             .with(translation(), (random::<Vec3>() - 0.5) * 5.0)
+            .with(rotation(), Quat::IDENTITY)
             .spawn();
     });
 
