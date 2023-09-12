@@ -158,7 +158,7 @@ fn generate_scope(
             }
 
             Ok(quote! {
-                #[allow(unused)]
+                #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
                 pub mod #id {
                     #inner
                 }

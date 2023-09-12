@@ -4,7 +4,7 @@
 pub use raw::ambient_core;
 mod raw {
     pub mod ambient_core {
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod animation {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -140,7 +140,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod app {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -269,7 +269,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod audio {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -367,7 +367,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod camera {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -1370,7 +1370,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod ecs {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -1412,7 +1412,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod input {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -1508,7 +1508,7 @@ mod raw {
                 impl ModuleMessage for MouseOverChanged {}
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod layout {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2031,7 +2031,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod model {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2060,7 +2060,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod network {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2098,7 +2098,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod package {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2175,7 +2175,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod physics {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2368,7 +2368,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod player {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2397,7 +2397,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod prefab {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2420,7 +2420,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod primitives {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2854,7 +2854,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod procedurals {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2880,7 +2880,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod rect {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2964,7 +2964,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod rendering {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -3110,7 +3110,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod text {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -3253,7 +3253,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod transform {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -3452,7 +3452,7 @@ mod raw {
                 }
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod ui {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -3518,7 +3518,7 @@ mod raw {
                 impl ModuleMessage for FocusChanged {}
             }
         }
-        #[allow(unused)]
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod wasm {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {

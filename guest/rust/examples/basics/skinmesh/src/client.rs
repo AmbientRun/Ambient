@@ -27,7 +27,6 @@ pub async fn main() {
             lookat_target: Some(vec3(0., 0., 1.)),
             camera_angle: Some(vec2(-180f32.to_radians(), 45f32.to_radians())),
             camera_distance: Some(3.0),
-            ..default()
         },
     }
     .spawn();

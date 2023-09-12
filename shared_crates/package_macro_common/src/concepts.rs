@@ -27,7 +27,7 @@ pub fn generate(
         .filter_map(|c| context.extract_item_if_relevant(items, *c))
         .map(|concept| {
             let concept = &*concept;
-            let new = new::generate(items, type_printer, context, &guest_api_path, concept)?;
+            let new = generate_one(items, type_printer, context, &guest_api_path, concept)?;
             Ok(quote! {
                 #new
             })
@@ -49,326 +49,322 @@ pub fn generate(
     })
 }
 
-mod new {
-    use super::*;
+fn generate_one(
+    items: &ItemMap,
+    type_printer: &TypePrinter,
+    context: Context,
+    guest_api_path: &TokenStream,
+    concept: &Concept,
+) -> anyhow::Result<TokenStream> {
+    let concept_id = &concept.data().id;
+    let concept_optional_id = quote::format_ident!("{}Optional", concept_id.as_str());
 
-    pub(super) fn generate(
-        items: &ItemMap,
-        type_printer: &TypePrinter,
-        context: Context,
-        guest_api_path: &TokenStream,
-        concept: &Concept,
-    ) -> anyhow::Result<TokenStream> {
-        let concept_id = &concept.data().id;
-        let concept_optional_id = quote::format_ident!("{}Optional", concept_id.as_str());
+    let required_components = concept
+        .required_components
+        .iter()
+        .map(|(id, value)| {
+            component_to_field(
+                items,
+                type_printer,
+                context,
+                id.as_resolved().unwrap(),
+                value,
+            )
+        })
+        .collect::<anyhow::Result<Vec<_>>>()?;
 
-        let required_components = concept
-            .required_components
-            .iter()
-            .map(|(id, value)| {
-                component_to_field(
-                    items,
-                    type_printer,
-                    context,
-                    id.as_resolved().unwrap(),
-                    value,
-                )
-            })
-            .collect::<anyhow::Result<Vec<_>>>()?;
+    let optional_components = concept
+        .optional_components
+        .iter()
+        .map(|(id, value)| {
+            component_to_field(
+                items,
+                type_printer,
+                context,
+                id.as_resolved().unwrap(),
+                value,
+            )
+        })
+        .collect::<anyhow::Result<Vec<_>>>()?;
 
-        let optional_components = concept
-            .optional_components
-            .iter()
-            .map(|(id, value)| {
-                component_to_field(
-                    items,
-                    type_printer,
-                    context,
-                    id.as_resolved().unwrap(),
-                    value,
-                )
-            })
-            .collect::<anyhow::Result<Vec<_>>>()?;
-
-        let struct_def = {
-            let doc_comment = {
-                let mut doc_comment = String::new();
-                write!(
-                    doc_comment,
-                    "**{}**",
-                    concept.name.as_deref().unwrap_or(concept_id.as_str())
-                )?;
-                if let Some(description) = &concept.description {
-                    write!(doc_comment, ": {}", description)?;
-                }
-                writeln!(doc_comment)?;
-                writeln!(doc_comment)?;
-
-                if !concept.extends.is_empty() {
-                    write!(doc_comment, "**Extends**: ")?;
-                    for (i, id) in concept.extends.iter().enumerate() {
-                        let extend = items.get(id.as_resolved().unwrap());
-                        if i != 0 {
-                            doc_comment.push_str(", ");
-                        }
-
-                        write!(
-                            doc_comment,
-                            "`{}`",
-                            &items.fully_qualified_display_path(extend, None, None)
-                        )?;
-                    }
-                    writeln!(doc_comment)?;
-                    writeln!(doc_comment)?;
-                }
-                doc_comment.trim().to_string()
-            };
-
-            let components = required_components
-                .iter()
-                .map(|component| component.to_field_definition(false));
-
-            let optional_ref = if !optional_components.is_empty() {
-                Some(quote! {
-                    /// Optional components.
-                    pub optional: #concept_optional_id,
-                })
-            } else {
-                None
-            };
-
-            quote! {
-                #[doc = #doc_comment]
-                #[derive(Clone, Debug)]
-                pub struct #concept_id {
-                    #(#components)*
-                    #optional_ref
-                }
+    let struct_def = {
+        let doc_comment = {
+            let mut doc_comment = String::new();
+            write!(
+                doc_comment,
+                "**{}**",
+                concept.name.as_deref().unwrap_or(concept_id.as_str())
+            )?;
+            if let Some(description) = &concept.description {
+                write!(doc_comment, ": {}", description)?;
             }
+            writeln!(doc_comment)?;
+            writeln!(doc_comment)?;
+
+            if !concept.extends.is_empty() {
+                write!(doc_comment, "**Extends**: ")?;
+                for (i, id) in concept.extends.iter().enumerate() {
+                    let extend = items.get(id.as_resolved().unwrap());
+                    if i != 0 {
+                        doc_comment.push_str(", ");
+                    }
+
+                    write!(
+                        doc_comment,
+                        "`{}`",
+                        &items.fully_qualified_display_path(extend, None, None)
+                    )?;
+                }
+                writeln!(doc_comment)?;
+                writeln!(doc_comment)?;
+            }
+            doc_comment.trim().to_string()
         };
 
-        let optional_struct_def = if !optional_components.is_empty() {
-            let doc_comment = format!("Optional part of [{}].", concept_id);
+        let components = required_components
+            .iter()
+            .map(|component| component.to_field_definition(false));
 
-            let components = optional_components
-                .iter()
-                .map(|component| component.to_field_definition(true));
-
+        let optional_ref = if !optional_components.is_empty() {
             Some(quote! {
-                #[doc = #doc_comment]
-                #[derive(Clone, Debug, Default)]
-                pub struct #concept_optional_id {
-                    #(#components)*
-                }
+                /// Optional components.
+                pub optional: #concept_optional_id,
             })
         } else {
             None
         };
 
-        let make = {
-            let required = required_components.iter().map(|c| {
-                let path = &c.path;
-                let field_name = &c.id;
-
-                quote! { with(#path(), self.#field_name) }
-            });
-
-            let optional = optional_components.iter().map(|c| {
-                let path = &c.path;
-                let field_name = &c.id;
-
-                quote! {
-                    if let Some(#field_name) = self.optional.#field_name {
-                        entity.set(#path(), #field_name);
-                    }
-                }
-            });
-
-            quote! {
-                fn make(self) -> Entity {
-                    let mut entity = Entity::new()
-                        #(.#required)*;
-
-                    #(#optional)*
-
-                    entity
-                }
+        quote! {
+            #[doc = #doc_comment]
+            #[derive(Clone, Debug)]
+            pub struct #concept_id {
+                #(#components)*
+                #optional_ref
             }
-        };
+        }
+    };
 
-        let get_spawned = {
-            let required_components = required_components.iter().map(|c| {
-                c.with_id_and_path(|f, p| quote! { #f: entity::get_component(id, #p())?, })
-            });
+    let optional_struct_def = if !optional_components.is_empty() {
+        let doc_comment = format!("Optional part of [{}].", concept_id);
 
-            let optional = if optional_components.is_empty() {
-                None
-            } else {
-                let optional_components = optional_components.iter().map(|c| {
-                    c.with_id_and_path(|f, p| quote! { #f: entity::get_component(id, #p()), })
-                });
+        let components = optional_components
+            .iter()
+            .map(|component| component.to_field_definition(true));
 
-                Some(quote! {
-                    optional: #concept_optional_id {
-                        #(#optional_components)*
-                    }
-                })
-            };
-
-            quote! {
-                fn get_spawned(id: EntityId) -> Option<Self> {
-                    Some(Self {
-                        #(#required_components)*
-                        #optional
-                    })
-                }
-            }
-        };
-
-        let get_unspawned = {
-            let required_components = required_components
-                .iter()
-                .map(|c| c.with_id_and_path(|f, p| quote! { #f: entity.get(#p())?, }));
-
-            let optional = if optional_components.is_empty() {
-                None
-            } else {
-                let optional_components = optional_components
-                    .iter()
-                    .map(|c| c.with_id_and_path(|f, p| quote! { #f: entity.get(#p()), }));
-
-                Some(quote! {
-                    optional: #concept_optional_id {
-                        #(#optional_components)*
-                    }
-                })
-            };
-
-            quote! {
-                fn get_unspawned(entity: &Entity) -> Option<Self> {
-                    Some(Self {
-                        #(#required_components)*
-                        #optional
-                    })
-                }
-            }
-        };
-
-        let contained_by = {
-            let required_paths = required_components
-                .iter()
-                .map(|c| &c.path)
-                .collect::<Vec<_>>();
-
-            quote! {
-                fn contained_by_spawned(id: EntityId) -> bool {
-                    entity::has_components(id, &[
-                        #(&#required_paths()),*
-                    ])
-                }
-
-                fn contained_by_unspawned(entity: &Entity) -> bool {
-                    entity.has_components(&[
-                        #(&#required_paths()),*
-                    ])
-                }
-            }
-        };
-
-        Ok(quote! {
-            #struct_def
-            #optional_struct_def
-            impl #guest_api_path::ecs::Concept for #concept_id {
-                #make
-                #get_spawned
-                #get_unspawned
-                #contained_by
+        Some(quote! {
+            #[doc = #doc_comment]
+            #[derive(Clone, Debug, Default)]
+            pub struct #concept_optional_id {
+                #(#components)*
             }
         })
-    }
+    } else {
+        None
+    };
 
-    struct ComponentField<'a> {
-        doc_comment: String,
-        id: &'a Identifier,
-        ty: TokenStream,
-        path: TokenStream,
-    }
-    impl ComponentField<'_> {
-        fn to_field_definition(&self, use_option: bool) -> TokenStream {
-            let doc = &self.doc_comment;
-            let id = self.id;
-            let ty = &self.ty;
+    let make = {
+        let required = required_components.iter().map(|c| {
+            let path = &c.path;
+            let field_name = &c.id;
 
-            let ty = if use_option {
-                quote! { Option<#ty> }
-            } else {
-                ty.clone()
-            };
+            quote! { with(#path(), self.#field_name) }
+        });
+
+        let optional = optional_components.iter().map(|c| {
+            let path = &c.path;
+            let field_name = &c.id;
 
             quote! {
-                #[doc = #doc]
-                pub #id: #ty,
+                if let Some(#field_name) = self.optional.#field_name {
+                    entity.set(#path(), #field_name);
+                }
+            }
+        });
+
+        quote! {
+            fn make(self) -> Entity {
+                let mut entity = Entity::new()
+                    #(.#required)*;
+
+                #(#optional)*
+
+                entity
             }
         }
+    };
 
-        fn with_id_and_path(
-            &self,
-            f: impl Fn(&Identifier, &TokenStream) -> TokenStream,
-        ) -> TokenStream {
-            f(self.id, &self.path)
+    let get_spawned = {
+        let required_components = required_components
+            .iter()
+            .map(|c| c.with_id_and_path(|f, p| quote! { #f: entity::get_component(id, #p())?, }));
+
+        let optional = if optional_components.is_empty() {
+            None
+        } else {
+            let optional_components = optional_components.iter().map(|c| {
+                c.with_id_and_path(|f, p| quote! { #f: entity::get_component(id, #p()), })
+            });
+
+            Some(quote! {
+                optional: #concept_optional_id {
+                    #(#optional_components)*
+                }
+            })
+        };
+
+        quote! {
+            fn get_spawned(id: EntityId) -> Option<Self> {
+                Some(Self {
+                    #(#required_components)*
+                    #optional
+                })
+            }
+        }
+    };
+
+    let get_unspawned = {
+        let required_components = required_components
+            .iter()
+            .map(|c| c.with_id_and_path(|f, p| quote! { #f: entity.get(#p())?, }));
+
+        let optional = if optional_components.is_empty() {
+            None
+        } else {
+            let optional_components = optional_components
+                .iter()
+                .map(|c| c.with_id_and_path(|f, p| quote! { #f: entity.get(#p()), }));
+
+            Some(quote! {
+                optional: #concept_optional_id {
+                    #(#optional_components)*
+                }
+            })
+        };
+
+        quote! {
+            fn get_unspawned(entity: &Entity) -> Option<Self> {
+                Some(Self {
+                    #(#required_components)*
+                    #optional
+                })
+            }
+        }
+    };
+
+    let contained_by = {
+        let required_paths = required_components
+            .iter()
+            .map(|c| &c.path)
+            .collect::<Vec<_>>();
+
+        quote! {
+            fn contained_by_spawned(id: EntityId) -> bool {
+                entity::has_components(id, &[
+                    #(&#required_paths()),*
+                ])
+            }
+
+            fn contained_by_unspawned(entity: &Entity) -> bool {
+                entity.has_components(&[
+                    #(&#required_paths()),*
+                ])
+            }
+        }
+    };
+
+    Ok(quote! {
+        #struct_def
+        #optional_struct_def
+        impl #guest_api_path::ecs::Concept for #concept_id {
+            #make
+            #get_spawned
+            #get_unspawned
+            #contained_by
+        }
+    })
+}
+
+struct ComponentField<'a> {
+    doc_comment: String,
+    id: &'a Identifier,
+    ty: TokenStream,
+    path: TokenStream,
+}
+impl ComponentField<'_> {
+    fn to_field_definition(&self, use_option: bool) -> TokenStream {
+        let doc = &self.doc_comment;
+        let id = self.id;
+        let ty = &self.ty;
+
+        let ty = if use_option {
+            quote! { Option<#ty> }
+        } else {
+            ty.clone()
+        };
+
+        quote! {
+            #[doc = #doc]
+            pub #id: #ty,
         }
     }
 
-    fn component_to_field<'a>(
-        items: &'a ItemMap,
-        type_printer: &TypePrinter,
-        context: Context,
-        component_item_id: ItemId<Component>,
-        value: &ConceptValue,
-    ) -> anyhow::Result<ComponentField<'a>> {
-        let component = items.get(component_item_id);
-        let component_id = &component.data.id;
+    fn with_id_and_path(
+        &self,
+        f: impl Fn(&Identifier, &TokenStream) -> TokenStream,
+    ) -> TokenStream {
+        f(self.id, &self.path)
+    }
+}
 
-        let component_ty =
-            type_printer.get(context, items, None, component.type_.as_resolved().unwrap())?;
+fn component_to_field<'a>(
+    items: &'a ItemMap,
+    type_printer: &TypePrinter,
+    context: Context,
+    component_item_id: ItemId<Component>,
+    value: &ConceptValue,
+) -> anyhow::Result<ComponentField<'a>> {
+    let component = items.get(component_item_id);
+    let component_id = &component.data.id;
 
-        let mut doc_comment = String::new();
+    let component_ty =
+        type_printer.get(context, items, None, component.type_.as_resolved().unwrap())?;
 
+    let mut doc_comment = String::new();
+
+    writeln!(
+        doc_comment,
+        "**Component**: `{}`",
+        items.fully_qualified_display_path(component, None, None)
+    )?;
+    writeln!(doc_comment)?;
+
+    if let Some(value) = value.suggested.as_ref().and_then(|v| v.as_resolved()) {
         writeln!(
             doc_comment,
-            "**Component**: `{}`",
-            items.fully_qualified_display_path(component, None, None)
+            "**Suggested value**: `{}`",
+            SemiprettyTokenStream(value_to_token_stream(items, value)?)
         )?;
         writeln!(doc_comment)?;
-
-        if let Some(value) = value.suggested.as_ref().and_then(|v| v.as_resolved()) {
-            writeln!(
-                doc_comment,
-                "**Suggested value**: `{}`",
-                SemiprettyTokenStream(value_to_token_stream(items, value)?)
-            )?;
-            writeln!(doc_comment)?;
-        }
-
-        if let Some(description) = &value.description {
-            writeln!(doc_comment, "**Description**: {description}")?;
-            writeln!(doc_comment)?;
-        }
-
-        if let Some(description) = &component.description {
-            writeln!(doc_comment, "**Component description**: {}", description)?;
-            writeln!(doc_comment)?;
-        }
-
-        let component_path = context.get_path(items, None, component_item_id)?;
-
-        Ok(ComponentField {
-            doc_comment,
-            id: component_id,
-            ty: component_ty,
-            path: component_path,
-        })
     }
+
+    if let Some(description) = &value.description {
+        writeln!(doc_comment, "**Description**: {description}")?;
+        writeln!(doc_comment)?;
+    }
+
+    if let Some(description) = &component.description {
+        writeln!(doc_comment, "**Component description**: {}", description)?;
+        writeln!(doc_comment)?;
+    }
+
+    let component_path = context.get_path(items, None, component_item_id)?;
+
+    Ok(ComponentField {
+        doc_comment,
+        id: component_id,
+        ty: component_ty,
+        path: component_path,
+    })
 }
 
 /// Very, very basic one-line formatter for token streams
