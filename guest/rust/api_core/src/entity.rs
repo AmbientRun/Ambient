@@ -4,6 +4,7 @@ use crate::{
     internal::{
         component::{Component, Entity, SupportedValue, UntypedComponent},
         conversion::{FromBindgen, IntoBindgen},
+        generated::ambient_core::hierarchy::components::unmanaged_children,
         wit,
     },
     prelude::block_until,
@@ -224,17 +225,19 @@ pub fn mutate_component_with_default<T: SupportedValue + Clone + PartialEq>(
 
 /// Adds `child` as a child to `entity`.
 pub fn add_child(entity: EntityId, child: EntityId) {
-    if has_component(entity, children()) {
-        mutate_component(entity, children(), |children| children.push(child));
-    } else {
-        add_component(entity, children(), vec![child]);
+    if has_component(entity, unmanaged_children()) {
+        if has_component(entity, children()) {
+            mutate_component(entity, children(), |children| children.push(child));
+        } else {
+            add_component(entity, children(), vec![child]);
+        }
     }
     add_component(child, parent(), entity);
 }
 
 /// Removes `child` as a child to `entity`.
 pub fn remove_child(entity: EntityId, child: EntityId) {
-    if has_component(entity, children()) {
+    if has_component(entity, unmanaged_children()) {
         mutate_component(entity, children(), |children| {
             children.retain(|x| *x != child)
         });

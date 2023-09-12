@@ -221,6 +221,7 @@ fn systems(_world: &mut World) -> SystemGroup {
             // Can happen *during* the physics step
             Box::new(ambient_core::async_ecs::async_ecs_systems()),
             Box::new(ambient_prefab::systems()),
+            Box::new(ambient_core::hierarchy::systems()),
             // Happens after the physics step
             ambient_physics::fetch_simulation_system(),
             Box::new(ambient_animation::animation_systems()),

@@ -2,7 +2,7 @@ use crate::{
     core::{
         app::components::name,
         audio::components::*,
-        hierarchy::components::{children, parent},
+        hierarchy::components::{children, parent, unmanaged_children},
     },
     entity,
     prelude::{Entity, EntityId},
@@ -82,6 +82,7 @@ impl AudioPlayer {
             .with(is_audio_player(), ())
             .with(name(), "Audio player".to_string())
             .with(children(), vec![])
+            .with(unmanaged_children(), ())
             .spawn();
         Self { entity: player }
     }

@@ -144,6 +144,7 @@ fn check_all() -> anyhow::Result<()> {
             if !features.is_empty() {
                 command.args(["--features", features]);
             }
+            command.args(["--", "-A", "clippy::collapsible-if"]);
 
             if !command.spawn()?.wait()?.success() {
                 anyhow::bail!(

@@ -126,7 +126,7 @@ mod raw {
                 };
                 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
                 use std::time::Duration;
-                components ! ("hierarchy" , { # [doc = "**Parent**: The parent of this entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Parent"] , Description ["The parent of this entity."]] parent : EntityId , # [doc = "**Children**: The children of this entity.\n\n*Attributes*: Debuggable, Networked, Store, MaybeResource"] @ [Debuggable , Networked , Store , MaybeResource , Name ["Children"] , Description ["The children of this entity."]] children : Vec :: < EntityId > , });
+                components ! ("hierarchy" , { # [doc = "**Parent**: The parent of this entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Parent"] , Description ["The parent of this entity."]] parent : EntityId , # [doc = "**Children**: The children of this entity.\n\n*Attributes*: Debuggable, Store, MaybeResource"] @ [Debuggable , Store , MaybeResource , Name ["Children"] , Description ["The children of this entity."]] children : Vec :: < EntityId > , # [doc = "**Unmanaged children**: This children component is not updated automatically for this entity when this component is attached.\n\n*Attributes*: Debuggable, Networked, Store, MaybeResource"] @ [Debuggable , Networked , Store , MaybeResource , Name ["Unmanaged children"] , Description ["This children component is not updated automatically for this entity when this component is attached."]] unmanaged_children : () , });
             }
         }
         pub mod input {

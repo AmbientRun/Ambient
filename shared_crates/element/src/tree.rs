@@ -20,7 +20,7 @@ use ambient_guest_bridge::core::hierarchy::components::{children, parent};
 #[cfg(feature = "native")]
 use ambient_guest_bridge::ecs::{query, Component, SystemGroup};
 use ambient_guest_bridge::{
-    core::app::components::name,
+    core::{app::components::name, hierarchy::components::unmanaged_children},
     ecs::{Entity, EntityId, World},
 };
 use itertools::Itertools;
@@ -559,13 +559,17 @@ impl ElementTree {
             let mut all_children = Vec::new();
             self.get_full_instance_children(id, &mut all_children);
             world
-                .add_component(
+                .add_components(
                     instance.entity,
-                    children(),
-                    all_children
-                        .iter()
-                        .map(|c| self.instances.get(c).unwrap().entity)
-                        .collect_vec(),
+                    Entity::new()
+                        .with(
+                            children(),
+                            all_children
+                                .iter()
+                                .map(|c| self.instances.get(c).unwrap().entity)
+                                .collect_vec(),
+                        )
+                        .with(unmanaged_children(), ()),
                 )
                 .unwrap();
         }

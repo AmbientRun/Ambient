@@ -1557,9 +1557,16 @@ mod raw {
                 }
                 static CHILDREN: Lazy<Component<Vec<EntityId>>> =
                     Lazy::new(|| __internal_get_component("ambient_core::hierarchy::children"));
-                #[doc = "**Children**: The children of this entity.\n\n*Attributes*: Debuggable, Networked, Store, MaybeResource"]
+                #[doc = "**Children**: The children of this entity.\n\n*Attributes*: Debuggable, Store, MaybeResource"]
                 pub fn children() -> Component<Vec<EntityId>> {
                     *CHILDREN
+                }
+                static UNMANAGED_CHILDREN: Lazy<Component<()>> = Lazy::new(|| {
+                    __internal_get_component("ambient_core::hierarchy::unmanaged_children")
+                });
+                #[doc = "**Unmanaged children**: This children component is not updated automatically for this entity when this component is attached.\n\n*Attributes*: Debuggable, Networked, Store, MaybeResource"]
+                pub fn unmanaged_children() -> Component<()> {
+                    *UNMANAGED_CHILDREN
                 }
             }
         }
