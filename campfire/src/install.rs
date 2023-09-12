@@ -63,6 +63,7 @@ fn install_version(suffix: &str, args: &[&str]) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[allow(unused_mut)]
 fn ambient_executable_name(suffix: &str) -> String {
     let mut name = if suffix.is_empty() {
         "ambient".to_string()
