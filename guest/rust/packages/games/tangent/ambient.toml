@@ -5,6 +5,6 @@ version = "0.0.1"
 content = { type = "Playable" }
 
 [dependencies]
-tangent_core = { path = "core", deployment = "2N6Yj8EAvYSQlfNICKpkqw" }
-tangent_scene = { path = "mods/scene", deployment = "2aJsuKQ7Su3tLczI1C6E4h" }
-hide_cursor = { path = "../../std/hide_cursor", deployment = "3c2Br7VRxW9hVWj3600cWF" }
+tangent_core = { path = "core", deployment = "4BPVSYrKVj0O9CNSjyxfiP" }
+tangent_scene = { path = "mods/scene", deployment = "53X7JbsShwuRosRpIasJTy" }
+hide_cursor = { path = "../../std/hide_cursor", deployment = "1Bu9Jwn77UoUibJW8vpB5G" }

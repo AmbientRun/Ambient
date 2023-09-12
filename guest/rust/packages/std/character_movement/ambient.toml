@@ -5,4 +5,4 @@ version = "0.0.1"
 content = { type = "Asset", code = true }
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "2LkSGfvihrFLdaes6AFnRC" }
+unit_schema = { path = "../../schemas/unit", deployment = "7JvheyuVjOG0IP3MDpgLE0" }

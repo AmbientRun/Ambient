@@ -5,8 +5,8 @@ version = "0.0.1"
 content = { type = "Asset", code = true }
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "2LkSGfvihrFLdaes6AFnRC" }
-character_movement = { path = "../character_movement", deployment = "4fbi0TNgGEda60UJxFTARE" }
+unit_schema = { path = "../../schemas/unit", deployment = "7JvheyuVjOG0IP3MDpgLE0" }
+character_movement = { path = "../character_movement", deployment = "2rmWqkqWWIbMUGDy3c1y3x" }
 
 [components]
 use_fps_controller = { type = "Empty", attributes = [
