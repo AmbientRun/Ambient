@@ -16,7 +16,7 @@ use crate::{
 use ambient_core::hierarchy::{children, parent};
 use ambient_friendly_id::friendly_id;
 #[cfg(feature = "guest")]
-use ambient_guest_bridge::core::ecs::components::{children, parent};
+use ambient_guest_bridge::core::hierarchy::components::{children, parent};
 #[cfg(feature = "native")]
 use ambient_guest_bridge::ecs::{query, Component, SystemGroup};
 use ambient_guest_bridge::{

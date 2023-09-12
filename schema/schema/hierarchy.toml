@@ -1,0 +1,18 @@
+[package]
+id = "hierarchy"
+name = "Hierarchy"
+description = "Parent/child relationships."
+content = { type = "Asset", schema = true }
+version = "0.3.0-dev"
+
+[components.parent]
+type = "EntityId"
+name = "Parent"
+description = "The parent of this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components.children]
+type = { type = "Vec", element_type = "EntityId" }
+name = "Children"
+description = "The children of this entity."
+attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]

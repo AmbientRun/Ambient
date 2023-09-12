@@ -7,7 +7,7 @@ use ambient_api::{
                 PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
             },
         },
-        ecs::components::children,
+        hierarchy::components::{children, parent},
         messages::Frame,
         model::components::model_loaded,
         physics::components::linear_velocity,
@@ -73,15 +73,7 @@ pub fn main() {
             .spawn();
 
             entity::add_component(id, vehicle_hud(), hud_id);
-            // https://github.com/AmbientRun/Ambient/issues/843
-            run_async(async move {
-                if entity::wait_for_component(id, model_loaded())
-                    .await
-                    .is_some()
-                {
-                    entity::add_child(id, hud_id);
-                }
-            });
+            entity::add_child(id, hud_id);
         }
     });
 

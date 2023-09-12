@@ -1,5 +1,7 @@
 use ambient_ecs::{
-    children, components, copy_component_recursive, parent, Entity, FrameEvent, System, World,
+    components, copy_component_recursive,
+    generated::hierarchy::components::{children, parent},
+    Entity, FrameEvent, System, World,
 };
 
 components!("test", {

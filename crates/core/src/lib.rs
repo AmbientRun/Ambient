@@ -7,8 +7,8 @@ use hierarchy::despawn_recursive;
 use std::{sync::Arc, time::Duration};
 
 use ambient_ecs::{
-    components, parent, query, Debuggable, Description, DynSystem, Entity, FrameEvent, Name,
-    Networked, Resource, Store, System, World,
+    components, generated::hierarchy::components::parent, query, Debuggable, Description,
+    DynSystem, Entity, FrameEvent, Name, Networked, Resource, Store, System, World,
 };
 use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 

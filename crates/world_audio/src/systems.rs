@@ -10,7 +10,10 @@ use ambient_core::{
     runtime,
     transform::{rotation, translation},
 };
-use ambient_ecs::{children, generated::audio::components::*, parent, query, SystemGroup, World};
+use ambient_ecs::{
+    generated::audio::components::*, generated::hierarchy::components::children,
+    generated::hierarchy::components::parent, query, SystemGroup, World,
+};
 use ambient_native_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
 use glam::{vec4, Mat4};
 use parking_lot::Mutex;

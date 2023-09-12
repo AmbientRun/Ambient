@@ -7,7 +7,7 @@ use ambient_api::{
                 PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
             },
         },
-        ecs::components::children,
+        hierarchy::components::children,
         messages::Collision,
         model::components::model_from_url,
         physics::components::{

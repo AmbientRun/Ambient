@@ -3,7 +3,7 @@ use std::f32::consts::FRAC_PI_2;
 use ambient_api::{
     core::{
         app::components::name,
-        ecs::components::{children, parent},
+        hierarchy::components::{children, parent},
         physics::concepts::CharacterController,
         player::components::is_player,
         prefab::components::prefab_from_url,
