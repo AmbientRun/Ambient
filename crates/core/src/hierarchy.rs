@@ -1,12 +1,50 @@
 use std::collections::HashSet;
 
-use ambient_ecs::{query, Component, ComponentValue, ECSError, Entity, EntityId, World};
+use ambient_ecs::{
+    generated::hierarchy::components::unmanaged_children, query, Component, ComponentValue,
+    ECSError, Entity, EntityId, SystemGroup, World,
+};
 use itertools::Itertools;
 use yaml_rust::YamlEmitter;
 
 pub use ambient_ecs::generated::hierarchy::components::{children, parent};
 
 use crate::name;
+
+pub fn systems() -> SystemGroup {
+    SystemGroup::new(
+        "hierarchy",
+        vec![
+            query(parent().changed()).to_system_with_name("update_children", |q, world, qs, _| {
+                for (id, parent) in q.collect_cloned(world, qs) {
+                    if world.has_component(parent, unmanaged_children()) {
+                        continue;
+                    }
+                    if let Ok(children) = world.get_mut(parent, children()) {
+                        if !children.contains(&id) {
+                            children.push(id);
+                        }
+                    } else {
+                        world.add_component(parent, children(), vec![id]).unwrap();
+                    }
+                }
+            }),
+            query(parent()).despawned().to_system_with_name(
+                "remove_children",
+                |q, world, qs, _| {
+                    for (id, parent) in q.collect_cloned(world, qs) {
+                        if world.has_component(parent, unmanaged_children()) {
+                            continue;
+                        }
+                        if let Ok(children) = world.get_mut(parent, children()) {
+                            children.retain(|c| *c != id);
+                        }
+                    }
+                },
+            ),
+        ],
+    )
+}
 
 pub fn despawn_recursive(world: &mut World, entity: EntityId) -> Option<Entity> {
     despawn_children_recursive(world, entity);

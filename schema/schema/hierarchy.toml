@@ -15,4 +15,10 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = { type = "Vec", element_type = "EntityId" }
 name = "Children"
 description = "The children of this entity."
+attributes = ["Debuggable", "Store", "MaybeResource"]
+
+[components.unmanaged_children]
+type = "Empty"
+name = "Unmanaged children"
+description = "This children component is not updated automatically for this entity when this component is attached."
 attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]

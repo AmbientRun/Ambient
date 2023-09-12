@@ -5,7 +5,7 @@ use ambient_api::{
             components::{aspect_ratio_from_window, fog, fovy},
             concepts::make_perspective_infinite_reverse_camera,
         },
-        hierarchy::components::{children, parent},
+        hierarchy::components::parent,
         messages::Frame,
         physics::components::linear_velocity,
         rect::components::{line_from, line_to, line_width, rect},
@@ -72,11 +72,8 @@ pub fn main() {
     despawn_query(vehicle_hud())
         .requires(vehicle())
         .bind(move |vehicles| {
-            for (vehicle_id, hud_id) in vehicles {
+            for (_vehicle_id, hud_id) in vehicles {
                 entity::despawn(hud_id);
-                entity::mutate_component(vehicle_id, children(), |children| {
-                    children.retain(|&c| c != hud_id);
-                });
             }
         });
 
