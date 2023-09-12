@@ -1,3 +1,5 @@
+use std::f32::consts::{FRAC_PI_4, FRAC_PI_6};
+
 use ambient_api::{
     core::{
         primitives::components::{cube, quad},
@@ -6,12 +8,20 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::orbit_camera::concepts::OrbitCamera;
+use packages::orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional};
 
 #[main]
 fn main() {
     // Camera
-    OrbitCamera::suggested().spawn();
+    OrbitCamera {
+        is_orbit_camera: (),
+        optional: OrbitCameraOptional {
+            camera_angle: Some(vec2(-FRAC_PI_4, FRAC_PI_6)),
+            camera_distance: Some(5.),
+            ..default()
+        },
+    }
+    .spawn();
 
     Entity::new()
         .with(quad(), ())

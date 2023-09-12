@@ -6,14 +6,22 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::orbit_camera::concepts::OrbitCamera;
+use packages::orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional};
 
 use core::f32::consts::PI;
 
 #[main]
 pub fn main() {
     // Camera.
-    OrbitCamera::suggested().spawn();
+    OrbitCamera {
+        is_orbit_camera: (),
+        optional: OrbitCameraOptional {
+            camera_angle: Some(vec2(135f32.to_radians(), 45f32.to_radians())),
+            camera_distance: Some(2.),
+            ..default()
+        },
+    }
+    .spawn();
 
     // Scene geometry.
     Entity::new()

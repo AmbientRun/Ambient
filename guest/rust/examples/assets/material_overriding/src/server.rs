@@ -19,7 +19,8 @@ pub async fn main() {
     OrbitCamera {
         is_orbit_camera: (),
         optional: OrbitCameraOptional {
-            camera_distance: Some(2.0),
+            camera_angle: Some(vec2(135f32.to_radians(), 20f32.to_radians())),
+            camera_distance: Some(3.),
             ..default()
         },
     }

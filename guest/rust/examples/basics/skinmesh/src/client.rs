@@ -25,7 +25,7 @@ pub async fn main() {
         is_orbit_camera: (),
         optional: OrbitCameraOptional {
             lookat_target: Some(vec3(0., 0., 1.)),
-            camera_angle: Some(vec2(-180f32.to_radians(), 45f32.to_radians())),
+            camera_angle: Some(vec2(135f32.to_radians(), 45f32.to_radians())),
             camera_distance: Some(3.0),
         },
     }

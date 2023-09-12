@@ -16,6 +16,7 @@ pub fn main() {
     OrbitCamera {
         is_orbit_camera: (),
         optional: OrbitCameraOptional {
+            camera_angle: Some(vec2(135f32.to_radians(), 35f32.to_radians())),
             camera_distance: Some(10.),
             ..default()
         },

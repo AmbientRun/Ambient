@@ -18,6 +18,7 @@ fn main() {
     OrbitCamera {
         is_orbit_camera: (),
         optional: OrbitCameraOptional {
+            camera_angle: Some(vec2(0.0, 15f32.to_radians())),
             lookat_target: Some(vec3(0., 0., 2.)),
             ..default()
         },
