@@ -1,5 +1,10 @@
 [workspace]
 members = [
+
+    # Alex's stuff
+    "alex/a_nice_scene",
+    "alex/just_fog",
+
     "api",
     "api_core",
     "api_core/api_macros",

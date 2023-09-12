@@ -1,0 +1,6 @@
+[[pipelines]]
+sources = ["*.glb", "*.fbx"]
+type = "Models"
+
+[pipelines.collider]
+type = "FromModel"

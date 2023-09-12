@@ -1,0 +1,23 @@
+[package]
+name = "just_fog"
+
+edition = "2021"
+publish = false
+version = "0.0.1"
+
+[dependencies]
+ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", rev = "07263923455d9933d4d8845a853214773155dd34" }
+
+[[bin]]
+name = "client_just_fog"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server_just_fog"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

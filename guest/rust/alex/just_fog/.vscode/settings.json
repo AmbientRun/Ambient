@@ -1,0 +1,4 @@
+{
+  "rust-analyzer.cargo.target": "wasm32-wasi",
+  "rust-analyzer.cargo.features": ["client", "server"]
+}

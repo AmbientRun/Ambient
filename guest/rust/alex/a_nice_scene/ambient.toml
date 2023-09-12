@@ -1,0 +1,12 @@
+[package]
+id = "a_nice_scene"
+name = "a_nice_scene"
+version = "0.0.1"
+content = { type = "Playable" }
+
+[dependencies]
+base_assets = { path = "../../packages/std/base_assets" }
+character_animation = { path = "../../packages/std/character_animation" }
+character_movement = { path = "../../packages/std/character_movement" }
+hide_cursor = { path = "../../packages/std/hide_cursor" }
+fps_controller = { path = "../../packages/std/fps_controller" }

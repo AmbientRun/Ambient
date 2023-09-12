@@ -1,0 +1,25 @@
+[package]
+name = "a_nice_scene"
+
+edition = "2021"
+publish = false
+version = "0.0.1"
+
+[dependencies]
+ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", rev = "b6995065b287e3946536285c7937c7162b78d638" }
+glam = "0.24.1"
+regex = "1"
+
+[[bin]]
+name = "client_a_nice_scene"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server_a_nice_scene"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]
