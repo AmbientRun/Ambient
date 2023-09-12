@@ -13,11 +13,7 @@ use core::f32::consts::PI;
 #[main]
 pub fn main() {
     // Camera.
-    OrbitCamera {
-        is_orbit_camera: (),
-        optional: default(),
-    }
-    .spawn();
+    OrbitCamera::suggested().spawn();
 
     // Scene geometry.
     Entity::new()

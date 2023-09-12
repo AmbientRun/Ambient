@@ -77,6 +77,7 @@ pub async fn generate_code(
     };
 
     let output = quote! {
+        #[allow(unused, clippy::unit_arg, clippy::let_and_return, clippy::approx_constant)]
         mod raw {
             #(#outputs)*
         }
@@ -158,7 +159,6 @@ fn generate_scope(
             }
 
             Ok(quote! {
-                #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
                 pub mod #id {
                     #inner
                 }

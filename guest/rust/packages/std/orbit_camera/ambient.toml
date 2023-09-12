@@ -20,7 +20,7 @@ camera_distance = { type = "F32", description = "Camera distance specified in me
 name = "Orbit Camera"
 description = "An orbit camera."
 [concepts.OrbitCamera.components.required]
-is_orbit_camera = {}
+is_orbit_camera = { suggested = {} }
 [concepts.OrbitCamera.components.optional]
 camera_angle = {}
 camera_distance = {}

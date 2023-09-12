@@ -56,17 +56,12 @@ pub fn main() {
         spawn_paddle(true, vec3(255., 0., 0.)),
         spawn_paddle(false, vec3(0., 255., 0.)),
     ];
-    let ball = Sphere {
-        sphere: (),
-        sphere_radius: 0.5,
-        sphere_sectors: 36,
-        sphere_stacks: 18,
-    }
-    .make()
-    .with(scale(), vec3(BALL_RADIUS, BALL_RADIUS, 1.))
-    .with(translation(), vec3(0., 0., -1.))
-    .with(color(), vec4(255., 255., 255., 1.))
-    .spawn();
+    let ball = Sphere::suggested()
+        .make()
+        .with(scale(), vec3(BALL_RADIUS, BALL_RADIUS, 1.))
+        .with(translation(), vec3(0., 0., -1.))
+        .with(color(), vec4(255., 255., 255., 1.))
+        .spawn();
 
     // When a player spawns, create a camera and other components for them
     spawn_query(is_player()).bind(move |players| {

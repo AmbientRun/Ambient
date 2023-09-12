@@ -8,11 +8,7 @@ use packages::{orbit_camera::concepts::OrbitCamera, this::assets};
 #[main]
 pub async fn main() {
     // Camera
-    OrbitCamera {
-        is_orbit_camera: (),
-        optional: default(),
-    }
-    .spawn();
+    OrbitCamera::suggested().spawn();
 
     // Model
     Entity::new()

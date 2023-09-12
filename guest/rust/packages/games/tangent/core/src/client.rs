@@ -36,21 +36,13 @@ const RENDER_DEBUG: bool = false;
 #[main]
 pub fn main() {
     let camera_id = PerspectiveInfiniteReverseCamera {
-        local_to_world: Mat4::IDENTITY,
-        near: 0.1,
-        projection: Mat4::IDENTITY,
-        projection_view: Mat4::IDENTITY,
-        active_camera: 0.0,
-        inv_local_to_world: Mat4::IDENTITY,
-        fovy: 1.0,
-        aspect_ratio: 1.0,
-        perspective_infinite_reverse: (),
         optional: PerspectiveInfiniteReverseCameraOptional {
             translation: Some(vec3(5., 5., 2.)),
             main_scene: Some(()),
             aspect_ratio_from_window: Some(entity::resources()),
             ..default()
         },
+        ..PerspectiveInfiniteReverseCamera::suggested()
     }
     .make()
     .with(fog(), ())

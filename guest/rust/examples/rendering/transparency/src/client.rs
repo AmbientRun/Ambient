@@ -11,11 +11,7 @@ use packages::orbit_camera::concepts::OrbitCamera;
 #[main]
 fn main() {
     // Camera
-    OrbitCamera {
-        is_orbit_camera: (),
-        optional: default(),
-    }
-    .spawn();
+    OrbitCamera::suggested().spawn();
 
     Entity::new()
         .with(quad(), ())

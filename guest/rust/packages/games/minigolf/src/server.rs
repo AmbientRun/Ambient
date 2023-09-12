@@ -1,5 +1,3 @@
-use std::f32::consts::PI;
-
 use ambient_api::{
     core::{
         app::components::main_scene,
@@ -140,25 +138,10 @@ pub fn main() {
                     },
                 );
 
-                let camera_state = PlayerCameraState {
-                    player_camera_pivot: vec3(0f32, 0f32, 8f32),
-                    player_camera_position: Vec3::ZERO,
-                    player_camera_radius: 15f32,
-                    player_camera_rotation: vec2(PI, 0.610865f32),
-                }
-                .spawn();
+                let camera_state = PlayerCameraState::suggested().spawn();
                 entity::add_component(player, player_camera_state(), camera_state);
 
                 PerspectiveInfiniteReverseCamera {
-                    local_to_world: Mat4::IDENTITY,
-                    near: 0.1,
-                    projection: Mat4::IDENTITY,
-                    projection_view: Mat4::IDENTITY,
-                    active_camera: 0.0,
-                    inv_local_to_world: Mat4::IDENTITY,
-                    fovy: 1.0,
-                    aspect_ratio: 1.0,
-                    perspective_infinite_reverse: (),
                     optional: PerspectiveInfiniteReverseCameraOptional {
                         translation: Some(Vec3::ZERO),
                         rotation: Some(Quat::IDENTITY),
@@ -167,6 +150,7 @@ pub fn main() {
                         user_id: Some(player_user_id.clone()),
                         ..default()
                     },
+                    ..PerspectiveInfiniteReverseCamera::suggested()
                 }
                 .make()
                 .with(player_camera_state(), camera_state)

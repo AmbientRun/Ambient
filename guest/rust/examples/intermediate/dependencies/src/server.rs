@@ -10,11 +10,7 @@ use packages::{
 
 #[main]
 pub async fn main() {
-    OrbitCamera {
-        is_orbit_camera: (),
-        optional: default(),
-    }
-    .spawn();
+    OrbitCamera::suggested().spawn();
 
     let mut last_update = game_time();
     query(spawned_by_us()).each_frame(move |r| {

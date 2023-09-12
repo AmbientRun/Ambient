@@ -67,29 +67,21 @@ pub fn main() {
     spawn_query((is_player(), head_ref())).bind(move |players| {
         for (id, (_, head)) in players {
             if id == player::get_local() {
-                let camera = Entity::new()
-                    .with_merge(PerspectiveInfiniteReverseCamera {
-                        local_to_world: Mat4::IDENTITY,
-                        near: 0.1,
-                        projection: Mat4::IDENTITY,
-                        projection_view: Mat4::IDENTITY,
-                        active_camera: 0.0,
-                        inv_local_to_world: Mat4::IDENTITY,
-                        fovy: 1.0,
-                        aspect_ratio: 1.0,
-                        perspective_infinite_reverse: (),
-                        optional: PerspectiveInfiniteReverseCameraOptional {
-                            translation: Some(
-                                -Vec3::Z * get_component(id, camera_distance()).unwrap_or(4.),
-                            ),
-                            main_scene: Some(()),
-                            aspect_ratio_from_window: Some(entity::resources()),
-                            ..default()
-                        },
-                    })
-                    .with(local_to_parent(), Default::default())
-                    .with(name(), "Camera".to_string())
-                    .spawn();
+                let camera = PerspectiveInfiniteReverseCamera {
+                    optional: PerspectiveInfiniteReverseCameraOptional {
+                        translation: Some(
+                            -Vec3::Z * get_component(id, camera_distance()).unwrap_or(4.),
+                        ),
+                        main_scene: Some(()),
+                        aspect_ratio_from_window: Some(entity::resources()),
+                        ..default()
+                    },
+                    ..PerspectiveInfiniteReverseCamera::suggested()
+                }
+                .make()
+                .with(local_to_parent(), Default::default())
+                .with(name(), "Camera".to_string())
+                .spawn();
                 add_child(head, camera);
 
                 entity::add_components(id, Entity::new().with(player_camera_ref(), camera));

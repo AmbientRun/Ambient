@@ -31,21 +31,13 @@ const WAVE_FREQUENCY: f32 = 0.5 * TAU;
 
 fn make_camera() {
     PerspectiveInfiniteReverseCamera {
-        local_to_world: Mat4::IDENTITY,
-        near: 0.1,
-        projection: Mat4::IDENTITY,
-        projection_view: Mat4::IDENTITY,
-        active_camera: 0.0,
-        inv_local_to_world: Mat4::IDENTITY,
-        fovy: 1.0,
-        aspect_ratio: 1.0,
-        perspective_infinite_reverse: (),
         optional: PerspectiveInfiniteReverseCameraOptional {
             translation: Some(vec3(0.0, 3.0, 4.0) * 2.0),
             main_scene: Some(()),
             aspect_ratio_from_window: Some(entity::resources()),
             ..default()
         },
+        ..PerspectiveInfiniteReverseCamera::suggested()
     }
     .make()
     .with(lookat_target(), vec3(0.0, 3.0, 0.0))

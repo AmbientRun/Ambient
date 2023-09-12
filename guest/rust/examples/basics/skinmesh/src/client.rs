@@ -59,12 +59,7 @@ pub async fn main() {
     // This demonstrates how to attach an entity to a bone
     let left_foot = animation::get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
     let ball = Entity::new()
-        .with_merge(Sphere {
-            sphere: (),
-            sphere_radius: 0.5,
-            sphere_sectors: 36,
-            sphere_stacks: 18,
-        })
+        .with_merge(Sphere::suggested())
         .with(scale(), vec3(0.3, 0.3, 0.3))
         .with(color(), vec4(0.0, 1.0, 0.0, 1.0))
         .with(local_to_parent(), Default::default())

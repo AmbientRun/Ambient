@@ -73,3 +73,13 @@ impl<T: Concept + Sized> From<T> for Entity {
         concept.make()
     }
 }
+/// This trait provides a helper method to get an instance of this concept with
+/// all of the fields filled in with suggested values.
+///
+/// This trait is only implemented if all fields in a concept have a suggested value.
+pub trait ConceptSuggested: Concept {
+    /// Returns this concept with all of its fields filled in with suggested values.
+    ///
+    /// The optional field, if present, will be defaulted/have all of its fields be `None`.
+    fn suggested() -> Self;
+}

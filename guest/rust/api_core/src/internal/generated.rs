@@ -2,9 +2,14 @@
 #![allow(dead_code)]
 #![allow(unused)]
 pub use raw::ambient_core;
+#[allow(
+    unused,
+    clippy::unit_arg,
+    clippy::let_and_return,
+    clippy::approx_constant
+)]
 mod raw {
     pub mod ambient_core {
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod animation {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -140,7 +145,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod app {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -269,7 +273,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod audio {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -367,7 +370,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod camera {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -692,6 +694,31 @@ mod raw {
                         ])
                     }
                 }
+                impl crate::ecs::ConceptSuggested for Camera {
+                    fn suggested() -> Self {
+                        Self {
+                            local_to_world: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            near: 0.1f32,
+                            projection: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            projection_view: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            active_camera: 0f32,
+                            inv_local_to_world: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            optional: Default::default(),
+                        }
+                    }
+                }
                 #[doc = "**Perspective Common Camera**: Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n**Extends**: `ambient_core::camera::Camera`"]
                 #[derive(Clone, Debug)]
                 pub struct PerspectiveCommonCamera {
@@ -830,6 +857,33 @@ mod raw {
                             &crate::ambient_core::camera::components::fovy(),
                             &crate::ambient_core::camera::components::aspect_ratio(),
                         ])
+                    }
+                }
+                impl crate::ecs::ConceptSuggested for PerspectiveCommonCamera {
+                    fn suggested() -> Self {
+                        Self {
+                            local_to_world: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            near: 0.1f32,
+                            projection: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            projection_view: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            active_camera: 0f32,
+                            inv_local_to_world: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            fovy: 1f32,
+                            aspect_ratio: 1f32,
+                            optional: Default::default(),
+                        }
                     }
                 }
                 #[doc = "**Perspective Camera**: A perspective camera.\n\n**Extends**: `ambient_core::camera::PerspectiveCommonCamera`"]
@@ -985,6 +1039,35 @@ mod raw {
                         ])
                     }
                 }
+                impl crate::ecs::ConceptSuggested for PerspectiveCamera {
+                    fn suggested() -> Self {
+                        Self {
+                            local_to_world: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            near: 0.1f32,
+                            projection: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            projection_view: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            active_camera: 0f32,
+                            inv_local_to_world: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            fovy: 1f32,
+                            aspect_ratio: 1f32,
+                            perspective: (),
+                            far: 1000f32,
+                            optional: Default::default(),
+                        }
+                    }
+                }
                 #[doc = "**Perspective-Infinite-Reverse Camera**: A perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n**Extends**: `ambient_core::camera::PerspectiveCommonCamera`"]
                 #[derive(Clone, Debug)]
                 pub struct PerspectiveInfiniteReverseCamera {
@@ -1089,6 +1172,34 @@ mod raw {
                             &crate::ambient_core::camera::components::perspective_infinite_reverse(
                             ),
                         ])
+                    }
+                }
+                impl crate::ecs::ConceptSuggested for PerspectiveInfiniteReverseCamera {
+                    fn suggested() -> Self {
+                        Self {
+                            local_to_world: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            near: 0.1f32,
+                            projection: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            projection_view: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            active_camera: 0f32,
+                            inv_local_to_world: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            fovy: 1f32,
+                            aspect_ratio: 1f32,
+                            perspective_infinite_reverse: (),
+                            optional: Default::default(),
+                        }
                     }
                 }
                 #[doc = "**Orthographic Camera**: An orthographic camera.\n\n**Extends**: `ambient_core::camera::Camera`"]
@@ -1368,9 +1479,39 @@ mod raw {
                         ])
                     }
                 }
+                impl crate::ecs::ConceptSuggested for OrthographicCamera {
+                    fn suggested() -> Self {
+                        Self {
+                            local_to_world: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            near: -1f32,
+                            projection: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            projection_view: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            active_camera: 0f32,
+                            inv_local_to_world: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            orthographic: (),
+                            orthographic_left: -1f32,
+                            orthographic_right: 1f32,
+                            orthographic_top: 1f32,
+                            orthographic_bottom: -1f32,
+                            far: 1f32,
+                            optional: Default::default(),
+                        }
+                    }
+                }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod ecs {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -1412,7 +1553,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod input {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -1508,7 +1648,6 @@ mod raw {
                 impl ModuleMessage for MouseOverChanged {}
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod layout {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2031,7 +2170,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod model {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2060,7 +2198,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod network {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2098,7 +2235,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod package {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2175,7 +2311,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod physics {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2366,9 +2501,17 @@ mod raw {
                         ])
                     }
                 }
+                impl crate::ecs::ConceptSuggested for CharacterController {
+                    fn suggested() -> Self {
+                        Self {
+                            character_controller_height: 2f32,
+                            character_controller_radius: 0.5f32,
+                            physics_controlled: (),
+                        }
+                    }
+                }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod player {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2397,7 +2540,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod prefab {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2420,7 +2562,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod primitives {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2634,6 +2775,16 @@ mod raw {
                         ])
                     }
                 }
+                impl crate::ecs::ConceptSuggested for Sphere {
+                    fn suggested() -> Self {
+                        Self {
+                            sphere: (),
+                            sphere_radius: 0.5f32,
+                            sphere_sectors: 36u32,
+                            sphere_stacks: 18u32,
+                        }
+                    }
+                }
                 #[doc = "**Capsule**: A primitive capsule. Defined as a cylinder capped by hemispheres."]
                 #[derive(Clone, Debug)]
                 pub struct Capsule {
@@ -2751,6 +2902,18 @@ mod raw {
                         ])
                     }
                 }
+                impl crate::ecs::ConceptSuggested for Capsule {
+                    fn suggested() -> Self {
+                        Self {
+                            capsule: (),
+                            capsule_radius: 0.5f32,
+                            capsule_half_height: 0.5f32,
+                            capsule_rings: 0u32,
+                            capsule_latitudes: 16u32,
+                            capsule_longitudes: 32u32,
+                        }
+                    }
+                }
                 #[doc = "**Torus**: A primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution."]
                 #[derive(Clone, Debug)]
                 pub struct Torus {
@@ -2852,9 +3015,19 @@ mod raw {
                         ])
                     }
                 }
+                impl crate::ecs::ConceptSuggested for Torus {
+                    fn suggested() -> Self {
+                        Self {
+                            torus: (),
+                            torus_inner_radius: 0.25f32,
+                            torus_outer_radius: 0.35f32,
+                            torus_slices: 32u32,
+                            torus_loops: 16u32,
+                        }
+                    }
+                }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod procedurals {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2880,7 +3053,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod rect {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -2964,7 +3136,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod rendering {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -3110,7 +3281,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod text {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -3253,7 +3423,6 @@ mod raw {
                 }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod transform {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -3450,9 +3619,19 @@ mod raw {
                         ])
                     }
                 }
+                impl crate::ecs::ConceptSuggested for Transformable {
+                    fn suggested() -> Self {
+                        Self {
+                            local_to_world: Mat4::from_cols_array(&[
+                                1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
+                                0f32, 0f32, 0f32, 0f32, 1f32,
+                            ]),
+                            optional: Default::default(),
+                        }
+                    }
+                }
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod ui {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {
@@ -3518,7 +3697,6 @@ mod raw {
                 impl ModuleMessage for FocusChanged {}
             }
         }
-        #[allow(unused, clippy::unit_arg, clippy::let_and_return)]
         pub mod wasm {
             #[doc = r" Auto-generated component definitions."]
             pub mod components {

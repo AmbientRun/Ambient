@@ -6,11 +6,7 @@ use packages::{orbit_camera::concepts::OrbitCamera, this::assets};
 
 #[main]
 pub fn main() {
-    OrbitCamera {
-        is_orbit_camera: (),
-        optional: default(),
-    }
-    .spawn();
+    OrbitCamera::suggested().spawn();
 
     Entity::new()
         .with(translation(), vec3(-1.25, 0.0, 0.0))

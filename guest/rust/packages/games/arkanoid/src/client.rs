@@ -36,22 +36,11 @@ async fn main() {
     });
 
     let camera_id = OrthographicCamera {
-        local_to_world: Mat4::IDENTITY,
-        near: -1.,
-        projection: Mat4::IDENTITY,
-        projection_view: Mat4::IDENTITY,
-        active_camera: 0.0,
-        inv_local_to_world: Mat4::IDENTITY,
-        orthographic: (),
-        orthographic_left: -1.,
-        orthographic_right: 1.,
-        orthographic_top: 1.,
-        orthographic_bottom: -1.,
-        far: 1.,
         optional: OrthographicCameraOptional {
             main_scene: Some(()),
             ..default()
         },
+        ..OrthographicCamera::suggested()
     }
     .spawn();
 

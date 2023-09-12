@@ -60,15 +60,6 @@ pub fn main() {
                 .unwrap_or_else(|| vec2(0.0, PI / 2.));
 
             let camera_id = PerspectiveInfiniteReverseCamera {
-                local_to_world: Mat4::IDENTITY,
-                near: 0.1,
-                projection: Mat4::IDENTITY,
-                projection_view: Mat4::IDENTITY,
-                active_camera: 10.0,
-                inv_local_to_world: Mat4::IDENTITY,
-                fovy: 1.0,
-                aspect_ratio: 1.0,
-                perspective_infinite_reverse: (),
                 optional: PerspectiveInfiniteReverseCameraOptional {
                     translation: Some(new_camera_position),
                     rotation: Some(default()),
@@ -77,6 +68,7 @@ pub fn main() {
                     user_id: Some(player_user_id),
                     ..default()
                 },
+                ..PerspectiveInfiniteReverseCamera::suggested()
             }
             .make()
             .with(camera_angle(), new_camera_angle)

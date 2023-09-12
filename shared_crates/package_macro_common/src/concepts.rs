@@ -272,6 +272,37 @@ fn generate_one(
         }
     };
 
+    let concept_suggested = if required_components.iter().all(|c| c.suggested.is_some()) {
+        let required_components = required_components
+            .iter()
+            .map(|c| {
+                let field_name = &c.id;
+                let suggested = value_to_token_stream(items, c.suggested.unwrap())?;
+
+                anyhow::Ok(quote! { #field_name: #suggested, })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let optional_field = if optional_components.is_empty() {
+            None
+        } else {
+            Some(quote! { optional: Default::default(), })
+        };
+
+        Some(quote! {
+            impl #guest_api_path::ecs::ConceptSuggested for #concept_id {
+                fn suggested() -> Self {
+                    Self {
+                        #(#required_components)*
+                        #optional_field
+                    }
+                }
+            }
+        })
+    } else {
+        None
+    };
+
     Ok(quote! {
         #struct_def
         #optional_struct_def
@@ -281,6 +312,7 @@ fn generate_one(
             #get_unspawned
             #contained_by
         }
+        #concept_suggested
     })
 }
 
@@ -289,6 +321,7 @@ struct ComponentField<'a> {
     id: &'a Identifier,
     ty: TokenStream,
     path: TokenStream,
+    suggested: Option<&'a Value>,
 }
 impl ComponentField<'_> {
     fn to_field_definition(&self, use_option: bool) -> TokenStream {
@@ -321,7 +354,7 @@ fn component_to_field<'a>(
     type_printer: &TypePrinter,
     context: Context,
     component_item_id: ItemId<Component>,
-    value: &ConceptValue,
+    value: &'a ConceptValue,
 ) -> anyhow::Result<ComponentField<'a>> {
     let component = items.get(component_item_id);
     let component_id = &component.data.id;
@@ -364,6 +397,7 @@ fn component_to_field<'a>(
         id: component_id,
         ty: component_ty,
         path: component_path,
+        suggested: value.suggested.as_ref().and_then(|v| v.as_resolved()),
     })
 }
 

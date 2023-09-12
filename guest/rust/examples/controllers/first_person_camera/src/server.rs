@@ -20,12 +20,7 @@ pub fn main() {
         .spawn();
 
     Entity::new()
-        .with_merge(Sphere {
-            sphere: (),
-            sphere_radius: 0.5,
-            sphere_sectors: 36,
-            sphere_stacks: 18,
-        })
+        .with_merge(Sphere::suggested())
         .with(sphere_collider(), 0.5)
         .with(translation(), vec3(5., 5., 1.))
         .spawn();
