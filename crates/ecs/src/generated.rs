@@ -223,7 +223,24 @@ mod raw {
                 };
                 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
                 use std::time::Duration;
-                components ! ("ecs" , { # [doc = "**Children**: The children of this entity.\n\n*Attributes*: Debuggable, Networked, Store, MaybeResource"] @ [Debuggable , Networked , Store , MaybeResource , Name ["Children"] , Description ["The children of this entity."]] children : Vec :: < EntityId > , # [doc = "**Don't automatically despawn on module unload**: Indicates that this entity shouldn't be despawned when the module that spawned it unloads.\n\n*Attributes*: Debuggable, Store"] @ [Debuggable , Store , Name ["Don't automatically despawn on module unload"] , Description ["Indicates that this entity shouldn't be despawned when the module that spawned it unloads."]] dont_despawn_on_unload : () , # [doc = "**Don't store**: Indicates that this entity shouldn't be stored on disk.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Don't store"] , Description ["Indicates that this entity shouldn't be stored on disk."]] dont_store : () , # [doc = "**ID**: The ID of the entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["ID"] , Description ["The ID of the entity."]] id : EntityId , # [doc = "**Parent**: The parent of this entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Parent"] , Description ["The parent of this entity."]] parent : EntityId , });
+                components ! ("ecs" , { # [doc = "**Don't automatically despawn on module unload**: Indicates that this entity shouldn't be despawned when the module that spawned it unloads.\n\n*Attributes*: Debuggable, Store"] @ [Debuggable , Store , Name ["Don't automatically despawn on module unload"] , Description ["Indicates that this entity shouldn't be despawned when the module that spawned it unloads."]] dont_despawn_on_unload : () , # [doc = "**Don't store**: Indicates that this entity shouldn't be stored on disk.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Don't store"] , Description ["Indicates that this entity shouldn't be stored on disk."]] dont_store : () , # [doc = "**ID**: The ID of the entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["ID"] , Description ["The ID of the entity."]] id : EntityId , });
+            }
+        }
+        #[allow(unused)]
+        pub mod hierarchy {
+            #[doc = r" Auto-generated component definitions."]
+            pub mod components {
+                use crate::{
+                    components, Debuggable, Description, EntityId, Enum, MaybeResource, Name,
+                    Networked, Resource, Store,
+                };
+                use ambient_shared_types::{
+                    ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
+                    ProceduralTextureHandle,
+                };
+                use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+                use std::time::Duration;
+                components ! ("hierarchy" , { # [doc = "**Parent**: The parent of this entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Parent"] , Description ["The parent of this entity."]] parent : EntityId , # [doc = "**Children**: The children of this entity.\n\n*Attributes*: Debuggable, Networked, Store, MaybeResource"] @ [Debuggable , Networked , Store , MaybeResource , Name ["Children"] , Description ["The children of this entity."]] children : Vec :: < EntityId > , });
             }
         }
         #[allow(unused)]
@@ -1583,6 +1600,7 @@ mod raw {
             crate::generated::raw::ambient_core::audio::components::init_components();
             crate::generated::raw::ambient_core::camera::components::init_components();
             crate::generated::raw::ambient_core::ecs::components::init_components();
+            crate::generated::raw::ambient_core::hierarchy::components::init_components();
             crate::generated::raw::ambient_core::input::components::init_components();
             crate::generated::raw::ambient_core::layout::components::init_components();
             crate::generated::raw::ambient_core::model::components::init_components();

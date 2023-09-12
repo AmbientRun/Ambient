@@ -723,12 +723,6 @@ mod raw {
                     once_cell::sync::Lazy,
                     prelude::*,
                 };
-                static CHILDREN: Lazy<Component<Vec<EntityId>>> =
-                    Lazy::new(|| __internal_get_component("ambient_core::ecs::children"));
-                #[doc = "**Children**: The children of this entity.\n\n*Attributes*: Debuggable, Networked, Store, MaybeResource"]
-                pub fn children() -> Component<Vec<EntityId>> {
-                    *CHILDREN
-                }
                 static DONT_DESPAWN_ON_UNLOAD: Lazy<Component<()>> = Lazy::new(|| {
                     __internal_get_component("ambient_core::ecs::dont_despawn_on_unload")
                 });
@@ -748,11 +742,28 @@ mod raw {
                 pub fn id() -> Component<EntityId> {
                     *ID
                 }
+            }
+        }
+        #[allow(unused)]
+        pub mod hierarchy {
+            #[doc = r" Auto-generated component definitions."]
+            pub mod components {
+                use crate::{
+                    ecs::{Component, __internal_get_component},
+                    once_cell::sync::Lazy,
+                    prelude::*,
+                };
                 static PARENT: Lazy<Component<EntityId>> =
-                    Lazy::new(|| __internal_get_component("ambient_core::ecs::parent"));
+                    Lazy::new(|| __internal_get_component("ambient_core::hierarchy::parent"));
                 #[doc = "**Parent**: The parent of this entity.\n\n*Attributes*: Debuggable, Networked, Store"]
                 pub fn parent() -> Component<EntityId> {
                     *PARENT
+                }
+                static CHILDREN: Lazy<Component<Vec<EntityId>>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::hierarchy::children"));
+                #[doc = "**Children**: The children of this entity.\n\n*Attributes*: Debuggable, Networked, Store, MaybeResource"]
+                pub fn children() -> Component<Vec<EntityId>> {
+                    *CHILDREN
                 }
             }
         }
