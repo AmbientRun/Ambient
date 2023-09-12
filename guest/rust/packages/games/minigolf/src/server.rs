@@ -5,7 +5,7 @@ use ambient_api::{
             components::{active_camera, aspect_ratio_from_window},
             concepts::make_perspective_infinite_reverse_camera,
         },
-        ecs::components::children,
+        hierarchy::components::children,
         messages::Collision,
         model::components::model_from_url,
         physics::components::{

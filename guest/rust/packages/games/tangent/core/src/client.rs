@@ -5,7 +5,7 @@ use ambient_api::{
             components::{aspect_ratio_from_window, fog, fovy},
             concepts::make_perspective_infinite_reverse_camera,
         },
-        ecs::components::{children, parent},
+        hierarchy::components::{children, parent},
         messages::Frame,
         physics::components::linear_velocity,
         rect::components::{line_from, line_to, line_width, rect},

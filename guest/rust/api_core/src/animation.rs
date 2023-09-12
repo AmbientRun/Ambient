@@ -6,7 +6,7 @@ use crate::{
             play_clip_from_url, retarget_animation_scaled, retarget_model_from_url, start_time,
         },
         app::components::name,
-        ecs::components::{children, parent},
+        hierarchy::components::{children, parent},
     },
     entity,
     prelude::{epoch_time, Entity, EntityId},

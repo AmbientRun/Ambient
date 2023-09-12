@@ -7,13 +7,14 @@ use std::{
 
 use ambient_core::{asset_cache, async_ecs::async_run, epoch_time, runtime};
 use ambient_ecs::{
-    children, components,
+    components,
     generated::animation::components::{
         animation_errors, apply_animation_player, apply_base_pose, bind_ids, blend, clip_duration,
         clip_loaded, freeze_at_percentage, freeze_at_time, is_animation_player, looping,
         mask_bind_ids, mask_weights, play_clip_from_url, retarget_animation_scaled,
         retarget_model_from_url, speed, start_time,
     },
+    generated::hierarchy::components::children,
     query, ComponentDesc, Debuggable, EntityId, SystemGroup, World,
 };
 use ambient_model::{animation_binder, ModelFromUrl};

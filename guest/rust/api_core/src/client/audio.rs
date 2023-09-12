@@ -2,7 +2,7 @@ use crate::{
     core::{
         app::components::name,
         audio::components::*,
-        ecs::components::{children, parent},
+        hierarchy::components::{children, parent},
     },
     entity,
     prelude::{Entity, EntityId},

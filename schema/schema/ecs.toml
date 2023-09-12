@@ -5,12 +5,6 @@ description = "Core components for the ECS and entities."
 content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
 
-[components.children]
-type = { type = "Vec", element_type = "EntityId" }
-name = "Children"
-description = "The children of this entity."
-attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]
-
 [components.dont_despawn_on_unload]
 type = "Empty"
 name = "Don't automatically despawn on module unload"
@@ -27,10 +21,4 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "EntityId"
 name = "ID"
 description = "The ID of the entity."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.parent]
-type = "EntityId"
-name = "Parent"
-description = "The parent of this entity."
 attributes = ["Debuggable", "Networked", "Store"]

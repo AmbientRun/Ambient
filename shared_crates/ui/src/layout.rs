@@ -11,7 +11,7 @@ use ambient_element::{
     ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::core::{
-    ecs::components::children,
+    hierarchy::components::children,
     transform::components::{local_to_parent, local_to_world, translation},
 };
 use glam::{vec2, vec3, Mat4, Vec2, Vec3};

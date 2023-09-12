@@ -5,7 +5,7 @@ use ambient_element::{
 };
 use ambient_guest_bridge::core::{
     app::components::window_scale_factor,
-    ecs::components::children,
+    hierarchy::components::children,
     input::components::{is_mouse_over, mouse_pickable_max, mouse_pickable_min},
     layout::{
         components::{fit_horizontal, fit_vertical, height, width},

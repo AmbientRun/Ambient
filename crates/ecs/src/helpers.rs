@@ -1,8 +1,8 @@
 use itertools::Itertools;
 
 use crate::{
-    children, query, ArchetypeFilter, Component, ComponentValue, DynSystem, Entity, EntityId,
-    MakeDefault, Query, SystemGroup, World,
+    generated::hierarchy::components::children, query, ArchetypeFilter, Component, ComponentValue,
+    DynSystem, Entity, EntityId, MakeDefault, Query, SystemGroup, World,
 };
 
 pub fn ensure_has_component<X: ComponentValue + 'static, T: ComponentValue + Clone + 'static>(
