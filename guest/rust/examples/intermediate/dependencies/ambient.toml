@@ -6,5 +6,5 @@ version = "0.0.1"
 content = { type = "Playable", example = true }
 
 [dependencies]
-deps_assets = { path = "deps/assets" , deployment = "1VI9pFr8tBFAgw0nLA2AkG" }
-deps_code = { path = "deps/code" , deployment = "23HOklPVlRosu2cGGZU6xF" }
+deps_assets = { path = "deps/assets" , deployment = "4ynWQ1UoaQrX3zvUSA73D" }
+deps_code = { path = "deps/code" , deployment = "4Wh7JfRy9m4Pcx8zGeePcm" }
