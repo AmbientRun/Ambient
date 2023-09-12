@@ -1,5 +1,5 @@
 [package]
-name = "afps_fpsanim"
+name = "character_animation"
 
 edition = "2021"
 publish = false
@@ -9,9 +9,9 @@ version = "0.0.1"
 ambient_api = { workspace = true }
 
 [[bin]]
-name = "fpsanim_server"
-path = "src/server.rs"
-required-features = ["server"]
+name = "character_animation_client"
+path = "src/client.rs"
+required-features = ["client"]
 
 [features]
 client = ["ambient_api/client"]
