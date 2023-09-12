@@ -142,6 +142,7 @@ pub fn main() {
                     .with(color(), next_color)
                     .with(user_id(), player_user_id.clone())
                     .with(text(), player_user_id.clone())
+                    .with(parent(), player)
                     .spawn();
                 entity::add_component(player, player_text(), text);
 
@@ -153,7 +154,6 @@ pub fn main() {
                         .with(local_to_world(), Default::default())
                         .with(spherical_billboard(), ())
                         .with(translation(), vec3(-5., 0., 5.))
-                        .with(children(), vec![text])
                         .spawn(),
                 );
 

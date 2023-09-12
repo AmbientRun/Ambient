@@ -74,9 +74,6 @@ pub fn main() {
         .bind(move |vehicles| {
             for (vehicle_id, hud_id) in vehicles {
                 entity::despawn(hud_id);
-                entity::mutate_component(vehicle_id, children(), |children| {
-                    children.retain(|&c| c != hud_id);
-                });
             }
         });
 
