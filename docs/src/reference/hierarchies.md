@@ -87,6 +87,6 @@ would be rendered at the center of the arm (inside the arm), so by using `mesh_t
 
 ## Opting out of automatically derived children
 
-If you whish to manage the `children` component yourself, you can attach an `unmanaged_children` component to your
+If you wish to manage the `children` component yourself, you can attach an `unmanaged_children` component to your
 entity. This stops `children` from being automatically created, and it's now up to you to populate the `children`
 component to create a valid hierarchy.

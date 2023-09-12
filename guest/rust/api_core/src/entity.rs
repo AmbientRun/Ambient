@@ -238,11 +238,9 @@ pub fn add_child(entity: EntityId, child: EntityId) {
 /// Removes `child` as a child to `entity`.
 pub fn remove_child(entity: EntityId, child: EntityId) {
     if has_component(entity, unmanaged_children()) {
-        if has_component(entity, children()) {
-            mutate_component(entity, children(), |children| {
-                children.retain(|x| *x != child)
-            });
-        }
+        mutate_component(entity, children(), |children| {
+            children.retain(|x| *x != child)
+        });
     }
     remove_component(child, parent());
 }
