@@ -20,7 +20,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components.double_sided]
 type = "Bool"
 name = "Double-sided"
-description = "If this is set, the entity will be rendered with double-sided rendering."
+description = "If attached, this controls whether or not the entity will be rendered with double-sided rendering. If not attached, the decision will fall back to the material."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components.fog_color]
