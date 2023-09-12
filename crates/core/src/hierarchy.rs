@@ -32,7 +32,7 @@ pub fn systems() -> SystemGroup {
             query(parent()).despawned().to_system_with_name(
                 "remove_children",
                 |q, world, qs, _| {
-                    for (id, (parent)) in q.collect_cloned(world, qs) {
+                    for (id, parent) in q.collect_cloned(world, qs) {
                         if world.has_component(parent, unmanaged_children()) {
                             continue;
                         }
