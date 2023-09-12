@@ -1710,9 +1710,9 @@ dependencies = [
 
 [[package]]
 name = "anstyle"
-version = "1.0.2"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15c4c2c83f81532e5845a733998b6971faca23490340a418e9b72a3ec9de12ea"
+checksum = "b84bf0a05bbb2a83e5eb6fa36bb6e87baa08193c35ff52bbf6b38d8af2890e46"
 
 [[package]]
 name = "anstyle-parse"
@@ -6282,7 +6282,7 @@ checksum = "055b4e778e8feb9f93c4e439f71dc2156ef13360b432b799e179a8c4cdf0b1d7"
 dependencies = [
  "bytes",
  "libc",
- "socket2 0.5.3",
+ "socket2 0.5.4",
  "tracing",
  "windows-sys 0.48.0",
 ]
@@ -7344,9 +7344,9 @@ dependencies = [
 
 [[package]]
 name = "socket2"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2538b18701741680e0322a2302176d3253a35388e2e62f172f64f4f16605f877"
+checksum = "4031e820eb552adee9295814c0ced9e5cf38ddf1e8b7d566d6de8e2538ea989e"
 dependencies = [
  "libc",
  "windows-sys 0.48.0",
@@ -7829,7 +7829,7 @@ dependencies = [
  "parking_lot",
  "pin-project-lite",
  "signal-hook-registry",
- "socket2 0.5.3",
+ "socket2 0.5.4",
  "tokio-macros",
  "tracing",
  "windows-sys 0.48.0",
@@ -8610,7 +8610,7 @@ dependencies = [
 [[package]]
 name = "wasm-encoder"
 version = "0.32.0"
-source = "git+https://github.com/bytecodealliance/wasm-tools#e29e4ca971b7d81a1fedaea371385fa40f28b4d0"
+source = "git+https://github.com/bytecodealliance/wasm-tools#2ebe0d8755908eb0ba62eb1103fd3e80abcb1eb2"
 dependencies = [
  "leb128",
 ]
@@ -9062,7 +9062,7 @@ dependencies = [
 [[package]]
 name = "wast"
 version = "64.0.0"
-source = "git+https://github.com/bytecodealliance/wasm-tools#e29e4ca971b7d81a1fedaea371385fa40f28b4d0"
+source = "git+https://github.com/bytecodealliance/wasm-tools#2ebe0d8755908eb0ba62eb1103fd3e80abcb1eb2"
 dependencies = [
  "leb128",
  "memchr",
@@ -9082,7 +9082,7 @@ dependencies = [
 [[package]]
 name = "wat"
 version = "1.0.71"
-source = "git+https://github.com/bytecodealliance/wasm-tools#e29e4ca971b7d81a1fedaea371385fa40f28b4d0"
+source = "git+https://github.com/bytecodealliance/wasm-tools#2ebe0d8755908eb0ba62eb1103fd3e80abcb1eb2"
 dependencies = [
  "wast 64.0.0 (git+https://github.com/bytecodealliance/wasm-tools)",
 ]
