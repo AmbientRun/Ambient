@@ -13,4 +13,4 @@ ty = "U8"
 is_server = "Bool"
 
 [dependencies]
-input_schema = { path = "../../schemas/input", deployment = "7eSb4rePs2x7HfPTm1FdxB" }
+input_schema = { path = "../../schemas/input", deployment = "LeNsKy81OAyxcTk1mpJVD" }
