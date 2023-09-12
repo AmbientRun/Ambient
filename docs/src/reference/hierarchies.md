@@ -1,10 +1,10 @@
 # Hierarchies and transforms
 
-Ambient supports hierarchies of entities using the `parent` and `children` components. Both need to be present for a hierarchy to be valid - as an example, the following entities in the ECS
+Ambient supports hierarchies of entities using the `parent` and `children` components. The user only specifies the `parent` component, the `children` are automatically derived from the existing parents.
+As an example, the following entities in the ECS
 
 ```yml
 entity a:
-  - children: [b, c]
 entity b:
   - parent: a
 entity c:
@@ -19,8 +19,6 @@ entity a
     entity c
 ```
 
-If you are creating hierachies yourself, you need to make sure that both `parent` and `children` exists and are correct for the hierarchy to work.
-
 The `entity::add_child` and `entity::remove_child` functions can be used to add and remove children from a parent.
 
 When using the `model_from_url` or `prefab_from_url` components, the entire model sub-tree will be spawned in, with the root of the sub-tree being added as a child to the entity with the component. Each entity in the sub-tree will be part of the hierarchy using their own `parent` and `children` components.
@@ -32,7 +30,6 @@ To apply transforms to a hierarchy, `local_to_parent` must be used:
 
 ```yml
 entity a:
-  - children: [b]
   - local_to_world: Mat4(..)
 entity b:
   - parent: a
@@ -46,7 +43,6 @@ In this case, `b.local_to_world` will be calculated as `a.local_to_world * b.loc
 
 ```yml
 entity a:
-  - children: [b]
   - local_to_world: Mat4(..)
   - translation: vec3(5., 2., 9.)
   - rotation: quat(..)
@@ -88,3 +84,9 @@ mesh_to_world = local_to_world * mesh_to_local
 This also means that you can attach a mesh in the middle of a hierarchy, with an offset. For instance, if you have
 a bone hierarchy on a character, you can attach an mesh to the upper arm bone, but without `mesh_to_local/world` it
 would be rendered at the center of the arm (inside the arm), so by using `mesh_to_local/world` you can offset it.
+
+## Opting out of automatically derived children
+
+If you whish to manage the `children` component yourself, you can attach an `unmanaged_children` component to your
+entity. This stops `children` from being automatically created, and it's now up to you to populate the `children`
+component to create a valid hierarchy.

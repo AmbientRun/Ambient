@@ -99,6 +99,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(async_ecs_systems()),
             remove_at_time_system(),
             refcount_system(),
+            Box::new(ambient_core::hierarchy::systems()),
             Box::new(WorldEventsSystem),
             Box::new(ambient_focus::systems()),
             if full {

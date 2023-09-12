@@ -13,7 +13,8 @@ use ambient_core::{
     },
 };
 use ambient_ecs::{
-    generated::animation::components::bind_id, query, ComponentDesc, Entity, EntityId, World,
+    generated::{animation::components::bind_id, hierarchy::components::unmanaged_children},
+    query, ComponentDesc, Entity, EntityId, World,
 };
 use ambient_gpu::gpu::Gpu;
 use ambient_native_std::{
@@ -207,7 +208,8 @@ impl Model {
                         .with(children(), vec![])
                         .with(local_to_parent(), transform)
                         .with(local_to_world(), Default::default())
-                        .with(is_model_node(), ()),
+                        .with(is_model_node(), ())
+                        .with(unmanaged_children(), ()),
                     count,
                 );
                 for (transform, root) in transform_roots.iter().zip(roots.iter()) {
@@ -375,6 +377,9 @@ impl Model {
             }
         }
         if self.0.has_component(id, children()) {
+            for id in &entities {
+                world.add_component(*id, unmanaged_children(), ()).ok();
+            }
             for c in self.0.get_ref(id, children()).unwrap().iter() {
                 self.spawn_subtree(
                     gpu,
