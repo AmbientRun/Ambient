@@ -1,32 +1,31 @@
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         primitives::components::quad,
         rendering::components::pbr_material_from_url,
-        transform::{
-            components::{lookat_target, scale, translation},
-            concepts::make_transformable,
-        },
+        transform::components::{lookat_target, scale},
     },
     prelude::*,
 };
 
 #[main]
 pub fn main() {
-    Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(translation(), vec3(5., 5., 6.))
-        .with(lookat_target(), vec3(0., 0., 2.))
-        .with(main_scene(), ())
-        .spawn();
+    PerspectiveInfiniteReverseCamera {
+        optional: PerspectiveInfiniteReverseCameraOptional {
+            translation: Some(vec3(5., 5., 6.)),
+            main_scene: Some(()),
+            aspect_ratio_from_window: Some(entity::resources()),
+            ..default()
+        },
+        ..PerspectiveInfiniteReverseCamera::suggested()
+    }
+    .make()
+    .with(lookat_target(), vec3(0., 0., 2.))
+    .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 10.)
         .with(

@@ -8,3 +8,4 @@ content = { type = "Playable", example = true }
 [dependencies]
 deps_assets = { path = "deps/assets" , deployment = "4ynWQ1UoaQrX3zvUSA73D" }
 deps_code = { path = "deps/code" , deployment = "4Wh7JfRy9m4Pcx8zGeePcm" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" }

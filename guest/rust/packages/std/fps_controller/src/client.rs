@@ -1,10 +1,9 @@
 use crate::packages::this::components::player_camera_ref;
 use ambient_api::{
     core::{
-        app::components::{main_scene, name},
-        camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+        app::components::name,
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         messages::Frame,
         player::components::is_player,
@@ -68,17 +67,21 @@ pub fn main() {
     spawn_query((is_player(), head_ref())).bind(move |players| {
         for (id, (_, head)) in players {
             if id == player::get_local() {
-                let camera = Entity::new()
-                    .with_merge(make_perspective_infinite_reverse_camera())
-                    .with(aspect_ratio_from_window(), EntityId::resources())
-                    .with(main_scene(), ())
-                    .with(
-                        translation(),
-                        -Vec3::Z * get_component(id, camera_distance()).unwrap_or(4.),
-                    )
-                    .with(local_to_parent(), Default::default())
-                    .with(name(), "Camera".to_string())
-                    .spawn();
+                let camera = PerspectiveInfiniteReverseCamera {
+                    optional: PerspectiveInfiniteReverseCameraOptional {
+                        translation: Some(
+                            -Vec3::Z * get_component(id, camera_distance()).unwrap_or(4.),
+                        ),
+                        main_scene: Some(()),
+                        aspect_ratio_from_window: Some(entity::resources()),
+                        ..default()
+                    },
+                    ..PerspectiveInfiniteReverseCamera::suggested()
+                }
+                .make()
+                .with(local_to_parent(), Default::default())
+                .with(name(), "Camera".to_string())
+                .spawn();
                 add_child(head, camera);
 
                 entity::add_components(id, Entity::new().with(player_camera_ref(), camera));

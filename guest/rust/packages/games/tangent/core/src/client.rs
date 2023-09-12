@@ -2,10 +2,11 @@ use ambient_api::{
     core::{
         app::components::{main_scene, name},
         camera::{
-            components::{aspect_ratio_from_window, fog, fovy},
-            concepts::make_perspective_infinite_reverse_camera,
+            components::{fog, fovy},
+            concepts::{
+                PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
+            },
         },
-        hierarchy::components::parent,
         messages::Frame,
         physics::components::linear_velocity,
         rect::components::{line_from, line_to, line_width, rect},
@@ -13,10 +14,9 @@ use ambient_api::{
         text::components::{font_size, text},
         transform::{
             components::{
-                local_to_parent, local_to_world, lookat_target, mesh_to_local, mesh_to_world,
-                rotation, scale, translation,
+                local_to_parent, lookat_target, mesh_to_local, mesh_to_world, rotation, translation,
             },
-            concepts::make_transformable,
+            concepts::{Transformable, TransformableOptional},
         },
     },
     element::use_query,
@@ -33,36 +33,42 @@ const RENDER_DEBUG: bool = false;
 
 #[main]
 pub fn main() {
-    let camera_id = Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(fog(), ())
-        .with(translation(), vec3(5., 5., 2.))
-        .with(lookat_target(), vec3(0., 0., 1.))
-        .spawn();
+    let camera_id = PerspectiveInfiniteReverseCamera {
+        optional: PerspectiveInfiniteReverseCameraOptional {
+            translation: Some(vec3(5., 5., 2.)),
+            main_scene: Some(()),
+            aspect_ratio_from_window: Some(entity::resources()),
+            ..default()
+        },
+        ..PerspectiveInfiniteReverseCamera::suggested()
+    }
+    .make()
+    .with(fog(), ())
+    .with(lookat_target(), vec3(0., 0., 1.))
+    .spawn();
 
     spawn_query(vehicle()).bind(move |vehicles| {
         for (id, _) in vehicles {
-            let hud_id = Entity::new()
-                .with_merge(make_transformable())
-                .with(local_to_world(), Default::default())
-                .with(local_to_parent(), Default::default())
-                .with(mesh_to_local(), Default::default())
-                .with(mesh_to_world(), Default::default())
-                .with(main_scene(), ())
-                .with(text(), "0".to_string())
-                .with(color(), vec4(1., 1., 1., 1.))
-                .with(translation(), vec3(0.35, 0., 0.3))
-                .with(
-                    rotation(),
-                    Quat::from_rotation_z(25.0f32.to_radians())
-                        * Quat::from_rotation_x(-65.0f32.to_radians()),
-                )
-                .with(scale(), Vec3::ONE * 0.005)
-                .with(font_size(), 48.0)
-                .with(parent(), id)
-                .spawn();
+            let hud_id = Transformable {
+                local_to_world: default(),
+                optional: TransformableOptional {
+                    translation: Some(vec3(0.35, 0., 0.3)),
+                    rotation: Some(
+                        Quat::from_rotation_z(25.0f32.to_radians())
+                            * Quat::from_rotation_x(-65.0f32.to_radians()),
+                    ),
+                    scale: Some(Vec3::ONE * 0.005),
+                },
+            }
+            .make()
+            .with(local_to_parent(), Default::default())
+            .with(mesh_to_local(), Default::default())
+            .with(mesh_to_world(), Default::default())
+            .with(main_scene(), ())
+            .with(text(), "0".to_string())
+            .with(color(), vec4(1., 1., 1., 1.))
+            .with(font_size(), 48.0)
+            .spawn();
 
             entity::add_component(id, vehicle_hud(), hud_id);
             entity::add_child(id, hud_id);

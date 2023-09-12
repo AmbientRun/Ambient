@@ -105,7 +105,7 @@ pub async fn build<
             .add_package(RetrievableFile::Url(main_manifest_url.0.clone()), None)
             .await?;
         semantic
-            .resolve()
+            .resolve_all()
             .context("Failed to resolve dependencies for pre-build")?;
 
         semantic

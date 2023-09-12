@@ -15,14 +15,14 @@ impl Printer {
         let items = &semantic.items;
         println!("root_scope:");
         self.with_indent(|p| {
-            p.print_scope(items, &items.get(semantic.root_scope_id))?;
+            p.print_scope(items, items.get(semantic.root_scope_id))?;
             Ok(())
         })?;
 
         println!("packages:");
         self.with_indent(|p| {
             for id in semantic.packages.values() {
-                p.print_package(items, &items.get(*id))?;
+                p.print_package(items, items.get(*id))?;
             }
             Ok(())
         })?;
@@ -46,7 +46,7 @@ impl Printer {
                 "dependent: {}",
                 package
                     .dependent_package_id
-                    .map(|id| fully_qualified_display_path_ambient_style(items, &*items.get(id)))
+                    .map(|id| fully_qualified_display_path_ambient_style(items, items.get(id)))
                     .unwrap_or_default()
             );
 
@@ -62,17 +62,14 @@ impl Printer {
                     println!(
                         "{}: {} ({:?})",
                         name,
-                        fully_qualified_display_path_ambient_style(
-                            items,
-                            &*items.get(dependency.id)
-                        ),
+                        fully_qualified_display_path_ambient_style(items, items.get(dependency.id)),
                         dependency.enabled
                     );
                 }
                 Ok(())
             })?;
 
-            p.print_scope(items, &items.get(package.scope_id))?;
+            p.print_scope(items, items.get(package.scope_id))?;
 
             Ok(())
         })?;
@@ -93,7 +90,7 @@ impl Printer {
             p.with_indent(|p| {
                 for (import_name, package_id) in &scope.imports {
                     let package_path =
-                        fully_qualified_display_path_ambient_style(items, &*items.get(*package_id));
+                        fully_qualified_display_path_ambient_style(items, items.get(*package_id));
                     p.print_indent();
                     println!("{import_name} => {package_path}");
                 }
@@ -101,27 +98,27 @@ impl Printer {
             })?;
 
             for id in scope.components.values() {
-                p.print_component(items, &items.get(*id))?;
+                p.print_component(items, items.get(*id))?;
             }
 
             for id in scope.concepts.values() {
-                p.print_concept(items, &items.get(*id))?;
+                p.print_concept(items, items.get(*id))?;
             }
 
             for id in scope.messages.values() {
-                p.print_message(items, &items.get(*id))?;
+                p.print_message(items, items.get(*id))?;
             }
 
             for id in scope.types.values() {
-                p.print_type(items, &items.get(*id))?;
+                p.print_type(items, items.get(*id))?;
             }
 
             for id in scope.attributes.values() {
-                p.print_attribute(items, &items.get(*id))?;
+                p.print_attribute(items, items.get(*id))?;
             }
 
             for id in scope.scopes.values() {
-                p.print_scope(items, &items.get(*id))?;
+                p.print_scope(items, items.get(*id))?;
             }
 
             Ok(())
@@ -192,10 +189,22 @@ impl Printer {
             println!();
 
             p.print_indent();
-            println!("components:");
+            println!("required components:");
 
             p.with_indent(|p| {
-                for (component, value) in concept.components.iter() {
+                for (component, value) in concept.required_components.iter() {
+                    p.print_indent();
+                    println!("{}: {:?}", write_resolvable_id(items, component)?, value,);
+                }
+
+                Ok(())
+            })?;
+
+            p.print_indent();
+            println!("optional components:");
+
+            p.with_indent(|p| {
+                for (component, value) in concept.optional_components.iter() {
                     p.print_indent();
                     println!("{}: {:?}", write_resolvable_id(items, component)?, value,);
                 }
@@ -299,7 +308,7 @@ fn write_resolvable_id<T: Item>(
     Ok(match r {
         ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
         ResolvableItemId::Resolved(resolved) => {
-            fully_qualified_display_path_ambient_style(items, &*items.get(*resolved))
+            fully_qualified_display_path_ambient_style(items, items.get(*resolved))
         }
     })
 }

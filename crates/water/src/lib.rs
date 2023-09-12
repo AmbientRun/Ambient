@@ -52,7 +52,9 @@ pub fn systems() -> SystemGroup {
                         .await
                         .unwrap();
                         async_run.run(move |world| {
-                            world.add_component(id, water_normals(), normals).unwrap();
+                            // If spawned by a module that has unloaded, this water entity may have been destroyed,
+                            // so don't assume it can succeed
+                            let _ = world.add_component(id, water_normals(), normals);
                         })
                     });
                 }

@@ -3,8 +3,7 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, Resolve,
-    StandardDefinitions, Type,
+    Item, ItemData, ItemId, ItemType, ItemValue, ResolvableItemId, Resolve, Semantic, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -14,6 +13,8 @@ pub struct Message {
     pub description: Option<String>,
     pub fields: IndexMap<SnakeCaseIdentifier, ResolvableItemId<Type>>,
     pub as_module_message: bool,
+
+    resolved: bool,
 }
 
 impl Item for Message {
@@ -43,20 +44,16 @@ impl Item for Message {
     }
 }
 impl Resolve for Message {
-    fn resolve(
-        mut self,
-        items: &mut ItemMap,
-        context: &Context,
-        _definitions: &StandardDefinitions,
-        _self_id: ItemId<Self>,
-    ) -> anyhow::Result<Self> {
+    fn resolve(mut self, semantic: &mut Semantic, _self_id: ItemId<Self>) -> anyhow::Result<Self> {
+        let parent_id = self.data.parent_id.unwrap();
+
         let mut fields = IndexMap::new();
         for (name, type_) in &self.fields {
             fields.insert(
                 name.clone(),
                 match type_ {
                     ResolvableItemId::Unresolved(path) => {
-                        let id = context.get_type_id(items, path).with_context(|| {
+                        let id = semantic.get_contextual_type_id(parent_id, path).with_context(|| {
                             format!("Failed to resolve type `{path:?}` for field `{name}` of message `{}`", self.data.id)
                         })?;
                         ResolvableItemId::Resolved(id)
@@ -66,8 +63,13 @@ impl Resolve for Message {
             );
         }
         self.fields = fields;
+        self.resolved = true;
 
         Ok(self)
+    }
+
+    fn already_resolved(&self) -> bool {
+        self.resolved
     }
 }
 
@@ -82,6 +84,7 @@ impl Message {
                 .map(|(k, v)| (k.clone(), ResolvableItemId::Unresolved(v.clone())))
                 .collect(),
             as_module_message: value.as_module_message,
+            resolved: false,
         }
     }
 }

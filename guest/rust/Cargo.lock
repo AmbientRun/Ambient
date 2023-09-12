@@ -1656,6 +1656,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "orbit_camera"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "ordered-float"
 version = "3.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

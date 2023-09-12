@@ -118,8 +118,8 @@ pub fn add_component<T: SupportedValue>(entity: EntityId, component: Component<T
 }
 
 /// Adds the components `components` for `entity` with `value`. Will replace any existing components specified in `components`.
-pub fn add_components(entity: EntityId, components: Entity) {
-    wit::component::add_components(entity.into_bindgen(), &components.into_bindgen())
+pub fn add_components(entity: EntityId, components: impl Into<Entity>) {
+    wit::component::add_components(entity.into_bindgen(), &components.into().into_bindgen())
 }
 
 /// Sets the component `component` for `entity` with `value`.

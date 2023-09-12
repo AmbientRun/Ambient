@@ -8,18 +8,18 @@ use anyhow::Context as AnyhowContext;
 use async_recursion::async_recursion;
 
 use ambient_package::{
-    BuildMetadata, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
+    BuildMetadata, ComponentType, Identifier, ItemPath, ItemPathBuf, Manifest,
+    PascalCaseIdentifier, SnakeCaseIdentifier,
 };
 use ambient_shared_types::primitive_component_definitions;
 
 mod scope;
-pub use scope::{Context, Scope};
+pub use scope::Scope;
 
 mod package;
 pub use package::{Dependency, LocalOrRemote, Package, PackageLocator, RetrievableFile};
 
 mod item;
-use item::Resolve;
 pub use item::{
     Item, ItemData, ItemId, ItemMap, ItemSource, ItemType, ItemValue, ResolvableItemId,
 };
@@ -28,7 +28,7 @@ mod component;
 pub use component::Component;
 
 mod concept;
-pub use concept::Concept;
+pub use concept::{Concept, ConceptValue};
 
 mod attribute;
 pub use attribute::Attribute;
@@ -37,6 +37,7 @@ mod primitive_type;
 pub use primitive_type::PrimitiveType;
 
 mod type_;
+use thiserror::Error;
 pub use type_::{Enum, Type, TypeInner};
 
 mod message;
@@ -135,6 +136,7 @@ impl Semantic {
             dependencies: HashMap::new(),
             scope_id,
             dependent_package_id,
+            resolved: false,
         };
 
         let id = self.items.add(package);
@@ -186,7 +188,7 @@ impl Semantic {
         Ok(id)
     }
 
-    pub fn resolve(&mut self) -> anyhow::Result<()> {
+    pub fn resolve_all(&mut self) -> anyhow::Result<()> {
         let mut seen_locators = HashMap::new();
         for locator in self.packages.keys() {
             if let Some(present) = seen_locators.insert(locator.id.clone(), locator.clone()) {
@@ -204,19 +206,16 @@ impl Semantic {
 
                 anyhow::bail!(
                     "package conflict found:\n  - {present}{}\n\n  - {locator}{}\n\n{}",
-                    imported_by(&self.items, &present_package),
-                    imported_by(&self.items, &locator_package),
+                    imported_by(&self.items, present_package),
+                    imported_by(&self.items, locator_package),
                     "the system does not currently support multiple versions of the same package in the dependency tree"
                 );
             }
         }
 
-        for package_id in self.packages.values().copied() {
-            self.items.resolve(
-                &Context::new(self.root_scope_id),
-                &self.standard_definitions,
-                package_id,
-            )?;
+        let package_ids = self.packages.values().copied().collect::<Vec<_>>();
+        for package_id in package_ids {
+            self.resolve(package_id)?;
         }
 
         Ok(())
@@ -228,6 +227,100 @@ impl Semantic {
 
     pub fn get_scope_id_by_name(&self, name: &SnakeCaseIdentifier) -> Option<ItemId<Scope>> {
         self.root_scope().scopes.get(name).copied()
+    }
+}
+impl Semantic {
+    /// Resolve the item with the given id by cloning it, avoiding borrowing issues.
+    pub(crate) fn resolve<T: Resolve>(&mut self, id: ItemId<T>) -> anyhow::Result<&mut T> {
+        let item = self.items.get(id);
+        if !item.already_resolved() {
+            let item = item.clone();
+            let new_item = item.resolve(self, id)?;
+            self.items.insert(id, new_item);
+        }
+        Ok(self.items.get_mut(id))
+    }
+
+    /// Walks upwards from `start_scope` to find the first type located at `path`.
+    fn get_contextual<Output: Item>(
+        &self,
+        start_scope: ItemId<Scope>,
+        getter: impl Fn(ItemId<Scope>) -> Option<ItemId<Output>>,
+    ) -> Option<ItemId<Output>> {
+        let mut context_scope_id = Some(start_scope);
+        while let Some(scope_id) = context_scope_id {
+            if let Some(id) = getter(scope_id) {
+                return Some(id);
+            }
+            context_scope_id = self.items.get(scope_id).data().parent_id;
+        }
+        if let Some(id) = getter(self.root_scope_id) {
+            return Some(id);
+        }
+        None
+    }
+
+    /// Walks upwards from `start_scope` to find the first type located at `path`.
+    pub(crate) fn get_contextual_type_id(
+        &self,
+        start_scope: ItemId<Scope>,
+        component_type: &ComponentType,
+    ) -> Option<ItemId<Type>> {
+        self.get_contextual(start_scope, |scope_id| match component_type {
+            ComponentType::Item(id) => get_type_id(&self.items, scope_id, id.as_path()),
+            ComponentType::Contained {
+                type_,
+                element_type,
+            } => get_type_id(&self.items, scope_id, element_type.as_path()).map(|id| match type_ {
+                ambient_package::ContainerType::Vec => self.items.get_vec_id(id),
+                ambient_package::ContainerType::Option => self.items.get_option_id(id),
+            }),
+        })
+    }
+
+    /// Walks upwards from `start_scope` to find the first attribute located at `path`.
+    pub(crate) fn get_contextual_attribute_id<'a>(
+        &self,
+        start_scope: ItemId<Scope>,
+        path: ItemPath<'a>,
+    ) -> Result<ItemId<Attribute>, ContextGetError<'a>> {
+        self.get_contextual(start_scope, |scope_id| {
+            get_attribute_id(&self.items, scope_id, path)
+        })
+        .ok_or(ContextGetError::NotFound {
+            path,
+            type_: ItemType::Attribute,
+        })
+    }
+
+    /// Walks upwards from `start_scope` to find the first concept located at `path`.
+    pub(crate) fn get_contextual_concept_id<'a>(
+        &self,
+        start_scope: ItemId<Scope>,
+        path: ItemPath<'a>,
+    ) -> Result<ItemId<Concept>, ContextGetError<'a>> {
+        self.get_contextual(start_scope, |scope_id| {
+            get_concept_id(&self.items, scope_id, path)
+        })
+        .ok_or(ContextGetError::NotFound {
+            path,
+            type_: ItemType::Concept,
+        })
+    }
+
+    /// Walks upwards from `start_scope` to find the first component located at `path`.
+    pub(crate) fn get_contextual_component_id<'a>(
+        &self,
+        start_scope: ItemId<Scope>,
+        path: ItemPath<'a>,
+    ) -> Result<ItemId<Component>, ContextGetError<'a>> {
+        self.get_contextual(start_scope, |scope_id| {
+            get_component_id(&self.items, scope_id, path)
+        })
+        .ok_or(ContextGetError::NotFound {
+            path,
+            type_: ItemType::Component,
+        })
     }
 }
 impl Semantic {
@@ -320,7 +413,7 @@ impl Semantic {
             items
                 .get_or_create_scope_mut(scope_id, scope_path)
                 .concepts
-                .insert(item.as_snake().map_err(|e| e.to_owned())?.clone(), value);
+                .insert(item.as_pascal().map_err(|e| e.to_owned())?.clone(), value);
         }
 
         for (path, message) in manifest.messages.iter() {
@@ -453,4 +546,92 @@ pub fn package_dependency_to_retrievable_file(
             Some(RetrievableFile::Url(url.join("ambient.toml")?))
         }
     })
+}
+
+/// This item supports being resolved by cloning.
+pub(crate) trait Resolve: Item {
+    fn resolve(self, items: &mut Semantic, self_id: ItemId<Self>) -> anyhow::Result<Self>;
+    fn already_resolved(&self) -> bool;
+}
+
+fn get_type_id(
+    items: &ItemMap,
+    self_scope_id: ItemId<Scope>,
+    path: ItemPath,
+) -> Option<ItemId<Type>> {
+    let (scope, item) = path.scope_and_item();
+    items
+        .get_scope(self_scope_id, scope)
+        .ok()?
+        .types
+        .get(item.as_pascal().ok()?)
+        .copied()
+}
+
+fn get_attribute_id(
+    items: &ItemMap,
+    self_scope_id: ItemId<Scope>,
+    path: ItemPath,
+) -> Option<ItemId<Attribute>> {
+    let (scope, item) = path.scope_and_item();
+    items
+        .get_scope(self_scope_id, scope)
+        .ok()?
+        .attributes
+        .get(item.as_pascal().ok()?)
+        .copied()
+}
+
+fn get_concept_id(
+    items: &ItemMap,
+    self_scope_id: ItemId<Scope>,
+    path: ItemPath,
+) -> Option<ItemId<Concept>> {
+    let (scope, item) = path.scope_and_item();
+    items
+        .get_scope(self_scope_id, scope)
+        .ok()?
+        .concepts
+        .get(item.as_pascal().ok()?)
+        .copied()
+}
+
+fn get_component_id(
+    items: &ItemMap,
+    self_scope_id: ItemId<Scope>,
+    path: ItemPath,
+) -> Option<ItemId<Component>> {
+    let (scope, item) = path.scope_and_item();
+    items
+        .get_scope(self_scope_id, scope)
+        .ok()?
+        .components
+        .get(item.as_snake().ok()?)
+        .copied()
+}
+
+#[derive(Error, Debug)]
+pub enum ContextGetError<'a> {
+    #[error("Failed to find {path} ({type_})")]
+    NotFound { path: ItemPath<'a>, type_: ItemType },
+}
+impl ContextGetError<'_> {
+    pub fn into_owned(self) -> ContextGetOwnedError {
+        self.into()
+    }
+}
+#[derive(Error, Debug)]
+pub enum ContextGetOwnedError {
+    #[error("Failed to find {path} ({type_})")]
+    NotFound { path: ItemPathBuf, type_: ItemType },
+}
+impl From<ContextGetError<'_>> for ContextGetOwnedError {
+    fn from(error: ContextGetError) -> Self {
+        match error {
+            ContextGetError::NotFound { path, type_ } => Self::NotFound {
+                path: path.to_owned(),
+                type_,
+            },
+        }
+    }
 }

@@ -127,55 +127,62 @@ attributes = ["Debuggable", "Networked", "Store"]
 
 # Concepts
 
-[concepts.camera]
+[concepts.Camera]
 name = "Camera"
 description = "Base components for a camera. You will need other components to make a fully-functioning camera."
-extends = ["transform::transformable"]
+extends = ["transform::Transformable"]
 
-[concepts.camera.components]
-near = 0.1
-projection = "Identity"
-projection_view = "Identity"
-active_camera = 0.0
-"transform::local_to_world" = "Identity"
-"transform::inv_local_to_world" = "Identity"
+# TODO: remove suggested active_camera and sync with docs once suggestions are no longer necessary
+[concepts.Camera.components.required]
+near = { suggested = 0.1 }
+projection = { suggested = "Identity" }
+projection_view = { suggested = "Identity" }
+active_camera = { suggested = 0.0 }
+"transform::local_to_world" = { suggested = "Identity" }
+"transform::inv_local_to_world" = { suggested = "Identity" }
+[concepts.Camera.components.optional]
+"app::main_scene" = { description = "Either the main or UI scene must be specified for this camera to be used." }
+"app::ui_scene" = { description = "Either the main or UI scene must be specified for this camera to be used." }
+"player::user_id" = { description = "If set, this camera will only be used for the specified user." }
 
-[concepts.perspective_common_camera]
+[concepts.PerspectiveCommonCamera]
 name = "Perspective Common Camera"
 description = "Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`."
-extends = ["camera"]
+extends = ["Camera"]
 
-[concepts.perspective_common_camera.components]
-fovy = 1.0
-aspect_ratio = 1.0
+[concepts.PerspectiveCommonCamera.components.required]
+fovy = { suggested = 1.0 }
+aspect_ratio = { suggested = 1.0 }
+[concepts.PerspectiveCommonCamera.components.optional]
+aspect_ratio_from_window = {}
 
-[concepts.perspective_camera]
+[concepts.PerspectiveCamera]
 name = "Perspective Camera"
 description = "A perspective camera."
-extends = ["perspective_common_camera"]
+extends = ["PerspectiveCommonCamera"]
 
-[concepts.perspective_camera.components]
-perspective = {}
-far = 1000.0
+[concepts.PerspectiveCamera.components.required]
+perspective = { suggested = {} }
+far = { suggested = 1000.0 }
 
-[concepts.perspective_infinite_reverse_camera]
+[concepts.PerspectiveInfiniteReverseCamera]
 name = "Perspective-Infinite-Reverse Camera"
 description = "A perspective-infinite-reverse camera. This is recommended for most use-cases."
-extends = ["perspective_common_camera"]
+extends = ["PerspectiveCommonCamera"]
 
-[concepts.perspective_infinite_reverse_camera.components]
-perspective_infinite_reverse = {}
+[concepts.PerspectiveInfiniteReverseCamera.components.required]
+perspective_infinite_reverse = { suggested = {} }
 
-[concepts.orthographic_camera]
+[concepts.OrthographicCamera]
 name = "Orthographic Camera"
 description = "An orthographic camera."
-extends = ["camera"]
+extends = ["Camera"]
 
-[concepts.orthographic_camera.components]
-orthographic = {}
-orthographic_left = -1.0
-orthographic_right = 1.0
-orthographic_top = 1.0
-orthographic_bottom = -1.0
-near = -1.0
-far = 1.0
+[concepts.OrthographicCamera.components.required]
+orthographic = { suggested = {} }
+orthographic_left = { suggested = -1.0 }
+orthographic_right = { suggested = 1.0 }
+orthographic_top = { suggested = 1.0 }
+orthographic_bottom = { suggested = -1.0 }
+near = { suggested = -1.0 }
+far = { suggested = 1.0 }

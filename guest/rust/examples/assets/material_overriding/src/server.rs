@@ -1,41 +1,39 @@
 use ambient_api::{
     core::{
         app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
-        },
         prefab::components::{prefab_from_url, spawned},
         primitives::components::quad,
         rendering::components::{cast_shadows, light_ambient, light_diffuse, sun},
-        transform::{
-            components::{lookat_target, rotation, scale, translation},
-            concepts::make_transformable,
-        },
+        transform::components::{local_to_world, rotation, scale},
     },
     prelude::*,
 };
 
-use packages::this::{assets, components::is_the_best};
+use packages::{
+    orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional},
+    this::{assets, components::is_the_best},
+};
 
 #[main]
 pub async fn main() {
-    Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(translation(), vec3(2., 2., 1.))
-        .with(lookat_target(), vec3(0., 0., 0.))
-        .spawn();
+    OrbitCamera {
+        is_orbit_camera: (),
+        optional: OrbitCameraOptional {
+            camera_angle: Some(vec2(135f32.to_radians(), 20f32.to_radians())),
+            camera_distance: Some(3.),
+            ..default()
+        },
+    }
+    .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with(local_to_world(), Mat4::IDENTITY)
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 2.0)
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with(local_to_world(), Mat4::IDENTITY)
         .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-1.))
         .with(main_scene(), ())
@@ -44,7 +42,7 @@ pub async fn main() {
         .spawn();
 
     let model = Entity::new()
-        .with_merge(make_transformable())
+        .with(local_to_world(), Mat4::IDENTITY)
         .with(cast_shadows(), ())
         .with(prefab_from_url(), assets::url("Teapot.glb"))
         .with(is_the_best(), true)

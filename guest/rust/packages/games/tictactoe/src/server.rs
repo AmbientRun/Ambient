@@ -1,17 +1,11 @@
+use std::f32::consts::PI;
+
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
-        },
         player::components::is_player,
         primitives::components::cube,
         rendering::components::color,
-        transform::{
-            components::{lookat_target, scale, translation},
-            concepts::make_transformable,
-        },
+        transform::components::{scale, translation},
     },
     prelude::*,
 };
@@ -19,33 +13,39 @@ use ambient_api::{
 mod constants;
 use constants::*;
 
-use packages::this::{
-    components::{cell, cells, owned_by},
-    messages::Input,
+use packages::{
+    orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional},
+    this::{
+        components::{cell, cells, owned_by},
+        messages::Input,
+    },
 };
 
 #[main]
 pub fn main() {
-    Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
-        .with(aspect_ratio_from_window(), entity::resources())
-        .with(main_scene(), ())
-        .with(translation(), vec3(SIZE as f32, SIZE as f32, SIZE as f32))
-        .with(
-            lookat_target(),
-            vec3(SIZE as f32 / 2., SIZE as f32 / 2., 0.),
-        )
-        .spawn();
+    const CUBE_SIZE: f32 = 0.6;
+    const SIZE_F32: f32 = SIZE as f32;
+
+    OrbitCamera {
+        is_orbit_camera: (),
+        optional: OrbitCameraOptional {
+            camera_distance: Some(SIZE_F32),
+            camera_angle: Some(vec2(PI, 60f32.to_radians())),
+            ..default()
+        },
+    }
+    .spawn();
 
     let cell_entities = {
         let mut cells = Vec::new();
+        let centre = vec3((SIZE / 2) as f32, (SIZE / 2) as f32, 0.);
+
         for y in 0..SIZE {
             for x in 0..SIZE {
                 let id = Entity::new()
-                    .with_merge(make_transformable())
                     .with(cube(), ())
-                    .with(translation(), vec3(x as f32, y as f32, 0.))
-                    .with(scale(), vec3(0.6, 0.6, 0.6))
+                    .with(translation(), vec3(x as f32, y as f32, 0.) - centre)
+                    .with(scale(), vec3(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE))
                     .with(color(), DEFAULT_COLOR)
                     .spawn();
                 cells.push(id);

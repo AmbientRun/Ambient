@@ -4,12 +4,8 @@ use ambient_api::{
         model::components::model_loaded,
         player::components::is_player,
         prefab::components::prefab_from_url,
-        // primitives::quad,
-        rendering::components::color, //pbr_material_from_url
-        transform::{
-            components::{local_to_parent, reset_scale, rotation, scale, translation},
-            concepts::make_transformable,
-        },
+        rendering::components::color,
+        transform::components::{local_to_parent, reset_scale, rotation, scale, translation},
     },
     prelude::*,
 };
@@ -35,7 +31,6 @@ pub fn main() {
                 }
                 let hand = hand.unwrap();
                 let gun = Entity::new()
-                    .with_merge(make_transformable())
                     .with(prefab_from_url(), assets::url("red.glb"))
                     .with(translation(), vec3(-0.06, 0.2, 0.0))
                     .with(

@@ -1,4 +1,10 @@
-use ambient_package_semantic::{Concept, Item, ItemMap, ScalarValue, Scope, Value};
+use std::fmt::Write;
+
+use ambient_package::Identifier;
+use ambient_package_semantic::{
+    Component, Concept, ConceptValue, Item, ItemId, ItemMap, ScalarValue, Scope, Value,
+};
+
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -10,19 +16,20 @@ pub fn generate(
     type_printer: &TypePrinter,
     scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
+    let Some(guest_api_path) = context.guest_api_path() else {
+        // Concept generation is not supported on the host.
+        return Ok(quote! {});
+    };
+
     let concepts = scope
         .concepts
         .values()
         .filter_map(|c| context.extract_item_if_relevant(items, *c))
         .map(|concept| {
             let concept = &*concept;
-            let make_concept = generate_make(items, type_printer, context, concept)?;
-            let is_concept = generate_is(items, type_printer, context, concept)?;
-            let concept_fn = generate_concept(items, type_printer, context, concept)?;
+            let new = generate_one(items, type_printer, context, &guest_api_path, concept)?;
             Ok(quote! {
-                #make_concept
-                #is_concept
-                #concept_fn
+                #new
             })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
@@ -31,229 +38,367 @@ pub fn generate(
         return Ok(quote! {});
     }
 
-    let inner = match context {
-        Context::Host => quote! {
-            use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, IVec2, IVec3, IVec4, Mat4, Quat};
-            use crate::{EntityId, Entity, Component};
-            #(#concepts)*
-        },
-
-        Context::GuestApi | Context::GuestUser => {
-            let api_path = context.guest_api_path().unwrap();
-            quote! {
-                use #api_path::prelude::*;
-                #(#concepts)*
-            }
-        }
-    };
-
     Ok(quote! {
         /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
         ///
         /// They do not have any runtime representation outside of the components that compose them.
         pub mod concepts {
-            #inner
+            use #guest_api_path::prelude::*;
+            #(#concepts)*
         }
     })
 }
 
-fn generate_make(
+fn generate_one(
     items: &ItemMap,
     type_printer: &TypePrinter,
     context: Context,
+    guest_api_path: &TokenStream,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
-    let name = concept.data().id.as_str();
-    let make_comment = format!(
-        "Makes a *{}*.\n\n{}\n\n{}",
-        concept.name.as_deref().unwrap_or(name),
-        concept.description.as_ref().unwrap_or(&"".to_string()),
-        generate_component_list_doc_comment(items, type_printer, context, concept)?
-    );
-    let make_ident = quote::format_ident!("make_{}", name);
+    let concept_id = &concept.data().id;
+    let concept_optional_id = quote::format_ident!("{}Optional", concept_id.as_str());
 
-    let extends: Vec<_> = concept
-        .extends
+    let required_components = concept
+        .required_components
         .iter()
-        .map(|id| {
-            let path = context.get_path(items, Some("make_"), id.as_resolved().unwrap())?;
+        .map(|(id, value)| {
+            component_to_field(
+                items,
+                type_printer,
+                context,
+                id.as_resolved().unwrap(),
+                value,
+            )
+        })
+        .collect::<anyhow::Result<Vec<_>>>()?;
 
-            Ok(quote! {
-                with_merge(#path())
+    let optional_components = concept
+        .optional_components
+        .iter()
+        .map(|(id, value)| {
+            component_to_field(
+                items,
+                type_printer,
+                context,
+                id.as_resolved().unwrap(),
+                value,
+            )
+        })
+        .collect::<anyhow::Result<Vec<_>>>()?;
+
+    let struct_def = {
+        let doc_comment = {
+            let mut doc_comment = String::new();
+            write!(
+                doc_comment,
+                "**{}**",
+                concept.name.as_deref().unwrap_or(concept_id.as_str())
+            )?;
+            if let Some(description) = &concept.description {
+                write!(doc_comment, ": {}", description)?;
+            }
+            writeln!(doc_comment)?;
+            writeln!(doc_comment)?;
+
+            if !concept.extends.is_empty() {
+                write!(doc_comment, "**Extends**: ")?;
+                for (i, id) in concept.extends.iter().enumerate() {
+                    let extend = items.get(id.as_resolved().unwrap());
+                    if i != 0 {
+                        doc_comment.push_str(", ");
+                    }
+
+                    write!(
+                        doc_comment,
+                        "`{}`",
+                        &items.fully_qualified_display_path(extend, None, None)
+                    )?;
+                }
+                writeln!(doc_comment)?;
+                writeln!(doc_comment)?;
+            }
+            doc_comment.trim().to_string()
+        };
+
+        let components = required_components
+            .iter()
+            .map(|component| component.to_field_definition(false));
+
+        let optional_ref = if !optional_components.is_empty() {
+            Some(quote! {
+                /// Optional components.
+                pub optional: #concept_optional_id,
             })
-        })
-        .collect::<anyhow::Result<_>>()?;
+        } else {
+            None
+        };
 
-    let components = concept
-        .components
-        .iter()
-        .map(|(id, default)| {
-            let path = context.get_path(items, None, id.as_resolved().unwrap())?;
-            let default = value_to_token_stream(items, default.as_resolved().unwrap())?;
-            Ok(quote! { with(#path(), #default) })
-        })
-        .collect::<anyhow::Result<Vec<_>>>()?;
-
-    Ok(quote! {
-        #[allow(clippy::approx_constant)]
-        #[doc = #make_comment]
-        pub fn #make_ident() -> Entity {
-            Entity::new()
-                #(.#extends)*
-                #(.#components)*
+        quote! {
+            #[doc = #doc_comment]
+            #[derive(Clone, Debug)]
+            pub struct #concept_id {
+                #(#components)*
+                #optional_ref
+            }
         }
-    })
-}
+    };
 
-fn generate_is(
-    items: &ItemMap,
-    type_printer: &TypePrinter,
-    context: Context,
-    concept: &Concept,
-) -> anyhow::Result<TokenStream> {
-    let name = concept.data().id.as_str();
-    let is_comment = format!(
-        "Checks if the entity is a *{}*.\n\n{}\n\n{}",
-        concept.name.as_deref().unwrap_or(name),
-        concept.description.as_ref().unwrap_or(&"".to_string()),
-        generate_component_list_doc_comment(items, type_printer, context, concept)?,
-    );
-    let is_ident = quote::format_ident!("is_{}", name);
+    let optional_struct_def = if !optional_components.is_empty() {
+        let doc_comment = format!("Optional part of [{}].", concept_id);
 
-    let extends: Vec<_> = concept
-        .extends
-        .iter()
-        .map(|id| context.get_path(items, Some("is_"), id.as_resolved().unwrap()))
-        .collect::<anyhow::Result<_>>()?;
+        let components = optional_components
+            .iter()
+            .map(|component| component.to_field_definition(true));
 
-    let components = concept
-        .components
-        .iter()
-        .map(|(id, _)| {
-            let path = context.get_path(items, None, id.as_resolved().unwrap())?;
-            Ok(quote! { #path() })
+        Some(quote! {
+            #[doc = #doc_comment]
+            #[derive(Clone, Debug, Default)]
+            pub struct #concept_optional_id {
+                #(#components)*
+            }
         })
-        .collect::<anyhow::Result<Vec<_>>>()?;
+    } else {
+        None
+    };
 
-    Ok(match context {
-        Context::Host => quote! {
-            #[doc = #is_comment]
-            pub fn #is_ident(world: &crate::World, id: EntityId) -> bool {
-                #(#extends(world, id) && )* world.has_components(id, &{
-                    let mut set = crate::ComponentSet::new();
-                    #(set.insert(#components.desc());)*
-                    set
+    let make = {
+        let required = required_components.iter().map(|c| {
+            let path = &c.path;
+            let field_name = &c.id;
+
+            quote! { with(#path(), self.#field_name) }
+        });
+
+        let optional = optional_components.iter().map(|c| {
+            let path = &c.path;
+            let field_name = &c.id;
+
+            quote! {
+                if let Some(#field_name) = self.optional.#field_name {
+                    entity.set(#path(), #field_name);
+                }
+            }
+        });
+
+        quote! {
+            fn make(self) -> Entity {
+                let mut entity = Entity::new()
+                    #(.#required)*;
+
+                #(#optional)*
+
+                entity
+            }
+        }
+    };
+
+    let get_spawned = {
+        let required_components = required_components
+            .iter()
+            .map(|c| c.with_id_and_path(|f, p| quote! { #f: entity::get_component(id, #p())?, }));
+
+        let optional = if optional_components.is_empty() {
+            None
+        } else {
+            let optional_components = optional_components.iter().map(|c| {
+                c.with_id_and_path(|f, p| quote! { #f: entity::get_component(id, #p()), })
+            });
+
+            Some(quote! {
+                optional: #concept_optional_id {
+                    #(#optional_components)*
+                }
+            })
+        };
+
+        quote! {
+            fn get_spawned(id: EntityId) -> Option<Self> {
+                Some(Self {
+                    #(#required_components)*
+                    #optional
                 })
             }
-        },
-        Context::GuestApi | Context::GuestUser => quote! {
-            #[doc = #is_comment]
-            pub fn #is_ident(id: EntityId) -> bool {
-                #(#extends(id) && )* entity::has_components(id, &[
-                    #(&#components),*
+        }
+    };
+
+    let get_unspawned = {
+        let required_components = required_components
+            .iter()
+            .map(|c| c.with_id_and_path(|f, p| quote! { #f: entity.get(#p())?, }));
+
+        let optional = if optional_components.is_empty() {
+            None
+        } else {
+            let optional_components = optional_components
+                .iter()
+                .map(|c| c.with_id_and_path(|f, p| quote! { #f: entity.get(#p()), }));
+
+            Some(quote! {
+                optional: #concept_optional_id {
+                    #(#optional_components)*
+                }
+            })
+        };
+
+        quote! {
+            fn get_unspawned(entity: &Entity) -> Option<Self> {
+                Some(Self {
+                    #(#required_components)*
+                    #optional
+                })
+            }
+        }
+    };
+
+    let contained_by = {
+        let required_paths = required_components
+            .iter()
+            .map(|c| &c.path)
+            .collect::<Vec<_>>();
+
+        quote! {
+            fn contained_by_spawned(id: EntityId) -> bool {
+                entity::has_components(id, &[
+                    #(&#required_paths()),*
                 ])
             }
-        },
-    })
-}
 
-fn generate_concept(
-    items: &ItemMap,
-    type_printer: &TypePrinter,
-    context: Context,
-    concept: &Concept,
-) -> anyhow::Result<TokenStream> {
-    let name = concept.data().id.as_str();
-    let fn_comment = format!(
-        "Returns the components that comprise *{}* as a tuple.\n\n{}\n\n{}",
-        concept.name.as_deref().unwrap_or(name),
-        concept.description.as_ref().unwrap_or(&"".to_string()),
-        generate_component_list_doc_comment(items, type_printer, context, concept)?,
-    );
-    let fn_ident = quote::format_ident!("{}", name);
+            fn contained_by_unspawned(entity: &Entity) -> bool {
+                entity.has_components(&[
+                    #(&#required_paths()),*
+                ])
+            }
+        }
+    };
 
-    // TODO: include extends in component list
-    let components = concept
-        .components
-        .iter()
-        .map(|(id, _)| {
-            let path = context.get_path(items, None, id.as_resolved().unwrap())?;
-            Ok(quote! { #path() })
+    let concept_suggested = if required_components.iter().all(|c| c.suggested.is_some()) {
+        let required_components = required_components
+            .iter()
+            .map(|c| {
+                let field_name = &c.id;
+                let suggested = value_to_token_stream(items, c.suggested.unwrap())?;
+
+                anyhow::Ok(quote! { #field_name: #suggested, })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let optional_field = if optional_components.is_empty() {
+            None
+        } else {
+            Some(quote! { optional: Default::default(), })
+        };
+
+        Some(quote! {
+            impl #guest_api_path::ecs::ConceptSuggested for #concept_id {
+                fn suggested() -> Self {
+                    Self {
+                        #(#required_components)*
+                        #optional_field
+                    }
+                }
+            }
         })
-        .collect::<anyhow::Result<Vec<_>>>()?;
-
-    let fn_ret = concept
-        .components
-        .iter()
-        .map(|(id, _)| {
-            let component = &*items.get(id.as_resolved().unwrap());
-            type_printer.get(context, items, None, component.type_.as_resolved().unwrap())
-        })
-        .collect::<anyhow::Result<Vec<_>>>()?;
+    } else {
+        None
+    };
 
     Ok(quote! {
-        #[doc = #fn_comment]
-        #[allow(clippy::type_complexity)]
-        pub fn #fn_ident() -> (#(Component<#fn_ret>),*) {
-           (#(#components),*)
+        #struct_def
+        #optional_struct_def
+        impl #guest_api_path::ecs::Concept for #concept_id {
+            #make
+            #get_spawned
+            #get_unspawned
+            #contained_by
         }
+        #concept_suggested
     })
 }
 
-pub fn generate_component_list_doc_comment(
-    items: &ItemMap,
-    type_printer: &TypePrinter,
-    context: Context,
-    concept: &Concept,
-) -> anyhow::Result<String> {
-    let mut output = "*Definition*:\n\n```ignore\n{\n".to_string();
+struct ComponentField<'a> {
+    doc_comment: String,
+    id: &'a Identifier,
+    ty: TokenStream,
+    path: TokenStream,
+    suggested: Option<&'a Value>,
+}
+impl ComponentField<'_> {
+    fn to_field_definition(&self, use_option: bool) -> TokenStream {
+        let doc = &self.doc_comment;
+        let id = self.id;
+        let ty = &self.ty;
 
-    fn write_level(
-        items: &ItemMap,
+        let ty = if use_option {
+            quote! { Option<#ty> }
+        } else {
+            ty.clone()
+        };
 
-        type_printer: &TypePrinter,
-        context: Context,
-        concept: &Concept,
-        output: &mut String,
-        level: usize,
-    ) -> anyhow::Result<()> {
-        use std::fmt::Write;
-
-        let padding = " ".repeat(level * 2);
-        for (id, value) in &concept.components {
-            let component = &*items.get(id.as_resolved().unwrap());
-            let component_path = items.fully_qualified_display_path(component, None, None);
-
-            writeln!(
-                output,
-                "{padding}\"{component_path}\": {} = {},",
-                SemiprettyTokenStream(
-                    type_printer
-                        .get(context, items, None, component.type_.as_resolved().unwrap())
-                        .unwrap()
-                        .clone()
-                ),
-                value.as_resolved().unwrap()
-            )?;
+        quote! {
+            #[doc = #doc]
+            pub #id: #ty,
         }
-        for concept_id in &concept.extends {
-            let concept_id = concept_id.as_resolved().unwrap();
-            let concept = &*items.get(concept_id);
-            let concept_path = items.fully_qualified_display_path(concept, None, None);
-
-            writeln!(output, "{padding}\"{concept_path}\": {{ // Concept.")?;
-            write_level(items, type_printer, context, concept, output, level + 1)?;
-            writeln!(output, "{padding}}},")?;
-        }
-
-        Ok(())
     }
 
-    write_level(items, type_printer, context, concept, &mut output, 1)?;
+    fn with_id_and_path(
+        &self,
+        f: impl Fn(&Identifier, &TokenStream) -> TokenStream,
+    ) -> TokenStream {
+        f(self.id, &self.path)
+    }
+}
 
-    output += "}\n```\n";
+fn component_to_field<'a>(
+    items: &'a ItemMap,
+    type_printer: &TypePrinter,
+    context: Context,
+    component_item_id: ItemId<Component>,
+    value: &'a ConceptValue,
+) -> anyhow::Result<ComponentField<'a>> {
+    let component = items.get(component_item_id);
+    let component_id = &component.data.id;
 
-    Ok(output)
+    let component_ty =
+        type_printer.get(context, items, None, component.type_.as_resolved().unwrap())?;
+
+    let mut doc_comment = String::new();
+
+    writeln!(
+        doc_comment,
+        "**Component**: `{}`",
+        items.fully_qualified_display_path(component, None, None)
+    )?;
+    writeln!(doc_comment)?;
+
+    if let Some(value) = value.suggested.as_ref().and_then(|v| v.as_resolved()) {
+        writeln!(
+            doc_comment,
+            "**Suggested value**: `{}`",
+            SemiprettyTokenStream(value_to_token_stream(items, value)?)
+        )?;
+        writeln!(doc_comment)?;
+    }
+
+    if let Some(description) = &value.description {
+        writeln!(doc_comment, "**Description**: {description}")?;
+        writeln!(doc_comment)?;
+    }
+
+    if let Some(description) = &component.description {
+        writeln!(doc_comment, "**Component description**: {}", description)?;
+        writeln!(doc_comment)?;
+    }
+
+    let component_path = context.get_path(items, None, component_item_id)?;
+
+    Ok(ComponentField {
+        doc_comment,
+        id: component_id,
+        ty: component_ty,
+        path: component_path,
+        suggested: value.suggested.as_ref().and_then(|v| v.as_resolved()),
+    })
 }
 
 /// Very, very basic one-line formatter for token streams

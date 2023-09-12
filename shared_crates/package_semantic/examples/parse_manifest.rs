@@ -24,7 +24,7 @@ async fn main() -> anyhow::Result<()> {
 
     let mut printer = Printer::new();
     if should_resolve {
-        semantic.resolve()?;
+        semantic.resolve_all()?;
     }
     printer.print(&semantic)?;
 
