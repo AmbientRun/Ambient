@@ -17,8 +17,8 @@ use packages::{
 pub fn main() {
     OrbitCamera {
         is_orbit_camera: (),
-        lookat_target: Vec3::Z * 1.5,
         optional: OrbitCameraOptional {
+            lookat_target: Some(Vec3::Z * 1.5),
             camera_distance: Some(10.0),
             ..default()
         },

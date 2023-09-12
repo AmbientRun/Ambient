@@ -23,8 +23,8 @@ use packages::{
 pub async fn main() {
     OrbitCamera {
         is_orbit_camera: (),
-        lookat_target: vec3(0., 0., 1.),
         optional: OrbitCameraOptional {
+            lookat_target: Some(vec3(0., 0., 1.)),
             camera_angle: Some(vec2(-180f32.to_radians(), 45f32.to_radians())),
             camera_distance: Some(3.0),
             ..default()

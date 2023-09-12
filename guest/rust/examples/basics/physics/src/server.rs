@@ -22,7 +22,6 @@ use packages::{
 pub async fn main() {
     let camera = OrbitCamera {
         is_orbit_camera: (),
-        lookat_target: Vec3::ZERO,
         optional: OrbitCameraOptional {
             camera_distance: Some(7.5),
             camera_angle: Some(vec2(45f32.to_radians(), 45f32.to_radians())),

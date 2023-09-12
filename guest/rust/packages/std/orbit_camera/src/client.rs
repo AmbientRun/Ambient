@@ -39,6 +39,7 @@ pub fn main() {
                 vec2(0.0, 45f32.to_radians()),
             );
             entity::add_component_if_required(camera_id, camera_distance(), 5.0);
+            entity::add_component_if_required(camera_id, lookat_target(), Vec3::ZERO);
         }
     });
 

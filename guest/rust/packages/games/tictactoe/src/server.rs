@@ -28,7 +28,6 @@ pub fn main() {
 
     OrbitCamera {
         is_orbit_camera: (),
-        lookat_target: Vec3::ZERO,
         optional: OrbitCameraOptional {
             camera_distance: Some(SIZE_F32),
             camera_angle: Some(vec2(PI, 60f32.to_radians())),

@@ -21,7 +21,7 @@ name = "Orbit Camera"
 description = "An orbit camera."
 [concepts.OrbitCamera.components.required]
 is_orbit_camera = {}
-"ambient_core::transform::lookat_target" = {}
 [concepts.OrbitCamera.components.optional]
 camera_angle = {}
 camera_distance = {}
+"ambient_core::transform::lookat_target" = {}

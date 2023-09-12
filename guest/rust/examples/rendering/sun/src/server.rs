@@ -16,8 +16,8 @@ use packages::orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional};
 pub fn main() {
     OrbitCamera {
         is_orbit_camera: (),
-        lookat_target: Vec3::Z,
         optional: OrbitCameraOptional {
+            lookat_target: Some(Vec3::Z),
             camera_angle: Some(vec2(FRAC_PI_2, 20f32.to_radians())),
             camera_distance: None,
         },

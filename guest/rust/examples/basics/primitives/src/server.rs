@@ -15,7 +15,6 @@ use packages::orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional};
 pub fn main() {
     OrbitCamera {
         is_orbit_camera: (),
-        lookat_target: vec3(0., 0., 0.),
         optional: OrbitCameraOptional {
             camera_distance: Some(10.),
             ..default()

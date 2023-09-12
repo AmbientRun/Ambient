@@ -18,7 +18,6 @@ use packages::{
 pub async fn main() {
     OrbitCamera {
         is_orbit_camera: (),
-        lookat_target: Vec3::ZERO,
         optional: OrbitCameraOptional {
             camera_distance: Some(2.0),
             ..default()

@@ -9,7 +9,6 @@ pub async fn main() {
     // Camera
     OrbitCamera {
         is_orbit_camera: (),
-        lookat_target: Vec3::ZERO,
         optional: default(),
     }
     .spawn();

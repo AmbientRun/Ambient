@@ -11,14 +11,16 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::orbit_camera::concepts::OrbitCamera;
+use packages::orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional};
 
 #[main]
 fn main() {
     OrbitCamera {
         is_orbit_camera: (),
-        lookat_target: vec3(0., 0., 2.),
-        optional: default(),
+        optional: OrbitCameraOptional {
+            lookat_target: Some(vec3(0., 0., 2.)),
+            ..default()
+        },
     }
     .make()
     .with(fog(), ())
