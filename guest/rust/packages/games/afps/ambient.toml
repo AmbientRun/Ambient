@@ -5,19 +5,19 @@ version = "0.0.1"
 content = { type = "Playable" }
 
 [dependencies]
-character_animation = { path = "../../std/character_animation", deployment = "4Zmsxx1l2zkCdIE1KUVHld" }
-hide_cursor = { path = "../../std/hide_cursor", deployment = "126RuLU9V6r5acXZVH91R4" }
-fpsaudio = { path = "core/fpsaudio", deployment = "3D9V4S8k9Hhg5tQQ8baZD1" }
-fpsmodel = { path = "core/fpsmodel", deployment = "46FCV1hX3u6wqmNoU4jFwU" }
-fpsmovement = { path = "core/fpsmovement", deployment = "51kNLQ6eLuo0r9fvoJCbZO" }
-fpsrule = { path = "core/fpsrule", deployment = "2iCjVVAkaByFDAx4HNRKuo" }
-fpsui = { path = "core/fpsui", deployment = "WpXrhFdafSpUWoul1DWgR" }
+character_animation = { path = "../../std/character_animation", deployment = "1QbLonnkdSfaUCO81grzQk" }
+hide_cursor = { path = "../../std/hide_cursor", deployment = "1Bu9Jwn77UoUibJW8vpB5G" }
+fpsaudio = { path = "core/fpsaudio", deployment = "2LVtTCVu3Dd6Fxb4Z7SoHy" }
+fpsmodel = { path = "core/fpsmodel", deployment = "hKjirtXRYWCZanK1k0z2p" }
+fpsmovement = { path = "core/fpsmovement", deployment = "2GdOLXFdiMkjkwzZFg6rXb" }
+fpsrule = { path = "core/fpsrule", deployment = "5E5ZzXjfHiEGZBLPKFS7n2" }
+fpsui = { path = "core/fpsui", deployment = "4xcL4LtGquC4IjC2UGtLYT" }
 
-console = { path = "../../tools/console", deployment = "6fiOLSBknpyCN6XPGU7feK" }
-package_manager = { path = "../../tools/package_manager", deployment = "10SKxn2flFlxRDuNVZtynX" }
-editor = { path = "../../tools/editor", deployment = "5S7QfL124I54g3JMy3902D" }
+console = { path = "../../tools/console", deployment = "7L7gGlHC3v3Zn7u36Vu0kg" }
+package_manager = { path = "../../tools/package_manager", deployment = "5qgGG2GREOGcgo9h9EG3pS" }
+editor = { path = "../../tools/editor", deployment = "6bDFlGCr7NK9RxzGLrjQXc" }
 
-scene = { path = "mods/scene", deployment = "npmllxiwfB2lYlHmbQY9Z" }
-spraypaint = { path = "mods/spraypaint", deployment = "1uCHZgcUP8ThW0L5m9wPZ9" }
-zombie = { path = "mods/zombie", deployment = "672esmFmnkgkYEDEbDYdtf" }
-world_latency = { path = "mods/world_latency", deployment = "5sQq21CnTBtKEwwFMuqHg2" }
+scene = { path = "mods/scene", deployment = "4XovMbn7t50q6HE7wc8INh" }
+spraypaint = { path = "mods/spraypaint", deployment = "3g6oePY81ymzNeUlJ1njkR" }
+zombie = { path = "mods/zombie", deployment = "5oLWS7hOnTNOhCEY4GHPK4" }
+world_latency = { path = "mods/world_latency", deployment = "4jSoS3lXgCs97Lmn6zsSum" }
