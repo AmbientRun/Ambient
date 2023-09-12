@@ -4,7 +4,7 @@ default-members = ["client"]
 resolver = "2"
 
 [workspace.package]
-version = "0.3.0-dev"
+version = "0.3.0-nightly-2023-09-12"
 rust-version = "1.70.0"
 
 [workspace.dependencies]
