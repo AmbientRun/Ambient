@@ -1,9 +1,13 @@
+use std::f32::consts::PI;
+
 use ambient_api::{
     core::{
         app::components::main_scene,
         camera::{
-            components::{active_camera, aspect_ratio_from_window},
-            concepts::make_PerspectiveInfiniteReverseCamera,
+            components::active_camera,
+            concepts::{
+                PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
+            },
         },
         ecs::components::children,
         messages::Collision,
@@ -18,10 +22,10 @@ use ambient_api::{
         text::components::{font_size, text},
         transform::{
             components::{
-                inv_local_to_world, local_to_parent, local_to_world, mesh_to_local, mesh_to_world,
-                rotation, scale, spherical_billboard, translation,
+                local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale,
+                spherical_billboard, translation,
             },
-            concepts::make_Transformable,
+            concepts::{Transformable, TransformableOptional},
         },
     },
     entity::resources,
@@ -34,7 +38,7 @@ use packages::this::{
         player_indicator, player_indicator_arrow, player_restore_point, player_shoot_requested,
         player_stroke_count, player_text, player_text_container,
     },
-    concepts::{make_PlayerCameraState, make_PlayerState},
+    concepts::{PlayerCameraState, PlayerState},
     messages::{Bonk, Hit, Input},
 };
 use utils::CameraState;
@@ -44,12 +48,12 @@ mod utils;
 const BALL_RADIUS: f32 = 0.34;
 
 fn create_environment() {
-    make_Transformable()
+    Entity::new()
         .with(water(), ())
         .with(scale(), Vec3::ONE * 2000.)
         .spawn();
 
-    make_Transformable()
+    Entity::new()
         .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-45_f32.to_radians()))
         .with(light_diffuse(), Vec3::ONE)
@@ -57,14 +61,14 @@ fn create_environment() {
         .with(main_scene(), ())
         .spawn();
 
-    make_Transformable().with(sky(), ()).spawn();
+    Entity::new().with(sky(), ()).spawn();
 
-    make_Transformable()
+    Entity::new()
         .with(prefab_from_url(), assets::url("level.glb"))
         .with(translation(), Vec3::Z * -0.25)
         .spawn();
 
-    make_Transformable()
+    Entity::new()
         .with(model_from_url(), assets::url("fan.glb"))
         .with(collider_from_url(), assets::url("fan.glb"))
         .with(kinematic(), ())
@@ -76,12 +80,20 @@ fn create_environment() {
 }
 
 fn make_golf_ball() -> Entity {
-    make_Transformable()
-        .with(is_ball(), ())
-        .with(physics_controlled(), ())
-        .with(dynamic(), true)
-        .with(sphere_collider(), BALL_RADIUS)
-        .with(model_from_url(), assets::url("ball.glb"))
+    Transformable {
+        local_to_world: Mat4::IDENTITY,
+        optional: TransformableOptional {
+            translation: Some(Vec3::ZERO),
+            rotation: Some(Quat::IDENTITY),
+            scale: Some(Vec3::ONE),
+        },
+    }
+    .make()
+    .with(is_ball(), ())
+    .with(physics_controlled(), ())
+    .with(dynamic(), true)
+    .with(sphere_collider(), BALL_RADIUS)
+    .with(model_from_url(), assets::url("ball.glb"))
 }
 
 fn make_text() -> Entity {
@@ -119,21 +131,48 @@ pub fn main() {
                 // 80 + 22.5; pseudo random color, with 16 being unique
                 entity::mutate_component(resources(), next_player_hue(), |h| *h += 102.5);
 
-                entity::add_components(player, make_PlayerState());
+                entity::add_components(
+                    player,
+                    PlayerState {
+                        player_restore_point: vec3(-5f32, 0f32, 20f32),
+                        player_stroke_count: 0,
+                        player_color: Vec4::ONE,
+                    }
+                    .make(),
+                );
 
-                let camera_state = make_PlayerCameraState().spawn();
+                let camera_state = PlayerCameraState {
+                    player_camera_pivot: vec3(0f32, 0f32, 8f32),
+                    player_camera_position: Vec3::ZERO,
+                    player_camera_radius: 15f32,
+                    player_camera_rotation: vec2(PI, 0.610865f32),
+                }
+                .make()
+                .spawn();
                 entity::add_component(player, player_camera_state(), camera_state);
 
-                make_PerspectiveInfiniteReverseCamera()
-                    .with(aspect_ratio_from_window(), EntityId::resources())
-                    .with(user_id(), player_user_id.clone())
-                    .with(player_camera_state(), camera_state)
-                    .with(main_scene(), ())
-                    .with(local_to_world(), Default::default())
-                    .with(inv_local_to_world(), Default::default())
-                    .with(translation(), Default::default())
-                    .with(rotation(), Default::default())
-                    .spawn();
+                PerspectiveInfiniteReverseCamera {
+                    local_to_world: Mat4::IDENTITY,
+                    near: 0.1,
+                    projection: Mat4::IDENTITY,
+                    projection_view: Mat4::IDENTITY,
+                    active_camera: 0.0,
+                    inv_local_to_world: Mat4::IDENTITY,
+                    fovy: 1.0,
+                    aspect_ratio: 1.0,
+                    perspective_infinite_reverse: (),
+                    optional: PerspectiveInfiniteReverseCameraOptional {
+                        translation: Some(Vec3::ZERO),
+                        rotation: Some(Quat::IDENTITY),
+                        main_scene: Some(()),
+                        aspect_ratio_from_window: Some(entity::resources()),
+                        ..default()
+                    },
+                }
+                .make()
+                .with(user_id(), player_user_id.clone())
+                .with(player_camera_state(), camera_state)
+                .spawn();
 
                 // TODO: This is a bit... odd
                 entity::add_component(player, player_color(), next_color * 2.2);
@@ -148,7 +187,7 @@ pub fn main() {
                 entity::add_component(
                     player,
                     player_text_container(),
-                    make_Transformable()
+                    Entity::new()
                         .with(main_scene(), ())
                         .with(local_to_world(), Default::default())
                         .with(spherical_billboard(), ())
@@ -170,34 +209,58 @@ pub fn main() {
                 entity::add_component(
                     player,
                     player_indicator(),
-                    make_Transformable()
-                        .with(color(), next_color)
-                        .with(user_id(), player_user_id.clone())
-                        .with(model_from_url(), assets::url("indicator.glb"))
-                        .spawn(),
+                    Transformable {
+                        local_to_world: Mat4::IDENTITY,
+                        optional: TransformableOptional {
+                            translation: Some(Vec3::ZERO),
+                            rotation: Some(Quat::IDENTITY),
+                            scale: Some(Vec3::ONE),
+                        },
+                    }
+                    .make()
+                    .with(color(), next_color)
+                    .with(user_id(), player_user_id.clone())
+                    .with(model_from_url(), assets::url("indicator.glb"))
+                    .spawn(),
                 );
 
                 entity::add_component(
                     player,
                     player_indicator_arrow(),
-                    make_Transformable()
-                        .with(color(), next_color)
-                        .with(user_id(), player_user_id.clone())
-                        .with(model_from_url(), assets::url("indicator_arrow.glb"))
-                        .spawn(),
+                    Transformable {
+                        local_to_world: Mat4::IDENTITY,
+                        optional: TransformableOptional {
+                            translation: Some(Vec3::ZERO),
+                            rotation: Some(Quat::IDENTITY),
+                            scale: Some(Vec3::ONE),
+                        },
+                    }
+                    .make()
+                    .with(color(), next_color)
+                    .with(user_id(), player_user_id.clone())
+                    .with(model_from_url(), assets::url("indicator_arrow.glb"))
+                    .spawn(),
                 );
 
                 entity::add_component(player, player_shoot_requested(), false);
             }
         });
 
-    let flag = make_Transformable()
-        .with(model_from_url(), assets::url("flag.glb"))
-        .with(collider_from_url(), assets::url("flag.glb"))
-        .with(dynamic(), true)
-        .with(kinematic(), ())
-        .with(origin(), vec3(-35., 205., 0.3166))
-        .spawn();
+    let flag = Transformable {
+        local_to_world: Mat4::IDENTITY,
+        optional: TransformableOptional {
+            translation: Some(Vec3::ZERO),
+            rotation: Some(Quat::IDENTITY),
+            scale: Some(Vec3::ONE),
+        },
+    }
+    .make()
+    .with(model_from_url(), assets::url("flag.glb"))
+    .with(collider_from_url(), assets::url("flag.glb"))
+    .with(dynamic(), true)
+    .with(kinematic(), ())
+    .with(origin(), vec3(-35., 205., 0.3166))
+    .spawn();
 
     // Update the flag every frame.
     query(translation())

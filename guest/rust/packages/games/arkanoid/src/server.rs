@@ -6,7 +6,7 @@ use ambient_api::{
         messages::Frame,
         physics::components::linear_velocity,
         player::components::{is_player, user_id},
-        primitives::components::cube,
+        primitives::{components::cube, concepts::Sphere},
         rendering::components::color,
         transform::components::*,
     },
@@ -24,7 +24,7 @@ use packages::this::{
 fn spawn_enemies(enemies: &mut Vec<EntityId>, y_pos: f32, color: Vec3) {
     for i in 0..7 {
         enemies.push(
-            make_Transformable()
+            Entity::new()
                 .with(cube(), ())
                 .with(scale(), vec3(PADDLE_WIDTH, PADDLE_HEIGHT / 2., 1.))
                 .with(translation(), vec3(-1. + (i as f32 / 3.), y_pos, 0.))
@@ -64,14 +64,14 @@ pub fn main() {
     spawn_enemies(&mut enemies, 0.5, vec3(0.6, 0.8, 0.2));
 
     //Spawn field
-    make_Transformable()
+    Entity::new()
         .with(cube(), ())
         .with(scale(), vec3(X_BOUNDARY * 2.5, Y_BOUNDARY * 2.3, 1.))
         .with(translation(), vec3(0., 0., 1.0))
         .with(self::color(), vec4(1., 1., 1., 1.))
         .spawn();
 
-    make_Transformable()
+    Entity::new()
         .with(cube(), ())
         .with(
             scale(),
@@ -81,19 +81,24 @@ pub fn main() {
         .with(self::color(), vec4(0., 0., 0., 1.))
         .spawn();
 
-    let paddle = make_Transformable()
+    let paddle = Entity::new()
         .with(cube(), ())
         .with(scale(), vec3(PADDLE_WIDTH, PADDLE_HEIGHT, 1.))
         .with(translation(), vec3(0., -0.9, 0.))
         .with(self::color(), vec4(0., 1., 1., 1.))
         .spawn();
 
-    let ball = make_Transformable()
-        .with_merge(make_Sphere())
-        .with(scale(), vec3(BALL_RADIUS, BALL_RADIUS, 1.))
-        .with(translation(), vec3(0., -0.9 + BALL_RADIUS, 0.))
-        .with(self::color(), vec4(1., 1., 1., 1.))
-        .spawn();
+    let ball = Sphere {
+        sphere: (),
+        sphere_radius: 0.5,
+        sphere_sectors: 36,
+        sphere_stacks: 18,
+    }
+    .make()
+    .with(scale(), vec3(BALL_RADIUS, BALL_RADIUS, 1.))
+    .with(translation(), vec3(0., -0.9 + BALL_RADIUS, 0.))
+    .with(self::color(), vec4(1., 1., 1., 1.))
+    .spawn();
 
     // When a player spawns, create a camera and other components for them
     spawn_query(is_player()).bind(move |players| {

@@ -1,11 +1,11 @@
 use ambient_api::{
     core::{
-        app::components::{main_scene, window_logical_size},
+        app::components::window_logical_size,
         camera::{
             components::{
                 orthographic_bottom, orthographic_left, orthographic_right, orthographic_top,
             },
-            concepts::make_OrthographicCamera,
+            concepts::{OrthographicCamera, OrthographicCameraOptional},
         },
         messages::Frame,
     },
@@ -30,7 +30,26 @@ async fn main() {
     bgm_player.set_amplitude(0.2);
     bgm_player.play(url_from_server);
 
-    let camera_id = make_OrthographicCamera().with(main_scene(), ()).spawn();
+    let camera_id = OrthographicCamera {
+        local_to_world: Mat4::IDENTITY,
+        near: -1.,
+        projection: Mat4::IDENTITY,
+        projection_view: Mat4::IDENTITY,
+        active_camera: 0.0,
+        inv_local_to_world: Mat4::IDENTITY,
+        orthographic: (),
+        orthographic_left: -1.,
+        orthographic_right: 1.,
+        orthographic_top: 1.,
+        orthographic_bottom: -1.,
+        far: 1.,
+        optional: OrthographicCameraOptional {
+            main_scene: Some(()),
+            ..default()
+        },
+    }
+    .make()
+    .spawn();
 
     Frame::subscribe(move |_| {
         let input = input::get();

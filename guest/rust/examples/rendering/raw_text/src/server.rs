@@ -1,11 +1,8 @@
 use ambient_api::{
     core::{
         app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window,
-            concepts::{
-                PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
-            },
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         rendering::components::color,
         text::components::text,

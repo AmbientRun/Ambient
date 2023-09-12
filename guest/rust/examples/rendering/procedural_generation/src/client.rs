@@ -6,7 +6,7 @@ use ambient_api::{
             PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         primitives::{
-            components::{cube, quad, sphere_radius},
+            components::{cube, quad},
             concepts::Sphere,
         },
         procedurals::components::{procedural_material, procedural_mesh},

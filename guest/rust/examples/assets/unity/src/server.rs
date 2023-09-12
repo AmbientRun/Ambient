@@ -1,6 +1,5 @@
 use ambient_api::{
     core::{
-        app::components::main_scene,
         prefab::components::prefab_from_url,
         primitives::components::quad,
         rendering::components::cast_shadows,

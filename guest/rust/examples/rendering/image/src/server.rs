@@ -1,15 +1,11 @@
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window,
-            concepts::{
-                PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
-            },
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         primitives::components::quad,
         rendering::components::pbr_material_from_url,
-        transform::components::{lookat_target, scale, translation},
+        transform::components::{lookat_target, scale},
     },
     prelude::*,
 };

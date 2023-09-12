@@ -5,7 +5,7 @@ use packages::{
         components::{spawned_by_us, spin_direction},
         messages::Spawn,
     },
-    orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional},
+    orbit_camera::concepts::OrbitCamera,
 };
 
 #[main]

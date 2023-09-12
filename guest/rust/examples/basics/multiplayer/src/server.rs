@@ -1,10 +1,7 @@
 use ambient_api::{
     core::{
-        camera::{
-            components::aspect_ratio_from_window,
-            concepts::{
-                PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
-            },
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         player::components::is_player,
         primitives::components::cube,

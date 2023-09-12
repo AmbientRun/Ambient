@@ -1,6 +1,6 @@
 use ambient_api::{
     core::{
-        messages::Frame, primitives::components::cube, rendering::components::color,
+        primitives::components::cube, rendering::components::color,
         transform::components::translation,
     },
     prelude::*,

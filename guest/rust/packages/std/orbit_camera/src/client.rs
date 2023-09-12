@@ -3,7 +3,7 @@ use ambient_api::{
         camera::concepts::{
             PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
-        transform::components::{rotation, translation},
+        transform::components::{lookat_target, rotation, translation},
     },
     prelude::*,
 };
@@ -45,15 +45,19 @@ pub fn main() {
     query(is_orbit_camera()).each_frame(|cameras| {
         let (delta, input) = input::get_delta();
 
+        let distance_delta = delta.mouse_wheel * -0.1;
         let angle_delta = if input.mouse_buttons.contains(&MouseButton::Right) {
             delta.mouse_position * 0.01
         } else {
             Vec2::ZERO
         };
 
-        let distance_delta = delta.mouse_wheel * -0.1;
-
         for (camera_id, _) in cameras {
+            let distance =
+                entity::mutate_component_with_default(camera_id, camera_distance(), 0.0, |dist| {
+                    *dist = f32::max(*dist + distance_delta, 1.0);
+                });
+
             let angle = entity::mutate_component_with_default(
                 camera_id,
                 camera_angle(),
@@ -64,14 +68,13 @@ pub fn main() {
                 },
             );
 
-            let distance =
-                entity::mutate_component_with_default(camera_id, camera_distance(), 0.0, |dist| {
-                    *dist = f32::max(*dist + distance_delta, 1.0);
-                });
-
             let quat = Quat::from_euler(glam::EulerRot::ZXY, angle.x, -angle.y, 0.0);
-            entity::add_component(camera_id, translation(), quat * vec3(0.0, -distance, 0.0));
             entity::add_component(camera_id, rotation(), quat);
+
+            let lookat_target =
+                entity::get_component(camera_id, lookat_target()).unwrap_or_default();
+            let pos = lookat_target + quat * vec3(0.0, -distance, 0.0);
+            entity::add_component(camera_id, translation(), pos);
         }
     });
 }

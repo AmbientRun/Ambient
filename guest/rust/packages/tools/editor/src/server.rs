@@ -2,9 +2,9 @@ use std::f32::consts::PI;
 
 use ambient_api::{
     core::{
-        app::components::{main_scene, name},
+        app::components::name,
         camera::{
-            components::{active_camera, aspect_ratio_from_window},
+            components::active_camera,
             concepts::{
                 PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
             },
