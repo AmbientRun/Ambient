@@ -18,6 +18,14 @@ pub trait Concept {
     /// Creates an entity with the components defined by this concept.
     fn make(self) -> Entity;
 
+    /// Spawns this concept into the world. If you want to modify state before spawning, use `make` instead.
+    fn spawn(self) -> EntityId
+    where
+        Self: Sized,
+    {
+        self.make().spawn()
+    }
+
     /// If the entity with `id` exists and has the components defined by this concept, returns this concept with all of the values of the components in the entity.
     ///
     /// # Examples

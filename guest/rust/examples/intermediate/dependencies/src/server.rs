@@ -15,7 +15,6 @@ pub async fn main() {
         lookat_target: Vec3::ZERO,
         optional: default(),
     }
-    .make()
     .spawn();
 
     let mut last_update = game_time();

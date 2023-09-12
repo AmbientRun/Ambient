@@ -35,7 +35,6 @@ pub fn main() {
             ..default()
         },
     }
-    .make()
     .spawn();
 
     let cell_entities = {

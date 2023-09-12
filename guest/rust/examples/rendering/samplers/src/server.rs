@@ -11,7 +11,6 @@ pub fn main() {
         lookat_target: Vec3::ZERO,
         optional: default(),
     }
-    .make()
     .spawn();
 
     Entity::new()

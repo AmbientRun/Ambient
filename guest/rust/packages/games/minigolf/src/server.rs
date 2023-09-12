@@ -137,8 +137,7 @@ pub fn main() {
                         player_restore_point: vec3(-5f32, 0f32, 20f32),
                         player_stroke_count: 0,
                         player_color: Vec4::ONE,
-                    }
-                    .make(),
+                    },
                 );
 
                 let camera_state = PlayerCameraState {
@@ -147,7 +146,6 @@ pub fn main() {
                     player_camera_radius: 15f32,
                     player_camera_rotation: vec2(PI, 0.610865f32),
                 }
-                .make()
                 .spawn();
                 entity::add_component(player, player_camera_state(), camera_state);
 

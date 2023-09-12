@@ -53,7 +53,6 @@ async fn main() {
             ..default()
         },
     }
-    .make()
     .spawn();
 
     Frame::subscribe(move |_| {

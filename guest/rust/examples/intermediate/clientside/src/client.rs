@@ -26,7 +26,6 @@ pub async fn main() {
             ..default()
         },
     }
-    .make()
     .spawn();
 
     let start_time = game_time();

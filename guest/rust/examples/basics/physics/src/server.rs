@@ -29,7 +29,6 @@ pub async fn main() {
             ..default()
         },
     }
-    .make()
     .spawn();
 
     let cube = Entity::new()

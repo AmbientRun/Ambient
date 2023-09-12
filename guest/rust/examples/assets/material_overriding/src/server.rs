@@ -24,7 +24,6 @@ pub async fn main() {
             ..default()
         },
     }
-    .make()
     .spawn();
 
     Entity::new()
