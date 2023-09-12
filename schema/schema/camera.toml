@@ -143,6 +143,7 @@ active_camera = { suggested = 0.0 }
 [concepts.Camera.components.optional]
 "app::main_scene" = { description = "Either the main or UI scene must be specified for this camera to be used." }
 "app::ui_scene" = { description = "Either the main or UI scene must be specified for this camera to be used." }
+"player::user_id" = { description = "If set, this camera will only be used for the specified user." }
 
 [concepts.PerspectiveCommonCamera]
 name = "Perspective Common Camera"

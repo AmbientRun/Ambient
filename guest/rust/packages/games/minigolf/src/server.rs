@@ -164,11 +164,11 @@ pub fn main() {
                         rotation: Some(Quat::IDENTITY),
                         main_scene: Some(()),
                         aspect_ratio_from_window: Some(entity::resources()),
+                        user_id: Some(player_user_id.clone()),
                         ..default()
                     },
                 }
                 .make()
-                .with(user_id(), player_user_id.clone())
                 .with(player_camera_state(), camera_state)
                 .spawn();
 

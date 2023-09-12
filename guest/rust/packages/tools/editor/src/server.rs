@@ -74,11 +74,11 @@ pub fn main() {
                     rotation: Some(default()),
                     main_scene: Some(()),
                     aspect_ratio_from_window: Some(entity::resources()),
+                    user_id: Some(player_user_id),
                     ..default()
                 },
             }
             .make()
-            .with(user_id(), player_user_id)
             .with(camera_angle(), new_camera_angle)
             .with(name(), "Editor Camera".to_string())
             .spawn();
