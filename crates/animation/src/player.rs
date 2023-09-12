@@ -90,7 +90,7 @@ fn sample_animation_node_inner(
             (freeze_at_percentage * clip.duration()) as f64
         } else {
             let mut time = match world.get(node, start_time()) {
-                Ok(st) => (time - st).as_secs_f64(),
+                Ok(st) => time.saturating_sub(st).as_secs_f64(),
                 Err(_) => time.as_secs_f64(),
             };
             let speed = world.get(node, speed()).unwrap_or(1.);
