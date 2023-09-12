@@ -133,9 +133,12 @@ name = "Transformable"
 description = "Can be translated, rotated and scaled."
 
 [concepts.Transformable.components.required]
+local_to_world = { suggested = "Identity" }
+
+[concepts.Transformable.components.optional]
 translation = { suggested = [0.0, 0.0, 0.0] }
-scale = { suggested = [1.0, 1.0, 1.0] }
 rotation = { suggested = [0.0, 0.0, 0.0, 1.0] }
+scale = { suggested = [1.0, 1.0, 1.0] }
 
 [concepts.Camera]
 name = "Camera"
@@ -146,11 +149,47 @@ extends = ["transform::Transformable"]
 near = { suggested = 0.1 }
 projection = { suggested = "Identity" }
 projection_view = { suggested = "Identity" }
-active_camera = {}
+active_camera = { suggested = 0.0 }
 "transform::local_to_world" = { suggested = "Identity" }
-"transform::inv_local_to_world" = { suggested = "Identity", description = "Used to calculate the view matrix" }
+"transform::inv_local_to_world" = { suggested = "Identity" }
+[concepts.Camera.components.optional]
+"app::main_scene" = { description = "Either the main or UI scene must be specified for this camera to be used." }
+"app::ui_scene" = { description = "Either the main or UI scene must be specified for this camera to be used." }
+"player::user_id" = { description = "If set, this camera will only be used for the specified user." }
 ```
 
-In this example, the "camera" concept contains all of the components from a transformable, as well as components of its own. This means that any entity that has the "camera" concept will also have the components from the "transformable" concept.
+In this example, the "Camera" concept contains all of the components from a transformable, as well as components of its own. This means that any entity that has the "camera" concept will also have the components from the "Transformable" concept.
 
-**TODO**: Rewrite the Rust codegen expansion here
+In your Rust code, this will be represented as a struct that contains the components that are defined in the concept. This is generated as part of the same macro that enables other Ambient functionality within your Rust code.
+
+For example, the `Camera` concept will generate a struct that looks like this:
+
+```rust
+#[derive(Clone, Debug)]
+pub struct Camera {
+    pub local_to_world: Mat4,
+    pub near: f32,
+    pub projection: Mat4,
+    pub projection_view: Mat4,
+    pub active_camera: f32,
+    pub inv_local_to_world: Mat4,
+    pub optional: CameraOptional,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct CameraOptional {
+    pub translation: Option<Vec3>,
+    pub rotation: Option<Quat>,
+    pub scale: Option<Vec3>,
+    pub main_scene: Option<()>,
+    pub ui_scene: Option<()>,
+    pub user_id: Option<String>,
+}
+```
+
+The `Concept` struct implements the `Concept` trait, which offers several operations. Each of these fields represents a specific component from the concept.
+
+This struct can be filled out with values and then converted to an `Entity` using the `Concept::make` method, or spawned using `Concept::spawn`.
+Alternatively, it can be populated using the `Concept::get_{un}spawned` method, allowing for easy retrieval of all of the values of a concept from an entity or the ECS.
+
+For more information, consult the API documentation on the `Concept` trait.
