@@ -135,7 +135,6 @@ toml = { version = "0.7.4", features = ["preserve_order"] }
 percent-encoding = "2.2.0"
 indoc = "2.0"
 cargo_toml = "0.15.0"
-git-version = "0.3.5"
 toml_edit = "0.19.3"
 arboard = "3.2.0"
 noise = { version = "0.7.0", default-features = false }
