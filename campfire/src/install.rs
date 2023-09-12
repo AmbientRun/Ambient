@@ -34,11 +34,7 @@ pub fn main(install: &Install) -> anyhow::Result<()> {
 }
 
 fn install_version(suffix: &str, args: &[&str]) -> anyhow::Result<()> {
-    let target_name = if suffix.is_empty() {
-        "ambient".to_string()
-    } else {
-        format!("ambient-{suffix}")
-    };
+    let target_name = ambient_executable_name(suffix);
 
     let install_root = Path::new("tmp");
     let target_path = home::cargo_home()?.join("bin").join(target_name);
@@ -58,8 +54,24 @@ fn install_version(suffix: &str, args: &[&str]) -> anyhow::Result<()> {
         anyhow::bail!("`cargo install` failed with status {}", status);
     }
 
-    std::fs::copy(install_root.join("bin").join("ambient"), &target_path)?;
+    std::fs::copy(
+        install_root.join("bin").join(ambient_executable_name("")),
+        &target_path,
+    )?;
     log::info!("Installed ambient to {}", target_path.display());
 
     Ok(())
+}
+
+fn ambient_executable_name(suffix: &str) -> String {
+    let mut name = if suffix.is_empty() {
+        "ambient".to_string()
+    } else {
+        format!("ambient-{suffix}")
+    };
+    #[cfg(target_os = "windows")]
+    {
+        name.push_str(".exe");
+    }
+    name
 }
