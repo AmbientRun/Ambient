@@ -5,10 +5,13 @@
 use std::sync::Arc;
 
 use ambient_core::{
+    async_ecs::async_run,
     gpu,
     player::local_user_id,
+    runtime,
     window::{window_ctl, WindowCtl},
 };
+use ambient_ecs::generated::input::messages::ClipboardGet;
 use ambient_gpu::texture::Texture;
 use ambient_input::{player_prev_raw_input, player_raw_input};
 use ambient_native_std::mesh::MeshBuilder;
@@ -28,7 +31,7 @@ use super::Bindings;
 use crate::shared::{
     conversion::{FromBindgen, IntoBindgen},
     implementation::message,
-    message::Target,
+    message::{MessageExt, Target},
     wit,
 };
 
@@ -198,9 +201,25 @@ impl wit::client_camera::Host for Bindings {
 }
 
 impl wit::client_clipboard::Host for Bindings {
-    fn get(&mut self) -> anyhow::Result<Option<String>> {
-        Err(anyhow::anyhow!("Clipboard is not yet supported"))
-        // Ok(ambient_sys::clipboard::get().await)
+    fn get(&mut self) -> anyhow::Result<()> {
+        let module_id = self.id;
+        let async_run = self.world().resource(async_run()).clone();
+        let runtime = self.world().resource(runtime());
+        let task = async move {
+            let contents = ambient_sys::clipboard::get().await;
+            async_run.run(move |world| {
+                ClipboardGet { contents }
+                    .send(world, Some(module_id))
+                    .unwrap();
+            });
+        };
+
+        #[cfg(target_os = "unknown")]
+        runtime.spawn_local(task);
+        #[cfg(not(target_os = "unknown"))]
+        runtime.spawn(task);
+
+        Ok(())
     }
 
     fn set(&mut self, text: String) -> anyhow::Result<()> {

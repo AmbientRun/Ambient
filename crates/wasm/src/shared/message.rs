@@ -128,7 +128,10 @@ pub(super) fn run(
 }
 
 pub trait MessageExt {
+    /// Run this message immediately.
     fn run(self, world: &mut World, module_id: Option<EntityId>) -> anyhow::Result<()>;
+    /// Send this message to be run on the next frame.
+    fn send(self, world: &mut World, module_id: Option<EntityId>) -> anyhow::Result<()>;
 }
 impl<T: ambient_ecs::Message> MessageExt for T {
     fn run(self, world: &mut World, module_id: Option<EntityId>) -> anyhow::Result<()> {
@@ -144,5 +147,17 @@ impl<T: ambient_ecs::Message> MessageExt for T {
             },
         );
         Ok(())
+    }
+
+    fn send(self, world: &mut World, module_id: Option<EntityId>) -> anyhow::Result<()> {
+        Ok(send(
+            world,
+            module_id
+                .map(Target::PackageOrModule)
+                .unwrap_or(Target::All { include_self: true }),
+            WorldEventSource::Runtime,
+            T::id().to_string(),
+            self.serialize_message()?,
+        ))
     }
 }

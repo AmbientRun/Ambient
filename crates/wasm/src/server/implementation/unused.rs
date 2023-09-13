@@ -72,7 +72,7 @@ impl wit::client_camera::Host for Bindings {
 }
 
 impl wit::client_clipboard::Host for Bindings {
-    fn get(&mut self) -> anyhow::Result<Option<String>> {
+    fn get(&mut self) -> anyhow::Result<()> {
         unsupported()
     }
 
