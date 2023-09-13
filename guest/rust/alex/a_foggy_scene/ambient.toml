@@ -5,11 +5,16 @@ version = "0.0.1"
 content = { type = "Playable" }
 
 [dependencies]
-base_assets = { path = "../../packages/std/base_assets" }
-character_animation = { path = "../../packages/std/character_animation" }
-character_movement = { path = "../../packages/std/character_movement" }
-hide_cursor = { path = "../../packages/std/hide_cursor" }
-fps_controller = { path = "../../packages/std/fps_controller" }
+# base_assets = { path = "../../packages/std/base_assets" }
+# character_animation = { path = "../../packages/std/character_animation" }
+# character_movement = { path = "../../packages/std/character_movement" }
+# hide_cursor = { path = "../../packages/std/hide_cursor" }
+# fps_controller = { path = "../../packages/std/fps_controller" }
+
+base_assets = { deployment = "63elc01s73Fw7Zf22WnhdG" }
+fps_controller = { deployment = "4BhYdBFfRXoVEC0Esusfhk" }
+character_animation = { deployment = "1yoj6WWYw930TwO55E0b1L" }
+hide_cursor = { deployment = "48Dlz7rfPcrCdGVCdlEQ7F" }
 
 [components]
 effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
