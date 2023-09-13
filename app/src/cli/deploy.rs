@@ -40,7 +40,7 @@ pub async fn handle(
                 .api_token
                 .as_ref()
                 .with_context(|| format!(
-                    "No API token provided. You can provide one with `--token` or by specifying it in `general.api_token` in {:?}.",
+                    "No API token provided. You can provide one with `--token` or by specifying it in `general.api_token` in {:?}. Create your api token on the Ambient website: https://ambient-733e7.web.app",
                     Settings::path().unwrap_or_default()
                 ))?
         }
