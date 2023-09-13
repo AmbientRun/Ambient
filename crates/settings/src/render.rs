@@ -21,7 +21,7 @@ impl RenderSettings {
     }
 }
 
-#[derive(Default, Serialize, Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Default, Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum RenderMode {
     #[default]
     MultiIndirect,

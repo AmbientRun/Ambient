@@ -46,16 +46,16 @@ impl Gpu {
         }
 
         #[cfg(target_os = "windows")]
-        let backend = wgpu::Backends::VULKAN;
+        let backends = wgpu::Backends::DX12;
 
         #[cfg(all(not(target_os = "windows"), not(target_os = "unknown")))]
-        let backend = wgpu::Backends::PRIMARY;
+        let backends = wgpu::Backends::PRIMARY;
 
         #[cfg(target_os = "unknown")]
-        let backend = wgpu::Backends::all();
+        let backends = wgpu::Backends::all();
 
         let instance = wgpu::Instance::new(InstanceDescriptor {
-            backends: wgpu::Backends::DX12,
+            backends,
             // TODO upgrade to Dxc ?
             // https://docs.rs/wgpu/latest/wgpu/enum.Dx12Compiler.html
             // dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,

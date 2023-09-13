@@ -391,6 +391,7 @@ impl TreeRenderer {
                 &self.primitives,
                 collect_state,
                 self.primitives.total_capacity() as u32,
+                self.config.render_mode,
             );
 
             assert_eq!(
@@ -513,7 +514,6 @@ impl TreeRenderer {
             return; // Nothing to render
         };
 
-        #[cfg(any(target_os = "macos", target_os = "unknown"))]
         let count_state = collect_state.counts_cpu.lock();
 
         let mut is_bound = false;
@@ -559,6 +559,8 @@ impl TreeRenderer {
                 // This is due to an unconditional panic
                 // https://github.com/gfx-rs/wgpu/blob/4478c52debcab1b88b80756b197dc10ece90dec9/wgpu/src/backend/web.rs#L3053
                 #[cfg(all(not(target_os = "macos"), not(target_os = "unknown")))]
+                if cfg!(target_os = "windows")
+                    && self.config.render_mode == RenderMode::MultiIndirect
                 {
                     render_pass.multi_draw_indexed_indirect_count(
                         collect_state.commands.buffer(),
@@ -567,43 +569,37 @@ impl TreeRenderer {
                         mat.material_index as u64 * std::mem::size_of::<u32>() as u64,
                         mat.primitives.len() as u32,
                     );
-                }
-                #[cfg(any(target_os = "macos", target_os = "unknown"))]
-                {
-                    if self.config.render_mode == RenderMode::Direct {
-                        for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
-                            let primitive =
-                                &world.get_ref(id, primitives()).unwrap()[primitive_idx];
+                } else if self.config.render_mode == RenderMode::Indirect {
+                    // If none, a new material has been added, but the async buffer read has
+                    // not yet finished and we are still using the previous frame's material
+                    // counts.
+                    let count = count_state
+                        .counts()
+                        .get(mat.material_index as usize)
+                        .copied()
+                        .unwrap_or(0);
 
-                            let mesh = mesh_buffer.get_mesh_metadata(&primitive.mesh);
-                            let index = offset + i as u64;
+                    // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
+                    tracing::trace!(?count, ?offset, "draw node primitives");
+                    for i in 0..count {
+                        render_pass.draw_indexed_indirect(
+                            collect_state.commands.buffer(),
+                            (offset + i as u64) * std::mem::size_of::<DrawIndexedIndirect>() as u64,
+                        );
+                    }
+                } else {
+                    for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
+                        let primitive = &world.get_ref(id, primitives()).unwrap()[primitive_idx];
 
-                            tracing::debug!("Drawing {index}, {mesh:?}");
-                            render_pass.draw_indexed(
-                                mesh.index_offset..(mesh.index_offset + mesh.index_count),
-                                0,
-                                index as u32..(index as u32 + 1),
-                            )
-                        }
-                    } else {
-                        // If none, a new material has been added, but the async buffer read has
-                        // not yet finished and we are still using the previous frame's material
-                        // counts.
-                        let count = count_state
-                            .counts()
-                            .get(mat.material_index as usize)
-                            .copied()
-                            .unwrap_or(0);
+                        let mesh = mesh_buffer.get_mesh_metadata(&primitive.mesh);
+                        let index = offset + i as u64;
 
-                        // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
-                        tracing::trace!(?count, ?offset, "draw node primitives");
-                        for i in 0..count {
-                            render_pass.draw_indexed_indirect(
-                                collect_state.commands.buffer(),
-                                (offset + i as u64)
-                                    * std::mem::size_of::<DrawIndexedIndirect>() as u64,
-                            );
-                        }
+                        tracing::debug!("Drawing {index}, {mesh:?}");
+                        render_pass.draw_indexed(
+                            mesh.index_offset..(mesh.index_offset + mesh.index_count),
+                            0,
+                            index as u32..(index as u32 + 1),
+                        )
                     }
                 }
             }
