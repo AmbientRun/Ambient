@@ -144,6 +144,9 @@ pub mod window {
     pub async fn set_clipboard(text: &str) -> anyhow::Result<()> {
         #[cfg(feature = "client")]
         super::api::client::clipboard::set(text);
+        #[cfg(not(feature = "client"))]
+        let _ = text;
+
         Ok(())
     }
 }
