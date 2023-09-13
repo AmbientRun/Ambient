@@ -8,17 +8,14 @@ use ambient_api::{
         },
         text::{components::font_style, types::FontStyle},
     },
-    element::{use_module_message_effect, use_query},
+    element::use_query,
     prelude::*,
     ui::ImageFromUrl,
 };
 
-use crate::packages::{
-    input_schema::messages::{InputRelease, InputRequest},
-    this::{
-        assets,
-        messages::{PackageLoadShow, PackageSetEnabled, PackageShow, WasmReload},
-    },
+use crate::packages::this::{
+    assets,
+    messages::{PackageLoadShow, PackageSetEnabled, PackageShow, WasmReload},
 };
 
 use super::use_hotkey_toggle;
@@ -41,8 +38,6 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn PackageManagerInner(hooks: &mut Hooks) -> Element {
-    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
-
     let packages = use_query(
         hooks,
         (

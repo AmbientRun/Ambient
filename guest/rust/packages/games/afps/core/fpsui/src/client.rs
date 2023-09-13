@@ -3,7 +3,7 @@
 use ambient_api::{
     core::player::components::is_player,
     core::rect::components::{background_color, line_from, line_to, line_width},
-    element::{use_entity_component, use_module_message_effect, use_query, use_state},
+    element::{use_entity_component, use_query, use_state},
     prelude::*,
     ui::{use_keyboard_input, use_window_logical_resolution, ImageFromUrl},
 };
@@ -14,7 +14,6 @@ use packages::{
         components::{kill_log, player_deathcount, player_killcount, player_last_frame},
         messages::StartGame,
     },
-    input_schema::messages::{InputRelease, InputRequest},
     this::assets,
     unit_schema::components::health,
 };
@@ -37,7 +36,6 @@ pub fn App(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn JoinScreen(hooks: &mut Hooks) -> Element {
-    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
     let (name, set_name) = use_state(hooks, "".to_string());
 
     Group::el([
@@ -166,8 +164,6 @@ fn KillHistory(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn Scoreboard(hooks: &mut Hooks) -> Element {
-    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
-
     let players = use_query(
         hooks,
         (
