@@ -6,18 +6,13 @@ use ambient_api::{
         rendering::components::color,
         text::{components::font_style, types::FontStyle},
     },
-    element::{
-        use_module_message_effect, use_rerender_signal, use_spawn, use_state, use_state_with,
-    },
+    element::{use_rerender_signal, use_spawn, use_state, use_state_with},
     prelude::*,
     ui::use_keyboard_input,
 };
 use shared::*;
 
-use packages::{
-    input_schema::messages::{InputRelease, InputRequest},
-    this::messages::{ConsoleServerInput, ConsoleServerOutput},
-};
+use packages::this::messages::{ConsoleServerInput, ConsoleServerOutput};
 
 mod shared;
 
@@ -74,8 +69,6 @@ pub fn App(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
 
 #[element_component]
 pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
-    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
-
     let render_signal = use_rerender_signal(hooks);
     use_spawn(hooks, {
         let console = console.clone();
