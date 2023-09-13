@@ -118,7 +118,7 @@ pub fn find_child_with_name_ending(
 }
 
 #[cfg(not(target_os = "unknown"))]
-fn dump_world_hierarchy_to_tmp_file(world: &World) {
+pub fn dump_world_hierarchy_to_tmp_file(world: &World) {
     use std::{fs::File, path::PathBuf};
 
     use ambient_native_std::asset_cache::SyncAssetKeyExt;
