@@ -1,6 +1,7 @@
 name: Release
 
 on:
+  workflow_dispatch:
   push:
     tags: [v*]
 
@@ -11,7 +12,17 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  meta:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Extract tag and version
+        run: |
+          echo 'tag=${GITHUB_REF#refs/tags/v}' >> $GITHUB_OUTPUT
+          echo 'version=${tag#v}' >> $GITHUB_OUTPUT
+
   create-release:
+    # Only for full releases
+    if: true != contains(github.ref, '-')
     runs-on: ubuntu-22.04
     outputs:
       tag: ${{ steps.create-gh-release.outputs.computed-prefix }}${{ steps.create-gh-release.outputs.version }}
@@ -24,6 +35,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   upload-examples:
+    # Only for full releases
+    if: true != contains(github.ref, '-')
     needs: create-release
     runs-on: ubuntu-22.04
     env:
