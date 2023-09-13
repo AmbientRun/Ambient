@@ -6,7 +6,8 @@ pub use raw::ambient_core;
     unused,
     clippy::unit_arg,
     clippy::let_and_return,
-    clippy::approx_constant
+    clippy::approx_constant,
+    clippy::unused_unit
 )]
 mod raw {
     pub mod ambient_core {
@@ -533,7 +534,7 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::player::user_id`\n\n**Description**: If set, this camera will only be used for the specified user.\n\n**Component description**: An identifier attached to all things owned by a user, and supplied by the user.\nThis can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body.\n\n"]
                     pub user_id: Option<String>,
                 }
-                impl crate::ecs::Concept for Camera {
+                impl Concept for Camera {
                     fn make(self) -> Entity {
                         let mut entity = Entity::new()
                             .with(
@@ -694,7 +695,7 @@ mod raw {
                         ])
                     }
                 }
-                impl crate::ecs::ConceptSuggested for Camera {
+                impl ConceptSuggested for Camera {
                     fn suggested() -> Self {
                         Self {
                             local_to_world: Mat4::from_cols_array(&[
@@ -715,6 +716,57 @@ mod raw {
                                 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
                                 0f32, 0f32, 0f32, 0f32, 1f32,
                             ]),
+                            optional: Default::default(),
+                        }
+                    }
+                }
+                impl ConceptComponents for Camera {
+                    type Required = (
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<Mat4>,
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<Mat4>,
+                    );
+                    type Optional = (
+                        Component<Vec3>,
+                        Component<Quat>,
+                        Component<Vec3>,
+                        Component<()>,
+                        Component<()>,
+                        Component<String>,
+                    );
+                    fn required() -> Self::Required {
+                        (
+                            crate::ambient_core::transform::components::local_to_world(),
+                            crate::ambient_core::camera::components::near(),
+                            crate::ambient_core::camera::components::projection(),
+                            crate::ambient_core::camera::components::projection_view(),
+                            crate::ambient_core::camera::components::active_camera(),
+                            crate::ambient_core::transform::components::inv_local_to_world(),
+                        )
+                    }
+                    fn optional() -> Self::Optional {
+                        (
+                            crate::ambient_core::transform::components::translation(),
+                            crate::ambient_core::transform::components::rotation(),
+                            crate::ambient_core::transform::components::scale(),
+                            crate::ambient_core::app::components::main_scene(),
+                            crate::ambient_core::app::components::ui_scene(),
+                            crate::ambient_core::player::components::user_id(),
+                        )
+                    }
+                    fn from_required_data(
+                        required: <Self::Required as ComponentsTuple>::Data,
+                    ) -> Self {
+                        Self {
+                            local_to_world: required.0,
+                            near: required.1,
+                            projection: required.2,
+                            projection_view: required.3,
+                            active_camera: required.4,
+                            inv_local_to_world: required.5,
                             optional: Default::default(),
                         }
                     }
@@ -759,7 +811,7 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::camera::aspect_ratio_from_window`\n\n**Component description**: If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component.\n\n"]
                     pub aspect_ratio_from_window: Option<EntityId>,
                 }
-                impl crate::ecs::Concept for PerspectiveCommonCamera {
+                impl Concept for PerspectiveCommonCamera {
                     fn make(self) -> Entity {
                         let mut entity = Entity::new()
                             .with(
@@ -859,7 +911,7 @@ mod raw {
                         ])
                     }
                 }
-                impl crate::ecs::ConceptSuggested for PerspectiveCommonCamera {
+                impl ConceptSuggested for PerspectiveCommonCamera {
                     fn suggested() -> Self {
                         Self {
                             local_to_world: Mat4::from_cols_array(&[
@@ -882,6 +934,65 @@ mod raw {
                             ]),
                             fovy: 1f32,
                             aspect_ratio: 1f32,
+                            optional: Default::default(),
+                        }
+                    }
+                }
+                impl ConceptComponents for PerspectiveCommonCamera {
+                    type Required = (
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<Mat4>,
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<f32>,
+                    );
+                    type Optional = (
+                        Component<Vec3>,
+                        Component<Quat>,
+                        Component<Vec3>,
+                        Component<()>,
+                        Component<()>,
+                        Component<String>,
+                        Component<EntityId>,
+                    );
+                    fn required() -> Self::Required {
+                        (
+                            crate::ambient_core::transform::components::local_to_world(),
+                            crate::ambient_core::camera::components::near(),
+                            crate::ambient_core::camera::components::projection(),
+                            crate::ambient_core::camera::components::projection_view(),
+                            crate::ambient_core::camera::components::active_camera(),
+                            crate::ambient_core::transform::components::inv_local_to_world(),
+                            crate::ambient_core::camera::components::fovy(),
+                            crate::ambient_core::camera::components::aspect_ratio(),
+                        )
+                    }
+                    fn optional() -> Self::Optional {
+                        (
+                            crate::ambient_core::transform::components::translation(),
+                            crate::ambient_core::transform::components::rotation(),
+                            crate::ambient_core::transform::components::scale(),
+                            crate::ambient_core::app::components::main_scene(),
+                            crate::ambient_core::app::components::ui_scene(),
+                            crate::ambient_core::player::components::user_id(),
+                            crate::ambient_core::camera::components::aspect_ratio_from_window(),
+                        )
+                    }
+                    fn from_required_data(
+                        required: <Self::Required as ComponentsTuple>::Data,
+                    ) -> Self {
+                        Self {
+                            local_to_world: required.0,
+                            near: required.1,
+                            projection: required.2,
+                            projection_view: required.3,
+                            active_camera: required.4,
+                            inv_local_to_world: required.5,
+                            fovy: required.6,
+                            aspect_ratio: required.7,
                             optional: Default::default(),
                         }
                     }
@@ -930,7 +1041,7 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::camera::aspect_ratio_from_window`\n\n**Component description**: If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component.\n\n"]
                     pub aspect_ratio_from_window: Option<EntityId>,
                 }
-                impl crate::ecs::Concept for PerspectiveCamera {
+                impl Concept for PerspectiveCamera {
                     fn make(self) -> Entity {
                         let mut entity = Entity::new()
                             .with(
@@ -1039,7 +1150,7 @@ mod raw {
                         ])
                     }
                 }
-                impl crate::ecs::ConceptSuggested for PerspectiveCamera {
+                impl ConceptSuggested for PerspectiveCamera {
                     fn suggested() -> Self {
                         Self {
                             local_to_world: Mat4::from_cols_array(&[
@@ -1064,6 +1175,71 @@ mod raw {
                             aspect_ratio: 1f32,
                             perspective: (),
                             far: 1000f32,
+                            optional: Default::default(),
+                        }
+                    }
+                }
+                impl ConceptComponents for PerspectiveCamera {
+                    type Required = (
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<Mat4>,
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<f32>,
+                        Component<()>,
+                        Component<f32>,
+                    );
+                    type Optional = (
+                        Component<Vec3>,
+                        Component<Quat>,
+                        Component<Vec3>,
+                        Component<()>,
+                        Component<()>,
+                        Component<String>,
+                        Component<EntityId>,
+                    );
+                    fn required() -> Self::Required {
+                        (
+                            crate::ambient_core::transform::components::local_to_world(),
+                            crate::ambient_core::camera::components::near(),
+                            crate::ambient_core::camera::components::projection(),
+                            crate::ambient_core::camera::components::projection_view(),
+                            crate::ambient_core::camera::components::active_camera(),
+                            crate::ambient_core::transform::components::inv_local_to_world(),
+                            crate::ambient_core::camera::components::fovy(),
+                            crate::ambient_core::camera::components::aspect_ratio(),
+                            crate::ambient_core::camera::components::perspective(),
+                            crate::ambient_core::camera::components::far(),
+                        )
+                    }
+                    fn optional() -> Self::Optional {
+                        (
+                            crate::ambient_core::transform::components::translation(),
+                            crate::ambient_core::transform::components::rotation(),
+                            crate::ambient_core::transform::components::scale(),
+                            crate::ambient_core::app::components::main_scene(),
+                            crate::ambient_core::app::components::ui_scene(),
+                            crate::ambient_core::player::components::user_id(),
+                            crate::ambient_core::camera::components::aspect_ratio_from_window(),
+                        )
+                    }
+                    fn from_required_data(
+                        required: <Self::Required as ComponentsTuple>::Data,
+                    ) -> Self {
+                        Self {
+                            local_to_world: required.0,
+                            near: required.1,
+                            projection: required.2,
+                            projection_view: required.3,
+                            active_camera: required.4,
+                            inv_local_to_world: required.5,
+                            fovy: required.6,
+                            aspect_ratio: required.7,
+                            perspective: required.8,
+                            far: required.9,
                             optional: Default::default(),
                         }
                     }
@@ -1110,7 +1286,7 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::camera::aspect_ratio_from_window`\n\n**Component description**: If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component.\n\n"]
                     pub aspect_ratio_from_window: Option<EntityId>,
                 }
-                impl crate::ecs::Concept for PerspectiveInfiniteReverseCamera {
+                impl Concept for PerspectiveInfiniteReverseCamera {
                     fn make(self) -> Entity {
                         let mut entity = Entity :: new () . with (crate :: ambient_core :: transform :: components :: local_to_world () , self . local_to_world) . with (crate :: ambient_core :: camera :: components :: near () , self . near) . with (crate :: ambient_core :: camera :: components :: projection () , self . projection) . with (crate :: ambient_core :: camera :: components :: projection_view () , self . projection_view) . with (crate :: ambient_core :: camera :: components :: active_camera () , self . active_camera) . with (crate :: ambient_core :: transform :: components :: inv_local_to_world () , self . inv_local_to_world) . with (crate :: ambient_core :: camera :: components :: fovy () , self . fovy) . with (crate :: ambient_core :: camera :: components :: aspect_ratio () , self . aspect_ratio) . with (crate :: ambient_core :: camera :: components :: perspective_infinite_reverse () , self . perspective_infinite_reverse) ;
                         if let Some(translation) = self.optional.translation {
@@ -1174,7 +1350,7 @@ mod raw {
                         ])
                     }
                 }
-                impl crate::ecs::ConceptSuggested for PerspectiveInfiniteReverseCamera {
+                impl ConceptSuggested for PerspectiveInfiniteReverseCamera {
                     fn suggested() -> Self {
                         Self {
                             local_to_world: Mat4::from_cols_array(&[
@@ -1198,6 +1374,68 @@ mod raw {
                             fovy: 1f32,
                             aspect_ratio: 1f32,
                             perspective_infinite_reverse: (),
+                            optional: Default::default(),
+                        }
+                    }
+                }
+                impl ConceptComponents for PerspectiveInfiniteReverseCamera {
+                    type Required = (
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<Mat4>,
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<f32>,
+                        Component<()>,
+                    );
+                    type Optional = (
+                        Component<Vec3>,
+                        Component<Quat>,
+                        Component<Vec3>,
+                        Component<()>,
+                        Component<()>,
+                        Component<String>,
+                        Component<EntityId>,
+                    );
+                    fn required() -> Self::Required {
+                        (
+                            crate::ambient_core::transform::components::local_to_world(),
+                            crate::ambient_core::camera::components::near(),
+                            crate::ambient_core::camera::components::projection(),
+                            crate::ambient_core::camera::components::projection_view(),
+                            crate::ambient_core::camera::components::active_camera(),
+                            crate::ambient_core::transform::components::inv_local_to_world(),
+                            crate::ambient_core::camera::components::fovy(),
+                            crate::ambient_core::camera::components::aspect_ratio(),
+                            crate::ambient_core::camera::components::perspective_infinite_reverse(),
+                        )
+                    }
+                    fn optional() -> Self::Optional {
+                        (
+                            crate::ambient_core::transform::components::translation(),
+                            crate::ambient_core::transform::components::rotation(),
+                            crate::ambient_core::transform::components::scale(),
+                            crate::ambient_core::app::components::main_scene(),
+                            crate::ambient_core::app::components::ui_scene(),
+                            crate::ambient_core::player::components::user_id(),
+                            crate::ambient_core::camera::components::aspect_ratio_from_window(),
+                        )
+                    }
+                    fn from_required_data(
+                        required: <Self::Required as ComponentsTuple>::Data,
+                    ) -> Self {
+                        Self {
+                            local_to_world: required.0,
+                            near: required.1,
+                            projection: required.2,
+                            projection_view: required.3,
+                            active_camera: required.4,
+                            inv_local_to_world: required.5,
+                            fovy: required.6,
+                            aspect_ratio: required.7,
+                            perspective_infinite_reverse: required.8,
                             optional: Default::default(),
                         }
                     }
@@ -1248,7 +1486,7 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::player::user_id`\n\n**Description**: If set, this camera will only be used for the specified user.\n\n**Component description**: An identifier attached to all things owned by a user, and supplied by the user.\nThis can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body.\n\n"]
                     pub user_id: Option<String>,
                 }
-                impl crate::ecs::Concept for OrthographicCamera {
+                impl Concept for OrthographicCamera {
                     fn make(self) -> Entity {
                         let mut entity = Entity::new()
                             .with(
@@ -1479,7 +1717,7 @@ mod raw {
                         ])
                     }
                 }
-                impl crate::ecs::ConceptSuggested for OrthographicCamera {
+                impl ConceptSuggested for OrthographicCamera {
                     fn suggested() -> Self {
                         Self {
                             local_to_world: Mat4::from_cols_array(&[
@@ -1506,6 +1744,75 @@ mod raw {
                             orthographic_top: 1f32,
                             orthographic_bottom: -1f32,
                             far: 1f32,
+                            optional: Default::default(),
+                        }
+                    }
+                }
+                impl ConceptComponents for OrthographicCamera {
+                    type Required = (
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<Mat4>,
+                        Component<Mat4>,
+                        Component<f32>,
+                        Component<Mat4>,
+                        Component<()>,
+                        Component<f32>,
+                        Component<f32>,
+                        Component<f32>,
+                        Component<f32>,
+                        Component<f32>,
+                    );
+                    type Optional = (
+                        Component<Vec3>,
+                        Component<Quat>,
+                        Component<Vec3>,
+                        Component<()>,
+                        Component<()>,
+                        Component<String>,
+                    );
+                    fn required() -> Self::Required {
+                        (
+                            crate::ambient_core::transform::components::local_to_world(),
+                            crate::ambient_core::camera::components::near(),
+                            crate::ambient_core::camera::components::projection(),
+                            crate::ambient_core::camera::components::projection_view(),
+                            crate::ambient_core::camera::components::active_camera(),
+                            crate::ambient_core::transform::components::inv_local_to_world(),
+                            crate::ambient_core::camera::components::orthographic(),
+                            crate::ambient_core::camera::components::orthographic_left(),
+                            crate::ambient_core::camera::components::orthographic_right(),
+                            crate::ambient_core::camera::components::orthographic_top(),
+                            crate::ambient_core::camera::components::orthographic_bottom(),
+                            crate::ambient_core::camera::components::far(),
+                        )
+                    }
+                    fn optional() -> Self::Optional {
+                        (
+                            crate::ambient_core::transform::components::translation(),
+                            crate::ambient_core::transform::components::rotation(),
+                            crate::ambient_core::transform::components::scale(),
+                            crate::ambient_core::app::components::main_scene(),
+                            crate::ambient_core::app::components::ui_scene(),
+                            crate::ambient_core::player::components::user_id(),
+                        )
+                    }
+                    fn from_required_data(
+                        required: <Self::Required as ComponentsTuple>::Data,
+                    ) -> Self {
+                        Self {
+                            local_to_world: required.0,
+                            near: required.1,
+                            projection: required.2,
+                            projection_view: required.3,
+                            active_camera: required.4,
+                            inv_local_to_world: required.5,
+                            orthographic: required.6,
+                            orthographic_left: required.7,
+                            orthographic_right: required.8,
+                            orthographic_top: required.9,
+                            orthographic_bottom: required.10,
+                            far: required.11,
                             optional: Default::default(),
                         }
                     }
@@ -2327,6 +2634,322 @@ mod raw {
                     *SERVER_MODULES
                 }
             }
+            #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+            #[doc = r""]
+            #[doc = r" They do not have any runtime representation outside of the components that compose them."]
+            pub mod concepts {
+                use crate::prelude::*;
+                #[doc = "**Package**: A package is a collection of assets, definitions and WASM logic."]
+                #[derive(Clone, Debug)]
+                pub struct Package {
+                    #[doc = "**Component**: `ambient_core::package::is_package`\n\n**Component description**: Whether or not this entity is a package.\n\n"]
+                    pub is_package: (),
+                    #[doc = "**Component**: `ambient_core::package::enabled`\n\n**Component description**: Whether or not this package is enabled.\n\n"]
+                    pub enabled: bool,
+                    #[doc = "**Component**: `ambient_core::package::id`\n\n**Component description**: The ID of the package.\n\n"]
+                    pub id: String,
+                    #[doc = "**Component**: `ambient_core::package::name`\n\n**Component description**: The name of the package.\n\n"]
+                    pub name: String,
+                    #[doc = "**Component**: `ambient_core::package::version`\n\n**Component description**: The version of the package.\n\n"]
+                    pub version: String,
+                    #[doc = "**Component**: `ambient_core::package::authors`\n\n**Component description**: The authors of the package.\n\n"]
+                    pub authors: Vec<String>,
+                    #[doc = "**Component**: `ambient_core::package::asset_url`\n\n**Component description**: The asset URL (i.e. where the built assets are) of the package.\n\n"]
+                    pub asset_url: String,
+                    #[doc = "**Component**: `ambient_core::package::client_modules`\n\n**Component description**: The clientside WASM modules spawned by this package.\n\n"]
+                    pub client_modules: Vec<EntityId>,
+                    #[doc = "**Component**: `ambient_core::package::server_modules`\n\n**Component description**: The serverside WASM modules spawned by this package.\n\n"]
+                    pub server_modules: Vec<EntityId>,
+                    #[doc = r" Optional components."]
+                    pub optional: PackageOptional,
+                }
+                #[doc = "Optional part of [Package]."]
+                #[derive(Clone, Debug, Default)]
+                pub struct PackageOptional {
+                    #[doc = "**Component**: `ambient_core::package::description`\n\n**Component description**: The description of the package. If not attached, the package does not have a description.\n\n"]
+                    pub description: Option<String>,
+                    #[doc = "**Component**: `ambient_core::package::repository`\n\n**Component description**: The repository of the package. If not attached, the package does not have a repository.\n\n"]
+                    pub repository: Option<String>,
+                }
+                impl Concept for Package {
+                    fn make(self) -> Entity {
+                        let mut entity = Entity::new()
+                            .with(
+                                crate::ambient_core::package::components::is_package(),
+                                self.is_package,
+                            )
+                            .with(
+                                crate::ambient_core::package::components::enabled(),
+                                self.enabled,
+                            )
+                            .with(crate::ambient_core::package::components::id(), self.id)
+                            .with(crate::ambient_core::package::components::name(), self.name)
+                            .with(
+                                crate::ambient_core::package::components::version(),
+                                self.version,
+                            )
+                            .with(
+                                crate::ambient_core::package::components::authors(),
+                                self.authors,
+                            )
+                            .with(
+                                crate::ambient_core::package::components::asset_url(),
+                                self.asset_url,
+                            )
+                            .with(
+                                crate::ambient_core::package::components::client_modules(),
+                                self.client_modules,
+                            )
+                            .with(
+                                crate::ambient_core::package::components::server_modules(),
+                                self.server_modules,
+                            );
+                        if let Some(description) = self.optional.description {
+                            entity.set(
+                                crate::ambient_core::package::components::description(),
+                                description,
+                            );
+                        }
+                        if let Some(repository) = self.optional.repository {
+                            entity.set(
+                                crate::ambient_core::package::components::repository(),
+                                repository,
+                            );
+                        }
+                        entity
+                    }
+                    fn get_spawned(id: EntityId) -> Option<Self> {
+                        Some(Self {
+                            is_package: entity::get_component(
+                                id,
+                                crate::ambient_core::package::components::is_package(),
+                            )?,
+                            enabled: entity::get_component(
+                                id,
+                                crate::ambient_core::package::components::enabled(),
+                            )?,
+                            id: entity::get_component(
+                                id,
+                                crate::ambient_core::package::components::id(),
+                            )?,
+                            name: entity::get_component(
+                                id,
+                                crate::ambient_core::package::components::name(),
+                            )?,
+                            version: entity::get_component(
+                                id,
+                                crate::ambient_core::package::components::version(),
+                            )?,
+                            authors: entity::get_component(
+                                id,
+                                crate::ambient_core::package::components::authors(),
+                            )?,
+                            asset_url: entity::get_component(
+                                id,
+                                crate::ambient_core::package::components::asset_url(),
+                            )?,
+                            client_modules: entity::get_component(
+                                id,
+                                crate::ambient_core::package::components::client_modules(),
+                            )?,
+                            server_modules: entity::get_component(
+                                id,
+                                crate::ambient_core::package::components::server_modules(),
+                            )?,
+                            optional: PackageOptional {
+                                description: entity::get_component(
+                                    id,
+                                    crate::ambient_core::package::components::description(),
+                                ),
+                                repository: entity::get_component(
+                                    id,
+                                    crate::ambient_core::package::components::repository(),
+                                ),
+                            },
+                        })
+                    }
+                    fn get_unspawned(entity: &Entity) -> Option<Self> {
+                        Some(Self {
+                            is_package: entity
+                                .get(crate::ambient_core::package::components::is_package())?,
+                            enabled: entity
+                                .get(crate::ambient_core::package::components::enabled())?,
+                            id: entity.get(crate::ambient_core::package::components::id())?,
+                            name: entity.get(crate::ambient_core::package::components::name())?,
+                            version: entity
+                                .get(crate::ambient_core::package::components::version())?,
+                            authors: entity
+                                .get(crate::ambient_core::package::components::authors())?,
+                            asset_url: entity
+                                .get(crate::ambient_core::package::components::asset_url())?,
+                            client_modules: entity
+                                .get(crate::ambient_core::package::components::client_modules())?,
+                            server_modules: entity
+                                .get(crate::ambient_core::package::components::server_modules())?,
+                            optional: PackageOptional {
+                                description: entity
+                                    .get(crate::ambient_core::package::components::description()),
+                                repository: entity
+                                    .get(crate::ambient_core::package::components::repository()),
+                            },
+                        })
+                    }
+                    fn contained_by_spawned(id: EntityId) -> bool {
+                        entity::has_components(
+                            id,
+                            &[
+                                &crate::ambient_core::package::components::is_package(),
+                                &crate::ambient_core::package::components::enabled(),
+                                &crate::ambient_core::package::components::id(),
+                                &crate::ambient_core::package::components::name(),
+                                &crate::ambient_core::package::components::version(),
+                                &crate::ambient_core::package::components::authors(),
+                                &crate::ambient_core::package::components::asset_url(),
+                                &crate::ambient_core::package::components::client_modules(),
+                                &crate::ambient_core::package::components::server_modules(),
+                            ],
+                        )
+                    }
+                    fn contained_by_unspawned(entity: &Entity) -> bool {
+                        entity.has_components(&[
+                            &crate::ambient_core::package::components::is_package(),
+                            &crate::ambient_core::package::components::enabled(),
+                            &crate::ambient_core::package::components::id(),
+                            &crate::ambient_core::package::components::name(),
+                            &crate::ambient_core::package::components::version(),
+                            &crate::ambient_core::package::components::authors(),
+                            &crate::ambient_core::package::components::asset_url(),
+                            &crate::ambient_core::package::components::client_modules(),
+                            &crate::ambient_core::package::components::server_modules(),
+                        ])
+                    }
+                }
+                impl ConceptComponents for Package {
+                    type Required = (
+                        Component<()>,
+                        Component<bool>,
+                        Component<String>,
+                        Component<String>,
+                        Component<String>,
+                        Component<Vec<String>>,
+                        Component<String>,
+                        Component<Vec<EntityId>>,
+                        Component<Vec<EntityId>>,
+                    );
+                    type Optional = (Component<String>, Component<String>);
+                    fn required() -> Self::Required {
+                        (
+                            crate::ambient_core::package::components::is_package(),
+                            crate::ambient_core::package::components::enabled(),
+                            crate::ambient_core::package::components::id(),
+                            crate::ambient_core::package::components::name(),
+                            crate::ambient_core::package::components::version(),
+                            crate::ambient_core::package::components::authors(),
+                            crate::ambient_core::package::components::asset_url(),
+                            crate::ambient_core::package::components::client_modules(),
+                            crate::ambient_core::package::components::server_modules(),
+                        )
+                    }
+                    fn optional() -> Self::Optional {
+                        (
+                            crate::ambient_core::package::components::description(),
+                            crate::ambient_core::package::components::repository(),
+                        )
+                    }
+                    fn from_required_data(
+                        required: <Self::Required as ComponentsTuple>::Data,
+                    ) -> Self {
+                        Self {
+                            is_package: required.0,
+                            enabled: required.1,
+                            id: required.2,
+                            name: required.3,
+                            version: required.4,
+                            authors: required.5,
+                            asset_url: required.6,
+                            client_modules: required.7,
+                            server_modules: required.8,
+                            optional: Default::default(),
+                        }
+                    }
+                }
+            }
+            #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+            #[doc = r" and with other modules."]
+            pub mod messages {
+                use crate::{
+                    message::{
+                        Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                    },
+                    prelude::*,
+                };
+                #[derive(Clone, Debug)]
+                #[doc = "**PackageLoadSuccess**: A package has successfully loaded. Note that this may fire before all of its constituent WASM modules have loaded."]
+                pub struct PackageLoadSuccess {
+                    pub package: EntityId,
+                    pub url: String,
+                }
+                impl PackageLoadSuccess {
+                    #[allow(clippy::too_many_arguments)]
+                    pub fn new(package: impl Into<EntityId>, url: impl Into<String>) -> Self {
+                        Self {
+                            package: package.into(),
+                            url: url.into(),
+                        }
+                    }
+                }
+                impl Message for PackageLoadSuccess {
+                    fn id() -> &'static str {
+                        "PackageLoadSuccess"
+                    }
+                    fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                        let mut output = vec![];
+                        self.package.serialize_message_part(&mut output)?;
+                        self.url.serialize_message_part(&mut output)?;
+                        Ok(output)
+                    }
+                    fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                        Ok(Self {
+                            package: EntityId::deserialize_message_part(&mut input)?,
+                            url: String::deserialize_message_part(&mut input)?,
+                        })
+                    }
+                }
+                impl RuntimeMessage for PackageLoadSuccess {}
+                #[derive(Clone, Debug)]
+                #[doc = "**PackageLoadFailure**: A package has failed to load."]
+                pub struct PackageLoadFailure {
+                    pub url: String,
+                    pub reason: String,
+                }
+                impl PackageLoadFailure {
+                    #[allow(clippy::too_many_arguments)]
+                    pub fn new(url: impl Into<String>, reason: impl Into<String>) -> Self {
+                        Self {
+                            url: url.into(),
+                            reason: reason.into(),
+                        }
+                    }
+                }
+                impl Message for PackageLoadFailure {
+                    fn id() -> &'static str {
+                        "PackageLoadFailure"
+                    }
+                    fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                        let mut output = vec![];
+                        self.url.serialize_message_part(&mut output)?;
+                        self.reason.serialize_message_part(&mut output)?;
+                        Ok(output)
+                    }
+                    fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                        Ok(Self {
+                            url: String::deserialize_message_part(&mut input)?,
+                            reason: String::deserialize_message_part(&mut input)?,
+                        })
+                    }
+                }
+                impl RuntimeMessage for PackageLoadFailure {}
+            }
         }
         pub mod physics {
             #[doc = r" Auto-generated component definitions."]
@@ -2494,7 +3117,7 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::physics::physics_controlled`\n\n**Suggested value**: `()`\n\n**Component description**: If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider.\n\n"]
                     pub physics_controlled: (),
                 }
-                impl crate::ecs::Concept for CharacterController {
+                impl Concept for CharacterController {
                     fn make(self) -> Entity {
                         let mut entity = Entity :: new () . with (crate :: ambient_core :: physics :: components :: character_controller_height () , self . character_controller_height) . with (crate :: ambient_core :: physics :: components :: character_controller_radius () , self . character_controller_radius) . with (crate :: ambient_core :: physics :: components :: physics_controlled () , self . physics_controlled) ;
                         entity
@@ -2518,12 +3141,35 @@ mod raw {
                         ])
                     }
                 }
-                impl crate::ecs::ConceptSuggested for CharacterController {
+                impl ConceptSuggested for CharacterController {
                     fn suggested() -> Self {
                         Self {
                             character_controller_height: 2f32,
                             character_controller_radius: 0.5f32,
                             physics_controlled: (),
+                        }
+                    }
+                }
+                impl ConceptComponents for CharacterController {
+                    type Required = (Component<f32>, Component<f32>, Component<()>);
+                    type Optional = ();
+                    fn required() -> Self::Required {
+                        (
+                            crate::ambient_core::physics::components::character_controller_height(),
+                            crate::ambient_core::physics::components::character_controller_radius(),
+                            crate::ambient_core::physics::components::physics_controlled(),
+                        )
+                    }
+                    fn optional() -> Self::Optional {
+                        ()
+                    }
+                    fn from_required_data(
+                        required: <Self::Required as ComponentsTuple>::Data,
+                    ) -> Self {
+                        Self {
+                            character_controller_height: required.0,
+                            character_controller_radius: required.1,
+                            physics_controlled: required.2,
                         }
                     }
                 }
@@ -2718,7 +3364,7 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::primitives::sphere_stacks`\n\n**Suggested value**: `18u32`\n\n**Component description**: Set the latitudinal stacks of a `sphere` entity.\n\n"]
                     pub sphere_stacks: u32,
                 }
-                impl crate::ecs::Concept for Sphere {
+                impl Concept for Sphere {
                     fn make(self) -> Entity {
                         let mut entity = Entity::new()
                             .with(
@@ -2792,13 +3438,43 @@ mod raw {
                         ])
                     }
                 }
-                impl crate::ecs::ConceptSuggested for Sphere {
+                impl ConceptSuggested for Sphere {
                     fn suggested() -> Self {
                         Self {
                             sphere: (),
                             sphere_radius: 0.5f32,
                             sphere_sectors: 36u32,
                             sphere_stacks: 18u32,
+                        }
+                    }
+                }
+                impl ConceptComponents for Sphere {
+                    type Required = (
+                        Component<()>,
+                        Component<f32>,
+                        Component<u32>,
+                        Component<u32>,
+                    );
+                    type Optional = ();
+                    fn required() -> Self::Required {
+                        (
+                            crate::ambient_core::primitives::components::sphere(),
+                            crate::ambient_core::primitives::components::sphere_radius(),
+                            crate::ambient_core::primitives::components::sphere_sectors(),
+                            crate::ambient_core::primitives::components::sphere_stacks(),
+                        )
+                    }
+                    fn optional() -> Self::Optional {
+                        ()
+                    }
+                    fn from_required_data(
+                        required: <Self::Required as ComponentsTuple>::Data,
+                    ) -> Self {
+                        Self {
+                            sphere: required.0,
+                            sphere_radius: required.1,
+                            sphere_sectors: required.2,
+                            sphere_stacks: required.3,
                         }
                     }
                 }
@@ -2818,7 +3494,7 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::primitives::capsule_longitudes`\n\n**Suggested value**: `32u32`\n\n**Component description**: Set the number of longitudinal sections.\n\n"]
                     pub capsule_longitudes: u32,
                 }
-                impl crate::ecs::Concept for Capsule {
+                impl Concept for Capsule {
                     fn make(self) -> Entity {
                         let mut entity = Entity::new()
                             .with(
@@ -2919,7 +3595,7 @@ mod raw {
                         ])
                     }
                 }
-                impl crate::ecs::ConceptSuggested for Capsule {
+                impl ConceptSuggested for Capsule {
                     fn suggested() -> Self {
                         Self {
                             capsule: (),
@@ -2928,6 +3604,42 @@ mod raw {
                             capsule_rings: 0u32,
                             capsule_latitudes: 16u32,
                             capsule_longitudes: 32u32,
+                        }
+                    }
+                }
+                impl ConceptComponents for Capsule {
+                    type Required = (
+                        Component<()>,
+                        Component<f32>,
+                        Component<f32>,
+                        Component<u32>,
+                        Component<u32>,
+                        Component<u32>,
+                    );
+                    type Optional = ();
+                    fn required() -> Self::Required {
+                        (
+                            crate::ambient_core::primitives::components::capsule(),
+                            crate::ambient_core::primitives::components::capsule_radius(),
+                            crate::ambient_core::primitives::components::capsule_half_height(),
+                            crate::ambient_core::primitives::components::capsule_rings(),
+                            crate::ambient_core::primitives::components::capsule_latitudes(),
+                            crate::ambient_core::primitives::components::capsule_longitudes(),
+                        )
+                    }
+                    fn optional() -> Self::Optional {
+                        ()
+                    }
+                    fn from_required_data(
+                        required: <Self::Required as ComponentsTuple>::Data,
+                    ) -> Self {
+                        Self {
+                            capsule: required.0,
+                            capsule_radius: required.1,
+                            capsule_half_height: required.2,
+                            capsule_rings: required.3,
+                            capsule_latitudes: required.4,
+                            capsule_longitudes: required.5,
                         }
                     }
                 }
@@ -2945,7 +3657,7 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::primitives::torus_loops`\n\n**Suggested value**: `16u32`\n\n**Component description**: Set the loops of a `torus` entity, spanning XY-plane.\n\n"]
                     pub torus_loops: u32,
                 }
-                impl crate::ecs::Concept for Torus {
+                impl Concept for Torus {
                     fn make(self) -> Entity {
                         let mut entity = Entity::new()
                             .with(
@@ -3032,7 +3744,7 @@ mod raw {
                         ])
                     }
                 }
-                impl crate::ecs::ConceptSuggested for Torus {
+                impl ConceptSuggested for Torus {
                     fn suggested() -> Self {
                         Self {
                             torus: (),
@@ -3040,6 +3752,39 @@ mod raw {
                             torus_outer_radius: 0.35f32,
                             torus_slices: 32u32,
                             torus_loops: 16u32,
+                        }
+                    }
+                }
+                impl ConceptComponents for Torus {
+                    type Required = (
+                        Component<()>,
+                        Component<f32>,
+                        Component<f32>,
+                        Component<u32>,
+                        Component<u32>,
+                    );
+                    type Optional = ();
+                    fn required() -> Self::Required {
+                        (
+                            crate::ambient_core::primitives::components::torus(),
+                            crate::ambient_core::primitives::components::torus_inner_radius(),
+                            crate::ambient_core::primitives::components::torus_outer_radius(),
+                            crate::ambient_core::primitives::components::torus_slices(),
+                            crate::ambient_core::primitives::components::torus_loops(),
+                        )
+                    }
+                    fn optional() -> Self::Optional {
+                        ()
+                    }
+                    fn from_required_data(
+                        required: <Self::Required as ComponentsTuple>::Data,
+                    ) -> Self {
+                        Self {
+                            torus: required.0,
+                            torus_inner_radius: required.1,
+                            torus_outer_radius: required.2,
+                            torus_slices: required.3,
+                            torus_loops: required.4,
                         }
                     }
                 }
@@ -3565,7 +4310,7 @@ mod raw {
                     #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
                     pub scale: Option<Vec3>,
                 }
-                impl crate::ecs::Concept for Transformable {
+                impl Concept for Transformable {
                     fn make(self) -> Entity {
                         let mut entity = Entity::new().with(
                             crate::ambient_core::transform::components::local_to_world(),
@@ -3636,13 +4381,35 @@ mod raw {
                         ])
                     }
                 }
-                impl crate::ecs::ConceptSuggested for Transformable {
+                impl ConceptSuggested for Transformable {
                     fn suggested() -> Self {
                         Self {
                             local_to_world: Mat4::from_cols_array(&[
                                 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32,
                                 0f32, 0f32, 0f32, 0f32, 1f32,
                             ]),
+                            optional: Default::default(),
+                        }
+                    }
+                }
+                impl ConceptComponents for Transformable {
+                    type Required = (Component<Mat4>,);
+                    type Optional = (Component<Vec3>, Component<Quat>, Component<Vec3>);
+                    fn required() -> Self::Required {
+                        (crate::ambient_core::transform::components::local_to_world(),)
+                    }
+                    fn optional() -> Self::Optional {
+                        (
+                            crate::ambient_core::transform::components::translation(),
+                            crate::ambient_core::transform::components::rotation(),
+                            crate::ambient_core::transform::components::scale(),
+                        )
+                    }
+                    fn from_required_data(
+                        required: <Self::Required as ComponentsTuple>::Data,
+                    ) -> Self {
+                        Self {
+                            local_to_world: required.0,
                             optional: Default::default(),
                         }
                     }
@@ -3758,6 +4525,170 @@ mod raw {
                 #[doc = "**Package reference**: The package that this module belongs to.\n\n*Attributes*: Networked, Store, Debuggable"]
                 pub fn package_ref() -> Component<EntityId> {
                     *PACKAGE_REF
+                }
+            }
+            #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+            #[doc = r""]
+            #[doc = r" They do not have any runtime representation outside of the components that compose them."]
+            pub mod concepts {
+                use crate::prelude::*;
+                #[doc = "**Module**: A WASM module that can be enabled or disabled, and may or may not be on the server."]
+                #[derive(Clone, Debug)]
+                pub struct Module {
+                    #[doc = "**Component**: `ambient_core::wasm::is_module`\n\n**Component description**: A module.\n\n"]
+                    pub is_module: (),
+                    #[doc = "**Component**: `ambient_core::wasm::bytecode_from_url`\n\n**Component description**: Asset URL for the bytecode of a WASM component.\n\n"]
+                    pub bytecode_from_url: String,
+                    #[doc = "**Component**: `ambient_core::wasm::module_enabled`\n\n**Component description**: Whether or not this module is enabled.\n\n"]
+                    pub module_enabled: bool,
+                    #[doc = "**Component**: `ambient_core::wasm::module_name`\n\n**Component description**: The name of this module.\n\n"]
+                    pub module_name: String,
+                    #[doc = "**Component**: `ambient_core::wasm::package_ref`\n\n**Component description**: The package that this module belongs to.\n\n"]
+                    pub package_ref: EntityId,
+                    #[doc = r" Optional components."]
+                    pub optional: ModuleOptional,
+                }
+                #[doc = "Optional part of [Module]."]
+                #[derive(Clone, Debug, Default)]
+                pub struct ModuleOptional {
+                    #[doc = "**Component**: `ambient_core::wasm::is_module_on_server`\n\n**Component description**: Whether or not this module is on the server.\n\n"]
+                    pub is_module_on_server: Option<()>,
+                }
+                impl Concept for Module {
+                    fn make(self) -> Entity {
+                        let mut entity = Entity::new()
+                            .with(
+                                crate::ambient_core::wasm::components::is_module(),
+                                self.is_module,
+                            )
+                            .with(
+                                crate::ambient_core::wasm::components::bytecode_from_url(),
+                                self.bytecode_from_url,
+                            )
+                            .with(
+                                crate::ambient_core::wasm::components::module_enabled(),
+                                self.module_enabled,
+                            )
+                            .with(
+                                crate::ambient_core::wasm::components::module_name(),
+                                self.module_name,
+                            )
+                            .with(
+                                crate::ambient_core::wasm::components::package_ref(),
+                                self.package_ref,
+                            );
+                        if let Some(is_module_on_server) = self.optional.is_module_on_server {
+                            entity.set(
+                                crate::ambient_core::wasm::components::is_module_on_server(),
+                                is_module_on_server,
+                            );
+                        }
+                        entity
+                    }
+                    fn get_spawned(id: EntityId) -> Option<Self> {
+                        Some(Self {
+                            is_module: entity::get_component(
+                                id,
+                                crate::ambient_core::wasm::components::is_module(),
+                            )?,
+                            bytecode_from_url: entity::get_component(
+                                id,
+                                crate::ambient_core::wasm::components::bytecode_from_url(),
+                            )?,
+                            module_enabled: entity::get_component(
+                                id,
+                                crate::ambient_core::wasm::components::module_enabled(),
+                            )?,
+                            module_name: entity::get_component(
+                                id,
+                                crate::ambient_core::wasm::components::module_name(),
+                            )?,
+                            package_ref: entity::get_component(
+                                id,
+                                crate::ambient_core::wasm::components::package_ref(),
+                            )?,
+                            optional: ModuleOptional {
+                                is_module_on_server: entity::get_component(
+                                    id,
+                                    crate::ambient_core::wasm::components::is_module_on_server(),
+                                ),
+                            },
+                        })
+                    }
+                    fn get_unspawned(entity: &Entity) -> Option<Self> {
+                        Some(Self {
+                            is_module: entity
+                                .get(crate::ambient_core::wasm::components::is_module())?,
+                            bytecode_from_url: entity
+                                .get(crate::ambient_core::wasm::components::bytecode_from_url())?,
+                            module_enabled: entity
+                                .get(crate::ambient_core::wasm::components::module_enabled())?,
+                            module_name: entity
+                                .get(crate::ambient_core::wasm::components::module_name())?,
+                            package_ref: entity
+                                .get(crate::ambient_core::wasm::components::package_ref())?,
+                            optional: ModuleOptional {
+                                is_module_on_server: entity.get(
+                                    crate::ambient_core::wasm::components::is_module_on_server(),
+                                ),
+                            },
+                        })
+                    }
+                    fn contained_by_spawned(id: EntityId) -> bool {
+                        entity::has_components(
+                            id,
+                            &[
+                                &crate::ambient_core::wasm::components::is_module(),
+                                &crate::ambient_core::wasm::components::bytecode_from_url(),
+                                &crate::ambient_core::wasm::components::module_enabled(),
+                                &crate::ambient_core::wasm::components::module_name(),
+                                &crate::ambient_core::wasm::components::package_ref(),
+                            ],
+                        )
+                    }
+                    fn contained_by_unspawned(entity: &Entity) -> bool {
+                        entity.has_components(&[
+                            &crate::ambient_core::wasm::components::is_module(),
+                            &crate::ambient_core::wasm::components::bytecode_from_url(),
+                            &crate::ambient_core::wasm::components::module_enabled(),
+                            &crate::ambient_core::wasm::components::module_name(),
+                            &crate::ambient_core::wasm::components::package_ref(),
+                        ])
+                    }
+                }
+                impl ConceptComponents for Module {
+                    type Required = (
+                        Component<()>,
+                        Component<String>,
+                        Component<bool>,
+                        Component<String>,
+                        Component<EntityId>,
+                    );
+                    type Optional = (Component<()>,);
+                    fn required() -> Self::Required {
+                        (
+                            crate::ambient_core::wasm::components::is_module(),
+                            crate::ambient_core::wasm::components::bytecode_from_url(),
+                            crate::ambient_core::wasm::components::module_enabled(),
+                            crate::ambient_core::wasm::components::module_name(),
+                            crate::ambient_core::wasm::components::package_ref(),
+                        )
+                    }
+                    fn optional() -> Self::Optional {
+                        (crate::ambient_core::wasm::components::is_module_on_server(),)
+                    }
+                    fn from_required_data(
+                        required: <Self::Required as ComponentsTuple>::Data,
+                    ) -> Self {
+                        Self {
+                            is_module: required.0,
+                            bytecode_from_url: required.1,
+                            module_enabled: required.2,
+                            module_name: required.3,
+                            package_ref: required.4,
+                            optional: Default::default(),
+                        }
+                    }
                 }
             }
         }

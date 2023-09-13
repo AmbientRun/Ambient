@@ -1,8 +1,8 @@
 pub use crate::{
     asset,
     ecs::{
-        change_query, despawn_query, query, spawn_query, Component, Concept, ConceptSuggested,
-        Entity, QueryEvent,
+        change_query, despawn_query, query, spawn_query, Component, ComponentsTuple, Concept,
+        ConceptComponents, ConceptQuery, ConceptSuggested, Entity, QueryEvent,
     },
     entity,
     global::*,

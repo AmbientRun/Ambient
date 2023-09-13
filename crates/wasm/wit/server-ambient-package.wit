@@ -1,0 +1,3 @@
+interface server-ambient-package {
+    load: func(package-url: string)
+}

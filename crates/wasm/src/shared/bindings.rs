@@ -40,6 +40,7 @@ pub trait BindingsBound:
     + super::wit::server_message::Host
     + super::wit::server_physics::Host
     + super::wit::server_http::Host
+    + super::wit::server_ambient_package::Host
     + Clone
     + Sync
     + Send

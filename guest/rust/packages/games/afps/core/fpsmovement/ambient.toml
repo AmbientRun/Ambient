@@ -6,7 +6,6 @@ content = { type = "Asset", code = true }
 
 [dependencies]
 afps_schema = { path = "../../schema", deployment = "3MID8NqYoDfJs41j5AEzA3" }
-input_schema = { path = "../../../../schemas/input", deployment = "5yFgFAf65EGlpeL4vBwrnH" }
 editor_schema = { path = "../../../../schemas/editor", deployment = "4UgpKM1XlmWzvZC6dLrZui" }
 unit_schema = { path = "../../../../schemas/unit", deployment = "nvFy5XHnuCQECe4e7JeRK" }
 character_movement = { path = "../../../../std/character_movement", deployment = "6rqQh7NX4EHnSax8y9pPZF" }

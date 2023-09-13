@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 pub use crate::internal::component::{
     query::{
         change_query, despawn_query, query, spawn_query, ChangeQuery, EventQuery, GeneralQuery,
@@ -73,8 +75,8 @@ impl<T: Concept + Sized> From<T> for Entity {
         concept.make()
     }
 }
-/// This trait provides a helper method to get an instance of this concept with
-/// all of the fields filled in with suggested values.
+/// Provides a helper method to get an instance of this concept with all of the fields
+/// filled in with suggested values.
 ///
 /// This trait is only implemented if all fields in a concept have a suggested value.
 pub trait ConceptSuggested: Concept {
@@ -82,4 +84,59 @@ pub trait ConceptSuggested: Concept {
     ///
     /// The optional field, if present, will be defaulted/have all of its fields be `None`.
     fn suggested() -> Self;
+}
+/// Provides component tuples for this concept.
+pub trait ConceptComponents: Concept {
+    /// A tuple of the required components for this concept.
+    type Required: ComponentsTuple;
+    /// A tuple of the optional components for this concept.
+    type Optional: ComponentsTuple;
+
+    /// Returns a tuple of the required components for this concept.
+    fn required() -> Self::Required;
+    /// Returns a tuple of the optional components for this concept.
+    fn optional() -> Self::Optional;
+    /// Converts a tuple of data back to a concept.
+    fn from_required_data(required: <Self::Required as ComponentsTuple>::Data) -> Self;
+
+    /// Creates a [`ConceptQuery`] that can be passed into queries.
+    ///
+    /// Note that this will only get the required components of the concept, and not the optional
+    /// components!
+    fn as_query() -> ConceptQuery<Self>
+    where
+        Self: Sized,
+    {
+        ConceptQuery(PhantomData)
+    }
+}
+
+/// Helper that lets you pass in concepts where component tuples are expected.
+///
+/// Note that this will only get the required components of the concept, and not the optional
+/// components!
+// TODO: See if we can revise the APIs to remove this.
+#[derive(Default, Debug)]
+pub struct ConceptQuery<C: ConceptComponents>(PhantomData<C>);
+impl<C: ConceptComponents> Copy for ConceptQuery<C> {}
+impl<C: ConceptComponents> Clone for ConceptQuery<C> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+/// Helper blanket implementation that allows you to use concepts where component tuples are expected.
+impl<C: ConceptComponents> ComponentsTuple for ConceptQuery<C> {
+    type Data = C;
+
+    fn as_indices(&self) -> Vec<u32> {
+        C::required().as_indices()
+    }
+
+    fn from_component_types(
+        component_types: Vec<crate::internal::wit::component::Value>,
+    ) -> Option<Self::Data> {
+        Some(C::from_required_data(
+            <C as ConceptComponents>::Required::from_component_types(component_types)?,
+        ))
+    }
 }

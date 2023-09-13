@@ -6,11 +6,14 @@ use std::{
 };
 
 use ambient_cb::Cb;
+use ambient_core::{async_ecs::async_run, runtime};
 use ambient_ecs::{
-    components, generated::app::components::name as app_name,
-    generated::wasm::components::module_enabled, query, ComponentRegistry, Entity, EntityId,
-    ExternalComponentAttributes, ExternalComponentDesc, Networked, PrimitiveComponentType,
-    Resource, SystemGroup, World,
+    components,
+    generated::{app::components::name as app_name, package::messages::PackageLoadFailure},
+    generated::{package::messages::PackageLoadSuccess, wasm::components::module_enabled},
+    query, world_events, ComponentRegistry, Entity, EntityId, ExternalComponentAttributes,
+    ExternalComponentDesc, Networked, PrimitiveComponentType, Resource, SystemGroup, World,
+    WorldEventsExt,
 };
 use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::ServerWorldExt;
@@ -66,7 +69,7 @@ pub async fn initialize(
         )),
     );
 
-    add(world, &main_package_path.push("ambient.toml")?).await?;
+    add(world, main_package_path.push("ambient.toml")?.to_string())?;
 
     Ok(())
 }
@@ -90,14 +93,74 @@ pub fn server_systems() -> SystemGroup {
     )
 }
 
-pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result<ItemId<Package>> {
-    let semantic = world_semantic(world);
-    // We must use a Tokio mutex as we need to be able to hold onto the semantic through
-    // the await point, and the semantic has RefCells inside of it.
-    let mut semantic = semantic.lock().await;
+#[cfg(target_os = "unknown")]
+pub fn add(_world: &mut World, _url: String) -> Result<(), url::ParseError> {
+    // The future that the host implementation uses is not `Send`, so we can't spawn it on the
+    // WASM client. We're disabling it for now.
+    unimplemented!("package loading is not supported on WASM as it is a server-only operation")
+}
 
-    let package_item_id =
-        add_to_semantic_and_register_components(&mut semantic, package_url).await?;
+// A string is used instead of an AbsAssetUrl to allow WASM to call this and have its original URL
+// passed all the way through.
+#[cfg(not(target_os = "unknown"))]
+pub fn add(world: &mut World, url: String) -> Result<(), url::ParseError> {
+    let semantic = world_semantic(world);
+    let async_run = world.resource(async_run()).clone();
+
+    let package_url = AbsAssetUrl::from_str(&url)?;
+
+    world.resource(runtime()).spawn(async move {
+        let mut semantic = semantic.lock().await;
+
+        let package_item_id_result =
+            add_to_semantic_and_register_components(&mut semantic, &package_url).await;
+
+        async_run.run(move |world| {
+            let package_item_id = match package_item_id_result {
+                Ok(id) => id,
+                Err(err) => {
+                    world
+                        .resource_mut(world_events())
+                        .add_message(PackageLoadFailure {
+                            url: url.clone(),
+                            reason: err.to_string(),
+                        });
+                    return;
+                }
+            };
+
+            match sync_semantic_to_world(world, package_item_id) {
+                Ok(id) => {
+                    world
+                        .resource_mut(world_events())
+                        .add_message(PackageLoadSuccess {
+                            package: id,
+                            url: url.clone(),
+                        });
+                }
+                Err(err) => {
+                    world
+                        .resource_mut(world_events())
+                        .add_message(PackageLoadFailure {
+                            url: url.clone(),
+                            reason: err.to_string(),
+                        });
+                }
+            }
+        });
+    });
+
+    Ok(())
+}
+
+fn sync_semantic_to_world(
+    world: &mut World,
+    package_item_id: ItemId<Package>,
+) -> anyhow::Result<EntityId> {
+    let semantic = world_semantic(world);
+    let semantic = semantic.blocking_lock();
+
+    let main_package_id = semantic.items.get(package_item_id).data.id.to_string();
 
     let package_id_spawned = world
         .synced_resource(package_id_to_package_entity())
@@ -204,7 +267,12 @@ pub async fn add(world: &mut World, package_url: &AbsAssetUrl) -> anyhow::Result
         };
     }
 
-    Ok(package_item_id)
+    Ok(world
+        .synced_resource(package_id_to_package_entity())
+        .unwrap()
+        .get(&main_package_id)
+        .copied()
+        .expect("main package was not spawned; this is likely a logical error"))
 }
 
 pub async fn add_to_semantic_and_register_components(

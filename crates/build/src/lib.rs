@@ -326,12 +326,15 @@ pub async fn build_rust_if_available(
     let rustc = ambient_rustc::Rust::get_system_installation().await?;
 
     for feature in &manifest.build.rust.feature_multibuild {
+        let output_path = build_path.join(feature);
+        // We can safely remove this directory and its contents as Rust/Cargo maintains
+        // its own build cache. Removing this directory should prevent stale files from
+        // being used.
+        let _ = std::fs::remove_dir_all(&output_path);
+        std::fs::create_dir_all(&output_path)?;
+
         for (path, bytecode) in rustc.build(package_path, optimize, &[feature])? {
             let component_bytecode = ambient_wasm::shared::build::componentize(&bytecode)?;
-
-            let output_path = build_path.join(feature);
-            std::fs::create_dir_all(&output_path)?;
-
             let filename = path.file_name().context("no filename")?;
             tokio::fs::write(output_path.join(filename), component_bytecode).await?;
         }

@@ -405,6 +405,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_git_rev"
+version = "0.3.0-dev"
+
+[[package]]
 name = "ambient_gizmos"
 version = "0.3.0-dev"
 dependencies = [
@@ -569,6 +573,7 @@ dependencies = [
  "ambient_cb",
  "ambient_color",
  "ambient_friendly_id",
+ "ambient_git_rev",
  "ambient_math",
  "ambient_shared_types",
  "ambient_sys",
@@ -579,7 +584,6 @@ dependencies = [
  "convert_case 0.6.0",
  "data-encoding",
  "futures",
- "git-version",
  "glam",
  "log",
  "mikktspace",
@@ -726,6 +730,7 @@ name = "ambient_package_semantic_native"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_cb",
+ "ambient_core",
  "ambient_ecs",
  "ambient_native_std",
  "ambient_network",
@@ -2967,28 +2972,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "git-version"
-version = "0.3.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6b0decc02f4636b9ccad390dcbe77b722a77efedfa393caf8379a51d5c61899"
-dependencies = [
- "git-version-macro",
- "proc-macro-hack",
-]
-
-[[package]]
-name = "git-version-macro"
-version = "0.3.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe69f1cbdb6e28af2bac214e943b99ce8a0a06b447d15d3e61161b0423139f3f"
-dependencies = [
- "proc-macro-hack",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "glam"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4812,12 +4795,6 @@ dependencies = [
  "once_cell",
  "toml_edit",
 ]
-
-[[package]]
-name = "proc-macro-hack"
-version = "0.5.20+deprecated"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc375e1527247fe1a97d8b7156678dfe7c1af2fc075c9a4db3690ecd2a148068"
 
 [[package]]
 name = "proc-macro2"

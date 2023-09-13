@@ -11,6 +11,3 @@ input = "String"
 text = "String"
 ty = "U8"
 is_server = "Bool"
-
-[dependencies]
-input_schema = { path = "../../schemas/input", deployment = "5yFgFAf65EGlpeL4vBwrnH" }

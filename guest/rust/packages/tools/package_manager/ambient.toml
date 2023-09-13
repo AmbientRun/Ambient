@@ -8,14 +8,10 @@ content = { type = "Tool" }
 url = "String"
 
 [messages.PackageLoadSuccess.fields]
-id = "String"
+id = "EntityId"
 name = "String"
-version = "String"
-authors = { container_type = "Vec", element_type = "String" }
-client_wasms = { container_type = "Vec", element_type = "String" }
-server_wasms = { container_type = "Vec", element_type = "String" }
 
-[messages.ErrorMessage.fields]
+[messages.PackageLoadFailure.fields]
 reason = "String"
 
 [messages.PackageSetEnabled.fields]
@@ -29,10 +25,14 @@ enabled = "Bool"
 [messages.WasmReload.fields]
 id = "EntityId"
 
-[messages.WasmReplaceBytecodeUrl.fields]
+[messages.PackageShow]
+description = "Shows the package view for a package"
+[messages.PackageShow.fields]
 id = "EntityId"
-url = "String"
+
+[messages.PackageLoadShow]
+description = "Shows the package load view"
+[messages.PackageLoadShow.fields]
 
 [dependencies]
-input_schema = { path = "../../schemas/input", deployment = "5yFgFAf65EGlpeL4vBwrnH" }
-editor_schema = { path = "../../schemas/editor" , deployment = "4UgpKM1XlmWzvZC6dLrZui" }
+editor_schema = { path = "../../schemas/editor", deployment = "4UgpKM1XlmWzvZC6dLrZui" }

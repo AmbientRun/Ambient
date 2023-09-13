@@ -118,3 +118,54 @@ pub async fn wait_for_runtime_message<T: RuntimeMessage + Clone + 'static>(
     })
     .await
 }
+
+/// Stops execution of this function until one of the given [`RuntimeMessage`]sare received.
+/// The `is_relevant` functions are used to filter out messages that are not relevant.
+///
+/// This must be used with `.await` in either an `async fn` or an `async` block.
+// TODO: Can we do this with a race of `wait_for_runtime_message`? We would want the resulting
+// future to cancel their subscriptions, which is why I haven't done it yet.
+pub async fn wait_for_fallible_runtime_messages<
+    Success: RuntimeMessage + Clone + 'static,
+    Failure: RuntimeMessage + Clone + 'static,
+>(
+    is_relevant_success: impl Fn(&Success) -> bool + 'static,
+    is_relevant_failure: impl Fn(&Failure) -> bool + 'static,
+) -> Result<Success, Failure> {
+    let result = Rc::new(RefCell::new(None));
+    let mut success_listener = Some(Success::subscribe({
+        let result = result.clone();
+        move |response| {
+            if !is_relevant_success(&response) {
+                return;
+            }
+
+            *result.borrow_mut() = Some(Ok(response));
+        }
+    }));
+    let mut failure_listener = Some(Failure::subscribe({
+        let result = result.clone();
+        move |response| {
+            if !is_relevant_failure(&response) {
+                return;
+            }
+
+            *result.borrow_mut() = Some(Err(response));
+        }
+    }));
+
+    std::future::poll_fn(move |_cx| match &*result.borrow() {
+        Some(r) => {
+            let r = (*r).clone();
+            if let Some(listener) = success_listener.take() {
+                listener.stop();
+            }
+            if let Some(listener) = failure_listener.take() {
+                listener.stop();
+            }
+            Poll::Ready(r)
+        }
+        _ => Poll::Pending,
+    })
+    .await
+}
