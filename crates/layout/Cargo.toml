@@ -10,11 +10,11 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
-ambient_gpu_ecs = { path = "../gpu_ecs" , version = "0.3.0-dev" }
-ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
-ambient_core = { path = "../core" , version = "0.3.0-dev" }
-ambient_input = { path = "../input" , version = "0.3.0-dev" }
+ambient_ecs = { path = "../ecs" , version = "0.3.0-nightly-2023-09-13" }
+ambient_gpu_ecs = { path = "../gpu_ecs" , version = "0.3.0-nightly-2023-09-13" }
+ambient_gpu = { path = "../gpu" , version = "0.3.0-nightly-2023-09-13" }
+ambient_core = { path = "../core" , version = "0.3.0-nightly-2023-09-13" }
+ambient_input = { path = "../input" , version = "0.3.0-nightly-2023-09-13" }
 glam = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
