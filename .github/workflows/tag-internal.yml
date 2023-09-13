@@ -1,3 +1,5 @@
+# This workflow is triggered on a schedule and on demand. It updates the version number and triggers the deploy jobs.
+
 name: Tag internal build
 
 on:
@@ -64,7 +66,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            for (const workflow_id of ['build-server.yml', 'release.yml', 'deploy-web.yml', 'deploy-packages.yml']) {
+            for (const workflow_id of ['deploy-server.yml', 'release-version.yml', 'deploy-web.yml', 'deploy-packages.yml']) {
               github.rest.actions.createWorkflowDispatch({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
