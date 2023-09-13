@@ -17,7 +17,7 @@ use crate::packages::{
     input_schema::messages::{InputRelease, InputRequest},
     this::{
         assets,
-        messages::{PackageSetEnabled, WasmReload},
+        messages::{PackageSetEnabled, PackageShow, WasmReload},
     },
 };
 
@@ -132,6 +132,11 @@ fn PackageManagerInner(hooks: &mut Hooks) -> Element {
                 ])
                 .with(space_between_items(), 4.0),
                 Text::el(package.description.as_deref().unwrap_or("No description")),
+                Button::new("View", move |_| {
+                    PackageShow { id }.send_local(crate::packages::this::entity())
+                })
+                .style(ButtonStyle::Flat)
+                .el(),
             ])
             .with(space_between_items(), 8.0),
         ])

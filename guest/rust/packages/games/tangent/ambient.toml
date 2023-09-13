@@ -8,3 +8,4 @@ content = { type = "Playable" }
 tangent_core = { path = "core", deployment = "5Gy9YdIEbUIozAYxkQ8NJR" }
 tangent_scene = { path = "mods/scene", deployment = "26LiRhhUBnqesi0DY7jOcM" }
 hide_cursor = { path = "../../std/hide_cursor", deployment = "48Dlz7rfPcrCdGVCdlEQ7F" }
+package_manager = { path = "../../tools/package_manager", deployment = "7ieydENz7QySoYebFCphLY" }

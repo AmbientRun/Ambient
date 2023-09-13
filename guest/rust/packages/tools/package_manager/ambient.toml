@@ -33,6 +33,11 @@ id = "EntityId"
 id = "EntityId"
 url = "String"
 
+[messages.PackageShow]
+description = "Shows the package view for a package"
+[messages.PackageShow.fields]
+id = "EntityId"
+
 [dependencies]
 input_schema = { path = "../../schemas/input", deployment = "5yFgFAf65EGlpeL4vBwrnH" }
-editor_schema = { path = "../../schemas/editor" , deployment = "4UgpKM1XlmWzvZC6dLrZui" }
+editor_schema = { path = "../../schemas/editor", deployment = "4UgpKM1XlmWzvZC6dLrZui" }

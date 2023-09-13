@@ -8,6 +8,6 @@ use server::*;
 #[main]
 pub async fn main() {
     package_load::main();
-    wasm_manager::main();
+    package_view::main();
     package_manager::main();
 }
