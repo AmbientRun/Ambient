@@ -10,16 +10,12 @@ use ambient_api::{
         wasm::{components::is_module_on_server, concepts::Module},
     },
     element::{
-        use_entity_concept, use_module_message, use_module_message_effect, use_query, use_ref_with,
-        use_rerender_signal,
+        use_entity_concept, use_module_message, use_query, use_ref_with, use_rerender_signal,
     },
     prelude::*,
 };
 
-use crate::packages::{
-    input_schema::messages::{InputRelease, InputRequest},
-    this::messages::{PackageSetEnabled, PackageShow, WasmReload, WasmSetEnabled},
-};
+use crate::packages::this::messages::{PackageSetEnabled, PackageShow, WasmReload, WasmSetEnabled};
 
 #[element_component]
 pub fn PackageViews(hooks: &mut Hooks) -> Element {
@@ -53,7 +49,6 @@ pub fn PackageViews(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn PackageViewInner(hooks: &mut Hooks, package_id: EntityId) -> Element {
-    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
     let package = use_entity_concept::<Package>(hooks, package_id);
     let mut modules: Vec<_> = use_query(hooks, Module::as_query())
         .into_iter()

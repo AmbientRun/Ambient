@@ -1,12 +1,9 @@
 use ambient_api::{
-    element::{use_module_message, use_module_message_effect, use_state, use_state_with},
+    element::{use_module_message, use_state, use_state_with},
     prelude::*,
 };
 
-use crate::packages::{
-    input_schema::messages::{InputRelease, InputRequest},
-    this::messages,
-};
+use crate::packages::this::messages;
 
 #[element_component]
 pub fn PackageLoad(_hooks: &mut Hooks) -> Element {
@@ -34,7 +31,6 @@ fn PackageLoadDialog(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn PackageLoadDialogInner(hooks: &mut Hooks, close: Cb<dyn Fn() + Sync + Send>) -> Element {
-    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
     let (url, set_url) = use_state_with(hooks, |_| String::new());
 
     FlowColumn::el([
@@ -80,11 +76,10 @@ fn ErrorMessage(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn ErrorMessageInner(
-    hooks: &mut Hooks,
+    _hooks: &mut Hooks,
     reason: String,
     close: Cb<dyn Fn() + Send + Sync>,
 ) -> Element {
-    use_module_message_effect::<InputRequest, InputRelease>(hooks, None);
     FlowColumn::el([Text::el(reason), Button::new("OK", move |_| close()).el()])
         .with(space_between_items(), 4.0)
         .with_margin_even(STREET)
