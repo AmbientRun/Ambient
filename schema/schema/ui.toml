@@ -3,7 +3,7 @@ id = "ui"
 name = "UI"
 description = "User interface components"
 content = { type = "Asset", schema = true }
-version = "0.3.0-nightly-2023-09-13"
+version = "0.3.0-dev"
 
 [components.focus]
 type = "String"
