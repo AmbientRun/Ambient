@@ -1,31 +1,31 @@
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         primitives::components::quad,
-        transform::{
-            components::{lookat_target, translation},
-            concepts::make_transformable,
-        },
+        transform::components::{lookat_target, translation},
     },
     prelude::*,
 };
 
 #[main]
 pub fn main() {
-    Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(translation(), Vec3::ONE * 5.)
-        .with(lookat_target(), vec3(0., 0., 0.))
-        .spawn();
+    PerspectiveInfiniteReverseCamera {
+        optional: PerspectiveInfiniteReverseCameraOptional {
+            aspect_ratio_from_window: Some(entity::resources()),
+            main_scene: Some(()),
+            translation: Some(Vec3::ONE * 5.),
+            ..default()
+        },
+        ..PerspectiveInfiniteReverseCamera::suggested()
+    }
+    .make()
+    .with(lookat_target(), vec3(0., 0., 0.))
+    .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with(translation(), vec3(0., 0., 0.))
         .with(quad(), ())
         .spawn();
 
