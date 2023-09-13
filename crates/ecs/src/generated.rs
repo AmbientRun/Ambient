@@ -194,6 +194,35 @@ mod raw {
                     }
                 }
                 impl ModuleMessage for MouseOverChanged {}
+                #[derive(Clone, Debug)]
+                #[doc = "**ClipboardGet**: Sent to a package that has requested the clipboard contents."]
+                pub struct ClipboardGet {
+                    pub contents: Option<String>,
+                }
+                impl ClipboardGet {
+                    #[allow(clippy::too_many_arguments)]
+                    pub fn new(contents: impl Into<Option<String>>) -> Self {
+                        Self {
+                            contents: contents.into(),
+                        }
+                    }
+                }
+                impl Message for ClipboardGet {
+                    fn id() -> &'static str {
+                        "ClipboardGet"
+                    }
+                    fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                        let mut output = vec![];
+                        self.contents.serialize_message_part(&mut output)?;
+                        Ok(output)
+                    }
+                    fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                        Ok(Self {
+                            contents: Option::<String>::deserialize_message_part(&mut input)?,
+                        })
+                    }
+                }
+                impl RuntimeMessage for ClipboardGet {}
             }
         }
         pub mod layout {
