@@ -23,6 +23,5 @@ zombie_model_ref = { type = "EntityId", attributes = [
 id = "EntityId"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "3MID8NqYoDfJs41j5AEzA3" }
 character_animation = { path = "../../../../std/character_animation", deployment = "1yoj6WWYw930TwO55E0b1L" }
 unit_schema = { path = "../../../../schemas/unit", deployment = "nvFy5XHnuCQECe4e7JeRK" }
