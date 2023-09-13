@@ -6,7 +6,8 @@ pub use raw::ambient_core;
     unused,
     clippy::unit_arg,
     clippy::let_and_return,
-    clippy::approx_constant
+    clippy::approx_constant,
+    clippy::unused_unit
 )]
 mod raw {
     pub mod ambient_core {
