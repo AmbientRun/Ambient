@@ -17,7 +17,7 @@ use crate::packages::{
     input_schema::messages::{InputRelease, InputRequest},
     this::{
         assets,
-        messages::{PackageSetEnabled, PackageShow, WasmReload},
+        messages::{PackageLoadShow, PackageSetEnabled, PackageShow, WasmReload},
     },
 };
 
@@ -89,59 +89,66 @@ fn PackageManagerInner(hooks: &mut Hooks) -> Element {
         .collect();
     packages.sort_by_key(|(_, package)| package.name.clone());
 
-    FlowColumn::el(packages.into_iter().map(|(id, package)| {
-        FlowRow::el([
-            ImageFromUrl {
-                url: assets::url("construction.png"),
-            }
-            .el()
-            .with(width(), 48.0)
-            .with(height(), 48.0),
-            FlowColumn::el([
-                Checkbox::new(package.enabled, move |value| {
-                    PackageSetEnabled { id, enabled: value }.send_server_reliable();
-                })
-                .el(),
-                Button::new(FontAwesomeIcon::el(0xf2f1, true), {
-                    let modules: Vec<_> = package
-                        .client_modules
-                        .iter()
-                        .chain(package.server_modules.iter())
-                        .copied()
-                        .collect();
-                    move |_| {
-                        for &id in &modules {
-                            WasmReload::new(id).send_server_reliable();
-                        }
-                    }
-                })
-                .style(ButtonStyle::Flat)
-                .el(),
-            ]),
-            FlowColumn::el([
-                FlowRow::el([
-                    Text::el(package.name).with(font_style(), FontStyle::Bold),
-                    Text::el(package.version),
-                    Text::el("by"),
-                    Text::el(if package.authors.is_empty() {
-                        "No authors specified".to_string()
-                    } else {
-                        package.authors.join(", ")
+    FlowColumn::el(Iterator::chain(
+        [Button::new("Load package", |_| {
+            PackageLoadShow.send_local(crate::packages::this::entity())
+        })
+        .el()]
+        .into_iter(),
+        packages.into_iter().map(|(id, package)| {
+            FlowRow::el([
+                ImageFromUrl {
+                    url: assets::url("construction.png"),
+                }
+                .el()
+                .with(width(), 48.0)
+                .with(height(), 48.0),
+                FlowColumn::el([
+                    Checkbox::new(package.enabled, move |value| {
+                        PackageSetEnabled { id, enabled: value }.send_server_reliable();
                     })
-                    .with(font_style(), FontStyle::Italic),
+                    .el(),
+                    Button::new(FontAwesomeIcon::el(0xf2f1, true), {
+                        let modules: Vec<_> = package
+                            .client_modules
+                            .iter()
+                            .chain(package.server_modules.iter())
+                            .copied()
+                            .collect();
+                        move |_| {
+                            for &id in &modules {
+                                WasmReload::new(id).send_server_reliable();
+                            }
+                        }
+                    })
+                    .style(ButtonStyle::Flat)
+                    .el(),
+                ]),
+                FlowColumn::el([
+                    FlowRow::el([
+                        Text::el(package.name).with(font_style(), FontStyle::Bold),
+                        Text::el(package.version),
+                        Text::el("by"),
+                        Text::el(if package.authors.is_empty() {
+                            "No authors specified".to_string()
+                        } else {
+                            package.authors.join(", ")
+                        })
+                        .with(font_style(), FontStyle::Italic),
+                    ])
+                    .with(space_between_items(), 4.0),
+                    Text::el(package.description.as_deref().unwrap_or("No description")),
+                    Button::new("View", move |_| {
+                        PackageShow { id }.send_local(crate::packages::this::entity())
+                    })
+                    .style(ButtonStyle::Flat)
+                    .el(),
                 ])
-                .with(space_between_items(), 4.0),
-                Text::el(package.description.as_deref().unwrap_or("No description")),
-                Button::new("View", move |_| {
-                    PackageShow { id }.send_local(crate::packages::this::entity())
-                })
-                .style(ButtonStyle::Flat)
-                .el(),
+                .with(space_between_items(), 8.0),
             ])
-            .with(space_between_items(), 8.0),
-        ])
-        .with(space_between_items(), 8.0)
-    }))
+            .with(space_between_items(), 8.0)
+        }),
+    ))
     .with(space_between_items(), 4.0)
     .with_margin_even(STREET)
 }
