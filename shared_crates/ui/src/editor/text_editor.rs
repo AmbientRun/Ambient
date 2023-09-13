@@ -121,22 +121,25 @@ pub fn TextEditor(
                         #[cfg(not(target_os = "macos"))]
                         set_command(pressed);
                     }
-                    VirtualKeyCode::V => {
-                        if command && pressed {
-                            let on_change = on_change.clone();
-                            let cursor_position = cursor_position.clone();
-                            let intermediate_value = intermediate_value.clone();
-                            ambient_guest_bridge::run_async_local(world, move || async move {
-                                if let Some(paste) =
-                                    ambient_guest_bridge::window::get_clipboard().await
-                                {
-                                    let mut value = intermediate_value.lock();
-                                    value.insert_str(*cursor_position.lock(), &paste);
-                                    *cursor_position.lock() += paste.len();
-                                    on_change.0(value.clone());
-                                }
-                            })
-                        }
+                    VirtualKeyCode::C if command && pressed => {
+                        let value = intermediate_value.lock().clone();
+                        ambient_guest_bridge::run_async_local(world, move || async move {
+                            let _ = ambient_guest_bridge::window::set_clipboard(&value).await;
+                        })
+                    }
+                    VirtualKeyCode::V if command && pressed => {
+                        let on_change = on_change.clone();
+                        let cursor_position = cursor_position.clone();
+                        let intermediate_value = intermediate_value.clone();
+                        ambient_guest_bridge::run_async_local(world, move || async move {
+                            if let Some(paste) = ambient_guest_bridge::window::get_clipboard().await
+                            {
+                                let mut value = intermediate_value.lock();
+                                value.insert_str(*cursor_position.lock(), &paste);
+                                *cursor_position.lock() += paste.len();
+                                on_change.0(value.clone());
+                            }
+                        })
                     }
                     VirtualKeyCode::Left => {
                         if pressed && *cursor_position.lock() > 0 {
