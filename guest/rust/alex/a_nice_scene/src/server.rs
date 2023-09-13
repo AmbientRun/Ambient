@@ -5,6 +5,28 @@ pub fn main() {
     plrs_fps_controlled();
     ground_plane();
     load_scene();
+    rising_falling_cube();
+}
+
+pub fn rising_falling_cube() {
+    use ambient_api::core::{
+        physics::components::cube_collider,
+        primitives::components::cube,
+        rendering::components::color,
+        transform::{components::translation, concepts::make_transformable},
+    };
+    use std::f32::consts::PI;
+    let rfc = Entity::new()
+        .with_merge(make_transformable())
+        .with(translation(), vec3(10., 10., 0.))
+        .with(color(), vec4(1., 0., 0., 1.))
+        .with(cube(), ())
+        .with(cube_collider(), vec3(1., 1., 1.))
+        .spawn();
+    ambient_api::core::messages::Frame::subscribe(move |_| {
+        let t: f32 = game_time().as_secs_f32();
+        entity::set_component(rfc, translation(), vec3(10., 10., t.sin()));
+    });
 }
 
 pub fn plrs_fps_controlled() {
@@ -14,7 +36,7 @@ pub fn plrs_fps_controlled() {
     };
     use packages::{
         character_animation::components::basic_character_animations,
-        fps_controller::components::use_fps_controller, this,
+        fps_controller::components::use_fps_controller,
     };
     spawn_query((is_player(), user_id())).bind(|plrs| {
         for (plr, (_, uid)) in plrs {
@@ -22,10 +44,9 @@ pub fn plrs_fps_controlled() {
                 plr,
                 Entity::new()
                     .with(use_fps_controller(), ())
-                    // .with(model_from_url(), packages::base_assets::assets::url("Y Bot.fbx"))
                     .with(
                         model_from_url(),
-                        packages::this::assets::url("Ch46_nonPBR.fbx"),
+                        packages::base_assets::assets::url("Y Bot.fbx"),
                     )
                     .with(basic_character_animations(), plr),
             );
@@ -48,10 +69,8 @@ pub fn ground_plane() {
 pub fn spawn_sun() -> EntityId {
     use ambient_api::core::{
         app::components::main_scene,
-        prefab::components::prefab_from_url,
         rendering::components::{
-            cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky,
-            sun,
+            fog_color, fog_density, fog_height_falloff, light_diffuse, sky, sun,
         },
         transform::{components::rotation, concepts::make_transformable},
     };
@@ -81,7 +100,7 @@ mod sceneloader;
 pub fn load_scene() {
     use ambient_api::core::{
         app::components::name,
-        physics::components::{cube_collider, plane_collider},
+        physics::components::cube_collider,
         prefab::components::prefab_from_url,
         primitives::components::cube,
         transform::{
