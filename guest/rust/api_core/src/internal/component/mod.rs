@@ -61,7 +61,7 @@ macro_rules! tuple_impls {
     ( $( $name:ident )+ ) => {
         impl<$($name: SupportedValue),+> ComponentsTuple for ($(Component<$name>,)+) {
             #[allow(unused_parens)]
-            type Data = ($($name),+);
+            type Data = ($($name,)+);
 
             fn as_indices(&self) -> Vec<u32> {
                 #[allow(non_snake_case)]
@@ -72,7 +72,7 @@ macro_rules! tuple_impls {
                 paste::paste! {
                     #[allow(non_snake_case)]
                     if let [$([<value_ $name>],)+] = &component_types[..] {
-                        Some(($($name::from_result([<value_ $name>].clone())?),+))
+                        Some(($($name::from_result([<value_ $name>].clone())?,)+))
                     } else {
                         None
                     }
@@ -90,6 +90,10 @@ tuple_impls! { A B C D E F }
 tuple_impls! { A B C D E F G }
 tuple_impls! { A B C D E F G H }
 tuple_impls! { A B C D E F G H I }
+tuple_impls! { A B C D E F G H I J }
+tuple_impls! { A B C D E F G H I J K }
+tuple_impls! { A B C D E F G H I J K L }
+tuple_impls! { A B C D E F G H I J K L M }
 impl<T: SupportedValue> ComponentsTuple for Component<T> {
     type Data = T;
 

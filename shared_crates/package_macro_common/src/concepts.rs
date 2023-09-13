@@ -27,7 +27,7 @@ pub fn generate(
         .filter_map(|c| context.extract_item_if_relevant(items, *c))
         .map(|concept| {
             let concept = &*concept;
-            let new = generate_one(items, type_printer, context, &guest_api_path, concept)?;
+            let new = generate_one(items, type_printer, context, concept)?;
             Ok(quote! {
                 #new
             })
@@ -53,7 +53,6 @@ fn generate_one(
     items: &ItemMap,
     type_printer: &TypePrinter,
     context: Context,
-    guest_api_path: &TokenStream,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
     let concept_id = &concept.data().id;
@@ -272,6 +271,12 @@ fn generate_one(
         }
     };
 
+    let optional_field = if optional_components.is_empty() {
+        None
+    } else {
+        Some(quote! { optional: Default::default(), })
+    };
+
     let concept_suggested = if required_components.iter().all(|c| c.suggested.is_some()) {
         let required_components = required_components
             .iter()
@@ -283,14 +288,8 @@ fn generate_one(
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        let optional_field = if optional_components.is_empty() {
-            None
-        } else {
-            Some(quote! { optional: Default::default(), })
-        };
-
         Some(quote! {
-            impl #guest_api_path::ecs::ConceptSuggested for #concept_id {
+            impl ConceptSuggested for #concept_id {
                 fn suggested() -> Self {
                     Self {
                         #(#required_components)*
@@ -303,16 +302,54 @@ fn generate_one(
         None
     };
 
+    let concept_components = {
+        let (required_component_types, required_component_calls): (Vec<_>, Vec<_>) =
+            required_components.iter().map(|c| (&c.ty, &c.path)).unzip();
+        let (optional_component_types, optional_component_calls): (Vec<_>, Vec<_>) =
+            optional_components.iter().map(|c| (&c.ty, &c.path)).unzip();
+
+        let from_required_fields = required_components.iter().enumerate().map(|(i, c)| {
+            let field_name = &c.id;
+            let i = syn::Index::from(i);
+            quote! {
+                #field_name: required.#i,
+            }
+        });
+
+        quote! {
+            impl ConceptComponents for #concept_id {
+                type Required = (#(Component<#required_component_types>,)*);
+                type Optional = (#(Component<#optional_component_types>,)*);
+
+                fn required() -> Self::Required {
+                    (#(#required_component_calls(),)*)
+                }
+
+                fn optional() -> Self::Optional {
+                    (#(#optional_component_calls(),)*)
+                }
+
+                fn from_required_data(required: <Self::Required as ComponentsTuple>::Data) -> Self {
+                    Self {
+                        #(#from_required_fields)*
+                        #optional_field
+                    }
+                }
+            }
+        }
+    };
+
     Ok(quote! {
         #struct_def
         #optional_struct_def
-        impl #guest_api_path::ecs::Concept for #concept_id {
+        impl Concept for #concept_id {
             #make
             #get_spawned
             #get_unspawned
             #contained_by
         }
         #concept_suggested
+        #concept_components
     })
 }
 

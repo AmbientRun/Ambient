@@ -555,6 +555,81 @@ mod raw {
                 use std::time::Duration;
                 components ! ("package" , { # [doc = "**Is Package**: Whether or not this entity is a package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Is Package"] , Description ["Whether or not this entity is a package."]] is_package : () , # [doc = "**Enabled**: Whether or not this package is enabled.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Enabled"] , Description ["Whether or not this package is enabled."]] enabled : bool , # [doc = "**ID**: The ID of the package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["ID"] , Description ["The ID of the package."]] id : String , # [doc = "**Name**: The name of the package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Name"] , Description ["The name of the package."]] name : String , # [doc = "**Version**: The version of the package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Version"] , Description ["The version of the package."]] version : String , # [doc = "**Authors**: The authors of the package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Authors"] , Description ["The authors of the package."]] authors : Vec :: < String > , # [doc = "**Description**: The description of the package. If not attached, the package does not have a description.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Description"] , Description ["The description of the package. If not attached, the package does not have a description."]] description : String , # [doc = "**Repository**: The repository of the package. If not attached, the package does not have a repository.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Repository"] , Description ["The repository of the package. If not attached, the package does not have a repository."]] repository : String , # [doc = "**Asset URL**: The asset URL (i.e. where the built assets are) of the package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Asset URL"] , Description ["The asset URL (i.e. where the built assets are) of the package."]] asset_url : String , # [doc = "**Client Modules**: The clientside WASM modules spawned by this package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Client Modules"] , Description ["The clientside WASM modules spawned by this package."]] client_modules : Vec :: < EntityId > , # [doc = "**Server Modules**: The serverside WASM modules spawned by this package.\n\n*Attributes*: Debuggable, Networked"] @ [Debuggable , Networked , Name ["Server Modules"] , Description ["The serverside WASM modules spawned by this package."]] server_modules : Vec :: < EntityId > , });
             }
+            #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+            #[doc = r" and with other modules."]
+            pub mod messages {
+                use crate::{Entity, EntityId};
+                use ambient_package_rt::message_serde::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                };
+                use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+                #[derive(Clone, Debug)]
+                #[doc = "**PackageLoadSuccess**: A package has successfully loaded. Note that this may fire before all of its constituent WASM modules have loaded."]
+                pub struct PackageLoadSuccess {
+                    pub package: EntityId,
+                    pub url: String,
+                }
+                impl PackageLoadSuccess {
+                    #[allow(clippy::too_many_arguments)]
+                    pub fn new(package: impl Into<EntityId>, url: impl Into<String>) -> Self {
+                        Self {
+                            package: package.into(),
+                            url: url.into(),
+                        }
+                    }
+                }
+                impl Message for PackageLoadSuccess {
+                    fn id() -> &'static str {
+                        "PackageLoadSuccess"
+                    }
+                    fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                        let mut output = vec![];
+                        self.package.serialize_message_part(&mut output)?;
+                        self.url.serialize_message_part(&mut output)?;
+                        Ok(output)
+                    }
+                    fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                        Ok(Self {
+                            package: EntityId::deserialize_message_part(&mut input)?,
+                            url: String::deserialize_message_part(&mut input)?,
+                        })
+                    }
+                }
+                impl RuntimeMessage for PackageLoadSuccess {}
+                #[derive(Clone, Debug)]
+                #[doc = "**PackageLoadFailure**: A package has failed to load."]
+                pub struct PackageLoadFailure {
+                    pub url: String,
+                    pub reason: String,
+                }
+                impl PackageLoadFailure {
+                    #[allow(clippy::too_many_arguments)]
+                    pub fn new(url: impl Into<String>, reason: impl Into<String>) -> Self {
+                        Self {
+                            url: url.into(),
+                            reason: reason.into(),
+                        }
+                    }
+                }
+                impl Message for PackageLoadFailure {
+                    fn id() -> &'static str {
+                        "PackageLoadFailure"
+                    }
+                    fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                        let mut output = vec![];
+                        self.url.serialize_message_part(&mut output)?;
+                        self.reason.serialize_message_part(&mut output)?;
+                        Ok(output)
+                    }
+                    fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                        Ok(Self {
+                            url: String::deserialize_message_part(&mut input)?,
+                            reason: String::deserialize_message_part(&mut input)?,
+                        })
+                    }
+                }
+                impl RuntimeMessage for PackageLoadFailure {}
+            }
         }
         pub mod physics {
             #[doc = r" Auto-generated component definitions."]
