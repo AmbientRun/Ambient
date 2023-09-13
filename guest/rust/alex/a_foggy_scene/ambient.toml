@@ -1,0 +1,17 @@
+[package]
+id = "a_foggy_scene"
+name = "a_foggy_scene"
+version = "0.0.1"
+content = { type = "Playable" }
+
+[dependencies]
+base_assets = { path = "../../packages/std/base_assets" }
+character_animation = { path = "../../packages/std/character_animation" }
+character_movement = { path = "../../packages/std/character_movement" }
+hide_cursor = { path = "../../packages/std/hide_cursor" }
+fps_controller = { path = "../../packages/std/fps_controller" }
+
+[components]
+effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
+coldness = { type = "F32", attributes = ["Debuggable", "Networked"] } # from 0-1. at 1, you die.
+warmth_radius = { type = "F32" }

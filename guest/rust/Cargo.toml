@@ -3,6 +3,7 @@ members = [
 
     # Alex's stuff
     "alex/a_nice_scene",
+    "alex/a_foggy_scene",
     "alex/just_fog",
 
     "api",
