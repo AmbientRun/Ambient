@@ -1,4 +1,4 @@
 interface client-clipboard {
-    get: func() -> option<string>
+    get: func()
     set: func(text: string)
 }

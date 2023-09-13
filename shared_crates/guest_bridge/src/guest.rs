@@ -136,12 +136,14 @@ pub mod window {
     }
     pub async fn get_clipboard() -> Option<String> {
         #[cfg(feature = "client")]
-        return super::api::client::clipboard::get();
+        return super::api::client::clipboard::get().await;
         #[cfg(not(feature = "client"))]
         return None;
     }
 
-    pub async fn set_clipboard(_text: &str) -> anyhow::Result<()> {
-        Err(anyhow::anyhow!("Clipboard is not yet supported"))
+    pub async fn set_clipboard(text: &str) -> anyhow::Result<()> {
+        #[cfg(feature = "client")]
+        super::api::client::clipboard::set(text);
+        Ok(())
     }
 }
