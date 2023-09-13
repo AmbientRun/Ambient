@@ -276,7 +276,7 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
             shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 
             // Browsers won't compile larger wasm modules synchronously to avoid locking up the browser
-            Ok(component::Component::new_async(engine.inner(), args.component_bytecode).await?)
+            component::Component::new_async(engine.inner(), args.component_bytecode).await?
         };
 
         #[cfg(not(target_os = "unknown"))]
