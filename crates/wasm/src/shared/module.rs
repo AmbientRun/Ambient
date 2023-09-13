@@ -270,19 +270,21 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
             wasm_bridge::component::Linker::<BindingContext<Bindings>>::new(engine.inner());
 
         #[cfg(target_os = "unknown")]
-        preview2::command::add_to_linker(&mut linker)?;
+        let component = {
+            preview2::command::add_to_linker(&mut linker)?;
+
+            shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
+
+            // Browsers won't compile larger wasm modules synchronously to avoid locking up the browser
+            Ok(component::Component::new_async(engine.inner(), args.component_bytecode).await?)
+        };
 
         #[cfg(not(target_os = "unknown"))]
-        preview2::command::sync::add_to_linker(&mut linker)?;
+        let component = tokio::task::block_in_place(|| -> anyhow::Result<_> {
+            preview2::command::sync::add_to_linker(&mut linker)?;
 
-        shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
+            shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 
-        #[cfg(target_os = "unknown")]
-        // Browsers won't compile larger wasm modules synchronously to avoid locking up the browser
-        let component =
-            component::Component::new_async(engine.inner(), args.component_bytecode).await?;
-        #[cfg(not(target_os = "unknown"))]
-        let component = tokio::task::block_in_place(|| {
             component::Component::new(engine.inner(), args.component_bytecode)
         })?;
 
