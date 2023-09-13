@@ -71,3 +71,33 @@ type = { container_type = "Vec", element_type = "EntityId" }
 name = "Server Modules"
 description = "The serverside WASM modules spawned by this package."
 attributes = ["Debuggable", "Networked"]
+
+[concepts.Package]
+name = "Package"
+description = "A package is a collection of assets, definitions and WASM logic."
+[concepts.Package.components.required]
+is_package = {}
+enabled = {}
+id = {}
+name = {}
+version = {}
+authors = {}
+asset_url = {}
+client_modules = {}
+server_modules = {}
+[concepts.Package.components.optional]
+description = {}
+repository = {}
+
+[messages.PackageLoadSuccess]
+description = "A package has successfully loaded. Note that this may fire before all of its constituent WASM modules have loaded."
+[messages.PackageLoadSuccess.fields]
+package = "EntityId"
+url = "String"
+
+[messages.PackageLoadFailure]
+name = "Package Load Failure"
+description = "A package has failed to load."
+[messages.PackageLoadFailure.fields]
+url = "String"
+reason = "String"

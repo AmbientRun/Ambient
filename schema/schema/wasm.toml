@@ -40,3 +40,15 @@ name = "Package reference"
 description = "The package that this module belongs to."
 type = "EntityId"
 attributes = ["Networked", "Store", "Debuggable"]
+
+[concepts.Module]
+name = "Module"
+description = "A WASM module that can be enabled or disabled, and may or may not be on the server."
+[concepts.Module.components.required]
+is_module = {}
+bytecode_from_url = {}
+module_enabled = {}
+module_name = {}
+package_ref = {}
+[concepts.Module.components.optional]
+is_module_on_server = {}
