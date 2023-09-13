@@ -13,18 +13,19 @@ For details on how to import the content, see [asset pipeline](./asset_pipeline.
 - [Mixamo](https://www.mixamo.com): Free characters and animations.
 
 ## Models
-
+- [OpenGameArt](https://opengameart.org/): Creative commons licensed.
 - [Unity asset store](https://assetstore.unity.com/): Lots of content. The Ambient asset pipeline supports importing Unity models. However, ensure that the license allows you to use the content in your game.
 - [Quixel](https://quixel.com/): Realistic scanned models. The asset pipeline supports importing Quixel models. However, ensure that the license allows you to use the content in your game.
 - [Sketchfab](https://sketchfab.com/): Many models.
 
 ## Materials
 
-- [https://ambientcg.com/](https://ambientcg.com/): Many materials.
+- [Ambientcg.com](https://ambientcg.com/): Many materials.
 
 ## Audio
 
-- [https://freesound.org/](https://freesound.org/): Lots of sounds from recordings to synthesis ones.
+- [Freesound.org](https://freesound.org/): Lots of sounds from recordings to synthesis ones.
+- [8bit Sound Generator](https://www.bfxr.net/): You have full rights to all sounds made with bfxr, and are free to use them for any purposes, commercial or otherwise.
 
 ## Collections
 
