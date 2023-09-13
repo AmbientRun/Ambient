@@ -46,7 +46,10 @@ pub fn main() {
             player::get_local(),
             player_intermediate_rotation(),
             Vec2::ZERO,
-            |rot| *rot += delta.mouse_position * 0.01,
+            |rot| {
+                *rot += delta.mouse_position * 0.01;
+                rot.y = rot.y.clamp(-89f32.to_radians(), 89f32.to_radians());
+            },
         );
 
         if input.keys.contains(&KeyCode::Space) {
