@@ -18,7 +18,7 @@ pub async fn load(url: &str) -> anyhow::Result<EntityId> {
         prelude::wait_for_fallible_runtime_messages,
     };
 
-    internal::wit::server_ambient_package::load(&url);
+    internal::wit::server_ambient_package::load(url);
     let res = wait_for_fallible_runtime_messages::<PackageLoadSuccess, PackageLoadFailure>(
         {
             let url = url.to_owned();
