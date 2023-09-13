@@ -7,9 +7,20 @@ pub fn main() {
         let Some(user_id) = ctx.client_user_id() else {
             return;
         };
-        let url = msg.url.strip_suffix('/').unwrap_or(&msg.url).to_owned();
+        let maybe_url = msg.url.strip_suffix('/').unwrap_or(&msg.url).to_owned();
+        let url = if !maybe_url.contains("http") {
+            format!("https://assets.ambient.run/{maybe_url}")
+        } else {
+            maybe_url
+        };
+        let url = if !url.ends_with("ambient.toml") {
+            format!("{}/ambient.toml", url)
+        } else {
+            url
+        };
+
         run_async(async move {
-            match dbg!(package::load(dbg!(&url)).await) {
+            match package::load(&url).await {
                 Ok(id) => {
                     PackageLoadSuccess::new(
                         id,

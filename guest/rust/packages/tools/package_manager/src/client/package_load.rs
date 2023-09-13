@@ -38,10 +38,10 @@ fn PackageLoadDialogInner(hooks: &mut Hooks, close: Cb<dyn Fn() + Sync + Send>) 
     let (url, set_url) = use_state_with(hooks, |_| String::new());
 
     FlowColumn::el([
-        Text::el("Enter package URL:").with_margin_even(STREET),
+        Text::el("Enter URL/deployment ID for a built package:").with_margin_even(STREET),
         TextEditor::new(url, set_url.clone())
             .auto_focus()
-            .placeholder(Some("URL"))
+            .placeholder(Some("URL/deployment ID"))
             .on_submit(move |url| {
                 messages::PackageLoad { url }.send_server_reliable();
                 set_url(String::new());
