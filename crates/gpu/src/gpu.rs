@@ -55,10 +55,14 @@ impl Gpu {
         let backend = wgpu::Backends::all();
 
         let instance = wgpu::Instance::new(InstanceDescriptor {
-            backends: backend,
+            backends: wgpu::Backends::DX12,
             // TODO upgrade to Dxc ?
             // https://docs.rs/wgpu/latest/wgpu/enum.Dx12Compiler.html
-            dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
+            // dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
+            dx12_shader_compiler: wgpu::Dx12Compiler::Dxc {
+                dxil_path: Some("./dxil.dll".into()),
+                dxc_path: Some("./dxcompiler.dll".into()),
+            },
         });
 
         let surface = window.map(|window| unsafe { instance.create_surface(window).unwrap() });

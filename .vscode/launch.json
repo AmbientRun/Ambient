@@ -23,7 +23,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/controllers/first_person_camera",
+                "guest/rust/examples/basics/primitives",
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

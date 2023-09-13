@@ -101,7 +101,7 @@ impl SyncAssetKey<Settings> for SettingsKey {
         {
             Settings {
                 render: RenderSettings {
-                    render_mode: RenderMode::Indirect,
+                    render_mode: RenderMode::Direct,
                     ..Default::default()
                 },
                 ..Default::default()
