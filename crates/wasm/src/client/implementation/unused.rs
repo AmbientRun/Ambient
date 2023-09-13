@@ -131,7 +131,6 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 }
-
 impl wit::server_message::Host for Bindings {
     fn send(
         &mut self,
@@ -139,12 +138,16 @@ impl wit::server_message::Host for Bindings {
         _: String,
         _: Vec<u8>,
     ) -> anyhow::Result<()> {
-        unimplemented!()
+        unsupported()
     }
 }
-
 impl wit::server_http::Host for Bindings {
     fn get(&mut self, _: String) -> anyhow::Result<()> {
-        unimplemented!()
+        unsupported()
+    }
+}
+impl wit::server_ambient_package::Host for Bindings {
+    fn load(&mut self, _: String) -> anyhow::Result<()> {
+        unsupported()
     }
 }
