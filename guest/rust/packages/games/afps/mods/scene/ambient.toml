@@ -5,4 +5,4 @@ version = "0.0.1"
 content = { type = "Asset", models = true, code = true }
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "4nLSWOFVGx91KtWwXB0Cn9" }
+afps_schema = { path = "../../schema", deployment = "3MID8NqYoDfJs41j5AEzA3" }
