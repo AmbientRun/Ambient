@@ -2,6 +2,7 @@ use std::{path::Path, time::Duration};
 
 use anyhow::Context;
 use clap::Args;
+use futures::future::try_join;
 use itertools::Itertools;
 use notify::{RecursiveMode, Watcher};
 
@@ -11,6 +12,8 @@ use super::build::BuildOptions;
 pub struct Serve {
     #[clap(flatten)]
     build: BuildOptions,
+    #[arg(long)]
+    watch: bool,
 }
 
 impl Serve {
@@ -31,13 +34,19 @@ impl Serve {
                 .context("Failed to run npm install")?;
         }
 
+        self.build
+            .build()
+            .await
+            .context("Failed to build ambient client before serving")?;
+
+        if !Path::new("./web/pkg").exists() {
+            anyhow::bail!("Client package does not exist");
+        }
+
         let serve = self.serve();
         let watch = self.watch_and_build();
 
-        tokio::select! {
-            v = serve => v?,
-            v = watch => v?,
-        }
+        let ((), ()) = try_join(serve, watch).await?;
 
         Ok(())
     }
@@ -92,10 +101,13 @@ impl Serve {
     }
 
     pub async fn watch_and_build(&self) -> anyhow::Result<()> {
-        let (tx, rx) = flume::unbounded();
+        if !self.watch {
+            return Ok(());
+        }
 
-        // Kick off initial build
-        let _ = tx.send(vec![]);
+        log::info!("Enabled watching");
+
+        let (tx, rx) = flume::unbounded();
 
         let mut watcher =
             notify::recommended_watcher(move |event: notify::Result<notify::Event>| {

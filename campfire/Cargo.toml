@@ -21,7 +21,7 @@ simplelog = "0.12.1"
 cargo_toml = "0.15"
 guppy = "0.15"
 indicatif = "0.17.3"
-tokio = { version = "1.0", features = ["fs", "macros", "rt", "process", "time"] }
+tokio = { version = "1.0", features = ["fs", "rt", "process", "time"] }
 futures = "0.3"
 num_cpus = "1.15.0"
 home = "0.5"
