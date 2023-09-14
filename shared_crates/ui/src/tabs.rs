@@ -71,9 +71,8 @@ impl<T: ToString + PartialEq + Default + Clone + Debug + Sync + Send + 'static> 
         self
     }
 }
-impl<
-        T: ToString + PartialEq + Default + ComponentValue + Clone + Debug + Sync + Send + 'static,
-    > ElementComponent for Tabs<T>
+impl<T: ToString + PartialEq + Default + Clone + Debug + Sync + Send + 'static> ElementComponent
+    for Tabs<T>
 {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (value, set_value) = use_state(hooks, T::default());
