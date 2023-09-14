@@ -50,7 +50,7 @@ async fn process_request() -> anyhow::Result<PackageRemoteResponse> {
     .and_then(|id| entity::get_component(id, ambient_api::core::package::components::id()));
 
     let mut api_url = "https://api.ambient.run/packages/list".to_string();
-    if let Some(id) = &mod_manager_for {
+    if let Some(_id) = &mod_manager_for {
         // TODO: use for_playables filtering when available
         api_url.push_str("?content_contains=Mod");
     }

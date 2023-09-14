@@ -3,7 +3,6 @@ use std::{collections::HashSet, fmt};
 use ambient_api::{
     core::{
         package::{
-            self,
             components::{description, id, is_package},
             concepts::Package as PackageConcept,
         },
@@ -161,7 +160,7 @@ fn use_remote_packages(hooks: &mut Hooks) -> PackagesState {
     let (remote_packages, set_remote_packages) = use_state(hooks, PackagesState::Loading);
 
     use_effect(hooks, (), move |_, _| {
-        PackageRemoteRequest::default().send_server_reliable();
+        PackageRemoteRequest.send_server_reliable();
         |_| {}
     });
 
@@ -188,7 +187,6 @@ fn use_remote_packages(hooks: &mut Hooks) -> PackagesState {
                     "Failed to parse packages: {}",
                     error
                 )));
-                return;
             }
         };
     });
@@ -251,7 +249,7 @@ fn PackageList(_hooks: &mut Hooks, packages: Vec<DisplayPackage>) -> Element {
     let mut packages = packages;
     packages.sort_by_key(|package| package.name.clone());
 
-    FlowColumn::el(packages.into_iter().map(|package| Package::el(package)))
+    FlowColumn::el(packages.into_iter().map(Package::el))
         .with(space_between_items(), 8.0)
         .with(min_width(), 400.0)
 }
