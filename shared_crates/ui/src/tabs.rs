@@ -10,7 +10,6 @@ use crate::{
     button::{Button, ButtonStyle},
     default_theme::STREET,
     layout::{FlowColumn, FlowRow},
-    UIExt,
 };
 
 #[derive(Clone, Debug)]
