@@ -8,6 +8,8 @@ version = "0.0.1"
 [dependencies]
 ambient_api = { workspace = true }
 ambient_package = { workspace = true }
+ambient_shared_types = { workspace = true }
+
 toml = "0.7"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

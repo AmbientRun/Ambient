@@ -9,7 +9,7 @@ pub fn main() {
         };
         let maybe_url = msg.url.strip_suffix('/').unwrap_or(&msg.url).to_owned();
         let url = if !maybe_url.contains("http") {
-            format!("https://assets.ambient.run/{maybe_url}")
+            ambient_shared_types::urls::deployment_url(&maybe_url)
         } else {
             maybe_url
         };

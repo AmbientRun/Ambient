@@ -38,7 +38,7 @@ pub async fn deploy(
     auth_token: &str,
     path: impl AsRef<Path>,
     force_upload: bool,
-) -> anyhow::Result<String> {
+) -> anyhow::Result<(String, Manifest)> {
     let manifest =
         Manifest::parse(&tokio::fs::read_to_string(path.as_ref().join("ambient.toml")).await?)?;
 
@@ -155,7 +155,10 @@ pub async fn deploy(
     handle.await??;
 
     // this should have arrived in Finished message from the server
-    deployment.ok_or_else(|| anyhow::anyhow!("No deployment id returned from deploy"))
+    Ok((
+        deployment.ok_or_else(|| anyhow::anyhow!("No deployment id returned from deploy"))?,
+        manifest,
+    ))
 }
 
 // Get all files from "build" and EXTRA_FILES_FROM_PACKAGE_ROOT
