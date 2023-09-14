@@ -5,6 +5,6 @@ version = "0.0.1"
 content = { type = "Playable" }
 
 [dependencies]
-tangent_core = { path = "core", deployment = "3Cr1inzxA7I9S0uGcygsDb" }
-hide_cursor = { path = "../../std/hide_cursor", deployment = "1o9AEWIWxauVgzUsW6x7Fb" }
-package_manager = { path = "../../tools/package_manager", deployment = "4hTFWZ5hiN5sTDAnQ6s1BN" }
+tangent_core = { path = "core", deployment = "5bTrM5ALilFYHrX4LkRxwN" }
+hide_cursor = { path = "../../std/hide_cursor", deployment = "4jy6aSt8bVKwPVjXwWCiq4" }
+package_manager = { path = "../../tools/package_manager", deployment = "FLZfgOfDlm10XUlP60rXI" }
