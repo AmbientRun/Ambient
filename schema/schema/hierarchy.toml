@@ -3,7 +3,7 @@ id = "hierarchy"
 name = "Hierarchy"
 description = "Parent/child relationships."
 content = { type = "Asset", schema = true }
-version = "0.3.0-nightly-2023-09-14"
+version = "0.3.0-dev"
 
 [components.parent]
 type = "EntityId"
