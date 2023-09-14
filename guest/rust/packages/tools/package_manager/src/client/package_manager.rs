@@ -1,6 +1,9 @@
+use std::fmt;
+
 use ambient_api::{
     core::{
         package::{components::description, concepts::Package},
+        rect::components::background_color,
         text::{components::font_style, types::FontStyle},
     },
     element::{use_module_message, use_query, use_spawn},
@@ -33,6 +36,40 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn PackageManagerInner(hooks: &mut Hooks) -> Element {
+    #[derive(PartialEq, Default, Clone, Debug)]
+    enum ListTab {
+        #[default]
+        Local,
+        Remote,
+    }
+    impl fmt::Display for ListTab {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(
+                f,
+                "{}",
+                match self {
+                    ListTab::Local => "Local",
+                    ListTab::Remote => "Remote",
+                }
+            )
+        }
+    }
+
+    Tabs::new()
+        .with_tab(ListTab::Local, || PackagesLocal::el())
+        .with_tab(ListTab::Remote, || {
+            Button::new("Load package", |_| {
+                PackageLoadShow.send_local(crate::packages::this::entity())
+            })
+            .el()
+        })
+        .el()
+        .with(space_between_items(), 4.0)
+        .with_margin_even(STREET)
+}
+
+#[element_component]
+fn PackagesLocal(hooks: &mut Hooks) -> Element {
     let packages = use_query(hooks, Package::as_query());
 
     let display_packages: Vec<_> = packages
@@ -51,15 +88,7 @@ fn PackageManagerInner(hooks: &mut Hooks) -> Element {
         })
         .collect();
 
-    FlowColumn::el([
-        Button::new("Load package", |_| {
-            PackageLoadShow.send_local(crate::packages::this::entity())
-        })
-        .el(),
-        PackageList::el(display_packages),
-    ])
-    .with(space_between_items(), 4.0)
-    .with_margin_even(STREET)
+    PackageList::el(display_packages)
 }
 
 #[derive(Clone, Debug)]
@@ -84,23 +113,13 @@ fn PackageList(_hooks: &mut Hooks, packages: Vec<DisplayPackage>) -> Element {
     packages.sort_by_key(|package| package.name.clone());
 
     FlowColumn::el(packages.into_iter().map(|package| {
-        FlowRow::el([
+        with_rect(FlowRow::el([
             ImageFromUrl {
                 url: assets::url("construction.png"),
             }
             .el()
-            .with(width(), 48.0)
-            .with(height(), 48.0),
-            match &package.source {
-                DisplayPackageSource::Local { id } => {
-                    let id = *id;
-                    FlowColumn::el([Checkbox::new(package.enabled, move |value| {
-                        PackageSetEnabled { id, enabled: value }.send_server_reliable();
-                    })
-                    .el()])
-                }
-                _ => Element::new(),
-            },
+            .with(width(), 64.0)
+            .with(height(), 64.0),
             FlowColumn::el([
                 FlowRow::el([
                     Text::el(package.name).with(font_style(), FontStyle::Bold),
@@ -118,19 +137,39 @@ fn PackageList(_hooks: &mut Hooks, packages: Vec<DisplayPackage>) -> Element {
                 match &package.source {
                     DisplayPackageSource::Local { id } => {
                         let id = *id;
-                        Button::new("View", move |_| {
-                            PackageShow { id }.send_local(crate::packages::this::entity())
-                        })
-                        .style(ButtonStyle::Flat)
-                        .el()
+                        FlowRow::el([
+                            Button::new(
+                                if package.enabled { "Disable" } else { "Enable" },
+                                move |_| {
+                                    PackageSetEnabled {
+                                        id,
+                                        enabled: !package.enabled,
+                                    }
+                                    .send_server_reliable();
+                                },
+                            )
+                            .style(ButtonStyle::Inline)
+                            .el(),
+                            Button::new("View", move |_| {
+                                PackageShow { id }.send_local(crate::packages::this::entity())
+                            })
+                            .style(ButtonStyle::Inline)
+                            .el(),
+                        ])
+                        .with(space_between_items(), 8.0)
                     }
                     _ => Element::new(),
                 },
             ])
-            .with(space_between_items(), 8.0),
-        ])
+            .with(space_between_items(), 4.0),
+        ]))
         .with(space_between_items(), 8.0)
+        .with(background_color(), vec4(0., 0., 0., 0.5))
+        .with(fit_horizontal(), Fit::Parent)
+        .with_padding_even(8.0)
     }))
+    .with(space_between_items(), 8.0)
+    .with(min_width(), 400.0)
 }
 
 // TODO: is there a way to share this?
