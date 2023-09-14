@@ -3,12 +3,14 @@ use std::fmt::Debug;
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{to_owned, use_state, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_guest_bridge::{core::layout::components::space_between_items, ecs::ComponentValue};
+use ambient_guest_bridge::core::layout::components::{padding, space_between_items};
+use glam::vec4;
 
 use crate::{
-    button::Button,
+    button::{Button, ButtonStyle},
     default_theme::STREET,
     layout::{FlowColumn, FlowRow},
+    UIExt,
 };
 
 #[derive(Clone, Debug)]
@@ -38,12 +40,13 @@ impl<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'static> ElementCom
                         move |_| on_change.0(tab.clone())
                     })
                     .toggled(tab == value)
+                    .style(ButtonStyle::Card)
                     .el()
+                    .with(padding(), vec4(0.0, STREET, 0.0, STREET))
                 })
                 .collect(),
         )
         .el()
-        .with(space_between_items(), STREET)
     }
 }
 
