@@ -59,8 +59,9 @@ async fn process_request() -> anyhow::Result<PackageRemoteResponse> {
         let manifest: Manifest = toml::from_str(std::str::from_utf8(&http::get(&url).await?)?)?;
 
         packages_json.push(serde_json::to_string(&PackageJson {
-            name: manifest.package.name,
             url,
+            name: manifest.package.name,
+            id: manifest.package.id.to_string(),
             version: manifest.package.version.to_string(),
             authors: manifest.package.authors,
             description: manifest.package.description,

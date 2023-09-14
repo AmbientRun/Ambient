@@ -1,8 +1,12 @@
-use std::fmt;
+use std::{collections::HashSet, fmt};
 
 use ambient_api::{
     core::{
-        package::{components::description, concepts::Package as PackageConcept},
+        package::{
+            self,
+            components::{description, id, is_package},
+            concepts::Package as PackageConcept,
+        },
         rect::components::background_color,
         text::{components::font_style, types::FontStyle},
     },
@@ -12,14 +16,11 @@ use ambient_api::{
 };
 
 use crate::{
-    packages::{
-        self,
-        this::{
-            assets,
-            messages::{
-                PackageLoadShow, PackageRemoteRequest, PackageRemoteResponse, PackageSetEnabled,
-                PackageShow,
-            },
+    packages::this::{
+        assets,
+        messages::{
+            PackageLoad, PackageLoadShow, PackageRemoteRequest, PackageRemoteResponse,
+            PackageSetEnabled, PackageShow,
         },
     },
     shared::PackageJson,
@@ -99,13 +100,15 @@ fn PackagesLocal(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn PackagesRemote(hooks: &mut Hooks) -> Element {
+    let loaded_packages = use_query(hooks, (is_package(), id()));
+
     #[derive(Clone, Debug)]
     enum PackagesState {
         Loading,
-        Loaded(Vec<DisplayPackage>),
+        Loaded(Vec<PackageJson>),
         Error(String),
     }
-    let (packages, set_packages) = use_state(hooks, PackagesState::Loading);
+    let (remote_packages, set_remote_packages) = use_state(hooks, PackagesState::Loading);
 
     use_effect(hooks, (), move |_, _| {
         PackageRemoteRequest::default().send_server_reliable();
@@ -118,7 +121,7 @@ fn PackagesRemote(hooks: &mut Hooks) -> Element {
         }
 
         if let Some(error) = &msg.error {
-            set_packages(PackagesState::Error(error.to_string()));
+            set_remote_packages(PackagesState::Error(error.to_string()));
             return;
         }
 
@@ -129,9 +132,27 @@ fn PackagesRemote(hooks: &mut Hooks) -> Element {
             .collect::<Result<Vec<_>, _>>();
 
         match packages_json {
-            Ok(packages_json) => set_packages(PackagesState::Loaded(
-                packages_json
+            Ok(packages_json) => set_remote_packages(PackagesState::Loaded(packages_json)),
+            Err(error) => {
+                set_remote_packages(PackagesState::Error(format!(
+                    "Failed to parse packages: {}",
+                    error
+                )));
+                return;
+            }
+        };
+    });
+
+    let loaded_package_ids: HashSet<String> =
+        HashSet::from_iter(loaded_packages.into_iter().map(|(_, (_, id))| id));
+
+    FlowColumn::el([
+        match remote_packages {
+            PackagesState::Loading => Text::el("Loading..."),
+            PackagesState::Loaded(remote_packages) => PackageList::el(
+                remote_packages
                     .into_iter()
+                    .filter(|package| !loaded_package_ids.contains(&package.id))
                     .map(|package| DisplayPackage {
                         source: DisplayPackageSource::Remote {
                             url: package.url.clone(),
@@ -142,21 +163,7 @@ fn PackagesRemote(hooks: &mut Hooks) -> Element {
                         description: package.description,
                     })
                     .collect(),
-            )),
-            Err(error) => {
-                set_packages(PackagesState::Error(format!(
-                    "Failed to parse packages: {}",
-                    error
-                )));
-                return;
-            }
-        };
-    });
-
-    FlowColumn::el([
-        match packages {
-            PackagesState::Loading => Text::el("Loading..."),
-            PackagesState::Loaded(packages) => PackageList::el(packages),
+            ),
             PackagesState::Error(error) => Text::el(error),
         },
         Button::new("Load package from URL", |_| {
@@ -244,7 +251,12 @@ fn Package(_hooks: &mut Hooks, package: DisplayPackage) -> Element {
                     ])
                     .with(space_between_items(), 8.0)
                 }
-                _ => Element::new(),
+                DisplayPackageSource::Remote { url } => {
+                    let url = url.to_string();
+                    button("Load", move || {
+                        PackageLoad { url: url.clone() }.send_server_reliable();
+                    })
+                }
             },
         ])
         .with(space_between_items(), 4.0),
