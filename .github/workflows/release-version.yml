@@ -45,10 +45,12 @@ jobs:
 
           # if tag has a dash then it's an internal release
           if [[ $tag == v*-* ]]; then
-            echo "kind=internal" >> $GITHUB_OUTPUT
+            kind=internal
           else
-            echo "kind=full" >> $GITHUB_OUTPUT
+            kind=full
           fi
+
+          echo "kind=${kind}" >> $GITHUB_OUTPUT
           echo "tag=${tag}" >> $GITHUB_OUTPUT
           echo "version=${version}" >> $GITHUB_OUTPUT
 
