@@ -3,7 +3,7 @@ id = "procedurals"
 name = "Procedurals"
 description = "Procedural asset functionality and related."
 content = { type = "Asset", schema = true }
-version = "0.3.0-dev"
+version = "0.3.0-internal-kuba-just-testing-trigger"
 
 [components.procedural_mesh]
 type = "ProceduralMeshHandle"
