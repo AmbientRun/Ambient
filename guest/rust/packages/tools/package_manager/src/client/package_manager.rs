@@ -10,17 +10,22 @@ use ambient_api::{
         rect::components::background_color,
         text::{components::font_style, types::FontStyle},
     },
-    element::{use_effect, use_module_message, use_query, use_spawn, use_state},
+    element::{
+        use_effect, use_entity_component, use_module_message, use_query, use_spawn, use_state,
+    },
     prelude::*,
     ui::ImageFromUrl,
 };
 
 use crate::{
-    packages::this::{
-        assets,
-        messages::{
-            PackageLoad, PackageLoadShow, PackageRemoteRequest, PackageRemoteResponse,
-            PackageSetEnabled, PackageShow,
+    packages::{
+        self,
+        this::{
+            assets,
+            messages::{
+                PackageLoad, PackageLoadShow, PackageRemoteRequest, PackageRemoteResponse,
+                PackageSetEnabled, PackageShow,
+            },
         },
     },
     shared::PackageJson,
@@ -30,18 +35,56 @@ use super::use_hotkey_toggle;
 
 #[element_component]
 pub fn PackageManager(hooks: &mut Hooks) -> Element {
+    let mod_manager_for = use_entity_component(
+        hooks,
+        packages::this::entity(),
+        packages::this::components::mod_manager_for(),
+    )
+    .0;
+
+    let title = if mod_manager_for.is_some() {
+        "Mod Manager".to_string()
+    } else {
+        "Package Manager".to_string()
+    };
+
     let (visible, set_visible) = use_hotkey_toggle(hooks, VirtualKeyCode::F4);
-    use_editor_menu_bar(hooks, "Package Manager".to_string(), {
+    use_editor_menu_bar(hooks, title.clone(), {
         let set_visible = set_visible.clone();
         move || set_visible(!visible)
     });
 
     Window::el(
-        "Package Manager".to_string(),
+        title.clone(),
         visible,
         Some(cb(move || set_visible(false))),
-        PackageManagerInner::el(),
+        if let Some(mod_manager_for) = mod_manager_for {
+            ModManagerInner::el(mod_manager_for)
+        } else {
+            PackageManagerInner::el()
+        }
+        .with(space_between_items(), 4.0)
+        .with_margin_even(STREET),
     )
+}
+
+#[element_component]
+fn ModManagerInner(hooks: &mut Hooks, _mod_manager_for: EntityId) -> Element {
+    let remote_packages = use_remote_packages(hooks);
+
+    match &remote_packages {
+        PackagesState::Loading => Text::el("Loading..."),
+        PackagesState::Loaded(packages) => FlowColumn::el([
+            Text::el("Local").header_style(),
+            // The server filters what's available, so we can safely assume that
+            // if it's in the remote packages, it's relevant to us
+            // TODO: replace this with clientside filtering
+            PackagesLocal::el(packages.iter().map(|pkg| pkg.id.clone()).collect()),
+            Text::el("Remote").header_style(),
+            PackagesRemote::el(remote_packages),
+        ]),
+        PackagesState::Error(error) => Text::el(error),
+    }
 }
 
 #[element_component]
@@ -65,20 +108,29 @@ fn PackageManagerInner(hooks: &mut Hooks) -> Element {
         }
     }
 
+    let remote_packages = use_remote_packages(hooks);
+
     Tabs::new()
-        .with_tab(ListTab::Local, || PackagesLocal::el())
-        .with_tab(ListTab::Remote, || PackagesRemote::el())
+        .with_tab(ListTab::Local, || PackagesLocal::el(HashSet::new()))
+        .with_tab(ListTab::Remote, move || {
+            PackagesRemote::el(remote_packages.clone())
+        })
         .el()
-        .with(space_between_items(), 4.0)
-        .with_margin_even(STREET)
 }
 
 #[element_component]
-fn PackagesLocal(hooks: &mut Hooks) -> Element {
+fn PackagesLocal(hooks: &mut Hooks, show_only_these_package_ids: HashSet<String>) -> Element {
     let packages = use_query(hooks, PackageConcept::as_query());
 
     let display_packages: Vec<_> = packages
         .into_iter()
+        .filter(|(_, package)| {
+            if show_only_these_package_ids.is_empty() {
+                return true;
+            }
+
+            show_only_these_package_ids.contains(&package.id)
+        })
         .map(|(id, package)| {
             let description = entity::get_component(id, description());
 
@@ -98,16 +150,14 @@ fn PackagesLocal(hooks: &mut Hooks) -> Element {
     PackageList::el(display_packages)
 }
 
-#[element_component]
-fn PackagesRemote(hooks: &mut Hooks) -> Element {
-    let loaded_packages = use_query(hooks, (is_package(), id()));
-
-    #[derive(Clone, Debug)]
-    enum PackagesState {
-        Loading,
-        Loaded(Vec<PackageJson>),
-        Error(String),
-    }
+#[derive(Clone, Debug)]
+enum PackagesState {
+    Loading,
+    Loaded(Vec<PackageJson>),
+    Error(String),
+}
+// TODO: Remove once we know about the content on the client :facepalm:
+fn use_remote_packages(hooks: &mut Hooks) -> PackagesState {
     let (remote_packages, set_remote_packages) = use_state(hooks, PackagesState::Loading);
 
     use_effect(hooks, (), move |_, _| {
@@ -142,6 +192,13 @@ fn PackagesRemote(hooks: &mut Hooks) -> Element {
             }
         };
     });
+
+    remote_packages
+}
+
+#[element_component]
+fn PackagesRemote(hooks: &mut Hooks, remote_packages: PackagesState) -> Element {
+    let loaded_packages = use_query(hooks, (is_package(), id()));
 
     let loaded_package_ids: HashSet<String> =
         HashSet::from_iter(loaded_packages.into_iter().map(|(_, (_, id))| id));
