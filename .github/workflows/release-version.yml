@@ -43,8 +43,8 @@ jobs:
           else
             echo "kind=full" >> $GITHUB_OUTPUT
           fi
-          echo 'tag=${tag}' >> $GITHUB_OUTPUT
-          echo 'version=${version}' >> $GITHUB_OUTPUT
+          echo "tag=${tag}" >> $GITHUB_OUTPUT
+          echo "version=${version}" >> $GITHUB_OUTPUT
 
   create-release:
     if: needs.meta.outputs.kind == 'full'
