@@ -140,11 +140,6 @@ jobs:
           cd ${{ env.EXE_DIR }}
           xcrun notarytool store-credentials "notarytool-profile" --apple-id "${{ secrets.APPLE_DEVELOPER_EMAIL }}" --team-id="${{ secrets.APPLE_TEAM_ID }}" --password "${{ secrets.APPLE_DEVELOPER_PASSWORD }}"
           xcrun notarytool submit "ambient-${{ matrix.target }}.zip" --keychain-profile "notarytool-profile" --wait
-      - name: Upload debug symbols
-        run: sentry-cli upload-dif -o dims -p client ${{ env.EXE_DIR }}/${{ matrix.exe_name }} ${{ env.EXE_DIR }}/${{ matrix.symbol_path }}
-      - name: Upload
-        if: needs.meta.outputs.kind == 'full'
-        run: gh release upload ${{ needs.meta.outputs.tag }} ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
       - name: Authenticate with Google Cloud
         id: auth
         uses: google-github-actions/auth@v0
@@ -158,6 +153,11 @@ jobs:
         with:
           path: ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
           destination: "ambient-artifacts/ambient-builds/${{ needs.meta.outputs.version }}/${{ matrix.os }}"
+      - name: Upload GitHub release
+        if: needs.meta.outputs.kind == 'full'
+        run: gh release upload ${{ needs.meta.outputs.tag }} ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
+      - name: Upload debug symbols
+        run: sentry-cli upload-dif -o dims -p native-client ${{ env.EXE_DIR }}/${{ matrix.exe_name }} ${{ env.EXE_DIR }}/${{ matrix.symbol_path }}
 
   publish-api:
     if: needs.meta.outputs.kind == 'full'
