@@ -1678,6 +1678,7 @@ dependencies = [
  "ambient_api",
  "ambient_package",
  "serde",
+ "serde_json",
  "toml 0.7.6",
 ]
 
@@ -2379,6 +2380,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "tangent"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
 ]
 
 [[package]]

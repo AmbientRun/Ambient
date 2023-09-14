@@ -4,6 +4,12 @@ name = "Package Manager"
 version = "0.0.1"
 content = { type = "Tool" }
 
+[components.mod_manager_for]
+name = "Mod Manager For"
+description = "Package config component. Attach this component to this package's entity to make it a mod manager for the given package."
+type = "EntityId"
+attributes = ["Networked", "Debuggable"]
+
 [messages.PackageLoad.fields]
 url = "String"
 
@@ -34,5 +40,17 @@ id = "EntityId"
 description = "Shows the package load view"
 [messages.PackageLoadShow.fields]
 
+[messages.PackageRemoteRequest]
+description = "Requests all relevant remote packages"
+[messages.PackageRemoteRequest.fields]
+
+[messages.PackageRemoteResponse]
+description = "Response to a remote package request"
+[messages.PackageRemoteResponse.fields]
+# It would be nice to send structured types here
+# https://github.com/AmbientRun/Ambient/issues/790
+packages = { container_type = "Vec", element_type = "String" }
+error = { container_type = "Option", element_type = "String" }
+
 [dependencies]
-editor_schema = { path = "../../schemas/editor", deployment = "pmZjq6Wcr1luBrsbkR141" }
+editor_schema = { path = "../../schemas/editor", deployment = "NCtVbEsZzOTybL5etYjHH" }

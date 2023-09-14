@@ -2,7 +2,7 @@
 id = "tangent_scene"
 name = "Tangent Scene"
 version = "0.0.1"
-content = { type = "Asset", models = true, code = true }
+content = { type = "Mod", for_playables = ["tangent"] }
 
 [dependencies]
-tangent_schema = { path = "../../schema" , deployment = "6aJ3qf6AHkUgyarfXphwsJ" }
+tangent_schema = { deployment = "1TPATbTfhDSITewj4eCfJQ" }
