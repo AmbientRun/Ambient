@@ -5,4 +5,4 @@ version = "0.0.1"
 content = { type = "Asset", models = true, code = true }
 
 [dependencies]
-tangent_schema = { path = "../../schema" , deployment = "68FZwslnO39yL69EUXnmHf" }
+tangent_schema = { path = "../../schema" , deployment = "6aJ3qf6AHkUgyarfXphwsJ" }

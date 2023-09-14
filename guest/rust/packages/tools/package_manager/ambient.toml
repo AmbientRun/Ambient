@@ -35,4 +35,4 @@ description = "Shows the package load view"
 [messages.PackageLoadShow.fields]
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor", deployment = "4UgpKM1XlmWzvZC6dLrZui" }
+editor_schema = { path = "../../schemas/editor", deployment = "pmZjq6Wcr1luBrsbkR141" }
