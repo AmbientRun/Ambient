@@ -1,6 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_package::Manifest;
 use ambient_settings::{Settings, SettingsKey};
 use anyhow::Context;
 use parking_lot::Mutex;
@@ -40,8 +41,9 @@ pub async fn handle(
                 .api_token
                 .as_ref()
                 .with_context(|| format!(
-                    "No API token provided. You can provide one with `--token` or by specifying it in `general.api_token` in {:?}. Create your api token on the Ambient website: https://ambient-733e7.web.app",
-                    Settings::path().unwrap_or_default()
+                    "No API token provided.\n\nYou can provide one with `--token` or by specifying `general.api_token` in {:?}.\n\nCreate your API token on the Ambient website: '{}'.",
+                    Settings::path().unwrap_or_default(),
+                    ambient_shared_types::urls::AMBIENT_WEB_APP_URL
                 ))?
         }
     };
@@ -49,12 +51,15 @@ pub async fn handle(
     #[derive(Debug, Clone)]
     enum Deployment {
         Skipped,
-        Deployed(String),
+        Deployed {
+            deployment_id: String,
+            manifest: Manifest,
+        },
     }
     impl Deployment {
         fn as_deployed(&self) -> Option<String> {
             match self {
-                Self::Deployed(v) => Some(v.clone()),
+                Self::Deployed { deployment_id, .. } => Some(deployment_id.clone()),
                 _ => None,
             }
         }
@@ -143,10 +148,13 @@ pub async fn handle(
                 let manifest_path_to_deployment_id = manifest_path_to_deployment_id.clone();
                 async move {
                     let deployment = if was_built {
-                        let deployment_id =
+                        let deployment =
                             ambient_deploy::deploy(api_server, token, build_path, force_upload)
                                 .await?;
-                        Deployment::Deployed(deployment_id)
+                        Deployment::Deployed {
+                            deployment_id: deployment.0,
+                            manifest: deployment.1,
+                        }
                     } else {
                         // TODO: this check does not actually save much, as the process of deploying
                         // the package and updating the manifest invalidates the last-build-time check
@@ -182,12 +190,24 @@ pub async fn handle(
                     "Package \"{main_package_name}\" was already deployed, skipping deployment"
                 );
             }
-            Deployment::Deployed(deployment_id) => {
+            Deployment::Deployed {
+                deployment_id,
+                manifest,
+            } => {
+                let deploy_url = ambient_shared_types::urls::deployment_url(&deployment_id);
+                let ensure_running_url =
+                    ambient_shared_types::urls::ensure_running_url(&deployment_id);
+                let web_url = ambient_shared_types::urls::web_package_url(
+                    manifest.package.id.as_str(),
+                    Some(deployment_id.as_str()),
+                );
+
                 log::info!("Package \"{main_package_name}\" deployed successfully!");
                 log::info!("  Deployment ID: {deployment_id}");
-                log::info!("  Deploy URL: https://assets.ambient.run/{deployment_id}");
-                log::info!("  Run: ambient run 'https://assets.ambient.run/{deployment_id}'");
-                log::info!("  Join: ambient join 'https://api.ambient.run/servers/ensure-running?deployment_id={deployment_id}'");
+                log::info!("  Deploy URL: '{deploy_url}'");
+                log::info!("  Web URL: '{web_url}'");
+                log::info!("  Run: ambient run '{deploy_url}'");
+                log::info!("  Join: ambient join '{ensure_running_url}'");
 
                 if first_deployment_id.is_none() {
                     first_deployment_id = Some(deployment_id);

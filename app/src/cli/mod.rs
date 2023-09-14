@@ -69,7 +69,7 @@ pub enum Commands {
         #[arg(long)]
         extra_packages: Vec<PathBuf>,
         /// API server endpoint
-        #[arg(long, default_value = "https://api.ambient.run")]
+        #[arg(long, default_value = ambient_shared_types::urls::API_URL)]
         api_server: String,
         /// Authentication token
         #[arg(short, long)]

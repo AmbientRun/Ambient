@@ -1677,6 +1677,7 @@ version = "0.0.1"
 dependencies = [
  "ambient_api",
  "ambient_package",
+ "ambient_shared_types",
  "serde",
  "serde_json",
  "toml 0.7.6",

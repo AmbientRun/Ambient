@@ -1,7 +1,6 @@
-use std::collections::HashSet;
-
 use ambient_api::{anyhow, core::package::components::enabled, prelude::*};
 use ambient_package::Manifest;
+use ambient_shared_types::urls::{PackageContent, PackageListParams};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -49,26 +48,32 @@ async fn process_request() -> anyhow::Result<PackageRemoteResponse> {
     )
     .and_then(|id| entity::get_component(id, ambient_api::core::package::components::id()));
 
-    let mut api_url = "https://api.ambient.run/packages/list".to_string();
-    if let Some(_id) = &mod_manager_for {
-        // TODO: use for_playables filtering when available
-        api_url.push_str("?content_contains=Mod");
-    }
+    let list_params = if let Some(id) = &mod_manager_for {
+        PackageListParams {
+            content_contains: &[PackageContent::Mod],
+            for_playable: Some(id),
+            ..default()
+        }
+    } else {
+        PackageListParams {
+            content_contains: &[
+                PackageContent::Mod,
+                PackageContent::Asset,
+                PackageContent::Tool,
+            ],
+            ..default()
+        }
+    };
+    let api_url = ambient_shared_types::urls::package_list_url(list_params);
 
-    let mut api_packages: Vec<PackageListApiJson> =
-        serde_json::from_slice(&http::get(&api_url).await?)?;
-
-    let ignore_content_types: HashSet<&str> = HashSet::from_iter(["Schema", "Playable"]);
-    api_packages.retain(|pkg| {
-        HashSet::from_iter(pkg.content.iter().map(|s| s.as_str()))
-            .is_disjoint(&ignore_content_types)
-    });
+    let api_packages =
+        serde_json::from_slice::<Vec<PackageListApiJson>>(&http::get(&api_url).await?)?;
 
     let mut packages_json = vec![];
     for api_package in api_packages {
         let url = format!(
-            "https://assets.ambient.run/{}/ambient.toml",
-            api_package.latest_deployment
+            "{}/ambient.toml",
+            ambient_shared_types::urls::deployment_url(&api_package.latest_deployment)
         );
 
         let manifest: Manifest = toml::from_str(std::str::from_utf8(&http::get(&url).await?)?)?;
