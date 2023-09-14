@@ -78,7 +78,7 @@ fn ModManagerInner(hooks: &mut Hooks, _mod_manager_for: EntityId) -> Element {
             // The server filters what's available, so we can safely assume that
             // if it's in the remote packages, it's relevant to us
             // TODO: replace this with clientside filtering
-            PackagesLocal::el(packages.iter().map(|pkg| pkg.id.clone()).collect()),
+            PackagesLocal::el(Some(packages.iter().map(|pkg| pkg.id.clone()).collect())),
             Text::el("Remote").header_style(),
             PackagesRemote::el(remote_packages),
         ]),
@@ -110,7 +110,7 @@ fn PackageManagerInner(hooks: &mut Hooks) -> Element {
     let remote_packages = use_remote_packages(hooks);
 
     Tabs::new()
-        .with_tab(ListTab::Local, || PackagesLocal::el(HashSet::new()))
+        .with_tab(ListTab::Local, || PackagesLocal::el(None))
         .with_tab(ListTab::Remote, move || {
             PackagesRemote::el(remote_packages.clone())
         })
@@ -118,17 +118,21 @@ fn PackageManagerInner(hooks: &mut Hooks) -> Element {
 }
 
 #[element_component]
-fn PackagesLocal(hooks: &mut Hooks, show_only_these_package_ids: HashSet<String>) -> Element {
+fn PackagesLocal(
+    hooks: &mut Hooks,
+    show_only_these_package_ids: Option<HashSet<String>>,
+) -> Element {
     let packages = use_query(hooks, PackageConcept::as_query());
 
     let display_packages: Vec<_> = packages
         .into_iter()
         .filter(|(_, package)| {
-            if show_only_these_package_ids.is_empty() {
-                return true;
+            if let Some(show_only_these_package_ids) = &show_only_these_package_ids {
+                if !show_only_these_package_ids.contains(&package.id) {
+                    return false;
+                }
             }
-
-            show_only_these_package_ids.contains(&package.id)
+            true
         })
         .map(|(id, package)| {
             let description = entity::get_component(id, description());
