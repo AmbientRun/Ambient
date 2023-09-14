@@ -46,7 +46,7 @@ impl Gpu {
         }
 
         let backends = if cfg!(target_os = "windows") {
-            wgpu::Backends::DX12
+            wgpu::Backends::VULKAN
         } else if cfg!(target_os = "macos") {
             wgpu::Backends::PRIMARY
         } else if cfg!(target_os = "unknown") {

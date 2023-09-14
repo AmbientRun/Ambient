@@ -1,4 +1,3 @@
-use core::panic;
 use std::sync::Arc;
 
 use ambient_ecs::{EntityId, World};
@@ -345,7 +344,6 @@ impl RendererCollect {
         }
 
         if render_mode == RenderMode::Indirect {
-            panic!("");
             use ambient_core::RuntimeKey;
 
             let buffs = CollectCountStagingBuffersKey.get(assets);

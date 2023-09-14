@@ -589,10 +589,9 @@ impl TreeRenderer {
                         let mesh = mesh_buffer.get_mesh_metadata(&primitive.mesh);
                         let index = offset + i as u64;
 
-                        tracing::debug!("Drawing {index}, {mesh:?}");
                         render_pass.draw_indexed(
                             mesh.index_offset..(mesh.index_offset + mesh.index_count),
-                            0,
+                            mesh.base_offset as i32,
                             index as u32..(index as u32 + 1),
                         )
                     }
@@ -600,12 +599,15 @@ impl TreeRenderer {
             }
         }
     }
+
     pub fn n_entities(&self) -> usize {
         self.tree.values().fold(0, |p, n| p + n.n_entities())
     }
+
     pub fn n_nodes(&self) -> usize {
         self.tree.values().fold(0, |p, n| p + n.n_nodes())
     }
+
     pub fn dump(&self, f: &mut dyn std::io::Write) {
         for (key, node) in self.tree.iter() {
             writeln!(f, "    shader {key:?}").unwrap();

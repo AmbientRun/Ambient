@@ -42,7 +42,9 @@ impl Settings {
                                 render,
                                 ..Default::default()
                             };
+
                             settings.write_to_file(Some(path.clone()))?;
+
                             settings
                         } else {
                             return Err(err)
@@ -101,7 +103,6 @@ impl SyncAssetKey<Settings> for SettingsKey {
         {
             Settings {
                 render: RenderSettings {
-                    render_mode: RenderMode::Direct,
                     ..Default::default()
                 },
                 ..Default::default()

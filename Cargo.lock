@@ -1342,6 +1342,7 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_native_std",
  "anyhow",
+ "cfg-if",
  "directories",
  "serde",
  "toml 0.7.8",
