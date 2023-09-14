@@ -2383,6 +2383,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tangent"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "tangent_core"
 version = "0.0.1"
 dependencies = [
