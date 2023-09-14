@@ -45,14 +45,17 @@ impl Gpu {
             std::env::set_var("DISABLE_LAYER_NV_OPTIMUS_1", "1");
         }
 
-        #[cfg(target_os = "windows")]
-        let backends = wgpu::Backends::DX12;
+        let backends = if cfg!(target_os = "windows") {
+            wgpu::Backends::DX12
+        } else if cfg!(target_os = "macos") {
+            wgpu::Backends::PRIMARY
+        } else if cfg!(target_os = "unknown") {
+            wgpu::Backends::BROWSER_WEBGPU
+        } else {
+            wgpu::Backends::all()
+        };
 
-        #[cfg(all(not(target_os = "windows"), not(target_os = "unknown")))]
-        let backends = wgpu::Backends::PRIMARY;
-
-        #[cfg(target_os = "unknown")]
-        let backends = wgpu::Backends::all();
+        tracing::info!("Configured backends: {backends:?}");
 
         let instance = wgpu::Instance::new(InstanceDescriptor {
             backends,

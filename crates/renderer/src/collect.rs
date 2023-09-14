@@ -1,4 +1,5 @@
-use std::{cell::RefMut, sync::Arc};
+use core::panic;
+use std::sync::Arc;
 
 use ambient_ecs::{EntityId, World};
 use ambient_gpu::{
@@ -85,7 +86,6 @@ pub(crate) struct RendererCollectState {
     pub params: TypedBuffer<RendererCollectParams>,
     pub commands: TypedBuffer<DrawIndexedIndirect>,
     pub counts: TypedBuffer<u32>,
-    // #[cfg(any(target_os = "macos", target_os = "unknown"))]
     /// Multi draw indexed indirect is not supported on macOS
     pub(crate) counts_cpu: Arc<Mutex<DrawCountState>>,
     pub tick: u64,
@@ -120,7 +120,6 @@ impl RendererCollectState {
                     | wgpu::BufferUsages::COPY_SRC
                     | wgpu::BufferUsages::INDIRECT,
             ),
-            // #[cfg(any(target_os = "macos", target_os = "unknown"))]
             counts_cpu: Arc::new(Default::default()),
             material_layouts: TypedBuffer::new(
                 gpu,
@@ -345,10 +344,8 @@ impl RendererCollect {
             cpass.dispatch_workgroups(x, 1, 1);
         }
 
-        if cfg!(target_os = "macos")
-            || cfg!(target_os = "unknown")
-            || render_mode == RenderMode::Indirect
-        {
+        if render_mode == RenderMode::Indirect {
+            panic!("");
             use ambient_core::RuntimeKey;
 
             let buffs = CollectCountStagingBuffersKey.get(assets);
