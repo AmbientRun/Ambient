@@ -1,4 +1,4 @@
-name: "deploy-web"
+name: Deploy web client
 
 on:
   workflow_dispatch:
