@@ -3,7 +3,7 @@ id = "prefab"
 name = "Prefab"
 description = "Prefab-related state, including loading of prefabs."
 content = { type = "Asset", schema = true }
-version = "0.3.0-internal-screenshot-fix"
+version = "0.3.0-dev"
 
 [components.prefab_from_url]
 type = "String"
