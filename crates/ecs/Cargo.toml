@@ -11,10 +11,10 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_sys = { path = "../sys", version = "0.3.0-dev" }
-ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
-ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.3.0-dev" }
-ambient_package_rt = { path = "../../shared_crates/package_rt" , version = "0.3.0-dev" }
+ambient_sys = { path = "../sys", version = "0.3.0-nightly-2023-09-14" }
+ambient_native_std = { path = "../native_std" , version = "0.3.0-nightly-2023-09-14" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.3.0-nightly-2023-09-14" }
+ambient_package_rt = { path = "../../shared_crates/package_rt" , version = "0.3.0-nightly-2023-09-14" }
 
 itertools = { workspace = true }
 serde = { workspace = true }
