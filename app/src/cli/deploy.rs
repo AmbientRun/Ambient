@@ -146,11 +146,17 @@ pub async fn handle(
             |package_manifest_path, build_path, was_built| {
                 // After build, deploy the package.
                 let manifest_path_to_deployment_id = manifest_path_to_deployment_id.clone();
+                let package_path = package_path.clone();
                 async move {
                     let deployment = if was_built {
-                        let deployment =
-                            ambient_deploy::deploy(api_server, token, build_path, force_upload)
-                                .await?;
+                        let deployment = ambient_deploy::deploy(
+                            api_server,
+                            token,
+                            build_path,
+                            package_path,
+                            force_upload,
+                        )
+                        .await?;
                         Deployment::Deployed {
                             deployment_id: deployment.0,
                             manifest: deployment.1,
