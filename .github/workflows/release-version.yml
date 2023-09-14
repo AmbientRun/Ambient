@@ -9,8 +9,9 @@ on:
   push:
     tags: [v*]
     branches:
-      # Testing only
-      - kuba/merge-nightly-release-jobs
+      # For workflow testing only
+      # This is to simulate pushing to a tag
+      - WORKFLOW-TESTING/release-version/v*
 
 permissions:
   contents: write
@@ -29,17 +30,22 @@ jobs:
       - name: Extract tag and version
         id: extract
         run: |
-          tag=${GITHUB_REF#refs/tags/v}
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            tag=${GITHUB_REF#refs/tags/}
+          elif [[ $GITHUB_REF == refs/heads/WORKFLOW-TESTING/release-version/* ]]; then
+            # This is a special case for testing only
+            tag=${GITHUB_REF#refs/heads/WORKFLOW-TESTING/release-version/}
+          else
+            echo "Triggered for unexpected git ref"
+            exit 1
+          fi
+
+          # Version is the tag without the v
           version=${tag#v}
 
           # if tag has a dash then it's an internal release
-          if [[ $GITHUB_REF == refs/tags/v*-* ]]; then
+          if [[ $tag == v*-* ]]; then
             echo "kind=internal" >> $GITHUB_OUTPUT
-          elif [[ $GITHUB_REF == refs/heads/kuba/merge-nightly-release-jobs ]]; then
-            # This is a special case for testing only
-            echo "kind=internal" >> $GITHUB_OUTPUT
-            tag="v0.3.0-internal-kuba-merge-nightly-release-jobs"
-            version="0.3.0-internal-kuba-merge-nightly-release-jobs"
           else
             echo "kind=full" >> $GITHUB_OUTPUT
           fi
