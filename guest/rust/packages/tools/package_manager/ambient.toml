@@ -34,5 +34,17 @@ id = "EntityId"
 description = "Shows the package load view"
 [messages.PackageLoadShow.fields]
 
+[messages.PackageRemoteRequest]
+description = "Requests all relevant remote packages"
+[messages.PackageRemoteRequest.fields]
+
+[messages.PackageRemoteResponse]
+description = "Response to a remote package request"
+[messages.PackageRemoteResponse.fields]
+# It would be nice to send structured types here
+# https://github.com/AmbientRun/Ambient/issues/790
+packages = { container_type = "Vec", element_type = "String" }
+error = { container_type = "Option", element_type = "String" }
+
 [dependencies]
 editor_schema = { path = "../../schemas/editor", deployment = "pmZjq6Wcr1luBrsbkR141" }
