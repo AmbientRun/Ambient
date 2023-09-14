@@ -358,7 +358,6 @@ impl TreeRenderer {
             );
             collect_state.commands.write(gpu, 0, &draw_commands);
 
-            #[cfg(any(target_os = "macos", target_os = "unknown"))]
             {
                 let mut counts_state = collect_state.counts_cpu.lock();
                 counts_state.update(counts, collect_state.tick)
@@ -558,10 +557,10 @@ impl TreeRenderer {
                 //
                 // This is due to an unconditional panic
                 // https://github.com/gfx-rs/wgpu/blob/4478c52debcab1b88b80756b197dc10ece90dec9/wgpu/src/backend/web.rs#L3053
-                #[cfg(all(not(target_os = "macos"), not(target_os = "unknown")))]
                 if cfg!(target_os = "windows")
                     && self.config.render_mode == RenderMode::MultiIndirect
                 {
+                    panic!("");
                     render_pass.multi_draw_indexed_indirect_count(
                         collect_state.commands.buffer(),
                         offset * std::mem::size_of::<DrawIndexedIndirect>() as u64,
@@ -588,6 +587,7 @@ impl TreeRenderer {
                         );
                     }
                 } else {
+                    panic!("aerns");
                     for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
                         let primitive = &world.get_ref(id, primitives()).unwrap()[primitive_idx];
 
