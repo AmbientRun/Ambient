@@ -4,6 +4,12 @@ name = "Package Manager"
 version = "0.0.1"
 content = { type = "Tool" }
 
+[components.mod_manager_for]
+name = "Mod Manager For"
+description = "Package config component. Attach this component to this package's entity to make it a mod manager for the given package."
+type = "EntityId"
+attributes = ["Networked", "Debuggable"]
+
 [messages.PackageLoad.fields]
 url = "String"
 
@@ -47,4 +53,4 @@ packages = { container_type = "Vec", element_type = "String" }
 error = { container_type = "Option", element_type = "String" }
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor", deployment = "pmZjq6Wcr1luBrsbkR141" }
+editor_schema = { path = "../../schemas/editor", deployment = "gqDEh5MyO0TAYzAzRHxbm" }

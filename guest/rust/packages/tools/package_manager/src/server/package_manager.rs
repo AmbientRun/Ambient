@@ -5,7 +5,10 @@ use ambient_package::Manifest;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    packages::this::messages::{PackageRemoteRequest, PackageRemoteResponse, PackageSetEnabled},
+    packages::{
+        self,
+        this::messages::{PackageRemoteRequest, PackageRemoteResponse, PackageSetEnabled},
+    },
     shared::PackageJson,
 };
 
@@ -40,8 +43,20 @@ pub fn main() {
 }
 
 async fn process_request() -> anyhow::Result<PackageRemoteResponse> {
+    let mod_manager_for = entity::get_component(
+        packages::this::entity(),
+        packages::this::components::mod_manager_for(),
+    )
+    .and_then(|id| entity::get_component(id, ambient_api::core::package::components::id()));
+
+    let mut api_url = "https://api.ambient.run/packages/list".to_string();
+    if let Some(id) = &mod_manager_for {
+        // TODO: use for_playables filtering when available
+        api_url.push_str("?content_contains=Mod");
+    }
+
     let mut api_packages: Vec<PackageListApiJson> =
-        serde_json::from_slice(&http::get("https://api.ambient.run/packages/list").await?)?;
+        serde_json::from_slice(&http::get(&api_url).await?)?;
 
     let ignore_content_types: HashSet<&str> = HashSet::from_iter(["Schema", "Playable"]);
     api_packages.retain(|pkg| {
@@ -57,6 +72,17 @@ async fn process_request() -> anyhow::Result<PackageRemoteResponse> {
         );
 
         let manifest: Manifest = toml::from_str(std::str::from_utf8(&http::get(&url).await?)?)?;
+
+        if let Some(id) = &mod_manager_for {
+            let ambient_package::PackageContent::Mod { for_playables } = manifest.package.content
+            else {
+                continue;
+            };
+
+            if !for_playables.contains(id) {
+                continue;
+            }
+        }
 
         packages_json.push(serde_json::to_string(&PackageJson {
             url,
