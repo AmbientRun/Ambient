@@ -1,7 +1,14 @@
-name: Tag nightly build
+# This workflow is triggered on a schedule and on demand. It updates the version number and triggers the deploy jobs.
+
+name: Tag internal build
 
 on:
   workflow_dispatch:
+    inputs:
+      suffix:
+        description: 'Suffix to add to the version number (e.g. suffix "testing" will create a version like "0.3.0-internal-testing")'
+        required: true
+        default: 'fancy-new-feature'
   schedule:
     - cron: '0 2 * * *'
 
@@ -31,12 +38,22 @@ jobs:
         run: rustup target add --toolchain stable wasm32-wasi
       - name: Rust cache
         uses: Leafwing-Studios/cargo-cache@v1.1.0
+
+      - name: Extract tag from input
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "version_suffix=internal-${{ github.event.inputs.suffix }}" >> $GITHUB_ENV
+      - name: Extract tag from input
+        if: github.event_name == 'schedule'
+        run: |
+          date_suffix=$(date +%Y-%m-%d)
+          echo "version_suffix=nightly-${date_suffix}" >> $GITHUB_ENV
+
       - name: Update version and tag
         id: tag
         run: |
           version_majminpat=$(cargo cf --version | sed -E -e 's/campfire ([0-9]+\.[0-9]+\.[0-9]+).*$/\1/')
-          date_suffix=$(date +%Y-%m-%d)
-          version="${version_majminpat}-nightly-${date_suffix}"
+          version="${version_majminpat}-${{ env.version_suffix }}"
           tag="v${version}"
           cargo cf release update-version ${version}
           git config --global user.name "${{ env.BOT_NAME }}"
@@ -49,7 +66,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            for (const workflow_id of ['build-server.yml', 'build-nightly.yml', 'deploy-web.yml', 'deploy-packages.yml']) {
+            for (const workflow_id of ['deploy-server.yml', 'release-version.yml', 'deploy-web.yml', 'deploy-packages.yml']) {
               github.rest.actions.createWorkflowDispatch({
                 owner: context.repo.owner,
                 repo: context.repo.repo,

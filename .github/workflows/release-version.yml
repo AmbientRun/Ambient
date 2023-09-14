@@ -1,8 +1,17 @@
+# This workflow expects a version tag like "v0.4.0" or "v0.3.0-nightly".
+# If the version doesn't have a pre-release part (that is it doesn't have any "-") then a full release will be performed.
+# Otherwise it will create and upload an internal build.
+
 name: Release
 
 on:
+  workflow_dispatch:
   push:
     tags: [v*]
+    branches:
+      # For workflow testing only
+      # This is to simulate pushing to a tag
+      - WORKFLOW-TESTING/release-version/v*
 
 permissions:
   contents: write
@@ -11,7 +20,48 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  meta:
+    runs-on: ubuntu-22.04
+    outputs:
+      kind: ${{ steps.extract.outputs.kind }}
+      tag: ${{ steps.extract.outputs.tag }}
+      version: ${{ steps.extract.outputs.version }}
+    steps:
+      - name: Extract tag and version
+        id: extract
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            tag=${GITHUB_REF#refs/tags/}
+          elif [[ $GITHUB_REF == refs/heads/WORKFLOW-TESTING/release-version/* ]]; then
+            # This is a special case for testing only
+            tag=${GITHUB_REF#refs/heads/WORKFLOW-TESTING/release-version/}
+          else
+            echo "Triggered for unexpected git ref"
+            exit 1
+          fi
+
+          # Version is the tag without the v
+          version=${tag#v}
+
+          # if tag has a dash then it's an internal release
+          if [[ $tag == v*-* ]]; then
+            kind=internal
+          else
+            kind=full
+          fi
+
+          echo "kind=${kind}" >> $GITHUB_OUTPUT
+          echo "tag=${tag}" >> $GITHUB_OUTPUT
+          echo "version=${version}" >> $GITHUB_OUTPUT
+
+          # print out what was set
+          echo "kind=${kind}"
+          echo "tag=${tag}"
+          echo "version=${version}"
+
   create-release:
+    if: needs.meta.outputs.kind == 'full'
+    needs: meta
     runs-on: ubuntu-22.04
     outputs:
       tag: ${{ steps.create-gh-release.outputs.computed-prefix }}${{ steps.create-gh-release.outputs.version }}
@@ -24,7 +74,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   upload-examples:
-    needs: create-release
+    if: needs.meta.outputs.kind == 'full'
+    needs: meta
     runs-on: ubuntu-22.04
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -33,10 +84,12 @@ jobs:
       - name: Copy and upload examples
         run: |
           ./scripts/make_examples_bundle.sh
-          gh release upload ${{ needs.create-release.outputs.tag }} tmp/examples.zip
+          gh release upload ${{ needs.meta.outputs.tag }} tmp/examples.zip
 
   build-app:
-    needs: create-release
+    needs: meta
+    permissions:
+      id-token: write
     strategy:
       matrix:
         include:
@@ -100,13 +153,28 @@ jobs:
           cd ${{ env.EXE_DIR }}
           xcrun notarytool store-credentials "notarytool-profile" --apple-id "${{ secrets.APPLE_DEVELOPER_EMAIL }}" --team-id="${{ secrets.APPLE_TEAM_ID }}" --password "${{ secrets.APPLE_DEVELOPER_PASSWORD }}"
           xcrun notarytool submit "ambient-${{ matrix.target }}.zip" --keychain-profile "notarytool-profile" --wait
+      - name: Authenticate with Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v0
+        with:
+          token_format: access_token
+          workload_identity_provider: projects/549180905870/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github@ambient-733e7.iam.gserviceaccount.com
+          access_token_lifetime: 1800s
+      - name: Upload to Google Cloud
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
+          destination: "ambient-artifacts/ambient-builds/${{ needs.meta.outputs.version }}/${{ matrix.os }}"
+      - name: Upload GitHub release
+        if: needs.meta.outputs.kind == 'full'
+        run: gh release upload ${{ needs.meta.outputs.tag }} ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
       - name: Upload debug symbols
-        run: sentry-cli upload-dif -o dims -p client ${{ env.EXE_DIR }}/${{ matrix.exe_name }} ${{ env.EXE_DIR }}/${{ matrix.symbol_path }}
-      - name: Upload
-        run: gh release upload ${{ needs.create-release.outputs.tag }} ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
+        run: sentry-cli upload-dif -o dims -p native-client ${{ env.EXE_DIR }}/${{ matrix.exe_name }} ${{ env.EXE_DIR }}/${{ matrix.symbol_path }}
 
   publish-api:
-    needs: [create-release, build-app]
+    if: needs.meta.outputs.kind == 'full'
+    needs: [meta, create-release, build-app]
     runs-on: ubuntu-22.04
     env:
       CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
@@ -118,7 +186,8 @@ jobs:
         run: cargo run -p campfire-slim release publish --execute
 
   publish-release:
-    needs: [create-release, build-app, publish-api]
+    if: needs.meta.outputs.kind == 'full'
+    needs: [meta, create-release, build-app, publish-api]
     runs-on: ubuntu-22.04
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
