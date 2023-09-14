@@ -15,4 +15,4 @@ ray_dir = "Vec3"
 position = "Vec3"
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "54J8J4hjR0RfLRFLxq8swi" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "vsUm2Yl6FkADdJtiWd1A8" }

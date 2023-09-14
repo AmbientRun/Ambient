@@ -5,7 +5,7 @@ version = "0.0.1"
 content = { type = "Tool" }
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor" , deployment = "4UgpKM1XlmWzvZC6dLrZui" }
+editor_schema = { path = "../../schemas/editor" , deployment = "pmZjq6Wcr1luBrsbkR141" }
 
 [components]
 # Player components
