@@ -52,6 +52,11 @@ jobs:
           echo "tag=${tag}" >> $GITHUB_OUTPUT
           echo "version=${version}" >> $GITHUB_OUTPUT
 
+          # print out what was set
+          echo "kind=${kind}"
+          echo "tag=${tag}"
+          echo "version=${version}"
+
   create-release:
     if: needs.meta.outputs.kind == 'full'
     needs: meta
