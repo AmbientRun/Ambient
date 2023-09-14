@@ -6,6 +6,5 @@ content = { type = "Playable" }
 
 [dependencies]
 tangent_core = { path = "core", deployment = "6ohn5Rwwqy8FuFGe4AYgZi" }
-tangent_scene = { path = "mods/scene", deployment = "7Mq34Y8E6M0xDZvT8oKUpe" }
 hide_cursor = { path = "../../std/hide_cursor", deployment = "72i9rwwm8taOeSqEYXnuQN" }
 package_manager = { path = "../../tools/package_manager", deployment = "2mGVCqCbJiOIANR4owPWPF" }
