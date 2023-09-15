@@ -4,3 +4,6 @@ type = "Models"
 
 [pipelines.collider]
 type = "FromModel"
+
+[[pipelines]]
+type = "Audio"
