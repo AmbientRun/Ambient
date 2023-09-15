@@ -281,26 +281,21 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
 
         #[cfg(not(target_os = "unknown"))]
         let component = tokio::task::block_in_place(|| -> anyhow::Result<_> {
-            tracing::info!("Adding bindings to linker");
             preview2::command::sync::add_to_linker(&mut linker)?;
 
             shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 
-            tracing::info!("Instantiate component");
             component::Component::new(engine.inner(), args.component_bytecode)
         })?;
 
         let (guest_bindings, guest_instance) = async {
-            tracing::info!("Instantiate bindings");
             let (guest_bindings, guest_instance) =
                 shared::wit::Bindings::instantiate(&mut store, &component, &linker)?;
 
             // Initialise the runtime.
-            tracing::info!(id=?args.id, "initialize runtime");
             guest_bindings
                 .ambient_bindings_guest()
                 .call_init(&mut store)?;
-            tracing::info!("Initialized");
             anyhow::Ok((guest_bindings, guest_instance))
         }
         .await?;
