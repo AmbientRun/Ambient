@@ -31,7 +31,7 @@ pub enum RenderMode {
 impl RenderMode {
     pub const fn instrinsic_render_mode() -> Self {
         cfg_if::cfg_if! {
-            if #[cfg(target_os = "windows")] {
+            if #[cfg(any(target_os = "windows", target_os = "linux"))] {
                 Self::MultiIndirect
             } else if #[cfg(target_os = "macos")] {
                 Self::Indirect
