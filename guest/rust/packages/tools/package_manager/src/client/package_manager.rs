@@ -3,7 +3,7 @@ use std::{collections::HashSet, fmt};
 use ambient_api::{
     core::{
         package::{
-            components::{description, id, is_package},
+            components::{description, for_playables, id, is_package},
             concepts::Package as PackageConcept,
         },
         rect::components::background_color,
@@ -68,26 +68,17 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
 }
 
 #[element_component]
-fn ModManagerInner(hooks: &mut Hooks, _mod_manager_for: EntityId) -> Element {
-    let remote_packages = use_remote_packages(hooks);
-
-    match &remote_packages {
-        PackagesState::Loading => Text::el("Loading..."),
-        PackagesState::Loaded(packages) => FlowColumn::el([
-            Text::el("Local").header_style(),
-            // The server filters what's available, so we can safely assume that
-            // if it's in the remote packages, it's relevant to us
-            // TODO: replace this with clientside filtering
-            PackagesLocal::el(Some(packages.iter().map(|pkg| pkg.id.clone()).collect())),
-            Text::el("Remote").header_style(),
-            PackagesRemote::el(remote_packages),
-        ]),
-        PackagesState::Error(error) => Text::el(error),
-    }
+fn ModManagerInner(_hooks: &mut Hooks, mod_manager_for: EntityId) -> Element {
+    FlowColumn::el([
+        Text::el("Local").header_style(),
+        PackagesLocal::el(Some(mod_manager_for)),
+        Text::el("Remote").header_style(),
+        PackagesRemote::el(),
+    ])
 }
 
 #[element_component]
-fn PackageManagerInner(hooks: &mut Hooks) -> Element {
+fn PackageManagerInner(_hooks: &mut Hooks) -> Element {
     #[derive(PartialEq, Default, Clone, Debug)]
     enum ListTab {
         #[default]
@@ -107,32 +98,36 @@ fn PackageManagerInner(hooks: &mut Hooks) -> Element {
         }
     }
 
-    let remote_packages = use_remote_packages(hooks);
-
     Tabs::new()
         .with_tab(ListTab::Local, || PackagesLocal::el(None))
-        .with_tab(ListTab::Remote, move || {
-            PackagesRemote::el(remote_packages.clone())
-        })
+        .with_tab(ListTab::Remote, move || PackagesRemote::el())
         .el()
 }
 
 #[element_component]
-fn PackagesLocal(
-    hooks: &mut Hooks,
-    show_only_these_package_ids: Option<HashSet<String>>,
-) -> Element {
+fn PackagesLocal(hooks: &mut Hooks, mod_manager_for: Option<EntityId>) -> Element {
     let packages = use_query(hooks, PackageConcept::as_query());
+
+    let mod_manager_for = match mod_manager_for {
+        Some(mod_manager_for) => match entity::get_component(mod_manager_for, id()) {
+            Some(id) => Some(id),
+            None => return Text::el("Could not get ID of main package to mod").into(),
+        },
+        None => None,
+    };
 
     let display_packages: Vec<_> = packages
         .into_iter()
-        .filter(|(_, package)| {
-            if let Some(show_only_these_package_ids) = &show_only_these_package_ids {
-                if !show_only_these_package_ids.contains(&package.id) {
-                    return false;
+        .filter(|(id, package)| {
+            if let Some(mod_manager_for) = &mod_manager_for {
+                if let Some(for_playables) = entity::get_component(*id, for_playables()) {
+                    for_playables.contains(mod_manager_for)
+                } else {
+                    false
                 }
+            } else {
+                true
             }
-            true
         })
         .map(|(id, package)| {
             let description = entity::get_component(id, description());
@@ -159,7 +154,6 @@ enum PackagesState {
     Loaded(Vec<PackageJson>),
     Error(String),
 }
-// TODO: Remove once we know about the content on the client :facepalm:
 fn use_remote_packages(hooks: &mut Hooks) -> PackagesState {
     let (remote_packages, set_remote_packages) = use_state(hooks, PackagesState::Loading);
 
@@ -199,7 +193,8 @@ fn use_remote_packages(hooks: &mut Hooks) -> PackagesState {
 }
 
 #[element_component]
-fn PackagesRemote(hooks: &mut Hooks, remote_packages: PackagesState) -> Element {
+fn PackagesRemote(hooks: &mut Hooks) -> Element {
+    let remote_packages = use_remote_packages(hooks);
     let loaded_packages = use_query(hooks, (is_package(), id()));
 
     let loaded_package_ids: HashSet<String> =

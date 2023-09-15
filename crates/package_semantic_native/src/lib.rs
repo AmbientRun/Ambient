@@ -17,6 +17,7 @@ use ambient_ecs::{
 };
 use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::ServerWorldExt;
+use ambient_package::PackageContent;
 use ambient_package_semantic::{
     Item, ItemId, ItemSource, LocalOrRemote, Package, PrimitiveType, RetrievableFile, Semantic,
     TypeInner,
@@ -234,6 +235,9 @@ fn sync_semantic_to_world(
         }
         if let Some(repository) = &manifest.package.repository {
             entity.set(self::repository(), repository.clone());
+        }
+        if let PackageContent::Mod { for_playables } = &manifest.package.content {
+            entity.set(self::for_playables(), for_playables.clone());
         }
         let entity = entity.spawn(world);
         world

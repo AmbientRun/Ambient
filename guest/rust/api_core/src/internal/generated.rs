@@ -2644,6 +2644,12 @@ mod raw {
                 pub fn repository() -> Component<String> {
                     *REPOSITORY
                 }
+                static FOR_PLAYABLES: Lazy<Component<Vec<String>>> =
+                    Lazy::new(|| __internal_get_component("ambient_core::package::for_playables"));
+                #[doc = "**For Playables**: The playable IDs that this package is for. This package must be a `Mod`.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn for_playables() -> Component<Vec<String>> {
+                    *FOR_PLAYABLES
+                }
                 static ASSET_URL: Lazy<Component<String>> =
                     Lazy::new(|| __internal_get_component("ambient_core::package::asset_url"));
                 #[doc = "**Asset URL**: The asset URL (i.e. where the built assets are) of the package.\n\n*Attributes*: Debuggable, Networked"]
@@ -2699,6 +2705,8 @@ mod raw {
                     pub description: Option<String>,
                     #[doc = "**Component**: `ambient_core::package::repository`\n\n**Component description**: The repository of the package. If not attached, the package does not have a repository.\n\n"]
                     pub repository: Option<String>,
+                    #[doc = "**Component**: `ambient_core::package::for_playables`\n\n**Component description**: The playable IDs that this package is for. This package must be a `Mod`.\n\n"]
+                    pub for_playables: Option<Vec<String>>,
                 }
                 impl Concept for Package {
                     fn make(self) -> Entity {
@@ -2743,6 +2751,12 @@ mod raw {
                             entity.set(
                                 crate::ambient_core::package::components::repository(),
                                 repository,
+                            );
+                        }
+                        if let Some(for_playables) = self.optional.for_playables {
+                            entity.set(
+                                crate::ambient_core::package::components::for_playables(),
+                                for_playables,
                             );
                         }
                         entity
@@ -2794,6 +2808,10 @@ mod raw {
                                     id,
                                     crate::ambient_core::package::components::repository(),
                                 ),
+                                for_playables: entity::get_component(
+                                    id,
+                                    crate::ambient_core::package::components::for_playables(),
+                                ),
                             },
                         })
                     }
@@ -2820,6 +2838,8 @@ mod raw {
                                     .get(crate::ambient_core::package::components::description()),
                                 repository: entity
                                     .get(crate::ambient_core::package::components::repository()),
+                                for_playables: entity
+                                    .get(crate::ambient_core::package::components::for_playables()),
                             },
                         })
                     }
@@ -2865,7 +2885,7 @@ mod raw {
                         Component<Vec<EntityId>>,
                         Component<Vec<EntityId>>,
                     );
-                    type Optional = (Component<String>, Component<String>);
+                    type Optional = (Component<String>, Component<String>, Component<Vec<String>>);
                     fn required() -> Self::Required {
                         (
                             crate::ambient_core::package::components::is_package(),
@@ -2883,6 +2903,7 @@ mod raw {
                         (
                             crate::ambient_core::package::components::description(),
                             crate::ambient_core::package::components::repository(),
+                            crate::ambient_core::package::components::for_playables(),
                         )
                     }
                     fn from_required_data(
@@ -2978,6 +2999,90 @@ mod raw {
                     }
                 }
                 impl RuntimeMessage for PackageLoadFailure {}
+            }
+            #[doc = r" Auto-generated type definitions."]
+            pub mod types {
+                use crate::{global::serde, message::*};
+                #[derive(
+                    Copy,
+                    Clone,
+                    Debug,
+                    PartialEq,
+                    Eq,
+                    serde :: Serialize,
+                    serde :: Deserialize,
+                    Default,
+                )]
+                #[serde(crate = "self::serde")]
+                #[doc = "**PackageContent**: The content type of the package."]
+                pub enum PackageContent {
+                    #[default]
+                    #[doc = "A playable experience."]
+                    Playable,
+                    #[doc = "An asset."]
+                    Asset,
+                    #[doc = "A tool."]
+                    Tool,
+                    #[doc = "A mod."]
+                    Mod,
+                }
+                impl crate::ecs::EnumComponent for PackageContent {
+                    fn to_u32(&self) -> u32 {
+                        match self {
+                            Self::Playable => PackageContent::Playable as u32,
+                            Self::Asset => PackageContent::Asset as u32,
+                            Self::Tool => PackageContent::Tool as u32,
+                            Self::Mod => PackageContent::Mod as u32,
+                        }
+                    }
+                    fn from_u32(value: u32) -> Option<Self> {
+                        if value == PackageContent::Playable as u32 {
+                            return Some(Self::Playable);
+                        }
+                        if value == PackageContent::Asset as u32 {
+                            return Some(Self::Asset);
+                        }
+                        if value == PackageContent::Tool as u32 {
+                            return Some(Self::Tool);
+                        }
+                        if value == PackageContent::Mod as u32 {
+                            return Some(Self::Mod);
+                        }
+                        None
+                    }
+                }
+                impl crate::ecs::SupportedValue for PackageContent {
+                    fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_result(result).and_then(Self::from_u32)
+                    }
+                    fn into_result(self) -> crate::ecs::WitComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_result()
+                    }
+                    fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                        use crate::ecs::EnumComponent;
+                        u32::from_value(value).and_then(Self::from_u32)
+                    }
+                    fn into_value(self) -> crate::ecs::ComponentValue {
+                        use crate::ecs::EnumComponent;
+                        self.to_u32().into_value()
+                    }
+                }
+                impl MessageSerde for PackageContent {
+                    fn serialize_message_part(
+                        &self,
+                        output: &mut Vec<u8>,
+                    ) -> Result<(), MessageSerdeError> {
+                        crate::ecs::EnumComponent::to_u32(self).serialize_message_part(output)
+                    }
+                    fn deserialize_message_part(
+                        input: &mut dyn std::io::Read,
+                    ) -> Result<Self, MessageSerdeError> {
+                        crate::ecs::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                            .ok_or(MessageSerdeError::InvalidValue)
+                    }
+                }
             }
         }
         pub mod physics {
