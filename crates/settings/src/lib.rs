@@ -118,8 +118,24 @@ impl SyncAssetKey<Settings> for SettingsKey {
     fn load(&self, _assets: ambient_native_std::asset_cache::AssetCache) -> Settings {
         #[cfg(target_os = "unknown")]
         {
+            use js_sys::Reflect;
+            let nav = web_sys::window().unwrap().navigator();
+            let ua = Reflect::get(&nav, &"userAgentData".into()).unwrap();
+            let platform = Reflect::get(&ua, &"platform".into())
+                .unwrap()
+                .as_string()
+                .unwrap();
+
+            tracing::info!("Detected platform: {platform}");
+            let render_mode = if platform == "Windows" {
+                RenderMode::Direct
+            } else {
+                RenderMode::Indirect
+            };
+
             Settings {
                 render: RenderSettings {
+                    render_mode: Some(render_mode),
                     ..Default::default()
                 },
                 ..Default::default()

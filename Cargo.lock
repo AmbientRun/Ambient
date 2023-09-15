@@ -1345,9 +1345,11 @@ dependencies = [
  "anyhow",
  "cfg-if",
  "directories",
+ "js-sys",
  "serde",
  "toml 0.7.8",
  "tracing",
+ "web-sys",
 ]
 
 [[package]]
