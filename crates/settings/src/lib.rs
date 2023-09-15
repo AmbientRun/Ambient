@@ -46,6 +46,10 @@ impl Settings {
                         } else {
                             settings
                         }
+                        #[cfg(any(target_os = "windows", target_os = "linux"))]
+                        {
+                            settings
+                        }
                     }
                     Err(err) => {
                         if let Ok(render) = toml::from_str::<RenderSettings>(&settings) {

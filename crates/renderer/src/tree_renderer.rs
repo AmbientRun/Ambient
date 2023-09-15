@@ -557,11 +557,11 @@ impl TreeRenderer {
                 // This is due to an unconditional panic
                 // https://github.com/gfx-rs/wgpu/blob/4478c52debcab1b88b80756b197dc10ece90dec9/wgpu/src/backend/web.rs#L3053
                 if self.config.render_mode == RenderMode::MultiIndirect {
-                    #[cfg(not(any(target_os = "windows", target_os= "linux")))]
+                    #[cfg(not(any(target_os = "windows", target_os = "linux")))]
                     {
                         panic!("MultiIndirect is not supported on the current platform");
                     }
-                    #[cfg(any(target_os = "windows", target_os= "linux"))]
+                    #[cfg(any(target_os = "windows", target_os = "linux"))]
                     {
                         render_pass.multi_draw_indexed_indirect_count(
                             collect_state.commands.buffer(),
