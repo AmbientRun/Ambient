@@ -9,7 +9,6 @@ use ambient_api::{
         },
         messages::Frame,
         physics::components::linear_velocity,
-        rect::components::{line_from, line_to, line_width, rect},
         rendering::components::color,
         text::components::{font_size, text},
         transform::{
@@ -19,17 +18,14 @@ use ambient_api::{
             concepts::{Transformable, TransformableOptional},
         },
     },
-    element::use_query,
     prelude::*,
 };
 use packages::tangent_schema::{
     components::{player_vehicle, vehicle, vehicle_hud},
     messages::Input,
 };
-use packages::this::components::{debug_lines, debug_messages};
 
 const CAMERA_OFFSET: Vec3 = vec3(0.5, 1.8, 0.6);
-const RENDER_DEBUG: bool = false;
 
 #[main]
 pub fn main() {
@@ -149,52 +145,8 @@ pub fn main() {
             .send_server_unreliable();
         }
     });
-
-    if RENDER_DEBUG {
-        DebugUI.el().spawn_interactive();
-        DebugLines.el().spawn_interactive();
-    }
 }
 
 fn speed_kph(linear_velocity: Vec3, rotation: Quat) -> f32 {
     linear_velocity.dot(rotation * -Vec3::Y) * 3.6
-}
-
-#[element_component]
-fn DebugUI(hooks: &mut Hooks) -> Element {
-    let messages = use_query(hooks, debug_messages());
-
-    FlowColumn::el(messages.into_iter().map(|(id, msgs)| {
-        FlowColumn::el([
-            Text::el(format!("{}", id,)).section_style(),
-            FlowColumn::el(
-                msgs.into_iter()
-                    .map(|s| Text::el(s).with(color(), vec4(1., 1., 1., 1.))),
-            ),
-        ])
-    }))
-    .with_padding_even(10.)
-    .with_background(vec4(1., 1., 1., 0.02))
-}
-
-#[element_component]
-fn DebugLines(hooks: &mut Hooks) -> Element {
-    let lines = use_query(hooks, debug_lines());
-
-    Group::el(lines.into_iter().flat_map(|(_, lines)| {
-        lines
-            .chunks(2)
-            .map(|line| {
-                let [start, end]: [Vec3; 2] = line.try_into().unwrap();
-
-                Element::new()
-                    .init_default(rect())
-                    .with(main_scene(), ())
-                    .with(line_from(), start)
-                    .with(line_to(), end)
-                    .with(line_width(), 0.05)
-                    .with(color(), vec4(1., 1., 1., 1.))
-            })
-            .collect::<Vec<_>>()
-    }))
 }
