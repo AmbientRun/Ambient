@@ -1,0 +1,19 @@
+[package]
+id = "temperature"
+name = "temperature"
+version = "0.0.1"
+content = { type = "Asset", code = true, schema = true }
+
+[components]
+temperature = { type = "F32", attributes = ["Debuggable", "Networked"] }
+temperature_src_rate = { type = "F32" } # rate of change per second of affected temperature-havers
+temperature_src_radius = { type = "F32" } # at what range does this strength affect temperature-havers?
+temperature_src_falloff = { type = "F32" } # % (0-1) of radius that is a linear gradient. optional. default is 0.5
+
+# [concepts.temperature_source]
+# name = "Temperature Source"
+# description = "Source of temperature changes for entities with 'temperature' component"
+# [concepts.temperature_source.fields]
+# temperature_src = 37.0 # body temp.
+# temperature_src_radius = 5.0
+# temperature_src_falloff = 0.1
