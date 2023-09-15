@@ -103,7 +103,7 @@ pub fn load_scene() {
         .spawn();
 
     let nodes =
-        crate::sceneloader::scene_contents_to_nodes(include_str!("../data/snowstorm_maze.tscn"));
+        crate::sceneloader::scene_contents_to_nodes(include_str!("../scenes/snowstorm_maze.tscn"));
 
     for (_key, node) in nodes {
         if let Some(path) = node.path {
