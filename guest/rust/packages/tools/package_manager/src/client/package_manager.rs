@@ -100,7 +100,7 @@ fn PackageManagerInner(_hooks: &mut Hooks) -> Element {
 
     Tabs::new()
         .with_tab(ListTab::Local, || PackagesLocal::el(None))
-        .with_tab(ListTab::Remote, move || PackagesRemote::el())
+        .with_tab(ListTab::Remote, PackagesRemote::el)
         .el()
 }
 
@@ -111,14 +111,14 @@ fn PackagesLocal(hooks: &mut Hooks, mod_manager_for: Option<EntityId>) -> Elemen
     let mod_manager_for = match mod_manager_for {
         Some(mod_manager_for) => match entity::get_component(mod_manager_for, id()) {
             Some(id) => Some(id),
-            None => return Text::el("Could not get ID of main package to mod").into(),
+            None => return Text::el("Could not get ID of main package to mod"),
         },
         None => None,
     };
 
     let display_packages: Vec<_> = packages
         .into_iter()
-        .filter(|(id, package)| {
+        .filter(|(id, _package)| {
             if let Some(mod_manager_for) = &mod_manager_for {
                 if let Some(for_playables) = entity::get_component(*id, for_playables()) {
                     for_playables.contains(mod_manager_for)
