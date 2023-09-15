@@ -1,7 +1,7 @@
 [package]
 id = "tangent_schema"
 name = "Tangent Schema"
-version = "0.0.1"
+version = "0.1.0"
 content = { type = "Asset", schema = true }
 
 [components]

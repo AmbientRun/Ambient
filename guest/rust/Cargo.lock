@@ -2385,21 +2385,21 @@ dependencies = [
 
 [[package]]
 name = "tangent"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "tangent_core"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
-name = "tangent_scene"
-version = "0.0.1"
+name = "tangent_level_cubicide"
+version = "0.1.0"
 dependencies = [
  "ambient_api",
 ]

@@ -3,7 +3,7 @@ name = "tangent"
 
 edition = "2021"
 publish = false
-version = "0.0.1"
+version = "0.1.0"
 
 [dependencies]
 ambient_api = { workspace = true }

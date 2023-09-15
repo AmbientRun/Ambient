@@ -1,7 +1,7 @@
 [package]
 id = "tangent_core"
 name = "Tangent Core"
-version = "0.0.1"
+version = "0.1.0"
 content = { type = "Playable" }
 
 [components]
@@ -13,4 +13,5 @@ debug_messages = { type = { type = "Vec", element_type = "String" }, name = "Deb
 ] }
 
 [dependencies]
-tangent_schema = { path = "../schema" , deployment = "50R0JirqrBg4FxIBO7JMMd" }
+tangent_schema = { path = "../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
+hide_cursor = { path = "../../../std/hide_cursor", deployment = "1IceD2zFRXDdJRwvCtUSGK" }

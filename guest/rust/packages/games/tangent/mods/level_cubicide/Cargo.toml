@@ -1,15 +1,15 @@
 [package]
-name = "tangent_scene"
+name = "tangent_level_cubicide"
 
 edition = "2021"
 publish = false
-version = "0.0.1"
+version = "0.1.0"
 
 [dependencies]
 ambient_api = { workspace = true }
 
 [[bin]]
-name = "tangent_scene_server"
+name = "tangent_level_cubicide_server"
 path = "src/server.rs"
 required-features = ["server"]
 
