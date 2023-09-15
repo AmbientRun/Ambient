@@ -6,11 +6,13 @@ use std::{
 
 use ambient_package::{BuildMetadata, Manifest, PackageId, SnakeCaseIdentifier};
 use ambient_std::path;
-use anyhow::Context as AnyhowContext;
+use thiserror::Error;
 use url::Url;
 
 use crate::{
-    schema, util::read_file, Item, ItemData, ItemId, ItemType, ItemValue, Resolve, Scope, Semantic,
+    schema,
+    util::{read_file, ReadFileError},
+    Item, ItemData, ItemId, ItemType, ItemValue, Resolve, Scope, Semantic,
 };
 use semver::Version;
 
@@ -41,6 +43,24 @@ impl Display for PackageLocator {
     }
 }
 
+#[derive(Error, Debug)]
+pub enum GetError {
+    #[error("Failed to find {0:?} in Ambient schema")]
+    FailedToFindInAmbientSchema(PathBuf),
+    #[error("Failed to read file")]
+    ReadFileError(#[from] ReadFileError),
+    #[error("Path {0:?} must be absolute")]
+    PathMustBeAbsolute(PathBuf),
+}
+
+#[derive(Error, Debug)]
+pub enum ParentJoinError {
+    #[error("No parent for {0:?}")]
+    NoParent(PathBuf),
+    #[error("URL parse error")]
+    UrlParseError(#[from] url::ParseError),
+}
+
 #[derive(Clone, PartialEq, Debug, Eq, Hash)]
 /// Paths should be to the manifest, not to the folder it's in
 pub enum RetrievableFile {
@@ -49,14 +69,17 @@ pub enum RetrievableFile {
     Url(Url),
 }
 impl RetrievableFile {
-    pub async fn get(&self) -> anyhow::Result<String> {
+    pub async fn get(&self) -> Result<String, GetError> {
         Ok(match self {
             RetrievableFile::Ambient(path) => schema()
                 .get(ambient_std::path::path_to_unix_string_lossy(path).as_str())
-                .with_context(|| format!("Failed to find {path:?} in Ambient schema"))?
+                .ok_or_else(|| GetError::FailedToFindInAmbientSchema(path.to_owned()))?
                 .to_string(),
             RetrievableFile::Path(path) => {
-                anyhow::ensure!(path.is_absolute(), "Path {path:?} must be absolute");
+                if !path.is_absolute() {
+                    return Err(GetError::PathMustBeAbsolute(path.to_owned()));
+                }
+
                 #[cfg(target_os = "unknown")]
                 {
                     unimplemented!("file reading is not supported on web")
@@ -73,10 +96,13 @@ impl RetrievableFile {
     }
 
     /// Takes the parent of this path and joins it with the given path
-    pub fn parent_join(&self, suffix: &Path) -> anyhow::Result<Self> {
-        fn parent_join(path: &Path, suffix: &Path) -> anyhow::Result<PathBuf> {
+    pub fn parent_join(&self, suffix: &Path) -> Result<Self, ParentJoinError> {
+        fn parent_join(path: &Path, suffix: &Path) -> Result<PathBuf, ParentJoinError> {
             Ok(path::normalize(
-                &path.parent().context("no parent")?.join(suffix),
+                &path
+                    .parent()
+                    .ok_or_else(|| ParentJoinError::NoParent(path.to_owned()))?
+                    .join(suffix),
             ))
         }
 
