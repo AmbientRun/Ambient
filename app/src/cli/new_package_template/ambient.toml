@@ -3,3 +3,4 @@ id = "{{id}}"
 name = "{{name}}"
 version = "0.0.1"
 content = { type = "Playable" }
+ambient_version = "{{ambient_version}}"
