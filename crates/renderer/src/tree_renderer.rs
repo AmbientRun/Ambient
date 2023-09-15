@@ -358,14 +358,12 @@ impl TreeRenderer {
             );
             collect_state.commands.write(gpu, 0, &draw_commands);
 
-            #[cfg(any(target_os = "macos", target_os = "unknown"))]
             {
                 let mut counts_state = collect_state.counts_cpu.lock();
                 counts_state.update(counts, collect_state.tick)
             }
         } else {
-            #[cfg(any(target_os = "macos", target_os = "unknown"))]
-            {
+            if self.config.render_mode == RenderMode::Indirect {
                 let mut counts_state = collect_state.counts_cpu.lock();
                 if counts_state.counts().len() != material_layouts.len() {
                     *counts_state.counts_mut() =
@@ -391,6 +389,7 @@ impl TreeRenderer {
                 &self.primitives,
                 collect_state,
                 self.primitives.total_capacity() as u32,
+                self.config.render_mode,
             );
 
             assert_eq!(
@@ -513,7 +512,6 @@ impl TreeRenderer {
             return; // Nothing to render
         };
 
-        #[cfg(any(target_os = "macos", target_os = "unknown"))]
         let count_state = collect_state.counts_cpu.lock();
 
         let mut is_bound = false;
@@ -558,63 +556,73 @@ impl TreeRenderer {
                 //
                 // This is due to an unconditional panic
                 // https://github.com/gfx-rs/wgpu/blob/4478c52debcab1b88b80756b197dc10ece90dec9/wgpu/src/backend/web.rs#L3053
-                #[cfg(all(not(target_os = "macos"), not(target_os = "unknown")))]
-                {
-                    render_pass.multi_draw_indexed_indirect_count(
-                        collect_state.commands.buffer(),
-                        offset * std::mem::size_of::<DrawIndexedIndirect>() as u64,
-                        collect_state.counts.buffer(),
-                        mat.material_index as u64 * std::mem::size_of::<u32>() as u64,
-                        mat.primitives.len() as u32,
-                    );
-                }
-                #[cfg(any(target_os = "macos", target_os = "unknown"))]
-                {
-                    if self.config.render_mode == RenderMode::Direct {
-                        for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
-                            let primitive =
-                                &world.get_ref(id, primitives()).unwrap()[primitive_idx];
+                if self.config.render_mode == RenderMode::MultiIndirect {
+                    #[cfg(not(any(target_os = "windows", target_os = "linux")))]
+                    {
+                        panic!("MultiIndirect is not supported on the current platform");
+                    }
+                    #[cfg(any(target_os = "windows", target_os = "linux"))]
+                    {
+                        render_pass.multi_draw_indexed_indirect_count(
+                            collect_state.commands.buffer(),
+                            offset * std::mem::size_of::<DrawIndexedIndirect>() as u64,
+                            collect_state.counts.buffer(),
+                            mat.material_index as u64 * std::mem::size_of::<u32>() as u64,
+                            mat.primitives.len() as u32,
+                        );
+                    }
+                } else if self.config.render_mode == RenderMode::Indirect {
+                    // If none, a new material has been added, but the async buffer read has
+                    // not yet finished and we are still using the previous frame's material
+                    // counts.
+                    let count = count_state
+                        .counts()
+                        .get(mat.material_index as usize)
+                        .copied()
+                        .unwrap_or(0);
 
-                            let mesh = mesh_buffer.get_mesh_metadata(&primitive.mesh);
-                            let index = offset + i as u64;
+                    // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
+                    tracing::trace!(?count, ?offset, "draw node primitives");
+                    for i in 0..count {
+                        render_pass.draw_indexed_indirect(
+                            collect_state.commands.buffer(),
+                            (offset + i as u64) * std::mem::size_of::<DrawIndexedIndirect>() as u64,
+                        );
+                    }
+                } else if self.config.render_mode == RenderMode::Direct {
+                    tracing::info!("Using direct renderer");
+                    for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
+                        let primitive = &world.get_ref(id, primitives()).unwrap()[primitive_idx];
 
-                            tracing::debug!("Drawing {index}, {mesh:?}");
-                            render_pass.draw_indexed(
-                                mesh.index_offset..(mesh.index_offset + mesh.index_count),
-                                0,
-                                index as u32..(index as u32 + 1),
-                            )
-                        }
-                    } else {
-                        // If none, a new material has been added, but the async buffer read has
-                        // not yet finished and we are still using the previous frame's material
-                        // counts.
-                        let count = count_state
-                            .counts()
-                            .get(mat.material_index as usize)
-                            .copied()
-                            .unwrap_or(0);
+                        let mesh = mesh_buffer.get_mesh_metadata(&primitive.mesh);
+                        let index = offset + i as u64;
 
-                        // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
-                        tracing::trace!(?count, ?offset, "draw node primitives");
-                        for i in 0..count {
-                            render_pass.draw_indexed_indirect(
-                                collect_state.commands.buffer(),
-                                (offset + i as u64)
-                                    * std::mem::size_of::<DrawIndexedIndirect>() as u64,
-                            );
-                        }
+                        render_pass.draw_indexed(
+                            mesh.index_offset..(mesh.index_offset + mesh.index_count),
+                            // This was previously `0` and worked for Windows, MacOs, and MacOS + Chrome.
+                            // Changing this to `mesh.base_offset` makes it works on the web using Windows + Chrome, but breaks it for MacOs + Chrome
+                            // The indirect commands in `collect.wgsl` use an offset of 0
+                            //
+                            // The correct value should be `0`, but as said, breaks Windows +
+                            // Chrome
+                            mesh.base_offset as i32,
+                            // 0,
+                            index as u32..(index as u32 + 1),
+                        )
                     }
                 }
             }
         }
     }
+
     pub fn n_entities(&self) -> usize {
         self.tree.values().fold(0, |p, n| p + n.n_entities())
     }
+
     pub fn n_nodes(&self) -> usize {
         self.tree.values().fold(0, |p, n| p + n.n_nodes())
     }
+
     pub fn dump(&self, f: &mut dyn std::io::Write) {
         for (key, node) in self.tree.iter() {
             writeln!(f, "    shader {key:?}").unwrap();

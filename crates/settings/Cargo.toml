@@ -17,3 +17,8 @@ directories = { workspace = true }
 toml = { workspace = true }
 tracing = { workspace = true }
 serde = { workspace = true }
+cfg-if = { workspace = true }
+
+[target.'cfg(target_os = "unknown")'.dependencies]
+web-sys = { version = "0.3" } 
+js-sys = { version = "0.3" }

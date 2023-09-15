@@ -113,7 +113,7 @@
     }
   },
   "serve-third-person-camera": {
-    "cmd": "cargo run serve ./guest/rust/examples/controllers/third_person_camera/ --clean-build",
+    "cmd": "cargo run serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build",
     "env": {
       "RUST_LOG": "info,ambient_network=info"
     }

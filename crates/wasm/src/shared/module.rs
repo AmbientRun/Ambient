@@ -293,11 +293,9 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
                 shared::wit::Bindings::instantiate(&mut store, &component, &linker)?;
 
             // Initialise the runtime.
-            tracing::debug!(id=?args.id, "initialize runtime");
             guest_bindings
                 .ambient_bindings_guest()
                 .call_init(&mut store)?;
-
             anyhow::Ok((guest_bindings, guest_instance))
         }
         .await?;

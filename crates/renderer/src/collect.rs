@@ -12,6 +12,7 @@ use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     include_file,
 };
+use ambient_settings::RenderMode;
 use glam::{uvec2, UVec2, UVec3};
 use parking_lot::Mutex;
 use wgpu::{
@@ -84,7 +85,6 @@ pub(crate) struct RendererCollectState {
     pub params: TypedBuffer<RendererCollectParams>,
     pub commands: TypedBuffer<DrawIndexedIndirect>,
     pub counts: TypedBuffer<u32>,
-    #[cfg(any(target_os = "macos", target_os = "unknown"))]
     /// Multi draw indexed indirect is not supported on macOS
     pub(crate) counts_cpu: Arc<Mutex<DrawCountState>>,
     pub tick: u64,
@@ -119,7 +119,6 @@ impl RendererCollectState {
                     | wgpu::BufferUsages::COPY_SRC
                     | wgpu::BufferUsages::INDIRECT,
             ),
-            #[cfg(any(target_os = "macos", target_os = "unknown"))]
             counts_cpu: Arc::new(Default::default()),
             material_layouts: TypedBuffer::new(
                 gpu,
@@ -287,6 +286,7 @@ impl RendererCollect {
         input_primitives: &TypedMultiBuffer<CollectPrimitive>,
         output: &mut RendererCollectState,
         primitives_count: u32,
+        render_mode: RenderMode,
     ) {
         output.commands.set_len(gpu, primitives_count as usize);
 
@@ -343,8 +343,7 @@ impl RendererCollect {
             cpass.dispatch_workgroups(x, 1, 1);
         }
 
-        #[cfg(any(target_os = "macos", target_os = "unknown"))]
-        {
+        if render_mode == RenderMode::Indirect {
             use ambient_core::RuntimeKey;
 
             let buffs = CollectCountStagingBuffersKey.get(assets);
@@ -400,7 +399,6 @@ impl CollectCountStagingBuffers {
         }
     }
 
-    #[cfg(any(target_os = "macos", target_os = "unknown"))]
     fn take_buffer(&self, gpu: &Gpu, size: usize) -> TypedBuffer<u32> {
         match self.buffers.lock().pop() {
             Some(mut buffer) => {
@@ -416,7 +414,6 @@ impl CollectCountStagingBuffers {
         }
     }
 
-    #[cfg(any(target_os = "macos", target_os = "unknown"))]
     fn return_buffer(&self, buffer: TypedBuffer<u32>) {
         self.buffers.lock().push(buffer)
     }

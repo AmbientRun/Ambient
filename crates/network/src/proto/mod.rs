@@ -27,7 +27,7 @@ pub enum ServerPush {
 
 /// Miscellaneous information about the server that needs to be sent to the client during the handshake.
 /// Note: This has to deserialize correctly between versions of the server and client for us to be able to show a nice error message.
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct ServerInfo {
     /// The name of the main package. Used by the client to figure out what to title its window. Defaults to "Ambient".
     pub main_package_name: String,
@@ -40,6 +40,16 @@ pub struct ServerInfo {
     /// TODO: use semver
     pub version: String,
     pub external_components: FailableDeserialization<Vec<ExternalComponentDesc>>,
+}
+
+impl std::fmt::Debug for ServerInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ServerInfo")
+            .field("main_package_name", &self.main_package_name)
+            .field("content_base_url", &self.content_base_url)
+            .field("version", &self.version)
+            .finish_non_exhaustive()
+    }
 }
 
 impl ServerInfo {

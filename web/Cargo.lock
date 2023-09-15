@@ -734,6 +734,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_native_std",
  "ambient_network",
+ "ambient_package",
  "ambient_package_semantic",
  "ambient_shared_types",
  "anyhow",
@@ -907,10 +908,13 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_native_std",
  "anyhow",
+ "cfg-if",
  "directories",
+ "js-sys",
  "serde",
  "toml",
  "tracing",
+ "web-sys",
 ]
 
 [[package]]
