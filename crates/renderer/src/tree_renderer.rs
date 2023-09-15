@@ -557,13 +557,20 @@ impl TreeRenderer {
                 // This is due to an unconditional panic
                 // https://github.com/gfx-rs/wgpu/blob/4478c52debcab1b88b80756b197dc10ece90dec9/wgpu/src/backend/web.rs#L3053
                 if self.config.render_mode == RenderMode::MultiIndirect {
-                    render_pass.multi_draw_indexed_indirect_count(
-                        collect_state.commands.buffer(),
-                        offset * std::mem::size_of::<DrawIndexedIndirect>() as u64,
-                        collect_state.counts.buffer(),
-                        mat.material_index as u64 * std::mem::size_of::<u32>() as u64,
-                        mat.primitives.len() as u32,
-                    );
+                    #[cfg(not(any(target_os = "windows", target_os= "linux")))]
+                    {
+                        panic!("MultiIndirect is not supported on the current platform");
+                    }
+                    #[cfg(any(target_os = "windows", target_os= "linux"))]
+                    {
+                        render_pass.multi_draw_indexed_indirect_count(
+                            collect_state.commands.buffer(),
+                            offset * std::mem::size_of::<DrawIndexedIndirect>() as u64,
+                            collect_state.counts.buffer(),
+                            mat.material_index as u64 * std::mem::size_of::<u32>() as u64,
+                            mat.primitives.len() as u32,
+                        );
+                    }
                 } else if self.config.render_mode == RenderMode::Indirect {
                     // If none, a new material has been added, but the async buffer read has
                     // not yet finished and we are still using the previous frame's material
@@ -582,7 +589,7 @@ impl TreeRenderer {
                             (offset + i as u64) * std::mem::size_of::<DrawIndexedIndirect>() as u64,
                         );
                     }
-                } else {
+                } else if self.config.render_mode == RenderMode::Direct {
                     for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
                         let primitive = &world.get_ref(id, primitives()).unwrap()[primitive_idx];
 
@@ -591,7 +598,8 @@ impl TreeRenderer {
 
                         render_pass.draw_indexed(
                             mesh.index_offset..(mesh.index_offset + mesh.index_count),
-                            mesh.base_offset as i32,
+                            // mesh.base_offset as i32,
+                            0,
                             index as u32..(index as u32 + 1),
                         )
                     }

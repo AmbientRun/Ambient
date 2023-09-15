@@ -18,7 +18,6 @@ use wasm_bridge::{
     wasi::preview2::{self, IsATTY, Table, WasiCtx, WasiCtxBuilder},
     Store,
 };
-use wgpu::AdapterInfo;
 
 // use wasi_cap_std_sync::Dir;
 // use wasmtime_wasi::preview2 as wasi_preview2;

@@ -7,6 +7,7 @@ pub struct RenderSettings {
     #[serde(default)]
     pub(crate) vsync: Vsync,
     #[serde(default)]
+    /// If `None` fall back to the platform default
     pub render_mode: Option<RenderMode>,
     #[serde(default)]
     pub software_culling: bool,

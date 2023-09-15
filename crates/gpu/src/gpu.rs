@@ -59,13 +59,15 @@ impl Gpu {
 
         let instance = wgpu::Instance::new(InstanceDescriptor {
             backends,
-            // TODO upgrade to Dxc ?
+            // TODO: upgrade to Dxc? This requires us to ship additionall dll files, which may be
+            // possible using an installer. Nevertheless, we are currently using Vulkan on windows
+            // due to `base_instance` being broken on windows.
             // https://docs.rs/wgpu/latest/wgpu/enum.Dx12Compiler.html
-            // dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
-            dx12_shader_compiler: wgpu::Dx12Compiler::Dxc {
-                dxil_path: Some("./dxil.dll".into()),
-                dxc_path: Some("./dxcompiler.dll".into()),
-            },
+            dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
+            // dx12_shader_compiler: wgpu::Dx12Compiler::Dxc {
+            //     dxil_path: Some("./dxil.dll".into()),
+            //     dxc_path: Some("./dxcompiler.dll".into()),
+            // },
         });
 
         let surface = window.map(|window| unsafe { instance.create_surface(window).unwrap() });
