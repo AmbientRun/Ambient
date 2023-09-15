@@ -1952,7 +1952,7 @@ mod raw {
                 }
                 impl Message for MouseOverChanged {
                     fn id() -> &'static str {
-                        "MouseOverChanged"
+                        "ambient_core::input::MouseOverChanged"
                     }
                     fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                         let mut output = vec![];
@@ -1985,7 +1985,7 @@ mod raw {
                 }
                 impl Message for ClipboardGet {
                     fn id() -> &'static str {
-                        "ClipboardGet"
+                        "ambient_core::input::ClipboardGet"
                     }
                     fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                         let mut output = vec![];
@@ -2950,7 +2950,7 @@ mod raw {
                 }
                 impl Message for PackageLoadSuccess {
                     fn id() -> &'static str {
-                        "PackageLoadSuccess"
+                        "ambient_core::package::PackageLoadSuccess"
                     }
                     fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                         let mut output = vec![];
@@ -2983,7 +2983,7 @@ mod raw {
                 }
                 impl Message for PackageLoadFailure {
                     fn id() -> &'static str {
-                        "PackageLoadFailure"
+                        "ambient_core::package::PackageLoadFailure"
                     }
                     fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                         let mut output = vec![];
@@ -4597,7 +4597,7 @@ mod raw {
                 }
                 impl Message for FocusChanged {
                     fn id() -> &'static str {
-                        "FocusChanged"
+                        "ambient_core::ui::FocusChanged"
                     }
                     fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                         let mut output = vec![];
@@ -4845,7 +4845,7 @@ mod raw {
             }
             impl Message for Frame {
                 fn id() -> &'static str {
-                    "Frame"
+                    "ambient_core::Frame"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -4874,7 +4874,7 @@ mod raw {
             }
             impl Message for Collision {
                 fn id() -> &'static str {
-                    "Collision"
+                    "ambient_core::Collision"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -4901,7 +4901,7 @@ mod raw {
             }
             impl Message for ColliderLoads {
                 fn id() -> &'static str {
-                    "ColliderLoads"
+                    "ambient_core::ColliderLoads"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -4925,7 +4925,7 @@ mod raw {
             }
             impl Message for ModuleLoad {
                 fn id() -> &'static str {
-                    "ModuleLoad"
+                    "ambient_core::ModuleLoad"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -4951,7 +4951,7 @@ mod raw {
             }
             impl Message for ModuleUnload {
                 fn id() -> &'static str {
-                    "ModuleUnload"
+                    "ambient_core::ModuleUnload"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -4982,7 +4982,7 @@ mod raw {
             }
             impl Message for WindowFocusChange {
                 fn id() -> &'static str {
-                    "WindowFocusChange"
+                    "ambient_core::WindowFocusChange"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -5006,7 +5006,7 @@ mod raw {
             }
             impl Message for WindowClose {
                 fn id() -> &'static str {
-                    "WindowClose"
+                    "ambient_core::WindowClose"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -5037,7 +5037,7 @@ mod raw {
             }
             impl Message for WindowKeyboardCharacter {
                 fn id() -> &'static str {
-                    "WindowKeyboardCharacter"
+                    "ambient_core::WindowKeyboardCharacter"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -5066,7 +5066,7 @@ mod raw {
             }
             impl Message for WindowKeyboardModifiersChange {
                 fn id() -> &'static str {
-                    "WindowKeyboardModifiersChange"
+                    "ambient_core::WindowKeyboardModifiersChange"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -5103,7 +5103,7 @@ mod raw {
             }
             impl Message for WindowKeyboardInput {
                 fn id() -> &'static str {
-                    "WindowKeyboardInput"
+                    "ambient_core::WindowKeyboardInput"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -5138,7 +5138,7 @@ mod raw {
             }
             impl Message for WindowMouseInput {
                 fn id() -> &'static str {
-                    "WindowMouseInput"
+                    "ambient_core::WindowMouseInput"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -5171,7 +5171,7 @@ mod raw {
             }
             impl Message for WindowMouseWheel {
                 fn id() -> &'static str {
-                    "WindowMouseWheel"
+                    "ambient_core::WindowMouseWheel"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -5202,7 +5202,7 @@ mod raw {
             }
             impl Message for WindowMouseMotion {
                 fn id() -> &'static str {
-                    "WindowMouseMotion"
+                    "ambient_core::WindowMouseMotion"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -5242,7 +5242,7 @@ mod raw {
             }
             impl Message for HttpResponse {
                 fn id() -> &'static str {
-                    "HttpResponse"
+                    "ambient_core::HttpResponse"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
@@ -5277,7 +5277,7 @@ mod raw {
             }
             impl Message for WasmRebuild {
                 fn id() -> &'static str {
-                    "WasmRebuild"
+                    "ambient_core::WasmRebuild"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];

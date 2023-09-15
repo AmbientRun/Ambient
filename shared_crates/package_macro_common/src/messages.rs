@@ -16,6 +16,7 @@ pub fn generate(
         .filter_map(|m| context.extract_item_if_relevant(items, *m))
         .map(|message| {
             let id = message.data().id.as_str();
+            let path = items.fully_qualified_display_path(message, None, None);
 
             let doc_comment = if let Some(desc) = &message.description {
                 format!("**{}**: {}", id, desc)
@@ -107,7 +108,7 @@ pub fn generate(
                 #struct_definition
                 impl Message for #struct_name {
                     fn id() -> &'static str {
-                        #id
+                        #path
                     }
                     fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                         let mut output = vec![];
