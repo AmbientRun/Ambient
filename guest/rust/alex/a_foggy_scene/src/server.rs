@@ -1,33 +1,34 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    core::{
+        model::components::model_from_url,
+        physics::components::plane_collider,
+        player::components::is_player,
+        primitives::components::quad,
+        // rendering::components::{outline, overlay},
+        transform::{
+            components::{rotation, scale, translation},
+            concepts::make_transformable,
+        },
+    },
+    prelude::*,
+};
+use packages::{
+    character_animation::components::basic_character_animations,
+    fps_controller::components::use_fps_controller,
+    temperature::components::{temperature, temperature_src_radius, temperature_src_rate},
+    this::components::ambient_loop,
+};
 
 #[main]
 pub fn main() {
-    plrs_fps_controlled();
-    ground_plane();
-    central_campfire();
-    plrs_get_cold();
-    load_scene();
-}
+    entity::add_component(
+        packages::package_manager::entity(),
+        packages::package_manager::components::mod_manager_for(),
+        packages::this::entity(),
+    );
 
-const CAMPFIRE_POS: Vec3 = Vec3::new(3., 0., 0.);
-
-pub fn plrs_fps_controlled() {
-    use ambient_api::core::{
-        app::components::name,
-        model::components::model_from_url,
-        player::components::{is_player, user_id},
-        transform::{
-            components::{rotation, translation},
-            concepts::make_transformable,
-        },
-    };
-    use packages::{
-        character_animation::components::basic_character_animations,
-        fps_controller::components::use_fps_controller,
-        this::components::{coldness, effect_respawn},
-    };
-    spawn_query((is_player(), user_id())).bind(|plrs| {
-        for (plr, (_, uid)) in plrs {
+    spawn_query(is_player()).bind(|plrs| {
+        for (plr, _) in plrs {
             entity::add_components(
                 plr,
                 Entity::new()
@@ -37,124 +38,86 @@ pub fn plrs_fps_controlled() {
                         packages::base_assets::assets::url("Y Bot.fbx"),
                     )
                     .with(basic_character_animations(), plr)
-                    .with(effect_respawn(), true)
-                    .with(coldness(), 0.0),
+                    .with(temperature(), 37.0)
+                    .with(temperature_src_rate(), 1.0)
+                    .with(temperature_src_radius(), 8.0),
             );
         }
     });
-    spawn_query(effect_respawn()).bind(|plrs| {
-        for (plr, _) in plrs {
-            let rot = Quat::from_rotation_z(random::<f32>() * 6.28);
 
-            entity::add_component(plr, translation(), rot * vec3(3., 0., 0.) + CAMPFIRE_POS);
-            entity::add_component(plr, coldness(), 0.00); // reset coldness.
+    query(temperature())
+        .requires(is_player())
+        .each_frame(|plrs| {
+            for (plr, temp) in plrs {
+                if temp < 21. {
+                    // death by freezing - reset to start
+                    entity::add_component(plr, translation(), Vec3::ZERO);
+                    entity::set_component(plr, temperature(), 37.);
+                }
+                if temp > 37. {
+                    // max body temp
+                    entity::set_component(plr, temperature(), 37.);
+                }
+            }
+        });
 
-            // TODO: do 'respawning' animation. getting up off the ground.
-
-            entity::remove_component(plr, effect_respawn());
-        }
-    });
-}
-
-pub fn ground_plane() {
-    use ambient_api::core::{
-        physics::components::plane_collider,
-        primitives::components::quad,
-        transform::{components::scale, concepts::make_transformable},
-    };
     Entity::new()
-        .with_merge(make_transformable())
-        .with(quad(), ())
-        .with(scale(), Vec3::splat(1000.))
-        .with(plane_collider(), ())
+        .with(translation(), Vec3::ZERO)
+        .with(temperature_src_rate(), -2.2)
+        .with(temperature_src_radius(), core::f32::MAX)
         .spawn();
-}
 
-const FREEZE_RATE: f32 = 0.05;
-const THAW_RATE: f32 = 0.25;
-const CAMPFIRE_RANGE: f32 = 10.;
-
-pub fn plrs_get_cold() {
-    use ambient_api::core::transform::components::translation;
-    use packages::this::components::{coldness, effect_respawn, warmth_radius};
-
-    let find_warmth_sources = query((translation(), warmth_radius())).build();
-
-    query((translation(), coldness())).each_frame(move |plrs| {
-        let warmth_sources = find_warmth_sources.evaluate();
-        for (plr, (pos, cold)) in plrs {
-            let mut warmth: f32 = 0.0;
-            for (campfire, (firepos, firerad)) in warmth_sources.iter() {
-                warmth = warmth.max(1.0 - pos.distance(*firepos) / firerad);
-            }
-
-            if warmth < 0.05 {
-                entity::mutate_component(plr, coldness(), |cold| {
-                    *cold = (*cold + FREEZE_RATE * delta_time()).min(1.)
-                });
-            } else {
-                entity::mutate_component(plr, coldness(), |cold| {
-                    *cold = (*cold - THAW_RATE * delta_time()).max(0.)
-                });
-            }
-            if cold >= 1. {
-                entity::add_component(plr, effect_respawn(), true);
-            }
-        }
-    });
-}
-
-pub fn central_campfire() {
-    use ambient_api::core::{
-        model::components::model_from_url, //primitives::concepts::make_sphere,
-        rendering::components::outline,
-        transform::{
-            components::{rotation, translation},
-            concepts::make_transformable,
-        },
-    };
-    use packages::this::components::warmth_radius;
     Entity::new()
-        .with_merge(make_transformable())
-        .with(translation(), CAMPFIRE_POS)
-        .with(rotation(), Quat::from_rotation_z(3.00))
-        .with(warmth_radius(), CAMPFIRE_RANGE)
-        // .with_merge(make_sphere())
+        .with(translation(), vec3(3., 0., 0.))
+        .with(temperature_src_rate(), 2.5)
+        .with(temperature_src_radius(), 10.0)
         .with(
             model_from_url(),
             packages::this::assets::url("emissive_campfire.glb"),
         )
+        .with(
+            ambient_loop(),
+            packages::this::assets::url("4211__dobroide__firecrackling.ogg"),
+        )
         .spawn();
+
+    load_scene();
 }
 
-mod scene_snowstorm_maze;
 mod sceneloader;
 
 pub fn load_scene() {
     use ambient_api::core::{
         app::components::name,
-        physics::components::cube_collider,
         prefab::components::prefab_from_url,
-        primitives::components::cube,
-        transform::{
-            components::{rotation, scale, translation},
-            concepts::make_transformable,
-        },
+        // physics::components::cube_collider,
+        // primitives::components::cube,
     };
 
-    let nodes = crate::sceneloader::scene_contents_to_nodes(scene_snowstorm_maze::CONTENTS);
+    // we can include the fake default floor in here for now :)
+    Entity::new()
+        .with(translation(), Vec3::ZERO)
+        .with(quad(), ())
+        .with(scale(), Vec3::splat(1000.))
+        .with(plane_collider(), ())
+        .spawn();
+
+    let nodes =
+        crate::sceneloader::scene_contents_to_nodes(include_str!("../data/snowstorm_maze.tscn"));
 
     for (_key, node) in nodes {
         if let Some(path) = node.path {
-            Entity::new()
-                .with(name(), node.name)
-                .with_merge(make_transformable())
-                // .with_default(cube())
-                .with(translation(), node.pos.unwrap())
-                .with(rotation(), node.rot.unwrap())
-                .with(scale(), node.siz.unwrap())
-                .with(prefab_from_url(), crate::packages::this::assets::url(&path))
-                .spawn();
+            if path.ends_with("glb") {
+                Entity::new()
+                    .with(name(), node.name)
+                    .with_merge(make_transformable())
+                    // .with_default(cube())
+                    .with(translation(), node.pos.unwrap())
+                    .with(rotation(), node.rot.unwrap())
+                    .with(scale(), node.siz.unwrap())
+                    .with(prefab_from_url(), crate::packages::this::assets::url(&path))
+                    .spawn();
+            }
         }
     }
 }

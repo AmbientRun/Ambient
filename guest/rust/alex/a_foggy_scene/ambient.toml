@@ -1,7 +1,8 @@
 [package]
 id = "a_foggy_scene"
 name = "a_foggy_scene"
-version = "0.0.1"
+description = "Foggy scene with heat sources, uses temperature schema"
+version = "0.0.2"
 content = { type = "Playable" }
 
 [dependencies]
@@ -16,7 +17,11 @@ fps_controller = { deployment = "4BhYdBFfRXoVEC0Esusfhk" }
 character_animation = { deployment = "1yoj6WWYw930TwO55E0b1L" }
 hide_cursor = { deployment = "48Dlz7rfPcrCdGVCdlEQ7F" }
 
+package_manager = { deployment = "2j2oBSzO03NIixBDlEGeVT" }
+
+temperature = { path = "../temperature" }
+
 [components]
 effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
-coldness = { type = "F32", attributes = ["Debuggable", "Networked"] } # from 0-1. at 1, you die.
-warmth_radius = { type = "F32" }
+is_crackling_campfire_spatial_audio = { type = "Empty" } # sound source
+ambient_loop = { type = "String", attributes = ["Networked"] }

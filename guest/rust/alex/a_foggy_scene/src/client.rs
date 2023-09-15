@@ -1,32 +1,59 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    core::{
+        audio::components::amplitude,
+        camera::{components::fog, concepts::perspective_infinite_reverse_camera},
+        rendering::components::{fog_color, fog_density},
+    },
+    prelude::*,
+};
+use packages::{temperature::components::temperature, this::components::ambient_loop};
+
+const DEATH_TEMP: f32 = 21.;
+const NORMAL_TEMP: f32 = 37.;
 
 #[main]
 pub fn main() {
-    make_my_camera_foggy();
+    spawn_query(())
+        .requires(perspective_infinite_reverse_camera())
+        .bind(|cameras| {
+            for (camera, _) in cameras {
+                entity::add_component(camera, fog(), ());
+
+                spawn_query(ambient_loop()).bind(move |ambient_loopers| {
+                    for (looper, loop_path) in ambient_loopers {
+                        let spatial_audio_player = audio::SpatialAudioPlayer::new();
+                        spatial_audio_player.set_amplitude(2.0);
+                        spatial_audio_player.set_looping(true);
+                        spatial_audio_player.set_listener(camera);
+                        spatial_audio_player.play_sound_on_entity(loop_path, looper);
+                    }
+                });
+
+                break; // do it for one camera only
+            }
+        });
+
     let sun = make_my_local_sun_with_sky();
 
-    // spawn_query(is_player()).bind(move |players| {
-    //     for (id, _) in players {
-    //         // Only attach models to other players
-    //         if id != player::get_local() {
-    //             add_components(
-    //                 id,
-    //                 Entity::new()
-    //                     .with(model_from_url(), base_assets::assets::url("Y Bot.fbx"))
-    //                     .with(basic_character_animations(), id),
-    //             );
-    //         }
-    //     }
-    // });
-    pulse_suns_fog_over_time(sun);
-}
+    let storm_sound_player = audio::AudioPlayer::new();
+    storm_sound_player.set_looping(true);
+    storm_sound_player.set_amplitude(0.0);
+    let storm_sound_playing =
+        storm_sound_player.play(packages::this::assets::url("snowstorm_ambience.ogg"));
 
-pub fn pulse_suns_fog_over_time(sun: EntityId) {
-    use ambient_api::core::rendering::components::{fog_color, fog_density};
-    use packages::this::components::coldness;
     ambient_api::core::messages::Frame::subscribe(move |_| {
-        let coldness: f32 = entity::get_component(player::get_local(), coldness()).unwrap_or(1.);
-        // let coldness: f32 = 0.5 + 0.5 * game_time().as_secs_f32().sin();
+        let coldness: f32 = remap32(
+            entity::get_component(player::get_local(), temperature()).unwrap_or(1.),
+            DEATH_TEMP,
+            NORMAL_TEMP,
+            1.0,
+            0.0,
+        );
+        entity::add_component(
+            storm_sound_playing,
+            amplitude(),
+            0.05 + game_time().as_secs_f32().sin() * 0.05 + coldness.sqrt(),
+        );
         if coldness < 0.60 {
             let t = coldness / 0.60;
             entity::mutate_component(sun, fog_density(), |foggy| {
@@ -45,17 +72,8 @@ pub fn pulse_suns_fog_over_time(sun: EntityId) {
     });
 }
 
-pub fn make_my_camera_foggy() {
-    use ambient_api::core::camera::{
-        components::fog, concepts::perspective_infinite_reverse_camera,
-    };
-    spawn_query(())
-        .requires(perspective_infinite_reverse_camera())
-        .bind(|cameras| {
-            for (camera, _) in cameras {
-                entity::add_component(camera, fog(), ());
-            }
-        });
+fn remap32(value: f32, low1: f32, high1: f32, low2: f32, high2: f32) -> f32 {
+    low2 + (value - low1) * (high2 - low2) / (high1 - low1)
 }
 
 pub fn make_my_local_sun_with_sky() -> EntityId {
