@@ -19,7 +19,7 @@ hide_cursor = { deployment = "48Dlz7rfPcrCdGVCdlEQ7F" }
 
 package_manager = { deployment = "2j2oBSzO03NIixBDlEGeVT" }
 
-temperature = { path = "../temperature" }
+temperature = { path = "../temperature" , deployment = "1ApyQ75tro1e329197QCBh" }
 
 [components]
 effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
