@@ -4108,7 +4108,7 @@ dependencies = [
 [[package]]
 name = "h3"
 version = "0.0.2"
-source = "git+https://github.com/security-union/h3?branch=add-webtransport#fa956e0d44e66c04545741908fcb3690b0890be6"
+source = "git+https://github.com/hyperium/h3#a57ed224ac5d17a635eb71eb6f83c1196f581a51"
 dependencies = [
  "bytes",
  "fastrand 1.9.0",
@@ -4121,8 +4121,8 @@ dependencies = [
 
 [[package]]
 name = "h3-quinn"
-version = "0.0.2"
-source = "git+https://github.com/security-union/h3?branch=add-webtransport#fa956e0d44e66c04545741908fcb3690b0890be6"
+version = "0.0.3"
+source = "git+https://github.com/hyperium/h3#a57ed224ac5d17a635eb71eb6f83c1196f581a51"
 dependencies = [
  "bytes",
  "futures",
@@ -4136,7 +4136,7 @@ dependencies = [
 [[package]]
 name = "h3-webtransport"
 version = "0.1.0"
-source = "git+https://github.com/security-union/h3?branch=add-webtransport#fa956e0d44e66c04545741908fcb3690b0890be6"
+source = "git+https://github.com/hyperium/h3#a57ed224ac5d17a635eb71eb6f83c1196f581a51"
 dependencies = [
  "bytes",
  "futures-util",
