@@ -8,4 +8,6 @@ Installing Ambient for development purposes is easy, just follow these three ste
 
 Step 2. and 3. are commands that you need to paste into your terminal of choise.
 
+Ambient currently runs on Windows, Linux and Mac.
+
 Next, try the steps in [getting started](./getting_started.md) to create your first Ambient project.

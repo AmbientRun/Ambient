@@ -34,6 +34,8 @@ cargo install ambient
 
 This requires [Rust](https://www.rust-lang.org/) to be installed. You will also need to install the wasm32 toolchain: `rustup target add --toolchain stable wasm32-wasi`.
 
+Ambient runs on Windows, Linux and Mac.
+
 For alternative installation options, go to the [documentation on installing](https://ambientrun.github.io/Ambient/reference/advanced_installing.html).
 
 ## Roadmap
