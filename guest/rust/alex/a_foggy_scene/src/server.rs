@@ -69,7 +69,7 @@ pub fn main() {
 
     Entity::new()
         .with(translation(), vec3(3., 0., 0.))
-        .with(temperature_src_rate(), 2.5)
+        .with(temperature_src_rate(), 5.0) // very warm very fast
         .with(temperature_src_radius(), 10.0)
         .with(
             model_from_url(),
