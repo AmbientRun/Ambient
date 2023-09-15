@@ -28,6 +28,8 @@ pub enum Cli {
     Clean,
     /// Run a package. Alias for `package run`.
     Run(package::Run),
+    /// Serve a package. Alias for `package serve`.
+    Serve(package::Run),
 }
 
 // https://rust-cli-recommendations.sunshowers.io/handling-arguments.html

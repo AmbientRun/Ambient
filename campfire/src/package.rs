@@ -13,6 +13,8 @@ pub enum Package {
     Clean,
     /// Run an package
     Run(Run),
+    /// Serve an package
+    Serve(Run),
     /// List all packages
     List,
     /// Run all the packages in order
@@ -55,6 +57,7 @@ pub fn main(args: &Package) -> anyhow::Result<()> {
     match args {
         Package::Clean => clean(),
         Package::Run(args) => run(args),
+        Package::Serve(args) => serve(args),
         Package::List => list(),
         Package::RunAll(params) => run_all(params),
         Package::CheckAll => check_all(),
@@ -83,14 +86,25 @@ pub fn clean() -> anyhow::Result<()> {
 
 pub fn run(args: &Run) -> anyhow::Result<()> {
     let Run { package, params } = args;
-
-    let path = get_all_packages(true, true, false)?
-        .into_iter()
-        .find(|p| p.ends_with(package))
-        .ok_or_else(|| anyhow::anyhow!("no example found with name {}", package))?;
+    let path = find_package(package)?;
 
     log::info!("Running example {} (params: {params:?})...", path.display());
-    run_package(&path, params)
+    run_package("run", &path, params)
+}
+
+pub fn serve(args: &Run) -> anyhow::Result<()> {
+    let Run { package, params } = args;
+    let path = find_package(package)?;
+
+    log::info!("Serving example {} (params: {params:?})...", path.display());
+    run_package("serve", &path, params)
+}
+
+fn find_package(package: &String) -> anyhow::Result<PathBuf> {
+    Ok(get_all_packages(true, true, false)?
+        .into_iter()
+        .find(|p| p.ends_with(package))
+        .ok_or_else(|| anyhow::anyhow!("no example found with name {}", package))?)
 }
 
 fn list() -> anyhow::Result<()> {
@@ -104,7 +118,7 @@ fn list() -> anyhow::Result<()> {
 fn run_all(params: &RunParams) -> anyhow::Result<()> {
     for path in get_all_packages(true, true, false)? {
         log::info!("Running example {} (params: {params:?})...", path.display());
-        run_package(&path, params)?;
+        run_package("run", &path, params)?;
     }
 
     Ok(())
@@ -171,8 +185,8 @@ pub fn deploy_all(token: &str, include_examples: bool) -> anyhow::Result<()> {
     run_ambient(&args, true)
 }
 
-fn run_package(path: &Path, params: &RunParams) -> anyhow::Result<()> {
-    let mut args = vec!["run"];
+fn run_package(run_cmd: &str, path: &Path, params: &RunParams) -> anyhow::Result<()> {
+    let mut args = vec![run_cmd];
     let path = path.to_string_lossy();
     args.push(&path);
     if !params.args.is_empty() {
