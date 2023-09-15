@@ -9,6 +9,7 @@ use ambient_gpu::{
     typed_buffer::TypedBuffer,
 };
 use ambient_native_std::asset_cache::AssetCache;
+use ambient_settings::RenderSettings;
 use glam::{Mat4, UVec4, Vec3};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
@@ -29,6 +30,7 @@ pub struct TransparentRendererConfig {
     pub renderer_resources: RendererResources,
     pub fs_main: FSMain,
     pub render_opaque: bool,
+    pub settings: RenderSettings,
 }
 
 pub struct TransparentRenderer {
@@ -230,7 +232,11 @@ impl TransparentRenderer {
 
                 render_pass.draw_indexed(
                     metadata.index_offset..(metadata.index_offset + metadata.index_count),
-                    0,
+                    if self.config.settings.is_win32_web {
+                        metadata.base_offset as i32
+                    } else {
+                        0
+                    },
                     (i as u32)..((i + 1) as u32),
                 );
             }

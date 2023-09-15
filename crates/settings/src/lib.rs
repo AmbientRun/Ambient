@@ -127,18 +127,24 @@ impl SyncAssetKey<Settings> for SettingsKey {
                 .unwrap();
 
             tracing::info!("Detected platform: {platform}");
-            let render_mode = if platform == "Windows" {
-                RenderMode::Direct
-            } else {
-                RenderMode::Indirect
-            };
-
-            Settings {
-                render: RenderSettings {
-                    render_mode: Some(render_mode),
+            if platform == "Windows" {
+                Settings {
+                    render: RenderSettings {
+                        render_mode: Some(RenderMode::Direct),
+                        is_win32_web: true,
+                        ..Default::default()
+                    },
                     ..Default::default()
-                },
-                ..Default::default()
+                }
+            } else {
+                Settings {
+                    render: RenderSettings {
+                        render_mode: Some(RenderMode::Indirect),
+                        ..Default::default()
+                    },
+
+                    ..Default::default()
+                }
             }
         }
         #[cfg(not(target_os = "unknown"))]
