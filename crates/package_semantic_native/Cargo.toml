@@ -13,6 +13,7 @@ ambient_core = { path = "../core", version = "0.3.0-dev" }
 
 ambient_cb = { path = "../../libs/cb", version = "0.3.0-dev" }
 
+ambient_package = { path = "../../shared_crates/package", version = "0.3.0-dev" }
 ambient_package_semantic = { path = "../../shared_crates/package_semantic", version = "0.3.0-dev" }
 ambient_shared_types = { path = "../../shared_crates/shared_types", version = "0.3.0-dev" }
 

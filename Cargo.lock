@@ -1134,6 +1134,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_native_std",
  "ambient_network",
+ "ambient_package",
  "ambient_package_semantic",
  "ambient_shared_types",
  "anyhow",

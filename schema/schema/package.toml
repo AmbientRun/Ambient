@@ -5,6 +5,14 @@ description = "Package-related state and functionality."
 content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
 
+[enums.PackageContent]
+description = "The content type of the package."
+[enums.PackageContent.members]
+Playable = "A playable experience."
+Asset = "An asset."
+Tool = "A tool."
+Mod = "A mod."
+
 [components]
 [components.is_package]
 type = "Empty"
@@ -54,6 +62,12 @@ name = "Repository"
 description = "The repository of the package. If not attached, the package does not have a repository."
 attributes = ["Debuggable", "Networked"]
 
+[components.for_playables]
+type = { container_type = "Vec", element_type = "String" }
+name = "For Playables"
+description = "The playable IDs that this package is for. This package must be a `Mod`."
+attributes = ["Debuggable", "Networked"]
+
 [components.asset_url]
 type = "String"
 name = "Asset URL"
@@ -88,6 +102,7 @@ server_modules = {}
 [concepts.Package.components.optional]
 description = {}
 repository = {}
+for_playables = {}
 
 [messages.PackageLoadSuccess]
 description = "A package has successfully loaded. Note that this may fire before all of its constituent WASM modules have loaded."

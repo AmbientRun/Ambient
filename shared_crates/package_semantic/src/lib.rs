@@ -198,17 +198,17 @@ impl Semantic {
                 fn imported_by(items: &ItemMap, package: &Package) -> String {
                     match package.dependent_package_id {
                         Some(dependent_id) => {
-                            format!("\n    - imported by {}", items.get(dependent_id).locator)
+                            format!("\n      imported by {}", items.get(dependent_id).locator)
                         }
                         None => String::new(),
                     }
                 }
 
                 anyhow::bail!(
-                    "package conflict found:\n  - {present}{}\n\n  - {locator}{}\n\n{}",
+                    "Package conflict found:\n  - {present}{}\n\n  - {locator}{}\n\n{}",
                     imported_by(&self.items, present_package),
                     imported_by(&self.items, locator_package),
-                    "the system does not currently support multiple versions of the same package in the dependency tree"
+                    "The system does not currently support multiple versions of the same package in the dependency tree."
                 );
             }
         }
