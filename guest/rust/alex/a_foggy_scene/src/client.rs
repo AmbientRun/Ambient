@@ -49,11 +49,10 @@ pub fn main() {
             1.0,
             0.0,
         );
-        entity::add_component(
-            storm_sound_playing,
-            amplitude(),
-            0.05 + game_time().as_secs_f32().sin() * 0.05 + coldness.sqrt(),
-        );
+        entity::mutate_component_with_default(storm_sound_playing, amplitude(), 0.0, |amp| {
+            *amp =
+                *amp * 0.8 + 0.2 * (0.05 + game_time().as_secs_f32().sin() * 0.05 + coldness * 1.5)
+        });
         if coldness < 0.60 {
             let t = coldness / 0.60;
             entity::mutate_component(sun, fog_density(), |foggy| {
