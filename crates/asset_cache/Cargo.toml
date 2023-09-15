@@ -10,7 +10,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
+ambient_sys = { path = "../sys" , version = "0.3.0-nightly-2023-09-15" }
 serde = { workspace = true }
 as-any = { workspace = true }
 async-trait = { workspace = true }
