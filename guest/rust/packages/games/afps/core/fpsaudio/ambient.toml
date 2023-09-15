@@ -5,5 +5,5 @@ version = "0.0.1"
 content = { type = "Asset", audio = true, code = true }
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "70g2lwXyCmOwWgX2aMbboo" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "2d391TQUyordlsAnYuuBa0" }
+afps_schema = { path = "../../schema", deployment = "5DE4EHolMxpTC2FIsOvVAJ" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "70AKUZHXT98MIUEGi8gbmw" }
