@@ -14,7 +14,7 @@ use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     include_file,
 };
-use ambient_settings::SettingsKey;
+use ambient_settings::{RenderMode, SettingsKey};
 use wgpu::{BindGroupLayoutEntry, BindingType, PrimitiveTopology, ShaderStages};
 
 use super::{
@@ -115,7 +115,9 @@ impl Outlines {
                     depth_stencil: false,
                     cull_mode: Some(wgpu::Face::Back),
                     depth_bias: Default::default(),
-                    render_mode: settings.render_mode,
+                    render_mode: settings
+                        .render_mode
+                        .unwrap_or_else(RenderMode::instrinsic_render_mode),
                     software_culling: settings.software_culling,
                 },
             ),

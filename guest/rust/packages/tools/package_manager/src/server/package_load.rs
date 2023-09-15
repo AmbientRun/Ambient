@@ -1,72 +1,37 @@
-use ambient_api::{anyhow, core::wasm::components::bytecode_from_url, prelude::*};
-use serde::{de::DeserializeOwned, Deserialize};
+use ambient_api::{core::package::components::name, package, prelude::*};
 
-use crate::packages::this::messages::{
-    ErrorMessage, PackageLoad, PackageLoadSuccess, WasmReplaceBytecodeUrl,
-};
+use crate::packages::this::messages::{PackageLoad, PackageLoadFailure, PackageLoadSuccess};
 
 pub fn main() {
     PackageLoad::subscribe(|ctx, msg| {
         let Some(user_id) = ctx.client_user_id() else {
             return;
         };
-        let url = msg.url.strip_suffix('/').unwrap_or(&msg.url).to_owned();
-        run_async(async move {
-            match get_manifest_and_metadata(&url).await {
-                Ok((manifest, metadata)) => {
-                    let package = &manifest.package;
-                    let make_url = |suffix: String| format!("{}/build/{}", url, suffix);
+        let maybe_url = msg.url.strip_suffix('/').unwrap_or(&msg.url).to_owned();
+        let url = if !maybe_url.contains("http") {
+            ambient_shared_types::urls::deployment_url(&maybe_url)
+        } else {
+            maybe_url
+        };
+        let url = if !url.ends_with("ambient.toml") {
+            format!("{}/ambient.toml", url)
+        } else {
+            url
+        };
 
-                    PackageLoadSuccess {
-                        id: package.id.to_string(),
-                        name: package.name.clone(),
-                        authors: package.authors.clone(),
-                        version: package.version.to_string(),
-                        client_wasms: metadata
-                            .client_component_paths
-                            .into_iter()
-                            .map(make_url)
-                            .collect(),
-                        server_wasms: metadata
-                            .server_component_paths
-                            .into_iter()
-                            .map(make_url)
-                            .collect(),
-                    }
+        run_async(async move {
+            match package::load(&url).await {
+                Ok(id) => {
+                    PackageLoadSuccess::new(
+                        id,
+                        entity::get_component(id, name()).unwrap_or_default(),
+                    )
                     .send_client_targeted_reliable(user_id);
                 }
                 Err(err) => {
-                    ErrorMessage::new(err.to_string()).send_client_targeted_reliable(user_id);
+                    PackageLoadFailure::new(err.to_string()).send_client_targeted_reliable(user_id);
                 }
             };
         });
     });
-
-    WasmReplaceBytecodeUrl::subscribe(|_, msg| {
-        entity::set_component(msg.id, bytecode_from_url(), msg.url);
-    });
-}
-
-async fn get_manifest_and_metadata(
-    url: &str,
-) -> anyhow::Result<(ambient_package::Manifest, Metadata)> {
-    let manifest = get_toml(&format!("{url}/build/ambient.toml")).await?;
-    let metadata = get_toml(&format!("{url}/build/metadata.toml")).await?;
-
-    Ok((manifest, metadata))
-}
-
-async fn get_toml<T: DeserializeOwned>(url: &str) -> anyhow::Result<T> {
-    let response = http::get(url).await;
-
-    match response {
-        Ok(msg) => Ok(toml::from_str::<T>(&String::from_utf8(msg)?)?),
-        Err(err) => Err(anyhow!(err)),
-    }
-}
-
-#[derive(Deserialize, Debug)]
-struct Metadata {
-    client_component_paths: Vec<String>,
-    server_component_paths: Vec<String>,
 }

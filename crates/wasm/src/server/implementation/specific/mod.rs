@@ -10,7 +10,7 @@ use ambient_core::{
     player::{is_player, user_id},
     runtime,
 };
-use ambient_ecs::{generated::messages::HttpResponse, query, EntityId, Message, World};
+use ambient_ecs::{generated::messages::HttpResponse, query, EntityId, World};
 use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::server::player_transport;
 
@@ -20,7 +20,7 @@ use crate::shared::{
     self,
     conversion::FromBindgen,
     implementation::message,
-    message::{Target, WorldEventSource},
+    message::{MessageExt, Target},
 };
 
 mod physics;
@@ -132,16 +132,17 @@ impl shared::wit::server_http::Host for Bindings {
             };
 
             async_run.run(move |world| {
-                shared::message::send(
-                    world,
-                    Target::PackageOrModule(id),
-                    WorldEventSource::Runtime,
-                    HttpResponse::id().to_string(),
-                    response.serialize_message().unwrap(),
-                );
+                response.send(world, Some(id)).unwrap();
             });
         });
 
+        Ok(())
+    }
+}
+
+impl shared::wit::server_ambient_package::Host for Bindings {
+    fn load(&mut self, url: String) -> anyhow::Result<()> {
+        ambient_package_semantic_native::add(self.world_mut(), url)?;
         Ok(())
     }
 }

@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt,
     path::{Path, PathBuf},
     sync::OnceLock,
 };
@@ -8,18 +9,19 @@ use anyhow::Context as AnyhowContext;
 use async_recursion::async_recursion;
 
 use ambient_package::{
-    BuildMetadata, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
+    BuildMetadata, ComponentType, Identifier, ItemPath, ItemPathBuf, Manifest, PackageId,
+    PascalCaseIdentifier, SnakeCaseIdentifier,
 };
 use ambient_shared_types::primitive_component_definitions;
 
 mod scope;
-pub use scope::{Context, Scope};
+use package::{GetError, ParentJoinError};
+pub use scope::Scope;
 
 mod package;
 pub use package::{Dependency, LocalOrRemote, Package, PackageLocator, RetrievableFile};
 
 mod item;
-use item::Resolve;
 pub use item::{
     Item, ItemData, ItemId, ItemMap, ItemSource, ItemType, ItemValue, ResolvableItemId,
 };
@@ -28,7 +30,7 @@ mod component;
 pub use component::Component;
 
 mod concept;
-pub use concept::Concept;
+pub use concept::{Concept, ConceptValue};
 
 mod attribute;
 pub use attribute::Attribute;
@@ -37,6 +39,7 @@ mod primitive_type;
 pub use primitive_type::PrimitiveType;
 
 mod type_;
+use thiserror::Error;
 pub use type_::{Enum, Type, TypeInner};
 
 mod message;
@@ -56,11 +59,92 @@ pub fn schema() -> &'static Schema {
     SCHEMA.get_or_init(|| HashMap::from_iter(ambient_schema::FILES.iter().copied()))
 }
 
+#[derive(Error, Debug)]
+pub enum PackageAddError {
+    #[error("Failed to parse manifest from `{manifest_path}`")]
+    ManifestParseError {
+        manifest_path: RetrievableFile,
+        source: ambient_package::ManifestParseError,
+    },
+    #[error("Failed to add dependency `{dependency_name}` for {locator}: {source}")]
+    FailedToAddDependency {
+        dependency_name: SnakeCaseIdentifier,
+        locator: PackageLocator,
+        source: Box<PackageAddError>,
+    },
+    #[error(
+        "Include `{include_name}` = {include_path:?} for `{include_source}` must have an extension"
+    )]
+    IncludeMissingExtension {
+        include_name: SnakeCaseIdentifier,
+        include_path: PathBuf,
+        include_source: RetrievableFile,
+    },
+    #[error("Failed to parse included manifest from {include_source}")]
+    IncludeParseError {
+        include_source: RetrievableFile,
+        source: ambient_package::ManifestParseError,
+    },
+    #[error("{0}")]
+    PackageConflictError(#[from] PackageConflictError),
+    #[error("{0}")]
+    GetError(#[from] GetError),
+    #[error("{0}")]
+    ParentJoinError(#[from] ParentJoinError),
+    #[error("Dependency `{dependency_name}` for {locator} has no supported sources specified (are you trying to deploy a package with a local dependency?)")]
+    NoSupportedSources {
+        locator: PackageLocator,
+        dependency_name: SnakeCaseIdentifier,
+    },
+    #[error("{0}")]
+    BuildMetadataError(#[from] ambient_package::BuildMetadataError),
+    #[error("{0}")]
+    IdentifierCaseError(#[from] ambient_package::IdentifierCaseOwnedError),
+}
+
+#[derive(Debug)]
+pub struct PackageConflictError {
+    existing_package: PackageLocator,
+    existing_package_dependent: Option<PackageLocator>,
+    new_package: PackageLocator,
+    new_package_dependent: Option<PackageLocator>,
+}
+impl std::error::Error for PackageConflictError {}
+impl fmt::Display for PackageConflictError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let PackageConflictError {
+            existing_package,
+            existing_package_dependent,
+            new_package,
+            new_package_dependent,
+        } = self;
+
+        fn imported_by(dependent_locator: Option<&PackageLocator>) -> String {
+            match dependent_locator {
+                Some(locator) => {
+                    format!("\n      imported by {}", locator)
+                }
+                None => String::new(),
+            }
+        }
+
+        write!(
+            f,
+            "Package conflict found:\n  - {existing_package}{}\n\n  - {new_package}{}\n\n{}",
+            imported_by(existing_package_dependent.as_ref()),
+            imported_by(new_package_dependent.as_ref()),
+            "The system does not currently support multiple versions of the same package in the dependency tree."
+        )
+    }
+}
+
 #[derive(Clone, PartialEq, Debug)]
 pub struct Semantic {
     pub items: ItemMap,
     pub root_scope_id: ItemId<Scope>,
     pub packages: HashMap<PackageLocator, ItemId<Package>>,
+    /// Used to determine if there are any existing packages with this ID
+    pub id_to_locator: HashMap<PackageId, PackageLocator>,
     pub ambient_package_id: ItemId<Package>,
     pub standard_definitions: StandardDefinitions,
     ignore_local_dependencies: bool,
@@ -74,6 +158,7 @@ impl Semantic {
             items,
             root_scope_id,
             packages: HashMap::new(),
+            id_to_locator: HashMap::new(),
             ambient_package_id: ItemId::empty_you_should_really_initialize_this(),
             standard_definitions,
             ignore_local_dependencies,
@@ -97,13 +182,34 @@ impl Semantic {
         // Used to indicate which package had this as a dependency first,
         // improving error diagnostics
         dependent_package_id: Option<ItemId<Package>>,
-    ) -> anyhow::Result<ItemId<Package>> {
-        let manifest = Manifest::parse(&retrievable_manifest.get().await?)
-            .with_context(|| format!("Failed to parse manifest from `{retrievable_manifest}`"))?;
+    ) -> Result<ItemId<Package>, PackageAddError> {
+        let manifest = Manifest::parse(&retrievable_manifest.get().await?).map_err(|source| {
+            PackageAddError::ManifestParseError {
+                manifest_path: retrievable_manifest.clone(),
+                source,
+            }
+        })?;
 
         let locator = PackageLocator::from_manifest(&manifest, retrievable_manifest.clone());
+
         if let Some(id) = self.packages.get(&locator) {
             return Ok(*id);
+        }
+
+        if let Some(existing) = self.id_to_locator.get(&locator.id) {
+            let existing_package = self.items.get(self.packages[existing]);
+
+            let get_locator = |package_id: Option<ItemId<Package>>| {
+                package_id.map(|p| self.items.get(p).locator.clone())
+            };
+
+            return Err(PackageConflictError {
+                existing_package: existing.clone(),
+                existing_package_dependent: get_locator(existing_package.dependent_package_id),
+                new_package: locator,
+                new_package_dependent: get_locator(dependent_package_id),
+            }
+            .into());
         }
 
         let build_metadata = retrievable_manifest
@@ -135,6 +241,7 @@ impl Semantic {
             dependencies: HashMap::new(),
             scope_id,
             dependent_package_id,
+            resolved: false,
         };
 
         let id = self.items.add(package);
@@ -148,13 +255,18 @@ impl Semantic {
                 &dependency,
             )?
             else {
-                anyhow::bail!(
-                    "{locator}: dependency `{dependency_name}` has no supported sources specified (are you trying to deploy a package with a local dependency?)"
-                )
+                return Err(PackageAddError::NoSupportedSources {
+                    locator,
+                    dependency_name,
+                });
             };
 
-            let dependency_id = self.add_package(source, Some(id)).await.with_context(|| {
-                format!("Failed to add dependency `{dependency_name}` for {locator}")
+            let dependency_id = self.add_package(source, Some(id)).await.map_err(|err| {
+                PackageAddError::FailedToAddDependency {
+                    dependency_name: dependency_name.clone(),
+                    locator: locator.clone(),
+                    source: Box::new(err),
+                }
             })?;
 
             dependencies.insert(
@@ -171,7 +283,7 @@ impl Semantic {
 
             // If this is not the Ambient package, import the Ambient package
             if !matches!(retrievable_manifest, RetrievableFile::Ambient(_)) {
-                let id = SnakeCaseIdentifier::new("ambient_core")?;
+                let id = SnakeCaseIdentifier::new("ambient_core").unwrap();
                 scope.imports.insert(id, self.ambient_package_id);
             }
 
@@ -182,41 +294,17 @@ impl Semantic {
 
         self.items.get_mut(id).dependencies = dependencies;
 
+        self.id_to_locator
+            .insert(locator.id.clone(), locator.clone());
         self.packages.insert(locator, id);
+
         Ok(id)
     }
 
-    pub fn resolve(&mut self) -> anyhow::Result<()> {
-        let mut seen_locators = HashMap::new();
-        for locator in self.packages.keys() {
-            if let Some(present) = seen_locators.insert(locator.id.clone(), locator.clone()) {
-                let present_package = self.items.get(self.packages[&present]);
-                let locator_package = self.items.get(self.packages[locator]);
-
-                fn imported_by(items: &ItemMap, package: &Package) -> String {
-                    match package.dependent_package_id {
-                        Some(dependent_id) => {
-                            format!("\n    - imported by {}", items.get(dependent_id).locator)
-                        }
-                        None => String::new(),
-                    }
-                }
-
-                anyhow::bail!(
-                    "package conflict found:\n  - {present}{}\n\n  - {locator}{}\n\n{}",
-                    imported_by(&self.items, &present_package),
-                    imported_by(&self.items, &locator_package),
-                    "the system does not currently support multiple versions of the same package in the dependency tree"
-                );
-            }
-        }
-
-        for package_id in self.packages.values().copied() {
-            self.items.resolve(
-                &Context::new(self.root_scope_id),
-                &self.standard_definitions,
-                package_id,
-            )?;
+    pub fn resolve_all(&mut self) -> anyhow::Result<()> {
+        let package_ids = self.packages.values().copied().collect::<Vec<_>>();
+        for package_id in package_ids {
+            self.resolve(package_id)?;
         }
 
         Ok(())
@@ -231,6 +319,100 @@ impl Semantic {
     }
 }
 impl Semantic {
+    /// Resolve the item with the given id by cloning it, avoiding borrowing issues.
+    pub(crate) fn resolve<T: Resolve>(&mut self, id: ItemId<T>) -> anyhow::Result<&mut T> {
+        let item = self.items.get(id);
+        if !item.already_resolved() {
+            let item = item.clone();
+            let new_item = item.resolve(self, id)?;
+            self.items.insert(id, new_item);
+        }
+        Ok(self.items.get_mut(id))
+    }
+
+    /// Walks upwards from `start_scope` to find the first type located at `path`.
+    fn get_contextual<Output: Item>(
+        &self,
+        start_scope: ItemId<Scope>,
+        getter: impl Fn(ItemId<Scope>) -> Option<ItemId<Output>>,
+    ) -> Option<ItemId<Output>> {
+        let mut context_scope_id = Some(start_scope);
+        while let Some(scope_id) = context_scope_id {
+            if let Some(id) = getter(scope_id) {
+                return Some(id);
+            }
+            context_scope_id = self.items.get(scope_id).data().parent_id;
+        }
+        if let Some(id) = getter(self.root_scope_id) {
+            return Some(id);
+        }
+        None
+    }
+
+    /// Walks upwards from `start_scope` to find the first type located at `path`.
+    pub(crate) fn get_contextual_type_id(
+        &self,
+        start_scope: ItemId<Scope>,
+        component_type: &ComponentType,
+    ) -> Option<ItemId<Type>> {
+        self.get_contextual(start_scope, |scope_id| match component_type {
+            ComponentType::Item(id) => get_type_id(&self.items, scope_id, id.as_path()),
+            ComponentType::Contained {
+                type_,
+                element_type,
+            } => get_type_id(&self.items, scope_id, element_type.as_path()).map(|id| match type_ {
+                ambient_package::ContainerType::Vec => self.items.get_vec_id(id),
+                ambient_package::ContainerType::Option => self.items.get_option_id(id),
+            }),
+        })
+    }
+
+    /// Walks upwards from `start_scope` to find the first attribute located at `path`.
+    pub(crate) fn get_contextual_attribute_id<'a>(
+        &self,
+        start_scope: ItemId<Scope>,
+        path: ItemPath<'a>,
+    ) -> Result<ItemId<Attribute>, ContextGetError<'a>> {
+        self.get_contextual(start_scope, |scope_id| {
+            get_attribute_id(&self.items, scope_id, path)
+        })
+        .ok_or(ContextGetError::NotFound {
+            path,
+            type_: ItemType::Attribute,
+        })
+    }
+
+    /// Walks upwards from `start_scope` to find the first concept located at `path`.
+    pub(crate) fn get_contextual_concept_id<'a>(
+        &self,
+        start_scope: ItemId<Scope>,
+        path: ItemPath<'a>,
+    ) -> Result<ItemId<Concept>, ContextGetError<'a>> {
+        self.get_contextual(start_scope, |scope_id| {
+            get_concept_id(&self.items, scope_id, path)
+        })
+        .ok_or(ContextGetError::NotFound {
+            path,
+            type_: ItemType::Concept,
+        })
+    }
+
+    /// Walks upwards from `start_scope` to find the first component located at `path`.
+    pub(crate) fn get_contextual_component_id<'a>(
+        &self,
+        start_scope: ItemId<Scope>,
+        path: ItemPath<'a>,
+    ) -> Result<ItemId<Component>, ContextGetError<'a>> {
+        self.get_contextual(start_scope, |scope_id| {
+            get_component_id(&self.items, scope_id, path)
+        })
+        .ok_or(ContextGetError::NotFound {
+            path,
+            type_: ItemType::Component,
+        })
+    }
+}
+impl Semantic {
     #[cfg_attr(not(target_os = "unknown"), async_recursion)]
     #[cfg_attr(target_os = "unknown", async_recursion(?Send))]
     async fn add_scope_from_manifest_with_includes(
@@ -238,7 +420,7 @@ impl Semantic {
         parent_id: Option<ItemId<Scope>>,
         manifest: &Manifest,
         source: RetrievableFile,
-    ) -> anyhow::Result<ItemId<Scope>> {
+    ) -> Result<ItemId<Scope>, PackageAddError> {
         let includes = manifest.includes.clone();
         let scope_id =
             self.add_scope_from_manifest_without_includes(parent_id, manifest, source.clone())?;
@@ -249,15 +431,21 @@ impl Semantic {
         for include_name in include_names {
             let include_path = &includes[include_name];
 
-            anyhow::ensure!(
-                include_path.extension().is_some(),
-                "Include `{include_name}` = {include_path:?} for `{source}` must have an extension"
-            );
+            if include_path.extension().is_none() {
+                return Err(PackageAddError::IncludeMissingExtension {
+                    include_name: include_name.clone(),
+                    include_path: include_path.clone(),
+                    include_source: source.clone(),
+                });
+            }
 
             let include_source = source.parent_join(include_path)?;
             let include_manifest =
-                Manifest::parse(&include_source.get().await?).with_context(|| {
-                    format!("Failed to parse included manifest {source} for {source}")
+                Manifest::parse(&include_source.get().await?).map_err(|err| {
+                    PackageAddError::IncludeParseError {
+                        include_source: source.clone(),
+                        source: err,
+                    }
                 })?;
             let include_scope_id = self
                 .add_scope_from_manifest_with_includes(
@@ -281,7 +469,7 @@ impl Semantic {
         parent_id: Option<ItemId<Scope>>,
         manifest: &Manifest,
         source: RetrievableFile,
-    ) -> anyhow::Result<ItemId<Scope>> {
+    ) -> Result<ItemId<Scope>, PackageAddError> {
         let item_source = match source {
             RetrievableFile::Ambient(_) => ItemSource::Ambient,
             _ => ItemSource::User,
@@ -320,7 +508,7 @@ impl Semantic {
             items
                 .get_or_create_scope_mut(scope_id, scope_path)
                 .concepts
-                .insert(item.as_snake().map_err(|e| e.to_owned())?.clone(), value);
+                .insert(item.as_pascal().map_err(|e| e.to_owned())?.clone(), value);
         }
 
         for (path, message) in manifest.messages.iter() {
@@ -434,7 +622,7 @@ pub fn package_dependency_to_retrievable_file(
     retrievable_manifest: &RetrievableFile,
     ignore_local_dependencies: bool,
     dependency: &ambient_package::Dependency,
-) -> anyhow::Result<Option<RetrievableFile>> {
+) -> Result<Option<RetrievableFile>, ParentJoinError> {
     let path = dependency
         .path
         .as_ref()
@@ -453,4 +641,92 @@ pub fn package_dependency_to_retrievable_file(
             Some(RetrievableFile::Url(url.join("ambient.toml")?))
         }
     })
+}
+
+/// This item supports being resolved by cloning.
+pub(crate) trait Resolve: Item {
+    fn resolve(self, items: &mut Semantic, self_id: ItemId<Self>) -> anyhow::Result<Self>;
+    fn already_resolved(&self) -> bool;
+}
+
+fn get_type_id(
+    items: &ItemMap,
+    self_scope_id: ItemId<Scope>,
+    path: ItemPath,
+) -> Option<ItemId<Type>> {
+    let (scope, item) = path.scope_and_item();
+    items
+        .get_scope(self_scope_id, scope)
+        .ok()?
+        .types
+        .get(item.as_pascal().ok()?)
+        .copied()
+}
+
+fn get_attribute_id(
+    items: &ItemMap,
+    self_scope_id: ItemId<Scope>,
+    path: ItemPath,
+) -> Option<ItemId<Attribute>> {
+    let (scope, item) = path.scope_and_item();
+    items
+        .get_scope(self_scope_id, scope)
+        .ok()?
+        .attributes
+        .get(item.as_pascal().ok()?)
+        .copied()
+}
+
+fn get_concept_id(
+    items: &ItemMap,
+    self_scope_id: ItemId<Scope>,
+    path: ItemPath,
+) -> Option<ItemId<Concept>> {
+    let (scope, item) = path.scope_and_item();
+    items
+        .get_scope(self_scope_id, scope)
+        .ok()?
+        .concepts
+        .get(item.as_pascal().ok()?)
+        .copied()
+}
+
+fn get_component_id(
+    items: &ItemMap,
+    self_scope_id: ItemId<Scope>,
+    path: ItemPath,
+) -> Option<ItemId<Component>> {
+    let (scope, item) = path.scope_and_item();
+    items
+        .get_scope(self_scope_id, scope)
+        .ok()?
+        .components
+        .get(item.as_snake().ok()?)
+        .copied()
+}
+
+#[derive(Error, Debug)]
+pub enum ContextGetError<'a> {
+    #[error("Failed to find {path} ({type_})")]
+    NotFound { path: ItemPath<'a>, type_: ItemType },
+}
+impl ContextGetError<'_> {
+    pub fn into_owned(self) -> ContextGetOwnedError {
+        self.into()
+    }
+}
+#[derive(Error, Debug)]
+pub enum ContextGetOwnedError {
+    #[error("Failed to find {path} ({type_})")]
+    NotFound { path: ItemPathBuf, type_: ItemType },
+}
+impl From<ContextGetError<'_>> for ContextGetOwnedError {
+    fn from(error: ContextGetError) -> Self {
+        match error {
+            ContextGetError::NotFound { path, type_ } => Self::NotFound {
+                path: path.to_owned(),
+                type_,
+            },
+        }
+    }
 }

@@ -11,10 +11,7 @@ use ambient_api::{
             cast_shadows, fog_color, fog_density, fog_height_falloff, light_diffuse, sky, sun,
             water,
         },
-        transform::{
-            components::{rotation, scale, translation},
-            concepts::make_transformable,
-        },
+        transform::components::{rotation, scale, translation},
     },
     prelude::*,
 };
@@ -70,7 +67,6 @@ pub fn main() {
 
 fn make_water() {
     Entity::new()
-        .with_merge(make_transformable())
         .with(water(), ())
         .with(physics_controlled(), ())
         .with(plane_collider(), ())
@@ -80,13 +76,9 @@ fn make_water() {
 }
 
 fn make_sun() {
-    Entity::new()
-        .with_merge(make_transformable())
-        .with(sky(), ())
-        .spawn();
+    Entity::new().with(sky(), ()).spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
         .with(sun(), 0.0)
         .with(rotation(), Default::default())
         .with(main_scene(), ())
@@ -102,7 +94,6 @@ fn vehicle_creation_and_destruction() {
     spawn_query(is_player()).bind(|players| {
         for (player_id, ()) in players {
             let vehicle_id = Entity::new()
-                .with_merge(make_transformable())
                 .with(cast_shadows(), ())
                 .with(linear_velocity(), Default::default())
                 .with(angular_velocity(), Default::default())

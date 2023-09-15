@@ -37,8 +37,9 @@ pub async fn deploy(
     api_server: &str,
     auth_token: &str,
     path: impl AsRef<Path>,
+    package_root: impl AsRef<Path>,
     force_upload: bool,
-) -> anyhow::Result<String> {
+) -> anyhow::Result<(String, Manifest)> {
     let manifest =
         Manifest::parse(&tokio::fs::read_to_string(path.as_ref().join("ambient.toml")).await?)?;
 
@@ -60,7 +61,7 @@ pub async fn deploy(
     let mut client = create_client(api_server, auth_token).await?;
 
     // collect all files to deploy
-    let mut asset_path_to_file_path = collect_files_to_deploy(base_path)?;
+    let mut asset_path_to_file_path = collect_files_to_deploy(base_path, package_root)?;
     log::debug!("Found {} files to deploy", asset_path_to_file_path.len());
 
     // check that all required files are present
@@ -155,11 +156,17 @@ pub async fn deploy(
     handle.await??;
 
     // this should have arrived in Finished message from the server
-    deployment.ok_or_else(|| anyhow::anyhow!("No deployment id returned from deploy"))
+    Ok((
+        deployment.ok_or_else(|| anyhow::anyhow!("No deployment id returned from deploy"))?,
+        manifest,
+    ))
 }
 
 // Get all files from "build" and EXTRA_FILES_FROM_PACKAGE_ROOT
-fn collect_files_to_deploy(base_path: PathBuf) -> anyhow::Result<HashMap<String, PathBuf>> {
+fn collect_files_to_deploy(
+    base_path: PathBuf,
+    package_root: impl AsRef<Path>,
+) -> anyhow::Result<HashMap<String, PathBuf>> {
     // collect all files to deploy (everything in the build directory)
     let asset_path_to_file_path: Option<HashMap<String, PathBuf>> = WalkDir::new(base_path.clone())
         .into_iter()
@@ -194,7 +201,7 @@ fn collect_files_to_deploy(base_path: PathBuf) -> anyhow::Result<HashMap<String,
 
     // check for a few special files in the package root
     for file_name in EXTRA_FILES_FROM_PACKAGE_ROOT {
-        let file_path = base_path.join(file_name);
+        let file_path = package_root.as_ref().join(file_name);
         if file_path.exists() && file_path.is_file() {
             asset_path_to_file_path.insert(file_name.to_string(), file_path);
         }

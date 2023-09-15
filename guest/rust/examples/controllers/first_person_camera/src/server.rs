@@ -2,12 +2,9 @@ use ambient_api::{
     core::{
         physics::components::{plane_collider, sphere_collider},
         player::components::is_player,
-        primitives::{components::quad, concepts::make_sphere},
+        primitives::{components::quad, concepts::Sphere},
         rendering::components::color,
-        transform::{
-            components::{scale, translation},
-            concepts::make_transformable,
-        },
+        transform::components::{scale, translation},
     },
     prelude::*,
 };
@@ -16,7 +13,6 @@ use packages::fps_controller::components::{camera_distance, use_fps_controller};
 #[main]
 pub fn main() {
     Entity::new()
-        .with_merge(make_transformable())
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(1., 0., 0., 1.))
@@ -24,8 +20,7 @@ pub fn main() {
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
-        .with_merge(make_sphere())
+        .with_merge(Sphere::suggested())
         .with(sphere_collider(), 0.5)
         .with(translation(), vec3(5., 5., 1.))
         .spawn();

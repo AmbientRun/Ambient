@@ -23,7 +23,11 @@ pub enum ResolvableValue {
     Resolved(Value),
 }
 impl ResolvableValue {
-    pub(crate) fn resolve(&mut self, items: &ItemMap, id: ItemId<Type>) -> anyhow::Result<()> {
+    pub(crate) fn resolve_in_place(
+        &mut self,
+        items: &ItemMap,
+        id: ItemId<Type>,
+    ) -> anyhow::Result<()> {
         if let Self::Unresolved(value) = self {
             *self = Self::Resolved(Value::from_toml(value, items, id)?);
         }
@@ -232,11 +236,11 @@ impl Value {
         items: &ItemMap,
         ty_id: ItemId<Type>,
     ) -> anyhow::Result<Self> {
-        let ty = &*items.get(ty_id);
+        let ty = items.get(ty_id);
         Ok(match &ty.inner {
             TypeInner::Primitive(pt) => Self::Scalar(ScalarValue::from_toml(value, *pt)?),
             TypeInner::Vec(v) => {
-                let inner_ty = &*items.get(*v);
+                let inner_ty = items.get(*v);
                 let inner_ty = inner_ty.inner.as_primitive().with_context(|| {
                     format!("Expected primitive type, got {:?}", inner_ty.inner)
                 })?;
@@ -252,7 +256,7 @@ impl Value {
                 )
             }
             TypeInner::Option(o) => {
-                let inner_ty = &*items.get(*o);
+                let inner_ty = items.get(*o);
                 let inner_ty = inner_ty.inner.as_primitive().with_context(|| {
                     format!("Expected primitive type, got {:?}", inner_ty.inner)
                 })?;

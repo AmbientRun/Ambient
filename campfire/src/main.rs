@@ -21,6 +21,7 @@ async fn run() -> anyhow::Result<()> {
 
         Cli::Clean => package::clean(),
         Cli::Run(run) => package::run(&run),
+        Cli::Serve(run) => package::serve(&run),
         Cli::Web(command) => web::run(command).await,
     }
 }

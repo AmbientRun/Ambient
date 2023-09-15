@@ -7,7 +7,8 @@ pub struct RenderSettings {
     #[serde(default)]
     pub(crate) vsync: Vsync,
     #[serde(default)]
-    pub render_mode: RenderMode,
+    /// If `None` fall back to the platform default
+    pub render_mode: Option<RenderMode>,
     #[serde(default)]
     pub software_culling: bool,
 }
@@ -21,12 +22,30 @@ impl RenderSettings {
     }
 }
 
-#[derive(Default, Serialize, Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum RenderMode {
-    #[default]
     MultiIndirect,
     Indirect,
     Direct,
+}
+
+impl RenderMode {
+    pub const fn instrinsic_render_mode() -> Self {
+        cfg_if::cfg_if! {
+            if #[cfg(any(target_os = "windows", target_os = "linux"))] {
+                Self::MultiIndirect
+            } else if #[cfg(target_os = "macos")] {
+                Self::Indirect
+            } else if #[cfg(target_os = "unknown")] {
+                // Chrome uses DirectX12 which does not correctly implement `INDIRECT_FIRST_INSTANCE` which causes the wrong instance index to be passed to indirect draws.
+                // This in turn causes a dispatch of X vertices to unconditionally use instance/entity 0, and therefore the wrong mesh for the dispatch count.
+                // Not good
+               Self::Direct
+            } else {
+                Self::Direct
+            }
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

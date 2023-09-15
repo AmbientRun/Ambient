@@ -558,11 +558,14 @@ impl ToTokens for PascalCaseIdentifier {
 
 static RESERVED_SNAKE_CASE_IDENTIFIERS: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     HashSet::from_iter([
+        // Rust keywords
         "as", "break", "const", "continue", "crate", "else", "extern", "false", "fn", "for", "if",
         "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub", "ref", "return", "self",
         "static", "struct", "super", "trait", "true", "type", "unsafe", "use", "where", "while",
         "async", "await", "dyn", "abstract", "become", "box", "do", "final", "macro", "override",
         "priv", "typeof", "unsized", "virtual", "yield", "try",
+        // Identifiers reserved for use by Ambient codegen
+        "optional",
     ])
 });
 static RESERVED_PASCAL_CASE_IDENTIFIERS: Lazy<HashSet<&'static str>> =

@@ -57,7 +57,7 @@ pub async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     let tests = if let Mode::Update = gi.mode {
         // The base path is stripped as `get_all_packages` returns
         // paths relative to the current working directory.
-        get_all_packages(true, false)?
+        get_all_packages(true, false, false)?
             .into_iter()
             .map(|p| {
                 p.strip_prefix(TEST_BASE_PATH)

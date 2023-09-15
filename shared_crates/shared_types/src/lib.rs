@@ -5,6 +5,7 @@ mod procedurals;
 pub use crate::procedurals::*;
 
 pub mod asset;
+pub mod urls;
 
 /// A mapping from enum names to Rust types. Instantiate this with a macro that takes `$(($value:ident, $type:ty)),*`.
 #[macro_export]

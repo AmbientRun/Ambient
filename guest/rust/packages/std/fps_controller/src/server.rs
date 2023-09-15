@@ -1,10 +1,10 @@
 use ambient_api::{
     core::{
         app::components::name,
-        physics::concepts::make_character_controller,
+        physics::concepts::CharacterController,
         transform::{
             components::{local_to_parent, rotation, translation},
-            concepts::make_transformable,
+            concepts::{Transformable, TransformableOptional},
         },
     },
     entity::{add_child, add_component, get_component, set_component},
@@ -28,8 +28,19 @@ pub fn main() {
             entity::add_components(
                 id,
                 Entity::new()
-                    .with_merge(make_character_controller())
-                    .with_merge(make_transformable())
+                    .with_merge(CharacterController {
+                        character_controller_height: 2.,
+                        character_controller_radius: 0.5,
+                        physics_controlled: (),
+                    })
+                    .with_merge(Transformable {
+                        local_to_world: default(),
+                        optional: TransformableOptional {
+                            translation: Some(Vec3::ZERO),
+                            rotation: Some(default()),
+                            scale: Some(Vec3::ONE),
+                        },
+                    })
                     .with(run_direction(), Vec2::ZERO)
                     .with(vertical_velocity(), 0.)
                     .with(running(), false)
@@ -43,7 +54,10 @@ pub fn main() {
             for (id, _) in players {
                 let head = Entity::new()
                     .with(name(), "Head".to_string())
-                    .with_merge(make_transformable())
+                    .with_merge(Transformable {
+                        local_to_world: default(),
+                        optional: default(),
+                    })
                     .with(local_to_parent(), Default::default())
                     .with(translation(), Vec3::Z * 2.)
                     .with(

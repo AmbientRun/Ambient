@@ -1,0 +1,12 @@
+[package]
+name = "ambient_git_rev"
+version = { workspace = true }
+rust-version = { workspace = true }
+edition = "2021"
+description = "Ambient git revision helper. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

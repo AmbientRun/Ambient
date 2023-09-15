@@ -11,20 +11,26 @@ For details on how to import the content, see [asset pipeline](./asset_pipeline.
 ## Characters and animations
 
 - [Mixamo](https://www.mixamo.com): Free characters and animations.
+- [Rokoko](https://www.rokoko.com/free-resources): Free character animation assets.
 
 ## Models
 
+- [OpenGameArt](https://opengameart.org/): Creative commons licensed.
 - [Unity asset store](https://assetstore.unity.com/): Lots of content. The Ambient asset pipeline supports importing Unity models. However, ensure that the license allows you to use the content in your game.
 - [Quixel](https://quixel.com/): Realistic scanned models. The asset pipeline supports importing Quixel models. However, ensure that the license allows you to use the content in your game.
 - [Sketchfab](https://sketchfab.com/): Many models.
 
-## Materials
+## Materials & Textures
 
-- [https://ambientcg.com/](https://ambientcg.com/): Many materials.
+- [Ambientcg.com](https://ambientcg.com/): Many materials.
+- [Gametextures](https://gametextures.com/freebies): Signup to get some freebie textures.
 
 ## Audio
 
-- [https://freesound.org/](https://freesound.org/): Lots of sounds from recordings to synthesis ones.
+- [Freesound.org](https://freesound.org/): Lots of sounds from recordings to synthesis ones.
+- [8bit Sound Generator](https://www.bfxr.net/): You have full rights to all sounds made with bfxr, and are free to use them for any purposes, commercial or otherwise.
+- [Boomlibrary](https://www.boomlibrary.com/): Paid. Lots of game sounds and packages.
+- [WeLoveIndies.com](https://www.weloveindies.com/en ): Paid. Lots of game sounds and music.
 
 ## Collections
 

@@ -5,17 +5,12 @@ use std::sync::{
 
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         primitives::components::cube,
         rendering::components::color,
-        transform::{
-            components::{lookat_target, scale, translation},
-            concepts::make_transformable,
-        },
+        transform::components::{lookat_target, scale, translation},
     },
     prelude::*,
 };
@@ -34,13 +29,18 @@ pub fn main() {
     // other modules (e.g. `client_two.rs`) until it gets a response (4).
 
     // 0
-    Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(translation(), Vec3::ONE * 5.)
-        .with(lookat_target(), vec3(0., 0., 0.))
-        .spawn();
+    PerspectiveInfiniteReverseCamera {
+        optional: PerspectiveInfiniteReverseCameraOptional {
+            translation: Some(Vec3::ONE * 5.),
+            main_scene: Some(()),
+            aspect_ratio_from_window: Some(entity::resources()),
+            ..default()
+        },
+        ..PerspectiveInfiniteReverseCamera::suggested()
+    }
+    .make()
+    .with(lookat_target(), vec3(0., 0., 0.))
+    .spawn();
 
     // 1
     Hello::new("Hello, world from the client!", false).send_server_unreliable();
@@ -52,7 +52,6 @@ pub fn main() {
 
         let source_reliable = data.source_reliable;
         Entity::new()
-            .with_merge(make_transformable())
             .with(cube(), ())
             .with(
                 translation(),

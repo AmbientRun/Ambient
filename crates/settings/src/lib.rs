@@ -32,8 +32,25 @@ impl Settings {
         let settings = std::fs::read_to_string(&path);
         match settings {
             Ok(settings) => {
-                Ok(match toml::from_str(&settings) {
-                    Ok(settings) => settings,
+                Ok(match toml::from_str::<Settings>(&settings) {
+                    Ok(settings) => {
+                        #[cfg(not(any(target_os = "windows", target_os = "linux")))]
+                        if settings.render.render_mode == Some(RenderMode::MultiIndirect) {
+                            tracing::warn!("MultiIndirect render mode is not supported on this platform. Falling back to Indirect");
+                            let mut settings = settings;
+                            settings.render.render_mode = Some(RenderMode::Indirect);
+
+                            let _ = settings.write_to_file(Some(path.clone()));
+
+                            settings
+                        } else {
+                            settings
+                        }
+                        #[cfg(any(target_os = "windows", target_os = "linux"))]
+                        {
+                            settings
+                        }
+                    }
                     Err(err) => {
                         if let Ok(render) = toml::from_str::<RenderSettings>(&settings) {
                             // TEMP: Migrate old settings, which only had render settings,
@@ -42,7 +59,9 @@ impl Settings {
                                 render,
                                 ..Default::default()
                             };
+
                             settings.write_to_file(Some(path.clone()))?;
+
                             settings
                         } else {
                             return Err(err)
@@ -99,9 +118,24 @@ impl SyncAssetKey<Settings> for SettingsKey {
     fn load(&self, _assets: ambient_native_std::asset_cache::AssetCache) -> Settings {
         #[cfg(target_os = "unknown")]
         {
+            use js_sys::Reflect;
+            let nav = web_sys::window().unwrap().navigator();
+            let ua = Reflect::get(&nav, &"userAgentData".into()).unwrap();
+            let platform = Reflect::get(&ua, &"platform".into())
+                .unwrap()
+                .as_string()
+                .unwrap();
+
+            tracing::info!("Detected platform: {platform}");
+            let render_mode = if platform == "Windows" {
+                RenderMode::Direct
+            } else {
+                RenderMode::Indirect
+            };
+
             Settings {
                 render: RenderSettings {
-                    render_mode: RenderMode::Indirect,
+                    render_mode: Some(render_mode),
                     ..Default::default()
                 },
                 ..Default::default()

@@ -45,20 +45,29 @@ impl Gpu {
             std::env::set_var("DISABLE_LAYER_NV_OPTIMUS_1", "1");
         }
 
-        #[cfg(target_os = "windows")]
-        let backend = wgpu::Backends::VULKAN;
+        let backends = if cfg!(target_os = "windows") {
+            wgpu::Backends::VULKAN
+        } else if cfg!(target_os = "macos") {
+            wgpu::Backends::PRIMARY
+        } else if cfg!(target_os = "unknown") {
+            wgpu::Backends::BROWSER_WEBGPU
+        } else {
+            wgpu::Backends::all()
+        };
 
-        #[cfg(all(not(target_os = "windows"), not(target_os = "unknown")))]
-        let backend = wgpu::Backends::PRIMARY;
-
-        #[cfg(target_os = "unknown")]
-        let backend = wgpu::Backends::all();
+        tracing::info!("Configured backends: {backends:?}");
 
         let instance = wgpu::Instance::new(InstanceDescriptor {
-            backends: backend,
-            // TODO upgrade to Dxc ?
+            backends,
+            // TODO: upgrade to Dxc? This requires us to ship additionall dll files, which may be
+            // possible using an installer. Nevertheless, we are currently using Vulkan on windows
+            // due to `base_instance` being broken on windows.
             // https://docs.rs/wgpu/latest/wgpu/enum.Dx12Compiler.html
             dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
+            // dx12_shader_compiler: wgpu::Dx12Compiler::Dxc {
+            //     dxil_path: Some("./dxil.dll".into()),
+            //     dxc_path: Some("./dxcompiler.dll".into()),
+            // },
         });
 
         let surface = window.map(|window| unsafe { instance.create_surface(window).unwrap() });

@@ -33,6 +33,7 @@
 - [Distributing](reference/distributing.md)
 - [Terminology](reference/terminology.md)
 - [Common pitfalls](reference/common_pitfalls.md)
+- [Advanced installation](reference/advanced_installing.md)
 - [FAQ](reference/faq.md)
 - [Changelog](reference/changelog.md)
 

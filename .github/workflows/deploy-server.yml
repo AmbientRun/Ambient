@@ -1,4 +1,4 @@
-name: Build and upload server (Docker image and binary)
+name: Deploy server
 
 on:
   workflow_dispatch:

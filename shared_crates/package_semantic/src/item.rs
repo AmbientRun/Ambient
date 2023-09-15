@@ -9,15 +9,12 @@ use ambient_std::topological_sort::{topological_sort, TopologicalSortable};
 use thiserror::Error;
 use ulid::Ulid;
 
-use crate::{
-    Attribute, Component, Concept, Context, Message, Package, Scope, StandardDefinitions, Type,
-    TypeInner,
-};
+use crate::{Attribute, Component, Concept, Message, Package, Scope, Type, TypeInner};
 
 #[derive(Error, Debug)]
 pub enum GetScopeError {
     #[error(
-        "failed to find scope `{segment}` in scope `{scope_path}` while searching for `{path:?}`"
+        "Failed to find scope `{segment}` in scope `{scope_path}` while searching for `{path:?}`"
     )]
     NotFound {
         segment: SnakeCaseIdentifier,
@@ -94,19 +91,6 @@ impl ItemMap {
         self.items.insert(id.0, item.into_item_value());
     }
 
-    /// Resolve the item with the given id by cloning it, avoiding borrowing issues.
-    pub(crate) fn resolve<T: Resolve>(
-        &mut self,
-        context: &Context,
-        definitions: &StandardDefinitions,
-        id: ItemId<T>,
-    ) -> anyhow::Result<&mut T> {
-        let item = self.get(id).clone();
-        let new_item = item.resolve(self, context, definitions, id)?;
-        self.insert(id, new_item);
-        Ok(self.get_mut(id))
-    }
-
     pub fn get_vec_id(&self, id: ItemId<Type>) -> ItemId<Type> {
         self.vec_items.get(&id).copied().unwrap()
     }
@@ -139,7 +123,7 @@ impl ItemMap {
                     .copied()
                     .ok_or_else(|| GetScopeError::NotFound {
                         segment: segment.clone(),
-                        scope_path: self.fully_qualified_display_path(&*scope, None, None),
+                        scope_path: self.fully_qualified_display_path(scope, None, None),
                         path: path.to_vec(),
                     })?;
         }
@@ -315,17 +299,6 @@ pub trait Item: Clone {
     fn into_item_value(self) -> ItemValue;
 
     fn data(&self) -> &ItemData;
-}
-
-/// This item supports being resolved by cloning.
-pub(crate) trait Resolve: Item {
-    fn resolve(
-        self,
-        items: &mut ItemMap,
-        context: &Context,
-        definitions: &StandardDefinitions,
-        self_id: ItemId<Self>,
-    ) -> anyhow::Result<Self>;
 }
 
 pub struct ItemId<T: Item>(Ulid, PhantomData<T>);

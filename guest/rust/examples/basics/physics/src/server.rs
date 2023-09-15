@@ -1,10 +1,5 @@
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
-        },
         messages::{Collision, Frame},
         physics::components::{
             angular_velocity, cube_collider, dynamic, linear_velocity, physics_controlled,
@@ -13,28 +8,29 @@ use ambient_api::{
         prefab::components::prefab_from_url,
         primitives::components::cube,
         rendering::components::{cast_shadows, color},
-        transform::{
-            components::{lookat_target, rotation, scale, translation},
-            concepts::make_transformable,
-        },
+        transform::components::{rotation, scale, translation},
     },
     prelude::*,
 };
 
-use packages::this::{assets, messages::Bonk};
+use packages::{
+    orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional},
+    this::{assets, messages::Bonk},
+};
 
 #[main]
 pub async fn main() {
-    let camera = Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(translation(), vec3(5., 5., 4.))
-        .with(lookat_target(), vec3(0., 0., 0.))
-        .spawn();
+    let camera = OrbitCamera {
+        is_orbit_camera: (),
+        optional: OrbitCameraOptional {
+            camera_distance: Some(7.5),
+            camera_angle: Some(vec2(45f32.to_radians(), 45f32.to_radians())),
+            ..default()
+        },
+    }
+    .spawn();
 
     let cube = Entity::new()
-        .with_merge(make_transformable())
         .with(cube(), ())
         .with(visualize_collider(), ())
         .with(physics_controlled(), ())
@@ -50,13 +46,16 @@ pub async fn main() {
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
         .with(prefab_from_url(), assets::url("shape.glb"))
         .spawn();
 
     Collision::subscribe(move |msg| {
         println!("Bonk! {:?} collided", msg.ids);
-        Bonk {emitter: cube, listener: camera}.send_client_broadcast_unreliable();
+        Bonk {
+            emitter: cube,
+            listener: camera,
+        }
+        .send_client_broadcast_unreliable();
     });
 
     Frame::subscribe(move |_| {

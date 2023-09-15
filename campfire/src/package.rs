@@ -13,6 +13,10 @@ pub enum Package {
     Clean,
     /// Run an package
     Run(Run),
+    /// Serve an package
+    Serve(Run),
+    /// List all packages
+    List,
     /// Run all the packages in order
     RunAll(RunParams),
     /// Check all the packages
@@ -53,6 +57,8 @@ pub fn main(args: &Package) -> anyhow::Result<()> {
     match args {
         Package::Clean => clean(),
         Package::Run(args) => run(args),
+        Package::Serve(args) => serve(args),
+        Package::List => list(),
         Package::RunAll(params) => run_all(params),
         Package::CheckAll => check_all(),
         Package::BuildAll => build_all(),
@@ -63,37 +69,9 @@ pub fn main(args: &Package) -> anyhow::Result<()> {
     }
 }
 
-pub fn build_all() -> anyhow::Result<()> {
-    let package_paths = get_all_packages(true, true)?;
-
-    for path in &package_paths {
-        run_ambient(&["build", &path.to_string_lossy(), "--clean-build"], true)?;
-    }
-
-    Ok(())
-}
-
-pub fn deploy_all(token: &str, include_examples: bool) -> anyhow::Result<()> {
-    let paths = get_all_packages(include_examples, false)?;
-    let paths = paths.iter().map(|p| p.to_string_lossy()).collect_vec();
-
-    let mut args = vec!["deploy"];
-    for (idx, path) in paths.iter().enumerate() {
-        if idx != 0 {
-            args.push("--extra-packages");
-        }
-        args.push(path);
-    }
-    args.push("--token");
-    args.push(token);
-    args.push("--clean-build");
-
-    run_ambient(&args, true)
-}
-
 pub fn clean() -> anyhow::Result<()> {
     log::info!("Cleaning examples...");
-    for path in get_all_packages(true, true)? {
+    for path in get_all_packages(true, true, true)? {
         let build_path = path.join("build");
         if !build_path.exists() {
             continue;
@@ -108,20 +86,39 @@ pub fn clean() -> anyhow::Result<()> {
 
 pub fn run(args: &Run) -> anyhow::Result<()> {
     let Run { package, params } = args;
-
-    let path = get_all_packages(true, true)?
-        .into_iter()
-        .find(|p| p.ends_with(package))
-        .ok_or_else(|| anyhow::anyhow!("no example found with name {}", package))?;
+    let path = find_package(package)?;
 
     log::info!("Running example {} (params: {params:?})...", path.display());
-    run_package(&path, params)
+    run_package("run", &path, params)
+}
+
+pub fn serve(args: &Run) -> anyhow::Result<()> {
+    let Run { package, params } = args;
+    let path = find_package(package)?;
+
+    log::info!("Serving example {} (params: {params:?})...", path.display());
+    run_package("serve", &path, params)
+}
+
+fn find_package(package: &String) -> anyhow::Result<PathBuf> {
+    Ok(get_all_packages(true, true, false)?
+        .into_iter()
+        .find(|p| p.ends_with(package))
+        .ok_or_else(|| anyhow::anyhow!("no example found with name {}", package))?)
+}
+
+fn list() -> anyhow::Result<()> {
+    for path in get_all_packages(true, true, true)? {
+        println!("{}", path.display());
+    }
+
+    Ok(())
 }
 
 fn run_all(params: &RunParams) -> anyhow::Result<()> {
-    for path in get_all_packages(true, true)? {
+    for path in get_all_packages(true, true, false)? {
         log::info!("Running example {} (params: {params:?})...", path.display());
-        run_package(&path, params)?;
+        run_package("run", &path, params)?;
     }
 
     Ok(())
@@ -160,8 +157,36 @@ fn check_all() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn run_package(path: &Path, params: &RunParams) -> anyhow::Result<()> {
-    let mut args = vec!["run"];
+pub fn build_all() -> anyhow::Result<()> {
+    let package_paths = get_all_packages(true, true, true)?;
+
+    for path in &package_paths {
+        run_ambient(&["build", &path.to_string_lossy(), "--clean-build"], true)?;
+    }
+
+    Ok(())
+}
+
+pub fn deploy_all(token: &str, include_examples: bool) -> anyhow::Result<()> {
+    let paths = get_all_packages(include_examples, false, true)?;
+    let paths = paths.iter().map(|p| p.to_string_lossy()).collect_vec();
+
+    let mut args = vec!["deploy"];
+    for (idx, path) in paths.iter().enumerate() {
+        if idx != 0 {
+            args.push("--extra-packages");
+        }
+        args.push(path);
+    }
+    args.push("--token");
+    args.push(token);
+    args.push("--clean-build");
+
+    run_ambient(&args, true)
+}
+
+fn run_package(run_cmd: &str, path: &Path, params: &RunParams) -> anyhow::Result<()> {
+    let mut args = vec![run_cmd];
     let path = path.to_string_lossy();
     args.push(&path);
     if !params.args.is_empty() {
@@ -173,11 +198,22 @@ fn run_package(path: &Path, params: &RunParams) -> anyhow::Result<()> {
 pub fn get_all_packages(
     include_examples: bool,
     include_testcases: bool,
+    include_mods: bool,
 ) -> anyhow::Result<Vec<PathBuf>> {
     let mut package_paths = vec![];
     for category in all_directories_in(Path::new("guest/rust/packages"))? {
         for package in all_directories_in(&category.path())? {
-            package_paths.push(package.path());
+            let package_path = package.path();
+            package_paths.push(package_path.clone());
+
+            if include_mods {
+                let mods_path = package_path.join("mods");
+                if mods_path.is_dir() {
+                    for mod_path in all_directories_in(&mods_path)? {
+                        package_paths.push(mod_path.path());
+                    }
+                }
+            }
         }
     }
     if include_examples {

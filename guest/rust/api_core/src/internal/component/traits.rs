@@ -16,7 +16,12 @@ use std::time::Duration;
 
 #[doc(hidden)]
 pub fn get_component<T>(id: &str) -> Component<T> {
-    Component::new(wit::component::get_index(id).unwrap())
+    match wit::component::get_index(id) {
+        Some(id) => Component::new(id),
+        None => {
+            panic!("The component `{id}` was not registered with Ambient. Are you sure that this package was built for this version of Ambient, and that there are no stale build files?");
+        }
+    }
 }
 
 /// Implemented by all types that can be used as values in components.

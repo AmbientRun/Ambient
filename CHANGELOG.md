@@ -146,6 +146,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **UI**: Focus is now global across different packages, and we've removed the FocusRoot component
 - **API**: CursorLockGuard removed and `hide_cursor` package introduced.
 - **Hierarchies**: The `children` component is now automatically derived from `parent` components (unless the user opts out of this). The `children` component is also not networked any longer, since it's calculated on the client side.
+- **Concepts**: Concept code generation has been changed to generate `structs` instead, as well as adding support for optional components. See the documentation for more information.
 
 #### Non-breaking
 

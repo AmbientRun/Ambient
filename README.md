@@ -26,9 +26,17 @@ See the [documentation](https://ambientrun.github.io/Ambient/) for a guide on ho
 
 ## Installing
 
-The easiest way to get Ambient is by downloading the latest release [here](https://github.com/AmbientRun/Ambient/releases).
+Simply run:
 
-For alternative installation options, go to the [documentation on installing](https://ambientrun.github.io/Ambient/user/installing.html).
+```sh
+cargo install ambient
+```
+
+This requires [Rust](https://www.rust-lang.org/) to be installed. You will also need to install the wasm32 toolchain: `rustup target add --toolchain stable wasm32-wasi`.
+
+Ambient runs on Windows, Linux and Mac.
+
+For alternative installation options, go to the [documentation on installing](https://ambientrun.github.io/Ambient/reference/advanced_installing.html).
 
 ## Roadmap
 

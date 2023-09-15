@@ -202,30 +202,43 @@ attributes = ["Debuggable"]
 
 The `concepts` section contains custom concepts defined by the package. Concepts are used to define a set of components that can be attached to an entity.
 
-This is a TOML table, where the keys are the concept IDs (`SnakeCaseIdentifier`), and the values are the concept definitions.
+This is a TOML table, where the keys are the concept IDs (`CamelCaseIdentifier`), and the values are the concept definitions.
 
-| Property      | Type                 | Description                                                                                                                                                                                                                                                                                                                                                                           |
-| ------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`        | `String`             | _Optional_. A human-readable name for the concept.                                                                                                                                                                                                                                                                                                                                    |
-| `description` | `String`             | _Optional_. A human-readable description of the concept.                                                                                                                                                                                                                                                                                                                              |
-| `extends`     | `String[]`           | _Optional_. An array of concepts to extend. Must be defined in this package manifest.                                                                                                                                                                                                                                                                                                 |
-| `components`  | `Map<ItemPath, any>` | _Required_. An object containing the components and their default values.<br /><br />`Mat4` and `Quat` support `Identity` as a string, which will use the relevant identity value for that type.<br /><br />`F32` and `F64` support `PI`, `FRAC_PI_2`, `-PI`, and `-FRAC_PI_2` as string values, which correspond to pi (~3.14), half-pi (~1.57), and negative versions respectively. |
+| Property              | Type                          | Description                                                                                                                                                                                                                                                                                              |
+| --------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                | `String`                      | _Optional_. A human-readable name for the concept.                                                                                                                                                                                                                                                       |
+| `description`         | `String`                      | _Optional_. A human-readable description of the concept.                                                                                                                                                                                                                                                 |
+| `extends`             | `String[]`                    | _Optional_. An array of concepts to extend. Must be defined in this package manifest.                                                                                                                                                                                                                    |
+| `components.required` | `Map<ItemPath, ConceptValue>` | _Required_. An object containing the required components for this concept, and any associated information about the use of the component in this concept (see below).                                                                                                                                    |
+| `components.optional` | `Map<ItemPath, ConceptValue>` | _Optional_. An object containing the optional components for this concept, and any associated information about the use of the component in this concept (see below). These components do not need to be specified to satisfy a concept, but may provide additional control or information if available. |
 
-The `components` is an object where the keys are `ItemPath`s of components defined in the package manifest, and the values are the default values for those components in the concept.
+The `components` is an object where the keys are `ItemPath`s of components defined in the package manifest, and the values are `ConceptValue`s.
+
+`ConceptValue`s are a TOML table with the following properties:
+
+| Property      | Type          | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `description` | `String`      | _Optional_. A human-readable description of the component in the context of the concept, which may be different to the component's description.                                                                                                                                                                                                                                                                                                                      |
+| `suggested`   | `toml::Value` | _Optional_. If specified, the suggested value for this component in this concept. This is merely a suggestion, but must match the type of the component.<br /><br />`Mat4` and `Quat` support `Identity` as a string, which will use the relevant identity value for that type.<br /><br />`F32` and `F64` support `PI`, `FRAC_PI_2`, `-PI`, and `-FRAC_PI_2` as string values, which correspond to pi (~3.14), half-pi (~1.57), and negative versions respectively. |
 
 #### Example
 
 ```toml
-[concepts.concept1]
+[concepts.Concept1]
 name = "Concept 1"
 description = "The best"
-[concepts.Concept1.components]
-cool_component = 0
+[concepts.Concept1.components.required]
+cool_component = {}
 
 # A concept that extends `concept1` and has both `cool_component` and `cool_component2`.
-[concepts.concept2]
+[concepts.Concept2]
 extends = ["Concept1"]
-components = { cool_component2 = 1 }
+
+[concepts.Concept2.components.required]
+cool_component2 = { suggested = 42 }
+
+[concepts.Concept2.components.optional]
+cool_component3 = { suggested = 42 }
 ```
 
 ### Messages / `[messages]`

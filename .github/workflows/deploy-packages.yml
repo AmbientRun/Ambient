@@ -1,3 +1,5 @@
+# This workflow will deploy examples and other packages to the Ambient Cloud.
+
 name: Deploy packages
 
 on:

@@ -142,27 +142,6 @@ pub fn to_byte_unit(bytes: u64) -> String {
     }
 }
 
-pub fn parse_git_revision(version: &str) -> Option<String> {
-    let s = version.split('-').collect::<Vec<_>>();
-    if s.len() <= 2 {
-        Some(s[0].to_string())
-    } else {
-        Some(s.get(3)?[1..].to_string())
-    }
-}
-
-pub fn git_revision() -> Option<String> {
-    parse_git_revision(git_version::git_version!(
-        args = ["--abbrev=10", "--always", "--long"]
-    ))
-}
-
-pub fn git_revision_full() -> Option<String> {
-    parse_git_revision(git_version::git_version!(
-        args = ["--abbrev=40", "--always", "--long"]
-    ))
-}
-
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, PartialOrd, Eq, Ord)]
 pub struct AmbientVersion {
     pub version: Version,
@@ -184,7 +163,7 @@ impl Default for AmbientVersion {
     fn default() -> Self {
         Self {
             version: Version::parse(RUNTIME_VERSION).expect("Failed to parse version"),
-            revision: git_revision_full().unwrap_or_default(),
+            revision: ambient_git_rev::REV_FULL.to_string(),
         }
     }
 }
@@ -210,45 +189,6 @@ impl Display for AmbientVersion {
 
 pub fn ambient_version() -> AmbientVersion {
     AmbientVersion::default()
-}
-
-#[test]
-fn test_parse_git_revision() {
-    assert_eq!(parse_git_revision("9f244c3"), Some("9f244c3".to_string()));
-    assert_eq!(
-        parse_git_revision("9f244c3-modified"),
-        Some("9f244c3".to_string())
-    );
-    assert_eq!(
-        parse_git_revision("git-0.3.0-dev-g9f244c3"),
-        Some("9f244c3".to_string())
-    );
-}
-
-#[test]
-fn test_git_revision() {
-    let revision = String::from_utf8(
-        std::process::Command::new("git")
-            .args(["rev-parse", "--short=10", "HEAD"])
-            .output()
-            .expect("Failed to init git repo")
-            .stdout,
-    )
-    .expect("Invalid encoding");
-    assert_eq!(git_revision().as_deref(), Some(revision.trim()));
-}
-
-#[test]
-fn test_git_revision_full() {
-    let revision = String::from_utf8(
-        std::process::Command::new("git")
-            .args(["rev-parse", "--short=40", "HEAD"])
-            .output()
-            .expect("Failed to init git repo")
-            .stdout,
-    )
-    .expect("Invalid encoding");
-    assert_eq!(git_revision_full().as_deref(), Some(revision.trim()));
 }
 
 #[test]

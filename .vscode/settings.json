@@ -1,8 +1,9 @@
 {
-  "editor.detectIndentation": false,
-  "editor.tabSize": 4,
-  "files.trimTrailingWhitespace": true,
-  "[toml]": {
-    "editor.formatOnSave": false
-  }
+    "editor.detectIndentation": false,
+    "editor.tabSize": 4,
+    "files.trimTrailingWhitespace": true,
+    "[toml]": {
+        "editor.formatOnSave": false
+    },
+    "rust-analyzer.showUnlinkedFileNotification": false
 }

@@ -640,6 +640,34 @@ pub fn use_resource<
     use_entity_component(hooks, entity::resources(), component)
 }
 
+#[cfg(feature = "guest")]
+/// Use a concept from an entity in the ECS, and update its state if required.
+///
+/// If the entity does not exist, or does not match the concept, this will return `None`.
+pub fn use_entity_concept<C: ambient_guest_bridge::api::ecs::ConceptComponents>(
+    hooks: &mut Hooks,
+    id: EntityId,
+) -> Option<C> {
+    use ambient_guest_bridge::api::prelude::change_query;
+
+    let refresh = use_rerender_signal(hooks);
+    use_spawn(hooks, move |_| {
+        let c = change_query(())
+            .track_change(C::required())
+            .track_change(C::optional())
+            .requires(C::required())
+            .bind({
+                let refresh = refresh.clone();
+                move |_| refresh()
+            });
+        move |_| {
+            c.stop();
+        }
+    });
+
+    C::get_spawned(id)
+}
+
 /// Run `cb` every `seconds` seconds.
 ///
 /// If your `cb` depends on some state, consider using [use_interval_deps] instead.

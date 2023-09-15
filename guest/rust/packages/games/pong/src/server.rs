@@ -5,9 +5,9 @@ use ambient_api::{
         messages::Frame,
         physics::components::linear_velocity,
         player::components::{is_player, user_id},
-        primitives::{components::cube, concepts::make_sphere},
+        primitives::{components::cube, concepts::Sphere},
         rendering::components::color,
-        transform::{components::*, concepts::make_transformable},
+        transform::components::*,
     },
     prelude::*,
 };
@@ -22,7 +22,7 @@ use constants::*;
 
 fn spawn_paddle(left: bool, paddle_color: Vec3) -> EntityId {
     let x = X_BOUNDARY + PADDLE_WIDTH / 2.;
-    make_transformable()
+    Entity::new()
         .with(cube(), ())
         .with(scale(), vec3(PADDLE_WIDTH, PADDLE_LENGTH, 1.))
         .with(translation(), vec3(if left { -x } else { x }, 0., 0.))
@@ -46,7 +46,7 @@ pub fn main() {
 
     entity::add_component(entity::synchronized_resources(), track_audio_url(), bgm_url);
     // Spawn field, paddles and ball
-    make_transformable()
+    Entity::new()
         .with(cube(), ())
         .with(scale(), vec3(X_BOUNDARY * 2., Y_BOUNDARY * 2., 1.))
         .with(translation(), vec3(0., 0., 1.))
@@ -56,8 +56,8 @@ pub fn main() {
         spawn_paddle(true, vec3(255., 0., 0.)),
         spawn_paddle(false, vec3(0., 255., 0.)),
     ];
-    let ball = make_transformable()
-        .with_merge(make_sphere())
+    let ball = Sphere::suggested()
+        .make()
         .with(scale(), vec3(BALL_RADIUS, BALL_RADIUS, 1.))
         .with(translation(), vec3(0., 0., -1.))
         .with(color(), vec4(255., 255., 255., 1.))

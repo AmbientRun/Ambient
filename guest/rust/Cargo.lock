@@ -1656,6 +1656,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "orbit_camera"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "ordered-float"
 version = "3.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1670,7 +1677,9 @@ version = "0.0.1"
 dependencies = [
  "ambient_api",
  "ambient_package",
+ "ambient_shared_types",
  "serde",
+ "serde_json",
  "toml 0.7.6",
 ]
 
@@ -2372,6 +2381,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "tangent"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
 ]
 
 [[package]]

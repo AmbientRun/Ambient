@@ -53,8 +53,26 @@ impl Context {
             ItemType::Package => "packages::",
         };
         let prefix = format!("{type_namespace}{}", prefix.unwrap_or_default());
-        let path =
-            make_path(&items.fully_qualified_display_path(&*item, None, Some(prefix.as_str())));
+        let fully_qualified_display_path =
+            items.fully_qualified_display_path(&*item, None, Some(prefix.as_str()));
+
+        // Bad, lazy hack to remap `ambient_core` to a valid API path.
+        // Without this, `ambient_core::transform::lookat_target` will get emitted as
+        //  `ambient_api::core::ambient_core::transform::components::lookat_target`
+        // instead of
+        //  `ambient_api::core::transform::components::lookat_target`
+        let fully_qualified_display_path = if matches!(
+            (self, item.data().source),
+            (Context::GuestUser, ItemSource::Ambient)
+        ) {
+            fully_qualified_display_path
+                .strip_prefix("ambient_core::")
+                .unwrap_or(&fully_qualified_display_path)
+        } else {
+            &fully_qualified_display_path
+        };
+
+        let path = make_path(&fully_qualified_display_path);
 
         Ok(quote! { #path_prefix #path })
     }

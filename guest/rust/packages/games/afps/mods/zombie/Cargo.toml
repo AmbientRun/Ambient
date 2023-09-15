@@ -13,11 +13,6 @@ name = "zombie_server"
 path = "src/server.rs"
 required-features = ["server"]
 
-[[bin]]
-name = "zombie_client"
-path = "src/client.rs"
-required-features = ["client"]
-
 [features]
 client = ["ambient_api/client"]
 server = ["ambient_api/server"]

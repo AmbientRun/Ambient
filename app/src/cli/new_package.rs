@@ -48,7 +48,11 @@ pub(crate) fn handle(
     // Write the files to disk.
     let ambient_toml = include_str!("new_package_template/ambient.toml")
         .replace("{{id}}", id.as_str())
-        .replace("{{name}}", name);
+        .replace("{{name}}", name)
+        .replace(
+            "{{ambient_version}}",
+            &format!("{}", ambient_native_std::ambient_version().version),
+        );
 
     let cargo_toml = {
         // Special-case creating an example in guest/rust/examples so that it "Just Works".
@@ -70,23 +74,18 @@ pub(crate) fn handle(
             None => {
                 let version = ambient_version();
                 (
-                    #[cfg(feature = "production")]
-                    format!("ambient_api = \"{}\"", version.version),
-                    #[cfg(not(feature = "production"))]
-                    {
-                        if let Some(api_path) = api_path {
-                            log::info!("Ambient path: {}", api_path);
-                            format!("ambient_api = {{ path = {:?} }}", api_path)
-                        } else if let Some(tag) = version.tag() {
-                            log::info!("Ambient tag: {}", tag);
-                            format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", tag = \"{}\" }}", tag)
-                        } else if !version.revision.is_empty() {
-                            log::info!("Ambient revision: {}", version.revision);
-                            format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", version.revision)
-                        } else {
-                            log::info!("Ambient version: {}", version.version);
-                            format!("ambient_api = \"{}\"", version.version)
-                        }
+                    if let Some(api_path) = api_path {
+                        log::info!("Ambient path: {}", api_path);
+                        format!("ambient_api = {{ path = {:?} }}", api_path)
+                    } else if let Some(tag) = version.tag() {
+                        log::info!("Ambient tag: {}", tag);
+                        format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", tag = \"{}\" }}", tag)
+                    } else if !version.revision.is_empty() {
+                        log::info!("Ambient revision: {}", version.revision);
+                        format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", version.revision)
+                    } else {
+                        log::info!("Ambient version: {}", version.version);
+                        format!("ambient_api = \"{}\"", version.version)
                     },
                     false,
                 )

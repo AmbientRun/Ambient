@@ -181,7 +181,7 @@ impl Dependency {
         if let Some(url) = self.url.clone() {
             Some(url)
         } else if let Some(deployment) = self.deployment.as_ref() {
-            Url::parse(&format!("https://assets.ambient.run/{deployment}")).ok()
+            Url::parse(&ambient_shared_types::urls::deployment_url(&deployment)).ok()
         } else {
             None
         }
@@ -200,9 +200,9 @@ mod tests {
     use url::Url;
 
     use crate::{
-        Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Enum,
-        Identifier, ItemPathBuf, Manifest, ManifestParseError, Package, PackageId,
-        PascalCaseIdentifier, SnakeCaseIdentifier,
+        Build, BuildRust, Component, ComponentType, Components, Concept, ConceptValue,
+        ContainerType, Dependency, Enum, Identifier, ItemPathBuf, Manifest, ManifestParseError,
+        Package, PackageId, PascalCaseIdentifier, SnakeCaseIdentifier,
     };
     use semver::Version;
 
@@ -273,11 +273,11 @@ mod tests {
         [components]
         cell = { type = "i32", name = "Cell", description = "The ID of the cell this player is in", attributes = ["store"] }
 
-        [concepts.cell]
+        [concepts.Cell]
         name = "Cell"
         description = "A cell object"
-        [concepts.cell.components]
-        cell = 0
+        [concepts.Cell.components.required]
+        cell = {}
         "#;
 
         assert_eq!(
@@ -305,12 +305,15 @@ mod tests {
                     }
                 )]),
                 concepts: IndexMap::from_iter([(
-                    ipb("cell"),
+                    ipb("Cell"),
                     Concept {
                         name: Some("Cell".to_string()),
                         description: Some("A cell object".to_string()),
                         extends: vec![],
-                        components: IndexMap::from_iter([(ipb("cell"), toml::Value::Integer(0))])
+                        components: Components {
+                            required: IndexMap::from_iter([(ipb("cell"), ConceptValue::default())]),
+                            optional: Default::default()
+                        }
                     }
                 )]),
                 messages: Default::default(),
@@ -374,15 +377,18 @@ mod tests {
         "core::transform::spherical_billboard" = { type = "empty", name = "Spherical billboard", description = "" }
         "core::transform::translation" = { type = "vec3", name = "Translation", description = "" }
 
-        [concepts."ns::transformable"]
+        [concepts."ns::Transformable"]
         name = "Transformable"
         description = "Can be translated, rotated and scaled."
 
-        [concepts."ns::transformable".components]
+        [concepts."ns::Transformable".components.required]
         # This is intentionally out of order to ensure that order is preserved
-        "core::transform::translation" = [0, 0, 0]
-        "core::transform::scale" = [1, 1, 1]
-        "core::transform::rotation" = [0, 0, 0, 1]
+        "core::transform::translation" = { suggested = [0, 0, 0] }
+        "core::transform::scale" = { suggested = [1, 1, 1] }
+        "core::transform::rotation" = { suggested = [0, 0, 0, 1] }
+
+        [concepts."ns::Transformable".components.optional]
+        "core::transform::inv_local_to_world" = { description = "If specified, will be automatically updated" }
         "#;
 
         let manifest = Manifest::parse(TOML).unwrap();
@@ -443,38 +449,58 @@ mod tests {
                     ),
                 ]),
                 concepts: IndexMap::from_iter([(
-                    ipb("ns::transformable"),
+                    ipb("ns::Transformable"),
                     Concept {
                         name: Some("Transformable".to_string()),
                         description: Some("Can be translated, rotated and scaled.".to_string()),
                         extends: vec![],
-                        components: IndexMap::from_iter([
-                            (
-                                ipb("core::transform::translation"),
-                                Value::Array(vec![
-                                    Value::Integer(0),
-                                    Value::Integer(0),
-                                    Value::Integer(0)
-                                ])
-                            ),
-                            (
-                                ipb("core::transform::scale"),
-                                Value::Array(vec![
-                                    Value::Integer(1),
-                                    Value::Integer(1),
-                                    Value::Integer(1)
-                                ])
-                            ),
-                            (
-                                ipb("core::transform::rotation"),
-                                Value::Array(vec![
-                                    Value::Integer(0),
-                                    Value::Integer(0),
-                                    Value::Integer(0),
-                                    Value::Integer(1)
-                                ])
-                            ),
-                        ])
+                        components: Components {
+                            required: IndexMap::from_iter([
+                                (
+                                    ipb("core::transform::translation"),
+                                    ConceptValue {
+                                        suggested: Some(Value::Array(vec![
+                                            Value::Integer(0),
+                                            Value::Integer(0),
+                                            Value::Integer(0)
+                                        ])),
+                                        ..Default::default()
+                                    }
+                                ),
+                                (
+                                    ipb("core::transform::scale"),
+                                    ConceptValue {
+                                        suggested: Some(Value::Array(vec![
+                                            Value::Integer(1),
+                                            Value::Integer(1),
+                                            Value::Integer(1)
+                                        ])),
+                                        ..Default::default()
+                                    }
+                                ),
+                                (
+                                    ipb("core::transform::rotation"),
+                                    ConceptValue {
+                                        suggested: Some(Value::Array(vec![
+                                            Value::Integer(0),
+                                            Value::Integer(0),
+                                            Value::Integer(0),
+                                            Value::Integer(1)
+                                        ])),
+                                        ..Default::default()
+                                    }
+                                ),
+                            ]),
+                            optional: IndexMap::from_iter([(
+                                ipb("core::transform::inv_local_to_world"),
+                                ConceptValue {
+                                    description: Some(
+                                        "If specified, will be automatically updated".to_string()
+                                    ),
+                                    ..Default::default()
+                                },
+                            )])
+                        }
                     }
                 )]),
                 messages: Default::default(),
@@ -491,6 +517,7 @@ mod tests {
                 .unwrap()
                 .1
                 .components
+                .required
                 .keys()
                 .collect::<Vec<_>>(),
             vec![

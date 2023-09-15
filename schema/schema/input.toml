@@ -40,3 +40,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 description = "Mouse over has been updated"
 fields = { from_external = "Bool", mouse_over = "EntityId", distance = "F32" }
 as_module_message = true
+
+[messages.ClipboardGet]
+description = "Sent to a package that has requested the clipboard contents."
+fields = { contents = { container_type = "Option", element_type = "String" } }

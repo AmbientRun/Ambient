@@ -21,7 +21,7 @@ use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     color::Color,
 };
-use ambient_settings::SettingsKey;
+use ambient_settings::{RenderMode, SettingsKey};
 use glam::uvec2;
 use std::sync::Arc;
 use tracing::debug_span;
@@ -238,7 +238,9 @@ impl Renderer {
                         depth_stencil: true,
                         cull_mode: Some(wgpu::Face::Back),
                         depth_bias: Default::default(),
-                        render_mode: settings.render_mode,
+                        render_mode: settings
+                            .render_mode
+                            .unwrap_or_else(RenderMode::instrinsic_render_mode),
                         software_culling: settings.software_culling,
                     },
                 ))

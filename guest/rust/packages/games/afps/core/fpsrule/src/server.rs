@@ -10,10 +10,7 @@ use ambient_api::{
         player::components::is_player,
         primitives::components::cube,
         rendering::components::{cast_shadows, color},
-        transform::{
-            components::{rotation, scale, translation},
-            concepts::make_transformable,
-        },
+        transform::components::{rotation, scale, translation},
     },
     prelude::*,
 };
@@ -32,7 +29,10 @@ pub fn main() {
     spawn_query(is_player()).bind(|results| {
         for (id, ()) in results {
             run_async(async move {
-                if entity::wait_for_component(id, player_name()).await.is_none() {
+                if entity::wait_for_component(id, player_name())
+                    .await
+                    .is_none()
+                {
                     // entity deleted
                     return;
                 }
@@ -63,7 +63,7 @@ pub fn main() {
             //     println!("laser length: {}", laser_length);
             //     let laser_center = (hit.position + msg.ray_origin) / 2.0;
             //     let laser = Entity::new()
-            //         .with_merge(make_transformable())
+            //         .with_merge(make_Transformable())
             //         .with(cube(), ())
             //         .with(scale(), vec3(0.01, 0.01, laser_length * 0.6))
             //         .with(translation(), laser_center)
@@ -100,7 +100,6 @@ pub fn main() {
                         let rot = Quat::from_rotation_y(random::<f32>() * PI)
                             * Quat::from_rotation_x(random::<f32>() * PI);
                         Entity::new()
-                            .with_merge(make_transformable())
                             .with(cube(), ())
                             .with(rotation(), rot)
                             .with(physics_controlled(), ())

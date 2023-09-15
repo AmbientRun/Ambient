@@ -20,9 +20,6 @@ use serde::Deserialize;
 use server::{ServerHandle, QUIC_INTERFACE_PORT};
 use std::path::{Path, PathBuf};
 
-pub const GIT_VERSION: &str = git_version::git_version!();
-pub const VERSION: &str = env!("CARGO_PKG_VERSION");
-
 fn main() -> anyhow::Result<()> {
     let rt = ambient_sys::task::make_native_multithreaded_runtime()?;
 
@@ -361,10 +358,11 @@ fn init_sentry(sentry_dsn: &String) -> sentry::ClientInitGuard {
         std::process::exit(1);
     }));
 
+    let version = ambient_native_std::ambient_version();
     sentry::init((
         sentry_dsn.to_owned(),
         sentry::ClientOptions {
-            release: Some(format!("{VERSION}_{GIT_VERSION}").into()),
+            release: Some(format!("{}_{}", version.version, version.revision).into()),
             ..Default::default()
         },
     ))

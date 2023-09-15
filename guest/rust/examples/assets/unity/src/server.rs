@@ -1,40 +1,41 @@
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        camera::{
-            components::aspect_ratio_from_window,
-            concepts::make_perspective_infinite_reverse_camera,
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         prefab::components::prefab_from_url,
         primitives::components::quad,
         rendering::components::cast_shadows,
-        transform::{
-            components::{lookat_target, scale, translation},
-            concepts::make_transformable,
-        },
+        transform::components::{local_to_world, lookat_target, scale},
     },
     prelude::*,
 };
+
 use packages::this::assets;
 
 #[main]
 pub fn main() {
-    Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with(main_scene(), ())
-        .with(translation(), Vec3::ONE * 5. + Vec3::Z * 1.5)
-        .with(lookat_target(), Vec3::Z * 1.5)
-        .spawn();
+    PerspectiveInfiniteReverseCamera {
+        optional: PerspectiveInfiniteReverseCameraOptional {
+            aspect_ratio_from_window: Some(entity::resources()),
+            translation: Some(Vec3::ONE * 5. + Vec3::Z * 1.5),
+            main_scene: Some(()),
+            ..default()
+        },
+        ..PerspectiveInfiniteReverseCamera::suggested()
+    }
+    .make()
+    .with(lookat_target(), Vec3::Z * 1.5)
+    .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with(local_to_world(), Mat4::IDENTITY)
         .with(quad(), ())
         .with(scale(), Vec3::ONE * 100.)
         .spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
+        .with(local_to_world(), Mat4::IDENTITY)
         .with(cast_shadows(), ())
         .with(
             prefab_from_url(),

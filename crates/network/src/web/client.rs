@@ -437,7 +437,7 @@ async fn resolve_hosted_server(assets: &AssetCache, url: Url) -> anyhow::Result<
     let client = ReqwestClientKey.get(assets);
 
     let res = client
-        .get(url)
+        .get(url.clone())
         .send()
         .await
         .context("Failed to resolve hosted server")?
@@ -446,6 +446,6 @@ async fn resolve_hosted_server(assets: &AssetCache, url: Url) -> anyhow::Result<
         .context("Failed to get result for request")?;
 
     Url::parse(&format!("https://{}", res.trim())).with_context(|| {
-        format!("Expected a valid URL for host resolution, but was unable to resolve \"{res}\"")
+        format!("Expected a valid Url resolving host, but was unable to resolve {res}")
     })
 }

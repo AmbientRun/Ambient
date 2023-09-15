@@ -4,6 +4,7 @@ examples/*/*/build
 examples/*/*/target
 
 packages/*/*/build
+packages/*/*/mods/*/build
 
 testcases/*/.cargo
 testcases/*/.gitignore

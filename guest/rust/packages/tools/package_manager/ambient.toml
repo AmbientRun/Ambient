@@ -4,18 +4,20 @@ name = "Package Manager"
 version = "0.0.1"
 content = { type = "Tool" }
 
+[components.mod_manager_for]
+name = "Mod Manager For"
+description = "Package config component. Attach this component to this package's entity to make it a mod manager for the given package."
+type = "EntityId"
+attributes = ["Networked", "Debuggable"]
+
 [messages.PackageLoad.fields]
 url = "String"
 
 [messages.PackageLoadSuccess.fields]
-id = "String"
+id = "EntityId"
 name = "String"
-version = "String"
-authors = { container_type = "Vec", element_type = "String" }
-client_wasms = { container_type = "Vec", element_type = "String" }
-server_wasms = { container_type = "Vec", element_type = "String" }
 
-[messages.ErrorMessage.fields]
+[messages.PackageLoadFailure.fields]
 reason = "String"
 
 [messages.PackageSetEnabled.fields]
@@ -29,10 +31,26 @@ enabled = "Bool"
 [messages.WasmReload.fields]
 id = "EntityId"
 
-[messages.WasmReplaceBytecodeUrl.fields]
+[messages.PackageShow]
+description = "Shows the package view for a package"
+[messages.PackageShow.fields]
 id = "EntityId"
-url = "String"
+
+[messages.PackageLoadShow]
+description = "Shows the package load view"
+[messages.PackageLoadShow.fields]
+
+[messages.PackageRemoteRequest]
+description = "Requests all relevant remote packages"
+[messages.PackageRemoteRequest.fields]
+
+[messages.PackageRemoteResponse]
+description = "Response to a remote package request"
+[messages.PackageRemoteResponse.fields]
+# It would be nice to send structured types here
+# https://github.com/AmbientRun/Ambient/issues/790
+packages = { container_type = "Vec", element_type = "String" }
+error = { container_type = "Option", element_type = "String" }
 
 [dependencies]
-input_schema = { path = "../../schemas/input", deployment = "64pXUOreGMZXeZJL9921SE" }
-editor_schema = { path = "../../schemas/editor" , deployment = "6IgzU6tzLoh4CQTxmDUaoS" }
+editor_schema = { path = "../../schemas/editor", deployment = "2Lpg3bYwHGP8pmp8zrV3zN" }

@@ -9,7 +9,7 @@ use ambient_gpu::{
     texture::{Texture, TextureView},
 };
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
-use ambient_settings::SettingsKey;
+use ambient_settings::{RenderMode, SettingsKey};
 use bytemuck::{Pod, Zeroable};
 use glam::{Mat4, Vec3};
 use itertools::Itertools;
@@ -93,7 +93,9 @@ impl ShadowsRenderer {
                         slope_scale: -1.5,
                         clamp: 0.0,
                     },
-                    render_mode: settings.render_mode,
+                    render_mode: settings
+                        .render_mode
+                        .unwrap_or_else(RenderMode::instrinsic_render_mode),
                     software_culling: settings.software_culling,
                 },
             ),

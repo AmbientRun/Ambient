@@ -2,10 +2,12 @@ use std::f32::consts::PI;
 
 use ambient_api::{
     core::{
-        app::components::{main_scene, name},
+        app::components::name,
         camera::{
-            components::{active_camera, aspect_ratio_from_window},
-            concepts::make_perspective_infinite_reverse_camera,
+            components::active_camera,
+            concepts::{
+                PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
+            },
         },
         physics::components::dynamic,
         player::components::user_id,
@@ -57,16 +59,21 @@ pub fn main() {
                 })
                 .unwrap_or_else(|| vec2(0.0, PI / 2.));
 
-            let camera_id = Entity::new()
-                .with_merge(make_perspective_infinite_reverse_camera())
-                .with(aspect_ratio_from_window(), EntityId::resources())
-                .with(main_scene(), ())
-                .with(user_id(), player_user_id)
-                .with(translation(), new_camera_position)
-                .with(camera_angle(), new_camera_angle)
-                .with(name(), "Editor Camera".to_string())
-                .with(active_camera(), 10.0)
-                .spawn();
+            let camera_id = PerspectiveInfiniteReverseCamera {
+                optional: PerspectiveInfiniteReverseCameraOptional {
+                    translation: Some(new_camera_position),
+                    rotation: Some(default()),
+                    main_scene: Some(()),
+                    aspect_ratio_from_window: Some(entity::resources()),
+                    user_id: Some(player_user_id),
+                    ..default()
+                },
+                ..PerspectiveInfiniteReverseCamera::suggested()
+            }
+            .make()
+            .with(camera_angle(), new_camera_angle)
+            .with(name(), "Editor Camera".to_string())
+            .spawn();
 
             entity::add_component(id, editor_camera(), camera_id);
         } else {

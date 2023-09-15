@@ -114,38 +114,82 @@ In addition to specifying components in the query, you can also specify componen
 
 Concepts are defined in the package manifest, and are used to define a collection of components that correspond to some concept in the game world. For example, a `Player` concept might be defined as a collection of components that describe the player's health, inventory, and position.
 
-Concepts have an ID (specified as the name of their TOML table), a name, a description, and a list of components with defaults. Additionally, they can extend other concepts, which will cause them to inherit the components and defaults of the concept they extend.
+Concepts have an ID (specified as the name of their TOML table), a name, a description, and required/optional components. Additionally, they can extend other concepts, which will cause them to inherit the components of the concepts they extend. Anything that is defined in the concept will override the definition in the concept it extends.
+
+Required components must be present for an entity to satisfy a concept, while optional components are not required and can be used to provide additional information about the entity. As an example, a `CharacterAnimation` concept may require components to drive it, but can offer optional components as a way of configuring which animations should be used.
+
+When specifying a concept's components, the following optional parameters are available:
+
+- `suggested`: A suggested default for the value of the component. This is shown in documentation.
+- `description`: A description of the component in the context of the concept, which may be different to the component's description. This can be used to clarify how a component may be used within a concept. This is shown in documentation.
+
+These do not need to be specified, but are useful for providing additional information about the component.
 
 For illustration, here are two concepts that are defined as part of Ambient's default manifest:
 
 ```toml
-[concepts.transformable]
+[concepts.Transformable]
 name = "Transformable"
 description = "Can be translated, rotated and scaled."
 
-[concepts.transformable.components]
-translation = [0.0, 0.0, 0.0]
-scale = [1.0, 1.0, 1.0]
-rotation = [0.0, 0.0, 0.0, 1.0]
+[concepts.Transformable.components.required]
+local_to_world = { suggested = "Identity" }
 
-[concepts.camera]
+[concepts.Transformable.components.optional]
+translation = { suggested = [0.0, 0.0, 0.0] }
+rotation = { suggested = [0.0, 0.0, 0.0, 1.0] }
+scale = { suggested = [1.0, 1.0, 1.0] }
+
+[concepts.Camera]
 name = "Camera"
 description = "Base components for a camera. You will need other components to make a fully-functioning camera."
-extends = ["transform::transformable"]
+extends = ["transform::Transformable"]
 
-[concepts.camera.components]
-near = 0.1
-projection = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-projection_view = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-active_camera = 0.0
-"transform::local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-"transform::inv_local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+[concepts.Camera.components.required]
+near = { suggested = 0.1 }
+projection = { suggested = "Identity" }
+projection_view = { suggested = "Identity" }
+active_camera = { suggested = 0.0 }
+"transform::local_to_world" = { suggested = "Identity" }
+"transform::inv_local_to_world" = { suggested = "Identity" }
+[concepts.Camera.components.optional]
+"app::main_scene" = { description = "Either the main or UI scene must be specified for this camera to be used." }
+"app::ui_scene" = { description = "Either the main or UI scene must be specified for this camera to be used." }
+"player::user_id" = { description = "If set, this camera will only be used for the specified user." }
 ```
 
-In this example, the "camera" concept contains all of the components from a transformable, as well as components of its own. This means that any entity that has the "camera" concept will also have the components from the "transformable" concept.
+In this example, the "Camera" concept contains all of the components from a transformable, as well as components of its own. This means that any entity that has the "camera" concept will also have the components from the "Transformable" concept.
 
-Concepts are exposed to your Rust code in three ways, using `camera` as an example:
+In your Rust code, this will be represented as a struct that contains the components that are defined in the concept. This is generated as part of the same macro that enables other Ambient functionality within your Rust code.
 
-- `camera()`: returns a tuple of the components that are part of the `camera` concept. This can be used within queries to query for entities that have the `camera` concept.
-- `make_camera()`: makes a `Entity` with the components of the `camera` concept, which can then be spawned.
-- `is_camera(id)`: returns true if the entity with the given ID contains all of the components of the `camera` concept.
+For example, the `Camera` concept will generate a struct that looks like this:
+
+```rust
+#[derive(Clone, Debug)]
+pub struct Camera {
+    pub local_to_world: Mat4,
+    pub near: f32,
+    pub projection: Mat4,
+    pub projection_view: Mat4,
+    pub active_camera: f32,
+    pub inv_local_to_world: Mat4,
+    pub optional: CameraOptional,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct CameraOptional {
+    pub translation: Option<Vec3>,
+    pub rotation: Option<Quat>,
+    pub scale: Option<Vec3>,
+    pub main_scene: Option<()>,
+    pub ui_scene: Option<()>,
+    pub user_id: Option<String>,
+}
+```
+
+The `Concept` struct implements the `Concept` trait, which offers several operations. Each of these fields represents a specific component from the concept.
+
+This struct can be filled out with values and then converted to an `Entity` using the `Concept::make` method, or spawned using `Concept::spawn`.
+Alternatively, it can be populated using the `Concept::get_{un}spawned` method, allowing for easy retrieval of all of the values of a concept from an entity or the ECS.
+
+For more information, consult the API documentation on the `Concept` trait.
