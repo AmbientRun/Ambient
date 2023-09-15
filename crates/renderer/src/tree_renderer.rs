@@ -590,7 +590,6 @@ impl TreeRenderer {
                         );
                     }
                 } else if self.config.render_mode == RenderMode::Direct {
-                    tracing::info!("Using direct renderer");
                     for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
                         let primitive = &world.get_ref(id, primitives()).unwrap()[primitive_idx];
 
