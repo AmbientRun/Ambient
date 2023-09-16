@@ -1,5 +1,9 @@
 use ambient_api::prelude::*;
 
+pub fn circle_point(radians: f32, radius: f32) -> Vec2 {
+    vec2(radians.cos(), radians.sin()) * radius
+}
+
 pub fn spawnpoints() -> [(Vec3, f32); 5] {
     [
         (vec3(0.0, 0.0, 0.0), 10.0),

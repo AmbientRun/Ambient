@@ -69,7 +69,8 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
     // Spawn cubes until we hit the limit
     let mut grid = Grid::default();
     while grid.size() < TARGET_CUBE_COUNT {
-        let position = circle_point(rng.gen::<f32>() * TAU, rng.gen::<f32>() * LEVEL_RADIUS);
+        let position =
+            shared::circle_point(rng.gen::<f32>() * TAU, rng.gen::<f32>() * LEVEL_RADIUS);
 
         let base_size = vec3(rng.gen(), rng.gen(), rng.gen());
         let size = base_size * (CUBE_MAX_SIZE - CUBE_MIN_SIZE) + CUBE_MIN_SIZE;
@@ -98,15 +99,11 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
     for i in 0..360 {
         let angle = (i as f32).to_radians();
         let radius = LEVEL_RADIUS + rng.gen::<f32>() * 10.0;
-        let position = circle_point(angle, radius);
+        let position = shared::circle_point(angle, radius);
 
         let size = vec3(1.5, 1.5, 10.) + rng.gen::<Vec3>() * vec3(1., 1., 20.);
         make_cube(position, size, false, rng);
     }
-}
-
-fn circle_point(radians: f32, radius: f32) -> Vec2 {
-    vec2(radians.cos(), radians.sin()) * radius
 }
 
 fn make_cube(pos: Vec2, size: Vec3, dynamic: bool, rng: &mut dyn RngCore) -> EntityId {
