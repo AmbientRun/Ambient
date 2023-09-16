@@ -7,7 +7,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use packages::tangent_schema::components::player_vehicle;
+use packages::tangent_schema::player::components as pc;
 
 mod shared;
 
@@ -44,7 +44,7 @@ fn main() {
 }
 
 fn local_vehicle() -> Option<EntityId> {
-    entity::get_component(player::get_local(), player_vehicle())
+    entity::get_component(player::get_local(), pc::vehicle_ref())
 }
 
 #[element_component]

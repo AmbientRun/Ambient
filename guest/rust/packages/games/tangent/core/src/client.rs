@@ -21,8 +21,7 @@ use ambient_api::{
     prelude::*,
 };
 use packages::tangent_schema::{
-    components::{player_vehicle, vehicle, vehicle_hud},
-    messages::Input,
+    messages::Input, player::components as pc, vehicle::components as vc,
 };
 
 const CAMERA_OFFSET: Vec3 = vec3(0.5, 1.8, 0.6);
@@ -43,7 +42,7 @@ pub fn main() {
     .with(lookat_target(), vec3(0., 0., 1.))
     .spawn();
 
-    spawn_query(vehicle()).bind(move |vehicles| {
+    spawn_query(vc::player_ref()).bind(move |vehicles| {
         for (id, _) in vehicles {
             let hud_id = Transformable {
                 local_to_world: default(),
@@ -66,13 +65,13 @@ pub fn main() {
             .with(font_size(), 48.0)
             .spawn();
 
-            entity::add_component(id, vehicle_hud(), hud_id);
+            entity::add_component(id, vc::hud(), hud_id);
             entity::add_child(id, hud_id);
         }
     });
 
-    despawn_query(vehicle_hud())
-        .requires(vehicle())
+    despawn_query(vc::hud())
+        .requires(vc::player_ref())
         .bind(move |vehicles| {
             for (_vehicle_id, hud_id) in vehicles {
                 entity::despawn(hud_id);
@@ -88,7 +87,7 @@ pub fn main() {
         }
     });
 
-    query((vehicle_hud(), rotation(), linear_velocity())).each_frame(|huds| {
+    query((vc::hud(), rotation(), linear_velocity())).each_frame(|huds| {
         for (_, (hud_id, rot, lv)) in huds {
             entity::set_component(hud_id, text(), format!("{:.1}\n", speed_kph(lv, rot)));
         }
@@ -96,7 +95,7 @@ pub fn main() {
 
     Frame::subscribe(move |_| {
         let player_id = player::get_local();
-        let Some(vehicle_id) = entity::get_component(player_id, player_vehicle()) else {
+        let Some(vehicle_id) = entity::get_component(player_id, pc::vehicle_ref()) else {
             return;
         };
         let Some(vehicle_position) = entity::get_component(vehicle_id, translation()) else {

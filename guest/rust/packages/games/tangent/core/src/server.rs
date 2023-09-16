@@ -12,7 +12,7 @@ use ambient_api::{
 };
 
 use packages::{
-    tangent_schema::{components, messages::Input},
+    tangent_schema::{messages::Input, player::components as pc, vehicle::components as vc},
     this::assets,
 };
 
@@ -60,18 +60,15 @@ pub fn main() {
                 .with(angular_velocity(), Default::default())
                 .with(physics_controlled(), ())
                 .with(dynamic(), true)
-                .with(components::vehicle(), player_id)
+                .with(vc::player_ref(), player_id)
                 .with(
                     translation(),
                     SPAWN_POSITION + random::<Vec2>().extend(0.0) * SPAWN_RADIUS,
                 )
                 .with(density(), DENSITY)
-                .with(
-                    components::last_distances(),
-                    THRUSTERS.map(|_| 0.0).to_vec(),
-                )
-                .with(components::last_jump_time(), game_time())
-                .with(components::last_slowdown_time(), game_time())
+                .with(vc::last_distances(), THRUSTERS.map(|_| 0.0).to_vec())
+                .with(vc::last_jump_time(), game_time())
+                .with(vc::last_slowdown_time(), game_time())
                 .with(
                     model_from_url(),
                     assets::url("models/dynamic/raceCarWhite.glb/models/main.json"),
@@ -79,16 +76,16 @@ pub fn main() {
                 .with(cube_collider(), Vec3::new(0.6, 1.0, 0.2))
                 .spawn();
 
-            entity::add_component(player_id, components::player_vehicle(), vehicle_id);
-            entity::add_component(player_id, components::input_direction(), Vec2::ZERO);
-            entity::add_component(player_id, components::input_jump(), false);
+            entity::add_component(player_id, pc::vehicle_ref(), vehicle_id);
+            entity::add_component(player_id, pc::input_direction(), Vec2::ZERO);
+            entity::add_component(player_id, pc::input_jump(), false);
         }
     });
 
     // When a player despawns (leaves), despawn their vehicle.
     despawn_query(is_player()).bind(|players| {
         for (player, ()) in players {
-            if let Some(vehicle) = entity::get_component(player, components::player_vehicle()) {
+            if let Some(vehicle) = entity::get_component(player, pc::vehicle_ref()) {
                 entity::despawn(vehicle);
             }
         }
@@ -97,13 +94,13 @@ pub fn main() {
     // When a player sends input, update their input state.
     Input::subscribe(|ctx, input| {
         if let Some(player) = ctx.client_entity_id() {
-            entity::set_component(player, components::input_direction(), input.direction);
-            entity::set_component(player, components::input_jump(), input.jump);
+            entity::set_component(player, pc::input_direction(), input.direction);
+            entity::set_component(player, pc::input_jump(), input.jump);
         }
     });
 
     // Process all vehicles.
-    query(components::vehicle()).each_frame(move |vehicles| {
+    query(vc::player_ref()).each_frame(move |vehicles| {
         for (vehicle_id, driver_id) in vehicles {
             process_vehicle(vehicle_id, driver_id);
         }
@@ -113,7 +110,7 @@ pub fn main() {
 fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
     use entity::{get_component as get, set_component as set};
 
-    let direction = get(driver_id, components::input_direction()).unwrap_or_default();
+    let direction = get(driver_id, pc::input_direction()).unwrap_or_default();
     let Some(vehicle_position) = get(vehicle_id, translation()) else {
         return;
     };
@@ -121,17 +118,17 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
         return;
     };
 
-    let mut last_distances = get(vehicle_id, components::last_distances()).unwrap();
+    let mut last_distances = get(vehicle_id, vc::last_distances()).unwrap();
 
     // Apply jump
-    let vehicle_last_jump_time = get(vehicle_id, components::last_jump_time()).unwrap_or_default();
-    if get(driver_id, components::input_jump()).unwrap_or_default()
+    let vehicle_last_jump_time = get(vehicle_id, vc::last_jump_time()).unwrap_or_default();
+    if get(driver_id, pc::input_jump()).unwrap_or_default()
         && (game_time() - vehicle_last_jump_time).as_secs_f32() > JUMP_TIMEOUT
     {
         let linear_velocity = get(vehicle_id, linear_velocity()).unwrap_or_default();
         let speed_multiplier = (linear_velocity.dot(vehicle_rotation * -Vec3::Y) * 0.3).max(5.0);
 
-        set(vehicle_id, components::last_jump_time(), game_time());
+        set(vehicle_id, vc::last_jump_time(), game_time());
         physics::add_force(
             vehicle_id,
             vehicle_rotation * Vec3::Z * INPUT_JUMP_STRENGTH * speed_multiplier,
@@ -190,7 +187,7 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
             last_distances[index] = new_distance;
         }
     }
-    set(vehicle_id, components::last_distances(), last_distances);
+    set(vehicle_id, vc::last_distances(), last_distances);
 
     // Apply forward inputs by applying an invisible force at the back of the vehicle
     let pitch = vehicle_rotation.to_euler(glam::EulerRot::YXZ).1;
@@ -230,13 +227,12 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
     );
 
     // Dampen the angular velocity every so often
-    let vehicle_last_slowdown_time =
-        get(vehicle_id, components::last_slowdown_time()).unwrap_or_default();
+    let vehicle_last_slowdown_time = get(vehicle_id, vc::last_slowdown_time()).unwrap_or_default();
 
     if (game_time() - vehicle_last_slowdown_time).as_secs_f32() > ANGULAR_SLOWDOWN_DELAY {
         entity::mutate_component(vehicle_id, angular_velocity(), |av| {
             *av -= *av * ANGULAR_SLOWDOWN_STRENGTH;
         });
-        set(vehicle_id, components::last_slowdown_time(), game_time());
+        set(vehicle_id, vc::last_slowdown_time(), game_time());
     }
 }
