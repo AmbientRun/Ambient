@@ -1,47 +1,20 @@
 use ambient_api::{
     core::{
         app::components::{main_scene, name},
-        camera::{
-            components::{fog, fovy},
-            concepts::{
-                PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
-            },
-        },
-        messages::Frame,
         physics::components::linear_velocity,
         rendering::components::color,
         text::components::{font_size, text},
         transform::{
-            components::{
-                local_to_parent, lookat_target, mesh_to_local, mesh_to_world, rotation, translation,
-            },
+            components::{local_to_parent, mesh_to_local, mesh_to_world, rotation},
             concepts::{Transformable, TransformableOptional},
         },
     },
     prelude::*,
 };
-use packages::tangent_schema::{
-    messages::Input, player::components as pc, vehicle::components as vc,
-};
-
-const CAMERA_OFFSET: Vec3 = vec3(0.5, 1.8, 0.6);
+use packages::tangent_schema::{messages::Input, vehicle::components as vc};
 
 #[main]
 pub fn main() {
-    let camera_id = PerspectiveInfiniteReverseCamera {
-        optional: PerspectiveInfiniteReverseCameraOptional {
-            translation: Some(vec3(5., 5., 2.)),
-            main_scene: Some(()),
-            aspect_ratio_from_window: Some(entity::resources()),
-            ..default()
-        },
-        ..PerspectiveInfiniteReverseCamera::suggested()
-    }
-    .make()
-    .with(fog(), ())
-    .with(lookat_target(), vec3(0., 0., 1.))
-    .spawn();
-
     spawn_query(vc::player_ref()).bind(move |vehicles| {
         for (id, _) in vehicles {
             let hud_id = Transformable {
@@ -87,37 +60,18 @@ pub fn main() {
         }
     });
 
-    query((vc::hud(), rotation(), linear_velocity())).each_frame(|huds| {
-        for (_, (hud_id, rot, lv)) in huds {
-            entity::set_component(hud_id, text(), format!("{:.1}\n", speed_kph(lv, rot)));
+    query((rotation(), linear_velocity()))
+        .requires(vc::player_ref())
+        .each_frame(|vehicles| {
+            for (id, (rot, lv)) in vehicles {
+                entity::add_component(id, vc::speed_kph(), lv.dot(rot * -Vec3::Y) * 3.6);
+            }
+        });
+
+    query((vc::hud(), vc::speed_kph())).each_frame(|huds| {
+        for (_, (hud_id, speed_kph)) in huds {
+            entity::set_component(hud_id, text(), format!("{:.1}\n", speed_kph));
         }
-    });
-
-    Frame::subscribe(move |_| {
-        let player_id = player::get_local();
-        let Some(vehicle_id) = entity::get_component(player_id, pc::vehicle_ref()) else {
-            return;
-        };
-        let Some(vehicle_position) = entity::get_component(vehicle_id, translation()) else {
-            return;
-        };
-        let Some(vehicle_rotation) = entity::get_component(vehicle_id, rotation()) else {
-            return;
-        };
-        let Some(vehicle_linear_velocity) = entity::get_component(vehicle_id, linear_velocity())
-        else {
-            return;
-        };
-
-        let camera_position = vehicle_position + vehicle_rotation * CAMERA_OFFSET;
-        entity::set_component(camera_id, translation(), camera_position);
-        entity::set_component(
-            camera_id,
-            lookat_target(),
-            camera_position + vehicle_rotation * -Vec3::Y,
-        );
-        let kph = speed_kph(vehicle_linear_velocity, vehicle_rotation);
-        entity::set_component(camera_id, fovy(), 0.9 + (kph.abs() / 300.0).clamp(0.0, 1.0));
     });
 
     fixed_rate_tick(Duration::from_millis(20), |_| {
@@ -148,8 +102,4 @@ pub fn main() {
         }
         .send_server_unreliable();
     });
-}
-
-fn speed_kph(linear_velocity: Vec3, rotation: Quat) -> f32 {
-    linear_velocity.dot(rotation * -Vec3::Y) * 3.6
 }

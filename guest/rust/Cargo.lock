@@ -2391,6 +2391,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tangent_camera_follow"
+version = "0.1.0"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "tangent_core"
 version = "0.1.0"
 dependencies = [

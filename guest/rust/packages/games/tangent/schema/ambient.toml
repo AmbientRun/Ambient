@@ -19,6 +19,8 @@ content = { type = "Asset", schema = true }
     "Debuggable",
 ] }
 
+"vehicle::speed_kph" = { type = "F32", name = "Speed (KPH)", description = "Speed of the vehicle in kilometers per hour. Clientside-only." }
+
 "vehicle::last_distances" = { type = { type = "Vec", element_type = "F32" }, name = "Last Distances", description = "Distances from the ground for each vehicle probe", attributes = [
     "Networked",
 ] }
