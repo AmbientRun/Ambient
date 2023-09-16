@@ -11,7 +11,7 @@ use packages::tangent_schema::player::components as pc;
 
 mod shared;
 
-const RENDER_LEVEL_BOUNDARIES: bool = true;
+const RENDER_LEVEL_BOUNDARIES: bool = false;
 
 #[main]
 fn main() {
