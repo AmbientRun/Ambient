@@ -64,7 +64,9 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
     const CUBE_BOUNDS: f32 = 125.;
     const CUBE_MIN_SIZE: Vec3 = vec3(0.5, 0.5, 0.5);
     const CUBE_MAX_SIZE: Vec3 = vec3(5., 6., 15.);
+    const FADE_DISTANCE: f32 = 2.;
 
+    // Spawn cubes until we hit the limit
     let mut grid = Grid::default();
     while grid.size() < TARGET_CUBE_COUNT {
         let pos = rng.gen::<Vec2>() * (2. * CUBE_BOUNDS) - CUBE_BOUNDS;
@@ -73,7 +75,14 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
         let size = base_size * (CUBE_MAX_SIZE - CUBE_MIN_SIZE) + CUBE_MIN_SIZE;
         let radius = size.xy().max_element();
 
-        if shared::level(pos) < radius {
+        let level = shared::level(pos);
+        if level < radius {
+            continue;
+        }
+
+        let probability = ((level - radius) / FADE_DISTANCE).clamp(0.0, 1.0);
+        let sample = rng.gen::<f32>();
+        if sample > probability {
             continue;
         }
 
@@ -85,6 +94,7 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
         grid.add(pos, radius);
     }
 
+    // Make surrounding walls
     for i in 0..360 {
         let angle = (i as f32).to_radians();
         let radius = CUBE_BOUNDS * 1.25 + rng.gen::<f32>() * 10.0;
