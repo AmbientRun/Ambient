@@ -90,7 +90,7 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
             continue;
         }
 
-        make_cube(pos, size, rng);
+        make_cube(pos, size, true, rng);
         grid.add(pos, radius);
     }
 
@@ -98,14 +98,14 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
     for i in 0..360 {
         let angle = (i as f32).to_radians();
         let radius = CUBE_BOUNDS * 1.25 + rng.gen::<f32>() * 10.0;
-        let size = Vec3::ONE * 1.5 + vec3(rng.gen(), rng.gen(), rng.gen::<f32>() * 10. + 10.);
+        let size = vec3(1.5, 1.5, 10.) + rng.gen::<Vec3>() * vec3(1., 1., 20.);
         let position = vec2(angle.cos(), angle.sin()) * radius;
 
-        make_cube(position, size, rng);
+        make_cube(position, size, false, rng);
     }
 }
 
-fn make_cube(pos: Vec2, size: Vec3, rng: &mut dyn RngCore) -> EntityId {
+fn make_cube(pos: Vec2, size: Vec3, dynamic: bool, rng: &mut dyn RngCore) -> EntityId {
     const MASS_MULTIPLIER: f32 = 10.;
 
     let volume = size.dot(Vec3::ONE);
@@ -119,7 +119,7 @@ fn make_cube(pos: Vec2, size: Vec3, rng: &mut dyn RngCore) -> EntityId {
         // Physics
         .with(physics_controlled(), ())
         .with(cube_collider(), Vec3::ONE)
-        .with(dynamic(), true)
+        .with(self::dynamic(), dynamic)
         .with(mass(), volume * MASS_MULTIPLIER)
         .spawn()
 }
@@ -174,7 +174,7 @@ impl Grid {
                 continue;
             };
             for box_ in boxes {
-                if (box_.pos - pos).length() < box_.radius + radius {
+                if (box_.pos - pos).length_squared() < (box_.radius + radius).powi(2) {
                     return true;
                 }
             }
