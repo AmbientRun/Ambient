@@ -1,7 +1,7 @@
 use ambient_api::{
     core::{
         camera::{
-            components::{fog, fovy},
+            components::fog,
             concepts::{
                 PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
             },
@@ -25,7 +25,7 @@ pub fn main() {
         ..PerspectiveInfiniteReverseCamera::suggested()
     }
     .make()
-    // .with(fog(), ())
+    .with(fog(), ())
     .with(lookat_target(), vec3(0., 0., 0.))
     .with(lookat_up(), vec3(0., -1., 0.))
     .spawn();
@@ -46,18 +46,18 @@ pub fn main() {
         };
 
         let vehicle_yaw = vehicle_rotation.to_euler(glam::EulerRot::ZYX).0;
+        let vehicle_yaw_rot = Quat::from_rotation_z(vehicle_yaw);
 
-        entity::set_component(camera_id, translation(), vehicle_position + 20.0 * Vec3::Z);
-        entity::set_component(camera_id, lookat_target(), vehicle_position);
+        // offset to put the vehicle more towards the bottom of the screen
+        let base = vehicle_position + vehicle_yaw_rot * vec3(0., -7.5, 0.);
+        let speed_factor = 0.9 + (vehicle_speed_kph.abs() / 300.0).clamp(0.0, 1.0);
+
         entity::set_component(
             camera_id,
-            lookat_up(),
-            Quat::from_rotation_z(vehicle_yaw) * -Vec3::Y,
+            translation(),
+            base + 20.0 * speed_factor * Vec3::Z,
         );
-        entity::set_component(
-            camera_id,
-            fovy(),
-            0.9 + (vehicle_speed_kph.abs() / 300.0).clamp(0.0, 1.0),
-        );
+        entity::set_component(camera_id, lookat_target(), base);
+        entity::set_component(camera_id, lookat_up(), vehicle_yaw_rot * -Vec3::Y);
     });
 }
