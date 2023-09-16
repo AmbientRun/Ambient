@@ -10,7 +10,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_sys = { path = "../sys", version = "0.3.0-dev" }
+ambient_sys = { path = "../sys", version = "0.3.0-nightly-2023-09-16" }
 flume = { workspace = true }
 derive_more = { workspace = true }
 log = { workspace = true }
@@ -27,11 +27,11 @@ ordered-float = { workspace = true }
 dashmap = { workspace = true }
 derivative = { workspace = true }
 
-ambient_ui_native = { path = "../ui_native" , version = "0.3.0-dev" }
+ambient_ui_native = { path = "../ui_native" , version = "0.3.0-nightly-2023-09-16" }
 cpal = "0.14.1"
 lewton = "0.10.2"
 hound = "3.4.0"
-ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
+ambient_native_std = { path = "../native_std" , version = "0.3.0-nightly-2023-09-16" }
 serde = { workspace = true, features = ["derive"] }
 
 circular-queue = "0.2"

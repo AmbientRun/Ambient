@@ -10,16 +10,16 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_asset_cache = { path = "../asset_cache/", optional = true, version = "0.3.0-dev" }
-ambient_sys = { path = "../sys", version = "0.3.0-dev" }
-ambient_git_rev = { path = "../git_rev", version = "0.3.0-dev" }
+ambient_asset_cache = { path = "../asset_cache/", optional = true, version = "0.3.0-nightly-2023-09-16" }
+ambient_sys = { path = "../sys", version = "0.3.0-nightly-2023-09-16" }
+ambient_git_rev = { path = "../git_rev", version = "0.3.0-nightly-2023-09-16" }
 
-ambient_cb = { path = "../../libs/cb", version = "0.3.0-dev" }
-ambient_color = { path = "../../libs/color", version = "0.3.0-dev" }
-ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.3.0-dev" }
-ambient_math = { path = "../../libs/math", version = "0.3.0-dev" }
+ambient_cb = { path = "../../libs/cb", version = "0.3.0-nightly-2023-09-16" }
+ambient_color = { path = "../../libs/color", version = "0.3.0-nightly-2023-09-16" }
+ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.3.0-nightly-2023-09-16" }
+ambient_math = { path = "../../libs/math", version = "0.3.0-nightly-2023-09-16" }
 
-ambient_shared_types = { path = "../../shared_crates/shared_types", version = "0.3.0-dev" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", version = "0.3.0-nightly-2023-09-16" }
 
 anyhow = { workspace = true }
 tracing = { workspace = true }
