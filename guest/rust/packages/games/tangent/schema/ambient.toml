@@ -29,5 +29,20 @@ content = { type = "Asset", schema = true }
     "Networked",
 ] }
 
+"spawnpoint::is_spawnpoint" = { type = "Empty", name = "Is Spawnpoint", description = "Is a spawnpoint", attributes = [
+    "Networked",
+] }
+"spawnpoint::radius" = { type = "F32", name = "Radius", description = "Radius of the spawnpoint", attributes = [
+    "Networked",
+] }
+
+[concepts.Spawnpoint]
+name = "Spawnpoint"
+description = "A spawnpoint"
+[concepts.Spawnpoint.components.required]
+"spawnpoint::is_spawnpoint" = {}
+"spawnpoint::radius" = {}
+"ambient_core::transform::translation" = {}
+
 [messages]
 Input = { name = "Input", description = "Input", fields = { direction = "Vec2", jump = "Bool" } }

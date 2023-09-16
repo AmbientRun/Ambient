@@ -1,3 +1,5 @@
+use std::sync::OnceLock;
+
 use ambient_api::{
     core::{
         model::components::model_from_url,
@@ -5,14 +7,18 @@ use ambient_api::{
             angular_velocity, cube_collider, density, dynamic, linear_velocity, physics_controlled,
         },
         player::components::is_player,
-        rendering::components::cast_shadows,
-        transform::components::{rotation, translation},
+        primitives::concepts::Sphere,
+        rendering::components::{cast_shadows, color},
+        transform::components::{rotation, scale, translation},
     },
+    ecs::GeneralQuery,
     prelude::*,
 };
 
 use packages::{
-    tangent_schema::{messages::Input, player::components as pc, vehicle::components as vc},
+    tangent_schema::{
+        concepts::Spawnpoint, messages::Input, player::components as pc, vehicle::components as vc,
+    },
     this::assets,
 };
 
@@ -46,11 +52,25 @@ const SLOWDOWN_STRENGTH: f32 = 0.8;
 const ANGULAR_SLOWDOWN_DELAY: f32 = 0.25;
 const ANGULAR_SLOWDOWN_STRENGTH: f32 = 0.4;
 
-const SPAWN_POSITION: Vec3 = vec3(0., 0., 5.);
-const SPAWN_RADIUS: f32 = 20.0;
-
 #[main]
 pub fn main() {
+    // When a spawnpoint is created, give it a physical representation.
+    spawn_query(Spawnpoint::as_query()).bind(|spawnpoints| {
+        for (id, spawnpoint) in spawnpoints {
+            entity::add_components(
+                id,
+                Sphere {
+                    sphere: (),
+                    sphere_radius: spawnpoint.radius,
+                    ..Sphere::suggested()
+                }
+                .make()
+                .with(color(), vec4(1.0, 0.25, 0.0, 1.0))
+                .with(scale(), vec3(1.0, 1.0, 1.0 / (2.0 * spawnpoint.radius))),
+            );
+        }
+    });
+
     // When a player spawns, give them a vehicle.
     spawn_query(is_player()).bind(|players| {
         for (player_id, ()) in players {
@@ -61,10 +81,7 @@ pub fn main() {
                 .with(physics_controlled(), ())
                 .with(dynamic(), true)
                 .with(vc::player_ref(), player_id)
-                .with(
-                    translation(),
-                    SPAWN_POSITION + random::<Vec2>().extend(0.0) * SPAWN_RADIUS,
-                )
+                .with(translation(), choose_spawn_position())
                 .with(density(), DENSITY)
                 .with(vc::last_distances(), THRUSTERS.map(|_| 0.0).to_vec())
                 .with(vc::last_jump_time(), game_time())
@@ -105,6 +122,22 @@ pub fn main() {
             process_vehicle(vehicle_id, driver_id);
         }
     });
+}
+
+fn choose_spawn_position() -> Vec3 {
+    static QUERY: OnceLock<GeneralQuery<ConceptQuery<Spawnpoint>>> = OnceLock::new();
+    let sp = QUERY
+        .get_or_init(|| query(Spawnpoint::as_query()).build())
+        .evaluate()
+        .choose(&mut thread_rng())
+        .map(|(_, sp)| sp)
+        .cloned();
+
+    let Some(sp) = sp else {
+        return Vec3::ZERO;
+    };
+
+    sp.translation + (random::<Vec2>() * 2.0 * sp.radius - sp.radius).extend(5.0)
 }
 
 fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {

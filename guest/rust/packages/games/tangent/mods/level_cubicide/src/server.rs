@@ -14,6 +14,7 @@ use ambient_api::{
     prelude::*,
     rand,
 };
+use packages::tangent_schema::concepts::Spawnpoint;
 
 mod shared;
 
@@ -43,6 +44,16 @@ pub async fn main() {
         .with(scale(), Vec3::ONE * 4000.)
         .with(color(), sky_color.extend(1.0))
         .spawn();
+
+    // Spawn spawnpoints
+    for (pos, radius) in shared::spawnpoints() {
+        Spawnpoint {
+            is_spawnpoint: (),
+            radius,
+            translation: pos,
+        }
+        .spawn();
+    }
 
     let mut rng = rand::rngs::StdRng::seed_from_u64(42);
     make_cubes(&mut rng);
