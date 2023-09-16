@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::internal::{
     conversion::{FromBindgen, IntoBindgen},
-    wit,
+    wit::{self, component::ComponentIndex},
 };
 
 use super::{Component, ComponentValue, SupportedValue, SupportedValueRef, UntypedComponent};
@@ -11,7 +11,7 @@ use super::{Component, ComponentValue, SupportedValue, SupportedValueRef, Untype
 ///
 /// Use the [spawn](Entity::spawn) method to insert the [Entity] into the world.
 #[derive(Clone, Default)]
-pub struct Entity(pub(crate) HashMap<u32, ComponentValue>);
+pub struct Entity(pub(crate) HashMap<ComponentIndex, ComponentValue>);
 impl Entity {
     /// Creates a new `Entity`.
     pub fn new() -> Self {

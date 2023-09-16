@@ -12,16 +12,18 @@ pub use traits::{
     ComponentVecValue, SupportedValue, SupportedValueRef,
 };
 
+pub(crate) use ambient_shared_types::ComponentIndex;
+
 /// Implemented by all [Component]s.
 pub trait UntypedComponent {
     #[doc(hidden)]
-    fn index(&self) -> u32;
+    fn index(&self) -> ComponentIndex;
 }
 
 /// A component (piece of entity data). See [entity::get_component](crate::entity::get_component) and [entity::set_component](crate::entity::set_component).
 #[derive(Debug)]
 pub struct Component<T> {
-    index: u32,
+    index: ComponentIndex,
     _phantom: PhantomData<T>,
 }
 impl<T> Clone for Component<T> {
@@ -32,7 +34,7 @@ impl<T> Clone for Component<T> {
 impl<T> Copy for Component<T> {}
 impl<T> Component<T> {
     #[doc(hidden)]
-    pub const fn new(index: u32) -> Self {
+    pub const fn new(index: ComponentIndex) -> Self {
         Self {
             index,
             _phantom: PhantomData,
@@ -40,7 +42,7 @@ impl<T> Component<T> {
     }
 }
 impl<T> UntypedComponent for Component<T> {
-    fn index(&self) -> u32 {
+    fn index(&self) -> ComponentIndex {
         self.index
     }
 }
@@ -51,7 +53,7 @@ pub trait ComponentsTuple {
     type Data;
 
     #[doc(hidden)]
-    fn as_indices(&self) -> Vec<u32>;
+    fn as_indices(&self) -> Vec<ComponentIndex>;
     #[doc(hidden)]
     fn from_component_types(component_types: Vec<wit::component::Value>) -> Option<Self::Data>;
 }
@@ -63,7 +65,7 @@ macro_rules! tuple_impls {
             #[allow(unused_parens)]
             type Data = ($($name,)+);
 
-            fn as_indices(&self) -> Vec<u32> {
+            fn as_indices(&self) -> Vec<ComponentIndex> {
                 #[allow(non_snake_case)]
                 let ($($name,)+) = self;
                 vec![$($name.index(),)*]
@@ -97,7 +99,7 @@ tuple_impls! { A B C D E F G H I J K L M }
 impl<T: SupportedValue> ComponentsTuple for Component<T> {
     type Data = T;
 
-    fn as_indices(&self) -> Vec<u32> {
+    fn as_indices(&self) -> Vec<ComponentIndex> {
         vec![self.index()]
     }
     fn from_component_types(component_types: Vec<wit::component::Value>) -> Option<Self::Data> {
@@ -108,7 +110,7 @@ impl<T: SupportedValue> ComponentsTuple for Component<T> {
 impl ComponentsTuple for () {
     type Data = ();
 
-    fn as_indices(&self) -> Vec<u32> {
+    fn as_indices(&self) -> Vec<ComponentIndex> {
         vec![]
     }
     fn from_component_types(component_types: Vec<wit::component::Value>) -> Option<Self::Data> {

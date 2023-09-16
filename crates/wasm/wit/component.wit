@@ -9,6 +9,11 @@ interface component {
     use client-sampler.{handle as procedural-sampler-handle}
     use client-material.{handle as procedural-material-handle}
 
+    type component-index = u32
+
+    // wit does not support recursive types, so we serialize them as bincode
+    // and undo this at the point of use
+
     variant vec-value {
         type-empty(list<empty>),
         type-bool(list<bool>),
@@ -40,6 +45,7 @@ interface component {
         type-procedural-texture-handle(list<procedural-texture-handle>),
         type-procedural-sampler-handle(list<procedural-sampler-handle>),
         type-procedural-material-handle(list<procedural-material-handle>),
+        // type-entity(list<list<u8>>),
     }
 
     variant option-value {
@@ -73,6 +79,7 @@ interface component {
         type-procedural-texture-handle(option<procedural-texture-handle>),
         type-procedural-sampler-handle(option<procedural-sampler-handle>),
         type-procedural-material-handle(option<procedural-material-handle>),
+        // type-entity(option<list<u8>>),
     }
 
     variant value {
@@ -108,33 +115,34 @@ interface component {
         type-procedural-material-handle(procedural-material-handle),
         type-vec(vec-value),
         type-option(option-value),
+        //type-entity(list<u8>),
     }
 
-    type entity = list<tuple<u32, value>>
-    get-index: func(id: string) -> option<u32>
-    get-id: func(index: u32) -> option<string>
+    type entity = list<tuple<component-index, value>>
+    get-index: func(id: string) -> option<component-index>
+    get-id: func(index: component-index) -> option<string>
 
-    get-component: func(entity: entity-id, index: u32) -> option<value>
-    get-components: func(entity: entity-id, indices: list<u32>) -> entity
+    get-component: func(entity: entity-id, index: component-index) -> option<value>
+    get-components: func(entity: entity-id, indices: list<component-index>) -> entity
     get-all-components: func(entity: entity-id) -> entity
 
-    add-component: func(entity: entity-id, index: u32, value: value)
+    add-component: func(entity: entity-id, index: component-index, value: value)
     add-components: func(entity: entity-id, data: entity)
 
-    set-component: func(entity: entity-id, index: u32, value: value)
+    set-component: func(entity: entity-id, index: component-index, value: value)
     set-components: func(entity: entity-id, data: entity)
 
-    has-component: func(entity: entity-id, index: u32) -> bool
-    has-components: func(entity: entity-id, indices: list<u32>) -> bool
+    has-component: func(entity: entity-id, index: component-index) -> bool
+    has-components: func(entity: entity-id, indices: list<component-index>) -> bool
 
-    remove-component: func(entity: entity-id, index: u32)
-    remove-components: func(entity: entity-id, indices: list<u32>)
+    remove-component: func(entity: entity-id, index: component-index)
+    remove-components: func(entity: entity-id, indices: list<component-index>)
 
     record query-build {
-        components: list<u32>,
-        includes: list<u32>,
-        excludes: list<u32>,
-        changed: list<u32>,
+        components: list<component-index>,
+        includes: list<component-index>,
+        excludes: list<component-index>,
+        changed: list<component-index>,
     }
 
     enum query-event {

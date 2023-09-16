@@ -1,6 +1,7 @@
 use std::cell::UnsafeCell;
 
 use ambient_native_std::sparse_vec::SparseVec;
+use ambient_shared_types::ComponentIndex;
 use atomic_refcell::AtomicRefCell;
 
 use super::*;
@@ -351,7 +352,11 @@ impl Archetype {
             comp.changes.borrow_mut().next_frame();
         }
     }
-    pub fn get_component_content_version(&self, loc: EntityLocation, index: u32) -> Option<u64> {
+    pub fn get_component_content_version(
+        &self,
+        loc: EntityLocation,
+        index: ComponentIndex,
+    ) -> Option<u64> {
         self.components
             .get(index as _)
             .map(|arch_comp| arch_comp.get_content_version(loc.index))

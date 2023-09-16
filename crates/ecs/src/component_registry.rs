@@ -1,6 +1,7 @@
 use std::collections::{hash_map::Entry, BTreeMap, HashMap};
 
 use ambient_native_std::events::EventDispatcher;
+use ambient_shared_types::ComponentIndex;
 use once_cell::sync::Lazy;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
@@ -9,9 +10,10 @@ use crate::ComponentVTable;
 
 static COMPONENT_REGISTRY: Lazy<RwLock<ComponentRegistry>> =
     Lazy::new(|| RwLock::new(ComponentRegistry::default()));
-static COMPONENT_ATTRIBUTES: RwLock<BTreeMap<u32, AttributeStore>> = RwLock::new(BTreeMap::new());
+static COMPONENT_ATTRIBUTES: RwLock<BTreeMap<ComponentIndex, AttributeStore>> =
+    RwLock::new(BTreeMap::new());
 
-pub(crate) fn get_external_attributes(index: u32) -> AttributeStoreGuard {
+pub(crate) fn get_external_attributes(index: ComponentIndex) -> AttributeStoreGuard {
     let guard = COMPONENT_ATTRIBUTES.read();
 
     RwLockReadGuard::map(guard, |val| {
@@ -19,7 +21,7 @@ pub(crate) fn get_external_attributes(index: u32) -> AttributeStoreGuard {
     })
 }
 
-pub(crate) fn get_external_attributes_init(index: u32) -> AttributeStoreGuardMut {
+pub(crate) fn get_external_attributes_init(index: ComponentIndex) -> AttributeStoreGuardMut {
     let guard = COMPONENT_ATTRIBUTES.write();
 
     RwLockWriteGuard::map(guard, |val| val.entry(index).or_default())
@@ -114,8 +116,8 @@ define_external_component_attribute! {
 #[derive(Default)]
 pub struct ComponentRegistry {
     pub(crate) components: Vec<RegistryComponent>,
-    pub component_paths: HashMap<String, u32>,
-    pub next_index: u32,
+    pub component_paths: HashMap<String, ComponentIndex>,
+    pub next_index: ComponentIndex,
 
     /// Handlers are called with a write-lock on ComponentRegistry, which will result in deadlock if your operation
     /// requires a read-lock on ComponentRegistry. Consider deferring your operation to a later time.
@@ -216,7 +218,7 @@ impl ComponentRegistry {
         self.register(path.into(), vtable, Default::default())
     }
 
-    pub fn path_to_index(&self, path: &str) -> Option<u32> {
+    pub fn path_to_index(&self, path: &str) -> Option<ComponentIndex> {
         self.component_paths.get(path).copied()
     }
 
@@ -225,11 +227,11 @@ impl ComponentRegistry {
         Some(self.components[index as usize].desc)
     }
 
-    pub fn get_by_index(&self, index: u32) -> Option<ComponentDesc> {
+    pub fn get_by_index(&self, index: ComponentIndex) -> Option<ComponentDesc> {
         self.components.get(index as usize).map(|b| b.desc)
     }
 
-    pub fn get_primitive_component(&self, idx: u32) -> Option<PrimitiveComponent> {
+    pub fn get_primitive_component(&self, idx: ComponentIndex) -> Option<PrimitiveComponent> {
         self.components
             .get(idx as usize)
             .unwrap()
