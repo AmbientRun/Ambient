@@ -696,6 +696,7 @@ mod raw {
                     }
                 }
                 impl ConceptSuggested for Camera {
+                    #[doc = "```\nlocal_to_world: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nnear: 0.1f32,\nprojection: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nprojection_view: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nactive_camera: 0f32,\ninv_local_to_world: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\n```"]
                     fn suggested() -> Self {
                         Self {
                             local_to_world: Mat4::from_cols_array(&[
@@ -912,6 +913,7 @@ mod raw {
                     }
                 }
                 impl ConceptSuggested for PerspectiveCommonCamera {
+                    #[doc = "```\nlocal_to_world: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nnear: 0.1f32,\nprojection: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nprojection_view: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nactive_camera: 0f32,\ninv_local_to_world: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nfovy: 1f32,\naspect_ratio: 1f32,\n```"]
                     fn suggested() -> Self {
                         Self {
                             local_to_world: Mat4::from_cols_array(&[
@@ -1151,6 +1153,7 @@ mod raw {
                     }
                 }
                 impl ConceptSuggested for PerspectiveCamera {
+                    #[doc = "```\nlocal_to_world: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nnear: 0.1f32,\nprojection: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nprojection_view: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nactive_camera: 0f32,\ninv_local_to_world: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nfovy: 1f32,\naspect_ratio: 1f32,\nperspective: (),\nfar: 1000f32,\n```"]
                     fn suggested() -> Self {
                         Self {
                             local_to_world: Mat4::from_cols_array(&[
@@ -1351,6 +1354,7 @@ mod raw {
                     }
                 }
                 impl ConceptSuggested for PerspectiveInfiniteReverseCamera {
+                    #[doc = "```\nlocal_to_world: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nnear: 0.1f32,\nprojection: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nprojection_view: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nactive_camera: 0f32,\ninv_local_to_world: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nfovy: 1f32,\naspect_ratio: 1f32,\nperspective_infinite_reverse: (),\n```"]
                     fn suggested() -> Self {
                         Self {
                             local_to_world: Mat4::from_cols_array(&[
@@ -1718,6 +1722,7 @@ mod raw {
                     }
                 }
                 impl ConceptSuggested for OrthographicCamera {
+                    #[doc = "```\nlocal_to_world: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nnear: -1f32,\nprojection: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nprojection_view: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\nactive_camera: 0f32,\ninv_local_to_world: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\northographic: (),\northographic_left: -1f32,\northographic_right: 1f32,\northographic_top: 1f32,\northographic_bottom: -1f32,\nfar: 1f32,\n```"]
                     fn suggested() -> Self {
                         Self {
                             local_to_world: Mat4::from_cols_array(&[
@@ -3276,6 +3281,7 @@ mod raw {
                     }
                 }
                 impl ConceptSuggested for CharacterController {
+                    #[doc = "```\ncharacter_controller_height: 2f32,\ncharacter_controller_radius: 0.5f32,\nphysics_controlled: (),\n```"]
                     fn suggested() -> Self {
                         Self {
                             character_controller_height: 2f32,
@@ -3573,6 +3579,7 @@ mod raw {
                     }
                 }
                 impl ConceptSuggested for Sphere {
+                    #[doc = "```\nsphere: (),\nsphere_radius: 0.5f32,\nsphere_sectors: 36u32,\nsphere_stacks: 18u32,\n```"]
                     fn suggested() -> Self {
                         Self {
                             sphere: (),
@@ -3730,6 +3737,7 @@ mod raw {
                     }
                 }
                 impl ConceptSuggested for Capsule {
+                    #[doc = "```\ncapsule: (),\ncapsule_radius: 0.5f32,\ncapsule_half_height: 0.5f32,\ncapsule_rings: 0u32,\ncapsule_latitudes: 16u32,\ncapsule_longitudes: 32u32,\n```"]
                     fn suggested() -> Self {
                         Self {
                             capsule: (),
@@ -3879,6 +3887,7 @@ mod raw {
                     }
                 }
                 impl ConceptSuggested for Torus {
+                    #[doc = "```\ntorus: (),\ntorus_inner_radius: 0.25f32,\ntorus_outer_radius: 0.35f32,\ntorus_slices: 32u32,\ntorus_loops: 16u32,\n```"]
                     fn suggested() -> Self {
                         Self {
                             torus: (),
@@ -4516,6 +4525,7 @@ mod raw {
                     }
                 }
                 impl ConceptSuggested for Transformable {
+                    #[doc = "```\nlocal_to_world: Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ]),\n```"]
                     fn suggested() -> Self {
                         Self {
                             local_to_world: Mat4::from_cols_array(&[

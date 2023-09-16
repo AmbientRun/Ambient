@@ -284,15 +284,27 @@ fn generate_one(
                 let field_name = &c.id;
                 let suggested = value_to_token_stream(items, c.suggested.unwrap())?;
 
-                anyhow::Ok(quote! { #field_name: #suggested, })
+                anyhow::Ok(quote! { #field_name: #suggested })
             })
             .collect::<Result<Vec<_>, _>>()?;
 
+        let doc_comment = required_components
+            .iter()
+            .map(|ts| format!("{},", SemiprettyTokenStream(ts.clone())))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let doc_comment = if doc_comment.is_empty() {
+            doc_comment
+        } else {
+            format!("```\n{doc_comment}\n```")
+        };
+
         Some(quote! {
             impl ConceptSuggested for #concept_id {
+                #[doc = #doc_comment]
                 fn suggested() -> Self {
                     Self {
-                        #(#required_components)*
+                        #(#required_components,)*
                         #optional_field
                     }
                 }
@@ -442,6 +454,7 @@ fn component_to_field<'a>(
 struct SemiprettyTokenStream(TokenStream);
 impl std::fmt::Display for SemiprettyTokenStream {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut last_token_was_punct = false;
         for token in self.0.clone() {
             match &token {
                 proc_macro2::TokenTree::Group(g) => {
@@ -454,15 +467,25 @@ impl std::fmt::Display for SemiprettyTokenStream {
 
                     f.write_str(open)?;
                     SemiprettyTokenStream(g.stream()).fmt(f)?;
-                    f.write_str(close)?
+                    f.write_str(close)?;
+
+                    last_token_was_punct = false;
                 }
                 proc_macro2::TokenTree::Punct(p) => {
                     token.fmt(f)?;
-                    if p.as_char() == ',' {
+                    if p.spacing() == proc_macro2::Spacing::Alone
+                        && !last_token_was_punct
+                        && (p.as_char() == ',' || p.as_char() == ':')
+                    {
                         write!(f, " ")?;
                     }
+
+                    last_token_was_punct = true;
                 }
-                _ => token.fmt(f)?,
+                _ => {
+                    last_token_was_punct = false;
+                    token.fmt(f)?
+                }
             }
         }
         Ok(())
