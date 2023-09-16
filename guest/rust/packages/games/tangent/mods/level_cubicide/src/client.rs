@@ -38,7 +38,6 @@ fn main() {
         }
     });
 
-    LevelReturnArrow.el().spawn_interactive();
     if RENDER_LEVEL_BOUNDARIES {
         LevelBoundaries.el().spawn_interactive();
     }
@@ -46,89 +45,6 @@ fn main() {
 
 fn local_vehicle() -> Option<EntityId> {
     entity::get_component(player::get_local(), pc::vehicle_ref())
-}
-
-#[element_component]
-fn LevelReturnArrow(hooks: &mut Hooks) -> Element {
-    use ambient_api::core::{
-        app::components::main_scene,
-        rect::components::{line_from, line_to, line_width, rect},
-    };
-
-    let rerender = use_rerender_signal(hooks);
-    use_frame(hooks, move |_| rerender());
-
-    let Some(vehicle) = local_vehicle() else {
-        return Element::new();
-    };
-    let translation = entity::get_component(vehicle, translation()).unwrap_or_default();
-    let rotation = entity::get_component(vehicle, rotation()).unwrap_or_default();
-    let yaw = rotation.to_euler(glam::EulerRot::ZYX).0;
-
-    if shared::level(translation.xy()) < 10.0 {
-        return Element::new();
-    }
-
-    let mut samples: Vec<(f32, Vec2, f32)> = vec![];
-    for ang in (-180..=180).step_by(5).map(|v| v as f32) {
-        let ang = yaw + ang.to_radians();
-        let offset = shared::circle_point(ang, 10.0);
-        let position = translation.xy() + offset;
-        let probe_value = shared::level(position).max(0.0);
-
-        samples.push((ang, offset, probe_value));
-    }
-
-    fn make_line(p0: Vec3, p1: Vec3, color: Vec3) -> Element {
-        Element::new()
-            .init_default(rect())
-            .with(main_scene(), ())
-            .with(line_from(), p0)
-            .with(line_to(), p1)
-            .with(line_width(), 0.01)
-            .with(
-                ambient_api::core::rendering::components::color(),
-                color.extend(1.),
-            )
-            .with(double_sided(), true)
-    }
-
-    Group::el(
-        samples
-            .iter()
-            .copied()
-            .map(|min| {
-                let base = translation + Vec3::Z * 0.8;
-                let rot = Quat::from_rotation_z(90f32.to_radians() + min.0);
-                // let end = base + rot * -Vec3::Y * min.1;
-                let end = base + min.1.extend(0.0);
-                let color =
-                    vec3(0.0, 1.0, 0.0).lerp(vec3(1.0, 0.0, 0.0), (min.2 / 10.0).clamp(0.0, 1.0));
-                Group::el([
-                    make_line(base, end, color),
-                    make_line(end + rot * vec3(-0.2, 0.2, 0.0), end, color),
-                    make_line(end + rot * vec3(0.2, 0.2, 0.0), end, color),
-                ])
-            })
-            .take(0)
-            .chain(
-                samples
-                    .iter()
-                    .copied()
-                    .max_by_key(|m| (m.2 * 100.0) as u32)
-                    .map(|min| {
-                        let base = translation + Vec3::Z * 0.8;
-                        let rot = Quat::from_rotation_z(-90f32.to_radians() + min.0);
-                        let end = base - min.1.extend(0.0);
-                        let color = Vec3::ONE;
-                        Group::el([
-                            make_line(base, end, color),
-                            make_line(end + rot * vec3(-0.2, 0.2, 0.0), end, color),
-                            make_line(end + rot * vec3(0.2, 0.2, 0.0), end, color),
-                        ])
-                    }),
-            ),
-    )
 }
 
 #[element_component]
