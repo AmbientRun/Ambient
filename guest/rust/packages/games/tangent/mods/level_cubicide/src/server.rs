@@ -64,7 +64,6 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
     const CUBE_BOUNDS: f32 = 125.;
     const CUBE_MIN_SIZE: Vec3 = vec3(0.5, 0.5, 0.5);
     const CUBE_MAX_SIZE: Vec3 = vec3(5., 6., 15.);
-    const MASS_MULTIPLIER: f32 = 10.;
 
     let mut grid = Grid::default();
     while grid.size() < TARGET_CUBE_COUNT {
@@ -82,23 +81,37 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
             continue;
         }
 
-        let volume = size.dot(Vec3::ONE);
-        Entity::new()
-            .with(cube(), ())
-            .with(cast_shadows(), ())
-            // Properties
-            .with(translation(), vec3(pos.x, pos.y, size.z / 2.))
-            .with(scale(), size)
-            .with(color(), (rng.gen::<Vec3>() * 0.2).extend(1.))
-            // Physics
-            .with(physics_controlled(), ())
-            .with(cube_collider(), Vec3::ONE)
-            .with(dynamic(), true)
-            .with(mass(), volume * MASS_MULTIPLIER)
-            .spawn();
-
+        make_cube(pos, size, rng);
         grid.add(pos, radius);
     }
+
+    for i in 0..360 {
+        let angle = (i as f32).to_radians();
+        let radius = CUBE_BOUNDS * 1.25 + rng.gen::<f32>() * 10.0;
+        let size = Vec3::ONE * 1.5 + vec3(rng.gen(), rng.gen(), rng.gen::<f32>() * 10. + 10.);
+        let position = vec2(angle.cos(), angle.sin()) * radius;
+
+        make_cube(position, size, rng);
+    }
+}
+
+fn make_cube(pos: Vec2, size: Vec3, rng: &mut dyn RngCore) -> EntityId {
+    const MASS_MULTIPLIER: f32 = 10.;
+
+    let volume = size.dot(Vec3::ONE);
+    Entity::new()
+        .with(cube(), ())
+        .with(cast_shadows(), ())
+        // Properties
+        .with(translation(), vec3(pos.x, pos.y, size.z / 2.))
+        .with(scale(), size)
+        .with(color(), (rng.gen::<Vec3>() * 0.2).extend(1.))
+        // Physics
+        .with(physics_controlled(), ())
+        .with(cube_collider(), Vec3::ONE)
+        .with(dynamic(), true)
+        .with(mass(), volume * MASS_MULTIPLIER)
+        .spawn()
 }
 
 #[derive(Debug)]
