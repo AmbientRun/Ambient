@@ -3381,7 +3381,7 @@ mod raw {
                 }
                 static SPHERE: Lazy<Component<()>> =
                     Lazy::new(|| __internal_get_component("ambient_core::primitives::sphere"));
-                #[doc = "**Sphere**: If attached to an entity alongside the other `sphere_*` components, the entity will be converted to a sphere primitive.\n\nTo easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make_sphere`).\n\n*Attributes*: Debuggable, Networked, Store"]
+                #[doc = "**Sphere**: If attached to an entity alongside the other `sphere_*` components, the entity will be converted to a sphere primitive.\n\nTo easily instantiate a unit-diameter `sphere`, consider using the `Sphere` concept.\n\n*Attributes*: Debuggable, Networked, Store"]
                 pub fn sphere() -> Component<()> {
                     *SPHERE
                 }
@@ -3408,7 +3408,7 @@ mod raw {
                 }
                 static TORUS: Lazy<Component<()>> =
                     Lazy::new(|| __internal_get_component("ambient_core::primitives::torus"));
-                #[doc = "**Torus**: If attached to an entity alongside the other `torus_*` components, the entity will be converted to a torus primitive.\n\nTo easily instantiate a default `torus`, consider using the `torus` concept (e.g. `make_torus`).\n\n*Attributes*: Debuggable, Networked, Store"]
+                #[doc = "**Torus**: If attached to an entity alongside the other `torus_*` components, the entity will be converted to a torus primitive.\n\nTo easily instantiate a default `torus`, consider using the `Torus` concept.\n\n*Attributes*: Debuggable, Networked, Store"]
                 pub fn torus() -> Component<()> {
                     *TORUS
                 }
@@ -3441,7 +3441,7 @@ mod raw {
                 }
                 static CAPSULE: Lazy<Component<()>> =
                     Lazy::new(|| __internal_get_component("ambient_core::primitives::capsule"));
-                #[doc = "**Capsule**: If attached to an entity alongside the other `capsule_*` components, the entity will be converted to a capsule primitive.\n\nTo easily instantiate a default `capsule`, consider using the `capsule` concept (e.g. `make_capsule`).\n\n*Attributes*: Debuggable, Networked, Store"]
+                #[doc = "**Capsule**: If attached to an entity alongside the other `capsule_*` components, the entity will be converted to a capsule primitive.\n\nTo easily instantiate a default `capsule`, consider using the `Capsule` concept.\n\n*Attributes*: Debuggable, Networked, Store"]
                 pub fn capsule() -> Component<()> {
                     *CAPSULE
                 }
@@ -3489,7 +3489,7 @@ mod raw {
                 #[doc = "**Sphere**: A primitive sphere."]
                 #[derive(Clone, Debug)]
                 pub struct Sphere {
-                    #[doc = "**Component**: `ambient_core::primitives::sphere`\n\n**Suggested value**: `()`\n\n**Component description**: If attached to an entity alongside the other `sphere_*` components, the entity will be converted to a sphere primitive.\nTo easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make_sphere`).\n\n"]
+                    #[doc = "**Component**: `ambient_core::primitives::sphere`\n\n**Suggested value**: `()`\n\n**Component description**: If attached to an entity alongside the other `sphere_*` components, the entity will be converted to a sphere primitive.\nTo easily instantiate a unit-diameter `sphere`, consider using the `Sphere` concept.\n\n"]
                     pub sphere: (),
                     #[doc = "**Component**: `ambient_core::primitives::sphere_radius`\n\n**Suggested value**: `0.5f32`\n\n**Component description**: Set the radius of a `sphere` entity.\n\n"]
                     pub sphere_radius: f32,
@@ -3615,7 +3615,7 @@ mod raw {
                 #[doc = "**Capsule**: A primitive capsule. Defined as a cylinder capped by hemispheres."]
                 #[derive(Clone, Debug)]
                 pub struct Capsule {
-                    #[doc = "**Component**: `ambient_core::primitives::capsule`\n\n**Suggested value**: `()`\n\n**Component description**: If attached to an entity alongside the other `capsule_*` components, the entity will be converted to a capsule primitive.\nTo easily instantiate a default `capsule`, consider using the `capsule` concept (e.g. `make_capsule`).\n\n"]
+                    #[doc = "**Component**: `ambient_core::primitives::capsule`\n\n**Suggested value**: `()`\n\n**Component description**: If attached to an entity alongside the other `capsule_*` components, the entity will be converted to a capsule primitive.\nTo easily instantiate a default `capsule`, consider using the `Capsule` concept.\n\n"]
                     pub capsule: (),
                     #[doc = "**Component**: `ambient_core::primitives::capsule_radius`\n\n**Suggested value**: `0.5f32`\n\n**Component description**: Set the radius of a `capsule` entity, spanning XY-plane.\n\n"]
                     pub capsule_radius: f32,
@@ -3780,7 +3780,7 @@ mod raw {
                 #[doc = "**Torus**: A primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution."]
                 #[derive(Clone, Debug)]
                 pub struct Torus {
-                    #[doc = "**Component**: `ambient_core::primitives::torus`\n\n**Suggested value**: `()`\n\n**Component description**: If attached to an entity alongside the other `torus_*` components, the entity will be converted to a torus primitive.\nTo easily instantiate a default `torus`, consider using the `torus` concept (e.g. `make_torus`).\n\n"]
+                    #[doc = "**Component**: `ambient_core::primitives::torus`\n\n**Suggested value**: `()`\n\n**Component description**: If attached to an entity alongside the other `torus_*` components, the entity will be converted to a torus primitive.\nTo easily instantiate a default `torus`, consider using the `Torus` concept.\n\n"]
                     pub torus: (),
                     #[doc = "**Component**: `ambient_core::primitives::torus_inner_radius`\n\n**Suggested value**: `0.25f32`\n\n**Component description**: Set the inner radius of a `torus` entity, spanning XY-plane.\n\n"]
                     pub torus_inner_radius: f32,
