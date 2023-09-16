@@ -6,7 +6,10 @@ content = { type = "Playable" }
 
 [dependencies]
 tangent_core = { path = "core", deployment = "39nAewTgzpxp4PIpKR3WT8" }
-package_manager = { path = "../../tools/package_manager", deployment = "3CWmEvSv1vAj3HlhhEvjXK" }
 
-tangent_camera_follow = { path = "mods/camera_follow" }
-tangent_level_cubicide = { path = "mods/level_cubicide" }
+tangent_camera_follow = { path = "mods/camera_follow", enabled = false }
+tangent_camera_topdown = { path = "mods/camera_topdown", enabled = true }
+
+tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true }
+
+package_manager = { path = "../../tools/package_manager", deployment = "3CWmEvSv1vAj3HlhhEvjXK" }
