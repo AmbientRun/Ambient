@@ -118,7 +118,11 @@ fn make_cube(pos: Vec2, size: Vec3, dynamic: bool, rng: &mut dyn RngCore) -> Ent
         .with(cast_shadows(), ())
         // Properties
         .with(translation(), vec3(pos.x, pos.y, size.z / 2.))
-        .with(rotation(), Quat::from_rotation_z(rng.gen::<f32>() * TAU))
+        .with(
+            rotation(),
+            Quat::from_rotation_x((rng.gen::<f32>() - 0.5) * 5f32.to_radians())
+                * Quat::from_rotation_z(rng.gen::<f32>() * TAU),
+        )
         .with(scale(), size)
         .with(color(), (rng.gen::<Vec3>() * 0.2).extend(1.))
         // Physics
