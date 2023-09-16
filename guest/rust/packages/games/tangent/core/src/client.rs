@@ -118,31 +118,35 @@ pub fn main() {
         );
         let kph = speed_kph(vehicle_linear_velocity, vehicle_rotation);
         entity::set_component(camera_id, fovy(), 0.9 + (kph.abs() / 300.0).clamp(0.0, 1.0));
+    });
 
-        if input::is_game_focused() {
-            let input = input::get();
-            let direction = {
-                let mut direction = Vec2::ZERO;
-                if input.keys.contains(&KeyCode::W) {
-                    direction.y += 1.;
-                }
-                if input.keys.contains(&KeyCode::S) {
-                    direction.y -= 1.;
-                }
-                if input.keys.contains(&KeyCode::A) {
-                    direction.x -= 1.;
-                }
-                if input.keys.contains(&KeyCode::D) {
-                    direction.x += 1.;
-                }
-                direction
-            };
-            Input {
-                direction,
-                jump: input.keys.contains(&KeyCode::Space),
-            }
-            .send_server_unreliable();
+    fixed_rate_tick(Duration::from_millis(20), |_| {
+        if !input::is_game_focused() {
+            return;
         }
+
+        let input = input::get();
+        let direction = {
+            let mut direction = Vec2::ZERO;
+            if input.keys.contains(&KeyCode::W) {
+                direction.y += 1.;
+            }
+            if input.keys.contains(&KeyCode::S) {
+                direction.y -= 1.;
+            }
+            if input.keys.contains(&KeyCode::A) {
+                direction.x -= 1.;
+            }
+            if input.keys.contains(&KeyCode::D) {
+                direction.x += 1.;
+            }
+            direction
+        };
+        Input {
+            direction,
+            jump: input.keys.contains(&KeyCode::Space),
+        }
+        .send_server_unreliable();
     });
 }
 
