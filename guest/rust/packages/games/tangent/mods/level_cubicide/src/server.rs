@@ -49,8 +49,8 @@ pub async fn main() {
 }
 
 fn make_cubes(rng: &mut dyn rand::RngCore) {
-    const TARGET_CUBE_COUNT: usize = 2000;
-    const CUBE_BOUNDS: f32 = 250.;
+    const TARGET_CUBE_COUNT: usize = 1000;
+    const CUBE_BOUNDS: f32 = 125.;
     const CUBE_MIN_SIZE: Vec3 = vec3(0.5, 0.5, 0.5);
     const CUBE_MAX_SIZE: Vec3 = vec3(5., 6., 15.);
     const MASS_MULTIPLIER: f32 = 10.;
@@ -58,18 +58,20 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
     let mut grid = Grid::default();
     while grid.size() < TARGET_CUBE_COUNT {
         let pos = rng.gen::<Vec2>() * (2. * CUBE_BOUNDS) - CUBE_BOUNDS;
-        if shared::level(pos) < 0. {
-            continue;
-        }
 
         let base_size = vec3(rng.gen(), rng.gen(), rng.gen());
         let size = base_size * (CUBE_MAX_SIZE - CUBE_MIN_SIZE) + CUBE_MIN_SIZE;
         let radius = size.xy().max_element();
-        let volume = size.dot(Vec3::ONE);
+
+        if shared::level(pos) < radius {
+            continue;
+        }
+
         if grid.would_collide(pos, radius) {
             continue;
         }
 
+        let volume = size.dot(Vec3::ONE);
         Entity::new()
             .with(cube(), ())
             .with(cast_shadows(), ())
