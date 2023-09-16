@@ -9,6 +9,11 @@ version = "0.1.0"
 ambient_api = { workspace = true }
 
 [[bin]]
+name = "tangent_level_cubicide_client"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
 name = "tangent_level_cubicide_server"
 path = "src/server.rs"
 required-features = ["server"]

@@ -4,10 +4,10 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         physics::components::{cube_collider, dynamic, mass, physics_controlled, plane_collider},
-        primitives::components::cube,
+        primitives::components::{cube, quad},
         rendering::components::{
             cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky,
-            sun, water,
+            sun,
         },
         transform::components::{rotation, scale, translation},
     },
@@ -15,30 +15,33 @@ use ambient_api::{
     rand,
 };
 
+mod shared;
+
 #[main]
 pub async fn main() {
     // Make sky
     Entity::new().with(sky(), ()).spawn();
 
     // Make sun
+    let sky_color = vec3(0.11, 0.20, 0.27);
     Entity::new()
         .with(sun(), 0.0)
-        .with(rotation(), Default::default())
+        .with(rotation(), Quat::from_rotation_y(10f32.to_radians()))
         .with(main_scene(), ())
-        .with(light_diffuse(), Vec3::ONE)
-        .with(fog_color(), vec3(0.88, 0.37, 0.34))
-        .with(fog_density(), 0.01)
-        .with(fog_height_falloff(), 0.1)
-        .with(rotation(), Quat::from_rotation_y(190.0f32.to_radians()))
+        .with(light_diffuse(), sky_color * 2.)
+        .with(fog_color(), sky_color)
+        .with(fog_density(), 0.05)
+        .with(fog_height_falloff(), 0.05)
         .spawn();
 
-    // Make water
+    // Make ground
     Entity::new()
-        .with(water(), ())
+        .with(quad(), ())
         .with(physics_controlled(), ())
         .with(plane_collider(), ())
         .with(dynamic(), false)
         .with(scale(), Vec3::ONE * 4000.)
+        .with(color(), sky_color.extend(1.0))
         .spawn();
 
     let mut rng = rand::rngs::StdRng::seed_from_u64(42);
@@ -55,7 +58,7 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
     let mut grid = Grid::default();
     while grid.size() < TARGET_CUBE_COUNT {
         let pos = rng.gen::<Vec2>() * (2. * CUBE_BOUNDS) - CUBE_BOUNDS;
-        if exclude(pos) {
+        if shared::level(pos) < 0. {
             continue;
         }
 
@@ -73,7 +76,7 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
             // Properties
             .with(translation(), vec3(pos.x, pos.y, size.z / 2.))
             .with(scale(), size)
-            .with(color(), rng.gen::<Vec3>().extend(1.))
+            .with(color(), (rng.gen::<Vec3>() * 0.2).extend(1.))
             // Physics
             .with(physics_controlled(), ())
             .with(cube_collider(), Vec3::ONE)
@@ -83,14 +86,6 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
 
         grid.add(pos, radius);
     }
-}
-
-fn exclude(pos: Vec2) -> bool {
-    if pos.length() < 20. {
-        return true;
-    }
-
-    false
 }
 
 #[derive(Debug)]
