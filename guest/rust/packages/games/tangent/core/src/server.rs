@@ -8,7 +8,7 @@ use ambient_api::{
         physics::components as phyc,
         player::components::is_player,
         primitives::concepts::Sphere,
-        rendering::components::{cast_shadows, color},
+        rendering::components::cast_shadows,
         transform::components::{rotation, scale, translation},
     },
     ecs::GeneralQuery,
