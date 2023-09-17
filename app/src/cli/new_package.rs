@@ -2,18 +2,31 @@ use std::path::Path;
 
 use ambient_native_std::ambient_version;
 use anyhow::Context;
+use clap::Args;
 use convert_case::{Case, Casing};
 
 use super::PackagePath;
 
-pub(crate) fn handle(
-    package_path: &PackagePath,
-    name: Option<&str>,
-    api_path: Option<&str>,
-) -> anyhow::Result<()> {
+#[derive(Args, Clone, Debug)]
+pub struct NewPackageCli {
+    #[arg(short, long)]
+    name: Option<String>,
+    #[arg(long)]
+    api_path: Option<String>,
+    /// This package is being created in an existing Rust workspace,
+    /// and does not need to have extra files generated for it.
+    #[arg(long)]
+    in_workspace: bool,
+}
+
+pub(crate) fn handle(package_path: &PackagePath, args: &NewPackageCli) -> anyhow::Result<()> {
     let Some(package_path) = &package_path.fs_path else {
         anyhow::bail!("Cannot create package in a remote directory.");
     };
+
+    let name = args.name.as_deref();
+    let api_path = args.api_path.as_deref();
+    let in_workspace = args.in_workspace;
 
     // Build the identifier.
     let name = name.unwrap_or(
@@ -36,8 +49,10 @@ pub(crate) fn handle(
     let src_path = package_path.join("src");
 
     std::fs::create_dir_all(&package_path).context("Failed to create package directory")?;
-    std::fs::create_dir_all(&dot_cargo_path).context("Failed to create .cargo directory")?;
-    std::fs::create_dir_all(&dot_vscode_path).context("Failed to create .vscode directory")?;
+    if !in_workspace {
+        std::fs::create_dir_all(&dot_cargo_path).context("Failed to create .cargo directory")?;
+        std::fs::create_dir_all(&dot_vscode_path).context("Failed to create .vscode directory")?;
+    }
     std::fs::create_dir_all(&src_path).context("Failed to create src directory")?;
 
     // Write the files to disk.
@@ -114,24 +129,32 @@ pub(crate) fn handle(
         };
     }
 
-    let files_to_write = &[
+    let write_always = &[
         // root
         (Path::new("ambient.toml"), ambient_toml.as_str()),
         (Path::new("Cargo.toml"), cargo_toml.as_str()),
-        include_template!(".gitignore"),
+        // src
+        include_template!("src/client.rs"),
+        include_template!("src/server.rs"),
+    ];
+
+    let write_if_not_in_workspace = &[
+        // root
         include_template!("rust-toolchain.toml"),
+        include_template!(".gitignore"),
         // .cargo
         include_template!(".cargo/config.toml"),
         // .vscode
         include_template!(".vscode/settings.json"),
         include_template!(".vscode/launch.json"),
         include_template!(".vscode/extensions.json"),
-        // src
-        include_template!("src/client.rs"),
-        include_template!("src/server.rs"),
     ];
 
-    for (filename, contents) in files_to_write {
+    for (filename, contents) in write_always
+        .iter()
+        .chain(write_if_not_in_workspace.iter().filter(|_| !in_workspace))
+        .copied()
+    {
         std::fs::write(package_path.join(filename), contents)
             .with_context(|| format!("Failed to create {filename:?}"))?;
     }

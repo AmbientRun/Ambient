@@ -155,6 +155,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Logging**: The logging output levels have been tweaked to better communicate the state of the system at any given time.
 - **Debugger**: The debugger has been improved with a resizable sidebar, a scrollable view, and a component filter.
 - **Animation**: The animation graph is now executed on the server as well.
+- **CLI**: The `ambient new` command now takes several parameters to customize the resulting generation.
 
 ### Fixed
 
