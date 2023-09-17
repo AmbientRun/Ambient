@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use ambient_api::prelude::*;
 
 pub fn circle_point(radians: f32, radius: f32) -> Vec2 {
@@ -19,7 +20,7 @@ pub fn level(pos: Vec2) -> f32 {
     let spawnpoints_sdf = spawnpoints
         .iter()
         .map(|(p, r)| Sdf::translate(Sdf::circle(r + 10.), p.xy()))
-        .reduce(|a, b| Sdf::union(a, b))
+        .reduce(Sdf::union)
         .unwrap();
 
     let spawnpoint_bridges_sdf = spawnpoints
@@ -33,7 +34,7 @@ pub fn level(pos: Vec2) -> f32 {
                 .map(move |b| (a, b))
         })
         .map(|(a, b)| Sdf::oriented_box(a.xy(), b.xy(), 4.))
-        .reduce(|a, b| Sdf::union(a, b))
+        .reduce(Sdf::union)
         .unwrap();
 
     let sdf = Sdf::smooth_union(spawnpoints_sdf, spawnpoint_bridges_sdf, 2.);
@@ -79,7 +80,7 @@ impl Sdf {
                 q = mat2(vec2(d.x, -d.y), vec2(d.y, d.x)) * q;
                 q = q.abs() - vec2(l, thickness) * 0.5;
 
-                return q.max(Vec2::ZERO).length() + f32::min(f32::max(q.x, q.y), 0.0);
+                q.max(Vec2::ZERO).length() + f32::max(q.x, q.y).min(0.0)
             }
             Sdf::Translate { sdf, offset } => sdf.evaluate(pos - *offset),
             Sdf::Union { sdf1, sdf2 } => sdf1.evaluate(pos).min(sdf2.evaluate(pos)),
