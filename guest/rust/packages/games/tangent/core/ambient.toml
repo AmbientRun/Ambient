@@ -14,3 +14,13 @@ kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds" }
 name = "Input"
 description = "Input"
 fields = { direction = "Vec2", jump = "Bool", suicide = "Bool" }
+
+[messages.OnCollision]
+name = "On Collision"
+description = "Sent to the client when a vehicle collides with something."
+fields = { position = "Vec3", speed = "F32", vehicle_id = "EntityId" }
+
+[messages.OnSpawn]
+name = "On Spawn"
+description = "Sent to the client when a vehicle is spawned."
+fields = { vehicle_id = "EntityId", position = "Vec3" }

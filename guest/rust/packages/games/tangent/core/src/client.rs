@@ -9,13 +9,14 @@ use ambient_api::{
     once_cell::sync::Lazy,
     prelude::*,
 };
-use packages::tangent_schema::{
-    concepts::Explosion,
-    explosion::components as ec,
-    messages::OnCollision,
-    vehicle::{client::components as vcc, components as vc},
+use packages::{
+    tangent_schema::{
+        concepts::Explosion,
+        explosion::components as ec,
+        vehicle::{client::components as vcc, components as vc},
+    },
+    this::messages::{Input, OnCollision, OnSpawn},
 };
-use packages::this::messages::Input;
 
 #[main]
 pub fn main() {
@@ -39,6 +40,17 @@ pub fn main() {
     handle_input();
     handle_collisions();
     handle_explosions();
+
+    OnSpawn::subscribe(|ctx, msg| {
+        if !ctx.server() {
+            return;
+        }
+
+        audio::SpatialAudioPlayer::oneshot(
+            msg.position,
+            packages::kenney_impact_sounds::assets::url("ImpactMining_003.ogg"),
+        );
+    });
 }
 
 fn handle_input() {

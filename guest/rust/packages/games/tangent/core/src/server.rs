@@ -18,16 +18,16 @@ use ambient_api::{
 
 use packages::{
     tangent_schema::{
-        concepts::{Explosion, Spawnpoint, Vehicle, VehicleData},
-        messages::{OnCollision, OnDeath},
+        concepts::{Explosion, Spawnpoint, Vehicle, VehicleClass, VehicleData},
+        messages::OnDeath,
         player::components as pc,
-        vehicle::class::components as vclc,
-        vehicle::components as vc,
+        vehicle::{class::components as vclc, components as vc},
     },
-    this::{assets, messages::Input},
+    this::{
+        assets,
+        messages::{Input, OnCollision, OnSpawn},
+    },
 };
-
-use crate::packages::tangent_schema::concepts::VehicleClass;
 
 #[main]
 pub fn main() {
@@ -176,6 +176,7 @@ fn respawn_player(player_id: EntityId) {
     let last_distances = vd.offsets.iter().map(|_| 0.0).collect();
     let max_health = vd.max_health;
 
+    let position = choose_spawn_position();
     let vehicle = vd
         .make()
         // Runtime state
@@ -183,7 +184,7 @@ fn respawn_player(player_id: EntityId) {
         .with(phyc::angular_velocity(), Vec3::ZERO)
         .with(phyc::physics_controlled(), ())
         .with(phyc::dynamic(), true)
-        .with(translation(), choose_spawn_position())
+        .with(translation(), position)
         .with(rotation(), Quat::from_rotation_z(random::<f32>() * PI))
         .with(vc::player_ref(), player_id)
         .with(vc::health(), max_health)
@@ -213,6 +214,12 @@ fn respawn_player(player_id: EntityId) {
     entity::add_component(player_id, pc::vehicle_ref(), vehicle_id);
     entity::add_component(player_id, pc::input_direction(), Vec2::ZERO);
     entity::add_component(player_id, pc::input_jump(), false);
+
+    OnSpawn {
+        position,
+        vehicle_id,
+    }
+    .send_client_broadcast_unreliable();
 }
 
 fn spawn_explosion(translation: Vec3) {
