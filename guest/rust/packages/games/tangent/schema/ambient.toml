@@ -138,5 +138,12 @@ description = "A spawnpoint"
 "spawnpoint::radius" = {}
 "ambient_core::transform::translation" = {}
 
-[messages]
-Input = { name = "Input", description = "Input", fields = { direction = "Vec2", jump = "Bool" } }
+[messages.Input]
+name = "Input"
+description = "Input"
+fields = { direction = "Vec2", jump = "Bool" }
+
+[messages.OnCollision]
+name = "On Collision"
+description = "Sent to the client when a vehicle collides with something."
+fields = { position = "Vec3", speed = "F32", vehicle_id = "EntityId" }

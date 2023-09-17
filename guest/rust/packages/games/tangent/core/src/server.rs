@@ -17,7 +17,7 @@ use ambient_api::{
 use packages::{
     tangent_schema::{
         concepts::{Spawnpoint, Vehicle, VehicleData},
-        messages::Input,
+        messages::{Input, OnCollision},
         player::components as pc,
         vehicle::components as vc,
     },
@@ -69,6 +69,13 @@ pub fn main() {
 
     // When a collision occurs involving a vehicle, damage it.
     Collision::subscribe(|msg| {
+        let avg_position = msg
+            .ids
+            .iter()
+            .flat_map(|id| entity::get_component(*id, translation()))
+            .reduce(|a, b| (a + b) / 2.0)
+            .unwrap_or_default();
+
         for id in msg
             .ids
             .iter()
@@ -82,6 +89,13 @@ pub fn main() {
             entity::mutate_component(id, vc::health(), |health| {
                 *health = (*health - speed * 0.75).max(0.0);
             });
+
+            OnCollision {
+                position: avg_position,
+                speed,
+                vehicle_id: id,
+            }
+            .send_client_broadcast_unreliable();
         }
     });
 
@@ -193,7 +207,7 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
     }
 
     // If the vehicle's been upside down for some time, respawn it and don't process any further logic.
-    if (v.rotation * Vec3::Z).dot(Vec3::Z) < -0.4 {
+    if (v.rotation * Vec3::Z).dot(Vec3::Z) < -0.5 {
         if let Some(last_upside_down_time) = v.optional.last_upside_down_time {
             if (game_time() - last_upside_down_time).as_secs_f32() > 1.5 {
                 respawn_player(driver_id);
