@@ -5,8 +5,8 @@ version = "0.0.1"
 content = { type = "Asset", models = true, code = true }
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "4oAr4pSwOMiiyKMDiVju45" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "2KIBRbyVTPu9I1zXBndlsE" }
-character_animation = { path = "../../../../std/character_animation", deployment = "3ED69EA2jkjNF9mDtMSWUt" }
-base_assets = { path = "../../../../std/base_assets", deployment = "58aLQTPRSbX7ScBPTCx2SZ" }
-fps_controller = { path = "../../../../std/fps_controller", deployment = "6D0Db4gz8wMEmBKTtnI7Qq" }
+afps_schema = { path = "../../schema", deployment = "2PGwO9XpFP9nVoABsuu4Kz" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "3fhHR1bbJnOO8CzEihXjnu" }
+character_animation = { path = "../../../../std/character_animation", deployment = "1W9DOnQuzC6gR1CV4qT2Oq" }
+base_assets = { path = "../../../../std/base_assets", deployment = "4XmDJdT5fXTyjMaxwOdI9F" }
+fps_controller = { path = "../../../../std/fps_controller", deployment = "6aJXldqKRibcppxqV7ARU0" }

@@ -6,6 +6,6 @@ version = "0.0.1"
 content = { type = "Playable", example = true }
 
 [dependencies]
-deps_assets = { path = "deps/assets" , deployment = "3j2BKQ0MMDMYM1wbWJLLhC" }
-deps_code = { path = "deps/code" , deployment = "4vaaWIq1MIz6GlcJFfe0pH" }
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "29T5VtMzX4OLyKmdDtrswT" }
+deps_assets = { path = "deps/assets" , deployment = "6j1AhiwPkzEhZpSDAB0N8z" }
+deps_code = { path = "deps/code" , deployment = "4SJYqjoj4fOhPb2gNBgiwe" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "1YjK26DDRJENHVJ4r5EyEJ" }

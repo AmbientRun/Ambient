@@ -5,7 +5,7 @@ version = "0.0.1"
 content = { type = "Asset", code = true }
 
 [dependencies]
-ambient_example_deps_assets = { path = "../assets" , deployment = "3j2BKQ0MMDMYM1wbWJLLhC" }
+ambient_example_deps_assets = { path = "../assets" , deployment = "6j1AhiwPkzEhZpSDAB0N8z" }
 
 [components]
 spawned_by_us = { type = "Empty" }
