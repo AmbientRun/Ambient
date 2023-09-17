@@ -63,7 +63,7 @@ pub fn main() {
     despawn_query(is_player()).bind(|players| {
         for (player, ()) in players {
             if let Some(vehicle) = entity::get_component(player, pc::vehicle_ref()) {
-                entity::despawn(vehicle);
+                entity::despawn_recursive(vehicle);
             }
         }
     });
@@ -147,7 +147,6 @@ fn respawn_player(player_id: EntityId) {
         .with(phyc::linear_velocity(), Vec3::ZERO)
         .with(phyc::angular_velocity(), Vec3::ZERO)
         .with(phyc::physics_controlled(), ())
-        .with(phyc::cube_collider(), Vec3::new(0.6, 1.0, 0.2))
         .with(phyc::dynamic(), true)
         .with(local_to_world(), default())
         .with(translation(), position)
@@ -169,7 +168,7 @@ fn respawn_player(player_id: EntityId) {
             .send_local_broadcast(true);
             spawn_explosion(translation);
         }
-        entity::despawn(existing_vehicle_id);
+        entity::despawn_recursive(existing_vehicle_id);
     }
 
     let vehicle_id = vehicle.spawn();

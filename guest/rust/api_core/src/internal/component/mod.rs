@@ -113,6 +113,8 @@ tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA }
 tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB }
 tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB AC }
 tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB AC AD }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB AC AD AE }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB AC AD AE AF }
 impl<T: SupportedValue> ComponentsTuple for Component<T> {
     type Data = T;
 

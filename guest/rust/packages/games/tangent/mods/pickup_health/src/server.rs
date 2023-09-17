@@ -45,7 +45,7 @@ pub fn main() {
                 let new_health = (health + 25.0).clamp(0.0, max_health);
                 if health != new_health {
                     entity::set_component(entity_id, vc::health(), new_health);
-                    entity::despawn(id);
+                    entity::despawn_recursive(id);
 
                     OnHealthPickup {
                         position: pickup.translation,

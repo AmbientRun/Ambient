@@ -144,6 +144,7 @@ name = "Vehicle Data"
 description = "Data for a vehicle"
 [concepts.VehicleData.components.required]
 "ambient_core::physics::density" = {}
+"ambient_core::physics::cube_collider" = {}
 
 "vehicle::data::general::max_health" = {}
 

@@ -20,15 +20,6 @@ use packages::{
 
 #[main]
 pub fn main() {
-    // HACK: despawn all wheels on spawn
-    spawn_query(name()).bind(|entities| {
-        for (id, name) in entities {
-            if name.starts_with("wheel") {
-                entity::despawn(id);
-            }
-        }
-    });
-
     query((rotation(), linear_velocity()))
         .requires(vc::player_ref())
         .each_frame(|vehicles| {

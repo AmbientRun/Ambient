@@ -20,6 +20,7 @@ pub fn main() {
         description: "A versatile choice for those who seek balance in speed, firepower, and maneuverability.".to_string(),
 
         density: 10.0,
+        cube_collider: Vec3::new(0.6, 1.0, 0.2),
         max_health: 100.0,
 
         offsets,
@@ -28,7 +29,7 @@ pub fn main() {
         target: 2.5,
         max_strength: 25.0,
 
-        forward_force: 50.0,
+        forward_force: 40.0,
         backward_force: -10.0,
         forward_offset: vec2(0.0, Y_DISTANCE),
         side_force: 75.0 / 100.0,
