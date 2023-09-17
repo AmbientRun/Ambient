@@ -133,14 +133,3 @@ impl Sdf {
         }
     }
 }
-
-fn lerp<T: std::ops::Add + std::ops::Mul<f32>>(
-    a: T,
-    b: T,
-    t: f32,
-) -> <<T as std::ops::Mul<f32>>::Output as std::ops::Add>::Output
-where
-    <T as std::ops::Mul<f32>>::Output: std::ops::Add,
-{
-    a * (1.0 - t) + b * t
-}
