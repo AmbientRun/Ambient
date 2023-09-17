@@ -1,0 +1,7 @@
+[package]
+id = "kenney_impact_sounds"
+name = "Kenney's Impact Sounds"
+authors = ["Kenney"]
+description = "https://www.kenney.nl/assets/impact-sounds for Ambient. (Uploaded by Ambient, not Kenney.)"
+version = "0.0.1"
+content = { type = "Asset", models = true }
