@@ -7,8 +7,8 @@ content = { type = "Playable" }
 [dependencies]
 tangent_core = { path = "core", deployment = "39nAewTgzpxp4PIpKR3WT8" }
 
-tangent_camera_follow = { path = "mods/camera_follow", enabled = false }
-tangent_camera_topdown = { path = "mods/camera_topdown", enabled = true }
+tangent_camera_follow = { path = "mods/camera_follow", enabled = true }
+tangent_camera_topdown = { path = "mods/camera_topdown", enabled = false }
 
 tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true }
 
