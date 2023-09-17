@@ -43,7 +43,7 @@ pub fn generate(
         ///
         /// They do not have any runtime representation outside of the components that compose them.
         pub mod concepts {
-            use #guest_api_path::prelude::*;
+            use #guest_api_path::{prelude::*, global::serde::{self, Serialize, Deserialize}};
             #(#concepts)*
         }
     })
@@ -135,7 +135,8 @@ fn generate_one(
 
         quote! {
             #[doc = #doc_comment]
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Serialize, Deserialize)]
+            #[serde(crate = "self::serde")]
             pub struct #concept_id {
                 #(#components)*
                 #optional_ref
@@ -152,7 +153,8 @@ fn generate_one(
 
         Some(quote! {
             #[doc = #doc_comment]
-            #[derive(Clone, Debug, Default)]
+            #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+            #[serde(crate = "self::serde")]
             pub struct #concept_optional_id {
                 #(#components)*
             }

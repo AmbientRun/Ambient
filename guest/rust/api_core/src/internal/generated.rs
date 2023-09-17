@@ -499,9 +499,13 @@ mod raw {
             #[doc = r""]
             #[doc = r" They do not have any runtime representation outside of the components that compose them."]
             pub mod concepts {
-                use crate::prelude::*;
+                use crate::{
+                    global::serde::{self, Deserialize, Serialize},
+                    prelude::*,
+                };
                 #[doc = "**Camera**: Base components for a camera. You will need other components to make a fully-functioning camera.\n\n**Extends**: `ambient_core::transform::Transformable`"]
-                #[derive(Clone, Debug)]
+                #[derive(Clone, Debug, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct Camera {
                     #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
                     pub local_to_world: Mat4,
@@ -519,7 +523,8 @@ mod raw {
                     pub optional: CameraOptional,
                 }
                 #[doc = "Optional part of [Camera]."]
-                #[derive(Clone, Debug, Default)]
+                #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct CameraOptional {
                     #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
                     pub translation: Option<Vec3>,
@@ -773,7 +778,8 @@ mod raw {
                     }
                 }
                 #[doc = "**Perspective Common Camera**: Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n**Extends**: `ambient_core::camera::Camera`"]
-                #[derive(Clone, Debug)]
+                #[derive(Clone, Debug, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct PerspectiveCommonCamera {
                     #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
                     pub local_to_world: Mat4,
@@ -795,7 +801,8 @@ mod raw {
                     pub optional: PerspectiveCommonCameraOptional,
                 }
                 #[doc = "Optional part of [PerspectiveCommonCamera]."]
-                #[derive(Clone, Debug, Default)]
+                #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct PerspectiveCommonCameraOptional {
                     #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
                     pub translation: Option<Vec3>,
@@ -1000,7 +1007,8 @@ mod raw {
                     }
                 }
                 #[doc = "**Perspective Camera**: A perspective camera.\n\n**Extends**: `ambient_core::camera::PerspectiveCommonCamera`"]
-                #[derive(Clone, Debug)]
+                #[derive(Clone, Debug, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct PerspectiveCamera {
                     #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
                     pub local_to_world: Mat4,
@@ -1026,7 +1034,8 @@ mod raw {
                     pub optional: PerspectiveCameraOptional,
                 }
                 #[doc = "Optional part of [PerspectiveCamera]."]
-                #[derive(Clone, Debug, Default)]
+                #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct PerspectiveCameraOptional {
                     #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
                     pub translation: Option<Vec3>,
@@ -1248,7 +1257,8 @@ mod raw {
                     }
                 }
                 #[doc = "**Perspective-Infinite-Reverse Camera**: A perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n**Extends**: `ambient_core::camera::PerspectiveCommonCamera`"]
-                #[derive(Clone, Debug)]
+                #[derive(Clone, Debug, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct PerspectiveInfiniteReverseCamera {
                     #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
                     pub local_to_world: Mat4,
@@ -1272,7 +1282,8 @@ mod raw {
                     pub optional: PerspectiveInfiniteReverseCameraOptional,
                 }
                 #[doc = "Optional part of [PerspectiveInfiniteReverseCamera]."]
-                #[derive(Clone, Debug, Default)]
+                #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct PerspectiveInfiniteReverseCameraOptional {
                     #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
                     pub translation: Option<Vec3>,
@@ -1445,7 +1456,8 @@ mod raw {
                     }
                 }
                 #[doc = "**Orthographic Camera**: An orthographic camera.\n\n**Extends**: `ambient_core::camera::Camera`"]
-                #[derive(Clone, Debug)]
+                #[derive(Clone, Debug, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct OrthographicCamera {
                     #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
                     pub local_to_world: Mat4,
@@ -1475,7 +1487,8 @@ mod raw {
                     pub optional: OrthographicCameraOptional,
                 }
                 #[doc = "Optional part of [OrthographicCamera]."]
-                #[derive(Clone, Debug, Default)]
+                #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct OrthographicCameraOptional {
                     #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
                     pub translation: Option<Vec3>,
@@ -2678,9 +2691,13 @@ mod raw {
             #[doc = r""]
             #[doc = r" They do not have any runtime representation outside of the components that compose them."]
             pub mod concepts {
-                use crate::prelude::*;
+                use crate::{
+                    global::serde::{self, Deserialize, Serialize},
+                    prelude::*,
+                };
                 #[doc = "**Package**: A package is a collection of assets, definitions and WASM logic."]
-                #[derive(Clone, Debug)]
+                #[derive(Clone, Debug, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct Package {
                     #[doc = "**Component**: `ambient_core::package::is_package`\n\n**Component description**: Whether or not this entity is a package.\n\n"]
                     pub is_package: (),
@@ -2704,7 +2721,8 @@ mod raw {
                     pub optional: PackageOptional,
                 }
                 #[doc = "Optional part of [Package]."]
-                #[derive(Clone, Debug, Default)]
+                #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct PackageOptional {
                     #[doc = "**Component**: `ambient_core::package::description`\n\n**Component description**: The description of the package. If not attached, the package does not have a description.\n\n"]
                     pub description: Option<String>,
@@ -3245,9 +3263,13 @@ mod raw {
             #[doc = r""]
             #[doc = r" They do not have any runtime representation outside of the components that compose them."]
             pub mod concepts {
-                use crate::prelude::*;
+                use crate::{
+                    global::serde::{self, Deserialize, Serialize},
+                    prelude::*,
+                };
                 #[doc = "**Character Controller**: A capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule."]
-                #[derive(Clone, Debug)]
+                #[derive(Clone, Debug, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct CharacterController {
                     #[doc = "**Component**: `ambient_core::physics::character_controller_height`\n\n**Suggested value**: `2f32`\n\n**Component description**: The height of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_radius`, it will be given a physical character collider.\n\n"]
                     pub character_controller_height: f32,
@@ -3491,9 +3513,13 @@ mod raw {
             #[doc = r""]
             #[doc = r" They do not have any runtime representation outside of the components that compose them."]
             pub mod concepts {
-                use crate::prelude::*;
+                use crate::{
+                    global::serde::{self, Deserialize, Serialize},
+                    prelude::*,
+                };
                 #[doc = "**Sphere**: A primitive sphere."]
-                #[derive(Clone, Debug)]
+                #[derive(Clone, Debug, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct Sphere {
                     #[doc = "**Component**: `ambient_core::primitives::sphere`\n\n**Suggested value**: `()`\n\n**Component description**: If attached to an entity alongside the other `sphere_*` components, the entity will be converted to a sphere primitive.\nTo easily instantiate a unit-diameter `sphere`, consider using the `Sphere` concept.\n\n"]
                     pub sphere: (),
@@ -3620,7 +3646,8 @@ mod raw {
                     }
                 }
                 #[doc = "**Capsule**: A primitive capsule. Defined as a cylinder capped by hemispheres."]
-                #[derive(Clone, Debug)]
+                #[derive(Clone, Debug, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct Capsule {
                     #[doc = "**Component**: `ambient_core::primitives::capsule`\n\n**Suggested value**: `()`\n\n**Component description**: If attached to an entity alongside the other `capsule_*` components, the entity will be converted to a capsule primitive.\nTo easily instantiate a default `capsule`, consider using the `Capsule` concept.\n\n"]
                     pub capsule: (),
@@ -3786,7 +3813,8 @@ mod raw {
                     }
                 }
                 #[doc = "**Torus**: A primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution."]
-                #[derive(Clone, Debug)]
+                #[derive(Clone, Debug, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct Torus {
                     #[doc = "**Component**: `ambient_core::primitives::torus`\n\n**Suggested value**: `()`\n\n**Component description**: If attached to an entity alongside the other `torus_*` components, the entity will be converted to a torus primitive.\nTo easily instantiate a default `torus`, consider using the `Torus` concept.\n\n"]
                     pub torus: (),
@@ -4434,9 +4462,13 @@ mod raw {
             #[doc = r""]
             #[doc = r" They do not have any runtime representation outside of the components that compose them."]
             pub mod concepts {
-                use crate::prelude::*;
+                use crate::{
+                    global::serde::{self, Deserialize, Serialize},
+                    prelude::*,
+                };
                 #[doc = "**Transformable**: Can be translated, rotated and scaled."]
-                #[derive(Clone, Debug)]
+                #[derive(Clone, Debug, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct Transformable {
                     #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
                     pub local_to_world: Mat4,
@@ -4444,7 +4476,8 @@ mod raw {
                     pub optional: TransformableOptional,
                 }
                 #[doc = "Optional part of [Transformable]."]
-                #[derive(Clone, Debug, Default)]
+                #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct TransformableOptional {
                     #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
                     pub translation: Option<Vec3>,
@@ -4675,9 +4708,13 @@ mod raw {
             #[doc = r""]
             #[doc = r" They do not have any runtime representation outside of the components that compose them."]
             pub mod concepts {
-                use crate::prelude::*;
+                use crate::{
+                    global::serde::{self, Deserialize, Serialize},
+                    prelude::*,
+                };
                 #[doc = "**Module**: A WASM module that can be enabled or disabled, and may or may not be on the server."]
-                #[derive(Clone, Debug)]
+                #[derive(Clone, Debug, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct Module {
                     #[doc = "**Component**: `ambient_core::wasm::is_module`\n\n**Component description**: A module.\n\n"]
                     pub is_module: (),
@@ -4693,7 +4730,8 @@ mod raw {
                     pub optional: ModuleOptional,
                 }
                 #[doc = "Optional part of [Module]."]
-                #[derive(Clone, Debug, Default)]
+                #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+                #[serde(crate = "self::serde")]
                 pub struct ModuleOptional {
                     #[doc = "**Component**: `ambient_core::wasm::is_module_on_server`\n\n**Component description**: Whether or not this module is on the server.\n\n"]
                     pub is_module_on_server: Option<()>,
