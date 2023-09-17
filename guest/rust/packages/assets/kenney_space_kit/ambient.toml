@@ -1,0 +1,7 @@
+[package]
+id = "wrzx497nolk2dynyy6cs25v0u25qrpp9"
+name = "Kenney's Space Kit"
+authors = ["Kenney"]
+description = "https://www.kenney.nl/assets/space-kit for Ambient. (Uploaded by Ambient, not Kenney.)"
+version = "0.0.1"
+content = { type = "Asset", models = true }
