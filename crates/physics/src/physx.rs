@@ -99,9 +99,9 @@ pub fn sync_ecs_physics() -> SystemGroup {
         query((translation().changed(), rotation().changed())).incl(physics_shape());
     let translation_rotation_q2 = translation_rotation_q.query.clone();
 
-    // TODO we need a seperate query here for child entities
+    // we need a seperate query here for child entities
     // Though they have rotation and translation those values may not update
-    // the local_to_world.changed() will need to be updated
+    // the parents will and local_to_world.changed() will need to be updated
     let hiearchy_transform_qs = Arc::new(Mutex::new(QueryState::new()));
     let hiearchy_transform_q = query(local_to_world().changed()).incl(physics_shape());
     let hiearchy_transform_q2 = translation_rotation_q.query.clone();
@@ -146,45 +146,6 @@ pub fn sync_ecs_physics() -> SystemGroup {
                 }),
             ensure_has_component(rigid_dynamic(), linear_velocity(), Vec3::default()),
             ensure_has_component(rigid_dynamic(), angular_velocity(), Vec3::default()),
-            hiearchy_transform_q.to_system({
-                let hiearchy_transform_qs = hiearchy_transform_qs.clone();
-                move |q, world, _, _| {
-                    let mut qs = hiearchy_transform_qs.lock();
-                    for (id, &localworld) in q.iter(world, Some(&mut *qs)) {
-                        let is_kinematic = world.has_component(id, kinematic());
-                        let (_scale, rot, pos) = localworld.to_scale_rotation_translation();
-                        if let Ok(body) = world.get(id, rigid_dynamic()) {
-                            let pose = PxTransform::new(pos, rot);
-                            if is_kinematic {
-                                body.set_kinematic_target(&pose);
-                            } else {
-                                body.set_global_pose(&pose, true);
-                                body.set_linear_velocity(Vec3::ZERO, true);
-                                body.set_angular_velocity(Vec3::ZERO, true);
-                            }
-                        } else if let Ok(body) = world.get(id, rigid_static()) {
-                            body.set_global_pose(&PxTransform::new(pos, rot), true);
-                        } else if let Ok(shape) = world.get_ref(id, physics_shape()) {
-                            let actor = shape.get_actor().unwrap();
-                            let pose = PxTransform::new(pos, rot);
-                            if !is_kinematic {
-                                actor.set_global_pose(&pose, true);
-                            }
-                            if let Some(body) = actor.to_rigid_dynamic() {
-                                if is_kinematic {
-                                    body.set_kinematic_target(&pose);
-                                } else {
-                                    // Stop any rb movement when translating
-                                    body.set_linear_velocity(Vec3::ZERO, true);
-                                    body.set_angular_velocity(Vec3::ZERO, true);
-                                }
-                            } else {
-                                // update_actor_entity_transforms(world, actor);
-                            }
-                        }
-                    }
-                }
-            }),
             // Sync ECS changes to PhysX.
             translation_rotation_q.to_system({
                 let translation_rotation_qs = translation_rotation_qs.clone();
@@ -221,6 +182,43 @@ pub fn sync_ecs_physics() -> SystemGroup {
                                 }
                             } else {
                                 // update_actor_entity_transforms(world, actor);
+                            }
+                        }
+                    }
+                }
+            }),
+            hiearchy_transform_q.to_system({
+                let hiearchy_transform_qs = hiearchy_transform_qs.clone();
+                move |q, world, _, _| {
+                    let mut qs = hiearchy_transform_qs.lock();
+                    for (id, &localworld) in q.iter(world, Some(&mut *qs)) {
+                        let is_kinematic = world.has_component(id, kinematic());
+                        let (_scale, rot, pos) = localworld.to_scale_rotation_translation();
+                        if let Ok(body) = world.get(id, rigid_dynamic()) {
+                            let pose = PxTransform::new(pos, rot);
+                            if is_kinematic {
+                                body.set_kinematic_target(&pose);
+                            } else {
+                                body.set_global_pose(&pose, true);
+                                body.set_linear_velocity(Vec3::ZERO, true);
+                                body.set_angular_velocity(Vec3::ZERO, true);
+                            }
+                        } else if let Ok(body) = world.get(id, rigid_static()) {
+                            body.set_global_pose(&PxTransform::new(pos, rot), true);
+                        } else if let Ok(shape) = world.get_ref(id, physics_shape()) {
+                            let actor = shape.get_actor().unwrap();
+                            let pose = PxTransform::new(pos, rot);
+                            if !is_kinematic {
+                                actor.set_global_pose(&pose, true);
+                            }
+                            if let Some(body) = actor.to_rigid_dynamic() {
+                                if is_kinematic {
+                                    body.set_kinematic_target(&pose);
+                                } else {
+                                    // Stop any rb movement when translating
+                                    body.set_linear_velocity(Vec3::ZERO, true);
+                                    body.set_angular_velocity(Vec3::ZERO, true);
+                                }
                             }
                         }
                     }
