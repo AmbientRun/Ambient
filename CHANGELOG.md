@@ -55,6 +55,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Docs**: The IDE documentation has been improved, including information on how to set up Emacs for Ambient development (thanks to [@kevzettler](https://github.com/kevzettler) in [#505](https://github.com/AmbientRun/Ambient/pull/505)).
 - **Assets**: `ambient assets import` can be used to import assets one by one. This will create or modify the `pipeline.toml` file for you.
 - **Packages**: A new fps_controller package to easily get started with a fps or tps camera
+- **Camera**: Added `camera::get_active` to get the active camera.
 
 #### Examples
 
