@@ -45,60 +45,7 @@ pub fn main() {
     // When a player spawns, give them a vehicle.
     spawn_query(is_player()).bind(|players| {
         for (player_id, ()) in players {
-            const X_DISTANCE: f32 = 0.1;
-            const Y_DISTANCE: f32 = 0.4;
-            let offsets = vec![
-                vec2(-X_DISTANCE, -Y_DISTANCE),
-                vec2(X_DISTANCE, -Y_DISTANCE),
-                vec2(X_DISTANCE, Y_DISTANCE),
-                vec2(-X_DISTANCE, Y_DISTANCE),
-            ];
-            let last_distances = offsets.iter().map(|_| 0.0).collect();
-            let vehicle = VehicleData {
-                density: 10.0,
-                offsets,
-                k_p: 300.0,
-                k_d: -600.0,
-                target: 2.5,
-                max_strength: 25.0,
-                forward_force: 50.0,
-                backward_force: -4.0,
-                forward_offset: vec2(0.0, Y_DISTANCE),
-                side_force: 0.8,
-                side_offset: vec2(0.0, -Y_DISTANCE),
-                jump_force: 80.0,
-                pitch_strength: 10.0,
-                turning_strength: 20.0,
-                jump_timeout: Duration::from_secs_f32(2.0),
-                linear_strength: 0.8,
-                angular_strength: 0.4,
-                angular_delay: Duration::from_secs_f32(0.25),
-            }
-            .make()
-            // Runtime state
-            .with(phyc::linear_velocity(), Vec3::ZERO)
-            .with(phyc::angular_velocity(), Vec3::ZERO)
-            .with(phyc::physics_controlled(), ())
-            .with(phyc::dynamic(), true)
-            .with(translation(), choose_spawn_position())
-            .with(rotation(), Quat::IDENTITY)
-            .with(vc::player_ref(), player_id)
-            .with(vc::last_distances(), last_distances)
-            .with(vc::last_jump_time(), game_time())
-            .with(vc::last_slowdown_time(), game_time())
-            // Visual appearance
-            .with(cast_shadows(), ())
-            .with(
-                model_from_url(),
-                assets::url("models/dynamic/raceCarWhite.glb/models/main.json"),
-            )
-            .with(phyc::cube_collider(), Vec3::new(0.6, 1.0, 0.2));
-            assert!(Vehicle::contained_by_unspawned(&vehicle));
-            let vehicle_id = vehicle.spawn();
-
-            entity::add_component(player_id, pc::vehicle_ref(), vehicle_id);
-            entity::add_component(player_id, pc::input_direction(), Vec2::ZERO);
-            entity::add_component(player_id, pc::input_jump(), false);
+            respawn_player(player_id);
         }
     });
 
@@ -127,6 +74,70 @@ pub fn main() {
     });
 }
 
+fn respawn_player(player_id: EntityId) {
+    const X_DISTANCE: f32 = 0.1;
+    const Y_DISTANCE: f32 = 0.4;
+
+    let offsets = vec![
+        vec2(-X_DISTANCE, -Y_DISTANCE),
+        vec2(X_DISTANCE, -Y_DISTANCE),
+        vec2(X_DISTANCE, Y_DISTANCE),
+        vec2(-X_DISTANCE, Y_DISTANCE),
+    ];
+    let last_distances = offsets.iter().map(|_| 0.0).collect();
+
+    let vehicle = VehicleData {
+        density: 10.0,
+        offsets,
+        k_p: 300.0,
+        k_d: -600.0,
+        target: 2.5,
+        max_strength: 25.0,
+        forward_force: 50.0,
+        backward_force: -4.0,
+        forward_offset: vec2(0.0, Y_DISTANCE),
+        side_force: 0.8,
+        side_offset: vec2(0.0, -Y_DISTANCE),
+        jump_force: 80.0,
+        pitch_strength: 10.0,
+        turning_strength: 20.0,
+        jump_timeout: Duration::from_secs_f32(2.0),
+        linear_strength: 0.8,
+        angular_strength: 0.4,
+        angular_delay: Duration::from_secs_f32(0.25),
+    }
+    .make()
+    // Runtime state
+    .with(phyc::linear_velocity(), Vec3::ZERO)
+    .with(phyc::angular_velocity(), Vec3::ZERO)
+    .with(phyc::physics_controlled(), ())
+    .with(phyc::dynamic(), true)
+    .with(translation(), choose_spawn_position())
+    .with(rotation(), Quat::IDENTITY)
+    .with(vc::player_ref(), player_id)
+    .with(vc::last_distances(), last_distances)
+    .with(vc::last_jump_time(), game_time())
+    .with(vc::last_slowdown_time(), game_time())
+    // Visual appearance
+    .with(cast_shadows(), ())
+    .with(
+        model_from_url(),
+        assets::url("models/dynamic/raceCarWhite.glb/models/main.json"),
+    )
+    .with(phyc::cube_collider(), Vec3::new(0.6, 1.0, 0.2));
+
+    assert!(Vehicle::contained_by_unspawned(&vehicle));
+
+    if let Some(existing_vehicle_id) = entity::get_component(player_id, pc::vehicle_ref()) {
+        entity::despawn(existing_vehicle_id);
+    }
+
+    let vehicle_id = vehicle.spawn();
+    entity::add_component(player_id, pc::vehicle_ref(), vehicle_id);
+    entity::add_component(player_id, pc::input_direction(), Vec2::ZERO);
+    entity::add_component(player_id, pc::input_jump(), false);
+}
+
 fn choose_spawn_position() -> Vec3 {
     static QUERY: OnceLock<GeneralQuery<ConceptQuery<Spawnpoint>>> = OnceLock::new();
     let sp = QUERY
@@ -150,6 +161,20 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
     let Some(v) = Vehicle::get_spawned(vehicle_id) else {
         return;
     };
+
+    // If the vehicle's been upside down for som etime, respawn it and don't process any further logic.
+    if (v.rotation * Vec3::Z).dot(Vec3::Z) < -0.4 {
+        if let Some(last_upside_down_time) = v.optional.last_upside_down_time {
+            if (game_time() - last_upside_down_time).as_secs_f32() > 4.0 {
+                respawn_player(driver_id);
+                return;
+            }
+        } else {
+            entity::add_component(vehicle_id, vc::last_upside_down_time(), game_time());
+        }
+    } else {
+        entity::remove_component(vehicle_id, vc::last_upside_down_time());
+    }
 
     let mut last_distances = v.last_distances;
 
@@ -246,12 +271,6 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
         v.rotation * (Vec3::X * direction.x) * v.side_force,
         v.translation + v.rotation * v.side_offset.extend(0.0),
     );
-
-    // If the vehicle's upside down, reset its rotation and teleport it above
-    if (v.rotation * Vec3::Z).dot(Vec3::Z) < -0.4 {
-        entity::mutate_component(vehicle_id, translation(), |t| *t += Vec3::Z * 7.0);
-        set(vehicle_id, rotation(), Quat::IDENTITY);
-    }
 
     // Apply a constant slowdown force
     physics::add_force(

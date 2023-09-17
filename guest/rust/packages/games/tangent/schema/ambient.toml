@@ -30,6 +30,9 @@ content = { type = "Asset", schema = true }
 "vehicle::last_slowdown_time" = { type = "Duration", name = "Last Slowdown Time", description = "The last time the player's vehicle was slowed down", attributes = [
     "Networked",
 ] }
+"vehicle::last_upside_down_time" = { type = "Duration", name = "Last Upside Down Time", description = "The last time the player's vehicle was known to be upside down. Added when first detected, removed when no longer the case. Used to respawn the vehicle after some time.", attributes = [
+    "Networked",
+] }
 
 "vehicle_data::thruster::offsets" = { type = { type = "Vec", element_type = "Vec2" }, name = "Thruster Offsets", description = "Offsets of the thrusters from the center of the vehicle", attributes = [
     "Networked",
@@ -111,6 +114,8 @@ extends = ["VehicleData"]
 "vehicle::last_distances" = {}
 "vehicle::last_jump_time" = {}
 "vehicle::last_slowdown_time" = {}
+[concepts.Vehicle.components.optional]
+"vehicle::last_upside_down_time" = {}
 
 [concepts.Spawnpoint]
 name = "Spawnpoint"
