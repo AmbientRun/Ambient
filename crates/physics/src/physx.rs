@@ -2,10 +2,10 @@ use std::sync::Arc;
 
 use ambient_core::{
     delta_time,
-    transform::{rotation, scale, translation},
+    transform::{local_to_world, rotation, scale, translation},
 };
 use ambient_ecs::{
-    components, ensure_has_component, query, FnSystem, QueryState, Resource, SystemGroup,
+    components, ensure_has_component, parent, query, FnSystem, QueryState, Resource, SystemGroup,
 };
 use ambient_native_std::asset_cache::SyncAssetKey;
 use glam::{EulerRot, Quat, Vec3};
@@ -99,6 +99,13 @@ pub fn sync_ecs_physics() -> SystemGroup {
         query((translation().changed(), rotation().changed())).incl(physics_shape());
     let translation_rotation_q2 = translation_rotation_q.query.clone();
 
+    // TODO we need a seperate query here for child entities
+    // Though they have rotation and translation those values may not update
+    // the local_to_world.changed() will need to be updated
+    let hiearchy_transform_qs = Arc::new(Mutex::new(QueryState::new()));
+    let hiearchy_transform_q = query(local_to_world().changed()).incl(physics_shape());
+    let hiearchy_transform_q2 = translation_rotation_q.query.clone();
+
     let translation_character_qs = Arc::new(Mutex::new(QueryState::new()));
     let translation_character_q =
         query((translation().changed(), character_controller().changed()))
@@ -139,6 +146,47 @@ pub fn sync_ecs_physics() -> SystemGroup {
                 }),
             ensure_has_component(rigid_dynamic(), linear_velocity(), Vec3::default()),
             ensure_has_component(rigid_dynamic(), angular_velocity(), Vec3::default()),
+            hiearchy_transform_q.to_system({
+                let hiearchy_transform_qs = hiearchy_transform_qs.clone();
+                move |q, world, _, _| {
+                    let mut qs = hiearchy_transform_qs.lock();
+                    for (id, &localworld) in q.iter(world, Some(&mut *qs)) {
+                        let is_kinematic = world.has_component(id, kinematic());
+                        let (_scale, rot, pos) = localworld.to_scale_rotation_translation();
+                        // let pos = localworld.transform_point3(Vec3::ZERO);
+                        // let rot = Quat::from_mat4(&localworld);
+                        if let Ok(body) = world.get(id, rigid_dynamic()) {
+                            let pose = PxTransform::new(pos, rot);
+                            if is_kinematic {
+                                body.set_kinematic_target(&pose);
+                            } else {
+                                body.set_global_pose(&pose, true);
+                                body.set_linear_velocity(Vec3::ZERO, true);
+                                body.set_angular_velocity(Vec3::ZERO, true);
+                            }
+                        } else if let Ok(body) = world.get(id, rigid_static()) {
+                            body.set_global_pose(&PxTransform::new(pos, rot), true);
+                        } else if let Ok(shape) = world.get_ref(id, physics_shape()) {
+                            let actor = shape.get_actor().unwrap();
+                            let pose = PxTransform::new(pos, rot);
+                            if !is_kinematic {
+                                actor.set_global_pose(&pose, true);
+                            }
+                            if let Some(body) = actor.to_rigid_dynamic() {
+                                if is_kinematic {
+                                    body.set_kinematic_target(&pose);
+                                } else {
+                                    // Stop any rb movement when translating
+                                    body.set_linear_velocity(Vec3::ZERO, true);
+                                    body.set_angular_velocity(Vec3::ZERO, true);
+                                }
+                            } else {
+                                // update_actor_entity_transforms(world, actor);
+                            }
+                        }
+                    }
+                }
+            }),
             // Sync ECS changes to PhysX.
             translation_rotation_q.to_system({
                 let translation_rotation_qs = translation_rotation_qs.clone();
@@ -147,6 +195,7 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     let mut qs = translation_rotation_qs.lock();
                     for (id, (&pos, &rot)) in q.iter(world, Some(&mut *qs)) {
                         let is_kinematic = world.has_component(id, kinematic());
+
                         if let Ok(body) = world.get(id, rigid_dynamic()) {
                             let pose = PxTransform::new(pos, rot);
                             if is_kinematic {
@@ -232,9 +281,18 @@ pub fn sync_ecs_physics() -> SystemGroup {
             .to_system(|q, world, qs, _| {
                 let delta_time = *world.resource(delta_time());
                 for (id, (body, pos, rot, lvel, avel)) in q.collect_cloned(world, qs) {
+                    let mut h_pos = pos;
+                    let mut h_rot = rot;
+                    let is_child = world.has_component(id, parent());
+                    if is_child {
+                        let localworld = world.get(id, local_to_world()).unwrap();
+                        h_pos = localworld.transform_point3(Vec3::ZERO);
+                        h_rot = Quat::from_mat4(&localworld);
+                        println!("updating velocities for rigit dynamic child {:?} ", id)
+                    }
                     let avel = avel * delta_time;
-                    let new_pos = pos + lvel * delta_time;
-                    let new_rot = rot * Quat::from_euler(EulerRot::XYZ, avel.x, avel.y, avel.z);
+                    let new_pos = h_pos + lvel * delta_time;
+                    let new_rot = h_rot * Quat::from_euler(EulerRot::XYZ, avel.x, avel.y, avel.z);
                     let pos_changed = vec3_changed(pos, new_pos);
                     let rot_changed = quat_changed(rot, new_rot);
                     if pos_changed {
@@ -373,6 +431,8 @@ pub fn sync_ecs_physics() -> SystemGroup {
                 // Fast forward queries
                 let mut translation_rotation_qs = translation_rotation_qs.lock();
                 for _ in translation_rotation_q2.iter(world, Some(&mut *translation_rotation_qs)) {}
+                let mut hiearchy_transform_qs = hiearchy_transform_qs.lock();
+                for _ in hiearchy_transform_q2.iter(world, Some(&mut *hiearchy_transform_qs)) {}
                 let mut translation_character_qs = translation_character_qs.lock();
                 for _ in translation_character_q2.iter(world, Some(&mut *translation_character_qs))
                 {
