@@ -70,16 +70,24 @@ pub fn run(
         }
     };
 
-    let mut app = rt
-        .block_on(
-            AppBuilder::new()
-                .ui_renderer(true)
-                .with_asset_cache(assets)
-                .headless(headless)
-                .update_title_with_fps_stats(false)
-                .build(),
-        )
-        .expect("Failed to create app");
+    let builder = AppBuilder::new()
+        .ui_renderer(true)
+        .with_asset_cache(assets)
+        .headless(headless)
+        .update_title_with_fps_stats(false);
+
+    let builder = if let Some((x, y)) = run.window_x.zip(run.window_y) {
+        builder.with_window_position_override(glam::ivec2(x, y))
+    } else {
+        builder
+    };
+    let builder = if let Some((w, h)) = run.window_width.zip(run.window_height) {
+        builder.with_window_size_override(glam::uvec2(w, h))
+    } else {
+        builder
+    };
+
+    let mut app = rt.block_on(builder.build()).expect("Failed to create app");
 
     *app.world.resource_mut(window_title()) = "Ambient".to_string();
 

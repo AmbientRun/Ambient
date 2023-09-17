@@ -37,7 +37,7 @@ use ambient_renderer::lod::lod_system;
 use ambient_settings::SettingsKey;
 use ambient_sys::task::RuntimeHandle;
 
-use glam::{uvec2, vec2, UVec2, Vec2};
+use glam::{uvec2, vec2, IVec2, UVec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{main_renderer, ui_renderer, MainRenderer, UiRenderer};
 use winit::{
@@ -195,6 +195,8 @@ pub struct AppBuilder {
     pub examples_systems: bool,
     pub headless: Option<UVec2>,
     pub update_title_with_fps_stats: bool,
+    pub window_position_override: Option<IVec2>,
+    pub window_size_override: Option<UVec2>,
     #[cfg(target_os = "unknown")]
     pub parent_element: Option<web_sys::HtmlElement>,
 }
@@ -226,6 +228,8 @@ impl AppBuilder {
             examples_systems: false,
             headless: None,
             update_title_with_fps_stats: true,
+            window_position_override: None,
+            window_size_override: None,
             #[cfg(target_os = "unknown")]
             parent_element: None,
         }
@@ -277,6 +281,16 @@ impl AppBuilder {
         self
     }
 
+    pub fn with_window_position_override(mut self, position: IVec2) -> Self {
+        self.window_position_override = Some(position);
+        self
+    }
+
+    pub fn with_window_size_override(mut self, size: UVec2) -> Self {
+        self.window_size_override = Some(size);
+        self
+    }
+
     #[cfg(target_os = "unknown")]
     pub fn parent_element(mut self, value: Option<web_sys::HtmlElement>) -> Self {
         self.parent_element = value;
@@ -302,6 +316,22 @@ impl AppBuilder {
                 width: settings.render.resolution().0,
                 height: settings.render.resolution().1,
             });
+            let window = if let Some(position) = self.window_position_override {
+                window.with_position(winit::dpi::LogicalPosition {
+                    x: position.x,
+                    y: position.y,
+                })
+            } else {
+                window
+            };
+            let window = if let Some(size) = self.window_size_override {
+                window.with_inner_size(winit::dpi::LogicalSize {
+                    width: size.x,
+                    height: size.y,
+                })
+            } else {
+                window
+            };
             let window = Arc::new(window.build(&event_loop).unwrap());
             (Some(window), Some(event_loop))
         };

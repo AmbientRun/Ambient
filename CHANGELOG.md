@@ -56,6 +56,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Assets**: `ambient assets import` can be used to import assets one by one. This will create or modify the `pipeline.toml` file for you.
 - **Packages**: A new fps_controller package to easily get started with a fps or tps camera
 - **Camera**: Added `camera::get_active` to get the active camera.
+- **Client**: When using the native client, you can now use `--window-x` and `--window-y` to specify the window position, as well as `--window-width` and `--window-height` to specify the window size.
 
 #### Examples
 

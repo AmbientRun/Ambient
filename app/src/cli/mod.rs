@@ -149,6 +149,22 @@ pub struct RunCli {
     /// Specify a trusted certificate authority
     #[arg(long)]
     pub ca: Option<PathBuf>,
+
+    /// Window position X override
+    #[arg(long)]
+    pub window_x: Option<i32>,
+
+    /// Window position Y override
+    #[arg(long)]
+    pub window_y: Option<i32>,
+
+    /// Window width override
+    #[arg(long)]
+    pub window_width: Option<u32>,
+
+    /// Window height override
+    #[arg(long)]
+    pub window_height: Option<u32>,
 }
 
 #[derive(Args, Clone, Debug)]
