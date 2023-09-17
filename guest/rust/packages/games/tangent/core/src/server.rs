@@ -2,6 +2,7 @@ use std::sync::OnceLock;
 
 use ambient_api::{
     core::{
+        messages::Collision,
         model::components::model_from_url,
         physics::components as phyc,
         player::components::is_player,
@@ -66,6 +67,24 @@ pub fn main() {
         }
     });
 
+    // When a collision occurs involving a vehicle, damage it.
+    Collision::subscribe(|msg| {
+        for id in msg
+            .ids
+            .iter()
+            .copied()
+            .filter(|id| entity::has_component(*id, vc::player_ref()))
+        {
+            let speed = entity::get_component(id, phyc::linear_velocity())
+                .map(|v| v.length())
+                .unwrap_or_default();
+
+            entity::mutate_component(id, vc::health(), |health| {
+                *health = (*health - speed * 0.75).max(0.0);
+            });
+        }
+    });
+
     // Process all vehicles.
     query(vc::player_ref()).each_frame(move |vehicles| {
         for (vehicle_id, driver_id) in vehicles {
@@ -86,8 +105,9 @@ fn respawn_player(player_id: EntityId) {
     ];
     let last_distances = offsets.iter().map(|_| 0.0).collect();
 
-    let vehicle = VehicleData {
+    let vd = VehicleData {
         density: 10.0,
+        max_health: 100.0,
         offsets,
         k_p: 300.0,
         k_d: -600.0,
@@ -105,26 +125,30 @@ fn respawn_player(player_id: EntityId) {
         linear_strength: 0.8,
         angular_strength: 0.4,
         angular_delay: Duration::from_secs_f32(0.25),
-    }
-    .make()
-    // Runtime state
-    .with(phyc::linear_velocity(), Vec3::ZERO)
-    .with(phyc::angular_velocity(), Vec3::ZERO)
-    .with(phyc::physics_controlled(), ())
-    .with(phyc::dynamic(), true)
-    .with(translation(), choose_spawn_position())
-    .with(rotation(), Quat::IDENTITY)
-    .with(vc::player_ref(), player_id)
-    .with(vc::last_distances(), last_distances)
-    .with(vc::last_jump_time(), game_time())
-    .with(vc::last_slowdown_time(), game_time())
-    // Visual appearance
-    .with(cast_shadows(), ())
-    .with(
-        model_from_url(),
-        assets::url("models/dynamic/raceCarWhite.glb/models/main.json"),
-    )
-    .with(phyc::cube_collider(), Vec3::new(0.6, 1.0, 0.2));
+    };
+    let max_health = vd.max_health;
+
+    let vehicle = vd
+        .make()
+        // Runtime state
+        .with(phyc::linear_velocity(), Vec3::ZERO)
+        .with(phyc::angular_velocity(), Vec3::ZERO)
+        .with(phyc::physics_controlled(), ())
+        .with(phyc::dynamic(), true)
+        .with(translation(), choose_spawn_position())
+        .with(rotation(), Quat::IDENTITY)
+        .with(vc::player_ref(), player_id)
+        .with(vc::health(), max_health)
+        .with(vc::last_distances(), last_distances)
+        .with(vc::last_jump_time(), game_time())
+        .with(vc::last_slowdown_time(), game_time())
+        // Visual appearance
+        .with(cast_shadows(), ())
+        .with(
+            model_from_url(),
+            assets::url("models/dynamic/raceCarWhite.glb/models/main.json"),
+        )
+        .with(phyc::cube_collider(), Vec3::new(0.6, 1.0, 0.2));
 
     assert!(Vehicle::contained_by_unspawned(&vehicle));
 
@@ -162,7 +186,13 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
         return;
     };
 
-    // If the vehicle's been upside down for som etime, respawn it and don't process any further logic.
+    // If the vehicle's health is at zero, respawn it.
+    if v.health <= 0.0 {
+        respawn_player(driver_id);
+        return;
+    }
+
+    // If the vehicle's been upside down for some time, respawn it and don't process any further logic.
     if (v.rotation * Vec3::Z).dot(Vec3::Z) < -0.4 {
         if let Some(last_upside_down_time) = v.optional.last_upside_down_time {
             if (game_time() - last_upside_down_time).as_secs_f32() > 4.0 {

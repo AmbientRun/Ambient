@@ -14,6 +14,9 @@ content = { type = "Asset", schema = true }
 "player::input_jump" = { type = "Bool", name = "Jump", description = "Jump" }
 
 # Vehicle data
+"vehicle_data::general::max_health" = { type = "F32", name = "Max Health", description = "Maximum health of the vehicle", attributes = [
+    "Networked",
+] }
 
 "vehicle_data::thruster::offsets" = { type = { type = "Vec", element_type = "Vec2" }, name = "Thruster Offsets", description = "Offsets of the thrusters from the center of the vehicle", attributes = [
     "Networked",
@@ -46,6 +49,10 @@ content = { type = "Asset", schema = true }
     "Networked",
 ] }
 
+"vehicle::health" = { type = "F32", name = "Health", description = "Health of the vehicle", attributes = [
+    "Networked",
+] }
+
 "vehicle::last_distances" = { type = { type = "Vec", element_type = "F32" }, name = "Last Distances", description = "Distances from the ground for each vehicle probe", attributes = [
     "Networked",
 ] }
@@ -75,6 +82,8 @@ name = "Vehicle Data"
 description = "Data for a vehicle"
 [concepts.VehicleData.components.required]
 "ambient_core::physics::density" = {}
+
+"vehicle_data::general::max_health" = {}
 
 "vehicle_data::thruster::offsets" = {}
 "vehicle_data::thruster::k_p" = {}
@@ -114,6 +123,7 @@ extends = ["VehicleData"]
 "ambient_core::transform::rotation" = {}
 
 "vehicle::player_ref" = {}
+"vehicle::health" = {}
 "vehicle::last_distances" = {}
 "vehicle::last_jump_time" = {}
 "vehicle::last_slowdown_time" = {}
