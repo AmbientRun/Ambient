@@ -195,7 +195,7 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
     // If the vehicle's been upside down for some time, respawn it and don't process any further logic.
     if (v.rotation * Vec3::Z).dot(Vec3::Z) < -0.4 {
         if let Some(last_upside_down_time) = v.optional.last_upside_down_time {
-            if (game_time() - last_upside_down_time).as_secs_f32() > 4.0 {
+            if (game_time() - last_upside_down_time).as_secs_f32() > 1.5 {
                 respawn_player(driver_id);
                 return;
             }
