@@ -153,8 +153,6 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     for (id, &localworld) in q.iter(world, Some(&mut *qs)) {
                         let is_kinematic = world.has_component(id, kinematic());
                         let (_scale, rot, pos) = localworld.to_scale_rotation_translation();
-                        // let pos = localworld.transform_point3(Vec3::ZERO);
-                        // let rot = Quat::from_mat4(&localworld);
                         if let Ok(body) = world.get(id, rigid_dynamic()) {
                             let pose = PxTransform::new(pos, rot);
                             if is_kinematic {
