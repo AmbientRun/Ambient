@@ -96,6 +96,23 @@ tuple_impls! { A B C D E F G H I J }
 tuple_impls! { A B C D E F G H I J K }
 tuple_impls! { A B C D E F G H I J K L }
 tuple_impls! { A B C D E F G H I J K L M }
+tuple_impls! { A B C D E F G H I J K L M N }
+tuple_impls! { A B C D E F G H I J K L M N O }
+tuple_impls! { A B C D E F G H I J K L M N O P }
+tuple_impls! { A B C D E F G H I J K L M N O P Q }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X Y }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB AC }
+tuple_impls! { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB AC AD }
 impl<T: SupportedValue> ComponentsTuple for Component<T> {
     type Data = T;
 
