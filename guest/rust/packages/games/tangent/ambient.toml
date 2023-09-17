@@ -10,6 +10,8 @@ tangent_core = { path = "core", deployment = "39nAewTgzpxp4PIpKR3WT8" }
 tangent_camera_follow = { path = "mods/camera_follow", enabled = true }
 tangent_camera_topdown = { path = "mods/camera_topdown", enabled = false }
 
+tangent_hud_sideholo = { path = "mods/hud_sideholo", enabled = true }
+
 tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true }
 
 package_manager = { path = "../../tools/package_manager", deployment = "3CWmEvSv1vAj3HlhhEvjXK" }

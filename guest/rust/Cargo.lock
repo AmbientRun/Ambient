@@ -2415,6 +2415,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tangent_hud_sideholo"
+version = "0.1.0"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "tangent_level_cubicide"
 version = "0.1.0"
 dependencies = [

@@ -1,0 +1,8 @@
+[package]
+id = "tangent_hud_sideholo"
+name = "Tangent HUD: Side Hologram"
+version = "0.1.0"
+content = { type = "Mod", for_playables = ["tangent"] }
+
+[dependencies]
+tangent_schema = { path = "../../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
