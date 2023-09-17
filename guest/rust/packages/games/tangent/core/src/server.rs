@@ -21,10 +21,13 @@ use packages::{
         concepts::{Explosion, Spawnpoint, Vehicle, VehicleData},
         messages::{OnCollision, OnDeath},
         player::components as pc,
+        vehicle::class::components as vclc,
         vehicle::components as vc,
     },
     this::{assets, messages::Input},
 };
+
+use crate::packages::tangent_schema::concepts::VehicleClass;
 
 #[main]
 pub fn main() {
@@ -44,12 +47,56 @@ pub fn main() {
         }
     });
 
-    // When a player spawns, give them a vehicle.
-    spawn_query(is_player()).bind(|players| {
-        for (player_id, ()) in players {
-            respawn_player(player_id);
+    // REMOVE!
+    {
+        const X_DISTANCE: f32 = 0.1;
+        const Y_DISTANCE: f32 = 0.4;
+
+        let offsets = vec![
+            vec2(-X_DISTANCE, -Y_DISTANCE),
+            vec2(X_DISTANCE, -Y_DISTANCE),
+            vec2(X_DISTANCE, Y_DISTANCE),
+            vec2(-X_DISTANCE, Y_DISTANCE),
+        ];
+
+        VehicleClass {
+            is_class: (),
+            name: "Default".to_string(),
+            description: "The default vehicle class.".to_string(),
+
+            density: 10.0,
+            max_health: 100.0,
+            offsets,
+            k_p: 300.0,
+            k_d: -600.0,
+            target: 2.5,
+            max_strength: 25.0,
+            forward_force: 50.0,
+            backward_force: -4.0,
+            forward_offset: vec2(0.0, Y_DISTANCE),
+            side_force: 0.8,
+            side_offset: vec2(0.0, -Y_DISTANCE),
+            jump_force: 80.0,
+            pitch_strength: 10.0,
+            turning_strength: 20.0,
+            jump_timeout: Duration::from_secs_f32(2.0),
+            linear_strength: 0.8,
+            angular_strength: 0.4,
+            angular_delay: Duration::from_secs_f32(0.25),
+            model_url: assets::url("models/dynamic/raceCarWhite.glb/models/main.json"),
         }
-    });
+        .spawn()
+    };
+
+    // When the player's class changes, respawn them.
+    change_query(pc::vehicle_class())
+        .track_change(pc::vehicle_class())
+        .requires(is_player())
+        .bind(move |players| {
+            for (player_id, _class_id) in players {
+                respawn_player(player_id);
+            }
+        });
 
     // When a player despawns (leaves), despawn their vehicle.
     despawn_query(is_player()).bind(|players| {
@@ -116,38 +163,17 @@ pub fn main() {
 }
 
 fn respawn_player(player_id: EntityId) {
-    const X_DISTANCE: f32 = 0.1;
-    const Y_DISTANCE: f32 = 0.4;
-
-    let offsets = vec![
-        vec2(-X_DISTANCE, -Y_DISTANCE),
-        vec2(X_DISTANCE, -Y_DISTANCE),
-        vec2(X_DISTANCE, Y_DISTANCE),
-        vec2(-X_DISTANCE, Y_DISTANCE),
-    ];
-    let last_distances = offsets.iter().map(|_| 0.0).collect();
-
-    let vd = VehicleData {
-        density: 10.0,
-        max_health: 100.0,
-        offsets,
-        k_p: 300.0,
-        k_d: -600.0,
-        target: 2.5,
-        max_strength: 25.0,
-        forward_force: 50.0,
-        backward_force: -4.0,
-        forward_offset: vec2(0.0, Y_DISTANCE),
-        side_force: 0.8,
-        side_offset: vec2(0.0, -Y_DISTANCE),
-        jump_force: 80.0,
-        pitch_strength: 10.0,
-        turning_strength: 20.0,
-        jump_timeout: Duration::from_secs_f32(2.0),
-        linear_strength: 0.8,
-        angular_strength: 0.4,
-        angular_delay: Duration::from_secs_f32(0.25),
+    let Some(class_id) = entity::get_component(player_id, pc::vehicle_class()) else {
+        return;
     };
+    let Some(vd) = VehicleData::get_spawned(class_id) else {
+        return;
+    };
+    let Some(model_url) = entity::get_component(class_id, vclc::model_url()) else {
+        return;
+    };
+
+    let last_distances = vd.offsets.iter().map(|_| 0.0).collect();
     let max_health = vd.max_health;
 
     let vehicle = vd
@@ -166,10 +192,7 @@ fn respawn_player(player_id: EntityId) {
         .with(vc::last_slowdown_time(), game_time())
         // Visual appearance
         .with(cast_shadows(), ())
-        .with(
-            model_from_url(),
-            assets::url("models/dynamic/raceCarWhite.glb/models/main.json"),
-        )
+        .with(model_from_url(), model_url)
         .with(phyc::cube_collider(), Vec3::new(0.6, 1.0, 0.2));
 
     assert!(Vehicle::contained_by_unspawned(&vehicle));
