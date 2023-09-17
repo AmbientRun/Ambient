@@ -77,6 +77,15 @@ content = { type = "Asset", schema = true }
     "Networked",
 ] }
 
+# Explosion
+"explosion::is_explosion" = { type = "Empty", name = "Is Explosion", description = "Is an explosion", attributes = [
+    "Networked",
+] }
+"explosion::radius" = { type = "F32", name = "Radius", description = "Radius of the explosion", attributes = [
+    "Networked",
+] }
+"explosion::created_at" = { type = "Duration", name = "Created At", description = "Time the explosion was created. Must be manually attached using a spawn_query as time is not synchronized between client and server at time of writing." }
+
 [concepts.VehicleData]
 name = "Vehicle Data"
 description = "Data for a vehicle"
@@ -138,12 +147,22 @@ description = "A spawnpoint"
 "spawnpoint::radius" = {}
 "ambient_core::transform::translation" = {}
 
-[messages.Input]
-name = "Input"
-description = "Input"
-fields = { direction = "Vec2", jump = "Bool" }
+[concepts.Explosion]
+name = "Explosion"
+description = "An explosion"
+[concepts.Explosion.components.required]
+"explosion::is_explosion" = {}
+"explosion::radius" = {}
+"ambient_core::transform::translation" = {}
+[concepts.Explosion.components.optional]
+"explosion::created_at" = {}
 
 [messages.OnCollision]
 name = "On Collision"
 description = "Sent to the client when a vehicle collides with something."
 fields = { position = "Vec3", speed = "F32", vehicle_id = "EntityId" }
+
+[messages.OnDeath]
+name = "On Death"
+description = "Sent to server modules when a vehicle is destroyed."
+fields = { position = "Vec3", player_id = "EntityId" }

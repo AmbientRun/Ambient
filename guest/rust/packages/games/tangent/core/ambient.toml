@@ -9,3 +9,8 @@ tangent_schema = { path = "../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
 hide_cursor = { path = "../../../std/hide_cursor", deployment = "1IceD2zFRXDdJRwvCtUSGK" }
 
 kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds" }
+
+[messages.Input]
+name = "Input"
+description = "Input"
+fields = { direction = "Vec2", jump = "Bool", suicide = "Bool" }

@@ -1,7 +1,8 @@
-use std::sync::OnceLock;
+use std::{f32::consts::PI, sync::OnceLock};
 
 use ambient_api::{
     core::{
+        ecs::components::remove_at_game_time,
         messages::Collision,
         model::components::model_from_url,
         physics::components as phyc,
@@ -11,17 +12,18 @@ use ambient_api::{
         transform::components::{rotation, scale, translation},
     },
     ecs::GeneralQuery,
+    once_cell::sync::Lazy,
     prelude::*,
 };
 
 use packages::{
     tangent_schema::{
-        concepts::{Spawnpoint, Vehicle, VehicleData},
-        messages::{Input, OnCollision},
+        concepts::{Explosion, Spawnpoint, Vehicle, VehicleData},
+        messages::{OnCollision, OnDeath},
         player::components as pc,
         vehicle::components as vc,
     },
-    this::assets,
+    this::{assets, messages::Input},
 };
 
 #[main]
@@ -64,6 +66,13 @@ pub fn main() {
         if let Some(player) = ctx.client_entity_id() {
             entity::set_component(player, pc::input_direction(), input.direction);
             entity::set_component(player, pc::input_jump(), input.jump);
+
+            // If the user opted to commit suicide, immediately destroy their vehicle
+            if input.suicide {
+                if let Some(vehicle) = entity::get_component(player, pc::vehicle_ref()) {
+                    entity::set_component(vehicle, vc::health(), 0.0);
+                }
+            }
         }
     });
 
@@ -150,7 +159,7 @@ fn respawn_player(player_id: EntityId) {
         .with(phyc::physics_controlled(), ())
         .with(phyc::dynamic(), true)
         .with(translation(), choose_spawn_position())
-        .with(rotation(), Quat::IDENTITY)
+        .with(rotation(), Quat::from_rotation_z(random::<f32>() * PI))
         .with(vc::player_ref(), player_id)
         .with(vc::health(), max_health)
         .with(vc::last_distances(), last_distances)
@@ -167,6 +176,14 @@ fn respawn_player(player_id: EntityId) {
     assert!(Vehicle::contained_by_unspawned(&vehicle));
 
     if let Some(existing_vehicle_id) = entity::get_component(player_id, pc::vehicle_ref()) {
+        if let Some(translation) = entity::get_component(existing_vehicle_id, translation()) {
+            OnDeath {
+                position: translation,
+                player_id,
+            }
+            .send_local_broadcast(true);
+            spawn_explosion(translation);
+        }
         entity::despawn(existing_vehicle_id);
     }
 
@@ -174,6 +191,45 @@ fn respawn_player(player_id: EntityId) {
     entity::add_component(player_id, pc::vehicle_ref(), vehicle_id);
     entity::add_component(player_id, pc::input_direction(), Vec2::ZERO);
     entity::add_component(player_id, pc::input_jump(), false);
+}
+
+fn spawn_explosion(translation: Vec3) {
+    static QUERY: Lazy<GeneralQuery<Component<Vec3>>> = Lazy::new(|| {
+        query(self::translation())
+            .requires(vc::player_ref())
+            .build()
+    });
+
+    let radius = 2.5;
+
+    Explosion {
+        is_explosion: (),
+        translation,
+        radius,
+        optional: default(),
+    }
+    .make()
+    .with(remove_at_game_time(), game_time() + Duration::from_secs(2))
+    .spawn();
+
+    physics::add_radial_impulse(
+        translation,
+        3_000.0,
+        radius,
+        physics::FalloffRadius::FalloffToZeroAt(radius),
+    );
+
+    for (vehicle_id, vehicle_translation) in QUERY.evaluate() {
+        let distance = vehicle_translation.distance(translation);
+        if distance > radius {
+            continue;
+        }
+
+        let closeness = radius - distance;
+        entity::mutate_component(vehicle_id, vc::health(), |health| {
+            *health = (*health - closeness * 10.0).max(0.0);
+        });
+    }
 }
 
 fn choose_spawn_position() -> Vec3 {
@@ -189,7 +245,7 @@ fn choose_spawn_position() -> Vec3 {
         return Vec3::ZERO;
     };
 
-    sp.translation + (random::<Vec2>() * 2.0 * sp.radius - sp.radius).extend(5.0)
+    sp.translation + (random::<Vec2>() * 2.0 * sp.radius - sp.radius).extend(2.0)
 }
 
 fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
