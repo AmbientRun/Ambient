@@ -1864,6 +1864,13 @@ mod raw {
                 pub fn id() -> Component<EntityId> {
                     *ID
                 }
+                static REMOVE_AT_GAME_TIME: Lazy<Component<Duration>> = Lazy::new(|| {
+                    __internal_get_component("ambient_core::ecs::remove_at_game_time")
+                });
+                #[doc = "**Remove at game time**: If attached, this entity will be despawned at the specified game time.\n\n*Attributes*: Debuggable"]
+                pub fn remove_at_game_time() -> Component<Duration> {
+                    *REMOVE_AT_GAME_TIME
+                }
             }
         }
         pub mod hierarchy {

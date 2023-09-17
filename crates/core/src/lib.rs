@@ -25,9 +25,12 @@ pub mod player;
 pub mod transform;
 pub mod window;
 
-pub use ambient_ecs::generated::app::components::{
-    delta_time, description, epoch_time, game_time, main_package_name, main_scene, map_seed, name,
-    ref_count, selectable, snap_to_ground, tags, ui_scene,
+pub use ambient_ecs::generated::{
+    app::components::{
+        delta_time, description, epoch_time, game_time, main_package_name, main_scene, map_seed,
+        name, ref_count, selectable, snap_to_ground, tags, ui_scene,
+    },
+    ecs::components::remove_at_game_time,
 };
 
 /// The time between fixed updates of the server state.
@@ -58,8 +61,6 @@ components!("app", {
     last_frame_time: Instant,
     @[Resource, Debuggable]
     frame_index: usize,
-    @[Debuggable, Store]
-    remove_at_game_time: Duration,
 });
 
 pub fn init_all_components() {
