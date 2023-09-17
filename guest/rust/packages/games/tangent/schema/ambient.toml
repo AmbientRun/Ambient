@@ -118,6 +118,9 @@ content = { type = "Asset", schema = true }
 "vehicle::class::model_url" = { type = "String", name = "Model URL", description = "URL of the model for the vehicle class", attributes = [
     "Networked",
 ] }
+"vehicle::class::model_scale" = { type = "F32", name = "Model Scale", description = "Scale of the model for the vehicle class", attributes = [
+    "Networked",
+] }
 
 # Spawnpoint
 "spawnpoint::is_spawnpoint" = { type = "Empty", name = "Is Spawnpoint", description = "Is a spawnpoint", attributes = [
@@ -199,6 +202,7 @@ extends = ["VehicleData"]
 "vehicle::class::name" = {}
 "vehicle::class::description" = {}
 "vehicle::class::model_url" = {}
+"vehicle::class::model_scale" = {}
 
 [concepts.Spawnpoint]
 name = "Spawnpoint"

@@ -18,4 +18,6 @@ tangent_pickup_health = { path = "mods/pickup_health" }
 
 tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true }
 
+tangent_class_assault = { path = "mods/class_assault", enabled = true }
+
 package_manager = { path = "../../tools/package_manager", deployment = "3CWmEvSv1vAj3HlhhEvjXK" }

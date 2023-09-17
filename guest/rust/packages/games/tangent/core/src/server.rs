@@ -2,14 +2,19 @@ use std::{f32::consts::PI, sync::OnceLock};
 
 use ambient_api::{
     core::{
+        app::components::main_scene,
         ecs::components::remove_at_game_time,
+        hierarchy::components::parent,
         messages::Collision,
         model::components::model_from_url,
         physics::components as phyc,
         player::components::is_player,
         primitives::concepts::Sphere,
         rendering::components::cast_shadows,
-        transform::components::{rotation, scale, translation},
+        transform::components::{
+            local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale,
+            translation,
+        },
     },
     ecs::GeneralQuery,
     once_cell::sync::Lazy,
@@ -18,15 +23,12 @@ use ambient_api::{
 
 use packages::{
     tangent_schema::{
-        concepts::{Explosion, Spawnpoint, Vehicle, VehicleClass, VehicleData},
+        concepts::{Explosion, Spawnpoint, Vehicle, VehicleData},
         messages::OnDeath,
         player::components as pc,
         vehicle::{class::components as vclc, components as vc},
     },
-    this::{
-        assets,
-        messages::{Input, OnCollision, OnSpawn},
-    },
+    this::messages::{Input, OnCollision, OnSpawn},
 };
 
 #[main]
@@ -46,47 +48,6 @@ pub fn main() {
             );
         }
     });
-
-    // REMOVE!
-    {
-        const X_DISTANCE: f32 = 0.1;
-        const Y_DISTANCE: f32 = 0.4;
-
-        let offsets = vec![
-            vec2(-X_DISTANCE, -Y_DISTANCE),
-            vec2(X_DISTANCE, -Y_DISTANCE),
-            vec2(X_DISTANCE, Y_DISTANCE),
-            vec2(-X_DISTANCE, Y_DISTANCE),
-        ];
-
-        VehicleClass {
-            is_class: (),
-            name: "Default".to_string(),
-            description: "The default vehicle class.".to_string(),
-
-            density: 10.0,
-            max_health: 100.0,
-            offsets,
-            k_p: 300.0,
-            k_d: -600.0,
-            target: 2.5,
-            max_strength: 25.0,
-            forward_force: 50.0,
-            backward_force: -4.0,
-            forward_offset: vec2(0.0, Y_DISTANCE),
-            side_force: 0.8,
-            side_offset: vec2(0.0, -Y_DISTANCE),
-            jump_force: 80.0,
-            pitch_strength: 10.0,
-            turning_strength: 20.0,
-            jump_timeout: Duration::from_secs_f32(2.0),
-            linear_strength: 0.8,
-            angular_strength: 0.4,
-            angular_delay: Duration::from_secs_f32(0.25),
-            model_url: assets::url("models/dynamic/raceCarWhite.glb/models/main.json"),
-        }
-        .spawn()
-    };
 
     // When the player's class changes, respawn them.
     change_query(pc::vehicle_class())
@@ -172,6 +133,9 @@ fn respawn_player(player_id: EntityId) {
     let Some(model_url) = entity::get_component(class_id, vclc::model_url()) else {
         return;
     };
+    let Some(model_scale) = entity::get_component(class_id, vclc::model_scale()) else {
+        return;
+    };
 
     let last_distances = vd.offsets.iter().map(|_| 0.0).collect();
     let max_health = vd.max_health;
@@ -183,18 +147,16 @@ fn respawn_player(player_id: EntityId) {
         .with(phyc::linear_velocity(), Vec3::ZERO)
         .with(phyc::angular_velocity(), Vec3::ZERO)
         .with(phyc::physics_controlled(), ())
+        .with(phyc::cube_collider(), Vec3::new(0.6, 1.0, 0.2))
         .with(phyc::dynamic(), true)
+        .with(local_to_world(), default())
         .with(translation(), position)
         .with(rotation(), Quat::from_rotation_z(random::<f32>() * PI))
         .with(vc::player_ref(), player_id)
         .with(vc::health(), max_health)
         .with(vc::last_distances(), last_distances)
         .with(vc::last_jump_time(), game_time())
-        .with(vc::last_slowdown_time(), game_time())
-        // Visual appearance
-        .with(cast_shadows(), ())
-        .with(model_from_url(), model_url)
-        .with(phyc::cube_collider(), Vec3::new(0.6, 1.0, 0.2));
+        .with(vc::last_slowdown_time(), game_time());
 
     assert!(Vehicle::contained_by_unspawned(&vehicle));
 
@@ -214,6 +176,18 @@ fn respawn_player(player_id: EntityId) {
     entity::add_component(player_id, pc::vehicle_ref(), vehicle_id);
     entity::add_component(player_id, pc::input_direction(), Vec2::ZERO);
     entity::add_component(player_id, pc::input_jump(), false);
+
+    let _vehicle_model_id = Entity::new()
+        .with(cast_shadows(), ())
+        .with(model_from_url(), model_url)
+        .with(local_to_world(), default())
+        .with(local_to_parent(), default())
+        .with(mesh_to_local(), default())
+        .with(mesh_to_world(), default())
+        .with(main_scene(), ())
+        .with(scale(), Vec3::ONE * model_scale)
+        .with(parent(), vehicle_id)
+        .spawn();
 
     OnSpawn {
         position,
