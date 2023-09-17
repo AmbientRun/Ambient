@@ -7,13 +7,13 @@ pub fn circle_point(radians: f32, radius: f32) -> Vec2 {
     vec2(radians.cos(), radians.sin()) * radius
 }
 
-pub fn spawnpoints() -> [(Vec3, f32); 5] {
+pub fn spawnpoints() -> [(Vec3, f32, Vec3); 5] {
     [
-        (vec3(0.0, 0.0, 0.0), 10.0),
-        (vec3(0.0, -100.0, 0.0), 10.0),
-        (vec3(0.0, 100.0, 0.0), 10.0),
-        (vec3(-100.0, 0.0, 0.0), 10.0),
-        (vec3(100.0, 0.0, 0.0), 10.0),
+        (vec3(0.0, 0.0, 0.0), 10.0, vec3(1.0, 1.0, 1.0)),
+        (vec3(0.0, -100.0, 0.0), 10.0, vec3(1.0, 0.0, 0.0)),
+        (vec3(0.0, 100.0, 0.0), 10.0, vec3(0.0, 1.0, 0.0)),
+        (vec3(-100.0, 0.0, 0.0), 10.0, vec3(0.0, 0.0, 1.0)),
+        (vec3(100.0, 0.0, 0.0), 10.0, vec3(1.0, 1.0, 0.0)),
     ]
 }
 
@@ -27,7 +27,7 @@ fn sdf() -> &'static Sdf {
         let spawnpoints = spawnpoints();
         let spawnpoints_sdf = spawnpoints
             .iter()
-            .map(|(p, r)| Sdf::translate(Sdf::circle(r + 10.), p.xy()))
+            .map(|(p, r, _)| Sdf::translate(Sdf::circle(r + 10.), p.xy()))
             .reduce(Sdf::union)
             .unwrap();
 

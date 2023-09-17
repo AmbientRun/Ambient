@@ -39,7 +39,6 @@ pub fn main() {
                     ..Sphere::suggested()
                 }
                 .make()
-                .with(color(), vec4(1.0, 0.25, 0.0, 1.0))
                 .with(scale(), vec3(1.0, 1.0, 1.0 / (2.0 * spawnpoint.radius))),
             );
         }

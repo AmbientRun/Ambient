@@ -146,6 +146,7 @@ description = "A spawnpoint"
 "spawnpoint::is_spawnpoint" = {}
 "spawnpoint::radius" = {}
 "ambient_core::transform::translation" = {}
+"ambient_core::rendering::color" = {}
 
 [concepts.Explosion]
 name = "Explosion"

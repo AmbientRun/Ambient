@@ -52,11 +52,12 @@ pub async fn main() {
         .spawn();
 
     // Spawn spawnpoints
-    for (pos, radius) in shared::spawnpoints() {
+    for (pos, radius, color) in shared::spawnpoints() {
         Spawnpoint {
             is_spawnpoint: (),
             radius,
             translation: pos,
+            color: color.extend(1.0),
         }
         .spawn();
     }
