@@ -15,6 +15,12 @@ const RENDER_LEVEL_BOUNDARIES: bool = false;
 
 #[main]
 fn main() {
+    // Play ambient wind sound
+    let player = audio::AudioPlayer::new();
+    player.set_looping(true);
+    player.set_amplitude(0.3);
+    player.play(packages::this::assets::url("22331__black-boe__wind.ogg"));
+
     // Automatically adjust the density of the fog on a cycle
     query(sun()).each_frame(move |suns| {
         const BASE: f32 = 0.02;
