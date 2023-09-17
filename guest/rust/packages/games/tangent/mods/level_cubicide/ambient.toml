@@ -6,3 +6,4 @@ content = { type = "Mod", for_playables = ["tangent"] }
 
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
+pickup_health = { path = "../pickup_health" }

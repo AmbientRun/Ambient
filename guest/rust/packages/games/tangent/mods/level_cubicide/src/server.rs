@@ -11,12 +11,18 @@ use ambient_api::{
         },
         transform::components::{rotation, scale, translation},
     },
+    ecs::GeneralQuery,
+    once_cell::sync::Lazy,
     prelude::*,
     rand,
 };
 use packages::tangent_schema::concepts::Spawnpoint;
 
+use crate::packages::pickup_health::{components::is_health_pickup, concepts::HealthPickup};
+
 mod shared;
+
+const LEVEL_RADIUS: f32 = 125.;
 
 #[main]
 pub async fn main() {
@@ -57,11 +63,11 @@ pub async fn main() {
 
     let mut rng = rand::rngs::StdRng::seed_from_u64(42);
     make_cubes(&mut rng);
+    handle_pickups(&mut rng);
 }
 
 fn make_cubes(rng: &mut dyn rand::RngCore) {
     const TARGET_CUBE_COUNT: usize = 1000;
-    const LEVEL_RADIUS: f32 = 125.;
     const CUBE_MIN_SIZE: Vec3 = vec3(0.5, 0.5, 0.5);
     const CUBE_MAX_SIZE: Vec3 = vec3(5., 6., 15.);
     const FADE_DISTANCE: f32 = 2.;
@@ -103,6 +109,55 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
 
         let size = vec3(1.5, 1.5, 10.) + rng.gen::<Vec3>() * vec3(1., 1., 20.);
         make_cube(position, size, false, rng);
+    }
+}
+
+fn handle_pickups(rng: &mut dyn rand::RngCore) {
+    make_pickups(rng);
+
+    // Make pickups respawn
+    fixed_rate_tick(Duration::from_secs(5), |_| {
+        make_pickups(&mut thread_rng());
+    });
+}
+
+fn make_pickups(rng: &mut dyn rand::RngCore) {
+    const PICKUP_COUNT: usize = 10;
+
+    static QUERY: Lazy<GeneralQuery<Component<Vec3>>> =
+        Lazy::new(|| query(translation()).requires(is_health_pickup()).build());
+
+    // Consider a more efficient scheme for more pickups
+    loop {
+        let existing_pickups = QUERY.evaluate();
+        if existing_pickups.len() >= PICKUP_COUNT {
+            break;
+        }
+
+        let position =
+            shared::circle_point(rng.gen::<f32>() * TAU, rng.gen::<f32>() * LEVEL_RADIUS);
+
+        let level = shared::level(position.xy());
+        if level > 0.0 {
+            continue;
+        }
+
+        let position = position.extend(1.5);
+
+        if existing_pickups
+            .into_iter()
+            .map(|(_, pos)| position.distance_squared(pos))
+            .any(|length| length < 25f32.powi(2))
+        {
+            continue;
+        }
+
+        HealthPickup {
+            is_health_pickup: (),
+            translation: position,
+            rotation: Quat::IDENTITY,
+        }
+        .spawn();
     }
 }
 

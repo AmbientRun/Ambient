@@ -12,6 +12,8 @@ tangent_camera_topdown = { path = "mods/camera_topdown", enabled = false }
 
 tangent_hud_sideholo = { path = "mods/hud_sideholo", enabled = true }
 
+tangent_pickup_health = { path = "mods/pickup_health" }
+
 tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true }
 
 package_manager = { path = "../../tools/package_manager", deployment = "3CWmEvSv1vAj3HlhhEvjXK" }

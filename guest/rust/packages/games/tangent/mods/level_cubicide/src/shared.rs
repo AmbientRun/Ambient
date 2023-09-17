@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+use std::sync::OnceLock;
+
 use ambient_api::prelude::*;
 
 pub fn circle_point(radians: f32, radius: f32) -> Vec2 {
@@ -16,29 +18,35 @@ pub fn spawnpoints() -> [(Vec3, f32); 5] {
 }
 
 pub fn level(pos: Vec2) -> f32 {
-    let spawnpoints = spawnpoints();
-    let spawnpoints_sdf = spawnpoints
-        .iter()
-        .map(|(p, r)| Sdf::translate(Sdf::circle(r + 10.), p.xy()))
-        .reduce(Sdf::union)
-        .unwrap();
+    sdf().evaluate(pos)
+}
 
-    let spawnpoint_bridges_sdf = spawnpoints
-        .iter()
-        .map(|p| p.0)
-        .flat_map(|a| {
-            spawnpoints
-                .iter()
-                .map(|p| p.0)
-                .filter(move |b| *b != a)
-                .map(move |b| (a, b))
-        })
-        .map(|(a, b)| Sdf::oriented_box(a.xy(), b.xy(), 4.))
-        .reduce(Sdf::union)
-        .unwrap();
+fn sdf() -> &'static Sdf {
+    static SDF: OnceLock<Sdf> = OnceLock::new();
+    SDF.get_or_init(|| {
+        let spawnpoints = spawnpoints();
+        let spawnpoints_sdf = spawnpoints
+            .iter()
+            .map(|(p, r)| Sdf::translate(Sdf::circle(r + 10.), p.xy()))
+            .reduce(Sdf::union)
+            .unwrap();
 
-    let sdf = Sdf::smooth_union(spawnpoints_sdf, spawnpoint_bridges_sdf, 2.);
-    sdf.evaluate(pos)
+        let spawnpoint_bridges_sdf = spawnpoints
+            .iter()
+            .map(|p| p.0)
+            .flat_map(|a| {
+                spawnpoints
+                    .iter()
+                    .map(|p| p.0)
+                    .filter(move |b| *b != a)
+                    .map(move |b| (a, b))
+            })
+            .map(|(a, b)| Sdf::oriented_box(a.xy(), b.xy(), 4.))
+            .reduce(Sdf::union)
+            .unwrap();
+
+        Sdf::smooth_union(spawnpoints_sdf, spawnpoint_bridges_sdf, 2.)
+    })
 }
 
 /// A signed-distance function.

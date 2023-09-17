@@ -2429,6 +2429,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tangent_pickup_health"
+version = "0.1.0"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
