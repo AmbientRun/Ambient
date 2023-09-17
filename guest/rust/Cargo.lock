@@ -543,7 +543,6 @@ dependencies = [
 name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_friendly_id",
  "ambient_shared_types",
  "chrono",
  "convert_case",
@@ -551,6 +550,7 @@ dependencies = [
  "once_cell",
  "proc-macro2",
  "quote",
+ "rand 0.8.5",
  "semver",
  "serde",
  "syn 1.0.109",

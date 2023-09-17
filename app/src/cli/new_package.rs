@@ -1,9 +1,8 @@
 use std::path::Path;
 
 use ambient_native_std::ambient_version;
-use ambient_package::SnakeCaseIdentifier;
 use anyhow::Context;
-use convert_case::Casing;
+use convert_case::{Case, Casing};
 
 use super::PackagePath;
 
@@ -17,23 +16,19 @@ pub(crate) fn handle(
     };
 
     // Build the identifier.
-    let package_path = if let Some(name) = name {
-        package_path.join(name)
-    } else {
-        package_path.to_owned()
-    };
-
-    let name = package_path
-        .file_name()
-        .and_then(|s| s.to_str())
-        .context("Package path has no terminating segment")?;
+    let name = name.unwrap_or(
+        package_path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .context("Package path has no terminating segment")?,
+    );
 
     if package_path.is_dir() && std::fs::read_dir(&package_path)?.next().is_some() {
         anyhow::bail!("package path {package_path:?} is not empty");
     }
 
-    let id = name.to_case(convert_case::Case::Snake);
-    let id = SnakeCaseIdentifier::new(&id).map_err(|e| anyhow::Error::msg(e.to_string()))?;
+    let id = ambient_package::PackageId::generate();
+    let snake_case_name = name.to_case(Case::Snake).replace(":", "");
 
     // Create the folders.
     let dot_cargo_path = package_path.join(".cargo");
@@ -58,8 +53,8 @@ pub(crate) fn handle(
         // Special-case creating an example in guest/rust/examples so that it "Just Works".
         let segments = package_path.iter().collect::<Vec<_>>();
         let (replacement, in_ambient_examples) = match segments
-            .windows(3)
-            .position(|w| w == ["guest", "rust", "examples"])
+            .windows(2)
+            .position(|w| w == ["guest", "rust"])
         {
             Some(i) => {
                 let number_of_parents = segments.len() - i - 2;
@@ -93,10 +88,12 @@ pub(crate) fn handle(
         };
 
         let template_cargo_toml = include_str!("new_package_template/Cargo.toml");
-        let mut template_cargo_toml = template_cargo_toml.replace("{{id}}", id.as_str()).replace(
-            "ambient_api = { path = \"../../../../guest/rust/api\" }",
-            &replacement,
-        );
+        let mut template_cargo_toml = template_cargo_toml
+            .replace("{{id}}", &snake_case_name)
+            .replace(
+                "ambient_api = { path = \"../../../../guest/rust/api\" }",
+                &replacement,
+            );
 
         if in_ambient_examples {
             template_cargo_toml = template_cargo_toml.replace(
@@ -139,7 +136,7 @@ pub(crate) fn handle(
             .with_context(|| format!("Failed to create {filename:?}"))?;
     }
 
-    log::info!("Package \"{name}\" with id `{id}` created at {package_path:?}");
+    log::info!("Package \"{name}\" created at {package_path:?}");
 
     Ok(())
 }
