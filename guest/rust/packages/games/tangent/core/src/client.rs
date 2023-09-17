@@ -5,7 +5,9 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::tangent_schema::{messages::Input, vehicle::components as vc};
+use packages::tangent_schema::{
+    messages::Input, vehicle::client::components as vcc, vehicle::components as vc,
+};
 
 #[main]
 pub fn main() {
@@ -22,7 +24,7 @@ pub fn main() {
         .requires(vc::player_ref())
         .each_frame(|vehicles| {
             for (id, (rot, lv)) in vehicles {
-                entity::add_component(id, vc::speed_kph(), lv.dot(rot * -Vec3::Y) * 3.6);
+                entity::add_component(id, vcc::speed_kph(), lv.dot(rot * -Vec3::Y) * 3.6);
             }
         });
 

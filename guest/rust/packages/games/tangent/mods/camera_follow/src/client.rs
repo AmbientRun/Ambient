@@ -11,7 +11,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::tangent_schema::{player::components as pc, vehicle::components as vc};
+use packages::tangent_schema::{player::components as pc, vehicle::client::components as vcc};
 
 const CAMERA_OFFSET: Vec3 = vec3(0.5, 1.8, 0.6);
 
@@ -42,7 +42,7 @@ pub fn main() {
         let Some(vehicle_rotation) = entity::get_component(vehicle_id, rotation()) else {
             return;
         };
-        let Some(vehicle_speed_kph) = entity::get_component(vehicle_id, vc::speed_kph()) else {
+        let Some(vehicle_speed_kph) = entity::get_component(vehicle_id, vcc::speed_kph()) else {
             return;
         };
 
