@@ -5,7 +5,7 @@ use ambient_core::{
     transform::{local_to_world, rotation, scale, translation},
 };
 use ambient_ecs::{
-    components, ensure_has_component, parent, query, FnSystem, QueryState, Resource, SystemGroup,
+    components, ensure_has_component, query, FnSystem, QueryState, Resource, SystemGroup,
 };
 use ambient_native_std::asset_cache::SyncAssetKey;
 use glam::{EulerRot, Quat, Vec3};
@@ -277,18 +277,9 @@ pub fn sync_ecs_physics() -> SystemGroup {
             .to_system(|q, world, qs, _| {
                 let delta_time = *world.resource(delta_time());
                 for (id, (body, pos, rot, lvel, avel)) in q.collect_cloned(world, qs) {
-                    let mut h_pos = pos;
-                    let mut h_rot = rot;
-                    let is_child = world.has_component(id, parent());
-                    if is_child {
-                        let localworld = world.get(id, local_to_world()).unwrap();
-                        h_pos = localworld.transform_point3(Vec3::ZERO);
-                        h_rot = Quat::from_mat4(&localworld);
-                        println!("updating velocities for rigit dynamic child {:?} ", id)
-                    }
                     let avel = avel * delta_time;
-                    let new_pos = h_pos + lvel * delta_time;
-                    let new_rot = h_rot * Quat::from_euler(EulerRot::XYZ, avel.x, avel.y, avel.z);
+                    let new_pos = pos + lvel * delta_time;
+                    let new_rot = rot * Quat::from_euler(EulerRot::XYZ, avel.x, avel.y, avel.z);
                     let pos_changed = vec3_changed(pos, new_pos);
                     let rot_changed = quat_changed(rot, new_rot);
                     if pos_changed {
