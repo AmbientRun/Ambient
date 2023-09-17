@@ -110,8 +110,8 @@ pub fn main() {
     // When a player sends input, update their input state.
     Input::subscribe(|ctx, input| {
         if let Some(player) = ctx.client_entity_id() {
-            entity::set_component(player, pc::input_direction(), input.direction);
-            entity::set_component(player, pc::input_jump(), input.jump);
+            entity::add_component(player, pc::input_direction(), input.direction);
+            entity::add_component(player, pc::input_jump(), input.jump);
 
             // If the user opted to commit suicide, immediately destroy their vehicle
             if input.suicide {
@@ -291,11 +291,15 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
         return;
     }
 
-    // If the vehicle's been upside down for some time, respawn it and don't process any further logic.
+    // If the vehicle's been upside down for some time, start applying damage to it.
     if (v.rotation * Vec3::Z).dot(Vec3::Z) < -0.5 {
         if let Some(last_upside_down_time) = v.optional.last_upside_down_time {
-            if (game_time() - last_upside_down_time).as_secs_f32() > 1.5 {
-                respawn_player(driver_id);
+            if (game_time() - last_upside_down_time).as_secs_f32() > 0.5 {
+                const DAMAGE_PER_SECOND: f32 = 20.0;
+
+                entity::mutate_component(vehicle_id, vc::health(), |health| {
+                    *health = (*health - DAMAGE_PER_SECOND * delta_time()).max(0.0);
+                });
                 return;
             }
         } else {
