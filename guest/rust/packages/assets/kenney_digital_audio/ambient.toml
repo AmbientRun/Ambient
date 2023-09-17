@@ -1,0 +1,7 @@
+[package]
+id = "kenney_digital_audio"
+name = "Kenney's Digital Audio"
+authors = ["Kenney"]
+description = "https://www.kenney.nl/assets/digital-audio uploaded to Ambient"
+version = "0.0.1"
+content = { type = "Asset", models = true }
