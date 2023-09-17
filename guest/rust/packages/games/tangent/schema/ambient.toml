@@ -14,35 +14,35 @@ content = { type = "Asset", schema = true }
 "player::input_jump" = { type = "Bool", name = "Jump", description = "Jump" }
 
 # Vehicle data
-"vehicle_data::general::max_health" = { type = "F32", name = "Max Health", description = "Maximum health of the vehicle", attributes = [
+"vehicle::data::general::max_health" = { type = "F32", name = "Max Health", description = "Maximum health of the vehicle", attributes = [
     "Networked",
 ] }
 
-"vehicle_data::thruster::offsets" = { type = { type = "Vec", element_type = "Vec2" }, name = "Thruster Offsets", description = "Offsets of the thrusters from the center of the vehicle", attributes = [
+"vehicle::data::thruster::offsets" = { type = { type = "Vec", element_type = "Vec2" }, name = "Thruster Offsets", description = "Offsets of the thrusters from the center of the vehicle", attributes = [
     "Networked",
 ] }
-"vehicle_data::thruster::k_p" = { type = "F32", name = "Thruster K_p", description = "Proportional gain for the thrusters" }
-"vehicle_data::thruster::k_d" = { type = "F32", name = "Thruster K_d", description = "Derivative gain for the thrusters" }
-"vehicle_data::thruster::target" = { type = "F32", name = "Thruster Target Altitude", description = "Target altitude for the thrusters" }
-"vehicle_data::thruster::max_strength" = { type = "F32", name = "Thruster Max Strength", description = "Maximum strength of the thrusters" }
+"vehicle::data::thruster::k_p" = { type = "F32", name = "Thruster K_p", description = "Proportional gain for the thrusters" }
+"vehicle::data::thruster::k_d" = { type = "F32", name = "Thruster K_d", description = "Derivative gain for the thrusters" }
+"vehicle::data::thruster::target" = { type = "F32", name = "Thruster Target Altitude", description = "Target altitude for the thrusters" }
+"vehicle::data::thruster::max_strength" = { type = "F32", name = "Thruster Max Strength", description = "Maximum strength of the thrusters" }
 
-"vehicle_data::input::forward_force" = { type = "F32", name = "Forward Force", description = "Forward force applied to the vehicle on input" }
-"vehicle_data::input::backward_force" = { type = "F32", name = "Backward Force", description = "Backward force applied to the vehicle on input" }
-"vehicle_data::input::forward_offset" = { type = "Vec2", name = "Forward Offset", description = "Offset of the forward force from the center of the vehicle. Typically at the back of the vehicle." }
+"vehicle::data::input::forward_force" = { type = "F32", name = "Forward Force", description = "Forward force applied to the vehicle on input" }
+"vehicle::data::input::backward_force" = { type = "F32", name = "Backward Force", description = "Backward force applied to the vehicle on input" }
+"vehicle::data::input::forward_offset" = { type = "Vec2", name = "Forward Offset", description = "Offset of the forward force from the center of the vehicle. Typically at the back of the vehicle." }
 
-"vehicle_data::input::side_force" = { type = "F32", name = "Side Force", description = "Side force applied to the vehicle on input" }
-"vehicle_data::input::side_offset" = { type = "Vec2", name = "Side Offset", description = "Offset of the side force from the center of the vehicle. Typically at the front of the vehicle." }
+"vehicle::data::input::side_force" = { type = "F32", name = "Side Force", description = "Side force applied to the vehicle on input" }
+"vehicle::data::input::side_offset" = { type = "Vec2", name = "Side Offset", description = "Offset of the side force from the center of the vehicle. Typically at the front of the vehicle." }
 
-"vehicle_data::input::jump_force" = { type = "F32", name = "Jump Force", description = "Jump force applied to the vehicle on input" }
+"vehicle::data::input::jump_force" = { type = "F32", name = "Jump Force", description = "Jump force applied to the vehicle on input" }
 
-"vehicle_data::input::pitch_strength" = { type = "F32", name = "Pitch Strength", description = "Strength of the pitch applied to the applicable thrusters of the vehicle on input" }
-"vehicle_data::input::turning_strength" = { type = "F32", name = "Turning Strength", description = "Strength of the turning applied to the applicable thrusters of the vehicle on input" }
+"vehicle::data::input::pitch_strength" = { type = "F32", name = "Pitch Strength", description = "Strength of the pitch applied to the applicable thrusters of the vehicle on input" }
+"vehicle::data::input::turning_strength" = { type = "F32", name = "Turning Strength", description = "Strength of the turning applied to the applicable thrusters of the vehicle on input" }
 
-"vehicle_data::input::jump_timeout" = { type = "Duration", name = "Jump Timeout", description = "Timeout between jumps" }
+"vehicle::data::input::jump_timeout" = { type = "Duration", name = "Jump Timeout", description = "Timeout between jumps" }
 
-"vehicle_data::slowdown::linear_strength" = { type = "F32", name = "Linear Strength", description = "Strength of the linear slowdown applied to the vehicle" }
-"vehicle_data::slowdown::angular_strength" = { type = "F32", name = "Angular Strength", description = "Strength of the angular slowdown applied to the vehicle" }
-"vehicle_data::slowdown::angular_delay" = { type = "Duration", name = "Angular Delay", description = "Time to wait before applying angular slowdown" }
+"vehicle::data::slowdown::linear_strength" = { type = "F32", name = "Linear Strength", description = "Strength of the linear slowdown applied to the vehicle" }
+"vehicle::data::slowdown::angular_strength" = { type = "F32", name = "Angular Strength", description = "Strength of the angular slowdown applied to the vehicle" }
+"vehicle::data::slowdown::angular_delay" = { type = "Duration", name = "Angular Delay", description = "Time to wait before applying angular slowdown" }
 
 # Vehicle
 "vehicle::player_ref" = { type = "EntityId", name = "Vehicle", description = "A vehicle (and its driver)", attributes = [
@@ -92,31 +92,31 @@ description = "Data for a vehicle"
 [concepts.VehicleData.components.required]
 "ambient_core::physics::density" = {}
 
-"vehicle_data::general::max_health" = {}
+"vehicle::data::general::max_health" = {}
 
-"vehicle_data::thruster::offsets" = {}
-"vehicle_data::thruster::k_p" = {}
-"vehicle_data::thruster::k_d" = {}
-"vehicle_data::thruster::target" = {}
-"vehicle_data::thruster::max_strength" = {}
+"vehicle::data::thruster::offsets" = {}
+"vehicle::data::thruster::k_p" = {}
+"vehicle::data::thruster::k_d" = {}
+"vehicle::data::thruster::target" = {}
+"vehicle::data::thruster::max_strength" = {}
 
-"vehicle_data::input::forward_force" = {}
-"vehicle_data::input::backward_force" = {}
-"vehicle_data::input::forward_offset" = {}
+"vehicle::data::input::forward_force" = {}
+"vehicle::data::input::backward_force" = {}
+"vehicle::data::input::forward_offset" = {}
 
-"vehicle_data::input::side_force" = {}
-"vehicle_data::input::side_offset" = {}
+"vehicle::data::input::side_force" = {}
+"vehicle::data::input::side_offset" = {}
 
-"vehicle_data::input::jump_force" = {}
+"vehicle::data::input::jump_force" = {}
 
-"vehicle_data::input::pitch_strength" = {}
-"vehicle_data::input::turning_strength" = {}
+"vehicle::data::input::pitch_strength" = {}
+"vehicle::data::input::turning_strength" = {}
 
-"vehicle_data::input::jump_timeout" = {}
+"vehicle::data::input::jump_timeout" = {}
 
-"vehicle_data::slowdown::linear_strength" = {}
-"vehicle_data::slowdown::angular_strength" = {}
-"vehicle_data::slowdown::angular_delay" = {}
+"vehicle::data::slowdown::linear_strength" = {}
+"vehicle::data::slowdown::angular_strength" = {}
+"vehicle::data::slowdown::angular_delay" = {}
 
 [concepts.Vehicle]
 name = "Vehicle"

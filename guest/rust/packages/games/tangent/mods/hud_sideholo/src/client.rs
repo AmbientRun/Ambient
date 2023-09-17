@@ -14,7 +14,7 @@ use ambient_api::{
 };
 use packages::tangent_schema::{
     player::components as pc, vehicle::client::components as vcc, vehicle::components as vc,
-    vehicle_data as vdc,
+    vehicle::data as vdc,
 };
 
 #[main]

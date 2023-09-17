@@ -7,7 +7,7 @@ use ambient_api::{
 };
 use packages::this::concepts::HealthPickup;
 use packages::{
-    tangent_schema::{vehicle::components as vc, vehicle_data::general::components as vdgc},
+    tangent_schema::{vehicle::components as vc, vehicle::data::general::components as vdgc},
     this::messages::OnHealthPickup,
 };
 
