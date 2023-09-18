@@ -6,7 +6,7 @@ publish = false
 version = "0.0.1"
 
 [dependencies]
-ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", rev = "f489c778bc0632ff0d7bd80f84fa9a0f35ed9274" }
+ambient_api = { workspace = true }
 glam = "0.24.1"
 regex = "1"
 

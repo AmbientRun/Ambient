@@ -1,7 +1,7 @@
 use ambient_api::{
     core::{
         audio::components::amplitude,
-        camera::{components::fog, concepts::perspective_infinite_reverse_camera},
+        camera::components::{fog, perspective_infinite_reverse},
         rendering::components::{fog_color, fog_density},
     },
     prelude::*,
@@ -14,9 +14,9 @@ const NORMAL_TEMP: f32 = 37.;
 #[main]
 pub fn main() {
     spawn_query(())
-        .requires(perspective_infinite_reverse_camera())
+        .requires(perspective_infinite_reverse())
         .bind(|cameras| {
-            for (camera, _) in cameras {
+            if let Some((camera, _)) = cameras.into_iter().next() {
                 entity::add_component(camera, fog(), ());
 
                 spawn_query(ambient_loop()).bind(move |ambient_loopers| {
@@ -28,8 +28,6 @@ pub fn main() {
                         spatial_audio_player.play_sound_on_entity(loop_path, looper);
                     }
                 });
-
-                break; // do it for one camera only
             }
         });
 
@@ -81,16 +79,12 @@ pub fn make_my_local_sun_with_sky() -> EntityId {
         rendering::components::{
             fog_color, fog_density, fog_height_falloff, light_diffuse, sky, sun,
         },
-        transform::{components::rotation, concepts::make_transformable},
+        transform::components::rotation,
     };
 
-    Entity::new()
-        .with_merge(make_transformable())
-        .with(sky(), ())
-        .spawn();
+    Entity::new().with(sky(), ()).spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
         .with(sun(), 0.0)
         .with(rotation(), Default::default())
         .with(main_scene(), ())

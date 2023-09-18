@@ -6,7 +6,7 @@ publish = false
 version = "0.0.1"
 
 [dependencies]
-ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", tag = "v0.3.0-nightly-2023-09-14" }
+ambient_api = { workspace = true }
 
 [[bin]]
 name = "client_temperature"

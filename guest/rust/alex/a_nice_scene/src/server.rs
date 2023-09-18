@@ -10,14 +10,11 @@ pub fn main() {
 
 pub fn rising_falling_cube() {
     use ambient_api::core::{
-        physics::components::cube_collider,
-        primitives::components::cube,
-        rendering::components::color,
-        transform::{components::translation, concepts::make_transformable},
+        physics::components::cube_collider, primitives::components::cube,
+        rendering::components::color, transform::components::translation,
     };
     use std::f32::consts::PI;
     let rfc = Entity::new()
-        .with_merge(make_transformable())
         .with(translation(), vec3(10., 10., 0.))
         .with(color(), vec4(1., 0., 0., 1.))
         .with(cube(), ())
@@ -57,10 +54,10 @@ pub fn plrs_fps_controlled() {
 pub fn ground_plane() {
     use ambient_api::core::{
         physics::components::plane_collider, primitives::components::quad,
-        transform::concepts::make_transformable,
+        transform::components::local_to_world,
     };
     Entity::new()
-        .with_merge(make_transformable())
+        .with(local_to_world(), default())
         .with(quad(), ())
         .with(plane_collider(), ())
         .spawn();
@@ -72,16 +69,12 @@ pub fn spawn_sun() -> EntityId {
         rendering::components::{
             fog_color, fog_density, fog_height_falloff, light_diffuse, sky, sun,
         },
-        transform::{components::rotation, concepts::make_transformable},
+        transform::components::rotation,
     };
 
-    Entity::new()
-        .with_merge(make_transformable())
-        .with(sky(), ())
-        .spawn();
+    Entity::new().with(sky(), ()).spawn();
 
     Entity::new()
-        .with_merge(make_transformable())
         .with(sun(), 0.0)
         .with(rotation(), Default::default())
         .with(main_scene(), ())
@@ -103,10 +96,7 @@ pub fn load_scene() {
         physics::components::cube_collider,
         prefab::components::prefab_from_url,
         primitives::components::cube,
-        transform::{
-            components::{rotation, scale, translation},
-            concepts::make_transformable,
-        },
+        transform::components::{rotation, scale, translation},
     };
 
     let nodes = crate::sceneloader::scene_contents_to_nodes(scene_deep_pit::CONTENTS);
@@ -137,7 +127,6 @@ pub fn load_scene() {
                     node_rot.unwrap()
                 );
                 Entity::new()
-                    .with_merge(make_transformable())
                     .with(cube(), ())
                     .with(cube_collider(), vec3(1., 1., 1.))
                     .with(translation(), node_pos.unwrap())
@@ -158,7 +147,6 @@ pub fn load_scene() {
                 if let Some(path) = node.path {
                     Entity::new()
                         .with(name(), node.name)
-                        .with_merge(make_transformable())
                         // .with_default(cube())
                         .with(translation(), node_pos.unwrap())
                         .with(rotation(), node_rot.unwrap())

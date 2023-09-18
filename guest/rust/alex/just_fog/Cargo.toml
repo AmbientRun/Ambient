@@ -6,7 +6,7 @@ publish = false
 version = "0.0.1"
 
 [dependencies]
-ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", rev = "07263923455d9933d4d8845a853214773155dd34" }
+ambient_api = { workspace = true }
 
 [[bin]]
 name = "client_just_fog"

@@ -5,10 +5,7 @@ use ambient_api::{
         player::components::is_player,
         primitives::components::quad,
         // rendering::components::{outline, overlay},
-        transform::{
-            components::{rotation, scale, translation},
-            concepts::make_transformable,
-        },
+        transform::components::{rotation, scale, translation},
     },
     prelude::*,
 };
@@ -111,7 +108,6 @@ pub fn load_scene() {
             if path.ends_with("glb") {
                 Entity::new()
                     .with(name(), node.name)
-                    .with_merge(make_transformable())
                     // .with_default(cube())
                     .with(translation(), node.pos.unwrap())
                     .with(rotation(), node.rot.unwrap())
