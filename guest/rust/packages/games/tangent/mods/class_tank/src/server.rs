@@ -1,6 +1,8 @@
 use ambient_api::prelude::*;
 
-use crate::packages::tangent_schema::concepts::VehicleClass;
+use packages::tangent_schema::concepts::VehicleClass;
+
+use packages::this::components::is_tank;
 
 #[main]
 pub fn main() {
@@ -51,5 +53,7 @@ pub fn main() {
         model_url: packages::kenney_space_kit::assets::url("craft_miner.glb/models/main.json"),
         model_scale: 0.5,
     }
+    .make()
+    .with(is_tank(), ())
     .spawn();
 }

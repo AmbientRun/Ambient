@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 
-use crate::packages::tangent_schema::concepts::VehicleClass;
+use packages::{tangent_schema::concepts::VehicleClass, this::components::is_assault};
 
 #[main]
 pub fn main() {
@@ -50,5 +50,7 @@ pub fn main() {
         model_url: packages::kenney_space_kit::assets::url("craft_speederA.glb/models/main.json"),
         model_scale: 0.5,
     }
+    .make()
+    .with(is_assault(), ())
     .spawn();
 }

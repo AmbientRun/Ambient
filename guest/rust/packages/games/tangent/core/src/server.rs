@@ -23,10 +23,10 @@ use ambient_api::{
 
 use packages::{
     tangent_schema::{
-        concepts::{Explosion, Spawnpoint, Vehicle, VehicleData},
+        concepts::{Explosion, Spawnpoint, Vehicle},
         messages::OnDeath,
         player::components as pc,
-        vehicle::{class::components as vclc, components as vc},
+        vehicle::{class::components as vclc, components as vc, data as vd},
     },
     this::messages::{Input, OnCollision, OnSpawn},
 };
@@ -127,22 +127,32 @@ fn respawn_player(player_id: EntityId) {
     let Some(class_id) = entity::get_component(player_id, pc::vehicle_class()) else {
         return;
     };
-    let Some(vd) = VehicleData::get_spawned(class_id) else {
-        return;
-    };
-    let Some(model_url) = entity::get_component(class_id, vclc::model_url()) else {
-        return;
-    };
-    let Some(model_scale) = entity::get_component(class_id, vclc::model_scale()) else {
-        return;
-    };
 
-    let last_distances = vd.offsets.iter().map(|_| 0.0).collect();
-    let max_health = vd.max_health;
+    // Copy the class definition, and remove anything class-specific from it.
+    let mut class = entity::get_all_components(class_id);
+    let Some(model_url) = class.remove(vclc::model_url()) else {
+        return;
+    };
+    let Some(model_scale) = class.remove(vclc::model_scale()) else {
+        return;
+    };
+    class.remove(vclc::is_class());
+    class.remove(vclc::name());
+    class.remove(vclc::description());
+    class.remove(vclc::icon_url());
 
+    let offsets = class
+        .get(vd::thruster::components::offsets())
+        .unwrap_or_default();
+
+    let last_distances = offsets.iter().map(|_| 0.0).collect();
+    let max_health = class
+        .get(vd::general::components::max_health())
+        .unwrap_or(100.0);
+
+    // Create the vehicle before spawning it.
     let position = choose_spawn_position();
-    let vehicle = vd
-        .make()
+    let vehicle = class
         // Runtime state
         .with(phyc::linear_velocity(), Vec3::ZERO)
         .with(phyc::angular_velocity(), Vec3::ZERO)
@@ -171,6 +181,7 @@ fn respawn_player(player_id: EntityId) {
         entity::despawn_recursive(existing_vehicle_id);
     }
 
+    // Spawn it in.
     let vehicle_id = vehicle.spawn();
     entity::add_component(player_id, pc::vehicle_ref(), vehicle_id);
     entity::add_component(player_id, pc::input_direction(), Vec2::ZERO);
