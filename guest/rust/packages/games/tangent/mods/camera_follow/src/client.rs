@@ -45,14 +45,35 @@ pub fn main() {
         let Some(vehicle_speed_kph) = entity::get_component(vehicle_id, vcc::speed_kph()) else {
             return;
         };
+        let Some(camera_position) = entity::get_component(camera_id, translation()) else {
+            return;
+        };
+        let Some(camera_lookat) = entity::get_component(camera_id, lookat_target()) else {
+            return;
+        };
 
-        let camera_position = vehicle_position + vehicle_rotation * CAMERA_OFFSET;
-        entity::set_component(camera_id, translation(), camera_position);
-        entity::set_component(
-            camera_id,
-            lookat_target(),
-            camera_position + vehicle_rotation * -Vec3::Y,
-        );
+        // Smooth out the camera movement by moving towards the target with a constant velocity
+        let target_position = vehicle_position + vehicle_rotation * CAMERA_OFFSET;
+        let target_lookat = target_position + vehicle_rotation * -Vec3::Y;
+
+        let dt = delta_time();
+        const CAMERA_SPEED_MS: f32 = 15.0;
+        const CAMERA_SNAP_TIME: f32 = 0.1;
+
+        let camera_snap_distance_sqr = (CAMERA_SPEED_MS * CAMERA_SNAP_TIME).powi(2);
+
+        // If we're almost at the target, just snap to it
+        let s = if target_position.distance_squared(camera_position) < camera_snap_distance_sqr {
+            1.0
+        } else {
+            CAMERA_SPEED_MS * dt
+        };
+
+        let new_position = camera_position.lerp(target_position, s);
+        let new_lookat = camera_lookat.lerp(target_lookat, s);
+
+        entity::set_component(camera_id, translation(), new_position);
+        entity::set_component(camera_id, lookat_target(), new_lookat);
         entity::set_component(
             camera_id,
             fovy(),
