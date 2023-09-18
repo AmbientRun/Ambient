@@ -28,7 +28,7 @@ use packages::{
         player::components as pc,
         vehicle::{class::components as vclc, components as vc, data as vd},
     },
-    this::messages::{Input, OnCollision, OnSpawn},
+    this::messages::{Input, OnCollision},
 };
 
 mod shared;
@@ -231,12 +231,6 @@ fn respawn_player(player_id: EntityId) {
         .with(scale(), Vec3::ONE * model_scale)
         .with(parent(), vehicle_id)
         .spawn();
-
-    OnSpawn {
-        position,
-        vehicle_id,
-    }
-    .send_client_broadcast_unreliable();
 }
 
 fn handle_explosions() {

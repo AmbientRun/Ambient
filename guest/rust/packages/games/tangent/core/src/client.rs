@@ -17,7 +17,7 @@ use packages::{
         player::components as pc,
         vehicle::{client::components as vcc, components as vc},
     },
-    this::messages::{Input, OnCollision, OnSpawn},
+    this::messages::{Input, OnCollision},
 };
 
 mod shared;
@@ -36,16 +36,16 @@ pub fn main() {
     handle_collisions();
     handle_explosions();
 
-    OnSpawn::subscribe(|ctx, msg| {
-        if !ctx.server() {
-            return;
-        }
-
-        audio::SpatialAudioPlayer::oneshot(
-            msg.position,
-            packages::kenney_impact_sounds::assets::url("ImpactMining_003.ogg"),
-        );
-    });
+    spawn_query(translation())
+        .requires(vc::player_ref())
+        .bind(|vehicles| {
+            for (vehicle_id, translation) in vehicles {
+                audio::SpatialAudioPlayer::oneshot(
+                    translation,
+                    packages::kenney_impact_sounds::assets::url("ImpactMining_003.ogg"),
+                );
+            }
+        });
 
     CoreUI.el().spawn_interactive();
 }

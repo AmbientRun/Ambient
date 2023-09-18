@@ -19,8 +19,3 @@ fields = { direction = "Vec2", jump = "Bool", fire = "Bool", respawn = "Bool", a
 name = "On Collision"
 description = "Sent to the client when a vehicle collides with something."
 fields = { position = "Vec3", speed = "F32", vehicle_id = "EntityId" }
-
-[messages.OnSpawn]
-name = "On Spawn"
-description = "Sent to the client when a vehicle is spawned."
-fields = { vehicle_id = "EntityId", position = "Vec3" }
