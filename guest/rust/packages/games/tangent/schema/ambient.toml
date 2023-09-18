@@ -115,6 +115,9 @@ content = { type = "Asset", schema = true }
 "vehicle::class::description" = { type = "String", name = "Description", description = "Description of the vehicle class", attributes = [
     "Networked",
 ] }
+"vehicle::class::icon_url" = { type = "String", name = "Icon URL", description = "URL of the icon for the vehicle class", attributes = [
+    "Networked",
+] }
 "vehicle::class::model_url" = { type = "String", name = "Model URL", description = "URL of the model for the vehicle class", attributes = [
     "Networked",
 ] }
@@ -202,6 +205,7 @@ extends = ["VehicleData"]
 "vehicle::class::is_class" = {}
 "vehicle::class::name" = {}
 "vehicle::class::description" = {}
+"vehicle::class::icon_url" = {}
 "vehicle::class::model_url" = {}
 "vehicle::class::model_scale" = {}
 

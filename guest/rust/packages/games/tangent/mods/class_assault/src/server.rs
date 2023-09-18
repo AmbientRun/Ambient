@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 
-use crate::packages::{kenney_space_kit::assets, tangent_schema::concepts::VehicleClass};
+use crate::packages::tangent_schema::concepts::VehicleClass;
 
 #[main]
 pub fn main() {
@@ -16,8 +16,10 @@ pub fn main() {
 
     VehicleClass {
         is_class: (),
+
         name: "Assault".to_string(),
         description: "A versatile choice for those who seek balance in speed, firepower, and maneuverability.".to_string(),
+        icon_url: packages::this::assets::url("icon.png"),
 
         density: 10.0,
         cube_collider: Vec3::new(0.6, 1.0, 0.2),
@@ -45,7 +47,7 @@ pub fn main() {
         angular_strength: 0.4,
         angular_delay: Duration::from_secs_f32(0.25),
 
-        model_url: assets::url("craft_speederA.glb/models/main.json"),
+        model_url: packages::kenney_space_kit::assets::url("craft_speederA.glb/models/main.json"),
         model_scale: 0.5,
     }
     .spawn();

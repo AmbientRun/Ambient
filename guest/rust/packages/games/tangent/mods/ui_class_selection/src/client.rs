@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use ambient_api::{
     core::{
         rect::components::background_color,
@@ -93,23 +95,38 @@ pub fn Class(
 ) -> Element {
     let is_active_class = player_class_id.is_some_and(|id| id == class_id);
 
+    let stats: &[(&str, &dyn Display)] = &[
+        ("Health", &class.max_health),
+        ("Altitude", &format!("{}m", class.target)),
+        ("Forward Force", &class.forward_force),
+    ];
+
     with_rect(
         FlowRow::el([
-            // Image (ideally, this would be the class icon)
+            // Image
             ImageFromUrl {
-                url: "https://placekitten.com/g/128/128".to_string(),
+                url: class.icon_url,
             }
             .el()
             .with(width(), 64.0)
-            .with(height(), 64.0),
+            .with(height(), 64.0)
+            .with(align_vertical(), Align::Center),
             // Contents
             FlowColumn::el([
                 // Header
                 Text::el(class.name).with(font_style(), FontStyle::Bold),
                 // Description
                 Text::el(class.description),
+                Text::el(
+                    stats
+                        .iter()
+                        .map(|(k, v)| format!("{k}: {v}"))
+                        .collect::<Vec<_>>()
+                        .join(" | "),
+                ),
             ])
-            .with(space_between_items(), 4.0),
+            .with(space_between_items(), 4.0)
+            .with(align_vertical(), Align::Center),
         ])
         .with_padding_even(8.0)
         .with(space_between_items(), 8.0),
