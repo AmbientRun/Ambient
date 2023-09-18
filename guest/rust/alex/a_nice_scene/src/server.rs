@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use ambient_api::prelude::*;
 
 #[main]
@@ -13,7 +15,7 @@ pub fn rising_falling_cube() {
         physics::components::cube_collider, primitives::components::cube,
         rendering::components::color, transform::components::translation,
     };
-    use std::f32::consts::PI;
+
     let rfc = Entity::new()
         .with(translation(), vec3(10., 10., 0.))
         .with(color(), vec4(1., 0., 0., 1.))
@@ -36,7 +38,7 @@ pub fn plrs_fps_controlled() {
         fps_controller::components::use_fps_controller,
     };
     spawn_query((is_player(), user_id())).bind(|plrs| {
-        for (plr, (_, uid)) in plrs {
+        for (plr, (_, _uid)) in plrs {
             entity::add_components(
                 plr,
                 Entity::new()
@@ -117,7 +119,7 @@ pub fn load_scene() {
                 entity::add_component(
                     sun,
                     rotation(),
-                    node_rot.unwrap() * Quat::from_rotation_z(3.1416),
+                    node_rot.unwrap() * Quat::from_rotation_z(PI),
                 ); // sun reverse rotation
             }
             "cube1" | "cube2" => {

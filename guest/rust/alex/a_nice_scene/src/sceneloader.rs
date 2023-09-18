@@ -6,8 +6,9 @@ pub struct GodotNode {
     pub path: Option<String>,
 }
 
+#[allow(dead_code)]
 pub fn debug_nodes(nodes: &HashMap<String, GodotNode>) {
-    for (_key, node) in nodes {
+    for node in nodes.values() {
         println!(
             "node\n\t~{}\n\t~po{:?}\n\t~rt{:?}\n\t~sz{:?}\n\t~{:?}",
             node.name, node.pos, node.rot, node.siz, node.path
@@ -30,7 +31,7 @@ pub fn scene_contents_to_nodes(scene_contents: &str) -> HashMap<String, GodotNod
             .filter_map(|s| s.parse::<f32>().ok())
             .collect::<Vec<f32>>();
 
-        let (myscale, myrotation, mytranslation) = Mat4::from_mat3(Mat3 {
+        let (myscale, myrotation, _mytranslation) = Mat4::from_mat3(Mat3 {
             x_axis: Vec3 {
                 x: t[0],
                 z: t[1],

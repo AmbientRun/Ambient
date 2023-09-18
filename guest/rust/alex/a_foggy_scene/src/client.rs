@@ -76,9 +76,7 @@ fn remap32(value: f32, low1: f32, high1: f32, low2: f32, high2: f32) -> f32 {
 pub fn make_my_local_sun_with_sky() -> EntityId {
     use ambient_api::core::{
         app::components::main_scene,
-        rendering::components::{
-            fog_color, fog_density, fog_height_falloff, light_diffuse, sky, sun,
-        },
+        rendering::components::{fog_height_falloff, light_diffuse, sky, sun},
         transform::components::rotation,
     };
 
