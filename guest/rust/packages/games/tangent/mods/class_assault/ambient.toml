@@ -6,6 +6,8 @@ content = { type = "Mod", for_playables = ["tangent"] }
 
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
+gun_laser = { path = "../gun_laser" }
+
 kenney_space_kit = { path = "../../../../assets/kenney_space_kit" }
 
 [components]

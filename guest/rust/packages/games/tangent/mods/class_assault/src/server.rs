@@ -1,6 +1,16 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    core::{hierarchy::components::parent, transform::components::local_to_parent},
+    prelude::*,
+};
 
-use packages::{tangent_schema::concepts::VehicleClass, this::components::is_assault};
+use packages::{
+    gun_laser::concepts::{GunLaser, GunLaserOptional},
+    tangent_schema::{
+        concepts::VehicleClass, player::components as pc, vehicle::components as vc,
+        weapon::messages::Fire,
+    },
+    this::components::is_assault,
+};
 
 #[main]
 pub fn main() {
@@ -55,4 +65,45 @@ pub fn main() {
     .make()
     .with(is_assault(), ())
     .spawn();
+
+    spawn_query(vc::player_ref())
+        .requires(is_assault())
+        .bind(|vehicles| {
+            for (vehicle_id, _) in vehicles {
+                let weapon_ids = (-1..=1)
+                    .step_by(2)
+                    .map(|i| {
+                        GunLaser {
+                            is_gun_laser: (),
+                            local_to_world: default(),
+                            damage: 20.0,
+                            time_between_shots: Duration::from_millis(250),
+                            optional: GunLaserOptional {
+                                translation: Some(vec3(i as f32 * 0.05, -0.45, 0.0)),
+                                rotation: Some(default()),
+                                ..default()
+                            },
+                        }
+                        .make()
+                        .with(parent(), vehicle_id)
+                        .with(local_to_parent(), default())
+                        .spawn()
+                    })
+                    .collect();
+
+                entity::add_component(vehicle_id, vc::aimable_weapon_refs(), weapon_ids);
+            }
+        });
+
+    query((vc::player_ref(), vc::aimable_weapon_refs()))
+        .requires(is_assault())
+        .each_frame(|vehicles| {
+            for (_vehicle_id, (player_id, weapon_ids)) in vehicles {
+                if let Some(true) = entity::get_component(player_id, pc::input_fire()) {
+                    for weapon_id in weapon_ids {
+                        Fire { weapon_id }.send_local_broadcast(false);
+                    }
+                }
+            }
+        });
 }

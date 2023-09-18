@@ -263,7 +263,7 @@ fn handle_explosions() {
 
             physics::add_radial_impulse(
                 translation,
-                damage * 100.0,
+                damage * 50.0,
                 radius,
                 physics::FalloffRadius::FalloffToZeroAt(radius),
             );
