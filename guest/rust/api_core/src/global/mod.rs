@@ -41,3 +41,19 @@ pub const OkEmpty: ResultEmpty = Ok(());
 pub fn default<T: Default>() -> T {
     std::default::Default::default()
 }
+
+#[inline]
+/// Lerp (linear-interpolate) between any two values that support addition and multiplication.
+///
+/// Note that there may be better domain-specific ways to lerp between values, especially
+/// for quaternions and colors.
+pub fn lerp<T: std::ops::Add + std::ops::Mul<f32>>(
+    a: T,
+    b: T,
+    t: f32,
+) -> <<T as std::ops::Mul<f32>>::Output as std::ops::Add>::Output
+where
+    <T as std::ops::Mul<f32>>::Output: std::ops::Add,
+{
+    a * (1.0 - t) + b * t
+}

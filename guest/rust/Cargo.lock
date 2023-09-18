@@ -543,7 +543,6 @@ dependencies = [
 name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_friendly_id",
  "ambient_shared_types",
  "chrono",
  "convert_case",
@@ -551,6 +550,7 @@ dependencies = [
  "once_cell",
  "proc-macro2",
  "quote",
+ "rand 0.8.5",
  "semver",
  "serde",
  "syn 1.0.109",
@@ -578,9 +578,12 @@ dependencies = [
 name = "ambient_package_rt"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_shared_types",
  "byteorder",
  "glam",
+ "paste",
  "thiserror",
+ "ulid",
 ]
 
 [[package]]
@@ -2385,21 +2388,84 @@ dependencies = [
 
 [[package]]
 name = "tangent"
-version = "0.0.1"
+version = "0.1.0"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "tangent_camera_follow"
+version = "0.1.0"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "tangent_camera_topdown"
+version = "0.1.0"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "tangent_class_assault"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "tangent_class_scout"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "tangent_class_tank"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "tangent_core"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
-name = "tangent_scene"
-version = "0.0.1"
+name = "tangent_gun_laser"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "tangent_level_cubicide"
+version = "0.1.0"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "tangent_pickup_health"
+version = "0.1.0"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "tangent_ui_class_selection"
+version = "0.1.0"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "tangent_ui_holohud"
+version = "0.1.0"
 dependencies = [
  "ambient_api",
 ]

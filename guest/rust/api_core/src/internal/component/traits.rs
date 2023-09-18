@@ -10,6 +10,7 @@ use crate::{
         wit,
     },
 };
+use serde::{Deserialize, Serialize};
 
 use ambient_shared_types::primitive_component_definitions;
 use std::time::Duration;
@@ -53,7 +54,7 @@ where
 macro_rules! define_component_types {
     ($(($value:ident, $type:ty)),*) => { paste::paste! {
         /// A value that can be stored in a component.
-        #[derive(Clone, Debug, PartialEq)]
+        #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
         #[allow(missing_docs)]
         pub enum ComponentValue {
             $(
@@ -62,6 +63,25 @@ macro_rules! define_component_types {
             Vec(ComponentVecValue),
             Option(ComponentOptionValue),
         }
+
+        /// A vector value that can be stored in a component.
+        #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+        #[allow(missing_docs)]
+        pub enum ComponentVecValue {
+            $(
+                [<$value>](Vec<$type>),
+            )*
+        }
+
+        /// An option value that can be stored in a component.
+        #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+        #[allow(missing_docs)]
+        pub enum ComponentOptionValue {
+            $(
+                [<$value>](Option<$type>),
+            )*
+        }
+
         impl IntoBindgen for ComponentValue {
             type Item = wit::component::Value;
             fn into_bindgen(self) -> Self::Item {
@@ -87,14 +107,6 @@ macro_rules! define_component_types {
             }
         }
 
-        /// A vector value that can be stored in a component.
-        #[derive(Clone, Debug, PartialEq)]
-        #[allow(missing_docs)]
-        pub enum ComponentVecValue {
-            $(
-                [<$value>](Vec<$type>),
-            )*
-        }
         impl IntoBindgen for ComponentVecValue {
             type Item = wit::component::VecValue;
             fn into_bindgen(self) -> Self::Item {
@@ -116,14 +128,6 @@ macro_rules! define_component_types {
             }
         }
 
-        /// An option value that can be stored in a component.
-        #[derive(Clone, Debug, PartialEq)]
-        #[allow(missing_docs)]
-        pub enum ComponentOptionValue {
-            $(
-                [<$value>](Option<$type>),
-            )*
-        }
         impl IntoBindgen for ComponentOptionValue {
             type Item = wit::component::OptionValue;
             fn into_bindgen(self) -> Self::Item {
@@ -240,7 +244,7 @@ macro_rules! define_component_types {
             }
         }
         ) *
-    } };
+    } }
 }
 
 primitive_component_definitions!(define_component_types);

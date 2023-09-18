@@ -17,6 +17,8 @@ pub mod server;
 
 /// Retrieval of assets and where to find them.
 pub mod asset;
+/// Helper functions for the camera.
+pub mod camera;
 /// ECS-related functionality not directly related to entities.
 pub mod ecs;
 /// Manipulation, creation, removal, search and more for entities.

@@ -260,6 +260,7 @@ impl Renderer {
                     renderer_resources: renderer_resources.clone(),
                     fs_main: FSMain::Forward,
                     render_opaque: false,
+                    settings,
                 },
             ),
             solids_frame: RenderTarget::new(

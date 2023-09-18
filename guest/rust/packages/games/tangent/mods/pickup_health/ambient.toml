@@ -1,0 +1,26 @@
+[package]
+id = "tangent_pickup_health"
+name = "Tangent Pickup: Health"
+version = "0.1.0"
+content = { type = "Mod", for_playables = ["tangent"] }
+
+[dependencies]
+tangent_schema = { path = "../../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
+kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio" }
+
+[components]
+is_health_pickup = { type = "Empty", name = "Is Health Pickup", description = "This entity is a health pickup." }
+
+[messages.OnHealthPickup]
+name = "On Health Pickup"
+description = "Sent to the client when a health pickup is picked up."
+[messages.OnHealthPickup.fields]
+position = "Vec3"
+
+[concepts.HealthPickup]
+name = "Health Pickup"
+description = "This entity is a health pickup."
+[concepts.HealthPickup.components.required]
+is_health_pickup = {}
+"ambient_core::transform::translation" = {}
+"ambient_core::transform::rotation" = {}

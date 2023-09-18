@@ -25,7 +25,7 @@ pub fn systems() -> SystemGroup {
                             children.push(id);
                         }
                     } else {
-                        world.add_component(parent, children(), vec![id]).unwrap();
+                        let _ = world.add_component(parent, children(), vec![id]);
                     }
                 }
             }),

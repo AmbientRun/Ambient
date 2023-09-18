@@ -53,4 +53,4 @@ packages = { container_type = "Vec", element_type = "String" }
 error = { container_type = "Option", element_type = "String" }
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor", deployment = "2Lpg3bYwHGP8pmp8zrV3zN" }
+editor_schema = { path = "../../schemas/editor", deployment = "6vgY61Phll4WEX0IfQQmQl" }

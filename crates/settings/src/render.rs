@@ -11,6 +11,8 @@ pub struct RenderSettings {
     pub render_mode: Option<RenderMode>,
     #[serde(default)]
     pub software_culling: bool,
+    #[serde(default)]
+    pub is_win32_web: bool,
 }
 impl RenderSettings {
     pub fn resolution(&self) -> (u32, u32) {

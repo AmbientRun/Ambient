@@ -9,6 +9,8 @@ pub use crate::internal::component::{
     EnumComponent, SupportedValue, UntypedComponent, __internal_get_component,
 };
 
+use ambient_shared_types::ComponentIndex;
+
 #[doc(hidden)]
 pub use crate::internal::wit::component::Value as WitComponentValue;
 use crate::prelude::EntityId;
@@ -128,7 +130,7 @@ impl<C: ConceptComponents> Clone for ConceptQuery<C> {
 impl<C: ConceptComponents> ComponentsTuple for ConceptQuery<C> {
     type Data = C;
 
-    fn as_indices(&self) -> Vec<u32> {
+    fn as_indices(&self) -> Vec<ComponentIndex> {
         C::required().as_indices()
     }
 

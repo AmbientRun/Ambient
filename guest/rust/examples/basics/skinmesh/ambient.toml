@@ -10,4 +10,4 @@ content = { type = "Playable", example = true }
 SetController = { name = "Set controller", description = "Sets the animation controller.", fields = { value = "U32" } }
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "mefkxrH6H4xY1XXrJ30N6" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "D6ezUylONCqJeP6yzcvj0" }

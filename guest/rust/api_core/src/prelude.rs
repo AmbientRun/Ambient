@@ -1,5 +1,5 @@
 pub use crate::{
-    asset,
+    asset, camera,
     ecs::{
         change_query, despawn_query, query, spawn_query, Component, ComponentsTuple, Concept,
         ConceptComponents, ConceptQuery, ConceptSuggested, Entity, QueryEvent,
@@ -15,7 +15,7 @@ pub use rand::prelude::*;
 
 #[cfg(feature = "client")]
 pub use crate::client::{
-    audio, camera,
+    audio,
     input::{self, KeyCode, MouseButton},
 };
 

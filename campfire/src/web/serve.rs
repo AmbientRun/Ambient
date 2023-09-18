@@ -51,40 +51,27 @@ impl Serve {
         Ok(())
     }
 
-    #[cfg(target_os = "windows")]
     pub async fn serve(&self) -> anyhow::Result<()> {
         let dir = Path::new("web/www")
             .canonicalize()
             .context("Web server directory does not exist")?;
 
         // De-UNC the path.
-        let working_dir = dunce::simplified(&dir).to_owned();
+        #[cfg(target_os = "windows")]
+        let dir = dunce::simplified(&dir).to_owned();
 
-        let status = tokio::process::Command::new("cmd")
-            .args(["/C", "npm", "run", "dev"])
-            .current_dir(working_dir)
-            .kill_on_drop(true)
-            .spawn()
-            .context("Failed to spawn npm")?
-            .wait()
-            .await
-            .context("Failed to run dev web server")?;
+        #[cfg(not(target_os = "windows"))]
+        let command = "npm";
+        #[cfg(target_os = "windows")]
+        let command = "cmd";
 
-        if !status.success() {
-            anyhow::bail!("Web server exited with non-zero status: {status:?}")
-        }
+        #[cfg(not(target_os = "windows"))]
+        let args = ["run", "dev"];
+        #[cfg(target_os = "windows")]
+        let args = ["/C", "npm", "run", "dev"];
 
-        Ok(())
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    pub async fn serve(&self) -> anyhow::Result<()> {
-        let dir = Path::new("web/www")
-            .canonicalize()
-            .context("Web server directory does not exist")?;
-
-        let status = tokio::process::Command::new("npm")
-            .args(["run", "dev"])
+        let status = tokio::process::Command::new(command)
+            .args(args)
             .current_dir(dir)
             .kill_on_drop(true)
             .spawn()
@@ -137,14 +124,11 @@ impl Serve {
             paths.extend(rx.drain().flatten());
             log::info!("Changed paths: {paths:?}");
             log::info!("Rebuilding...");
-            #[cfg(not(target_os = "windows"))]
+
             if let Err(err) = self.build.build().await {
                 log::error!("Failed to build: {err}");
                 log::info!("Finished building the web client");
             }
-
-            #[cfg(target_os = "windows")]
-            log::info!("Rebuild is disabled on windows");
         }
 
         Ok(())

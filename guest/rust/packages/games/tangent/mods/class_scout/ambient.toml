@@ -1,0 +1,16 @@
+[package]
+id = "haq3c8ra5r7u3mhaynqqdvtcmgb6l54p"
+name = "Tangent Class: Scout"
+version = "0.1.0"
+content = { type = "Mod", for_playables = ["tangent"] }
+
+[dependencies]
+tangent_schema = { path = "../../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
+gun_laser = { path = "../gun_laser" }
+
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit" }
+
+[components]
+is_scout = { type = "Empty", name = "Is Scout", description = "Marks this entity as a scout.", attributes = [
+    "Networked",
+] }

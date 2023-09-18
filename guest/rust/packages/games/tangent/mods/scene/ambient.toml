@@ -1,8 +1,0 @@
-[package]
-id = "tangent_scene"
-name = "Tangent Scene"
-version = "0.0.1"
-content = { type = "Mod", for_playables = ["tangent"] }
-
-[dependencies]
-tangent_schema = { path = "../../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }

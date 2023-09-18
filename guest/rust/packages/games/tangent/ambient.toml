@@ -1,10 +1,24 @@
 [package]
 id = "tangent"
 name = "Tangent"
-version = "0.0.1"
+version = "0.1.0"
 content = { type = "Playable" }
 
 [dependencies]
 tangent_core = { path = "core", deployment = "39nAewTgzpxp4PIpKR3WT8" }
-hide_cursor = { path = "../../std/hide_cursor", deployment = "1IceD2zFRXDdJRwvCtUSGK" }
+
+tangent_camera_follow = { path = "mods/camera_follow", enabled = true }
+tangent_camera_topdown = { path = "mods/camera_topdown", enabled = false }
+
+tangent_ui_holohud = { path = "mods/ui_holohud", enabled = true }
+tangent_ui_class_selection = { path = "mods/ui_class_selection" }
+
+tangent_pickup_health = { path = "mods/pickup_health" }
+
+tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true }
+
+tangent_class_assault = { path = "mods/class_assault", enabled = true }
+tangent_class_scout = { path = "mods/class_scout", enabled = true }
+tangent_class_tank = { path = "mods/class_tank", enabled = true }
+
 package_manager = { path = "../../tools/package_manager", deployment = "3CWmEvSv1vAj3HlhhEvjXK" }

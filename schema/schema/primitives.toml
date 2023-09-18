@@ -26,7 +26,7 @@ type = "Empty"
 name = "Sphere"
 description = """
 If attached to an entity alongside the other `sphere_*` components, the entity will be converted to a sphere primitive.
-To easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make_sphere`)."""
+To easily instantiate a unit-diameter `sphere`, consider using the `Sphere` concept."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components.sphere_radius]
@@ -55,7 +55,7 @@ type = "Empty"
 name = "Torus"
 description = """
 If attached to an entity alongside the other `torus_*` components, the entity will be converted to a torus primitive.
-To easily instantiate a default `torus`, consider using the `torus` concept (e.g. `make_torus`)."""
+To easily instantiate a default `torus`, consider using the `Torus` concept."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components.torus_inner_radius]
@@ -87,7 +87,7 @@ type = "Empty"
 name = "Capsule"
 description = """
 If attached to an entity alongside the other `capsule_*` components, the entity will be converted to a capsule primitive.
-To easily instantiate a default `capsule`, consider using the `capsule` concept (e.g. `make_capsule`)."""
+To easily instantiate a default `capsule`, consider using the `Capsule` concept."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components.capsule_radius]

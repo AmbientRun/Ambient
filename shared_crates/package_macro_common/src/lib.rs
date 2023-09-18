@@ -125,6 +125,7 @@ fn generate_package(
         _ => TokenStream::new(),
     };
     let generated_output = generate_scope(context, items, type_printer, generate_from_scope)?;
+    let assets = assets::generate(context, items, generate_from_scope)?;
     let components_init = components::generate_init(context, items, generate_from_scope)?;
 
     let id = make_path(package.data.id.as_str());
@@ -132,6 +133,7 @@ fn generate_package(
         pub mod #id {
             #entity
             #generated_output
+            #assets
             #components_init
         }
     })
@@ -170,7 +172,6 @@ fn generate_scope(
     let concepts = concepts::generate(context, items, type_printer, scope)?;
     let messages = messages::generate(context, items, type_printer, scope)?;
     let types = enums::generate(context, items, scope)?;
-    let assets = assets::generate(context, items, scope)?;
 
     Ok(quote! {
         #(#scopes)*
@@ -179,7 +180,6 @@ fn generate_scope(
         #concepts
         #messages
         #types
-        #assets
     })
 }
 

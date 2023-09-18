@@ -1,16 +1,21 @@
 [package]
 id = "tangent_core"
 name = "Tangent Core"
-version = "0.0.1"
+version = "0.1.0"
 content = { type = "Playable" }
 
-[components]
-debug_lines = { type = { type = "Vec", element_type = "Vec3" }, name = "Debug Lines", description = "Debug lines (orig, dest)", attributes = [
-    "Networked",
-] }
-debug_messages = { type = { type = "Vec", element_type = "String" }, name = "Debug Messages", description = "Debug messages", attributes = [
-    "Networked",
-] }
-
 [dependencies]
-tangent_schema = { path = "../schema" , deployment = "50R0JirqrBg4FxIBO7JMMd" }
+tangent_schema = { path = "../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
+hide_cursor = { path = "../../../std/hide_cursor", deployment = "1IceD2zFRXDdJRwvCtUSGK" }
+
+kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds" }
+
+[messages.Input]
+name = "Input"
+description = "Input"
+fields = { direction = "Vec2", jump = "Bool", fire = "Bool", respawn = "Bool", aim_direction = "Vec2" }
+
+[messages.OnCollision]
+name = "On Collision"
+description = "Sent to the client when a vehicle collides with something."
+fields = { position = "Vec3", speed = "F32", vehicle_id = "EntityId" }
