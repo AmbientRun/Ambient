@@ -2,11 +2,16 @@ use ambient_api::{
     core::{
         audio::components::amplitude,
         camera::components::{fog, perspective_infinite_reverse},
+        player::components::is_player,
         rendering::components::{fog_color, fog_density},
     },
     prelude::*,
 };
-use packages::{temperature::components::temperature, this::components::ambient_loop};
+use packages::{
+    character_animation::{self, components::basic_character_animations},
+    temperature::components::temperature,
+    this::components::ambient_loop,
+};
 
 const DEATH_TEMP: f32 = 21.;
 const NORMAL_TEMP: f32 = 37.;
@@ -41,7 +46,7 @@ pub fn main() {
 
     ambient_api::core::messages::Frame::subscribe(move |_| {
         let coldness: f32 = remap32(
-            entity::get_component(player::get_local(), temperature()).unwrap_or(1.),
+            entity::get_component(player::get_local(), temperature()).unwrap_or(NORMAL_TEMP),
             DEATH_TEMP,
             NORMAL_TEMP,
             1.0,
@@ -67,6 +72,53 @@ pub fn main() {
             )
         });
     });
+
+    spawn_query(())
+        .requires((is_player(), basic_character_animations()))
+        .bind(|plrs| {
+            for (plr, _) in plrs {
+                entity::add_components(
+                    plr,
+                    Entity::new()
+                        .with(
+                            character_animation::components::walk_forward(),
+                            anim_url("movement/Jog Forward"),
+                        )
+                        .with(
+                            character_animation::components::walk_forward_left(),
+                            anim_url("movement/Jog Forward Diagonal"),
+                        )
+                        .with(
+                            character_animation::components::walk_forward_right(),
+                            anim_url("movement/Jog Forward Diagonal (1)"),
+                        )
+                        .with(
+                            character_animation::components::walk_right(),
+                            anim_url("movement/Jog Strafe Right"),
+                        )
+                        .with(
+                            character_animation::components::walk_backward(),
+                            anim_url("movement/Jog Forward"),
+                        )
+                        .with(
+                            character_animation::components::walk_backward_left(),
+                            anim_url("movement/Jog Backward Diagonal"),
+                        )
+                        .with(
+                            character_animation::components::walk_backward_right(),
+                            anim_url("movement/Jog Backward Diagonal (1)"),
+                        )
+                        .with(
+                            character_animation::components::walk_left(),
+                            anim_url("movement/Jog Strafe Left"),
+                        ),
+                );
+            }
+        });
+}
+
+fn anim_url(name: &str) -> String {
+    packages::this::assets::url(&format!("{name}.fbx/animations/mixamo.com.anim"))
 }
 
 fn remap32(value: f32, low1: f32, high1: f32, low2: f32, high2: f32) -> f32 {
