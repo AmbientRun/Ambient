@@ -38,6 +38,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev vulkan-validationlayers-dev mesa-vulkan-drivers libasound2-dev
+      - name: Download assets
+        run: cd guest/rust/examples/assets/unity && ./download.sh
       - name: Deploy all packages
         run: cargo campfire-slim package deploy-all --token ${{ secrets.AMBIENT_CLOUD_DEPLOY_TOKEN }} --include-examples
 
