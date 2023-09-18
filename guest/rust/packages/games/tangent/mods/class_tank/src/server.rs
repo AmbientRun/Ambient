@@ -17,27 +17,28 @@ pub fn main() {
     VehicleClass {
         is_class: (),
 
-        name: "Assault".to_string(),
-        description: "A versatile choice for those who seek balance in speed, firepower, and maneuverability.".to_string(),
+        name: "Tank".to_string(),
+        description: "A juggernaut on the battlefield, built to withstand punishment and deal massive damage."
+            .to_string(),
         icon_url: packages::this::assets::url("icon.png"),
 
-        density: 12.0,
+        density: 15.0,
         cube_collider: Vec3::new(0.6, 1.0, 0.2),
-        max_health: 100.0,
+        max_health: 150.0,
 
         offsets,
-        k_p: 300.0,
-        k_d: -600.0,
-        target: 2.5,
+        k_p: 200.0,
+        k_d: -400.0,
+        target: 3.0,
         max_strength: 25.0,
 
-        forward_force: 40.0,
-        backward_force: -10.0,
+        forward_force: 30.0,
+        backward_force: -5.0,
         forward_offset: vec2(0.0, Y_DISTANCE),
-        side_force: 75.0 / 100.0,
+        side_force: 50.0 / 100.0,
         side_offset: vec2(0.0, -Y_DISTANCE),
 
-        jump_force: 50.0,
+        jump_force: 20.0,
         pitch_strength: 10.0,
         turning_strength: 20.0,
 
@@ -47,7 +48,7 @@ pub fn main() {
         angular_strength: 0.4,
         angular_delay: Duration::from_secs_f32(0.25),
 
-        model_url: packages::kenney_space_kit::assets::url("craft_speederA.glb/models/main.json"),
+        model_url: packages::kenney_space_kit::assets::url("craft_miner.glb/models/main.json"),
         model_scale: 0.5,
     }
     .spawn();

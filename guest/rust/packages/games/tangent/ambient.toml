@@ -20,5 +20,6 @@ tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true }
 
 tangent_class_assault = { path = "mods/class_assault", enabled = true }
 tangent_class_scout = { path = "mods/class_scout", enabled = true }
+tangent_class_tank = { path = "mods/class_tank", enabled = true }
 
 package_manager = { path = "../../tools/package_manager", deployment = "3CWmEvSv1vAj3HlhhEvjXK" }

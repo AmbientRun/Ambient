@@ -1,0 +1,9 @@
+[package]
+id = "o0j4qyxwhcf9vukzslsvhrkj2sv5mf4x"
+name = "Tangent Class: Tank"
+version = "0.1.0"
+content = { type = "Mod", for_playables = ["tangent"] }
+
+[dependencies]
+tangent_schema = { path = "../../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit" }
