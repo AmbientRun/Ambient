@@ -13,4 +13,4 @@ debug_messages = { type = { type = "Vec", element_type = "String" }, name = "Deb
 ] }
 
 [dependencies]
-tangent_schema = { path = "../schema" , deployment = "2ldVFrVtitBydye7l48tNu" }
+tangent_schema = { path = "../schema" , deployment = "1aMdIidbBkJAajGCfhsjdI" }

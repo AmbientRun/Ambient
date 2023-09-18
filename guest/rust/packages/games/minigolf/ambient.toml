@@ -8,7 +8,7 @@ type = "Game"
 content = { type = "Playable", example = true }
 
 [dependencies]
-hide_cursor = { path = "../../std/hide_cursor", deployment = "3LqyWU4V76CHIsoV6xadB8" }
+hide_cursor = { path = "../../std/hide_cursor", deployment = "6Vs97bmINdTpIoXuESfIcQ" }
 
 [components]
 next_player_hue = { type = "F32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = [
