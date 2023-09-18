@@ -1,20 +1,30 @@
 #![allow(dead_code)]
 use std::sync::OnceLock;
 
-use ambient_api::prelude::*;
+use ambient_api::{once_cell::sync::Lazy, prelude::*};
 
 pub fn circle_point(radians: f32, radius: f32) -> Vec2 {
     vec2(radians.cos(), radians.sin()) * radius
 }
 
-pub fn spawnpoints() -> [(Vec3, f32, Vec3); 5] {
-    [
-        (vec3(0.0, 0.0, 0.0), 10.0, vec3(1.0, 1.0, 1.0)),
-        (vec3(0.0, -100.0, 0.0), 10.0, vec3(1.0, 0.0, 0.0)),
-        (vec3(0.0, 100.0, 0.0), 10.0, vec3(0.0, 1.0, 0.0)),
-        (vec3(-100.0, 0.0, 0.0), 10.0, vec3(0.0, 0.0, 1.0)),
-        (vec3(100.0, 0.0, 0.0), 10.0, vec3(1.0, 1.0, 0.0)),
-    ]
+pub fn spawnpoints() -> &'static [(Vec3, f32, Vec3)] {
+    const INCLUDE_CORNERS: bool = true;
+    static VALUE: Lazy<Vec<(Vec3, f32, Vec3)>> = Lazy::new(|| {
+        let mut output = vec![(vec3(0.0, 0.0, 0.0), 10.0, vec3(1.0, 1.0, 1.0))];
+
+        if INCLUDE_CORNERS {
+            output.extend_from_slice(&[
+                (vec3(0.0, -100.0, 0.0), 10.0, vec3(1.0, 0.0, 0.0)),
+                (vec3(0.0, 100.0, 0.0), 10.0, vec3(0.0, 1.0, 0.0)),
+                (vec3(-100.0, 0.0, 0.0), 10.0, vec3(0.0, 0.0, 1.0)),
+                (vec3(100.0, 0.0, 0.0), 10.0, vec3(1.0, 1.0, 0.0)),
+            ]);
+        }
+
+        output
+    });
+
+    VALUE.as_ref()
 }
 
 pub fn level(pos: Vec2) -> f32 {
@@ -25,27 +35,33 @@ fn sdf() -> &'static Sdf {
     static SDF: OnceLock<Sdf> = OnceLock::new();
     SDF.get_or_init(|| {
         let spawnpoints = spawnpoints();
-        let spawnpoints_sdf = spawnpoints
-            .iter()
-            .map(|(p, r, _)| Sdf::translate(Sdf::circle(r + 10.), p.xy()))
-            .reduce(Sdf::union)
-            .unwrap();
+        match spawnpoints {
+            [] => Sdf::circle(20.0),
+            [(p, r, _)] => Sdf::translate(Sdf::circle(r + 10.), p.xy()),
+            other => {
+                let spawnpoints_sdf = other
+                    .iter()
+                    .map(|(p, r, _)| Sdf::translate(Sdf::circle(r + 10.), p.xy()))
+                    .reduce(Sdf::union)
+                    .unwrap();
 
-        let spawnpoint_bridges_sdf = spawnpoints
-            .iter()
-            .map(|p| p.0)
-            .flat_map(|a| {
-                spawnpoints
+                let spawnpoint_bridges_sdf = other
                     .iter()
                     .map(|p| p.0)
-                    .filter(move |b| *b != a)
-                    .map(move |b| (a, b))
-            })
-            .map(|(a, b)| Sdf::oriented_box(a.xy(), b.xy(), 4.))
-            .reduce(Sdf::union)
-            .unwrap();
+                    .flat_map(|a| {
+                        other
+                            .iter()
+                            .map(|p| p.0)
+                            .filter(move |b| *b != a)
+                            .map(move |b| (a, b))
+                    })
+                    .map(|(a, b)| Sdf::oriented_box(a.xy(), b.xy(), 4.))
+                    .reduce(Sdf::union)
+                    .unwrap();
 
-        Sdf::smooth_union(spawnpoints_sdf, spawnpoint_bridges_sdf, 2.)
+                Sdf::smooth_union(spawnpoints_sdf, spawnpoint_bridges_sdf, 2.)
+            }
+        }
     })
 }
 

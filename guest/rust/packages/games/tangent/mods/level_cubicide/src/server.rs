@@ -52,7 +52,7 @@ pub async fn main() {
         .spawn();
 
     // Spawn spawnpoints
-    for (pos, radius, color) in shared::spawnpoints() {
+    for (pos, radius, color) in shared::spawnpoints().iter().copied() {
         Spawnpoint {
             is_spawnpoint: (),
             radius,
@@ -123,7 +123,7 @@ fn handle_pickups(rng: &mut dyn rand::RngCore) {
 }
 
 fn make_pickups(rng: &mut dyn rand::RngCore) {
-    const PICKUP_COUNT: usize = 10;
+    let pickup_count = shared::spawnpoints().len() * 2;
 
     static QUERY: Lazy<GeneralQuery<Component<Vec3>>> =
         Lazy::new(|| query(translation()).requires(is_health_pickup()).build());
@@ -131,7 +131,7 @@ fn make_pickups(rng: &mut dyn rand::RngCore) {
     // Consider a more efficient scheme for more pickups
     loop {
         let existing_pickups = QUERY.evaluate();
-        if existing_pickups.len() >= PICKUP_COUNT {
+        if existing_pickups.len() >= pickup_count {
             break;
         }
 
