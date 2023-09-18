@@ -4,10 +4,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::internal::{
     conversion::{FromBindgen, IntoBindgen},
-    wit::{self, component::ComponentIndex},
+    wit::{self},
 };
 
-use super::{Component, ComponentValue, SupportedValue, SupportedValueRef, UntypedComponent};
+use super::{
+    Component, ComponentIndex, ComponentValue, SupportedValue, SupportedValueRef, UntypedComponent,
+};
 
 /// An [Entity] is a collection of components and associated values.
 ///
