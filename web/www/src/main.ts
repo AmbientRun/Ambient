@@ -82,7 +82,7 @@ import("ambient_web")
             return;
         }
 
-        ambient.init_ambient(true, true);
+        ambient.init({ enableLogging: true, enablePanicHook : true });
 
         let target = window.document.getElementById("instance-container");
 
@@ -98,5 +98,9 @@ import("ambient_web")
         console.log(`Connecting to ${url}`)
 
         ambient.start(target, url);
+
+        setTimeout(() => {
+        ambient.stop();
+        }, 20000);
         // setupAudio();
     });

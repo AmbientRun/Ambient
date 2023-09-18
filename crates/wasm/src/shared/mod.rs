@@ -344,6 +344,8 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
 
                     log::info!("Running startup event for module {name}");
                     messages::ModuleLoad::new().run(world, Some(id)).unwrap();
+
+                    log::info!("Finished loading module {name}");
                 }
                 Err(err) => update_errors(world, &[(id, format!("{err:?}"))]),
             }

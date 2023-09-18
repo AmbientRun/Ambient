@@ -246,19 +246,22 @@
   "open-browser": {
     "cmd": "cargo run -p campfire --features openssl -- web open-browser"
   },
-  "build-web": {
+  "build web": {
     "cmd": "cargo cf web build"
   },
-  "check-web": {
+  "build web release": {
+    "cmd": "cargo cf web build --profile=release"
+  },
+  "check web": {
     "cmd": "cargo cf web check"
   },
-  "serve-web": {
+  "serve web": {
     "cmd": "cargo cf web serve",
     "env": {
       "RUST_LOG": "info"
     }
   },
-  "serve-web-release": {
+  "serve web release": {
     "cmd": "cargo cf web serve --profile=release",
     "env": {
       "RUST_LOG": "info"
