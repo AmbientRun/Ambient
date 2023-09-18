@@ -7,6 +7,7 @@ use std::{
 };
 
 use ambient_native_std::sparse_vec::SparseVec;
+use ambient_shared_types::ComponentIndex;
 use bit_set::BitSet;
 use bit_vec::BitVec;
 use itertools::Itertools;
@@ -37,6 +38,7 @@ mod events;
 mod helpers;
 mod index;
 mod location;
+mod message_serde;
 mod primitive_component;
 mod query;
 mod serialization;
@@ -53,6 +55,7 @@ pub use events::*;
 pub use helpers::*;
 pub use index::*;
 pub use location::*;
+pub use message_serde::*;
 pub use primitive_component::*;
 pub use query::*;
 pub use serialization::*;
@@ -455,7 +458,11 @@ impl World {
             Err(ECSError::NoSuchEntity { entity_id })
         }
     }
-    pub fn has_component_index(&self, entity_id: EntityId, component_index: u32) -> bool {
+    pub fn has_component_index(
+        &self,
+        entity_id: EntityId,
+        component_index: ComponentIndex,
+    ) -> bool {
         self.archetype_for_entity(entity_id)
             .map(|arch| {
                 arch.active_components
@@ -674,7 +681,7 @@ impl World {
     pub fn get_component_content_version(
         &self,
         entity_id: EntityId,
-        index: u32,
+        index: ComponentIndex,
     ) -> Result<u64, ECSError> {
         if let Some(loc) = self.locs.get(&entity_id) {
             let arch = self
@@ -858,8 +865,8 @@ pub enum ECSError {
 }
 
 struct MapEntity {
-    sets: HashMap<u32, ComponentEntry>,
-    removes: HashSet<u32>,
+    sets: HashMap<ComponentIndex, ComponentEntry>,
+    removes: HashSet<ComponentIndex>,
     active_components: ComponentSet,
 }
 impl MapEntity {

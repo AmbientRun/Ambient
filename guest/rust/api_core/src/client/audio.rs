@@ -1,11 +1,15 @@
+use std::time::Duration;
+
 use crate::{
     core::{
         app::components::name,
         audio::components::*,
+        ecs::components::remove_at_game_time,
         hierarchy::components::{children, parent, unmanaged_children},
+        transform::components::translation,
     },
     entity,
-    prelude::{Entity, EntityId},
+    prelude::{game_time, Entity, EntityId, Vec3},
 };
 
 /// stop the audio on the given entity
@@ -55,10 +59,34 @@ impl SpatialAudioPlayer {
         entity::add_component(self.player, looping(), val);
     }
 
-    pub fn play_sound_on_entity(&self, url: String, emitter: EntityId) {
+    pub fn play_sound_on_entity(&self, url: impl Into<String>, emitter: EntityId) {
         entity::add_component(self.player, spatial_audio_emitter(), emitter);
-        entity::add_component(self.player, audio_url(), url);
+        entity::add_component(self.player, audio_url(), url.into());
         entity::add_component(self.player, play_now(), ());
+    }
+}
+impl SpatialAudioPlayer {
+    /// Plays a sound at the given position. Note that the returned [`SpatialAudioPlayer`]
+    /// will be removed after 60 seconds.
+    ///
+    /// If no camera is available as a listener, no player will be created.
+    // TODO: Should we encourage use of this API? It's temporary, but it's also a lot easier to use.
+    pub fn oneshot(position: Vec3, url: impl Into<String>) -> Option<SpatialAudioPlayer> {
+        let Some(active_camera) = crate::camera::get_active(None) else {
+            return None;
+        };
+
+        let player = SpatialAudioPlayer::new();
+        entity::add_component(player.player, translation(), position);
+        entity::add_component(
+            player.player,
+            remove_at_game_time(),
+            game_time() + Duration::from_secs(60),
+        );
+        player.set_listener(active_camera);
+        player.play_sound_on_entity(url.into(), player.player);
+
+        Some(player)
     }
 }
 

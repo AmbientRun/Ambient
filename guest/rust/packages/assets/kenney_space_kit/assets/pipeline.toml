@@ -1,0 +1,5 @@
+[[pipelines]]
+type = "Models"
+
+[[pipelines.transforms]]
+type = "Center"

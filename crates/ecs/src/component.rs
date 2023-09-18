@@ -20,6 +20,8 @@ use crate::{
     ComponentVTable, Debuggable, Description, Name, Serializable,
 };
 
+use ambient_shared_types::ComponentIndex;
+
 pub trait ComponentValueBase: Send + Sync + Downcast + 'static {
     fn type_name(&self) -> &'static str {
         std::any::type_name::<Self>()
@@ -178,7 +180,7 @@ impl<T> Component<T> {
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct ComponentDesc {
-    index: u32,
+    index: ComponentIndex,
     pub(crate) vtable: &'static ComponentVTable<()>,
 }
 
@@ -257,7 +259,7 @@ impl ComponentDesc {
         (self.vtable.get_type_id)() == TypeId::of::<T>()
     }
 
-    pub(crate) fn new(index: u32, vtable: &'static ComponentVTable<()>) -> Self {
+    pub(crate) fn new(index: ComponentIndex, vtable: &'static ComponentVTable<()>) -> Self {
         Self { index, vtable }
     }
 
@@ -293,7 +295,7 @@ impl ComponentDesc {
         }
     }
 
-    pub fn index(&self) -> u32 {
+    pub fn index(&self) -> ComponentIndex {
         self.index
     }
 

@@ -8,6 +8,8 @@ use crate::{
     message::RuntimeMessage,
 };
 
+use ambient_shared_types::ComponentIndex;
+
 /// Creates a new [GeneralQueryBuilder] that will find entities that have the specified `components`
 /// and can be [built](GeneralQueryBuilder::build) to create a [GeneralQuery].
 ///
@@ -123,7 +125,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQueryBuilder<C
 /// at least once.
 pub struct UntrackedChangeQuery<Components: ComponentsTuple + Copy + Clone + 'static>(
     QueryBuilderImpl<Components>,
-    Vec<u32>,
+    Vec<ComponentIndex>,
 );
 impl<Components: ComponentsTuple + Copy + Clone + 'static> UntrackedChangeQuery<Components> {
     /// Creates a new query that will find entities that have the specified `components`.
@@ -271,13 +273,13 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
 }
 
 struct QueryBuilderImpl<Components: ComponentsTuple + Copy + Clone + 'static> {
-    components: Vec<u32>,
-    include: Vec<u32>,
-    exclude: Vec<u32>,
+    components: Vec<ComponentIndex>,
+    include: Vec<ComponentIndex>,
+    exclude: Vec<ComponentIndex>,
     _data: PhantomData<Components>,
 }
 impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryBuilderImpl<Components> {
-    fn new(components: Vec<u32>) -> QueryBuilderImpl<Components> {
+    fn new(components: Vec<ComponentIndex>) -> QueryBuilderImpl<Components> {
         Self {
             components,
             include: vec![],
@@ -291,7 +293,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryBuilderImpl<Comp
     pub fn excludes(&mut self, exclude: impl ComponentsTuple) {
         self.exclude.extend_from_slice(&exclude.as_indices());
     }
-    fn build_impl(self, changed: Vec<u32>, event: wit::component::QueryEvent) -> u64 {
+    fn build_impl(self, changed: Vec<ComponentIndex>, event: wit::component::QueryEvent) -> u64 {
         wit::component::query(
             &wit::component::QueryBuild {
                 components: self.components,

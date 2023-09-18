@@ -1,7 +1,9 @@
-use std::io::Read;
+use std::{io::Read, time::Duration};
 
+use ambient_shared_types::{procedural_storage_handle_definitions, ComponentIndex};
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use glam::{IVec2, IVec3, IVec4, Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+use paste::paste;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -13,9 +15,15 @@ pub enum MessageSerdeError {
     /// An invalid value was encountered during ser/de.
     #[error("invalid value")]
     InvalidValue,
+    /// An invalid component definition was encountered during ser/de.
+    #[error("invalid component definition")]
+    InvalidComponentDefinition { index: ComponentIndex },
     /// The length of an array exceeded 2^32-1 bytes.
     #[error("array too long")]
     ArrayTooLong(#[from] std::num::TryFromIntError),
+    /// This type is not supported for message serde on this side.
+    #[error("unsupported type")]
+    UnsupportedType,
 }
 
 /// Implemented for all types that can be serialized in a message.
@@ -331,6 +339,33 @@ impl<T: MessageSerde> MessageSerde for Option<T> {
         })
     }
 }
+impl MessageSerde for Duration {
+    fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+        output.write_u64::<BigEndian>(self.as_nanos().try_into().unwrap())?;
+        Ok(())
+    }
+
+    fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+        Ok(Self::from_nanos(input.read_u64::<BigEndian>()?))
+    }
+}
+
+macro_rules! make_procedural_storage_handle_serde {
+    ($($name:ident),*) => { paste!{$(
+        impl MessageSerde for ambient_shared_types::[<Procedural $name:camel Handle>] {
+            fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+                output.write_u128::<BigEndian>(ulid::Ulid::from(*self).0)?;
+                Ok(())
+            }
+
+            fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+                Ok(Self::from(ulid::Ulid(input.read_u128::<BigEndian>()?)))
+            }
+        }
+    )*}};
+}
+
+procedural_storage_handle_definitions!(make_procedural_storage_handle_serde);
 
 fn serialize_array<T: MessageSerde>(
     output: &mut Vec<u8>,

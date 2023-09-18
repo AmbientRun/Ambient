@@ -480,9 +480,9 @@ impl Semantic {
             source: item_source,
         }));
 
-        let make_item_data = |item_id: &Identifier| -> ItemData {
+        let make_item_data = |parent_id: ItemId<Scope>, item_id: &Identifier| -> ItemData {
             ItemData {
-                parent_id: Some(scope_id),
+                parent_id: Some(parent_id),
                 id: item_id.clone(),
                 source: item_source,
             }
@@ -493,9 +493,14 @@ impl Semantic {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Component::from_package(make_item_data(item), component));
+            let scope_id = items.get_or_create_scope_mut(scope_id, scope_path);
+            let value = items.add(Component::from_package(
+                make_item_data(scope_id, item),
+                component,
+            ));
+
             items
-                .get_or_create_scope_mut(scope_id, scope_path)
+                .get_mut(scope_id)
                 .components
                 .insert(item.as_snake().map_err(|e| e.to_owned())?.clone(), value);
         }
@@ -504,9 +509,14 @@ impl Semantic {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Concept::from_package(make_item_data(item), concept));
+            let scope_id = items.get_or_create_scope_mut(scope_id, scope_path);
+            let value = items.add(Concept::from_package(
+                make_item_data(scope_id, item),
+                concept,
+            ));
+
             items
-                .get_or_create_scope_mut(scope_id, scope_path)
+                .get_mut(scope_id)
                 .concepts
                 .insert(item.as_pascal().map_err(|e| e.to_owned())?.clone(), value);
         }
@@ -515,16 +525,21 @@ impl Semantic {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Message::from_package(make_item_data(item), message));
+            let scope_id = items.get_or_create_scope_mut(scope_id, scope_path);
+            let value = items.add(Message::from_package(
+                make_item_data(scope_id, item),
+                message,
+            ));
+
             items
-                .get_or_create_scope_mut(scope_id, scope_path)
+                .get_mut(scope_id)
                 .messages
                 .insert(item.as_pascal().map_err(|e| e.to_owned())?.clone(), value);
         }
 
         for (segment, enum_ty) in manifest.enums.iter() {
             let enum_id = items.add(Type::from_package_enum(
-                make_item_data(&Identifier::from(segment.clone())),
+                make_item_data(scope_id, &Identifier::from(segment.clone())),
                 enum_ty,
             ));
             items

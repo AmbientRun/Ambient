@@ -14,7 +14,7 @@ pub mod server;
 mod package_path;
 pub use package_path::*;
 
-use self::assets::AssetCommand;
+use self::{assets::AssetCommand, new_package::NewPackageCli};
 
 #[derive(Parser, Clone)]
 #[command(author, version, about, long_about = None)]
@@ -30,10 +30,8 @@ pub enum Commands {
     New {
         #[command(flatten)]
         package: PackageCli,
-        #[arg(short, long)]
-        name: Option<String>,
-        #[arg(long)]
-        api_path: Option<String>,
+        #[command(flatten)]
+        args: NewPackageCli,
     },
     /// Builds and runs the package locally
     Run {
@@ -149,6 +147,22 @@ pub struct RunCli {
     /// Specify a trusted certificate authority
     #[arg(long)]
     pub ca: Option<PathBuf>,
+
+    /// Window position X override
+    #[arg(long)]
+    pub window_x: Option<i32>,
+
+    /// Window position Y override
+    #[arg(long)]
+    pub window_y: Option<i32>,
+
+    /// Window width override
+    #[arg(long)]
+    pub window_width: Option<u32>,
+
+    /// Window height override
+    #[arg(long)]
+    pub window_height: Option<u32>,
 }
 
 #[derive(Args, Clone, Debug)]

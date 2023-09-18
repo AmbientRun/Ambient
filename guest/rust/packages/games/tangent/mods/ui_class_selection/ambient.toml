@@ -1,0 +1,12 @@
+[package]
+id = "tangent_ui_class_selection"
+name = "Tangent UI: Class Selection"
+version = "0.1.0"
+content = { type = "Mod", for_playables = ["tangent"] }
+
+[dependencies]
+tangent_schema = { path = "../../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
+
+[messages.ClassSetRequest]
+description = "Sent by the client to request a class set change."
+fields = { class_id = "EntityId" }

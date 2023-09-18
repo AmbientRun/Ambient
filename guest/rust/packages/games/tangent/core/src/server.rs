@@ -1,284 +1,459 @@
+use std::{f32::consts::PI, sync::OnceLock};
+
 use ambient_api::{
     core::{
         app::components::main_scene,
+        ecs::components::remove_at_game_time,
+        hierarchy::components::parent,
+        messages::Collision,
         model::components::model_from_url,
-        physics::components::{
-            angular_velocity, cube_collider, density, dynamic, linear_velocity, physics_controlled,
-            plane_collider,
-        },
+        physics::components as phyc,
         player::components::is_player,
-        rendering::components::{
-            cast_shadows, fog_color, fog_density, fog_height_falloff, light_diffuse, sky, sun,
-            water,
+        primitives::concepts::Sphere,
+        rendering::components::cast_shadows,
+        transform::components::{
+            local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale,
+            translation,
         },
-        transform::components::{rotation, scale, translation},
     },
+    ecs::GeneralQuery,
+    once_cell::sync::Lazy,
     prelude::*,
 };
+
 use packages::{
-    tangent_schema::{components, messages::Input},
-    this::{
-        assets,
-        components::{debug_lines, debug_messages},
+    tangent_schema::{
+        concepts::{Explosion, Spawnpoint, Vehicle},
+        messages::OnDeath,
+        player::components as pc,
+        vehicle::{class::components as vclc, components as vc, data as vd},
     },
+    this::messages::{Input, OnCollision},
 };
 
-const X_DISTANCE: f32 = 0.1;
-const Y_DISTANCE: f32 = 0.4;
-const OFFSETS: [(f32, f32); 4] = [
-    (-X_DISTANCE, -Y_DISTANCE),
-    (X_DISTANCE, -Y_DISTANCE),
-    (X_DISTANCE, Y_DISTANCE),
-    (-X_DISTANCE, Y_DISTANCE),
-];
-
-const K_P: f32 = 300.0;
-const K_D: f32 = -600.0;
-const TARGET: f32 = 2.5;
-const MAX_STRENGTH: f32 = 25.0;
-
-const INPUT_FORWARD_FORCE: f32 = 50.0;
-const INPUT_BACKWARD_FORCE: f32 = -4.0;
-const INPUT_SIDE_FORCE: f32 = 0.8;
-
-const INPUT_PITCH_STRENGTH: f32 = 10.0;
-const INPUT_TURNING_STRENGTH: f32 = 20.0;
-const INPUT_JUMP_STRENGTH: f32 = 80.0;
-
-const JUMP_TIMEOUT: f32 = 2.0;
-
-const DENSITY: f32 = 10.0;
-const SLOWDOWN_STRENGTH: f32 = 0.8;
-
-const ANGULAR_SLOWDOWN_DELAY: f32 = 0.25;
-const ANGULAR_SLOWDOWN_STRENGTH: f32 = 0.4;
-
-const SPAWN_POSITION: Vec3 = vec3(0., 0., 5.);
-const SPAWN_RADIUS: f32 = 20.0;
+mod shared;
 
 #[main]
 pub fn main() {
-    make_water();
-    make_sun();
-
-    vehicle_creation_and_destruction();
-    vehicle_processing();
-}
-
-fn make_water() {
-    Entity::new()
-        .with(water(), ())
-        .with(physics_controlled(), ())
-        .with(plane_collider(), ())
-        .with(dynamic(), false)
-        .with(scale(), Vec3::ONE * 4000.)
-        .spawn();
-}
-
-fn make_sun() {
-    Entity::new().with(sky(), ()).spawn();
-
-    Entity::new()
-        .with(sun(), 0.0)
-        .with(rotation(), Default::default())
-        .with(main_scene(), ())
-        .with(light_diffuse(), Vec3::ONE)
-        .with(fog_color(), vec3(0.88, 0.37, 0.34))
-        .with(fog_density(), 0.01)
-        .with(fog_height_falloff(), 0.1)
-        .with(rotation(), Quat::from_rotation_y(190.0f32.to_radians()))
-        .spawn();
-}
-
-fn vehicle_creation_and_destruction() {
-    spawn_query(is_player()).bind(|players| {
-        for (player_id, ()) in players {
-            let vehicle_id = Entity::new()
-                .with(cast_shadows(), ())
-                .with(linear_velocity(), Default::default())
-                .with(angular_velocity(), Default::default())
-                .with(physics_controlled(), ())
-                .with(dynamic(), true)
-                .with(components::vehicle(), player_id)
-                .with(
-                    translation(),
-                    SPAWN_POSITION + random::<Vec2>().extend(0.0) * SPAWN_RADIUS,
-                )
-                .with(density(), DENSITY)
-                .with(components::last_distances(), OFFSETS.map(|_| 0.0).to_vec())
-                .with(debug_messages(), vec![])
-                .with(debug_lines(), vec![])
-                .with(components::last_jump_time(), game_time())
-                .with(components::last_slowdown_time(), game_time())
-                .with(
-                    model_from_url(),
-                    assets::url("models/dynamic/raceCarWhite.glb/models/main.json"),
-                )
-                .with(cube_collider(), Vec3::new(0.6, 1.0, 0.2))
-                .spawn();
-
-            entity::add_component(player_id, components::player_vehicle(), vehicle_id);
-            entity::add_component(player_id, components::input_direction(), Vec2::ZERO);
-            entity::add_component(player_id, components::input_jump(), false);
+    // When a spawnpoint is created, give it a physical representation.
+    spawn_query(Spawnpoint::as_query()).bind(|spawnpoints| {
+        for (id, spawnpoint) in spawnpoints {
+            entity::add_components(
+                id,
+                Sphere {
+                    sphere: (),
+                    sphere_radius: spawnpoint.radius,
+                    ..Sphere::suggested()
+                }
+                .make()
+                .with(scale(), vec3(1.0, 1.0, 1.0 / (2.0 * spawnpoint.radius))),
+            );
         }
     });
 
+    // When the player's class changes, respawn them.
+    change_query(pc::vehicle_class())
+        .track_change(pc::vehicle_class())
+        .requires(is_player())
+        .bind(move |players| {
+            for (player_id, _class_id) in players {
+                respawn_player(player_id);
+            }
+        });
+
+    // When a player despawns (leaves), despawn their vehicle.
     despawn_query(is_player()).bind(|players| {
         for (player, ()) in players {
-            if let Some(vehicle) = entity::get_component(player, components::player_vehicle()) {
-                entity::despawn(vehicle);
+            if let Some(vehicle) = entity::get_component(player, pc::vehicle_ref()) {
+                entity::despawn_recursive(vehicle);
             }
         }
     });
 
+    // When a player sends input, update their input state.
     Input::subscribe(|ctx, input| {
-        if let Some(player) = ctx.client_entity_id() {
-            entity::set_component(player, components::input_direction(), input.direction);
-            entity::set_component(player, components::input_jump(), input.jump);
+        let Some(player) = ctx.client_entity_id() else {
+            return;
+        };
+
+        let Some(vehicle) = entity::get_component(player, pc::vehicle_ref()) else {
+            return;
+        };
+
+        let aim_direction_limits =
+            entity::get_component(vehicle, vd::input::components::aim_direction_limits())
+                .unwrap_or(Vec2::ONE * 20.0);
+
+        entity::add_component(player, pc::input_direction(), input.direction);
+        entity::add_component(player, pc::input_jump(), input.jump);
+        entity::add_component(player, pc::input_fire(), input.fire);
+        let aim_direction = input
+            .aim_direction
+            .clamp(-aim_direction_limits, aim_direction_limits);
+        entity::add_component(player, pc::input_aim_direction(), aim_direction);
+
+        entity::add_component(
+            vehicle,
+            vc::aim_position(),
+            shared::calculate_aim_position(vehicle, aim_direction),
+        );
+
+        // If the user opted to respawn, immediately destroy their vehicle
+        if input.respawn {
+            entity::set_component(vehicle, vc::health(), 0.0);
+        }
+    });
+
+    // When a collision occurs involving a vehicle, damage it.
+    Collision::subscribe(|msg| {
+        let avg_position = msg
+            .ids
+            .iter()
+            .flat_map(|id| entity::get_component(*id, translation()))
+            .reduce(|a, b| (a + b) / 2.0)
+            .unwrap_or_default();
+
+        for id in msg
+            .ids
+            .iter()
+            .copied()
+            .filter(|id| entity::has_component(*id, vc::player_ref()))
+        {
+            let speed = entity::get_component(id, phyc::linear_velocity())
+                .map(|v| v.length())
+                .unwrap_or_default();
+
+            entity::mutate_component(id, vc::health(), |health| {
+                *health = (*health - speed * 0.75).max(0.0);
+            });
+
+            OnCollision {
+                position: avg_position,
+                speed,
+                vehicle_id: id,
+            }
+            .send_client_broadcast_unreliable();
+        }
+    });
+
+    // Process all vehicles.
+    query(vc::player_ref()).each_frame(move |vehicles| {
+        for (vehicle_id, driver_id) in vehicles {
+            process_vehicle(vehicle_id, driver_id);
+        }
+    });
+
+    handle_explosions();
+}
+
+fn respawn_player(player_id: EntityId) {
+    let Some(class_id) = entity::get_component(player_id, pc::vehicle_class()) else {
+        return;
+    };
+
+    // Copy the class definition, and remove anything class-specific from it.
+    let mut class = entity::get_all_components(class_id);
+    let Some(model_url) = class.remove(vclc::model_url()) else {
+        return;
+    };
+    let Some(model_scale) = class.remove(vclc::model_scale()) else {
+        return;
+    };
+    class.remove(vclc::is_class());
+    class.remove(vclc::name());
+    class.remove(vclc::description());
+    class.remove(vclc::icon_url());
+
+    let offsets = class
+        .get(vd::thruster::components::offsets())
+        .unwrap_or_default();
+
+    let last_distances = offsets.iter().map(|_| 0.0).collect();
+    let max_health = class
+        .get(vd::general::components::max_health())
+        .unwrap_or(100.0);
+
+    // Create the vehicle before spawning it.
+    let position = choose_spawn_position();
+    let vehicle = class
+        // Runtime state
+        .with(phyc::linear_velocity(), Vec3::ZERO)
+        .with(phyc::angular_velocity(), Vec3::ZERO)
+        .with(phyc::physics_controlled(), ())
+        .with(phyc::dynamic(), true)
+        .with(local_to_world(), default())
+        .with(translation(), position)
+        .with(rotation(), Quat::from_rotation_z(random::<f32>() * PI))
+        .with(vc::player_ref(), player_id)
+        .with(vc::health(), max_health)
+        .with(vc::last_distances(), last_distances)
+        .with(vc::last_jump_time(), game_time())
+        .with(vc::last_slowdown_time(), game_time());
+
+    assert!(Vehicle::contained_by_unspawned(&vehicle));
+
+    if let Some(existing_vehicle_id) = entity::get_component(player_id, pc::vehicle_ref()) {
+        if let Some(translation) = entity::get_component(existing_vehicle_id, translation()) {
+            OnDeath {
+                position: translation,
+                player_id,
+            }
+            .send_local_broadcast(true);
+
+            Explosion {
+                is_explosion: (),
+                translation,
+                radius: 4.0,
+                damage: 25.0,
+                optional: default(),
+            }
+            .spawn();
+        }
+        entity::despawn_recursive(existing_vehicle_id);
+    }
+
+    // Spawn it in.
+    let vehicle_id = vehicle.spawn();
+    entity::add_component(player_id, pc::vehicle_ref(), vehicle_id);
+    entity::add_component(player_id, pc::input_direction(), Vec2::ZERO);
+    entity::add_component(player_id, pc::input_jump(), false);
+    entity::add_component(player_id, pc::input_fire(), false);
+    entity::add_component(player_id, pc::input_aim_direction(), Vec2::ZERO);
+
+    let _vehicle_model_id = Entity::new()
+        .with(cast_shadows(), ())
+        .with(model_from_url(), model_url)
+        .with(local_to_world(), default())
+        .with(local_to_parent(), default())
+        .with(mesh_to_local(), default())
+        .with(mesh_to_world(), default())
+        .with(main_scene(), ())
+        .with(scale(), Vec3::ONE * model_scale)
+        .with(parent(), vehicle_id)
+        .spawn();
+}
+
+fn handle_explosions() {
+    static QUERY: Lazy<GeneralQuery<Component<Vec3>>> = Lazy::new(|| {
+        query(self::translation())
+            .requires(vc::player_ref())
+            .build()
+    });
+
+    spawn_query(Explosion::as_query()).bind(|explosions| {
+        for (id, explosion) in explosions {
+            let Explosion {
+                radius,
+                translation,
+                damage,
+                ..
+            } = explosion;
+
+            entity::add_component(
+                id,
+                remove_at_game_time(),
+                game_time() + Duration::from_secs(2),
+            );
+
+            physics::add_radial_impulse(
+                translation,
+                damage * 50.0,
+                radius,
+                physics::FalloffRadius::FalloffToZeroAt(radius),
+            );
+
+            for (vehicle_id, vehicle_translation) in QUERY.evaluate() {
+                let distance = vehicle_translation.distance(translation);
+                if distance > radius {
+                    continue;
+                }
+
+                let closeness = (radius - distance) / radius;
+                entity::mutate_component(vehicle_id, vc::health(), |health| {
+                    *health = (*health - closeness * damage).max(0.0);
+                });
+            }
         }
     });
 }
 
-fn vehicle_processing() {
-    query(components::vehicle()).each_frame(move |vehicles| {
-        for (vehicle_id, driver_id) in vehicles {
-            let direction =
-                entity::get_component(driver_id, components::input_direction()).unwrap_or_default();
+fn choose_spawn_position() -> Vec3 {
+    static QUERY: OnceLock<GeneralQuery<ConceptQuery<Spawnpoint>>> = OnceLock::new();
+    let sp = QUERY
+        .get_or_init(|| query(Spawnpoint::as_query()).build())
+        .evaluate()
+        .choose(&mut thread_rng())
+        .map(|(_, sp)| sp)
+        .cloned();
 
-            let vehicle_position = match entity::get_component(vehicle_id, translation()) {
-                Some(vehicle_position) => vehicle_position,
-                _ => {
-                    continue;
-                }
-            };
-            let vehicle_rotation = match entity::get_component(vehicle_id, rotation()) {
-                Some(vehicle_rotation) => vehicle_rotation,
-                _ => {
-                    continue;
-                }
-            };
+    let Some(sp) = sp else {
+        return Vec3::ZERO;
+    };
 
-            let mut last_distances =
-                entity::get_component(vehicle_id, components::last_distances()).unwrap();
+    sp.translation + (random::<Vec2>() * 2.0 * sp.radius - sp.radius).extend(2.0)
+}
 
-            let vehicle_last_jump_time =
-                entity::get_component(vehicle_id, components::last_jump_time()).unwrap_or_default();
-            if entity::get_component(driver_id, components::input_jump()).unwrap_or_default()
-                && (game_time() - vehicle_last_jump_time).as_secs_f32() > JUMP_TIMEOUT
-            {
-                let linear_velocity =
-                    entity::get_component(vehicle_id, linear_velocity()).unwrap_or_default();
-                let forward = (linear_velocity.dot(vehicle_rotation * -Vec3::Y) * 0.3).max(5.0);
+fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
+    use entity::{get_component as get, set_component as set};
 
-                entity::set_component(vehicle_id, components::last_jump_time(), game_time());
-                physics::add_force(
-                    vehicle_id,
-                    vehicle_rotation * Vec3::Z * INPUT_JUMP_STRENGTH * forward,
-                );
-            };
+    let direction = get(driver_id, pc::input_direction()).unwrap_or_default();
+    let Some(v) = Vehicle::get_spawned(vehicle_id) else {
+        return;
+    };
 
-            let mut avg_distance = 0.0;
-            for (index, offset) in OFFSETS.iter().enumerate() {
-                let offset = Vec2::from(*offset).extend(0.0);
+    // If the vehicle's health is at zero, respawn it.
+    if v.health <= 0.0 {
+        respawn_player(driver_id);
+        return;
+    }
 
-                let probe_start = vehicle_position + vehicle_rotation * (offset - Vec3::Z * 0.1);
-                let probe_direction = vehicle_rotation * Vec3::Z * -1.0;
+    // If the vehicle's been upside down for some time, start applying damage to it.
+    if (v.rotation * Vec3::Z).dot(Vec3::Z) < -0.5 {
+        if let Some(last_upside_down_time) = v.optional.last_upside_down_time {
+            if (game_time() - last_upside_down_time).as_secs_f32() > 0.5 {
+                const DAMAGE_PER_SECOND: f32 = 20.0;
 
-                if probe_direction.z > 0.0 {
-                    continue;
-                }
-
-                let turning_strength_offset = if offset.y < 0.0 {
-                    if offset.x * direction.x < 0.0 {
-                        INPUT_TURNING_STRENGTH
-                    } else {
-                        0.0
-                    }
-                } else {
-                    0.0
-                };
-                let pitch_strength_offset = if offset.y < 0.0 {
-                    direction.y * -INPUT_PITCH_STRENGTH
-                } else {
-                    0.0
-                };
-                let strength_offset = turning_strength_offset + pitch_strength_offset;
-
-                if let Some(hit) = physics::raycast(probe_start, probe_direction)
-                    .into_iter()
-                    .find(|h| h.entity != vehicle_id)
-                {
-                    let old_distance = last_distances[index];
-                    let new_distance = hit.distance;
-                    let delta_distance = new_distance - old_distance;
-
-                    let error_distance = TARGET - hit.distance;
-                    let p = K_P * error_distance;
-                    let d = K_D * delta_distance;
-                    let strength =
-                        ((p + d + strength_offset) * delta_time()).clamp(-0.1, MAX_STRENGTH);
-
-                    let force = -probe_direction * strength;
-                    let position = vehicle_position + vehicle_rotation * offset;
-                    physics::add_force_at_position(vehicle_id, force, position);
-
-                    avg_distance = (avg_distance + new_distance) / 2.0;
-                    last_distances[index] = new_distance;
-                }
-            }
-            entity::set_component(vehicle_id, components::last_distances(), last_distances);
-
-            let pitch_correction = vehicle_rotation
-                .to_euler(glam::EulerRot::YXZ)
-                .1
-                .cos()
-                .powi(3)
-                .max(0.0);
-
-            let distance_correction =
-                1.0 - ((TARGET - avg_distance).abs() / TARGET).clamp(0.0, 1.0);
-
-            physics::add_force_at_position(
-                vehicle_id,
-                vehicle_rotation
-                    * (Vec3::Y * direction.y.abs())
-                    * pitch_correction
-                    * distance_correction
-                    * -if direction.y > 0. {
-                        INPUT_FORWARD_FORCE
-                    } else {
-                        INPUT_BACKWARD_FORCE
-                    },
-                vehicle_position + vehicle_rotation * Y_DISTANCE * Vec3::Y,
-            );
-
-            physics::add_force_at_position(
-                vehicle_id,
-                vehicle_rotation * (Vec3::X * -direction.x) * INPUT_SIDE_FORCE,
-                vehicle_position + vehicle_rotation * -Y_DISTANCE * Vec3::Y,
-            );
-
-            if (vehicle_rotation * Vec3::Z).dot(Vec3::Z) < -0.4 {
-                entity::mutate_component(vehicle_id, translation(), |t| *t += Vec3::Z * 7.0);
-                entity::set_component(vehicle_id, rotation(), Quat::IDENTITY);
-            }
-
-            // Apply a constant slowdown force
-            physics::add_force(
-                vehicle_id,
-                -entity::get_component(vehicle_id, linear_velocity()).unwrap_or_default()
-                    * SLOWDOWN_STRENGTH,
-            );
-
-            let vehicle_last_slowdown_time =
-                entity::get_component(vehicle_id, components::last_slowdown_time())
-                    .unwrap_or_default();
-            if (game_time() - vehicle_last_slowdown_time).as_secs_f32() > ANGULAR_SLOWDOWN_DELAY {
-                entity::mutate_component(vehicle_id, angular_velocity(), |av| {
-                    *av -= *av * ANGULAR_SLOWDOWN_STRENGTH;
+                entity::mutate_component(vehicle_id, vc::health(), |health| {
+                    *health = (*health - DAMAGE_PER_SECOND * delta_time()).max(0.0);
                 });
-                entity::set_component(vehicle_id, components::last_slowdown_time(), game_time());
+                return;
             }
+        } else {
+            entity::add_component(vehicle_id, vc::last_upside_down_time(), game_time());
         }
-    });
+    } else {
+        entity::remove_component(vehicle_id, vc::last_upside_down_time());
+    }
+
+    // Process gun aiming
+    if let Some((aimable_weapon_refs, aim_position)) =
+        v.optional.aimable_weapon_refs.zip(v.optional.aim_position)
+    {
+        for weapon_id in aimable_weapon_refs {
+            let Some(weapon_ltw) = entity::get_component(weapon_id, local_to_world()) else {
+                continue;
+            };
+
+            let (_, _, weapon_position) = weapon_ltw.to_scale_rotation_translation();
+
+            let inv_local_to_world =
+                Mat4::from_rotation_translation(-v.rotation, -weapon_position).transpose();
+
+            let aim_position_relative_to_gun = inv_local_to_world.transform_point3(aim_position);
+            let rot = Quat::from_rotation_arc(-Vec3::Y, aim_position_relative_to_gun.normalize());
+
+            entity::set_component(weapon_id, rotation(), rot);
+        }
+    }
+
+    // Apply jump
+    let vehicle_last_jump_time = get(vehicle_id, vc::last_jump_time()).unwrap_or_default();
+    if get(driver_id, pc::input_jump()).unwrap_or_default()
+        && (game_time() - vehicle_last_jump_time) > v.jump_timeout
+    {
+        let linear_velocity = get(vehicle_id, phyc::linear_velocity()).unwrap_or_default();
+        let speed_multiplier = (linear_velocity.dot(v.rotation * -Vec3::Y) * 0.3).max(5.0);
+
+        set(vehicle_id, vc::last_jump_time(), game_time());
+        physics::add_force(
+            vehicle_id,
+            v.rotation * Vec3::Z * v.jump_force * speed_multiplier,
+        );
+    };
+
+    // Apply per-thruster forces
+    let mut last_distances = v.last_distances;
+    let mut avg_distance = 0.0;
+    for (index, thruster_offset) in v.offsets.iter().enumerate() {
+        let offset = thruster_offset.extend(0.0);
+
+        let probe_start = v.translation + v.rotation * (offset - Vec3::Z * 0.1);
+        let probe_direction = v.rotation * Vec3::Z * -1.0;
+
+        if probe_direction.z > 0.0 {
+            continue;
+        }
+
+        let thruster_front_of_centre = offset.y < 0.0;
+        let turning_strength_offset = if thruster_front_of_centre {
+            if offset.x * direction.x < 0.0 {
+                v.turning_strength
+            } else {
+                0.0
+            }
+        } else {
+            0.0
+        };
+
+        let pitch_strength_offset = if thruster_front_of_centre {
+            direction.y * -v.pitch_strength
+        } else {
+            0.0
+        };
+
+        let strength_offset = turning_strength_offset + pitch_strength_offset;
+
+        if let Some(hit) = physics::raycast(probe_start, probe_direction)
+            .into_iter()
+            .find(|h| h.entity != vehicle_id)
+        {
+            let old_distance = last_distances[index];
+            let new_distance = hit.distance;
+            let delta_distance = new_distance - old_distance;
+
+            let error_distance = v.target - hit.distance;
+            let p = v.k_p * error_distance;
+            let d = v.k_d * delta_distance;
+            let strength = ((p + d + strength_offset) * delta_time()).clamp(-0.1, v.max_strength);
+
+            let force = -probe_direction * strength;
+            let position = v.translation + v.rotation * offset;
+            physics::add_force_at_position(vehicle_id, force, position);
+
+            avg_distance = (avg_distance + new_distance) / 2.0;
+            last_distances[index] = new_distance;
+        }
+    }
+    set(vehicle_id, vc::last_distances(), last_distances);
+
+    // Apply forward inputs by applying an invisible force at the back of the vehicle
+    let pitch = v.rotation.to_euler(glam::EulerRot::YXZ).1;
+    let pitch_correction = pitch.cos().powi(3).max(0.0);
+    let distance_correction = 1.0 - ((v.target - avg_distance).abs() / v.target).clamp(0.0, 1.0);
+    physics::add_force_at_position(
+        vehicle_id,
+        v.rotation
+            * (Vec3::Y * direction.y.abs())
+            * pitch_correction
+            * distance_correction
+            * -if direction.y > 0. {
+                v.forward_force
+            } else {
+                v.backward_force
+            },
+        v.translation + v.rotation * v.forward_offset.extend(0.0),
+    );
+
+    // Apply side inputs by applying an invisible force at the front of the vehicle
+    physics::add_force_at_position(
+        vehicle_id,
+        v.rotation * (Vec3::X * direction.x) * v.side_force,
+        v.translation + v.rotation * v.side_offset.extend(0.0),
+    );
+
+    // Apply a constant slowdown force
+    physics::add_force(
+        vehicle_id,
+        -get(vehicle_id, phyc::linear_velocity()).unwrap_or_default() * v.linear_strength,
+    );
+
+    // Dampen the angular velocity every so often
+    let vehicle_last_slowdown_time = get(vehicle_id, vc::last_slowdown_time()).unwrap_or_default();
+
+    if (game_time() - vehicle_last_slowdown_time) > v.angular_delay {
+        entity::mutate_component(vehicle_id, phyc::angular_velocity(), |av| {
+            *av -= *av * v.angular_strength;
+        });
+        set(vehicle_id, vc::last_slowdown_time(), game_time());
+    }
 }

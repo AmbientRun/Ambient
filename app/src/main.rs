@@ -75,14 +75,9 @@ fn main() -> anyhow::Result<()> {
     let release_build = cli.use_release_build();
     match &cli.command {
         // commands that immediately exit
-        Commands::New {
-            package,
-            name,
-            api_path,
-        } => {
+        Commands::New { package, args } => {
             let package_path = package.package_path()?;
-            cli::new_package::handle(&package_path, name.as_deref(), api_path.as_deref())
-                .context("Failed to create package")
+            cli::new_package::handle(&package_path, args).context("Failed to create package")
         }
         Commands::Assets { command } => rt.block_on(cli::assets::handle(command, &assets)),
         Commands::Build { package } => rt.block_on(async {
