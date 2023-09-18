@@ -38,6 +38,7 @@ pub fn main() {
                         packages::base_assets::assets::url("Y Bot.fbx"),
                     )
                     .with(basic_character_animations(), plr)
+                    .with_merge(make_gunless_animation())
                     .with(temperature(), 37.0)
                     .with(temperature_src_rate(), 1.0)
                     .with(temperature_src_radius(), 8.0),
@@ -120,4 +121,16 @@ pub fn load_scene() {
             }
         }
     }
+}
+
+fn anim_url(name: &str) -> String {
+    packages::this::assets::url(&format!("{name}.fbx/animations/mixamo.com.anim"))
+}
+
+pub fn make_gunless_animation() -> Entity {
+    use packages::character_animation;
+    Entity::new().with(
+        character_animation::components::walk_forward(),
+        anim_url("Walking"),
+    )
 }

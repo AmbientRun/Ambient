@@ -7,3 +7,23 @@ Converted to .ogg
 The sound used for the storm
 https://freesound.org/people/martypinso/sounds/22606/
 Converted to .ogg
+
+# lighthouse.glb
+- lost credit, need to find again
+
+# brokenutilitypole.glb
+"BrokenUtilityPole" (https://skfb.ly/6XUBG) by HippoStance is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
+# MSH_Building_001.glb
+by Dan Hunter
+
+# by droqen
+No attribution necessary, this is so I know everything's accounted for:
+- emissive_campfire.glb
+- really_lumpy_wall.glb
+
+# from Mixamo
+- Left Strafe Walking.fbx
+- Right Strafe Walking.fbx
+- Walking Backwards.fbx
+- Walking.fbx
