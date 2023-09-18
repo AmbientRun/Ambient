@@ -2415,6 +2415,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tangent_class_scout"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "tangent_core"
 version = "0.1.0"
 dependencies = [
