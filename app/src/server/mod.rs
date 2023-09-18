@@ -320,8 +320,8 @@ fn start_http_interface(
         .route(
             "/status",
             get(
-                |State(state): State<Arc<Mutex<Option<SharedServerState>>>>| async move {
-                    let server_state = state.lock().clone();
+                |State(holder): State<Arc<Mutex<Option<SharedServerState>>>>| async move {
+                    let server_state = holder.lock().clone();
                     let player_count = server_state
                         .map(|s| s.lock().player_count())
                         .unwrap_or_default();
