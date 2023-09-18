@@ -2,7 +2,7 @@
 id = "ambient_core"
 description = "Contains all core components for the Ambient runtime."
 name = "Core Components"
-version = "0.3.0-dev"
+version = "0.3.0-internal-tangent-010"
 content = { type = "Asset", schema = true }
 
 [includes]
