@@ -5,6 +5,5 @@ pub fn calculate_aim_position(vehicle_id: EntityId, input_aim_direction: Vec2) -
         * Quat::from_rotation_z(input_aim_direction.x.to_radians());
 
     let vehicle_ltw = entity::get_component(vehicle_id, local_to_world()).unwrap_or_default();
-    let aim_position = vehicle_ltw.transform_point3(aim_rotation * 1000.0 * -Vec3::Y);
-    aim_position
+    vehicle_ltw.transform_point3(aim_rotation * 1000.0 * -Vec3::Y)
 }

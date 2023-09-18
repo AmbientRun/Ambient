@@ -24,6 +24,7 @@ pub fn main() {
         vec2(-X_DISTANCE, Y_DISTANCE),
     ];
 
+    #[allow(clippy::eq_op)]
     VehicleClass {
         is_class: (),
 

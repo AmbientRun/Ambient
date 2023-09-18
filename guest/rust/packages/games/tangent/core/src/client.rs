@@ -39,7 +39,7 @@ pub fn main() {
     spawn_query(translation())
         .requires(vc::player_ref())
         .bind(|vehicles| {
-            for (vehicle_id, translation) in vehicles {
+            for (_vehicle_id, translation) in vehicles {
                 audio::SpatialAudioPlayer::oneshot(
                     translation,
                     packages::kenney_impact_sounds::assets::url("ImpactMining_003.ogg"),
