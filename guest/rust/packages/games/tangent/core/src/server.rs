@@ -24,6 +24,7 @@ use ambient_api::{
 use packages::{
     tangent_schema::{
         concepts::{Explosion, Spawnpoint, Vehicle},
+        explosion,
         messages::OnDeath,
         player::components as pc,
         vehicle::{class::components as vclc, components as vc, data as vd},
@@ -121,6 +122,8 @@ pub fn main() {
             process_vehicle(vehicle_id, driver_id);
         }
     });
+
+    handle_explosions();
 }
 
 fn respawn_player(player_id: EntityId) {
@@ -176,7 +179,15 @@ fn respawn_player(player_id: EntityId) {
                 player_id,
             }
             .send_local_broadcast(true);
-            spawn_explosion(translation);
+
+            Explosion {
+                is_explosion: (),
+                translation,
+                radius: 4.0,
+                damage: 25.0,
+                optional: default(),
+            }
+            .spawn();
         }
         entity::despawn_recursive(existing_vehicle_id);
     }
@@ -206,43 +217,48 @@ fn respawn_player(player_id: EntityId) {
     .send_client_broadcast_unreliable();
 }
 
-fn spawn_explosion(translation: Vec3) {
+fn handle_explosions() {
     static QUERY: Lazy<GeneralQuery<Component<Vec3>>> = Lazy::new(|| {
         query(self::translation())
             .requires(vc::player_ref())
             .build()
     });
 
-    let radius = 2.5;
+    spawn_query(Explosion::as_query()).bind(|explosions| {
+        for (id, explosion) in explosions {
+            let Explosion {
+                radius,
+                translation,
+                damage,
+                ..
+            } = explosion;
 
-    Explosion {
-        is_explosion: (),
-        translation,
-        radius,
-        optional: default(),
-    }
-    .make()
-    .with(remove_at_game_time(), game_time() + Duration::from_secs(2))
-    .spawn();
+            entity::add_component(
+                id,
+                remove_at_game_time(),
+                game_time() + Duration::from_secs(2),
+            );
 
-    physics::add_radial_impulse(
-        translation,
-        3_000.0,
-        radius,
-        physics::FalloffRadius::FalloffToZeroAt(radius),
-    );
+            physics::add_radial_impulse(
+                translation,
+                damage * 100.0,
+                radius,
+                physics::FalloffRadius::FalloffToZeroAt(radius),
+            );
 
-    for (vehicle_id, vehicle_translation) in QUERY.evaluate() {
-        let distance = vehicle_translation.distance(translation);
-        if distance > radius {
-            continue;
+            for (vehicle_id, vehicle_translation) in QUERY.evaluate() {
+                let distance = vehicle_translation.distance(translation);
+                if distance > radius {
+                    continue;
+                }
+
+                let closeness = (radius - distance) / radius;
+                entity::mutate_component(vehicle_id, vc::health(), |health| {
+                    *health = (*health - closeness * damage).max(0.0);
+                });
+            }
         }
-
-        let closeness = radius - distance;
-        entity::mutate_component(vehicle_id, vc::health(), |health| {
-            *health = (*health - closeness * 10.0).max(0.0);
-        });
-    }
+    });
 }
 
 fn choose_spawn_position() -> Vec3 {
