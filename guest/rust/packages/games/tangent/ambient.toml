@@ -10,8 +10,7 @@ tangent_core = { path = "core", deployment = "39nAewTgzpxp4PIpKR3WT8" }
 tangent_camera_follow = { path = "mods/camera_follow", enabled = true }
 tangent_camera_topdown = { path = "mods/camera_topdown", enabled = false }
 
-tangent_hud_sideholo = { path = "mods/hud_sideholo", enabled = true }
-
+tangent_ui_holohud = { path = "mods/ui_holohud", enabled = true }
 tangent_ui_class_selection = { path = "mods/ui_class_selection" }
 
 tangent_pickup_health = { path = "mods/pickup_health" }

@@ -1,5 +1,5 @@
 [package]
-name = "tangent_hud_sideholo"
+name = "tangent_ui_holohud"
 
 edition = "2021"
 publish = false
@@ -9,7 +9,7 @@ version = "0.1.0"
 ambient_api = { workspace = true }
 
 [[bin]]
-name = "tangent_hud_sideholo_client"
+name = "tangent_ui_holohud_client"
 path = "src/client.rs"
 required-features = ["client"]
 

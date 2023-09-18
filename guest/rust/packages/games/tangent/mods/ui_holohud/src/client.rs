@@ -29,59 +29,39 @@ fn Hud(hooks: &mut Hooks) -> Element {
 }
 
 #[element_component]
-fn VehicleHud(_hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
-    Group::el([
-        VehicleHudSide::el(vehicle_id),
-        VehicleHudBack::el(vehicle_id),
-    ])
-}
-
-#[element_component]
-fn VehicleHudSide(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
+fn VehicleHud(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
     let health = use_entity_component(hooks, vehicle_id, vc::health())
         .0
         .unwrap_or_default();
+
     let max_health =
         use_entity_component(hooks, vehicle_id, vdc::general::components::max_health())
             .0
             .unwrap_or_default();
 
-    Group::el([Text3D::el(
-        format!("{health:.0} HP"),
-        vec3(0.86, 0.08, 0.24)
-            .lerp(vec3(0.54, 0.72, 0.00), health / max_health)
-            .extend(1.0),
-        3.,
-    )
-    .with(translation(), vec3(0.0, 0.0, 0.0))])
+    let speed = use_entity_component(hooks, vehicle_id, vcc::speed_kph())
+        .0
+        .unwrap_or_default();
+
+    let health_color = vec3(0.86, 0.08, 0.24)
+        .lerp(vec3(0.54, 0.72, 0.00), health / max_health)
+        .extend(1.0);
+    let speed_color = Vec4::ONE;
+
+    Group::el([
+        Text3D::el(format!("{health:.0}"), health_color, 1.5)
+            .with(translation(), vec3(0.0, -0.04, 0.0)),
+        Text3D::el(format!("{speed:.1}"), speed_color, 1.0)
+            .with(translation(), vec3(0.0, 0.04, 0.0)),
+    ])
     .with(local_to_world(), default())
     .with(local_to_parent(), default())
     .with(mesh_to_local(), default())
     .with(mesh_to_world(), default())
     .with(main_scene(), ())
-    .with(translation(), vec3(0.35, 0.0, 0.3))
-    .with(
-        rotation(),
-        Quat::from_rotation_z(15.0f32.to_radians()) * Quat::from_rotation_x(-65.0f32.to_radians()),
-    )
+    .with(translation(), vec3(0.0, 0.75, 0.25))
+    .with(rotation(), Quat::from_rotation_x(-90.0f32.to_radians()))
     .with(parent(), vehicle_id)
-}
-
-#[element_component]
-fn VehicleHudBack(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
-    let kph = use_entity_component(hooks, vehicle_id, vcc::speed_kph())
-        .0
-        .unwrap_or_default();
-
-    Group::el([Text3D::el(format!("{kph:.1}"), Vec4::ONE, 1.)])
-        .with(local_to_world(), default())
-        .with(local_to_parent(), default())
-        .with(mesh_to_local(), default())
-        .with(mesh_to_world(), default())
-        .with(main_scene(), ())
-        .with(translation(), vec3(0.0, 0.75, 0.225))
-        .with(rotation(), Quat::from_rotation_x(-90.0f32.to_radians()))
-        .with(parent(), vehicle_id)
 }
 
 #[element_component]

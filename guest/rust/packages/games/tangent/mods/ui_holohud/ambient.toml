@@ -1,6 +1,6 @@
 [package]
-id = "tangent_hud_sideholo"
-name = "Tangent HUD: Side Hologram"
+id = "tangent_ui_holohud"
+name = "Tangent HUD: Hologram"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
 
