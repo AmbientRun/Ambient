@@ -1059,7 +1059,6 @@ dependencies = [
 name = "ambient_package"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_friendly_id",
  "ambient_shared_types",
  "chrono",
  "convert_case 0.6.0",
@@ -1068,6 +1067,7 @@ dependencies = [
  "paste",
  "proc-macro2",
  "quote",
+ "rand 0.8.5",
  "semver 1.0.18",
  "serde",
  "serde_json",
@@ -1097,9 +1097,12 @@ dependencies = [
 name = "ambient_package_rt"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_shared_types",
  "byteorder",
  "glam 0.24.1",
+ "paste",
  "thiserror",
+ "ulid",
 ]
 
 [[package]]

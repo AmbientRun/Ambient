@@ -1,0 +1,23 @@
+[package]
+name = "tangent_ui_class_selection"
+
+edition = "2021"
+publish = false
+version = "0.1.0"
+
+[dependencies]
+ambient_api = { workspace = true }
+
+[[bin]]
+name = "tangent_ui_class_selection_client"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "tangent_ui_class_selection_server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

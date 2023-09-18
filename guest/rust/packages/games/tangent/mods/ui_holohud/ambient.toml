@@ -1,0 +1,8 @@
+[package]
+id = "tangent_ui_holohud"
+name = "Tangent HUD: Hologram"
+version = "0.1.0"
+content = { type = "Mod", for_playables = ["tangent"] }
+
+[dependencies]
+tangent_schema = { path = "../../schema", deployment = "1aMdIidbBkJAajGCfhsjdI" }

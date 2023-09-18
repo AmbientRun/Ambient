@@ -7,10 +7,11 @@ use std::{
 };
 
 use crate::{
-    core::app,
+    core::{app, messages::Frame},
     entity,
     global::{OkEmpty, ResultEmpty},
     internal::executor::EXECUTOR,
+    message::Listener,
     prelude::RuntimeMessage,
 };
 
@@ -27,6 +28,24 @@ pub fn epoch_time() -> Duration {
 /// The length of the previous frame, in seconds.
 pub fn delta_time() -> f32 {
     entity::get_component(entity::resources(), app::components::delta_time()).unwrap()
+}
+
+/// Runs `callback` at most every `dt`. The actual time taken is passed to `callback`.
+///
+/// Note that this is bound by the length of the tick, so if your environment is running
+/// slower than `dt`, this will not run at the expected rate.
+pub fn fixed_rate_tick(dt: Duration, mut callback: impl FnMut(Duration) + 'static) -> Listener {
+    let mut last_tick = game_time();
+    Frame::subscribe(move |_| {
+        let delta = game_time() - last_tick;
+        if delta < dt {
+            return;
+        }
+
+        callback(delta);
+
+        last_tick = game_time();
+    })
 }
 
 /// A trait that abstracts over return types so that you can return an [ResultEmpty] or nothing.

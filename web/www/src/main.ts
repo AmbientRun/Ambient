@@ -98,9 +98,5 @@ import("ambient_web")
         console.log(`Connecting to ${url}`)
 
         ambient.start(target, url);
-
-        setTimeout(() => {
-        ambient.stop();
-        }, 20000);
         // setupAudio();
     });

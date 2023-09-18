@@ -138,6 +138,9 @@ To do so, you will need to update the following files:
 ### Runtime support
 
 - `shared_crates/package_rt/src/message_serde.rs`: Specify how to serialize and deserialize the type to a binary stream.
+  - If this type is defined differently between the guest and the host, use the respective files:
+    - `crates/ecs/src/message_serde.rs`
+    - `guest/rust/api_core/src/message/serde.rs`
 
 ### Utilities
 

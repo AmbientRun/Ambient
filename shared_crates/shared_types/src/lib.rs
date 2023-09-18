@@ -7,6 +7,8 @@ pub use crate::procedurals::*;
 pub mod asset;
 pub mod urls;
 
+pub type ComponentIndex = u32;
+
 /// A mapping from enum names to Rust types. Instantiate this with a macro that takes `$(($value:ident, $type:ty)),*`.
 #[macro_export]
 macro_rules! primitive_component_definitions {

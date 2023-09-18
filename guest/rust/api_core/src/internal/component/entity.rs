@@ -1,21 +1,35 @@
 use std::collections::HashMap;
 
+use serde::{Deserialize, Serialize};
+
 use crate::internal::{
     conversion::{FromBindgen, IntoBindgen},
-    wit,
+    wit::{self},
 };
 
-use super::{Component, ComponentValue, SupportedValue, SupportedValueRef, UntypedComponent};
+use super::{
+    Component, ComponentIndex, ComponentValue, SupportedValue, SupportedValueRef, UntypedComponent,
+};
 
 /// An [Entity] is a collection of components and associated values.
 ///
 /// Use the [spawn](Entity::spawn) method to insert the [Entity] into the world.
-#[derive(Clone, Default)]
-pub struct Entity(pub(crate) HashMap<u32, ComponentValue>);
+#[derive(Clone, Default, Serialize, Deserialize, PartialEq)]
+pub struct Entity(pub(crate) HashMap<ComponentIndex, ComponentValue>);
 impl Entity {
     /// Creates a new `Entity`.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Returns the number of component (values) in the entity.
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    /// Returns true if the entity has no components (values).
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 
     /// Returns true if this has `component`.

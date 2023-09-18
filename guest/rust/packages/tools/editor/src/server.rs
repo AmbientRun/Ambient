@@ -3,20 +3,15 @@ use std::f32::consts::PI;
 use ambient_api::{
     core::{
         app::components::name,
-        camera::{
-            components::active_camera,
-            concepts::{
-                PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
-            },
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         physics::components::dynamic,
         player::components::user_id,
         rendering::components::outline_recursive,
         transform::components::{local_to_world, rotation, translation},
     },
-    ecs::GeneralQuery,
     glam::EulerRot,
-    once_cell::sync::Lazy,
     prelude::*,
 };
 
@@ -44,7 +39,7 @@ pub fn main() {
         if in_editor {
             let player_user_id = entity::get_component(id, user_id()).unwrap();
 
-            let old_camera_transform = get_active_camera(&player_user_id)
+            let old_camera_transform = camera::get_active(Some(&player_user_id))
                 .and_then(|camera_id| entity::get_component(camera_id, local_to_world()))
                 .map(|transform| transform.to_scale_rotation_translation())
                 .map(|(_, r, t)| (r, t));
@@ -156,20 +151,6 @@ pub fn main() {
             }
         }
     });
-}
-
-// TODO: Move this to ambient_api?
-pub fn get_active_camera(player_user_id: &str) -> Option<EntityId> {
-    static QUERY: Lazy<GeneralQuery<(Component<f32>, Component<String>)>> =
-        Lazy::new(|| query((active_camera(), user_id())).build());
-
-    QUERY
-        .evaluate()
-        .into_iter()
-        .filter(|(_, (_, uid))| *uid == player_user_id)
-        .map(|(id, (ordering, _))| (id, ordering))
-        .max_by(|x, y| x.1.partial_cmp(&y.1).unwrap_or(std::cmp::Ordering::Less))
-        .map(|(id, _)| id)
 }
 
 fn deselect(player_id: EntityId) -> Option<EntityId> {

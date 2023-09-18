@@ -1,7 +1,3 @@
-// This lives in its own interface due to a wit-bindgen bug where `component-type` is only partially expanded
-// (i.e. `list-type` and `option-type` are not expanded), and it's only expanded in the first interface to use it.
-//
-// To work around this, we just give it its own interface and have functions that use it in the same interface.
 interface component {
     use types.{entity-id, mat4, quat, vec2, vec3, vec4, uvec2, uvec3, uvec4, ivec2, ivec3, ivec4, duration, empty}
     use client-mesh.{handle as procedural-mesh-handle}
@@ -110,6 +106,9 @@ interface component {
         type-option(option-value),
     }
 
+    // For some reason, using the component-index alias breaks bindgen for the web client.
+    // Where you see u32 below, pretend it says `component-index` instead.
+    type component-index = u32
     type entity = list<tuple<u32, value>>
     get-index: func(id: string) -> option<u32>
     get-id: func(index: u32) -> option<string>

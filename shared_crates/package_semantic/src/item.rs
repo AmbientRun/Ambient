@@ -142,7 +142,7 @@ impl ItemMap {
         &mut self,
         start_scope_id: ItemId<Scope>,
         path: &[SnakeCaseIdentifier],
-    ) -> &mut Scope {
+    ) -> ItemId<Scope> {
         let mut scope_id = start_scope_id;
         for segment in path.iter() {
             let existing_id = self.get(scope_id).scopes.get(segment).copied();
@@ -162,7 +162,7 @@ impl ItemMap {
                 }
             };
         }
-        self.get_mut(scope_id)
+        scope_id
     }
 
     /// Gets the fully qualified display path of an item.

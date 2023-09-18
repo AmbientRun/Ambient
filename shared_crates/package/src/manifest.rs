@@ -1,6 +1,7 @@
 use std::{collections::HashMap, fmt::Display, path::PathBuf};
 
 use indexmap::IndexMap;
+use rand::{seq::SliceRandom, Rng};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::Url;
@@ -61,6 +62,30 @@ pub struct PackageId(pub(crate) String);
 impl PackageId {
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+
+    /// Generates a new package ID.
+    // TODO: suffix with checksum
+    pub fn generate() -> Self {
+        const NUMERALS: [u8; 10] = [b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'];
+        const ALPHABET: [u8; 26] = [
+            b'a', b'b', b'c', b'd', b'e', b'f', b'g', b'h', b'i', b'j', b'k', b'l', b'm', b'n',
+            b'o', b'p', b'q', b'r', b's', b't', b'u', b'v', b'w', b'x', b'y', b'z',
+        ];
+
+        let mut rng = rand::thread_rng();
+        let mut output = vec![0u8; 32];
+        output[0] = *ALPHABET.choose(&mut rng).unwrap();
+        for i in 1..output.len() {
+            let idx = rng.gen_range(0..(NUMERALS.len() + ALPHABET.len()));
+            output[i] = if idx < NUMERALS.len() {
+                NUMERALS[idx]
+            } else {
+                ALPHABET[idx - NUMERALS.len()]
+            };
+        }
+
+        Self(String::from_utf8(output).unwrap())
     }
 }
 impl Display for PackageId {

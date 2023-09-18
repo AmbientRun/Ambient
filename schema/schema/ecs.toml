@@ -22,3 +22,9 @@ type = "EntityId"
 name = "ID"
 description = "The ID of the entity."
 attributes = ["Debuggable", "Networked", "Store"]
+
+[components.remove_at_game_time]
+type = "Duration"
+name = "Remove at game time"
+description = "If attached, this entity will be despawned at the specified game time."
+attributes = ["Debuggable"]

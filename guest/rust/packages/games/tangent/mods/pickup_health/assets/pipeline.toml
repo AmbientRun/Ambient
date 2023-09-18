@@ -1,0 +1,23 @@
+[[pipelines]]
+type = "Models"
+
+[[pipelines.transforms]]
+type = "RotateX"
+deg = 90.0
+
+[[pipelines.transforms]]
+type = "Scale"
+scale = 2.0
+
+[[pipelines.material_overrides]]
+
+[pipelines.material_overrides.filter]
+type = "All"
+
+[pipelines.material_overrides.material]
+name = "Material"
+base_color = "Material_Base_Color.png"
+normalmap = "Material_Normal.png"
+metallic_roughness = "Material_Roughness.png"
+roughness = 0.5
+metallic = 0.0

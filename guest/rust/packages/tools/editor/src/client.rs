@@ -428,21 +428,6 @@ fn is_mouse_in_cylinder(
     distance_to_cylinder <= radius
 }
 
-// todo: move to API
-pub fn fixed_rate_tick(dt: Duration, mut callback: impl FnMut(Duration) + 'static) {
-    let mut last_tick = game_time();
-    Frame::subscribe(move |_| {
-        let delta = game_time() - last_tick;
-        if delta < dt {
-            return;
-        }
-
-        callback(delta);
-
-        last_tick = game_time();
-    });
-}
-
 fn entity_name(id: EntityId) -> String {
     entity::get_component(id, name()).unwrap_or_else(|| id.to_string())
 }
