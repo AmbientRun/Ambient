@@ -11,3 +11,4 @@ dioxus-web = "0.3.1"
 ambient_web = { path = "../client" }
 web-sys = { version = "0.3.61", features = ["Window", "Document", "Element"] }
 wasm-bindgen = { workspace = true }
+serde-wasm-bindgen.workspace = true

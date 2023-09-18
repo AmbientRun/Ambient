@@ -82,7 +82,7 @@ import("ambient_web")
             return;
         }
 
-        ambient.init_ambient(true, true);
+        ambient.init({ enableLogging: true, enablePanicHook : true });
 
         let target = window.document.getElementById("instance-container");
 

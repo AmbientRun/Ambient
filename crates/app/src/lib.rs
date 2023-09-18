@@ -195,6 +195,7 @@ pub struct AppBuilder {
     pub examples_systems: bool,
     pub headless: Option<UVec2>,
     pub update_title_with_fps_stats: bool,
+    ctl: Option<(flume::Sender<WindowCtl>, flume::Receiver<WindowCtl>)>,
     pub window_position_override: Option<IVec2>,
     pub window_size_override: Option<UVec2>,
     #[cfg(target_os = "unknown")]
@@ -228,6 +229,7 @@ impl AppBuilder {
             examples_systems: false,
             headless: None,
             update_title_with_fps_stats: true,
+            ctl: None,
             window_position_override: None,
             window_size_override: None,
             #[cfg(target_os = "unknown")]
@@ -294,6 +296,16 @@ impl AppBuilder {
     #[cfg(target_os = "unknown")]
     pub fn parent_element(mut self, value: Option<web_sys::HtmlElement>) -> Self {
         self.parent_element = value;
+        self
+    }
+
+    pub fn window_ctl(
+        mut self,
+        ctl_tx: flume::Sender<WindowCtl>,
+        ctl_rx: flume::Receiver<WindowCtl>,
+    ) -> Self {
+        self.ctl = Some((ctl_tx, ctl_rx));
+
         self
     }
 
@@ -409,7 +421,7 @@ impl AppBuilder {
         // WindowKey.insert(&assets, window.clone());
 
         tracing::debug!("Inserting app resources");
-        let (ctl_tx, ctl_rx) = flume::unbounded();
+        let (ctl_tx, ctl_rx) = self.ctl.unwrap_or_else(flume::unbounded);
 
         let (window_physical_size, window_logical_size, window_scale_factor) =
             if let Some(window) = window.as_ref() {

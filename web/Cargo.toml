@@ -39,10 +39,13 @@ glam = { version = "0.24", features = ["rand", "bytemuck"] }
 futures = "0.3"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["time"] }
+flume = "0.11"
+serde = { version = "1.0", features = ["derive"] }
 
 # Web specific
 wasm-bindgen = { version = "0.2" }
 wasm-bindgen-futures = { version = "0.4" }
+serde-wasm-bindgen = { version = "0.6" }
 tracing-web = "0.1"
 time = { version = "0.3", features = ["wasm-bindgen"] }
 chrono = { version = "0.4", default-features = false, features = [

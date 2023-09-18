@@ -131,7 +131,6 @@ impl Connection {
 
         async move {
             let _stream = fut.await.map_err(|_| NetworkError::ConnectionClosed)?;
-            tracing::info!("Sent datagram {_stream:?}");
             Ok(())
         }
     }

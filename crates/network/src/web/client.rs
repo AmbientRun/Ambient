@@ -417,7 +417,6 @@ async fn handle_request(
             Ok(())
         }
         ProxyMessage::Datagram { id, data } => {
-            tracing::info!("Sending datagram request");
             let mut bytes = BytesMut::with_capacity(4 + data.len());
 
             bytes.put_u32(id);
