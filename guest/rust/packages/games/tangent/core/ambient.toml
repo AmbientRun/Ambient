@@ -13,7 +13,7 @@ kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds" }
 [messages.Input]
 name = "Input"
 description = "Input"
-fields = { direction = "Vec2", jump = "Bool", suicide = "Bool" }
+fields = { direction = "Vec2", jump = "Bool", fire = "Bool", suicide = "Bool" }
 
 [messages.OnCollision]
 name = "On Collision"

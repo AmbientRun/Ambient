@@ -2436,6 +2436,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tangent_gun_laser"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "tangent_level_cubicide"
 version = "0.1.0"
 dependencies = [

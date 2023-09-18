@@ -1,6 +1,16 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    core::{hierarchy::components::parent, transform::components::local_to_parent},
+    prelude::*,
+};
 
-use packages::{tangent_schema::concepts::VehicleClass, this::components::is_scout};
+use packages::{
+    gun_laser::concepts::{GunLaser, GunLaserOptional},
+    tangent_schema::{
+        concepts::VehicleClass, player::components as pc, vehicle::components as vc,
+        weapon::messages::Fire,
+    },
+    this::components::{is_scout, primary_weapon_id},
+};
 
 #[main]
 pub fn main() {
@@ -54,4 +64,41 @@ pub fn main() {
     .make()
     .with(is_scout(), ())
     .spawn();
+
+    spawn_query(vc::player_ref())
+        .requires(is_scout())
+        .bind(|vehicles| {
+            for (vehicle_id, _) in vehicles {
+                let weapon_id = GunLaser {
+                    is_gun_laser: (),
+                    local_to_world: default(),
+                    damage: 10.0,
+                    time_between_shots: Duration::from_secs(1),
+                    optional: GunLaserOptional {
+                        translation: Some(vec3(0.0, -0.55, 0.1)),
+                        ..default()
+                    },
+                }
+                .make()
+                .with(parent(), vehicle_id)
+                .with(local_to_parent(), default())
+                .spawn();
+
+                entity::add_component(vehicle_id, primary_weapon_id(), weapon_id);
+            }
+        });
+
+    query((vc::player_ref(), primary_weapon_id()))
+        .requires(is_scout())
+        .each_frame(|vehicles| {
+            for (_vehicle_id, (player_id, weapon_id)) in vehicles {
+                let Some(input_fire) = entity::get_component(player_id, pc::input_fire()) else {
+                    return;
+                };
+
+                if input_fire {
+                    Fire { weapon_id }.send_local(packages::gun_laser::entity());
+                }
+            }
+        });
 }

@@ -72,6 +72,7 @@ fn handle_input() {
         Input {
             direction,
             jump: input.keys.contains(&KeyCode::Space),
+            fire: input.mouse_buttons.contains(&MouseButton::Left),
             suicide: delta.keys.contains(&KeyCode::K),
         }
         .send_server_unreliable();

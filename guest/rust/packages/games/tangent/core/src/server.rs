@@ -74,6 +74,7 @@ pub fn main() {
         if let Some(player) = ctx.client_entity_id() {
             entity::add_component(player, pc::input_direction(), input.direction);
             entity::add_component(player, pc::input_jump(), input.jump);
+            entity::add_component(player, pc::input_fire(), input.fire);
 
             // If the user opted to commit suicide, immediately destroy their vehicle
             if input.suicide {
@@ -197,6 +198,7 @@ fn respawn_player(player_id: EntityId) {
     entity::add_component(player_id, pc::vehicle_ref(), vehicle_id);
     entity::add_component(player_id, pc::input_direction(), Vec2::ZERO);
     entity::add_component(player_id, pc::input_jump(), false);
+    entity::add_component(player_id, pc::input_fire(), false);
 
     let _vehicle_model_id = Entity::new()
         .with(cast_shadows(), ())

@@ -12,6 +12,7 @@ content = { type = "Asset", schema = true }
 ] }
 "player::input_direction" = { type = "Vec2", name = "Input Direction", description = "Input direction" }
 "player::input_jump" = { type = "Bool", name = "Jump", description = "Jump" }
+"player::input_fire" = { type = "Bool", name = "Fire", description = "Fire" }
 "player::vehicle_class" = { type = "EntityId", name = "Vehicle Class", description = "The player's vehicle class", attributes = [
     "Networked",
     "Debuggable",
@@ -236,3 +237,7 @@ description = "An explosion"
 name = "On Death"
 description = "Sent to server modules when a vehicle is destroyed."
 fields = { position = "Vec3", player_id = "EntityId" }
+
+[messages."weapon::Fire"]
+description = "A request to fire a weapon."
+fields = { weapon_id = "EntityId" }
