@@ -110,6 +110,7 @@ impl GameServer {
         create_on_forking_systems: Arc<dyn Fn() -> SystemGroup<ForkingEvent> + Sync + Send>,
         create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
         is_sync_component: Arc<dyn Fn(ComponentDesc, WorldStreamCompEvent) -> bool + Sync + Send>,
+        on_server_state_created: Arc<dyn Fn(SharedServerState) + Sync + Send>,
     ) -> SharedServerState {
         let Self {
             endpoint,
@@ -136,6 +137,7 @@ impl GameServer {
             create_on_forking_systems,
             create_shutdown_systems,
         )));
+        on_server_state_created(state.clone());
 
         let mut fps_counter = FpsCounter::new();
         let mut sim_interval = interval(FIXED_SERVER_TICK_TIME);

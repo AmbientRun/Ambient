@@ -24,17 +24,19 @@ use ambient_network::{
         client::ResolvedAddr,
         server::{Crypto, GameServer},
     },
-    server::{ForkingEvent, ProxySettings, ShutdownEvent},
+    server::{ForkingEvent, ProxySettings, SharedServerState, ShutdownEvent},
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
 use axum::{
+    extract::State,
     http::{Method, StatusCode},
     response::IntoResponse,
     routing::{get, get_service},
     Router,
 };
+use parking_lot::Mutex;
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
 use crate::{cli::HostCli, shared};
@@ -125,20 +127,25 @@ pub async fn start(
     };
 
     // here the key is inserted into the asset cache
+    let server_state_holder = Arc::new(Mutex::new(None));
     if let Ok(Some(build_path_fs)) = build_root_path.to_file_path() {
         let key = format!("http://{public_host}:{http_interface_port}/content/");
         let base_url = AbsAssetUrl::from_str(&key).unwrap();
         ServerBaseUrlKey.insert(&assets, base_url.clone());
         ContentBaseUrlKey.insert(&assets, base_url);
 
-        start_http_interface(Some(&build_path_fs), http_interface_port);
+        start_http_interface(
+            Some(&build_path_fs),
+            http_interface_port,
+            server_state_holder.clone(),
+        );
     } else {
         let base_url = build_root_path.clone();
 
         ServerBaseUrlKey.insert(&assets, base_url.clone());
         ContentBaseUrlKey.insert(&assets, base_url);
 
-        start_http_interface(None, http_interface_port);
+        start_http_interface(None, http_interface_port, server_state_holder.clone());
     }
 
     let join_handle = tokio::task::spawn(async move {
@@ -206,6 +213,7 @@ pub async fn start(
                 Arc::new(on_forking_systems),
                 Arc::new(on_shutdown_systems),
                 Arc::new(is_sync_component),
+                Arc::new(move |state| *server_state_holder.lock() = Some(state)),
             )
             .await;
     });
@@ -294,11 +302,33 @@ fn create_resources(assets: AssetCache) -> Entity {
     server_resources
 }
 
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ServerStatus {
+    player_count: usize,
+}
+
 pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
-fn start_http_interface(build_path: Option<&Path>, http_interface_port: u16) {
+fn start_http_interface(
+    build_path: Option<&Path>,
+    http_interface_port: u16,
+    server_state_holder: Arc<Mutex<Option<SharedServerState>>>,
+) {
     let mut router = Router::new()
         .route("/ping", get(|| async move { "ok" }))
+        .route(
+            "/status",
+            get(
+                |State(state): State<Arc<Mutex<Option<SharedServerState>>>>| async move {
+                    let server_state = state.lock().clone();
+                    let player_count = server_state
+                        .map(|s| s.lock().player_count())
+                        .unwrap_or_default();
+                    axum::Json(ServerStatus { player_count })
+                },
+            ),
+        )
         .route(
             "/info",
             get(|| async move { axum::Json(ambient_version()) }),
@@ -311,7 +341,7 @@ fn start_http_interface(build_path: Option<&Path>, http_interface_port: u16) {
         );
     };
 
-    router = router.layer(
+    let router = router.with_state(server_state_holder).layer(
         CorsLayer::new()
             .allow_origin(tower_http::cors::Any)
             .allow_methods(vec![Method::GET])
