@@ -1,9 +1,13 @@
 use ambient_api::{
     core::{
         model::components::model_from_url,
-        physics::components::plane_collider,
+        physics::components::{cube_collider, plane_collider, sphere_collider},
         player::components::is_player,
-        primitives::components::quad,
+        primitives::{
+            components::{cube, quad},
+            concepts::Sphere,
+        },
+        rendering::components::cast_shadows,
         // rendering::components::{outline, overlay},
         transform::components::{rotation, scale, translation},
     },
@@ -65,12 +69,12 @@ pub fn main() {
         .spawn();
 
     Entity::new()
-        .with(translation(), vec3(3., 0., 0.))
+        .with(translation(), vec3(3., 0., 0.25))
         .with(temperature_src_rate(), 5.0) // very warm very fast
-        .with(temperature_src_radius(), 10.0)
+        .with(temperature_src_radius(), 20.0) // big radius
         .with(
             model_from_url(),
-            packages::this::assets::url("emissive_campfire.glb"),
+            packages::this::assets::url("nocoll/Campfire.glb"),
         )
         .with(
             ambient_loop(),
@@ -99,11 +103,36 @@ pub fn load_scene() {
         .with(plane_collider(), ())
         .spawn();
 
-    let nodes =
-        crate::sceneloader::scene_contents_to_nodes(include_str!("../scenes/snowstorm_maze.tscn"));
+    let nodes = crate::sceneloader::scene_contents_to_nodes(include_str!(
+        "../scenes/snowstorm_mounds.tscn"
+    ));
 
     for (_key, node) in nodes {
-        if let Some(path) = node.path {
+        if node.name.starts_with("sphere") {
+            Entity::new()
+                .with_merge(
+                    Sphere {
+                        ..Sphere::suggested()
+                    }
+                    .make(),
+                )
+                .with(sphere_collider(), 0.5)
+                .with(translation(), node.pos.unwrap())
+                .with(rotation(), node.rot.unwrap())
+                .with(scale(), node.siz.unwrap())
+                .with(cast_shadows(), ())
+                .spawn();
+        } else if node.name.starts_with("cube") {
+            Entity::new()
+                .with(cube(), ())
+                .with(cube_collider(), Vec3::splat(1.))
+                .with(translation(), node.pos.unwrap())
+                .with(rotation(), node.rot.unwrap())
+                .with(scale(), node.siz.unwrap())
+                .spawn();
+        } else if node.name.starts_with("sun") {
+            // dbg!(node.rot.unwrap());
+        } else if let Some(path) = node.path {
             if path.ends_with("glb") {
                 Entity::new()
                     .with(name(), node.name)
@@ -112,6 +141,7 @@ pub fn load_scene() {
                     .with(rotation(), node.rot.unwrap())
                     .with(scale(), node.siz.unwrap())
                     .with(prefab_from_url(), crate::packages::this::assets::url(&path))
+                    .with(cast_shadows(), ())
                     .spawn();
             }
         }

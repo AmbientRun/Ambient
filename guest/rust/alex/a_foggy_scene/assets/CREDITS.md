@@ -23,7 +23,10 @@ No attribution necessary, this is so I know everything's accounted for:
 - really_lumpy_wall.glb
 
 # from Mixamo
-- Left Strafe Walking.fbx
-- Right Strafe Walking.fbx
-- Walking Backwards.fbx
-- Walking.fbx
+- movement/ folder
+
+# hermaneubis.glb
+from threedscans.com
+
+# Campfire.glb
+Campfire by Poly by Google [CC-BY] via Poly Pizza

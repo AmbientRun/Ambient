@@ -1,0 +1,3 @@
+[[pipelines]]
+sources = ["*.glb", "*.fbx"]
+type = "Models"
