@@ -1,18 +1,9 @@
-// This lives in its own interface due to a wit-bindgen bug where `component-type` is only partially expanded
-// (i.e. `list-type` and `option-type` are not expanded), and it's only expanded in the first interface to use it.
-//
-// To work around this, we just give it its own interface and have functions that use it in the same interface.
 interface component {
     use types.{entity-id, mat4, quat, vec2, vec3, vec4, uvec2, uvec3, uvec4, ivec2, ivec3, ivec4, duration, empty}
     use client-mesh.{handle as procedural-mesh-handle}
     use client-texture.{handle as procedural-texture-handle}
     use client-sampler.{handle as procedural-sampler-handle}
     use client-material.{handle as procedural-material-handle}
-
-    type component-index = u32
-
-    // wit does not support recursive types, so we serialize them as bincode
-    // and undo this at the point of use
 
     variant vec-value {
         type-empty(list<empty>),
@@ -45,7 +36,6 @@ interface component {
         type-procedural-texture-handle(list<procedural-texture-handle>),
         type-procedural-sampler-handle(list<procedural-sampler-handle>),
         type-procedural-material-handle(list<procedural-material-handle>),
-        // type-entity(list<list<u8>>),
     }
 
     variant option-value {
@@ -79,7 +69,6 @@ interface component {
         type-procedural-texture-handle(option<procedural-texture-handle>),
         type-procedural-sampler-handle(option<procedural-sampler-handle>),
         type-procedural-material-handle(option<procedural-material-handle>),
-        // type-entity(option<list<u8>>),
     }
 
     variant value {
@@ -115,34 +104,36 @@ interface component {
         type-procedural-material-handle(procedural-material-handle),
         type-vec(vec-value),
         type-option(option-value),
-        //type-entity(list<u8>),
     }
 
-    type entity = list<tuple<component-index, value>>
-    get-index: func(id: string) -> option<component-index>
-    get-id: func(index: component-index) -> option<string>
+    // For some reason, using the component-index alias breaks bindgen for the web client.
+    // Where you see u32 below, pretend it says `component-index` instead.
+    type component-index = u32
+    type entity = list<tuple<u32, value>>
+    get-index: func(id: string) -> option<u32>
+    get-id: func(index: u32) -> option<string>
 
-    get-component: func(entity: entity-id, index: component-index) -> option<value>
-    get-components: func(entity: entity-id, indices: list<component-index>) -> entity
+    get-component: func(entity: entity-id, index: u32) -> option<value>
+    get-components: func(entity: entity-id, indices: list<u32>) -> entity
     get-all-components: func(entity: entity-id) -> entity
 
-    add-component: func(entity: entity-id, index: component-index, value: value)
+    add-component: func(entity: entity-id, index: u32, value: value)
     add-components: func(entity: entity-id, data: entity)
 
-    set-component: func(entity: entity-id, index: component-index, value: value)
+    set-component: func(entity: entity-id, index: u32, value: value)
     set-components: func(entity: entity-id, data: entity)
 
-    has-component: func(entity: entity-id, index: component-index) -> bool
-    has-components: func(entity: entity-id, indices: list<component-index>) -> bool
+    has-component: func(entity: entity-id, index: u32) -> bool
+    has-components: func(entity: entity-id, indices: list<u32>) -> bool
 
-    remove-component: func(entity: entity-id, index: component-index)
-    remove-components: func(entity: entity-id, indices: list<component-index>)
+    remove-component: func(entity: entity-id, index: u32)
+    remove-components: func(entity: entity-id, indices: list<u32>)
 
     record query-build {
-        components: list<component-index>,
-        includes: list<component-index>,
-        excludes: list<component-index>,
-        changed: list<component-index>,
+        components: list<u32>,
+        includes: list<u32>,
+        excludes: list<u32>,
+        changed: list<u32>,
     }
 
     enum query-event {
