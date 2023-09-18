@@ -13,6 +13,7 @@ content = { type = "Asset", schema = true }
 "player::input_direction" = { type = "Vec2", name = "Input Direction", description = "Input direction" }
 "player::input_jump" = { type = "Bool", name = "Jump", description = "Jump" }
 "player::input_fire" = { type = "Bool", name = "Fire", description = "Fire" }
+"player::input_aim_direction" = { type = "Vec2", name = "Aim Direction", description = "Aim direction in degrees from the centre" }
 "player::vehicle_class" = { type = "EntityId", name = "Vehicle Class", description = "The player's vehicle class", attributes = [
     "Networked",
     "Debuggable",
@@ -71,6 +72,10 @@ content = { type = "Asset", schema = true }
     "Networked",
 ] }
 
+"vehicle::data::input::aim_direction_limits" = { type = "Vec2", name = "Aim Direction Limits", description = "Limits of the aim direction in degrees from the centre", attributes = [
+    "Networked",
+] }
+
 "vehicle::data::slowdown::linear_strength" = { type = "F32", name = "Linear Strength", description = "Strength of the linear slowdown applied to the vehicle", attributes = [
     "Networked",
 ] }
@@ -83,6 +88,9 @@ content = { type = "Asset", schema = true }
 
 # Vehicle
 "vehicle::player_ref" = { type = "EntityId", name = "Vehicle", description = "A vehicle (and its driver)", attributes = [
+    "Networked",
+] }
+"vehicle::aimable_weapon_refs" = { type = { type = "Vec", element_type = "EntityId" }, name = "Aimable Weapon Refs", description = "All aimable weapons for this vehicle. If present in this array, their rotations will be automatically updated to match the aim position. Assumes that the weapons are a child of the vehicle.", attributes = [
     "Networked",
 ] }
 
@@ -100,6 +108,11 @@ content = { type = "Asset", schema = true }
     "Networked",
 ] }
 "vehicle::last_upside_down_time" = { type = "Duration", name = "Last Upside Down Time", description = "The last time the player's vehicle was known to be upside down. Added when first detected, removed when no longer the case. Used to respawn the vehicle after some time.", attributes = [
+    "Networked",
+] }
+
+# Vehicle (server-only)
+"vehicle::aim_position" = { type = "Vec3", name = "Aim Position", description = "Position of the aim target", attributes = [
     "Networked",
 ] }
 
@@ -170,6 +183,8 @@ description = "Data for a vehicle"
 
 "vehicle::data::input::jump_force" = {}
 
+"vehicle::data::input::aim_direction_limits" = {}
+
 "vehicle::data::input::pitch_strength" = {}
 "vehicle::data::input::turning_strength" = {}
 
@@ -199,6 +214,8 @@ extends = ["VehicleData"]
 "vehicle::last_slowdown_time" = {}
 [concepts.Vehicle.components.optional]
 "vehicle::last_upside_down_time" = {}
+"vehicle::aim_position" = {}
+"vehicle::aimable_weapon_refs" = {}
 
 [concepts.VehicleClass]
 name = "Vehicle Class"

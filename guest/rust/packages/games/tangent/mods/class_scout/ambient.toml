@@ -14,7 +14,3 @@ kenney_space_kit = { path = "../../../../assets/kenney_space_kit" }
 is_scout = { type = "Empty", name = "Is Scout", description = "Marks this entity as a scout.", attributes = [
     "Networked",
 ] }
-
-primary_weapon_id = { type = "EntityId", name = "Primary Weapon", description = "The entity ID of the primary weapon.", attributes = [
-    "Networked",
-] }

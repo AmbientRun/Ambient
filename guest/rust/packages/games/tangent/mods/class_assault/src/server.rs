@@ -41,6 +41,8 @@ pub fn main() {
         pitch_strength: 10.0,
         turning_strength: 20.0,
 
+        aim_direction_limits: Vec2::ONE * 15f32,
+
         jump_timeout: Duration::from_secs_f32(2.0),
 
         linear_strength: 0.8,

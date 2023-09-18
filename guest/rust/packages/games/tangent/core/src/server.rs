@@ -24,13 +24,14 @@ use ambient_api::{
 use packages::{
     tangent_schema::{
         concepts::{Explosion, Spawnpoint, Vehicle},
-        explosion,
         messages::OnDeath,
         player::components as pc,
         vehicle::{class::components as vclc, components as vc, data as vd},
     },
     this::messages::{Input, OnCollision, OnSpawn},
 };
+
+mod shared;
 
 #[main]
 pub fn main() {
@@ -71,17 +72,35 @@ pub fn main() {
 
     // When a player sends input, update their input state.
     Input::subscribe(|ctx, input| {
-        if let Some(player) = ctx.client_entity_id() {
-            entity::add_component(player, pc::input_direction(), input.direction);
-            entity::add_component(player, pc::input_jump(), input.jump);
-            entity::add_component(player, pc::input_fire(), input.fire);
+        let Some(player) = ctx.client_entity_id() else {
+            return;
+        };
 
-            // If the user opted to commit suicide, immediately destroy their vehicle
-            if input.suicide {
-                if let Some(vehicle) = entity::get_component(player, pc::vehicle_ref()) {
-                    entity::set_component(vehicle, vc::health(), 0.0);
-                }
-            }
+        let Some(vehicle) = entity::get_component(player, pc::vehicle_ref()) else {
+            return;
+        };
+
+        let aim_direction_limits =
+            entity::get_component(vehicle, vd::input::components::aim_direction_limits())
+                .unwrap_or(Vec2::ONE * 20.0);
+
+        entity::add_component(player, pc::input_direction(), input.direction);
+        entity::add_component(player, pc::input_jump(), input.jump);
+        entity::add_component(player, pc::input_fire(), input.fire);
+        let aim_direction = input
+            .aim_direction
+            .clamp(-aim_direction_limits, aim_direction_limits);
+        entity::add_component(player, pc::input_aim_direction(), aim_direction);
+
+        entity::add_component(
+            vehicle,
+            vc::aim_position(),
+            shared::calculate_aim_position(vehicle, aim_direction),
+        );
+
+        // If the user opted to respawn, immediately destroy their vehicle
+        if input.respawn {
+            entity::set_component(vehicle, vc::health(), 0.0);
         }
     });
 
@@ -199,6 +218,7 @@ fn respawn_player(player_id: EntityId) {
     entity::add_component(player_id, pc::input_direction(), Vec2::ZERO);
     entity::add_component(player_id, pc::input_jump(), false);
     entity::add_component(player_id, pc::input_fire(), false);
+    entity::add_component(player_id, pc::input_aim_direction(), Vec2::ZERO);
 
     let _vehicle_model_id = Entity::new()
         .with(cast_shadows(), ())
@@ -311,7 +331,26 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
         entity::remove_component(vehicle_id, vc::last_upside_down_time());
     }
 
-    let mut last_distances = v.last_distances;
+    // Process gun aiming
+    if let Some((aimable_weapon_refs, aim_position)) =
+        v.optional.aimable_weapon_refs.zip(v.optional.aim_position)
+    {
+        for weapon_id in aimable_weapon_refs {
+            let Some(weapon_ltw) = entity::get_component(weapon_id, local_to_world()) else {
+                continue;
+            };
+
+            let (_, _, weapon_position) = weapon_ltw.to_scale_rotation_translation();
+
+            let inv_local_to_world =
+                Mat4::from_rotation_translation(-v.rotation, -weapon_position).transpose();
+
+            let aim_position_relative_to_gun = inv_local_to_world.transform_point3(aim_position);
+            let rot = Quat::from_rotation_arc(-Vec3::Y, aim_position_relative_to_gun.normalize());
+
+            entity::set_component(weapon_id, rotation(), rot);
+        }
+    }
 
     // Apply jump
     let vehicle_last_jump_time = get(vehicle_id, vc::last_jump_time()).unwrap_or_default();
@@ -329,6 +368,7 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
     };
 
     // Apply per-thruster forces
+    let mut last_distances = v.last_distances;
     let mut avg_distance = 0.0;
     for (index, thruster_offset) in v.offsets.iter().enumerate() {
         let offset = thruster_offset.extend(0.0);

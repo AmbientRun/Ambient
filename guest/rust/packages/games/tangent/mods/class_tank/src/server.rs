@@ -46,6 +46,8 @@ pub fn main() {
 
         jump_timeout: Duration::from_secs_f32(2.0),
 
+        aim_direction_limits: Vec2::ONE * 20f32,
+
         linear_strength: 0.8,
         angular_strength: 0.4,
         angular_delay: Duration::from_secs_f32(0.25),
