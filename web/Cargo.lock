@@ -2364,6 +2364,7 @@ dependencies = [
  "ambient_web",
  "dioxus",
  "dioxus-web",
+ "serde-wasm-bindgen 0.6.0",
  "wasm-bindgen",
  "web-sys",
 ]

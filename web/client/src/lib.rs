@@ -22,9 +22,13 @@ static APP_CONTROL: OnceLock<flume::Sender<WindowCtl>> = OnceLock::new();
 
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct Settings {
-    enable_logging: bool,
-    enable_panic_hook: bool,
+/// TODO: make private if no longer needed by the dioxus example?
+/// This is inteded to be used by a loosely typed settings object from javascript allow for
+/// backwards and forwards compatibility when new fields are added to the settings object in a
+/// "best fit" approach, similar to the `settings` in the LanguageServerProtocol spec.
+pub struct Settings {
+    pub enable_logging: bool,
+    pub enable_panic_hook: bool,
 }
 
 /// Initialize ambient
