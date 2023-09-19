@@ -1199,6 +1199,7 @@ dependencies = [
  "ambient_native_std",
  "ambient_physics",
  "ambient_rpc",
+ "ambient_sys",
  "anyhow",
  "async-trait",
  "serde_json",

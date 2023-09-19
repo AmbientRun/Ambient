@@ -19,6 +19,7 @@ ambient_audio.workspace = true
 ambient_cameras.workspace = true
 ambient_client_shared.workspace = true
 ambient_core.workspace = true
+ambient_prefab.workspace = true
 ambient_debugger.workspace = true
 ambient_ecs.workspace = true
 ambient_ecs_editor.workspace = true
