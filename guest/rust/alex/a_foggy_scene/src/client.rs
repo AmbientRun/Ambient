@@ -5,7 +5,7 @@ use ambient_api::{
         audio::components::amplitude,
         camera::components::{fog, perspective_infinite_reverse},
         player::components::is_player,
-        rendering::components::{cast_shadows, fog_color, fog_density, light_ambient},
+        rendering::components::{cast_shadows, fog_color, fog_density, light_ambient, outline},
     },
     prelude::*,
 };
@@ -67,9 +67,10 @@ pub fn main() {
             let t = (coldness - 0.60) / (1. - 0.60);
             entity::set_component(sun, fog_density(), 0.20 + 0.80 * t * t);
         }
-        // let desired_fog_colour = vec3(0.75, 0.45, 0.75).lerp(vec3(0.60, 1.00, 1.00), coldness.sqrt());
+        // let desired_fog_colour =
+        //     vec3(0.75, 0.45, 0.75).lerp(vec3(0.60, 1.00, 1.00), coldness.sqrt());
         // entity::mutate_component(sun, fog_color(), |color| {
-        //     *color = color.lerp(vec3(0.804, 0.804, 0.804), 0.1)
+        //     *color = color.lerp(desired_fog_colour, 0.1)
         // });
     });
 
@@ -147,8 +148,10 @@ pub fn make_my_local_sun_with_sky() -> EntityId {
         )
         // .with(rotation(), Default::default())
         .with(main_scene(), ())
-        .with(light_diffuse(), Vec3::ONE) // pure white light
-        .with(light_ambient(), vec3(0.100, 0.100, 0.100)) // low ambience
+        // .with(light_diffuse(), Vec3::ONE) // pure white light
+        // .with(light_ambient(), vec3(0.100, 0.100, 0.100)) // low ambience
+        .with(light_diffuse(), Vec3::splat(0.50)) // medium diffuse
+        .with(light_ambient(), vec3(0.404, 0.404, 0.404)) // bright ambience
         .with(cast_shadows(), ())
         // .with(fog_color(), vec3(0.88, 0.37, 0.34)) // dusty red
         // .with(fog_color(), vec3(0.34, 0.37, 0.88)) // blueish. cold.

@@ -1,0 +1,7 @@
+[[pipelines]]
+sources = ["*.glb", "*.fbx"]
+type = "Models"
+
+[[pipelines.transforms]]
+type = "RotateZ"
+deg = -90.0

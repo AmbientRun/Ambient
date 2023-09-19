@@ -7,7 +7,7 @@ use ambient_api::{
             components::{cube, quad},
             concepts::Sphere,
         },
-        rendering::components::cast_shadows,
+        rendering::components::{cast_shadows, color, outline},
         // rendering::components::{outline, overlay},
         transform::components::{rotation, scale, translation},
     },
@@ -36,7 +36,7 @@ pub fn main() {
                     .with(use_fps_controller(), ())
                     .with(
                         model_from_url(),
-                        packages::base_assets::assets::url("Y Bot.fbx"),
+                        packages::this::assets::url("muscle/Muscle Chicken.fbx"),
                     )
                     .with(basic_character_animations(), plr)
                     .with(temperature(), 37.0)
@@ -100,6 +100,7 @@ pub fn load_scene() {
         .with(translation(), Vec3::ZERO)
         .with(quad(), ())
         .with(scale(), Vec3::splat(1000.))
+        .with(color(), Vec3::splat(0.65).extend(1.))
         .with(plane_collider(), ())
         .spawn();
 
@@ -120,6 +121,8 @@ pub fn load_scene() {
                 .with(translation(), node.pos.unwrap())
                 .with(rotation(), node.rot.unwrap())
                 .with(scale(), node.siz.unwrap())
+                .with(color(), Vec3::splat(0.65).extend(1.))
+                .with(outline(), vec4(1.0, 0.0, 0.0, 1.0))
                 .with(cast_shadows(), ())
                 .spawn();
         } else if node.name.starts_with("cube") {
