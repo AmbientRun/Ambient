@@ -20,6 +20,13 @@ You should see a simple scene in front of you now, which looks like this:
 
 ![Ambient window](template.png)
 
+> Tip: You can also open the project in VSCode by typing `code .` in the folder, or `code my_project` from the root folder.
+
+> Tip: In VSCode you can hit `F5` to run the project.
+
+> Tip: Run with `--debugger` to show the debugger UI (i.e. `ambient run --debugger`). See [debugging for more info](../../user/debugging.md).
+> In VSCode you can switch to the "Debug" launch configuration and then press `F5` to do the same.
+
 Among the console output of ambient you should see a line that says something like:
 
 ```

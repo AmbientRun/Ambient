@@ -39,7 +39,7 @@ Frame::subscribe(|_| {
         .with(scale(), Vec3::ONE * 0.2)
         .with(
             translation(),
-            (rand::random::<Vec2>() * 2.0 - 1.0).extend(10.),
+            Vec3::X * 10. + (rand::random::<Vec2>() * 2.0 - 1.0).extend(10.),
         )
         .with(sphere_collider(), 0.5)
         .with(dynamic(), true)

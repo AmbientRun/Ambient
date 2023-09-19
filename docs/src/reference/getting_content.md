@@ -19,6 +19,8 @@ For details on how to import the content, see [asset pipeline](./asset_pipeline.
 - [Unity asset store](https://assetstore.unity.com/): Lots of content. The Ambient asset pipeline supports importing Unity models. However, ensure that the license allows you to use the content in your game.
 - [Quixel](https://quixel.com/): Realistic scanned models. The asset pipeline supports importing Quixel models. However, ensure that the license allows you to use the content in your game.
 - [Sketchfab](https://sketchfab.com/): Many models.
+- [Polyhaven](https://polyhaven.com/): The Public 3D Asset Library
+- [Official GLTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models)
 
 ## Materials & Textures
 
