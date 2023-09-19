@@ -74,7 +74,7 @@ pub fn main() {
         .with(temperature_src_radius(), 20.0) // big radius
         .with(
             model_from_url(),
-            packages::this::assets::url("nocoll/Campfire.glb"),
+            packages::this::assets::url("nocoll/pure_white_cone.glb"),
         )
         .with(
             ambient_loop(),
@@ -122,7 +122,6 @@ pub fn load_scene() {
                 .with(rotation(), node.rot.unwrap())
                 .with(scale(), node.siz.unwrap())
                 .with(color(), Vec3::splat(0.65).extend(1.))
-                .with(outline(), vec4(1.0, 0.0, 0.0, 1.0))
                 .with(cast_shadows(), ())
                 .spawn();
         } else if node.name.starts_with("cube") {
