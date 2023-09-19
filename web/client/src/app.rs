@@ -6,7 +6,7 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_native_std::friendly_id;
 use ambient_network::{server::RpcArgs, web::client::GameClientView};
 use ambient_rpc::RpcRegistry;
-use ambient_ui_native::{cb, Dock};
+use ambient_ui_native::{cb};
 use std::collections::HashMap;
 
 #[element_component]
@@ -48,7 +48,7 @@ pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {
             }))
         }),
         create_rpc_registry: cb(create_server_rpc_registry),
-        inner: Dock::el(vec![GameView { show_debug: false }.el()]),
+        inner: GameView { show_debug: false }.el(),
     }
     .el()
 }

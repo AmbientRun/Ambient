@@ -211,7 +211,6 @@ impl ElementComponent for GameClientView {
                 .world
                 .add_resource(crate::client::client_state(), Some(client_state.clone()));
 
-            // FlowRow(vec![Text::el(format!("Connected")), inner]).el()
             inner
         } else {
             Centered(vec![FlowColumn::el([FlowRow::el([

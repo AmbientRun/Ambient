@@ -181,7 +181,10 @@
     "cmd": "cargo run -- run ./guest/rust/packages/games/tictactoe"
   },
   "fog": {
-    "cmd": "cargo run -- run --release ./guest/rust/examples/rendering/fog"
+    "cmd": "cargo run -- run --release ./guest/rust/examples/rendering/fog --clean-build"
+  },
+  "run text": {
+    "cmd": "cargo run -- run --release ./guest/rust/examples/ui/text --clean-build"
   },
   "skinmesh": {
     "cmd": "cargo run -- run ./guest/rust/examples/basics/skinmesh"

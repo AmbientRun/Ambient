@@ -7,8 +7,7 @@ use ambient_core::{
     window::{ExitStatus, WindowCtl},
 };
 use ambient_ui_native::{
-    element::{ElementComponentExt, Group},
-    padding, Borders, WindowSized,
+    element::{ElementComponentExt, Group}, WindowSized,
 };
 use app::MainApp;
 use tracing_subscriber::{filter::LevelFilter, prelude::*, registry};
@@ -108,7 +107,7 @@ async fn run(target: Option<web_sys::HtmlElement>, server_url: String) -> anyhow
     Group(vec![
         UICamera.el().with(active_camera(), 0.),
         ambient_client_shared::player::PlayerRawInputHandler.el(),
-        WindowSized::el([MainApp::el(server_url).with(padding(), Borders::even(10.).into())]),
+        WindowSized::el([MainApp::el(server_url)]),
     ])
     .el()
     .spawn_interactive(world);
