@@ -27,6 +27,7 @@
 - [Chapter 4: Player interaction](./tutorials/game/4_player_interaction.md)
 - [Chapter 5: Models](./tutorials/game/5_models.md)
 - [Chapter 6: UI](./tutorials/game/6_ui.md)
+- [Chapter 7: Deploying](./tutorials/game/7_deploying.md)
 
 # Reference Guide
 

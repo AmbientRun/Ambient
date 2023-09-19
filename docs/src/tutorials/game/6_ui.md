@@ -31,3 +31,4 @@ You should now see something like this:
 
 > Challenge: Try adding a `Button`, which when clicked sends a message to the server and moves the characters position somewhere else.
 
+## [ ⇾ Chapter 7: Deploying](./7_deploying.md)
