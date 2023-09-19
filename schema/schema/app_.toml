@@ -59,7 +59,8 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "String"
 name = "Name"
 description = "A human-friendly name for this entity."
-attributes = ["Debuggable", "Networked", "Store"]
+# name is MaybeResource as it can be used as part of the resources entity of a prefab
+attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]
 
 [components.description]
 type = "String"
