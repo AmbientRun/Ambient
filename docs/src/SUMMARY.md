@@ -16,6 +16,14 @@
 - [Profiling](user/profiling.md)
 - [Settings](user/settings.md)
 
+# Tutorial
+
+## A game from scratch
+
+- [Intro](tutorials/game/0_intro.md)
+- [Creating a package](tutorials/game/1_package.md)
+
+
 # Reference Guide
 
 - [Getting content](reference/getting_content.md)
