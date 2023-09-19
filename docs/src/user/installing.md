@@ -6,7 +6,7 @@ Installing Ambient for development purposes is easy, just follow these three ste
 2. Add the wasm32 toolchain: `rustup target add --toolchain stable wasm32-wasi`
 3. Install ambient: `cargo install ambient`
 
-Step 2. and 3. are commands that you need to paste into your terminal of choise.
+Step 2. and 3. are commands that you need to paste into your terminal of choice.
 
 Ambient currently runs on Windows, Linux and Mac.
 
