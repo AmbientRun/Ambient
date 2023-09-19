@@ -20,10 +20,4 @@ This tutorial is divided into several chapters:
 
 - [Chapter 1: Creating a project](./1_package.md)
 - [Chapter 2: Setting up a fps controller](./2_fps_controller.md)
-- [Chapter 2: Obstacles](./3_obstacles.md)
-
-- [Chapter 3: Loading assets](./3_assets.md)
-- [Chapter 4: Components](./4_components.md)
-- [Chapter 5: Queries](./5_queries.md)
-- [Chapter 6: Input handling and messages](./6_input_queries.md)
-- [Chapter 7: UI](./7_ui.md)
+- [Chapter 3: Obstacles](./3_obstacles.md)

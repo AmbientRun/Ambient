@@ -23,6 +23,11 @@
 - [Intro](tutorials/game/0_intro.md)
 - [Creating a package](tutorials/game/1_package.md)
 
+- [Chapter 0: Intro](./tutorials/game/0_intro.md)
+- [Chapter 1: Creating a project](./tutorials/game/1_package.md)
+- [Chapter 2: Setting up a fps controller](./tutorials/game/2_fps_controller.md)
+- [Chapter 3: Obstacles](./tutorials/game/3_obstacles.md)
+
 
 # Reference Guide
 
@@ -30,6 +35,7 @@
 - [Runtime](reference/runtime.md)
 - [Package](reference/package.md)
 - [ECS](reference/ecs.md)
+- [Messages](reference/messages.md)
 - [Models](reference/models.md)
 - [Hierarchies and transforms](reference/hierarchies.md)
 - [Asset pipeline](reference/asset_pipeline.md)
