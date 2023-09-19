@@ -5,20 +5,20 @@ version = "0.1.0"
 content = { type = "Playable" }
 
 [dependencies]
-tangent_core = { path = "core", deployment = "39nAewTgzpxp4PIpKR3WT8" }
+tangent_core = { path = "core", deployment = "65vePZoRIcSvsoJ1ofl4pE" }
 
-tangent_camera_follow = { path = "mods/camera_follow", enabled = true }
-tangent_camera_topdown = { path = "mods/camera_topdown", enabled = false }
+tangent_camera_follow = { path = "mods/camera_follow", enabled = true , deployment = "5itgDzhwA9NZ75iHPfiJJr" }
+tangent_camera_topdown = { path = "mods/camera_topdown", enabled = false , deployment = "3L0xfrodRJIav8jYuUHUWd" }
 
-tangent_ui_holohud = { path = "mods/ui_holohud", enabled = true }
-tangent_ui_class_selection = { path = "mods/ui_class_selection" }
+tangent_ui_holohud = { path = "mods/ui_holohud", enabled = true , deployment = "3K0OC01rxYlC1zrUUf6IOO" }
+tangent_ui_class_selection = { path = "mods/ui_class_selection" , deployment = "2UMJ073bDUujYcHSVG9Hv7" }
 
-tangent_pickup_health = { path = "mods/pickup_health" }
+tangent_pickup_health = { path = "mods/pickup_health" , deployment = "mszu7F4GwY6WSjG1Okd7U" }
 
-tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true }
+tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true , deployment = "2SJQjSoBE3uEXMqqyRRAv5" }
 
-tangent_class_assault = { path = "mods/class_assault", enabled = true }
-tangent_class_scout = { path = "mods/class_scout", enabled = true }
-tangent_class_tank = { path = "mods/class_tank", enabled = true }
+tangent_class_assault = { path = "mods/class_assault", enabled = true , deployment = "6kkQxFFTKJMFWO7ecyDms2" }
+tangent_class_scout = { path = "mods/class_scout", enabled = true , deployment = "33jjtH8p4i7q40WpUK6JTL" }
+tangent_class_tank = { path = "mods/class_tank", enabled = true , deployment = "1VlMYlWmfGV6WOBIiUAmDn" }
 
-package_manager = { path = "../../tools/package_manager", deployment = "3CWmEvSv1vAj3HlhhEvjXK" }
+package_manager = { path = "../../tools/package_manager", deployment = "1T4wtq4B99x5yd8v1GEaNR" }

@@ -5,10 +5,10 @@ version = "0.1.0"
 content = { type = "Playable" }
 
 [dependencies]
-tangent_schema = { path = "../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
-hide_cursor = { path = "../../../std/hide_cursor", deployment = "1IceD2zFRXDdJRwvCtUSGK" }
+tangent_schema = { path = "../schema", deployment = "1wp8iJTwYD8dfqFA0sBrJD" }
+hide_cursor = { path = "../../../std/hide_cursor", deployment = "2lANi8tL1ixq6UdciJh9nr" }
 
-kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds" }
+kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds" , deployment = "4B6ZDnUUuRV9PIeiRsSiK" }
 
 [messages.Input]
 name = "Input"

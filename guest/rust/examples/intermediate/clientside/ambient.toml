@@ -18,4 +18,4 @@ grid_position = { name = "Grid Position", description = "The position of the cel
 ] }
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "D6ezUylONCqJeP6yzcvj0" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "6Be9qDWYrcsO8wKb5qr6sP" }
