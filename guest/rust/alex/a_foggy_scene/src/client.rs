@@ -1,18 +1,23 @@
-use std::f32::consts::PI;
+use std::f32::consts::{E, PI};
 
 use ambient_api::{
     core::{
         audio::components::amplitude,
         camera::components::{fog, perspective_infinite_reverse},
         player::components::is_player,
-        rendering::components::{cast_shadows, fog_color, fog_density, light_ambient, outline},
+        primitives::concepts::Sphere,
+        rendering::components::{
+            cast_shadows, color, fog_color, fog_density, light_ambient, outline,
+            pbr_material_from_url, transparency_group,
+        },
+        transform::components::{local_to_world, scale, spherical_billboard, translation},
     },
     prelude::*,
 };
 use packages::{
     character_animation::{self, components::basic_character_animations},
-    temperature::components::temperature,
-    this::components::ambient_loop,
+    temperature::components::{temperature, temperature_src_radius, temperature_src_rate},
+    this::components::{ambient_loop, heat_offset, heat_radius, visualizing_heat_source},
 };
 
 const DEATH_TEMP: f32 = 21.;
@@ -20,6 +25,8 @@ const NORMAL_TEMP: f32 = 37.;
 
 #[main]
 pub fn main() {
+    visualize_sources_of_warmth();
+
     spawn_query(())
         .requires(perspective_infinite_reverse())
         .bind(|cameras| {
@@ -141,18 +148,12 @@ pub fn make_my_local_sun_with_sky() -> EntityId {
 
     Entity::new()
         .with(sun(), 0.0)
-        .with(
-            rotation(),
-            Quat::from_xyzw(-0.091639765, 0.9358677, -0.312692, 0.13407977)
-                * Quat::from_rotation_z(PI),
-        )
         // .with(rotation(), Default::default())
         .with(main_scene(), ())
         // .with(light_diffuse(), Vec3::ONE) // pure white light
         // .with(light_ambient(), vec3(0.100, 0.100, 0.100)) // low ambience
-        .with(light_diffuse(), Vec3::splat(0.50)) // medium diffuse
-        .with(light_ambient(), vec3(0.404, 0.404, 0.404)) // bright ambience
-        .with(cast_shadows(), ())
+        .with(light_diffuse(), Vec3::splat(0.90)) // hi diffuse
+        .with(light_ambient(), Vec3::splat(0.15)) // low ambience
         // .with(fog_color(), vec3(0.88, 0.37, 0.34)) // dusty red
         // .with(fog_color(), vec3(0.34, 0.37, 0.88)) // blueish. cold.
         // .with(fog_color(), vec3(0.804, 0.804, 0.804)) // grey of the website
@@ -160,6 +161,86 @@ pub fn make_my_local_sun_with_sky() -> EntityId {
         // .with(fog_color(), vec3(0., 0., 0.))
         .with(fog_density(), 0.1)
         .with(fog_height_falloff(), 0.01)
-        .with(rotation(), Quat::from_rotation_y(190.0f32.to_radians()))
+        // .with(rotation(), Quat::from_rotation_y(190.0f32.to_radians()))
+        .with(
+            rotation(),
+            Quat::from_xyzw(-0.091639765, 0.9358677, -0.312692, 0.13407977)
+                * Quat::from_rotation_z(PI),
+        )
         .spawn()
+}
+
+const HEAT_SOURCE_COLOUR: Vec3 = Vec3::new(1.00, 0.00, 0.00);
+const ORANGERIET_2: Vec3 = Vec3::new(0.9882352941176471, 0.4196078431372549, 0.3137254901960784);
+const ORANGERIET_2_BRIGHT: Vec3 = Vec3::new(0.99, 0.76, 0.65);
+
+fn visualize_sources_of_warmth() {
+    spawn_query((
+        translation(),
+        temperature_src_rate(),
+        temperature_src_radius(),
+    ))
+    .bind(|heat_sources| {
+        for (heat_source, (pos, heat, radius)) in heat_sources {
+            if heat > 2.2 {
+                // campfire
+                spawn_heat_visualizing_sphere(heat_source, radius * 0.30, 0.);
+                spawn_heat_visualizing_sphere(heat_source, radius * 0.34, 0.);
+                spawn_heat_visualizing_sphere(heat_source, radius * 0.38, 0.);
+            } else if heat > 0.0 {
+                // players beating heart - removed for now
+                // spawn_heat_visualizing_sphere(heat_source, radius * 0.30, 1.25);
+            }
+
+            // do not create for negative heat sources
+        }
+    });
+    let _player_entity = player::get_local();
+    query((visualizing_heat_source(), heat_radius())).each_frame(move |spheres| {
+        for (sphere, (hs, radius)) in spheres {
+            if let Some(hs_translation) = entity::get_component(hs, translation()) {
+                entity::add_component(
+                    sphere,
+                    translation(),
+                    hs_translation
+                        + entity::get_component(sphere, heat_offset()).unwrap_or_default(),
+                );
+                let phase_offset = radius * -0.12;
+                entity::mutate_component(sphere, scale(), move |scale| {
+                    *scale = scale.lerp(
+                        Vec3::splat(
+                            radius
+                                * (1.00
+                                    + 0.10
+                                        * ((game_time().as_secs_f32() + phase_offset) * 2.0).sin()),
+                        ),
+                        0.2,
+                    );
+                    // scale.y = 0.01; // for billboard
+                });
+            }
+        }
+    });
+}
+
+fn spawn_heat_visualizing_sphere(
+    heat_source: EntityId,
+    sphere_radius: f32,
+    height_offset: f32,
+) -> EntityId {
+    let sphere = Sphere {
+        ..Sphere::suggested()
+    }
+    .make()
+    .with(visualizing_heat_source(), heat_source)
+    .with(transparency_group(), 5)
+    .with(color(), HEAT_SOURCE_COLOUR.extend(0.1))
+    .with(local_to_world(), Mat4::IDENTITY)
+    .with(scale(), Vec3::ONE)
+    // .with(spherical_billboard(), ())
+    .with(heat_radius(), sphere_radius)
+    .with(heat_offset(), vec3(0., 0., height_offset))
+    .spawn();
+    entity::add_child(heat_source, sphere);
+    sphere
 }

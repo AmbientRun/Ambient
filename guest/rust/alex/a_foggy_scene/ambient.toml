@@ -25,3 +25,7 @@ temperature = { path = "../temperature" , deployment = "1ApyQ75tro1e329197QCBh" 
 effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
 is_crackling_campfire_spatial_audio = { type = "Empty" } # sound source
 ambient_loop = { type = "String", attributes = ["Networked"] }
+
+visualizing_heat_source = { type = "EntityId" }
+heat_radius = { type = "F32" }
+heat_offset = { type = "Vec3" }
