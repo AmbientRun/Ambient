@@ -14,7 +14,7 @@ fn PlayerPosition(hooks: &mut Hooks) -> Element {
 }
 ```
 
-> UI in Ambient is losely inspired by React. See [the UI docs for more info](../../reference/ui.md).
+> In depth: UI in Ambient is losely inspired by React. See [the UI docs for more info](../../reference/ui.md).
 
 > Tip: See [the UI examples](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui) to learn
 > how to use layout, buttons, editors and much more.

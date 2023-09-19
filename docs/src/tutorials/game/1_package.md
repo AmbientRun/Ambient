@@ -8,7 +8,7 @@ ambient new my_project
 
 This will create a new ambient package.
 
-> A package is a bundle of code and assets which can be deployed. Read more about packages [here](../../reference/package.md).
+> In depth: A package is a bundle of code and assets which can be deployed. Read more about packages [here](../../reference/package.md).
 
 Enter the project folder by typing `cd my_project`, and then try running it with:
 
@@ -55,16 +55,16 @@ The basic structure of package is as follows:
   - `ambient.toml` _This is where you define ECS components, messages and other data about your package_
   - `Cargo.toml` _This is Rusts equivalent of `ambient.toml`, which defines Rust-specific package things such as Rust dependencies`_
 
-> You can read more about ECS [here](../../reference/ecs.html).
+> In depth: You can read more about ECS [here](../../reference/ecs.html).
 
 ## Server and client?
 
 Ambient is build to be multiplayer by default, which is why each new package comes with a `server.rs` and `client.rs`. You typically define
 game logic on the server, whereas the client forwards inputs and adds visual effects.
 
-> For an introduction to [server client, go here](../../user/overview.md)
+> In depth: For an introduction to [server client, go here](../../user/overview.md)
 
-> Read more here about [where my code should go](../../reference/faq.html#should-my-code-go-on-the-client-or-the-server)?
+> Tip: Unsure about server/client? Read more here about [where my code should go](../../reference/faq.html#should-my-code-go-on-the-client-or-the-server)?
 
 ## IDE setup
 

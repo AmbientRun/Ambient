@@ -8,7 +8,7 @@ You need to install Ambient first of all: see the documentation on [how to insta
 
 If you are new to Rust, you can learn the basics of the language on [rust-lang.org](https://www.rust-lang.org/learn).
 
-> If you prefer other methods for installation, see [here](../../reference/advanced_installing.md).
+> Tip: If you prefer other methods for installation, see [here](../../reference/advanced_installing.md).
 
 It's also recommended to setup your IDE for a better Ambient dev experience (see [here](../../user/setting_up_ide.html)).
 

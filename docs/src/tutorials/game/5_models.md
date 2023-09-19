@@ -15,7 +15,7 @@ type = "Models"
 sources = ["*.glb"]
 ```
 
-> [Read more about asset pipelines here](../../reference/asset_pipeline.md)
+> In depth: [Read more about asset pipelines here](../../reference/asset_pipeline.md)
 
 Finally, let's use the model. In our `server.rs`, add the following lines:
 

@@ -11,7 +11,7 @@ First we'll add a `Paint` message to our `ambient.toml`:
 fields = { ray_origin = "Vec3", ray_dir = "Vec3" }
 ```
 
-> Read more about defining your own messages [here](../../reference/messages.md).
+> In depth: Read more about defining your own messages [here](../../reference/messages.md).
 
 Next, we'll add some code the `client.rs` (for the first time in this tutorial!):
 
@@ -31,7 +31,7 @@ Frame::subscribe(move |_| {
 });
 ```
 
-> For an example of screen rays, [see this package](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/intermediate/screen_ray).
+> In depth: For an example of screen rays, [see this package](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/intermediate/screen_ray).
 
 Then let's add this to our `server.rs`:
 

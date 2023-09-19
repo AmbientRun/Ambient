@@ -62,7 +62,7 @@ First, we're going to add this to the `ambient.toml`:
 bouncy_created = { type = "Duration" }
 ```
 
-> Here we're defining a custom component. [Read more about components here](../../reference/ecs.md#components)
+> In depth: Here we're defining a custom component. [Read more about components here](../../reference/ecs.md#components)
 
 Then add the following to the bouncy ball entity:
 
@@ -82,7 +82,7 @@ query(bouncy_created()).each_frame(|entities| {
 });
 ```
 
-> Here we see a query which runs each frame. It grabs all entities with the `bouncy_created` component and
+> In depth: Here we see a query which runs each frame. It grabs all entities with the `bouncy_created` component and
 > removes all components that are older than 5 seconds.
 
 ## [ ⇾ Chapter 4: Player interaction](./4_player_interaction.md)

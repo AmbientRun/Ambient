@@ -20,7 +20,7 @@ This will create a basic ground plane for us.
 > Tip: When you save the file it should show some red squigly lines under the components; that's
 > because they aren't imported yet. Click one of them, then hit `ctrl-.` (or `cmd-.` on osx) and choose "Import ...".
 
-> Entities are the basic unit in an ECS. You
+> In depth: Entities are the basic unit in an ECS. You
 > can think of the ECS as a database, where Entities are rows, and components (`quad`, `scale`, `color` and `plane_collider` in this case)
 > are columns. Components are always pure data; they don't have any functionallity on their own. Instead, you typically
 > write queries that read and write from the ECS (called "Systems"). [Read more about the ECS here](../../reference/ecs.md)
@@ -38,7 +38,7 @@ character_animation = { deployment = "42T888c8BcFMZqf80PhvYF" }
 hide_cursor = { deployment = "6Vs97bmINdTpIoXuESfIcQ" }
 ```
 
-> [Read more about dependencies here](../../reference/package.md#dependencies--dependencies)
+> In depth: [Read more about dependencies here](../../reference/package.md#dependencies--dependencies)
 
 Add the following code to `server.rs`:
 
@@ -56,7 +56,7 @@ spawn_query(is_player()).bind(move |players| {
 });
 ```
 
-> A `spawn_query` waits for an entity with a specific set of components to be spawned. In this case we're waiting
+> In depth: A `spawn_query` waits for an entity with a specific set of components to be spawned. In this case we're waiting
 > for a player to be spawned. Then we're adding a few components to that player to give it an animated model, and
 > to make it react to user input (the `use_fps_controller`). [Read more about queries here](../../reference/ecs.md#systems).
 
