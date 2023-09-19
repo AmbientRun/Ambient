@@ -24,7 +24,7 @@
 - [Chapter 1: Creating a project](./tutorials/game/1_package.md)
 - [Chapter 2: Player character](./tutorials/game/2_player_character.md)
 - [Chapter 3: Scene](./tutorials/game/3_scene.md)
-
+- [Chapter 4: Player interaction](./tutorials/game/4_player_interaction.md)
 
 # Reference Guide
 

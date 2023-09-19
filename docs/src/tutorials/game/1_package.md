@@ -27,7 +27,13 @@ Proxy allocated an endpoint, use `ambient join proxy-eu.ambient.run:9898` to joi
 ```
 
 This can be used to quickly test a multiplayer game; just copy the text in green and run it in another terminal window,
-or even on another machine.
+or even on another machine. If you want to try things on the same machine you can also just type:
+
+```sh
+ambient join
+```
+
+to join the game through another window.
 
 ## Package structure
 

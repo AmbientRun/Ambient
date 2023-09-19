@@ -84,3 +84,5 @@ query(bouncy_created()).each_frame(|entities| {
 
 > Here we see a query which runs each frame. It grabs all entities with the `bouncy_created` component and
 > removes all components that are older than 5 seconds.
+
+## [ ⇾ Chapter 4: Player interaction](./4_player_interaction.md)
