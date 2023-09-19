@@ -5,10 +5,10 @@ version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
-gun_laser = { path = "../gun_laser" }
+tangent_schema = { path = "../../schema", deployment = "1wp8iJTwYD8dfqFA0sBrJD" }
+gun_laser = { path = "../gun_laser" , deployment = "49vNA2lJxjR6P21xlUSmvI" }
 
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit" , deployment = "4VFS7Pox6LYVXazhDQ3Zff" }
 
 [components]
 is_assault = { type = "Empty", name = "Is Assault", description = "Marks this entity as assault.", attributes = [
