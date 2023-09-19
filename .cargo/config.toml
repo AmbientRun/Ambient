@@ -19,4 +19,5 @@ rustflags = ["--cfg=web_sys_unstable_apis"]
 [alias]
 cf = "run --package campfire --"
 campfire = "run --package campfire --"
+campfire-ssl = "run --package campfire --features openssl --"
 campfire-slim = "run --package campfire --no-default-features --"
