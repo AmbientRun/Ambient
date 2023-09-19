@@ -18,6 +18,15 @@ use wasm_bindgen::prelude::*;
 mod app;
 mod wasm;
 
+#[cfg(feature = "tracing-allocator")]
+use std::alloc::System;
+#[cfg(feature = "tracing-allocator")]
+use wasm_tracing_allocator::WasmTracingAllocator;
+
+#[cfg(feature = "tracing-allocator")]
+#[global_allocator]
+static GLOBAL_ALLOCATOR: WasmTracingAllocator<System> = WasmTracingAllocator(System);
+
 static APP_CONTROL: OnceLock<flume::Sender<WindowCtl>> = OnceLock::new();
 
 #[derive(serde::Serialize, serde::Deserialize)]

@@ -74,6 +74,8 @@ window.audioStop = () => {
     }
 };
 
+import("wasm-tracing-allocator");
+
 import("ambient_web")
     .catch((e) => console.error("Error importing `ambient`:", e))
     .then((ambient) => {
@@ -82,7 +84,7 @@ import("ambient_web")
             return;
         }
 
-        ambient.init({ enableLogging: true, enablePanicHook : true });
+        ambient.init({ enableLogging: true, enablePanicHook: true });
 
         let target = window.document.getElementById("instance-container");
 

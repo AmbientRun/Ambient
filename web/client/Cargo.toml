@@ -58,3 +58,9 @@ web-sys.workspace = true
 futures.workspace = true
 tracing.workspace = true
 js-sys.workspace = true
+
+wasm-tracing-allocator = { version = "0.1.0", optional = true }
+
+[features]
+default = ["tracing-allocator"]
+tracing-allocator = ["dep:wasm-tracing-allocator"]
