@@ -26,6 +26,7 @@
 - [Chapter 3: Scene](./tutorials/game/3_scene.md)
 - [Chapter 4: Player interaction](./tutorials/game/4_player_interaction.md)
 - [Chapter 5: Models](./tutorials/game/5_models.md)
+- [Chapter 6: UI](./tutorials/game/6_ui.md)
 
 # Reference Guide
 

@@ -50,3 +50,5 @@ Paint::subscribe(|_, msg| {
 
 Great, let's run it and you should now be able to "paint" by pressing `Q`:
 
+
+## [ ⇾ Chapter 5: Models](./5_models.md)

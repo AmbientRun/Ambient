@@ -39,3 +39,5 @@ You should now see something like this:
 Great! We've learned how to load models into Ambient.
 
 > Tip: Use `prefab_from_url` instead of `model_from_url` if you also want to include a collider. [See the physics example.](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics)
+
+## [ ⇾ Chapter 6: UI](./6_ui.md)
