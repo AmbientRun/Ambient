@@ -7,10 +7,15 @@ use ambient_core::{
     window::{ExitStatus, WindowCtl},
 };
 use ambient_ui_native::{
-    element::{ElementComponentExt, Group}, WindowSized,
+    element::{ElementComponentExt, Group},
+    WindowSized,
 };
 use app::MainApp;
-use tracing_subscriber::{filter::LevelFilter, prelude::*, registry};
+use tracing_subscriber::{
+    filter::{LevelFilter, Targets},
+    prelude::*,
+    registry,
+};
 use tracing_web::MakeConsoleWriter;
 use wasm_bindgen::prelude::*;
 
@@ -28,6 +33,7 @@ static APP_CONTROL: OnceLock<flume::Sender<WindowCtl>> = OnceLock::new();
 pub struct Settings {
     pub enable_logging: bool,
     pub enable_panic_hook: bool,
+    pub log_filter: Option<String>,
 }
 
 /// Initialize ambient
@@ -41,7 +47,16 @@ pub fn init(settings: JsValue) -> Result<(), JsValue> {
             .without_time()
             .with_writer(MakeConsoleWriter); // write events to the console
 
-        registry().with(LevelFilter::DEBUG).with(fmt_layer).init();
+        let filter = settings
+            .log_filter
+            .map(|v| {
+                v.parse::<Targets>()
+                    .map_err(|_| JsValue::from("Failed to parse filtering directive"))
+            })
+            .transpose()?
+            .unwrap_or_else(|| Targets::new().with_default(LevelFilter::INFO));
+
+        registry().with(filter).with(fmt_layer).init();
     }
 
     if settings.enable_panic_hook {
