@@ -1,22 +1,23 @@
 use anyhow::Context;
-use openssl::hash::MessageDigest;
+use sha2::{Digest, Sha256};
+use spki::EncodePublicKey;
 use std::process::Command;
+use x509_certificate::X509Certificate;
 
 pub async fn open() -> anyhow::Result<()> {
     let cert_file = tokio::fs::read("./localhost.crt")
         .await
         .context("Failed to read certificate file")?;
 
-    let der =
-        openssl::x509::X509::from_der(&cert_file).context("Failed to deserialize certificate")?;
+    let der = X509Certificate::from_der(&cert_file).context("Failed to deserialize certificate")?;
 
-    let pubkey = der.public_key().context("Failed to get public key")?;
+    let pubkey = der.to_public_key_der().expect("Failed to get public key");
 
-    let key_der = pubkey.public_key_to_der()?;
-    let digest = openssl::hash::hash(MessageDigest::sha256(), &key_der)
-        .context("Failed to produce digest of public key")?;
+    let mut hasher = Sha256::new();
+    hasher.update(pubkey.as_bytes());
+    let digest = hasher.finalize();
 
-    let spki = openssl::base64::encode_block(&digest);
+    let spki = data_encoding::BASE64.encode(&digest);
 
     eprintln!("Got SPKI: {:?}", &spki);
 

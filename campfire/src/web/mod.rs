@@ -2,7 +2,6 @@ use clap::Subcommand;
 
 use self::build::BuildOptions;
 
-#[cfg(feature = "openssl")]
 mod browser;
 mod build;
 #[cfg(feature = "serve")]
@@ -27,16 +26,7 @@ pub async fn run(command: Web) -> anyhow::Result<()> {
             Ok(())
         }
         Web::Check(args) => args.check().await,
-        Web::OpenBrowser => {
-            #[cfg(feature = "openssl")]
-            {
-                browser::open().await
-            }
-            #[cfg(not(feature = "openssl"))]
-            {
-                anyhow::bail!("The `openssl` feature must be enabled to use this command")
-            }
-        }
+        Web::OpenBrowser => browser::open().await,
         #[cfg(feature = "serve")]
         Web::Serve(args) => args.run().await,
     }

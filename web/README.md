@@ -27,10 +27,10 @@ Whenever a file changes the client will automatically rebuild and the changes wi
 
 **Note**: Skip this section if you are connecting to a hosted Package.
 
-If using self-signed certificates, you need to toll Chrome to trust it.
+If using self-signed certificates, you need to tell Chrome to trust it.
 
 ```sh
-cargo run -p campfire --features openssl -- web open-browser
+cargo cf web open-browser
 ```
 
 **Note**: If you are on mac **make sure you close any existing Chrome instances using `Quit`**
