@@ -1,4 +1,9 @@
-# Chapter 3: Adding some obstacles
+# Chapter 3: Creating the scene
+
+In this chapter we'll create some basic blocks that the player can't walk through, and
+then we'll add a rain of bouncy balls.
+
+## Adding some obstacles
 
 Let's add some basic obstacles to your game. Add the following code:
 
@@ -17,6 +22,12 @@ for _ in 0..30 {
 
 > A `cube_collider` is one of the basic physics primitives. [Read more about physics here](../../reference/physics.md),
 > or try the [physics example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics).
+
+It should look something like this:
+
+![Scene](scene.png)
+
+## Creating a bouncy ball rain
 
 We can also spawn some interactive physics elements. Add the following to make it rain bouncy balls:
 
@@ -40,6 +51,8 @@ Frame::subscribe(|_| {
 
 Try running this. You should see a rain of bouncy balls now!
 
+![Bouncy balls](bouncy.png)
+
 But we have a problem; the bouncy balls never expire, so the world keeps filling up. Let's fix that.
 
 First, we're going to add this to the `ambient.toml`:
@@ -48,6 +61,8 @@ First, we're going to add this to the `ambient.toml`:
 [components]
 bouncy_created = { type = "Duration" }
 ```
+
+> Here we're defining a custom component. [Read more about components here](../../reference/ecs.md#components)
 
 Then add the following to the bouncy ball entity:
 

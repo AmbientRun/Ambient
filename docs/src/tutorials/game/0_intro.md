@@ -1,6 +1,4 @@
-# Ambient Tutorial: Getting started building a game
-
-Ambient is a game engine written in Rust, focusing on modding and multiplayer features.
+# Tutorial: Building a game from scratch
 
 In this tutorial, we will write a simple shooting game from scratch, and in the process, we will show you the basic features of the engine, providing resources such as documentation, reference, examples, games, etc. Hopefully this will give you a good idea of how to use Ambient to make your own game.
 
@@ -14,10 +12,4 @@ If you are new to Rust, you can learn the basics of the language on [rust-lang.o
 
 It's also recommended to setup your IDE for a better Ambient dev experience (see [here](../../user/setting_up_ide.html)).
 
-## Tutorial structure
-
-This tutorial is divided into several chapters:
-
-- [Chapter 1: Creating a project](./1_package.md)
-- [Chapter 2: Setting up a fps controller](./2_fps_controller.md)
-- [Chapter 3: Obstacles](./3_obstacles.md)
+## [ ⇾ Chapter 1: Creating a project](./1_package.md)

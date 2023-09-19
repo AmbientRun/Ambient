@@ -6,9 +6,11 @@ To start a new ambient project, type the following in your terminal of choice:
 ambient new my_project
 ```
 
-This will create a new ambient package. Enter the project folder by typing `cd my_project`, and then try running it with:
+This will create a new ambient package.
 
 > A package is a bundle of code and assets which can be deployed. Read more about packages [here](../../reference/package.md).
+
+Enter the project folder by typing `cd my_project`, and then try running it with:
 
 ```sh
 ambient run
@@ -38,7 +40,7 @@ The basic structure of package is as follows:
     - `client.rs` _This file contains the code that run on your players computers_
     - `server.rs` _This file contains code that runs on the game server_
   - `ambient.toml` _This is where you define ECS components, messages and other data about your package_
-  - `Cargo.toml` _This is Rusts equivalent of `ambient.toml`, which defines Rust-specific package things such as Rust dependencies`
+  - `Cargo.toml` _This is Rusts equivalent of `ambient.toml`, which defines Rust-specific package things such as Rust dependencies`_
 
 > You can read more about ECS [here](../../reference/ecs.html).
 
@@ -66,3 +68,5 @@ This will also give you auto-completion and a few other handy tools.
 Try to create some cubes and change their `translation()`, `scale()`, `rotation()` components.
 
 > Tip: You can refer to the [primitives example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/primitives/src/server.rs) in the Ambient main GitHub repository.
+
+## [ ⇾ Chapter 2: Player character](./2_player_character.md)

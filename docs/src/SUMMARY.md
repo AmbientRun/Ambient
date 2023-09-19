@@ -20,13 +20,10 @@
 
 ## A game from scratch
 
-- [Intro](tutorials/game/0_intro.md)
-- [Creating a package](tutorials/game/1_package.md)
-
-- [Chapter 0: Intro](./tutorials/game/0_intro.md)
+- [Intro](./tutorials/game/0_intro.md)
 - [Chapter 1: Creating a project](./tutorials/game/1_package.md)
-- [Chapter 2: Setting up a fps controller](./tutorials/game/2_fps_controller.md)
-- [Chapter 3: Obstacles](./tutorials/game/3_obstacles.md)
+- [Chapter 2: Player character](./tutorials/game/2_player_character.md)
+- [Chapter 3: Scene](./tutorials/game/3_scene.md)
 
 
 # Reference Guide
