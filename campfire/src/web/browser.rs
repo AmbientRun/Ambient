@@ -1,5 +1,6 @@
 use anyhow::Context;
 use openssl::hash::MessageDigest;
+use std::process::Command;
 
 pub async fn open() -> anyhow::Result<()> {
     let cert_file = tokio::fs::read("./localhost.crt")
@@ -50,7 +51,7 @@ fn detach_process(child: &mut Command) -> &mut Command {
 
 #[cfg(target_os = "macos")]
 fn spawn(spki: &str, _url: &str) -> anyhow::Result<()> {
-    let status = std::process::Command::new("open")
+    let status = Command::new("open")
         // Feeding a url to chrome here makes `--args spki` not be fed to chrome
         .args([
             "-a",
@@ -73,14 +74,19 @@ fn spawn(spki: &str, _url: &str) -> anyhow::Result<()> {
 
 #[cfg(target_os = "linux")]
 fn spawn(spki: &str, url: &str) -> anyhow::Result<()> {
-    let status = detach_process(
-        std::process::Command::new("google-chrome")
-            .arg(url)
-            // Feeding a url to chrome here makes `--args spki` not be fed to chrome
-            .arg(format!("--ignore-certificate-errors-spki-list={spki}")),
-    )
-    .spawn()
-    .context("Failed to open Google Chrome")?
+    const CANDIDATES: &[&str] = &["google-chrome", "google-chrome-stable", "chromium"];
+
+    let status = try_until_success(CANDIDATES, |cmd| {
+        detach_process(
+            Command::new(cmd)
+                .arg(url)
+                // Feeding a url to chrome here makes `--args spki` not be fed to chrome
+                .arg(format!("--ignore-certificate-errors-spki-list={spki}")),
+        )
+        .spawn()
+        .map_err(anyhow::Error::from)
+    })
+    .context("Failed to open Google Chrome; no installs found")?
     .wait()
     .context("Failed to wait for launch command to exit")?;
 
@@ -91,10 +97,27 @@ fn spawn(spki: &str, url: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[cfg(target_os = "linux")]
+fn try_until_success<T>(
+    inputs: &[&str],
+    f: impl Fn(&str) -> anyhow::Result<T>,
+) -> anyhow::Result<T> {
+    let mut errors = vec![];
+
+    for input in inputs {
+        match f(input) {
+            Ok(success) => return Ok(success),
+            Err(error) => errors.push((input, error.to_string())),
+        }
+    }
+
+    anyhow::bail!("{errors:?}")
+}
+
 #[cfg(target_os = "windows")]
 fn spawn(spki: &str, url: &str) -> anyhow::Result<()> {
     // Chrome needs to be completely closed for arguments to be passed correctly
-    let status = std::process::Command::new("cmd")
+    let status = Command::new("cmd")
         .args(["/C", "start", "chrome", url])
         .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
         .arg("--origin-to-force-quic-on=127.0.0.1:4433")
