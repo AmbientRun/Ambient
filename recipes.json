@@ -244,7 +244,7 @@
     }
   },
   "open-browser": {
-    "cmd": "cargo run -p campfire --features openssl -- web open-browser"
+    "cmd": "cargo cf web open-browser"
   },
   "build web": {
     "cmd": "cargo cf web build"

@@ -157,6 +157,7 @@ tonic = { version = "0.9", features = ["gzip", "tls", "tls-roots"] }
 md-5 = "0.10"
 pollster = "0.3.0"
 rpassword = "7.2"
+sha2 = "0.10"
 
 cfg-if = "1.0"
 
