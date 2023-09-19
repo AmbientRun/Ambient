@@ -81,6 +81,15 @@ pub fn default_sun_direction() -> Vec3 {
     vec3(-0.2, 1., 1.).normalize()
 }
 
+/// 0. sampler
+/// 1. globals uniform buffer
+/// 2. shadow cameras
+/// 3. shadow sampler
+/// 4. dummy shadow texture
+/// 5. color buffer
+/// 6. depth buffer
+/// 7. normals buffer
+/// 8. diagnostics buffer
 pub fn globals_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![
@@ -156,6 +165,16 @@ pub fn globals_layout() -> BindGroupDesc<'static> {
                 },
                 count: None,
             },
+            wgpu::BindGroupLayoutEntry {
+                binding: 8,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Storage { read_only: false },
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            },
         ],
         label: GLOBALS_BIND_GROUP.into(),
     }
@@ -170,6 +189,7 @@ pub(crate) struct ForwardGlobals {
     scene: Component<()>,
     start_time: ambient_sys::time::Instant,
     layout: Arc<wgpu::BindGroupLayout>,
+    diagnostics_buffer: wgpu::Buffer,
 }
 
 impl ForwardGlobals {
@@ -205,6 +225,13 @@ impl ForwardGlobals {
             ..Default::default()
         });
 
+        let diagnostics_buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("ForwardGlobals.buffer"),
+            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC,
+            size: std::mem::size_of::<u32>() as u64 * 1024,
+            mapped_at_creation: false,
+        });
+
         let params = GlobalParams::default();
 
         Self {
@@ -221,6 +248,7 @@ impl ForwardGlobals {
             scene,
             start_time: ambient_sys::time::Instant::now(),
             layout,
+            diagnostics_buffer,
         }
     }
 
@@ -234,6 +262,7 @@ impl ForwardGlobals {
     ) -> BindGroup {
         let skins = SkinsBufferKey.get(assets);
         let skins = skins.lock();
+
         gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &self.layout,
             entries: &[
@@ -278,19 +307,23 @@ impl ForwardGlobals {
                     ),
                 },
                 wgpu::BindGroupEntry {
-                    binding: 8 + MESH_METADATA_BINDING,
+                    binding: 8,
+                    resource: self.diagnostics_buffer.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 9 + MESH_METADATA_BINDING,
                     resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding(),
                 },
                 wgpu::BindGroupEntry {
-                    binding: 8 + MESH_BASE_BINDING,
+                    binding: 9 + MESH_BASE_BINDING,
                     resource: mesh_buffer.base_buffer.buffer().as_entire_binding(),
                 },
                 wgpu::BindGroupEntry {
-                    binding: 8 + MESH_SKIN_BINDING,
+                    binding: 9 + MESH_SKIN_BINDING,
                     resource: mesh_buffer.skinned_buffer.buffer().as_entire_binding(),
                 },
                 wgpu::BindGroupEntry {
-                    binding: 8 + SKINS_BINDING,
+                    binding: 9 + SKINS_BINDING,
                     resource: skins.buffer.buffer().as_entire_binding(),
                 },
             ],
