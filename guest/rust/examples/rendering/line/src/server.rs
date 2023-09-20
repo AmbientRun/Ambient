@@ -2,7 +2,6 @@
 use ambient_api::{
     core::{
         app::components::{name, ui_scene},
-        messages::Frame,
         primitives::{components::quad},
         rect::components::{line_width, pixel_line_from, pixel_line_to},
         transform::components::{scale},
