@@ -11,12 +11,18 @@ use itertools::Itertools;
 use serde::Deserialize;
 use std::str;
 
+use crate::package::get_all_packages;
+
 #[derive(Parser, Clone)]
 pub enum Release {
     /// Changes the Ambient version across all crates and documentation to match the given version
     UpdateVersion {
         #[arg()]
         new_version: String,
+
+        #[arg(long, default_value_t)]
+        /// If set, this will only update the `ambient_version` field of each user-facing package.
+        update_package_ambient_versions_only: bool,
     },
     /// Changes the minimum supported Rust version across all crates and documentation to match the given version
     UpdateMsrv {
@@ -53,7 +59,10 @@ pub enum Release {
 
 pub fn main(args: &Release) -> anyhow::Result<()> {
     match args {
-        Release::UpdateVersion { new_version } => update_version(new_version),
+        Release::UpdateVersion {
+            new_version,
+            update_package_ambient_versions_only,
+        } => update_version(new_version, *update_package_ambient_versions_only),
         Release::UpdateMsrv { new_version } => update_msrv(new_version),
         Release::Publish { execute } => publish(*execute),
         Release::Check {
@@ -80,7 +89,7 @@ const AMBIENT_MANIFEST_INCLUDES: &str = "schema/schema";
 const ROOT_CARGO: &str = "Cargo.toml";
 const WEB_CARGO: &str = "web/Cargo.toml";
 const GUEST_RUST_CARGO: &str = "guest/rust/Cargo.toml";
-const INSTALLING_DOCS: &str = "docs/src/user/installing.md";
+const ADVANCED_INSTALLING_DOCS: &str = "docs/src/reference/advanced_installing.md";
 const CHANGELOG: &str = "CHANGELOG.md";
 const README: &str = "README.md";
 const INTRODUCTION: &str = "docs/src/introduction.md";
@@ -128,14 +137,24 @@ fn check_release(
     Ok(())
 }
 
-fn update_version(new_version: &str) -> anyhow::Result<()> {
+fn update_version(
+    new_version: &str,
+    update_package_ambient_versions_only: bool,
+) -> anyhow::Result<()> {
     if !new_version.starts_with(char::is_numeric) {
         anyhow::bail!("version must start with an integer");
     }
 
+    // This must be done first, before we mutate anything, to ensure that it's in a consistent state
     let all_publishable_crates = get_all_publishable_crates()?;
+
+    fn add_ambient_version(toml: &mut toml_edit::Document, new_version: &str) {
+        toml["package"]["ambient_version"] = toml_edit::value(new_version);
+    }
+
     edit_toml(AMBIENT_MANIFEST, |toml| {
         toml["package"]["version"] = toml_edit::value(new_version);
+        add_ambient_version(toml, new_version);
     })?;
 
     for path in std::fs::read_dir(AMBIENT_MANIFEST_INCLUDES)?
@@ -144,57 +163,67 @@ fn update_version(new_version: &str) -> anyhow::Result<()> {
     {
         edit_toml(path, |toml| {
             toml["package"]["version"] = toml_edit::value(new_version);
+            add_ambient_version(toml, new_version);
         })?;
     }
 
-    edit_toml(ROOT_CARGO, |toml| {
-        toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
-    })?;
+    for path in get_all_packages(true, true, true)? {
+        edit_toml(path.join("ambient.toml"), |toml| {
+            add_ambient_version(toml, new_version);
+        })?;
+    }
 
-    edit_toml(WEB_CARGO, |toml| {
-        toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
-    })?;
+    if !update_package_ambient_versions_only {
+        edit_toml(ROOT_CARGO, |toml| {
+            toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
+        })?;
 
-    edit_toml(GUEST_RUST_CARGO, |toml| {
-        toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
-        update_ambient_dependency_versions(
-            &all_publishable_crates,
-            &mut toml["workspace"]["dependencies"],
-            new_version,
-        );
-    })?;
+        edit_toml(WEB_CARGO, |toml| {
+            toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
+        })?;
 
-    // Fix all of the dependency versions of publishable Ambient crates
-    for (path, _) in &all_publishable_crates {
-        edit_toml(path, |toml| {
+        // Fix all of the dependency versions of publishable Ambient crates
+        edit_toml(GUEST_RUST_CARGO, |toml| {
+            toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
             update_ambient_dependency_versions(
                 &all_publishable_crates,
-                &mut toml["dependencies"],
+                &mut toml["workspace"]["dependencies"],
                 new_version,
             );
         })?;
+
+        for (path, _) in &all_publishable_crates {
+            edit_toml(path, |toml| {
+                update_ambient_dependency_versions(
+                    &all_publishable_crates,
+                    &mut toml["dependencies"],
+                    new_version,
+                );
+            })?;
+        }
+
+        edit_file(ADVANCED_INSTALLING_DOCS, |document| {
+            const PREFIX: &str =
+                "cargo install --git https://github.com/AmbientRun/Ambient.git --tag";
+            document
+                .lines()
+                .map(|l| {
+                    if l.starts_with(PREFIX) {
+                        format!("{PREFIX} v{new_version} ambient")
+                    } else {
+                        l.to_string()
+                    }
+                })
+                // newline at the end
+                .chain(std::iter::once("".to_string()))
+                .collect::<Vec<String>>()
+                .join("\n")
+        })?;
+
+        // Run `cargo check` in the root and API to force the lockfile to update
+        check(".")?;
+        check("guest/rust")?;
     }
-
-    edit_file(INSTALLING_DOCS, |document| {
-        const PREFIX: &str = "cargo install --git https://github.com/AmbientRun/Ambient.git --tag";
-        document
-            .lines()
-            .map(|l| {
-                if l.starts_with(PREFIX) {
-                    format!("{PREFIX} v{new_version} ambient")
-                } else {
-                    l.to_string()
-                }
-            })
-            // newline at the end
-            .chain(std::iter::once("".to_string()))
-            .collect::<Vec<String>>()
-            .join("\n")
-    })?;
-
-    // Run `cargo check` in the root and API to force the lockfile to update
-    check(".")?;
-    check("guest/rust")?;
 
     Ok(())
 }
@@ -256,7 +285,7 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
             .join("\n")
     })?;
 
-    edit_file(INSTALLING_DOCS, |document| {
+    edit_file(ADVANCED_INSTALLING_DOCS, |document| {
         let begin = "<!-- rust-version-begin -->";
         let end = "<!-- rust-version-end -->";
         let begin_index = document.find(begin).expect("no begin") + begin.len();
