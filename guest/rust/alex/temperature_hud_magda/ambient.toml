@@ -6,7 +6,7 @@ content = { type = "Playable" }
 ambient_version = "0.3.0-nightly-2023-09-18"
 
 [dependencies]
-temperature = { path = "../temperature" , deployment = "1ApyQ75tro1e329197QCBh" }
+temperature = { path = "../temperature" , deployment = "3CWQymc750qQZ9uybn3O8p" }
 
 [components]
 active_camera = { type = "EntityId" }
