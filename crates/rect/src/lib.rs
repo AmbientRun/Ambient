@@ -89,22 +89,27 @@ pub fn systems() -> SystemGroup {
         vec![
             ensure_has_component_with_default(pixel_line_from(), line_from()),
             ensure_has_component_with_default(pixel_line_to(), line_to()),
-            query_mut(
-                (line_from(), line_to()),
-                (pixel_line_from().changed(), pixel_line_to().changed()),
-            )
-            .to_system(|q, world, qs, _| {
-                if let Some(world_cam) = Camera::get_active(world, main_scene(), None) {
-                    if let Some(ui_cam) = Camera::get_active(world, ui_scene(), None) {
-                        let mat = ui_cam.projection_view().inverse() * world_cam.projection_view();
+            query((pixel_line_from(), pixel_line_to()))
+                .incl(line_from())
+                .incl(line_to())
+                .to_system(|q, world, qs, _| {
+                    // This needs to run each frame because the camera may change
+                    if let Some(world_cam) = Camera::get_active(world, main_scene(), None) {
+                        if let Some(ui_cam) = Camera::get_active(world, ui_scene(), None) {
+                            let mat =
+                                ui_cam.projection_view().inverse() * world_cam.projection_view();
 
-                        for (_, (line_from, line_to), (&p_from, &p_to)) in q.iter(world, qs) {
-                            *line_from = mat.project_point3(p_from);
-                            *line_to = mat.project_point3(p_to);
+                            for (id, (p_from, p_to)) in q.collect_cloned(world, qs) {
+                                world
+                                    .set_if_changed(id, line_from(), mat.project_point3(p_from))
+                                    .ok();
+                                world
+                                    .set_if_changed(id, line_to(), mat.project_point3(p_to))
+                                    .ok();
+                            }
                         }
                     }
-                }
-            }),
+                }),
             query((
                 line_from().changed(),
                 line_to().changed(),

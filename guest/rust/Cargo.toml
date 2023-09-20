@@ -32,6 +32,7 @@ members = [
     "examples/rendering/decals",
     "examples/rendering/fog",
     "examples/rendering/image",
+    "examples/rendering/line",
     "examples/rendering/procedural_generation",
     "examples/rendering/raw_text",
     "examples/rendering/samplers",

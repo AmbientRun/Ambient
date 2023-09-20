@@ -15,6 +15,7 @@ tests = [
     "examples/rendering/decals",
     "examples/rendering/fog",
     "examples/rendering/image",
+    "examples/rendering/line",
     "examples/rendering/raw_text",
     "examples/rendering/samplers",
     "examples/rendering/procedural_generation",
