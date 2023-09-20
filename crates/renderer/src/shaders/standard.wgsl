@@ -23,13 +23,6 @@ fn hsv_to_rgb(c: vec3f) -> vec3f {
     let K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
     let p: vec3f = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
     return c.z * mix(K.xxx, clamp(p - K.xxx, vec3(0.0), vec3(1.0)), vec3(c.y));
-    // let K = vec4f(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
-    // let p = mix(vec4f(v, s, K.wz), vec4f(s, v, K.xy), step(v, s));
-    // let q = mix(vec4f(p.xyw, h), vec4f(h, p.yzx), step(p.x, h));
-
-    // let d = q.x - min(q.w, q.y);
-    // let e = 1.0e-10;
-    // return vec3f(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 }
 
 
@@ -54,7 +47,7 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
 
     let mesh_id = get_entity_primitive_mesh(entity_loc, primitive.z);
     let mesh_offset = mesh_metadatas[mesh_id].base_offset;
-    out.color = vec4f(hsv_to_rgb(vec3f(f32(mesh_offset) / 512.0, 1.0, f32(vertex_index) / 512.0)), 1.0);
+    out.color = vec4f(hsv_to_rgb(vec3f(f32(entity_loc.x) / 16.0, 1.0, f32(entity_loc.y + 1u) / 4.0)), 1.0);
 
     let clip = global_params.projection_view * world.pos;
 
