@@ -3,13 +3,13 @@ use clap::Parser;
 
 use crate::{cli::ClientCli, client};
 
-use super::{serve, HostCli, PackageCli};
+use super::{serve, HostCli, PackageArgs};
 
 #[derive(Parser, Clone, Debug)]
 /// Builds and runs the package locally
 pub struct Run {
     #[command(flatten)]
-    pub package: PackageCli,
+    pub package: PackageArgs,
     #[command(flatten)]
     pub host: HostCli,
     #[command(flatten)]

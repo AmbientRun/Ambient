@@ -9,14 +9,14 @@ use crate::{
 
 use super::{
     build::{self, BuildDirectories},
-    HostCli, PackageCli,
+    HostCli, PackageArgs,
 };
 
 #[derive(Parser, Clone, Debug)]
 /// Builds and runs the package in server-only mode
 pub struct Serve {
     #[command(flatten)]
-    pub package: PackageCli,
+    pub package: PackageArgs,
 
     #[command(flatten)]
     pub host: HostCli,
@@ -31,7 +31,7 @@ pub async fn handle(
 }
 
 pub async fn handle_inner(
-    package: &PackageCli,
+    package: &PackageArgs,
     host: &HostCli,
     assets: AssetCache,
     release_build: bool,

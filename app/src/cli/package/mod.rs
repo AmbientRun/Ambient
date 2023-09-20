@@ -1,6 +1,8 @@
 use std::{net::IpAddr, path::PathBuf};
 
-use clap::Args;
+use ambient_native_std::asset_cache::AssetCache;
+use ambient_package::PackageId;
+use clap::{Args, Subcommand};
 
 use super::PackagePath;
 
@@ -10,8 +12,25 @@ pub mod new;
 pub mod run;
 pub mod serve;
 
+#[derive(Subcommand, Clone, Debug)]
+/// Package-related commands.
+pub enum Package {
+    /// Regenerate the ID for a given package to make it compliant with the ID scheme.
+    RegenerateId {
+        #[command(flatten)]
+        package: PackageArgs,
+    },
+}
+impl Package {
+    pub fn args(&self) -> &PackageArgs {
+        match self {
+            Package::RegenerateId { package } => package,
+        }
+    }
+}
+
 #[derive(Args, Clone, Debug)]
-pub struct PackageCli {
+pub struct PackageArgs {
     /// Dummy flag to catch Rust users using muscle memory and warn them
     #[arg(long, short, hide = true)]
     pub project: bool,
@@ -39,7 +58,7 @@ pub struct PackageCli {
     /// Only build the WASM modules
     pub build_wasm_only: bool,
 }
-impl PackageCli {
+impl PackageArgs {
     pub fn is_release(&self) -> Option<bool> {
         match (self.debug, self.release) {
             (true, false) => Some(false),
@@ -97,4 +116,32 @@ pub struct HostCli {
     /// Shutdown the server after the specified number of seconds of inactivity
     #[arg(long)]
     pub shutdown_after_inactivity_seconds: Option<u64>,
+}
+
+pub fn handle(
+    args: &Package,
+    _rt: &tokio::runtime::Runtime,
+    _assets: AssetCache,
+) -> anyhow::Result<()> {
+    match args {
+        Package::RegenerateId { package } => regenerate_id(package),
+    }
+}
+
+fn regenerate_id(package: &PackageArgs) -> anyhow::Result<()> {
+    let package_path = package.package_path()?;
+    let Some(package_path) = &package_path.fs_path else {
+        anyhow::bail!("Cannot update ID of a remote package.");
+    };
+
+    let manifest_path = package_path.join("ambient.toml");
+    if !manifest_path.is_file() {
+        anyhow::bail!("Package does not have a manifest");
+    }
+
+    let mut toml = std::fs::read_to_string(&manifest_path)?.parse::<toml_edit::Document>()?;
+    toml["package"]["id"] = toml_edit::value(PackageId::generate().to_string());
+    std::fs::write(&manifest_path, toml.to_string())?;
+
+    Ok(())
 }

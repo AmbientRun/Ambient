@@ -70,9 +70,9 @@ fn main() -> anyhow::Result<()> {
     }
 
     match &cli.command {
-        // commands that immediately exit
+        // package commands
+        Commands::Package { package } => cli::package::handle(package, &rt, assets),
         Commands::New(args) => cli::package::new::handle(args).context("Failed to create package"),
-        Commands::Assets { assets: command } => rt.block_on(cli::assets::handle(command, &assets)),
         Commands::Build(build) => rt.block_on(async {
             cli::package::build::handle(build, &assets, use_release_build)
                 .await
@@ -83,12 +83,6 @@ fn main() -> anyhow::Result<()> {
             &assets,
             use_release_build,
         )),
-        Commands::Login => rt.block_on(cli::login::handle(&assets)),
-
-        // client
-        Commands::Join(join) => cli::join::handle(join, &rt, assets),
-
-        // server
         Commands::Serve(serve) => rt.block_on(async {
             Ok(
                 cli::package::serve::handle(serve, assets, use_release_build)
@@ -97,9 +91,12 @@ fn main() -> anyhow::Result<()> {
                     .await?,
             )
         }),
-
-        // client+server
         Commands::Run(run) => cli::package::run::handle(&rt, run, assets, use_release_build),
+
+        // non-package commands
+        Commands::Assets { assets: command } => rt.block_on(cli::assets::handle(command, &assets)),
+        Commands::Login => rt.block_on(cli::login::handle(&assets)),
+        Commands::Join(join) => cli::join::handle(join, &rt, assets),
     }
 }
 

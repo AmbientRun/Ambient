@@ -9,13 +9,13 @@ use parking_lot::Mutex;
 
 use crate::cli::{package::build, PackagePath};
 
-use super::PackageCli;
+use super::PackageArgs;
 
 #[derive(Parser, Clone, Debug)]
 /// Deploys the package
 pub struct Deploy {
     #[command(flatten)]
-    pub package: PackageCli,
+    pub package: PackageArgs,
     /// Additional packages to deploy; this allows you to share deployed dependencies
     /// between packages when doing a group deploy
     #[arg(long)]

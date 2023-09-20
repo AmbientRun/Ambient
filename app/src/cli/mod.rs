@@ -13,7 +13,9 @@ pub use package_path::*;
 use self::{
     assets::Assets,
     join::Join,
-    package::{build::Build, deploy::Deploy, new::New, run::Run, serve::Serve, PackageCli},
+    package::{
+        build::Build, deploy::Deploy, new::New, run::Run, serve::Serve, Package, PackageArgs,
+    },
 };
 
 #[derive(Parser, Clone)]
@@ -32,6 +34,10 @@ pub enum Commands {
     Deploy(Deploy),
     Serve(Serve),
     Join(Join),
+    Package {
+        #[command(subcommand)]
+        package: Package,
+    },
     /// Asset manipulation and migration
     Assets {
         #[command(subcommand)]
@@ -103,8 +109,9 @@ pub struct ClientCli {
 
 impl Cli {
     /// Extract package-relevant state only
-    pub fn package(&self) -> Option<&PackageCli> {
+    pub fn package(&self) -> Option<&PackageArgs> {
         match &self.command {
+            Commands::Package { package } => Some(package.args()),
             Commands::New(New { package, .. }) => Some(package),
             Commands::Run(Run { package, .. }) => Some(package),
             Commands::Build(Build { package, .. }) => Some(package),
@@ -125,7 +132,7 @@ impl Cli {
             C::Run(Run { package, .. }) | C::Build(Build { package, .. }) => {
                 package.is_release().unwrap_or(false)
             }
-            C::New(_) | C::Join(_) | C::Assets { .. } | C::Login => false,
+            C::New(_) | C::Join(_) | C::Assets { .. } | C::Package { .. } | C::Login => false,
         }
     }
 }

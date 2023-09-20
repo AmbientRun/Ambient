@@ -5,13 +5,13 @@ use anyhow::Context;
 use clap::{Parser, ValueEnum};
 use convert_case::{Case, Casing};
 
-use super::PackageCli;
+use super::PackageArgs;
 
 #[derive(Parser, Clone, Debug)]
 /// Create a new Ambient package
 pub struct New {
     #[command(flatten)]
-    pub package: PackageCli,
+    pub package: PackageArgs,
 
     #[arg(short, long)]
     name: Option<String>,

@@ -8,13 +8,13 @@ use ambient_package_semantic::RetrievableFile;
 use anyhow::Context;
 use clap::Parser;
 
-use super::PackageCli;
+use super::PackageArgs;
 
 #[derive(Parser, Clone, Debug)]
 /// Builds the package
 pub struct Build {
     #[command(flatten)]
-    pub package: PackageCli,
+    pub package: PackageArgs,
 }
 
 pub struct BuildDirectories {
@@ -44,7 +44,7 @@ pub async fn handle(
 }
 
 pub async fn handle_inner(
-    package_cli: &PackageCli,
+    package_cli: &PackageArgs,
     assets: &AssetCache,
     release_build: bool,
 ) -> anyhow::Result<BuildDirectories> {
