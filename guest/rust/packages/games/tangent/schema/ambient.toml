@@ -4,6 +4,9 @@ name = "Tangent Schema"
 version = "0.1.0"
 content = { type = "Asset", schema = true }
 
+[dependencies]
+game_object = { path = "../../../schemas/game_object" }
+
 [components]
 # Player
 "player::vehicle_ref" = { type = "EntityId", name = "Player's Vehicle", description = "The player's vehicle", attributes = [
@@ -97,10 +100,6 @@ content = { type = "Asset", schema = true }
     "Networked",
 ] }
 
-"vehicle::health" = { type = "F32", name = "Health", description = "Health of the vehicle", attributes = [
-    "Networked",
-] }
-
 "vehicle::last_distances" = { type = { type = "Vec", element_type = "F32" }, name = "Last Distances", description = "Distances from the ground for each vehicle probe", attributes = [
     "Networked",
 ] }
@@ -149,18 +148,6 @@ content = { type = "Asset", schema = true }
 "spawnpoint::radius" = { type = "F32", name = "Radius", description = "Radius of the spawnpoint", attributes = [
     "Networked",
 ] }
-
-# Explosion
-"explosion::is_explosion" = { type = "Empty", name = "Is Explosion", description = "Is an explosion", attributes = [
-    "Networked",
-] }
-"explosion::radius" = { type = "F32", name = "Radius", description = "Radius of the explosion", attributes = [
-    "Networked",
-] }
-"explosion::damage" = { type = "F32", name = "Damage", description = "Damage of the explosion", attributes = [
-    "Networked",
-] }
-"explosion::created_at" = { type = "Duration", name = "Created At", description = "Time the explosion was created. Must be manually attached using a spawn_query as time is not synchronized between client and server at time of writing." }
 
 # Weapon
 "weapon::fire" = { type = "Bool", name = "Fire", description = "When on, the weapon will attempt to fire.", attributes = [
@@ -217,8 +204,8 @@ description = "A vehicle with a physical representation"
 "ambient_core::transform::translation" = {}
 "ambient_core::transform::rotation" = {}
 
+"game_object::health" = {}
 "vehicle::player_ref" = {}
-"vehicle::health" = {}
 "vehicle::last_distances" = {}
 "vehicle::last_jump_time" = {}
 "vehicle::last_slowdown_time" = {}
@@ -248,17 +235,6 @@ description = "A spawnpoint"
 "spawnpoint::radius" = {}
 "ambient_core::transform::translation" = {}
 "ambient_core::rendering::color" = {}
-
-[concepts.Explosion]
-name = "Explosion"
-description = "An explosion"
-[concepts.Explosion.components.required]
-"explosion::is_explosion" = {}
-"explosion::radius" = {}
-"explosion::damage" = {}
-"ambient_core::transform::translation" = {}
-[concepts.Explosion.components.optional]
-"explosion::created_at" = {}
 
 [messages.OnDeath]
 name = "On Death"

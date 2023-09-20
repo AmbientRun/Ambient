@@ -9,7 +9,8 @@ use ambient_api::{
     prelude::*,
 };
 use packages::{
-    tangent_schema::{concepts::Explosion, weapon::components::fire},
+    explosion::concepts::Explosion,
+    tangent_schema::weapon::components::fire,
     this::{
         components::{is_gun_laser, last_shot_time},
         concepts::GunLaser,

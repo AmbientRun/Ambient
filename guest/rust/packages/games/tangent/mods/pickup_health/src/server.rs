@@ -5,10 +5,10 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::this::concepts::HealthPickup;
 use packages::{
+    game_object::components::health,
     tangent_schema::{vehicle::components as vc, vehicle::data::general::components as vdgc},
-    this::messages::OnHealthPickup,
+    this::{concepts::HealthPickup, messages::OnHealthPickup},
 };
 
 #[main]
@@ -23,7 +23,7 @@ pub fn main() {
         }
     });
 
-    let vehicle_candidate_query = query((translation(), vc::health(), vdgc::max_health()))
+    let vehicle_candidate_query = query((translation(), health(), vdgc::max_health()))
         .requires(vc::player_ref())
         .build();
 
@@ -44,7 +44,7 @@ pub fn main() {
 
                 let new_health = (health + 25.0).clamp(0.0, max_health);
                 if health != new_health {
-                    entity::set_component(entity_id, vc::health(), new_health);
+                    entity::set_component(entity_id, self::health(), new_health);
                     entity::despawn_recursive(id);
 
                     OnHealthPickup {

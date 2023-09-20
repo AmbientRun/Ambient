@@ -3,7 +3,6 @@ use std::{f32::consts::PI, sync::OnceLock};
 use ambient_api::{
     core::{
         app::components::main_scene,
-        ecs::components::remove_at_game_time,
         hierarchy::components::parent,
         messages::Collision,
         model::components::model_from_url,
@@ -17,13 +16,14 @@ use ambient_api::{
         },
     },
     ecs::GeneralQuery,
-    once_cell::sync::Lazy,
     prelude::*,
 };
 
 use packages::{
+    explosion::concepts::Explosion,
+    game_object::components::health,
     tangent_schema::{
-        concepts::{Explosion, Spawnpoint, Vehicle, VehicleClass, VehicleData},
+        concepts::{Spawnpoint, Vehicle, VehicleClass, VehicleData},
         messages::OnDeath,
         player::components as pc,
         vehicle::{components as vc, data as vd},
@@ -102,7 +102,7 @@ pub fn main() {
 
         // If the user opted to respawn, immediately destroy their vehicle
         if input.respawn {
-            entity::set_component(vehicle, vc::health(), 0.0);
+            entity::set_component(vehicle, health(), 0.0);
         }
     });
 
@@ -125,7 +125,7 @@ pub fn main() {
                 .map(|v| v.length())
                 .unwrap_or_default();
 
-            entity::mutate_component(id, vc::health(), |health| {
+            entity::mutate_component(id, health(), |health| {
                 *health = (*health - speed * 0.75).max(0.0);
             });
 
@@ -144,8 +144,6 @@ pub fn main() {
             process_vehicle(vehicle_id, driver_id);
         }
     });
-
-    handle_explosions();
 }
 
 fn respawn_player(player_id: EntityId) {
@@ -231,50 +229,6 @@ fn respawn_player(player_id: EntityId) {
         .spawn();
 }
 
-fn handle_explosions() {
-    static QUERY: Lazy<GeneralQuery<Component<Vec3>>> = Lazy::new(|| {
-        query(self::translation())
-            .requires(vc::player_ref())
-            .build()
-    });
-
-    spawn_query(Explosion::as_query()).bind(|explosions| {
-        for (id, explosion) in explosions {
-            let Explosion {
-                radius,
-                translation,
-                damage,
-                ..
-            } = explosion;
-
-            entity::add_component(
-                id,
-                remove_at_game_time(),
-                game_time() + Duration::from_secs(2),
-            );
-
-            physics::add_radial_impulse(
-                translation,
-                damage * 50.0,
-                radius,
-                physics::FalloffRadius::FalloffToZeroAt(radius),
-            );
-
-            for (vehicle_id, vehicle_translation) in QUERY.evaluate() {
-                let distance = vehicle_translation.distance(translation);
-                if distance > radius {
-                    continue;
-                }
-
-                let closeness = (radius - distance) / radius;
-                entity::mutate_component(vehicle_id, vc::health(), |health| {
-                    *health = (*health - closeness * damage).max(0.0);
-                });
-            }
-        }
-    });
-}
-
 fn choose_spawn_position() -> Vec3 {
     static QUERY: OnceLock<GeneralQuery<ConceptQuery<Spawnpoint>>> = OnceLock::new();
     let sp = QUERY
@@ -313,7 +267,7 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
             if (game_time() - last_upside_down_time).as_secs_f32() > 0.5 {
                 const DAMAGE_PER_SECOND: f32 = 20.0;
 
-                entity::mutate_component(vehicle_id, vc::health(), |health| {
+                entity::mutate_component(vehicle_id, health(), |health| {
                     *health = (*health - DAMAGE_PER_SECOND * delta_time()).max(0.0);
                 });
                 return;

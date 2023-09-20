@@ -12,9 +12,12 @@ use ambient_api::{
     element::use_entity_component,
     prelude::*,
 };
-use packages::tangent_schema::{
-    player::components as pc, vehicle::client::components as vcc, vehicle::components as vc,
-    vehicle::data as vdc,
+use packages::{
+    game_object::components::health,
+    tangent_schema::{
+        player::components as pc, vehicle::client::components as vcc, vehicle::components as vc,
+        vehicle::data as vdc,
+    },
 };
 
 #[main]
@@ -30,7 +33,7 @@ fn Hud(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn VehicleHud(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
-    let health = use_entity_component(hooks, vehicle_id, vc::health())
+    let health = use_entity_component(hooks, vehicle_id, self::health())
         .0
         .unwrap_or_default();
 
