@@ -4,7 +4,7 @@ In this chapter we'll add a floor to stand on, and then a player character that 
 
 ## Creating a floor
 
-First, remove all code withing `fn main`, and add the following:
+First, remove all code within `fn main` in `server.rs`, and add the following:
 
 ```rust
 Entity::new()
