@@ -10,24 +10,24 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
-ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
-ambient_core = { path = "../core" , version = "0.3.0-dev" }
-ambient_gizmos = { path = "../gizmos" , version = "0.3.0-dev" }
-ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
-ambient_gpu_ecs = { path = "../gpu_ecs" , version = "0.3.0-dev" }
-ambient_renderer = { path = "../renderer" , version = "0.3.0-dev" }
-ambient_cameras = { path = "../cameras" , version = "0.3.0-dev" }
-ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
-ambient_ui_native = { path = "../ui_native" , version = "0.3.0-dev" }
-ambient_focus = { path = "../focus" , version = "0.3.0-dev" }
-ambient_input = { path = "../input" , version = "0.3.0-dev" }
-ambient_model = { path = "../model" , version = "0.3.0-dev" }
-ambient_animation = { path = "../animation" , version = "0.3.0-dev" }
-ambient_procedurals = { path = "../procedurals" , version = "0.3.0-dev" }
-ambient_settings = { path = "../settings" , version = "0.3.0-dev" }
+ambient_sys = { path = "../sys" , version = "0.3.0-nightly-2023-09-20" }
+ambient_native_std = { path = "../native_std" , version = "0.3.0-nightly-2023-09-20" }
+ambient_core = { path = "../core" , version = "0.3.0-nightly-2023-09-20" }
+ambient_gizmos = { path = "../gizmos" , version = "0.3.0-nightly-2023-09-20" }
+ambient_gpu = { path = "../gpu" , version = "0.3.0-nightly-2023-09-20" }
+ambient_gpu_ecs = { path = "../gpu_ecs" , version = "0.3.0-nightly-2023-09-20" }
+ambient_renderer = { path = "../renderer" , version = "0.3.0-nightly-2023-09-20" }
+ambient_cameras = { path = "../cameras" , version = "0.3.0-nightly-2023-09-20" }
+ambient_ecs = { path = "../ecs" , version = "0.3.0-nightly-2023-09-20" }
+ambient_ui_native = { path = "../ui_native" , version = "0.3.0-nightly-2023-09-20" }
+ambient_focus = { path = "../focus" , version = "0.3.0-nightly-2023-09-20" }
+ambient_input = { path = "../input" , version = "0.3.0-nightly-2023-09-20" }
+ambient_model = { path = "../model" , version = "0.3.0-nightly-2023-09-20" }
+ambient_animation = { path = "../animation" , version = "0.3.0-nightly-2023-09-20" }
+ambient_procedurals = { path = "../procedurals" , version = "0.3.0-nightly-2023-09-20" }
+ambient_settings = { path = "../settings" , version = "0.3.0-nightly-2023-09-20" }
 
-ambient_element = { path = "../../shared_crates/element" , version = "0.3.0-dev" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.3.0-nightly-2023-09-20" }
 
 winit = { workspace = true }
 flume = { workspace = true }

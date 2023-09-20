@@ -205,7 +205,7 @@ mod raw {
                 }
                 static NAME: Lazy<Component<String>> =
                     Lazy::new(|| __internal_get_component("ambient_core::app::name"));
-                #[doc = "**Name**: A human-friendly name for this entity.\n\n*Attributes*: Debuggable, Networked, Store"]
+                #[doc = "**Name**: A human-friendly name for this entity.\n\n*Attributes*: Debuggable, Networked, Store, MaybeResource"]
                 pub fn name() -> Component<String> {
                     *NAME
                 }

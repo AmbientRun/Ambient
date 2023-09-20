@@ -3,7 +3,7 @@ id = "app"
 name = "App"
 description = "High-level state relevant to the application (including the in-development Editor)."
 content = { type = "Asset", schema = true }
-version = "0.3.0-dev"
+version = "0.3.0-nightly-2023-09-20"
 
 [components.cursor_position]
 type = "Vec2"
