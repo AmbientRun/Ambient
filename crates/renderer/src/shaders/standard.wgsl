@@ -50,7 +50,11 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
     out.world_bitangent = cross(world.normal, world.tangent);
     out.world_position = world.pos;
     out.local_position = world.local.xyz;
-    out.color = vec4f(hsv_to_rgb(vec3f(f32(instance_index) / 13.0, 1.0, 1.0)), 1.0);
+
+
+    let mesh_id = get_entity_primitive_mesh(entity_loc, primitive.z);
+    let mesh_offset = mesh_metadatas[mesh_id].base_offset;
+    out.color = vec4f(hsv_to_rgb(vec3f(f32(mesh_offset) / 512.0, 1.0, f32(vertex_index) / 512.0)), 1.0);
 
     let clip = global_params.projection_view * world.pos;
 
