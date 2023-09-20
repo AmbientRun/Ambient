@@ -1,8 +1,8 @@
 [package]
 id = "a_foggy_scene"
 name = "a_foggy_scene"
-description = "Foggy scene with heat sources, uses temperature schema"
-version = "0.0.2"
+description = "Foggy scene with heat sources, uses temperature schema, has UI"
+version = "0.0.3"
 content = { type = "Playable" }
 
 [dependencies]
