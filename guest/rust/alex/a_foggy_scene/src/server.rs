@@ -18,6 +18,8 @@ use packages::{
     temperature::components::{temperature, temperature_src_radius, temperature_src_rate},
     this::components::ambient_loop,
 };
+const DEATH_TEMP: f32 = 21.13;
+const NORMAL_TEMP: f32 = 36.65;
 
 #[main]
 pub fn main() {
@@ -38,7 +40,7 @@ pub fn main() {
                         packages::this::assets::url("muscle/Muscle Chicken.fbx"),
                     )
                     .with(basic_character_animations(), plr)
-                    .with(temperature(), 37.0)
+                    .with(temperature(), NORMAL_TEMP)
                     .with(temperature_src_rate(), 1.0)
                     .with(temperature_src_radius(), 8.0),
             );
@@ -49,14 +51,14 @@ pub fn main() {
         .requires(is_player())
         .each_frame(|plrs| {
             for (plr, temp) in plrs {
-                if temp < 21. {
+                if temp <= DEATH_TEMP {
                     // death by freezing - reset to start
                     entity::add_component(plr, translation(), Vec3::ZERO);
-                    entity::set_component(plr, temperature(), 37.);
+                    entity::set_component(plr, temperature(), NORMAL_TEMP);
                 }
-                if temp > 37. {
+                if temp > NORMAL_TEMP {
                     // max body temp
-                    entity::set_component(plr, temperature(), 37.);
+                    entity::set_component(plr, temperature(), NORMAL_TEMP);
                 }
             }
         });

@@ -20,6 +20,7 @@ hide_cursor = { path = "../../packages/std/hide_cursor", deployment = "48Dlz7rfP
 package_manager = { path = "../../packages/tools/package_manager", deployment = "2j2oBSzO03NIixBDlEGeVT" }
 
 temperature = { path = "../temperature" , deployment = "1ApyQ75tro1e329197QCBh" }
+temperature_hud = { path = "../temperature_hud_magda" }
 
 [components]
 effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness

@@ -6,6 +6,7 @@ members = [
     "alex/a_nice_scene",
     "alex/just_fog",
     "alex/temperature",
+    "alex/temperature_hud_magda",
 
     "api",
     "api_core",

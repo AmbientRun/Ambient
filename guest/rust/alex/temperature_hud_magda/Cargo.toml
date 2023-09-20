@@ -1,0 +1,23 @@
+[package]
+name = "temperature_hud_magda"
+
+edition = "2021"
+publish = false
+version = "0.0.1"
+
+[dependencies]
+ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", tag = "v0.3.0-nightly-2023-09-18" }
+
+[[bin]]
+name = "client_temperature_hud_magda"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server_temperature_hud_magda"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

@@ -5,7 +5,7 @@ use ambient_api::{
         audio::components::amplitude,
         camera::components::{fog, perspective_infinite_reverse},
         player::components::is_player,
-        primitives::concepts::Sphere,
+        primitives::{components::cube, concepts::Sphere},
         rendering::components::{
             cast_shadows, color, fog_color, fog_density, light_ambient, outline,
             pbr_material_from_url, transparency_group,
@@ -19,9 +19,8 @@ use packages::{
     temperature::components::{temperature, temperature_src_radius, temperature_src_rate},
     this::components::{ambient_loop, heat_offset, heat_radius, visualizing_heat_source},
 };
-
-const DEATH_TEMP: f32 = 21.;
-const NORMAL_TEMP: f32 = 37.;
+const DEATH_TEMP: f32 = 21.13;
+const NORMAL_TEMP: f32 = 36.65;
 
 #[main]
 pub fn main() {
@@ -42,6 +41,12 @@ pub fn main() {
                         spatial_audio_player.play_sound_on_entity(loop_path, looper);
                     }
                 });
+
+                entity::add_component(
+                    packages::temperature_hud::entity(),
+                    packages::temperature_hud::components::active_camera(),
+                    camera,
+                );
             }
         });
 
