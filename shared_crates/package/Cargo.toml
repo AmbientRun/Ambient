@@ -24,6 +24,8 @@ url = { workspace = true }
 chrono = { workspace = true }
 semver = { workspace = true }
 rand = { workspace = true }
+sha2 = { workspace = true }
+data-encoding = { workspace = true }
 
 [dev-dependencies]
 paste = { workspace = true }

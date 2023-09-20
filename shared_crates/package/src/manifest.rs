@@ -1,15 +1,15 @@
 use std::{collections::HashMap, fmt::Display, path::PathBuf};
 
 use indexmap::IndexMap;
-use rand::{seq::SliceRandom, Rng};
+use semver::{Version, VersionReq};
 use serde::{Deserialize, Serialize};
+use sha2::Digest;
 use thiserror::Error;
 use url::Url;
 
 use crate::{
     Component, Concept, Enum, ItemPathBuf, Message, PascalCaseIdentifier, SnakeCaseIdentifier,
 };
-use semver::{Version, VersionReq};
 
 #[derive(Error, Debug, PartialEq)]
 pub enum ManifestParseError {
@@ -67,25 +67,20 @@ impl PackageId {
     /// Generates a new package ID.
     // TODO: suffix with checksum
     pub fn generate() -> Self {
-        const NUMERALS: [u8; 10] = [b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'];
-        const ALPHABET: [u8; 26] = [
-            b'a', b'b', b'c', b'd', b'e', b'f', b'g', b'h', b'i', b'j', b'k', b'l', b'm', b'n',
-            b'o', b'p', b'q', b'r', b's', b't', b'u', b'v', b'w', b'x', b'y', b'z',
-        ];
+        const DATA_LENGTH: usize = 12;
+        const CHECKSUM_LENGTH: usize = 8;
+        const TOTAL_LENGTH: usize = DATA_LENGTH + CHECKSUM_LENGTH;
 
-        let mut rng = rand::thread_rng();
-        let mut output = vec![0u8; 32];
-        output[0] = *ALPHABET.choose(&mut rng).unwrap();
-        for i in 1..output.len() {
-            let idx = rng.gen_range(0..(NUMERALS.len() + ALPHABET.len()));
-            output[i] = if idx < NUMERALS.len() {
-                NUMERALS[idx]
-            } else {
-                ALPHABET[idx - NUMERALS.len()]
-            };
-        }
+        let data: [u8; DATA_LENGTH] = rand::random();
+        let checksum: [u8; CHECKSUM_LENGTH] = sha2::Sha256::digest(&data)[0..CHECKSUM_LENGTH]
+            .try_into()
+            .unwrap();
 
-        Self(String::from_utf8(output).unwrap())
+        let mut bytes = [0u8; TOTAL_LENGTH];
+        bytes[0..DATA_LENGTH].copy_from_slice(&data);
+        bytes[DATA_LENGTH..].copy_from_slice(&checksum);
+
+        Self(data_encoding::BASE32_NOPAD.encode(&bytes).to_lowercase())
     }
 }
 impl Display for PackageId {
