@@ -4,24 +4,50 @@ use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_package::Manifest;
 use ambient_settings::{Settings, SettingsKey};
 use anyhow::Context;
+use clap::Parser;
 use parking_lot::Mutex;
 
-use crate::cli::build;
+use crate::cli::{package::build, PackagePath};
 
-use super::{PackageCli, PackagePath};
+use super::PackageCli;
 
-#[allow(clippy::too_many_arguments)]
-pub async fn handle(
-    package: &PackageCli,
-    extra_packages: &[PathBuf],
-    assets: &AssetCache,
-    token: Option<&str>,
-    api_server: &str,
-    release_build: bool,
-    force_upload: bool,
-    ensure_running: bool,
-    context: &str,
-) -> anyhow::Result<()> {
+#[derive(Parser, Clone, Debug)]
+/// Deploys the package
+pub struct Deploy {
+    #[command(flatten)]
+    pub package: PackageCli,
+    /// Additional packages to deploy; this allows you to share deployed dependencies
+    /// between packages when doing a group deploy
+    #[arg(long)]
+    pub extra_packages: Vec<PathBuf>,
+    /// API server endpoint
+    #[arg(long, default_value = ambient_shared_types::urls::API_URL)]
+    pub api_server: String,
+    /// Authentication token
+    #[arg(short, long)]
+    pub token: Option<String>,
+    /// Don't use differential upload and upload all assets
+    #[arg(long)]
+    pub force_upload: bool,
+    /// Ensure the package is running after deploying
+    #[arg(long)]
+    pub ensure_running: bool,
+    /// Context to run the package in
+    #[arg(long, requires("ensure_running"), default_value = "")]
+    pub context: String,
+}
+
+pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> anyhow::Result<()> {
+    let Deploy {
+        package,
+        extra_packages,
+        api_server,
+        token,
+        force_upload,
+        ensure_running,
+        context,
+    } = args;
+
     if !release_build {
         // Using string interpolation due to a rustfmt bug where it will break
         // if any one line is too long
@@ -154,7 +180,7 @@ pub async fn handle(
                             token,
                             build_path,
                             package_path,
-                            force_upload,
+                            *force_upload,
                         )
                         .await?;
                         Deployment::Deployed {
@@ -222,7 +248,7 @@ pub async fn handle(
         }
     }
 
-    if let Some(deployment_id) = first_deployment_id.filter(|_| ensure_running) {
+    if let Some(deployment_id) = first_deployment_id.filter(|_| *ensure_running) {
         let spec = ambient_cloud_client::ServerSpec::new_with_deployment(deployment_id)
             .with_context(context.to_string());
         let server =

@@ -2,21 +2,28 @@ use std::path::Path;
 
 use ambient_native_std::ambient_version;
 use anyhow::Context;
-use clap::{Args, ValueEnum};
+use clap::{Parser, ValueEnum};
 use convert_case::{Case, Casing};
 
-use super::PackagePath;
+use super::PackageCli;
 
-#[derive(Args, Clone, Debug)]
-pub struct NewPackageCli {
+#[derive(Parser, Clone, Debug)]
+/// Create a new Ambient package
+pub struct New {
+    #[command(flatten)]
+    pub package: PackageCli,
+
     #[arg(short, long)]
     name: Option<String>,
+
     #[arg(long)]
     api_path: Option<String>,
+
     /// This package is being created in an existing Rust workspace,
     /// and does not need to have extra files generated for it.
     #[arg(long)]
     in_workspace: bool,
+
     #[arg(long, value_enum, default_value_t)]
     rust: RustTemplate,
 }
@@ -32,7 +39,9 @@ pub enum RustTemplate {
     Quad,
 }
 
-pub(crate) fn handle(package_path: &PackagePath, args: &NewPackageCli) -> anyhow::Result<()> {
+pub(crate) fn handle(args: &New) -> anyhow::Result<()> {
+    let package_path = args.package.package_path()?;
+
     let Some(package_path) = &package_path.fs_path else {
         anyhow::bail!("Cannot create package in a remote directory.");
     };
@@ -49,12 +58,12 @@ pub(crate) fn handle(package_path: &PackagePath, args: &NewPackageCli) -> anyhow
             .context("Package path has no terminating segment")?,
     );
 
-    if package_path.is_dir() && std::fs::read_dir(&package_path)?.next().is_some() {
+    if package_path.is_dir() && std::fs::read_dir(package_path)?.next().is_some() {
         anyhow::bail!("package path {package_path:?} is not empty");
     }
 
     let id = ambient_package::PackageId::generate();
-    let snake_case_name = name.to_case(Case::Snake).replace(":", "");
+    let snake_case_name = name.to_case(Case::Snake).replace(':', "");
 
     // Build a list of files to write to disk, then write them all at once.
     macro_rules! template_file {
@@ -147,7 +156,7 @@ pub(crate) fn handle(package_path: &PackagePath, args: &NewPackageCli) -> anyhow
 }
 
 fn build_cargo_toml(
-    package_path: &std::path::PathBuf,
+    package_path: &Path,
     api_path: Option<&str>,
     snake_case_name: String,
 ) -> String {

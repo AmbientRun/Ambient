@@ -14,7 +14,7 @@ use ambient_ecs::{
 };
 use ambient_native_std::{
     ambient_version,
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
     cb,
 };
@@ -26,7 +26,6 @@ use ambient_network::{
     },
     server::{ForkingEvent, ProxySettings, SharedServerState, ShutdownEvent},
 };
-use ambient_prefab::PrefabFromUrl;
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
 use axum::{
@@ -39,7 +38,7 @@ use axum::{
 use parking_lot::Mutex;
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
-use crate::{cli::HostCli, shared};
+use crate::{cli::package::HostCli, shared};
 
 pub mod wasm;
 
@@ -63,7 +62,6 @@ pub async fn start(
     host_cli: &HostCli,
     build_root_path: AbsAssetUrl,
     main_package_path: AbsAssetUrl,
-    view_asset_path: Option<PathBuf>,
     working_directory: PathBuf,
     manifest: ambient_package::Manifest,
     crypto: Crypto,
@@ -195,16 +193,6 @@ pub async fn start(
         .await
         .unwrap();
 
-        if let Some(asset_path) = view_asset_path {
-            let asset_path = main_package_path
-                .push(asset_path.to_string_lossy())
-                .expect("FIXME")
-                .push("prefabs/main.json")
-                .expect("pushing 'prefabs/main.json' shouldn't fail");
-            log::info!("Spawning asset from {:?}", asset_path);
-            let obj = PrefabFromUrl(asset_path.into()).get(&assets).await.unwrap();
-            obj.spawn_into_world(&mut server_world, None);
-        }
         log::info!("Starting server");
         server
             .run(

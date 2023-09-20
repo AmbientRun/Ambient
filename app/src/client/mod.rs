@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc, time::Duration};
 
 use ambient_app::{fps_stats, window_title, AppBuilder};
-use ambient_audio::AudioMixer;
+use ambient_audio::{AudioMixer, AudioStream};
 use ambient_cameras::UICamera;
 use ambient_client_shared::game_view::GameView;
 use ambient_core::{
@@ -24,7 +24,7 @@ use ambient_ui_native::{Dock, WindowSized};
 use glam::uvec2;
 
 use crate::{
-    cli::{GoldenImageCommand, RunCli},
+    cli::{ClientCli, GoldenImageCommand},
     shared::{self, certs::CERT},
 };
 
@@ -35,23 +35,35 @@ pub fn run(
     rt: &tokio::runtime::Runtime,
     assets: AssetCache,
     server_addr: ResolvedAddr,
-    run: &RunCli,
+    args: &ClientCli,
     golden_image_output_dir: Option<PathBuf>,
-    mixer: Option<AudioMixer>,
-) -> ExitStatus {
-    let user_id = run
+) -> anyhow::Result<()> {
+    let audio_stream = if !args.mute_audio {
+        match AudioStream::new() {
+            Ok(v) => Some(v),
+            Err(err) => {
+                log::error!("Failed to initialize audio stream: {err}");
+                None
+            }
+        }
+    } else {
+        None
+    };
+    let mixer = audio_stream.as_ref().map(|v| v.mixer().clone());
+
+    let user_id = args
         .user_id
         .clone()
         .unwrap_or_else(|| format!("user_{}", friendly_id()));
-    let headless = if run.headless {
+    let headless = if args.headless {
         Some(uvec2(600, 600))
     } else {
         None
     };
 
-    let is_debug = std::env::var("AMBIENT_DEBUGGER").is_ok() || run.debugger;
+    let is_debug = std::env::var("AMBIENT_DEBUGGER").is_ok() || args.debugger;
 
-    let cert = if let Some(ca) = &run.ca {
+    let cert = if let Some(ca) = &args.ca {
         match std::fs::read(ca) {
             Ok(v) => Some(v),
             Err(err) => {
@@ -76,12 +88,12 @@ pub fn run(
         .headless(headless)
         .update_title_with_fps_stats(false);
 
-    let builder = if let Some((x, y)) = run.window_x.zip(run.window_y) {
+    let builder = if let Some((x, y)) = args.window_x.zip(args.window_y) {
         builder.with_window_position_override(glam::ivec2(x, y))
     } else {
         builder
     };
-    let builder = if let Some((w, h)) = run.window_width.zip(run.window_height) {
+    let builder = if let Some((w, h)) = args.window_width.zip(args.window_height) {
         builder.with_window_size_override(glam::uvec2(w, h))
     } else {
         builder
@@ -95,7 +107,7 @@ pub fn run(
         server_addr,
         user_id,
         show_debug: is_debug,
-        golden_image_cmd: run.golden_image,
+        golden_image_cmd: args.golden_image,
         golden_image_output_dir,
         cert,
         mixer,
@@ -103,7 +115,19 @@ pub fn run(
     .el()
     .spawn_interactive(&mut app.world);
 
-    app.run_blocking()
+    let status = app.run_blocking();
+    match status {
+        ExitStatus::SUCCESS => Ok(()),
+        ExitStatus::FAILURE => {
+            anyhow::bail!("The Ambient application exited with a failure status code.")
+        }
+        other => {
+            anyhow::bail!(
+                "The Ambient application exited with an unknown status code: {:?}",
+                other
+            )
+        }
+    }
 }
 
 #[element_component]
