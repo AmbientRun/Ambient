@@ -195,6 +195,7 @@ pub fn sync_ecs_physics() -> SystemGroup {
                         let is_kinematic = world.has_component(id, kinematic());
                         let (_scale, rot, pos) = localworld.to_scale_rotation_translation();
                         if let Ok(body) = world.get(id, rigid_dynamic()) {
+                            //                            println!("child physx is dynamic {:?} ", id);
                             let pose = PxTransform::new(pos, rot);
                             if is_kinematic {
                                 body.set_kinematic_target(&pose);
@@ -204,8 +205,10 @@ pub fn sync_ecs_physics() -> SystemGroup {
                                 body.set_angular_velocity(Vec3::ZERO, true);
                             }
                         } else if let Ok(body) = world.get(id, rigid_static()) {
+                            //                            println!("child physx is static {:?} ", id);
                             body.set_global_pose(&PxTransform::new(pos, rot), true);
                         } else if let Ok(shape) = world.get_ref(id, physics_shape()) {
+                            //                            println!("child physx has a shape? {:?} ", id);
                             let actor = shape.get_actor().unwrap();
                             let pose = PxTransform::new(pos, rot);
                             if !is_kinematic {
