@@ -12,12 +12,12 @@ content = { type = "Playable" }
 # hide_cursor = { path = "../../packages/std/hide_cursor" }
 # fps_controller = { path = "../../packages/std/fps_controller" }
 
-base_assets = { path = "../../packages/std/base_assets", deployment = "63elc01s73Fw7Zf22WnhdG" }
-fps_controller = { path = "../../packages/std/fps_controller", deployment = "4BhYdBFfRXoVEC0Esusfhk" }
-character_animation = { path = "../../packages/std/character_animation", deployment = "1yoj6WWYw930TwO55E0b1L" }
-hide_cursor = { path = "../../packages/std/hide_cursor", deployment = "48Dlz7rfPcrCdGVCdlEQ7F" }
+base_assets = { deployment = "63elc01s73Fw7Zf22WnhdG" }
+fps_controller = { deployment = "4BhYdBFfRXoVEC0Esusfhk" }
+character_animation = { deployment = "1yoj6WWYw930TwO55E0b1L" }
+hide_cursor = { deployment = "48Dlz7rfPcrCdGVCdlEQ7F" }
 
-package_manager = { path = "../../packages/tools/package_manager", deployment = "2j2oBSzO03NIixBDlEGeVT" }
+package_manager = { deployment = "2j2oBSzO03NIixBDlEGeVT" }
 
 temperature = { path = "../temperature" , deployment = "1ApyQ75tro1e329197QCBh" }
 temperature_hud = { path = "../temperature_hud_magda" }
