@@ -8,4 +8,4 @@ type = "Game"
 content = { type = "Playable", example = true }
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "6Be9qDWYrcsO8wKb5qr6sP" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "5FW32mbhXcqn3Mtp2DsUvU" }

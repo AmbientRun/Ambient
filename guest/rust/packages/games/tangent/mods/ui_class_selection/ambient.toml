@@ -5,7 +5,7 @@ version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "1wp8iJTwYD8dfqFA0sBrJD" }
+tangent_schema = { path = "../../schema", deployment = "1MdfsKM0PneOuY19MlhaOw" }
 
 [messages.ClassSetRequest]
 description = "Sent by the client to request a class set change."
