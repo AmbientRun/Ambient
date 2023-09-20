@@ -1145,6 +1145,7 @@ dependencies = [
  "ambient_client_shared",
  "ambient_core",
  "ambient_debugger",
+ "ambient_decals",
  "ambient_ecs",
  "ambient_ecs_editor",
  "ambient_element",
