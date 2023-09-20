@@ -12,12 +12,18 @@ content = { type = "Playable" }
 # hide_cursor = { path = "../../packages/std/hide_cursor" }
 # fps_controller = { path = "../../packages/std/fps_controller" }
 
-base_assets = { path = "../../packages/std/base_assets", deployment = "63elc01s73Fw7Zf22WnhdG" }
-fps_controller = { path = "../../packages/std/fps_controller", deployment = "4BhYdBFfRXoVEC0Esusfhk" }
-character_animation = { path = "../../packages/std/character_animation", deployment = "1yoj6WWYw930TwO55E0b1L" }
-hide_cursor = { path = "../../packages/std/hide_cursor", deployment = "48Dlz7rfPcrCdGVCdlEQ7F" }
+# base_assets = { path = "../../packages/std/base_assets", deployment = "63elc01s73Fw7Zf22WnhdG" }
+# fps_controller = { path = "../../packages/std/fps_controller", deployment = "4BhYdBFfRXoVEC0Esusfhk" }
+# character_animation = { path = "../../packages/std/character_animation", deployment = "1yoj6WWYw930TwO55E0b1L" }
+# hide_cursor = { path = "../../packages/std/hide_cursor", deployment = "48Dlz7rfPcrCdGVCdlEQ7F" }
 
-package_manager = { path = "../../packages/tools/package_manager", deployment = "2j2oBSzO03NIixBDlEGeVT" }
+# package_manager = { path = "../../packages/tools/package_manager", deployment = "2j2oBSzO03NIixBDlEGeVT" }
+
+base_assets = { deployment = "2TUw8gb8vEm19jklIUKnyO" } # updated Sept 20
+fps_controller = { deployment = "7D8fzGFDOopKrUsY5AKofY" } # updated Sept 20
+character_animation = { deployment = "6HS1Mf3o535O4retxpytgH" } # updated Sept 20
+hide_cursor = { deployment = "A8CV3CgLgnnNNSsr2m9kL" } # updated Sept 20
+package_manager = { deployment = "4iENoKFy5uyYGLCVUTfZKz" } # updated Sept 20 - awkward due to not being asset? no copy button
 
 temperature = { path = "../temperature" , deployment = "3CWQymc750qQZ9uybn3O8p" }
 temperature_hud = { path = "../temperature_hud_magda" , deployment = "eIMybnMH1Vh9wTgKnG2n8" }
