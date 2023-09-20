@@ -34,10 +34,17 @@ fn VehicleHud(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
         .0
         .unwrap_or_default();
 
-    let max_health =
-        use_entity_component(hooks, vehicle_id, vdc::general::components::max_health())
-            .0
-            .unwrap_or_default();
+    let vehicle_data_ref = use_entity_component(hooks, vehicle_id, vc::data_ref())
+        .0
+        .unwrap_or_default();
+
+    let max_health = use_entity_component(
+        hooks,
+        vehicle_data_ref,
+        vdc::general::components::max_health(),
+    )
+    .0
+    .unwrap_or_default();
 
     let speed = use_entity_component(hooks, vehicle_id, vcc::speed_kph())
         .0

@@ -9,10 +9,11 @@ use ambient_api::{
     prelude::*,
 };
 use packages::{
-    tangent_schema::{concepts::Explosion, weapon::messages::Fire},
+    tangent_schema::{concepts::Explosion, weapon::components::fire},
     this::{
         components::{is_gun_laser, last_shot_time},
         concepts::GunLaser,
+        messages::Fire,
     },
 };
 
@@ -33,60 +34,64 @@ pub fn main() {
         }
     });
 
-    Fire::subscribe(|ctx, msg| {
-        if ctx.local().is_none() {
-            return;
-        }
+    query(fire())
+        .requires(is_gun_laser())
+        .each_frame(|weapons| {
+            for (weapon_id, fire) in weapons {
+                if !fire {
+                    continue;
+                }
 
-        let weapon_id = msg.weapon_id;
-        let Some(GunLaser {
-            local_to_world,
-            is_gun_laser: _,
-            damage,
-            time_between_shots,
-            optional,
-        }) = GunLaser::get_spawned(weapon_id)
-        else {
-            return;
-        };
+                let Some(GunLaser {
+                    local_to_world,
+                    is_gun_laser: _,
+                    damage,
+                    time_between_shots,
+                    optional,
+                }) = GunLaser::get_spawned(weapon_id)
+                else {
+                    return;
+                };
 
-        let Some(last_shot_time) = optional.last_shot_time else {
-            return;
-        };
+                if optional
+                    .last_shot_time
+                    .is_some_and(|lst| game_time() < lst + time_between_shots)
+                {
+                    return;
+                }
 
-        if game_time() < last_shot_time + time_between_shots {
-            return;
-        }
+                Fire { weapon_id }.send_client_broadcast_unreliable();
 
-        msg.send_client_broadcast_unreliable();
+                let p0 = local_to_world.transform_point3(vec3(0.0, -0.1, 0.1));
+                if let Some(hit) =
+                    physics::raycast_first(p0, local_to_world.transform_vector3(-Vec3::Y))
+                {
+                    let p1 = hit.position;
 
-        let p0 = local_to_world.transform_point3(vec3(0.0, -0.1, 0.1));
-        if let Some(hit) = physics::raycast_first(p0, local_to_world.transform_vector3(-Vec3::Y)) {
-            let p1 = hit.position;
+                    Entity::new()
+                        .with(main_scene(), ())
+                        .with(line_from(), p0)
+                        .with(line_to(), p1)
+                        .with(line_width(), 0.2)
+                        .with(color(), vec4(0.8, 0.3, 0.0, 1.0))
+                        .with(double_sided(), true)
+                        .with(
+                            remove_at_game_time(),
+                            game_time() + Duration::from_millis(100),
+                        )
+                        .spawn();
 
-            Entity::new()
-                .with(main_scene(), ())
-                .with(line_from(), p0)
-                .with(line_to(), p1)
-                .with(line_width(), 0.2)
-                .with(color(), vec4(0.8, 0.3, 0.0, 1.0))
-                .with(double_sided(), true)
-                .with(
-                    remove_at_game_time(),
-                    game_time() + Duration::from_millis(100),
-                )
-                .spawn();
+                    Explosion {
+                        is_explosion: (),
+                        radius: 1.0,
+                        damage,
+                        translation: p1,
+                        optional: default(),
+                    }
+                    .spawn();
 
-            Explosion {
-                is_explosion: (),
-                radius: 1.0,
-                damage,
-                translation: p1,
-                optional: default(),
+                    entity::add_component(weapon_id, self::last_shot_time(), game_time());
+                }
             }
-            .spawn();
-
-            entity::add_component(weapon_id, self::last_shot_time(), game_time());
-        }
-    });
+        });
 }

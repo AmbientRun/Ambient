@@ -6,8 +6,8 @@ content = { type = "Mod", for_playables = ["tangent"] }
 
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "1MdfsKM0PneOuY19MlhaOw" }
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit" , deployment = "19EG2Sg0txG4WXz2lW73LL" }
-kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio" , deployment = "6fsl0CRjEUzYrHgXRh2YGK" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "19EG2Sg0txG4WXz2lW73LL" }
+kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "6fsl0CRjEUzYrHgXRh2YGK" }
 
 [components]
 is_gun_laser = { type = "Empty", name = "Is Gun (Laser)", description = "This entity is a laser gun." }
@@ -25,3 +25,8 @@ damage = {}
 time_between_shots = {}
 [concepts.GunLaser.components.optional]
 last_shot_time = {}
+
+[messages.Fire]
+description = "Sent to the client-side when a gun is fired."
+[messages.Fire.fields]
+weapon_id = "EntityId"

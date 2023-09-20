@@ -1,5 +1,5 @@
 use ambient_api::{core::transform::components::translation, prelude::*};
-use packages::tangent_schema::weapon::messages::Fire;
+use packages::this::messages::Fire;
 
 #[main]
 pub fn main() {

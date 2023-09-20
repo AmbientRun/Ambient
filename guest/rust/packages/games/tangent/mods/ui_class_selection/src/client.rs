@@ -10,7 +10,10 @@ use ambient_api::{
     prelude::*,
     ui::{use_keyboard_input, ImageFromUrl},
 };
-use packages::tangent_schema::{concepts::VehicleClass, player::components as pc};
+use packages::tangent_schema::{
+    concepts::{VehicleClass, VehicleData},
+    player::components as pc,
+};
 use packages::this::messages::ClassSetRequest;
 
 #[main]
@@ -95,10 +98,14 @@ pub fn Class(
 ) -> Element {
     let is_active_class = player_class_id.is_some_and(|id| id == class_id);
 
+    let Some(vd) = VehicleData::get_spawned(class.data_ref) else {
+        return Element::new();
+    };
+
     let stats: &[(&str, &dyn Display)] = &[
-        ("Health", &class.max_health),
-        ("Altitude", &format!("{}m", class.target)),
-        ("Forward Force", &class.forward_force),
+        ("Health", &vd.max_health),
+        ("Altitude", &format!("{}m", vd.target)),
+        ("Forward Force", &vd.forward_force),
     ];
 
     with_rect(
