@@ -11,3 +11,7 @@ health = { type = "F32", name = "Health", description = "This game object's heal
     "Debuggable",
     "Networked",
 ] }
+
+max_health = { type = "F32", name = "Max Health", description = "Maximum health of the object. 100 HP is \"standard.\"", attributes = [
+    "Networked",
+] }

@@ -23,10 +23,6 @@ game_object = { path = "../../../schemas/game_object" }
 ] }
 
 # Vehicle data
-"vehicle::data::general::max_health" = { type = "F32", name = "Max Health", description = "Maximum health of the vehicle", attributes = [
-    "Networked",
-] }
-
 "vehicle::data::thruster::offsets" = { type = { type = "Vec", element_type = "Vec2" }, name = "Thruster Offsets", description = "Offsets of the thrusters from the center of the vehicle", attributes = [
     "Networked",
 ] }
@@ -161,7 +157,7 @@ description = "Data for a vehicle"
 "ambient_core::physics::density" = {}
 "ambient_core::physics::cube_collider" = {}
 
-"vehicle::data::general::max_health" = {}
+"game_object::max_health" = {}
 
 "vehicle::data::thruster::offsets" = {}
 "vehicle::data::thruster::k_p" = {}

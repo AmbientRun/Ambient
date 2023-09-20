@@ -13,10 +13,9 @@ use ambient_api::{
     prelude::*,
 };
 use packages::{
-    game_object::components::health,
+    game_object::components::{health, max_health},
     tangent_schema::{
         player::components as pc, vehicle::client::components as vcc, vehicle::components as vc,
-        vehicle::data as vdc,
     },
 };
 
@@ -41,13 +40,9 @@ fn VehicleHud(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
         .0
         .unwrap_or_default();
 
-    let max_health = use_entity_component(
-        hooks,
-        vehicle_data_ref,
-        vdc::general::components::max_health(),
-    )
-    .0
-    .unwrap_or_default();
+    let max_health = use_entity_component(hooks, vehicle_data_ref, max_health())
+        .0
+        .unwrap_or_default();
 
     let speed = use_entity_component(hooks, vehicle_id, vcc::speed_kph())
         .0

@@ -21,7 +21,7 @@ use ambient_api::{
 
 use packages::{
     explosion::concepts::Explosion,
-    game_object::components::health,
+    game_object::components::{health, max_health},
     tangent_schema::{
         concepts::{Spawnpoint, Vehicle, VehicleClass, VehicleData},
         messages::OnDeath,
@@ -161,8 +161,7 @@ fn respawn_player(player_id: EntityId) {
         .unwrap_or_default();
 
     let last_distances = offsets.iter().map(|_| 0.0).collect();
-    let max_health = entity::get_component(vehicle_data_ref, vd::general::components::max_health())
-        .unwrap_or(100.0);
+    let max_health = entity::get_component(vehicle_data_ref, max_health()).unwrap_or(100.0);
 
     // Create the vehicle before spawning it.
     let position = choose_spawn_position();
