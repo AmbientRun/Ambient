@@ -12,6 +12,8 @@ tests = [
     "examples/assets/material_overriding",
     "examples/assets/unity",
 
+    "examples/physics/visualize_colliders",
+
     "examples/rendering/decals",
     "examples/rendering/fog",
     "examples/rendering/image",
