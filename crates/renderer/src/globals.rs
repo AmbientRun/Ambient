@@ -12,10 +12,12 @@ use ambient_gpu::{
     sampler::SamplerKey,
     shader_module::{BindGroupDesc, DEPTH_FORMAT},
     texture::{Texture, TextureView},
+    typed_buffer::TypedBuffer,
 };
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use futures::Future;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
-use wgpu::{BindGroup, BindGroupLayout, Buffer, Sampler};
+use wgpu::{BindGroup, BindGroupLayout, Buffer, BufferUsages, Sampler};
 
 use super::{
     fog_color, get_active_sun, light_ambient, light_diffuse, RenderTarget, ShadowCameraData,
@@ -167,7 +169,7 @@ pub fn globals_layout() -> BindGroupDesc<'static> {
             },
             wgpu::BindGroupLayoutEntry {
                 binding: 8,
-                visibility: wgpu::ShaderStages::FRAGMENT,
+                visibility: wgpu::ShaderStages::VERTEX,
                 ty: wgpu::BindingType::Buffer {
                     ty: wgpu::BufferBindingType::Storage { read_only: false },
                     has_dynamic_offset: false,
@@ -189,7 +191,7 @@ pub(crate) struct ForwardGlobals {
     scene: Component<()>,
     start_time: ambient_sys::time::Instant,
     layout: Arc<wgpu::BindGroupLayout>,
-    diagnostics_buffer: wgpu::Buffer,
+    diagnostics_buffer: TypedBuffer<u32>,
 }
 
 impl ForwardGlobals {
@@ -225,12 +227,12 @@ impl ForwardGlobals {
             ..Default::default()
         });
 
-        let diagnostics_buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("ForwardGlobals.buffer"),
-            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC,
-            size: std::mem::size_of::<u32>() as u64 * 1024,
-            mapped_at_creation: false,
-        });
+        let diagnostics_buffer = TypedBuffer::new_init(
+            &gpu,
+            "diagnostics_buffer",
+            BufferUsages::STORAGE | BufferUsages::COPY_SRC,
+            &[0u32; 1024],
+        );
 
         let params = GlobalParams::default();
 
@@ -308,7 +310,7 @@ impl ForwardGlobals {
                 },
                 wgpu::BindGroupEntry {
                     binding: 8,
-                    resource: self.diagnostics_buffer.as_entire_binding(),
+                    resource: self.diagnostics_buffer.buffer().as_entire_binding(),
                 },
                 wgpu::BindGroupEntry {
                     binding: 9 + MESH_METADATA_BINDING,
@@ -386,6 +388,17 @@ impl ForwardGlobals {
             bytemuck::cast_slice(shadow_cameras),
         );
     }
+
+    pub fn get_diagnostics(
+        &self,
+        gpu: &Gpu,
+    ) -> impl Future<Output = Result<Vec<u32>, wgpu::BufferAsyncError>> {
+        let fut = self.diagnostics_buffer.read_staging(gpu, ..);
+        async move {
+            let data = fut.await;
+            data
+        }
+    }
 }
 
 fn create_dummy_shadow_texture(gpu: &Gpu) -> Arc<Texture> {
@@ -416,6 +429,7 @@ pub struct ShadowAndUIGlobals {
     dummy_prev_frame: RenderTarget,
     buffer: wgpu::Buffer,
     bind_group: Option<BindGroup>,
+    diagnostics_buffer: wgpu::Buffer,
 }
 impl ShadowAndUIGlobals {
     pub fn new(gpu: &Gpu, layout: Arc<wgpu::BindGroupLayout>) -> Self {
@@ -452,6 +466,13 @@ impl ShadowAndUIGlobals {
             ..Default::default()
         });
 
+        let diagnostics_buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("ShadowGlobals.shadow_cameras_buffer"),
+            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC,
+            size: std::mem::size_of::<u32>() as u64,
+            mapped_at_creation: false,
+        });
+
         Self {
             layout,
             buffer,
@@ -460,6 +481,7 @@ impl ShadowAndUIGlobals {
             shadow_view,
             dummy_prev_frame,
             bind_group: None,
+            diagnostics_buffer,
         }
     }
 
@@ -518,19 +540,23 @@ impl ShadowAndUIGlobals {
                     ),
                 },
                 wgpu::BindGroupEntry {
-                    binding: 8 + MESH_METADATA_BINDING,
+                    binding: 8,
+                    resource: self.diagnostics_buffer.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 9 + MESH_METADATA_BINDING,
                     resource: mesh_buffer.metadata_buffer.as_binding(),
                 },
                 wgpu::BindGroupEntry {
-                    binding: 8 + MESH_BASE_BINDING,
+                    binding: 9 + MESH_BASE_BINDING,
                     resource: mesh_buffer.base_buffer.front().as_binding(),
                 },
                 wgpu::BindGroupEntry {
-                    binding: 8 + MESH_SKIN_BINDING,
+                    binding: 9 + MESH_SKIN_BINDING,
                     resource: mesh_buffer.skinned_buffer.front().as_binding(),
                 },
                 wgpu::BindGroupEntry {
-                    binding: 8 + SKINS_BINDING,
+                    binding: 9 + SKINS_BINDING,
                     resource: skins.buffer.as_binding(),
                 },
             ],

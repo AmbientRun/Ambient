@@ -880,6 +880,7 @@ dependencies = [
  "bytemuck",
  "derive_more",
  "downcast-rs",
+ "futures",
  "glam",
  "itertools",
  "log",

@@ -61,6 +61,10 @@ var solids_screen_depth: texture_depth_2d;
 @binding(7)
 var solids_screen_normal_quat: texture_2d<f32>;
 
+@group(GLOBALS_BIND_GROUP)
+@binding(8)
+var<storage, read_write> diagnostics_buffer: array<u32>;
+
 fn inside(v: vec3<f32>) -> bool {
     return v.x > -1. && v.x < 1. && v.y > -1. && v.y < 1. && v.z > 0. && v.z < 1.;
 }

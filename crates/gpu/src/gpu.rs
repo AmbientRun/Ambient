@@ -121,7 +121,7 @@ impl Gpu {
                 &wgpu::DeviceDescriptor {
                     label: None,
                     features: wgpu::Features::default()
-                        | wgpu::Features::TEXTURE_ADAPTER_SPECIFIC_FORMAT_FEATURES
+                        | wgpu::Features::TEXTURE_ADAPTER_SPECIFIC_FORMAT_FEATURES | wgpu::Features::VERTEX_WRITABLE_STORAGE
                         // | wgpu::Features::POLYGON_MODE_LINE
                         | features,
                     limits: wgpu::Limits {

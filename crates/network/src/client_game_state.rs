@@ -7,6 +7,7 @@ use ambient_core::{
     transform::local_to_world,
     ui_scene,
     window::window_physical_size,
+    RuntimeKey,
 };
 use ambient_ecs::{components, query, Entity, FrameEvent, System, SystemGroup, World};
 use ambient_gizmos::render::GizmoRenderer;
@@ -135,6 +136,9 @@ impl ClientGameState {
             RendererTarget::Target(target),
             Some(Color::rgba(0., 0., 0., 1.)),
         );
+
+        let rt = RuntimeKey.get(&self.assets);
+        self.renderer.dump_diagnostics(gpu, &rt);
 
         tracing::trace!("Drawing ui");
 

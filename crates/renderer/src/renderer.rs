@@ -22,6 +22,7 @@ use ambient_native_std::{
     color::Color,
 };
 use ambient_settings::{RenderMode, SettingsKey};
+use ambient_sys::task::RuntimeHandle;
 use glam::uvec2;
 use std::sync::Arc;
 use tracing::debug_span;
@@ -30,7 +31,7 @@ use wgpu::{BindGroupLayout, BindGroupLayoutEntry, TextureView};
 pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
 pub const MATERIAL_BIND_GROUP: &str = "MATERIAL_BIND_GROUP";
 pub const PRIMITIVES_BIND_GROUP: &str = "PRIMITIVES_BIND_GROUP";
-pub const GLOBALS_BIND_GROUP_SIZE: u32 = 8;
+pub const GLOBALS_BIND_GROUP_SIZE: u32 = 9;
 
 pub const MESH_METADATA_BINDING: u32 = 0;
 pub const MESH_BASE_BINDING: u32 = 1;
@@ -572,6 +573,14 @@ impl Renderer {
             &bind_groups,
             &mesh_buffer,
         );
+    }
+
+    pub fn dump_diagnostics(&self, gpu: &Gpu, runtime: &RuntimeHandle) {
+        let fut = self.forward_globals.get_diagnostics(gpu);
+        runtime.spawn(async move {
+            let data = fut.await;
+            tracing::info!(?data, "Read shader data");
+        });
     }
 
     pub fn dump_to_tmp_file(&self) {
