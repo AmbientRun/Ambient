@@ -15,11 +15,11 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::packages::unit_schema::components::{health, vertical_velocity};
-use packages::afps_schema::components;
 use packages::{
-    afps_schema::messages::Explosion,
+    afps_schema::{components, messages::Explosion},
+    game_object::components::health,
     this::{assets, components::claymore, messages::Spraypaint},
+    unit_schema::components::vertical_velocity,
 };
 
 #[main]

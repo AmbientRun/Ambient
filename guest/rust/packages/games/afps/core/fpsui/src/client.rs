@@ -14,8 +14,8 @@ use packages::{
         components::{kill_log, player_deathcount, player_killcount, player_last_frame},
         messages::StartGame,
     },
+    game_object::components::health,
     this::assets,
-    unit_schema::components::health,
 };
 
 #[main]

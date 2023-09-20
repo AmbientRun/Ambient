@@ -5,6 +5,7 @@ version = "0.0.1"
 content = { type = "Asset", animations = true, code = true }
 
 [dependencies]
+game_object = { path = "../../schemas/game_object" }
 unit_schema = { path = "../../schemas/unit", deployment = "5KKf99BrahlrYHLEMMj6OU" }
 
 [components]

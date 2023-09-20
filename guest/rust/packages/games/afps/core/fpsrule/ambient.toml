@@ -7,3 +7,4 @@ content = { type = "Asset", code = true }
 [dependencies]
 afps_schema = { path = "../../schema", deployment = "2eD1KcHctO5dBLheldSqbA" }
 unit_schema = { path = "../../../../schemas/unit", deployment = "5KKf99BrahlrYHLEMMj6OU" }
+game_object = { path = "../../../../schemas/game_object" }
