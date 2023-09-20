@@ -1,13 +1,11 @@
-use std::f32::consts::FRAC_PI_2;
 
 use ambient_api::{
     core::{
-        app::components::{main_scene, name, ui_scene},
+        app::components::{name, ui_scene},
         messages::Frame,
-        primitives::{components::quad, concepts::Sphere},
+        primitives::{components::quad},
         rect::components::{line_width, pixel_line_from, pixel_line_to},
-        rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun, water},
-        transform::components::{rotation, scale, translation},
+        transform::components::{scale},
     },
     prelude::*,
 };
