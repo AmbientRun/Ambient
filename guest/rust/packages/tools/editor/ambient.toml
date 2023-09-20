@@ -3,6 +3,7 @@ id = "editor"
 name = "Editor"
 version = "0.0.1"
 content = { type = "Tool" }
+ambient_version = "0.3.0-nightly-2023-09-20"
 
 [dependencies]
 editor_schema = { path = "../../schemas/editor" , deployment = "2VGI9Ugc9qr1n4HGsdSerK" }

@@ -3,6 +3,7 @@ id = "o0j4qyxwhcf9vukzslsvhrkj2sv5mf4x"
 name = "Tangent Class: Tank"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
+ambient_version = "0.3.0-nightly-2023-09-20"
 
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "1MdfsKM0PneOuY19MlhaOw" }
