@@ -102,7 +102,7 @@ fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) 
     material.normal = normalize(material.normal);
 
     return MainFsOut(
-        in.color,
+        shading(material, in.world_position),
         quat_from_mat3(material_in.normal_matrix)
     ) ;
 }
