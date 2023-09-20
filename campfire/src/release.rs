@@ -150,7 +150,7 @@ fn update_version(
     // This must be done first, before we mutate anything, to ensure that it's in a consistent state
     let all_publishable_crates = get_all_publishable_crates()?;
 
-    if !dbg!(no_package_ambient_version_update) {
+    if !no_package_ambient_version_update {
         fn add_ambient_version(toml: &mut toml_edit::Document, new_version: &str) {
             toml["package"]["ambient_version"] = toml_edit::value(new_version);
         }
