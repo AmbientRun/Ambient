@@ -8,6 +8,7 @@ struct VertexOutput {
     @location(4) world_bitangent: vec3<f32>,
     @location(5) world_normal: vec3<f32>,
     @location(6) local_position: vec3<f32>,
+    @location(7) color: vec4<f32>,
 };
 
 fn get_entity_primitive_mesh(loc: vec2<u32>, index: u32) -> u32 {
@@ -17,6 +18,17 @@ fn get_entity_primitive_mesh(loc: vec2<u32>, index: u32) -> u32 {
     var meshes = get_entity_gpu_primitives_mesh(loc);
     return bitcast<u32>(meshes[i][j]);
 }
+
+fn hsv_to_rgb(h: f32, s: f32, v: f32) -> vec3f {
+    let K = vec4f(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    let p = mix(vec4f(v, s, K.wz), vec4f(s, v, K.xy), step(v, s));
+    let q = mix(vec4f(p.xyw, h), vec4f(h, p.yzx), step(p.x, h));
+
+    let d = q.x - min(q.w, q.y);
+    let e = 1.0e-10;
+    return vec3f(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+}
+
 
 @vertex
 fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) vertex_index: u32) -> VertexOutput {
@@ -35,6 +47,7 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
     out.world_bitangent = cross(world.normal, world.tangent);
     out.world_position = world.pos;
     out.local_position = world.local.xyz;
+    out.color = vec4f(hsv_to_rgb(f32(instance_index) * 16.0, f32(vertex_index) / 32.0 + 0.2, 1.0), 1.0);
 
     let clip = global_params.projection_view * world.pos;
 
@@ -89,9 +102,9 @@ fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) 
     material.normal = normalize(material.normal);
 
     return MainFsOut(
-        shading(material, in.world_position),
+        in.color,
         quat_from_mat3(material_in.normal_matrix)
-    );
+    ) ;
 }
 
 @fragment
