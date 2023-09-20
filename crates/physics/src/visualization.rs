@@ -1,7 +1,7 @@
 use crate::{
     collider::{collider_shapes, collider_shapes_convex},
     main_physics_scene,
-    physx::{physics_shape, rigid_actor},
+    physx::physics_shape,
     picking_scene, trigger_areas_scene,
 };
 use ambient_core::{
@@ -18,7 +18,7 @@ use ambient_gizmos::{local_gizmos, GizmoPrimitive};
 use glam::{vec4, Vec3};
 use itertools::Itertools;
 use physxx::{
-    PxActor, PxDebugLine, PxRenderBuffer, PxRigidActor, PxSceneRef, PxShape, PxShapeFlag,
+    PxActor, PxDebugLine, PxRenderBuffer, PxRigidActor, PxShape, PxShapeFlag,
     PxVisualizationParameter,
 };
 

@@ -1,19 +1,16 @@
 use ambient_api::{
     core::{
         app::components::name,
-        camera::concepts::{
-            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
-        },
         physics::{
             components::{cube_collider, sphere_collider, visualize_collider},
             concepts::CharacterController,
         },
         primitives::{
-            components::{cube, quad},
+            components::cube,
             concepts::{Capsule, Sphere},
         },
         transform::{
-            components::{lookat_target, mesh_to_local, translation},
+            components::mesh_to_local,
             concepts::{Transformable, TransformableOptional},
         },
     },
