@@ -3,7 +3,7 @@ id = "network"
 name = "Network"
 description = "Network-related state."
 content = { type = "Asset", schema = true }
-version = "0.3.0-nightly-2023-09-20"
+version = "0.3.0-dev"
 
 [components.is_remote_entity]
 type = "Empty"
