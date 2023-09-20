@@ -604,8 +604,8 @@ impl TreeRenderer {
                             //
                             // The correct value should be `0`, but as said, breaks Windows +
                             // Chrome
-                            // mesh.base_offset as i32,
-                            0,
+                            mesh.base_offset as i32,
+                            // 0,
                             index as u32..(index as u32 + 1),
                         )
                     }

@@ -50,7 +50,7 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
     out.world_bitangent = cross(world.normal, world.tangent);
     out.world_position = world.pos;
     out.local_position = world.local.xyz;
-    out.color = vec4f(hsv_to_rgb(vec3f(f32(instance_index) / 13.0, f32(vertex_index + 1u) / 128.0, 1.0)), 1.0);
+    out.color = vec4f(hsv_to_rgb(vec3f(f32(instance_index) / 13.0, 1.0, 1.0)), 1.0);
 
     let clip = global_params.projection_view * world.pos;
 
@@ -105,7 +105,8 @@ fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) 
     material.normal = normalize(material.normal);
 
     return MainFsOut(
-        shading(material, in.world_position),
+        // shading(material, in.world_position),
+        in.color,
         quat_from_mat3(material_in.normal_matrix)
     ) ;
 }
