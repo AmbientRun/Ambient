@@ -8,7 +8,7 @@ pub const API_URL: &str = "https://api.ambient.run";
 pub fn web_package_url(package_id: &str, deployment_id: Option<&str>) -> String {
     let mut output = format!("{AMBIENT_WEB_APP_URL}/packages/{package_id}");
     if let Some(deployment_id) = deployment_id {
-        output.push_str(&format!("/deployments/{deployment_id}"));
+        output.push_str(&format!("/deployment/{deployment_id}"));
     }
     output
 }

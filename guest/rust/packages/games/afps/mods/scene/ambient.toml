@@ -3,6 +3,7 @@ id = "afps_scene"
 name = "AFPS Scene"
 version = "0.0.1"
 content = { type = "Asset", models = true, code = true }
+ambient_version = "0.3.0-nightly-2023-09-20"
 
 [dependencies]
 afps_schema = { path = "../../schema", deployment = "7NBTASMOE1rultxb0ShMhi" }

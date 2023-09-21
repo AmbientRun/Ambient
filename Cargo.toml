@@ -9,43 +9,43 @@ version = "0.3.0-dev"
 rust-version = "1.70.0"
 
 [workspace.dependencies]
-aho-corasick = "1.0.2"
-profiling = { version = "1.0.9", features = ["profile-with-puffin"] }
-tracing = "0.1.35"
+aho-corasick = "1.1.1"
+profiling = { version = "1.0.11", features = ["profile-with-puffin"] }
+tracing = "0.1.37"
 tracing-tree = { version = "0.2" }
 tracing-stackdriver = "0.6.2"
-tracing-subscriber = { version = "0.3.16", features = [
+tracing-subscriber = { version = "0.3.17", features = [
     "env-filter",
     "time",
     "local-time",
     "parking_lot",
 ] }
 tracing-log = { version = "0.1" }
-wgpu = { version = "0.16.0", features = ["serde", "trace", "replay"] }
+wgpu = { version = "0.16.3", features = ["serde", "trace", "replay"] }
 wgpu-types = { version = "0.16", features = ["serde"] }
-winit = { version = "0.28.1", features = ["serde"] }
+winit = { version = "0.28.6", features = ["serde"] }
 futures = { version = "0.3", default-features = false, features = ["std"] }
-tokio = { version = "1.20", features = ["parking_lot"] }
-bytemuck = { version = "1.10", features = ["derive"] }
+tokio = { version = "1.32", features = ["parking_lot"] }
+bytemuck = { version = "1.14", features = ["derive"] }
 glam = { version = "0.24", features = ["bytemuck", "serde", "rand"] }
-gltf = "1.1.0"
-ordered-float = { version = "3.4.0", features = ["serde"] }
-derive_more = "0.99.11"
-image = "0.24.5"
-image_hasher = "1.1.2"
-itertools = "0.10.3"
-ndarray = { version = "0.15.3", features = ["serde"] }
-rand = "0.8.0"
+gltf = "1.3.0"
+ordered-float = { version = "3.9.1", features = ["serde"] }
+derive_more = "0.99.17"
+image = "0.24.7"
+image_hasher = "1.2.0"
+itertools = "0.10.5"
+ndarray = { version = "0.15.6", features = ["serde"] }
+rand = "0.8.5"
 rand_pcg = "0.3.1"
-glyph_brush = "0.7.4"
+glyph_brush = "0.7.7"
 log = "0.4"
 dyn-clonable = "0.9.0"
 semver = { version = "1.0", features = ["serde"] }
 paste = "1.0"
-as-any = "0.2.0"
+as-any = "0.2.1"
 closure = "0.3.0"
 serde = { version = "1.0", features = ["derive", "rc"] }
-serde_bytes = "0.11.5"
+serde_bytes = "0.11.12"
 serde_json = "1.0"
 serde_path_to_error = "0.1"
 byteorder = "1.4.3"
@@ -53,15 +53,15 @@ bincode = "1.3.3"
 lazy_static = "1.4.0"
 strum = { version = "0.24", features = ["derive"] }
 derivative = "2.2.0"
-async-trait = "0.1.56"
-png = "0.17.2"
+async-trait = "0.1.73"
+png = "0.17.10"
 puffin = "0.16.0"
 puffin_http = "0.13.0"
 futures-signals = "0.3"
-open = "2.0.2"
-which = "4.3.0"
+open = "2.1.3"
+which = "4.4.2"
 fbxcel = { version = "0.9.0", features = ["tree"] }
-reqwest = { version = "0.11.11", default-features = false, features = [
+reqwest = { version = "0.11.20", default-features = false, features = [
     'blocking',
     'rustls-tls',
     'json',
@@ -69,8 +69,8 @@ reqwest = { version = "0.11.11", default-features = false, features = [
 url = { version = "2", features = ["serde"] }
 thiserror = "1.0"
 thread-priority = "0.10.0"
-once_cell = { version = "1.13.0", features = ["parking_lot"] }
-smallvec = "1.8.0"
+once_cell = { version = "1.18.0", features = ["parking_lot"] }
+smallvec = "1.11.1"
 downcast-rs = "1.2.0"
 yaml-rust = { version = "0.5", package = "yaml-rust-davvid" }
 maplit = "1.0.2"
@@ -79,13 +79,13 @@ chrono = { version = "0.4", default-features = false, features = [
     "clock",
 ] }
 manual_future = "0.1.1"
-base64 = "0.13.0"
+base64 = "0.13.1"
 env_logger = "0.10.0"
-async-recursion = "1.0.0"
+async-recursion = "1.0.5"
 anyhow = { version = "1.0", features = ["backtrace"] }
 bitflags = "1.3"
-parking_lot = { version = "0.12.0", features = ["serde"] }
-clap = { version = "4.0", features = ["derive"] }
+parking_lot = { version = "0.12.1", features = ["serde"] }
+clap = { version = "4.4", features = ["derive"] }
 sentry = { version = "0.31", default-features = false, features = [
     'backtrace',
     'contexts',
@@ -103,40 +103,40 @@ num-traits = "0.2"
 num-derive = "0.3"
 proc-macro2 = "1.0"
 quote = "1.0"
-pretty_assertions = "1.2.1"
+pretty_assertions = "1.4.0"
 syn = { version = "1.0", features = ["full", "extra-traits"] }
-proc-macro-crate = "1.1.0"
-bytes = { version = "1.1.0", features = ["serde"] }
-dashmap = "5.3.0"
+proc-macro-crate = "1.3.1"
+bytes = { version = "1.5.0", features = ["serde"] }
+dashmap = "5.5.3"
 slotmap = "1.0.6"
-atomic_refcell = "0.1.8"
+atomic_refcell = "0.1.11"
 flume = { version = "0.11", features = ["async"] }
 im = "15.1.0"
-axum = "0.6.4"
-tower-http = { version = "0.3.0", features = ["cors", "fs"] }
+axum = "0.6.20"
+tower-http = { version = "0.3.5", features = ["cors", "fs"] }
 tower = "0.4.13"
 indexmap = { version = "2.0", features = ["serde"] }
-fixed-vec-deque = "0.1.9"
+fixed-vec-deque = "0.1.11"
 hex = "0.4.3"
 ring = "0.16.20"
-data-encoding = "2.3.2"
+data-encoding = "2.4.0"
 convert_case = "0.6.0"
-fs_extra = "1.2.0"
+fs_extra = "1.3.0"
 slugify = "0.1.0"
-serde_yaml = "0.9.17"
+serde_yaml = "0.9.25"
 bit-set = "0.5.3"
 bit-vec = "0.6.3"
-glob = "0.3.0"
+glob = "0.3.1"
 walkdir = "2"
-relative-path = { version = "1.7", features = ["serde"] }
-pin-project = "1.0"
+relative-path = { version = "1.9", features = ["serde"] }
+pin-project = "1.1"
 abort-on-drop = "0.2"
-toml = { version = "0.7.4", features = ["preserve_order"] }
-percent-encoding = "2.2.0"
+toml = { version = "0.7.8", features = ["preserve_order"] }
+percent-encoding = "2.3.0"
 indoc = "2.0"
-cargo_toml = "0.15.0"
-toml_edit = "0.19.3"
-arboard = "3.2.0"
+cargo_toml = "0.15.3"
+toml_edit = "0.19.15"
+arboard = "3.2.1"
 noise = { version = "0.7.0", default-features = false }
 russimp = { version = "1.0.6", features = ['prebuilt'] }
 symphonia = { version = "0.5", default-features = false, features = [
@@ -145,12 +145,12 @@ symphonia = { version = "0.5", default-features = false, features = [
     "wav",
 ] }
 vorbis_rs = "0.3.0"
-colored = "2.0.0"
+colored = "2.0.4"
 directories = "5.0.1"
-ulid = { version = "1.0.0", features = ["serde"] }
+ulid = { version = "1.1.0", features = ["serde"] }
 enum_dispatch = "0.3"
-uuid = "1.3"
-scopeguard = "1.0"
+uuid = "1.4"
+scopeguard = "1.2"
 prost = "0.11"
 tokio-stream = "0.1"
 tonic = { version = "0.9", features = ["gzip", "tls", "tls-roots"] }
@@ -162,7 +162,7 @@ sha2 = "0.10"
 cfg-if = "1.0"
 
 # Web Client
-web-sys = { version = "0.3.61", features = [
+web-sys = { version = "0.3.64", features = [
     "CanvasRenderingContext2d",
     "Document",
     "Element",
@@ -180,10 +180,10 @@ wasm-bindgen-futures = "0.4"
 #
 time = { version = "0.3" }
 quinn = { version = "0.10" }
-rustls-native-certs = "0.6.2"
-webpki-roots = "0.23.0"
+rustls-native-certs = "0.6.3"
+webpki-roots = "0.23.1"
 mikktspace = { git = "https://github.com/gltf-rs/mikktspace" }
-rustls = { version = "0.21.1", features = ["dangerous_configuration", "quic"] }
+rustls = { version = "0.21.7", features = ["dangerous_configuration", "quic"] }
 
 rustls-pemfile = "1.0"
 

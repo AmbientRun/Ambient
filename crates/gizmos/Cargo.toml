@@ -22,7 +22,7 @@ bytemuck = { workspace = true }
 wgpu = { workspace = true }
 log = { workspace = true }
 serde = { workspace = true }
-once_cell = "1.13.0"
+once_cell = "1.18.0"
 profiling = { workspace = true }
 
 [dev-dependencies]
