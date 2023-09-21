@@ -21,7 +21,42 @@ struct VertexOutput {
 
 fn get_entity_primitive_mesh(loc: vec2<u32>, index: u32) -> u32 {
     var meshes = get_entity_gpu_primitives_mesh(loc);
-    return bitcast<u32>(meshes[index >> 2u][index & 3u]);
+    if index == 0 {
+        return bitcast<u32>(meshes[0][0]);
+    } else if index == 1 {
+        return bitcast<u32>(meshes[0][1]);
+    } else if index == 2 {
+        return bitcast<u32>(meshes[0][2]);
+    } else if index == 3 {
+        return bitcast<u32>(meshes[0][3]);
+    } else if index == 4 {
+        return bitcast<u32>(meshes[1][0]);
+    } else if index == 5 {
+        return bitcast<u32>(meshes[1][1]);
+    } else if index == 6 {
+        return bitcast<u32>(meshes[1][2]);
+    } else if index == 7 {
+        return bitcast<u32>(meshes[1][3]);
+    } else if index == 8 {
+        return bitcast<u32>(meshes[2][0]);
+    } else if index == 9 {
+        return bitcast<u32>(meshes[2][1]);
+    } else if index == 10 {
+        return bitcast<u32>(meshes[2][2]);
+    } else if index == 11 {
+        return bitcast<u32>(meshes[2][3]);
+    } else if index == 12 {
+        return bitcast<u32>(meshes[3][0]);
+    } else if index == 13 {
+        return bitcast<u32>(meshes[3][1]);
+    } else if index == 14 {
+        return bitcast<u32>(meshes[3][2]);
+    } else if index == 15 {
+        return bitcast<u32>(meshes[3][3]);
+    } else {
+        // unreachable
+        return 1000;
+    }
 }
 
 @vertex
