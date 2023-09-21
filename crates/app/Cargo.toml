@@ -65,6 +65,7 @@ web-sys = { version = "0.3.61", features = [
     "Screen",
     "Window",
 ] }
+wasm-bindgen = { workspace = true }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 thread-priority = { workspace = true }

@@ -142,6 +142,7 @@ dependencies = [
  "profiling",
  "thread-priority",
  "tracing",
+ "wasm-bindgen",
  "web-sys",
  "wgpu",
  "winit",
