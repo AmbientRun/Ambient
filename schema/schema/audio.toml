@@ -1,5 +1,4 @@
 [package]
-id = "audio"
 name = "Audio"
 description = "Audio functionality and state."
 content = { type = "Asset", schema = true }

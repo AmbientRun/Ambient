@@ -164,11 +164,15 @@ pub async fn build_package(
         .zip(last_modified_time)
         .is_some_and(|(build, modified)| modified < build);
 
+    let package_id = manifest
+        .package
+        .id
+        .as_ref()
+        .map(|s| s.as_str())
+        .unwrap_or("missing ID");
+
     if last_build_settings.as_ref() == Some(settings) && last_modified_before_build {
-        tracing::info!(
-            "Skipping unmodified package \"{package_name}\" ({})",
-            manifest.package.id
-        );
+        tracing::info!("Skipping unmodified package \"{package_name}\" ({package_id})");
         return Ok(BuildResult {
             build_path,
             package_name: package_name.clone(),
@@ -176,10 +180,7 @@ pub async fn build_package(
         });
     }
 
-    tracing::info!(
-        "Building package \"{package_name}\" ({})",
-        manifest.package.id
-    );
+    tracing::info!("Building package \"{package_name}\" ({package_id})");
 
     let assets_path = package_path.join("assets");
     tokio::fs::create_dir_all(&build_path)

@@ -1,5 +1,4 @@
 [package]
-id = "animation"
 name = "Animation"
 description = "Components relating to animations."
 content = { type = "Asset", schema = true }

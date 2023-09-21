@@ -76,7 +76,11 @@ pub async fn start(
             .unwrap_or("http://proxy.ambient.run/proxy".to_string()),
         build_path: build_root_path.clone(),
         pre_cache_assets: host_cli.proxy_pre_cache_assets,
-        primary_package_id: manifest.package.id.to_string(),
+        primary_package_id: manifest
+            .package
+            .id
+            .expect("no package ID in manifest for primary package")
+            .to_string(),
     });
 
     let server = if let Some(port) = quic_interface_port {

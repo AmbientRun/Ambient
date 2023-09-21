@@ -1,5 +1,4 @@
 [package]
-id = "wasm"
 name = "WASM"
 description = "State related to WASM functionality."
 content = { type = "Asset", schema = true }

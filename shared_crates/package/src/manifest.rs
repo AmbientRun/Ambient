@@ -13,7 +13,7 @@ use crate::{
 
 #[derive(Error, Debug, PartialEq)]
 pub enum ManifestParseError {
-    #[error("manifest was not valid TOML")]
+    #[error("manifest was not valid TOML: {0}")]
     TomlError(#[from] toml::de::Error),
     #[error("manifest contains a project and/or an ember section; projects/embers have been renamed to packages")]
     ProjectEmberRenamedToPackageError,
@@ -88,10 +88,17 @@ impl Display for PackageId {
         self.0.fmt(f)
     }
 }
+impl From<PackageId> for SnakeCaseIdentifier {
+    fn from(id: PackageId) -> Self {
+        SnakeCaseIdentifier(id.0)
+    }
+}
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Package {
-    pub id: PackageId,
+    /// The ID can be optional if and only if the package is `ambient_core` or an include.
+    #[serde(default)]
+    pub id: Option<PackageId>,
     pub name: String,
     pub version: Version,
     pub description: Option<String>,
@@ -256,7 +263,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: PackageId("test".to_string()),
+                    id: Some(PackageId("test".to_string())),
                     name: "Test".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -304,7 +311,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: PackageId("tictactoe".to_string()),
+                    id: Some(PackageId("tictactoe".to_string())),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -362,7 +369,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: PackageId("tictactoe".to_string()),
+                    id: Some(PackageId("tictactoe".to_string())),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ambient_version: Some(
@@ -416,7 +423,7 @@ mod tests {
             manifest,
             Manifest {
                 package: Package {
-                    id: PackageId("my_package".to_string()),
+                    id: Some(PackageId("my_package".to_string())),
                     name: "My Package".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -568,7 +575,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: PackageId("tictactoe".to_string()),
+                    id: Some(PackageId("tictactoe".to_string())),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -613,7 +620,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: PackageId("test".to_string()),
+                    id: Some(PackageId("test".to_string())),
                     name: "Test".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -692,7 +699,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: PackageId("dependencies".to_string()),
+                    id: Some(PackageId("dependencies".to_string())),
                     name: "dependencies".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()

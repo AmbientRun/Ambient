@@ -1,5 +1,4 @@
 [package]
-id = "network"
 name = "Network"
 description = "Network-related state."
 content = { type = "Asset", schema = true }

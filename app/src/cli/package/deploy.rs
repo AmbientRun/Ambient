@@ -178,8 +178,8 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                         let deployment = ambient_deploy::deploy(
                             api_server,
                             token,
-                            build_path,
-                            package_path,
+                            &build_path,
+                            &package_path,
                             *force_upload,
                         )
                         .await?;
@@ -230,7 +230,11 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                 let ensure_running_url =
                     ambient_shared_types::urls::ensure_running_url(&deployment_id);
                 let web_url = ambient_shared_types::urls::web_package_url(
-                    manifest.package.id.as_str(),
+                    manifest
+                        .package
+                        .id
+                        .expect("no package ID - this is a bug")
+                        .as_str(),
                     Some(deployment_id.as_str()),
                 );
 
