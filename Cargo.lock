@@ -155,6 +155,7 @@ dependencies = [
  "image_hasher",
  "log",
  "parking_lot",
+ "rand 0.8.5",
  "rpassword",
  "rustls-pemfile",
  "rusty-hook",
