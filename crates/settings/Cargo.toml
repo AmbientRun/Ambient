@@ -10,7 +10,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_native_std = { path = "../native_std", version = "0.3.0-nightly-2023-09-21" }
+ambient_native_std = { path = "../native_std", version = "0.3.0-dev" }
 
 anyhow = { workspace = true }
 directories = { workspace = true }
