@@ -64,35 +64,34 @@ pub fn main() {
                 Fire { weapon_id }.send_client_broadcast_unreliable();
 
                 let p0 = local_to_world.transform_point3(vec3(0.0, -0.1, 0.1));
-                if let Some(hit) =
-                    physics::raycast_first(p0, local_to_world.transform_vector3(-Vec3::Y))
-                {
-                    let p1 = hit.position;
+                let dir = local_to_world.transform_vector3(-Vec3::Y);
+                let p1 = physics::raycast_first(p0, dir)
+                    .map(|h| h.position)
+                    .unwrap_or_else(|| p0 + dir * 1_000_000.0);
 
-                    Entity::new()
-                        .with(main_scene(), ())
-                        .with(line_from(), p0)
-                        .with(line_to(), p1)
-                        .with(line_width(), 0.2)
-                        .with(color(), vec4(0.8, 0.3, 0.0, 1.0))
-                        .with(double_sided(), true)
-                        .with(
-                            remove_at_game_time(),
-                            game_time() + Duration::from_millis(100),
-                        )
-                        .spawn();
-
-                    Explosion {
-                        is_explosion: (),
-                        radius: 1.0,
-                        damage,
-                        translation: p1,
-                        optional: default(),
-                    }
+                Entity::new()
+                    .with(main_scene(), ())
+                    .with(line_from(), p0)
+                    .with(line_to(), p1)
+                    .with(line_width(), 0.2)
+                    .with(color(), vec4(0.8, 0.3, 0.0, 1.0))
+                    .with(double_sided(), true)
+                    .with(
+                        remove_at_game_time(),
+                        game_time() + Duration::from_millis(100),
+                    )
                     .spawn();
 
-                    entity::add_component(weapon_id, self::last_shot_time(), game_time());
+                Explosion {
+                    is_explosion: (),
+                    radius: 1.0,
+                    damage,
+                    translation: p1,
+                    optional: default(),
                 }
+                .spawn();
+
+                entity::add_component(weapon_id, self::last_shot_time(), game_time());
             }
         });
 }
