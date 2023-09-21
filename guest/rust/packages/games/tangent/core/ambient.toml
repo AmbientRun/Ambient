@@ -5,13 +5,13 @@ version = "0.1.0"
 content = { type = "Playable" }
 
 [dependencies]
-tangent_schema = { path = "../schema", deployment = "1MdfsKM0PneOuY19MlhaOw" }
-hide_cursor = { path = "../../../std/hide_cursor", deployment = "A8CV3CgLgnnNNSsr2m9kL" }
+tangent_schema = { path = "../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
+hide_cursor = { path = "../../../std/hide_cursor", deployment = "3jJhKCyxtEKDcoQESgjzHV" }
 explosion = { path = "../../../std/explosion" }
 
 game_object = { path = "../../../schemas/game_object" }
 
-kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployment = "5NieG6TwTyjNJMwgkdWLbZ" }
+kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployment = "7VEdO55zqgSL75rJNg3TJ2" }
 
 [messages.Input]
 name = "Input"

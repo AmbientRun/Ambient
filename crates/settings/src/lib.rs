@@ -121,17 +121,13 @@ impl SyncAssetKey<Settings> for SettingsKey {
             use js_sys::Reflect;
             let nav = web_sys::window().unwrap().navigator();
             let ua = Reflect::get(&nav, &"userAgentData".into()).unwrap();
-            let platform = Reflect::get(&ua, &"platform".into())
-                .unwrap()
-                .as_string()
-                .unwrap();
+            let platform = Reflect::get(&ua, &"platform".into()).unwrap().as_string();
 
-            tracing::info!("Detected platform: {platform}");
-            if platform == "Windows" {
+            tracing::info!(?platform, "Detected platform");
+            if platform.as_deref() == Some("Windows") {
                 Settings {
                     render: RenderSettings {
                         render_mode: Some(RenderMode::Direct),
-                        is_win32_web: true,
                         ..Default::default()
                     },
                     ..Default::default()
@@ -142,7 +138,6 @@ impl SyncAssetKey<Settings> for SettingsKey {
                         render_mode: Some(RenderMode::Indirect),
                         ..Default::default()
                     },
-
                     ..Default::default()
                 }
             }

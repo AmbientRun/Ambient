@@ -349,6 +349,9 @@ impl AppBuilder {
         };
 
         #[cfg(target_os = "unknown")]
+        let mut drop_handles: Vec<Box<dyn std::fmt::Debug>> = Vec::new();
+
+        #[cfg(target_os = "unknown")]
         // Insert a canvas element for the window to attach to
         if let Some(window) = &window {
             use winit::platform::web::WindowExtWebSys;
@@ -360,6 +363,16 @@ impl AppBuilder {
                 let document = window.document().unwrap();
                 document.body().unwrap()
             });
+
+            use wasm_bindgen::prelude::*;
+
+            let on_context_menu = Closure::<dyn Fn(_)>::new(|event: web_sys::MouseEvent| {
+                event.prevent_default();
+            });
+
+            canvas.set_oncontextmenu(Some(on_context_menu.as_ref().unchecked_ref()));
+
+            drop_handles.push(Box::new(on_context_menu));
 
             // Get the screen's available width and height
             let window = web_sys::window().unwrap();
@@ -384,6 +397,7 @@ impl AppBuilder {
                 "background-color: black; width: {}px; height: {}px; z-index: 50",
                 max_width, max_height
             ));
+
             target.append_child(&canvas).unwrap();
         }
 
@@ -499,6 +513,8 @@ impl AppBuilder {
             modifiers: Default::default(),
             ctl_rx,
             update_title_with_fps_stats: self.update_title_with_fps_stats,
+            #[cfg(target_os = "unknown")]
+            drop_handles,
         })
     }
 
@@ -546,6 +562,8 @@ pub struct App {
 
     window_focused: bool,
     update_title_with_fps_stats: bool,
+    #[cfg(target_os = "unknown")]
+    drop_handles: Vec<Box<dyn std::fmt::Debug>>,
 }
 
 impl std::fmt::Debug for App {

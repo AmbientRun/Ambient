@@ -10,14 +10,6 @@ struct VertexOutput {
     @location(6) local_position: vec3<f32>,
 };
 
-fn get_entity_primitive_mesh(loc: vec2<u32>, index: u32) -> u32 {
-    let i = index >> 2u;
-    let j = index & 3u;
-
-    var meshes = get_entity_gpu_primitives_mesh(loc);
-    return bitcast<u32>(meshes[i][j]);
-}
-
 @vertex
 fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) vertex_index: u32) -> VertexOutput {
     var out: VertexOutput;

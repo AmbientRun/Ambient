@@ -73,6 +73,7 @@ pub struct ClientView {
     pub server_addr: ResolvedAddr,
     pub cert: Option<Vec<u8>>,
     pub user_id: String,
+    pub fail_on_version_mismatch: bool,
     pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, Entity) + Sync + Send>,
     pub on_loaded: LoadedFunc,
     pub create_rpc_registry: Cb<dyn Fn() -> RpcRegistry<RpcArgs> + Sync + Send>,
@@ -84,6 +85,7 @@ impl ElementComponent for ClientView {
         let Self {
             server_addr,
             user_id,
+            fail_on_version_mismatch,
             systems_and_resources,
             create_rpc_registry,
             on_loaded,
@@ -162,6 +164,7 @@ impl ElementComponent for ClientView {
                     conn.clone(),
                     &assets,
                     user_id,
+                    fail_on_version_mismatch,
                     move |args| {
                         let OnConnectionState {
                             assets,
@@ -277,6 +280,7 @@ async fn handle_connection(
     conn: quinn::Connection,
     assets: &AssetCache,
     user_id: String,
+    fail_on_version_mismatch: bool,
     mut on_loaded: impl FnMut(OnConnectionState) -> anyhow::Result<(SharedClientGameState, CleanupFunc)>
         + Send
         + Sync,
@@ -300,7 +304,7 @@ async fn handle_connection(
 
     while client.is_pending() {
         if let Some(frame) = push_recv.next().await {
-            client.process_push(assets, frame?)?;
+            client.process_push(assets, fail_on_version_mismatch, frame?)?;
         }
     }
 
@@ -343,7 +347,7 @@ async fn handle_connection(
     while let ClientProtoState::Connected(connected) = &mut client {
         tokio::select! {
             Some(frame) = push_recv.next() => {
-                client.process_push(assets, frame?)?;
+                client.process_push(assets, fail_on_version_mismatch, frame?)?;
             }
             _ = stats_timer.tick() => {
                 let stats = conn.stats();

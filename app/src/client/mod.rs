@@ -91,9 +91,16 @@ pub fn run(
 
     *app.world.resource_mut(window_title()) = "Ambient".to_string();
 
+    #[cfg(feature = "production")]
+    let fail_on_version_mismatch = true;
+
+    #[cfg(not(feature = "production"))]
+    let fail_on_version_mismatch = !run.dev_allow_version_mismatch;
+
     MainApp {
         server_addr,
         user_id,
+        fail_on_version_mismatch,
         show_debug: is_debug,
         golden_image_cmd: run.golden_image,
         golden_image_output_dir,
@@ -137,6 +144,7 @@ fn MainApp(
     server_addr: ResolvedAddr,
     golden_image_output_dir: Option<PathBuf>,
     user_id: String,
+    fail_on_version_mismatch: bool,
     show_debug: bool,
     golden_image_cmd: Option<GoldenImageCommand>,
     cert: Option<Vec<u8>>,
@@ -150,6 +158,7 @@ fn MainApp(
         WindowSized::el([ClientView {
             server_addr,
             user_id,
+            fail_on_version_mismatch,
             // NOTE: client.game_state is **locked** and accesible through game_state.
             //
             // This is to prevent another thread from updating using the client after connection but

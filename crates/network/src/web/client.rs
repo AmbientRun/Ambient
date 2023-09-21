@@ -289,7 +289,7 @@ async fn handle_connection(
     while client.is_pending() {
         tracing::info!("Waiting for server to accept connection and send server info");
         if let Some(frame) = push_recv.next().await {
-            client.process_push(&assets, frame?)?;
+            client.process_push(&assets, true, frame?)?;
         }
     }
 
@@ -321,7 +321,7 @@ async fn handle_connection(
     while let ClientProtoState::Connected(connected) = &mut client {
         tokio::select! {
             Some(frame) = push_recv.next() => {
-                client.process_push(&assets, frame?)?;
+                client.process_push(&assets, true, frame?)?;
             }
 
             Some(message) = proxy_rx.next() => {

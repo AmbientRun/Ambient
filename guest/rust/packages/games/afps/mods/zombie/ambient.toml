@@ -3,6 +3,7 @@ id = "afps_zombie"
 name = "AFPS Zombie"
 version = "0.0.1"
 content = { type = "Asset", models = true, animations = true, code = true }
+ambient_version = "0.3.0-nightly-2023-09-20"
 
 [components]
 is_zombie = { type = "Empty", attributes = ["Networked", "Debuggable"] }
@@ -23,6 +24,6 @@ zombie_model_ref = { type = "EntityId", attributes = [
 id = "EntityId"
 
 [dependencies]
-character_animation = { path = "../../../../std/character_animation", deployment = "6HS1Mf3o535O4retxpytgH" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "5KKf99BrahlrYHLEMMj6OU" }
+character_animation = { path = "../../../../std/character_animation", deployment = "WX6pD23AximbtP3Q1hB3e" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "23Br3CXehPb9wboVb2Fv5h" }
 game_object = { path = "../../../../schemas/game_object" }
