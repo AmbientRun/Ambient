@@ -5,4 +5,4 @@ version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "1MdfsKM0PneOuY19MlhaOw" }
+tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }

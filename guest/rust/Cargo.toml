@@ -6,7 +6,6 @@ members = [
     # Basics
     "examples/basics/input",
     "examples/basics/multiplayer",
-    "examples/basics/physics",
     "examples/basics/primitives",
     "examples/basics/skinmesh",
 
@@ -28,10 +27,15 @@ members = [
     "examples/assets/generate_pipeline",
     "examples/assets/unity",
 
+    # Physics
+    "examples/physics/basics",
+    "examples/physics/visualize_colliders",
+
     # Rendering
     "examples/rendering/decals",
     "examples/rendering/fog",
     "examples/rendering/image",
+    "examples/rendering/line",
     "examples/rendering/procedural_generation",
     "examples/rendering/raw_text",
     "examples/rendering/samplers",

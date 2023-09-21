@@ -5,8 +5,8 @@ version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "1MdfsKM0PneOuY19MlhaOw" }
-kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio" , deployment = "6fsl0CRjEUzYrHgXRh2YGK" }
+tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
+kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio" , deployment = "4i7bOwWXNKFddCEHdNRC8f" }
 
 [components]
 is_health_pickup = { type = "Empty", name = "Is Health Pickup", description = "This entity is a health pickup." }
