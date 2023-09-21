@@ -3,6 +3,7 @@ id = "tangent"
 name = "Tangent"
 version = "0.1.0"
 content = { type = "Playable" }
+ambient_version = "0.3.0-nightly-2023-09-20"
 
 [dependencies]
 tangent_core = { path = "core", deployment = "czUZv2AKa7SNwV1QsY0xN" }

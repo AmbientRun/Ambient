@@ -3,6 +3,7 @@ id = "afps_spraypaint"
 name = "AFPS Spraypaint"
 version = "0.0.1"
 content = { type = "Asset", models = true, textures = true, code = true }
+ambient_version = "0.3.0-nightly-2023-09-20"
 
 [components]
 claymore = { type = "EntityId" }

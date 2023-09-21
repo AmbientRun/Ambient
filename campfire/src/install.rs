@@ -64,6 +64,7 @@ fn install_version(suffix: &str, args: &[&str]) -> anyhow::Result<()> {
 }
 
 #[allow(unused_mut)]
+#[allow(clippy::let_and_return)]
 fn ambient_executable_name(suffix: &str) -> String {
     let mut name = if suffix.is_empty() {
         "ambient".to_string()
