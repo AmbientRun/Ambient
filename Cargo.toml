@@ -202,5 +202,9 @@ wit-bindgen-core = "0.9.0"
 wit-bindgen-rust = "0.9.0"
 wit-component = "0.11.0"
 
+[patch.crates-io]
+minidumper-child = { git = 'https://github.com/AmbientRun/minidumper-child.git' }
+
+
 [profile.release]
 incremental = true
