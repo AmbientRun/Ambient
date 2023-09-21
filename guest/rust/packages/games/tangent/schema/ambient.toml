@@ -201,6 +201,8 @@ description = "A vehicle with a physical representation"
 "ambient_core::transform::rotation" = {}
 
 "game_object::health" = {}
+"game_object::max_health" = {}
+
 "vehicle::player_ref" = {}
 "vehicle::last_distances" = {}
 "vehicle::last_jump_time" = {}

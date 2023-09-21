@@ -7,7 +7,6 @@ use ambient_api::{
 };
 use packages::{
     game_object::components::{health, max_health},
-    tangent_schema::vehicle::components as vc,
     this::{concepts::HealthPickup, messages::OnHealthPickup},
 };
 
@@ -23,12 +22,10 @@ pub fn main() {
         }
     });
 
-    let vehicle_candidate_query = query((translation(), health(), max_health()))
-        .requires(vc::player_ref())
-        .build();
+    let candidate_query = query((translation(), health(), max_health())).build();
 
     query(HealthPickup::as_query()).each_frame(move |pickups| {
-        let candidates = vehicle_candidate_query.evaluate();
+        let candidates = candidate_query.evaluate();
 
         for (id, pickup) in pickups {
             entity::set_component(

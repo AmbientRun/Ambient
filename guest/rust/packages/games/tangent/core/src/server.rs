@@ -178,7 +178,10 @@ fn respawn_player(player_id: EntityId) {
         translation: position,
         rotation: Quat::from_rotation_z(random::<f32>() * PI),
         player_ref: player_id,
+
         health: max_health,
+        max_health,
+
         last_distances,
         last_jump_time: game_time(),
         last_slowdown_time: game_time(),
