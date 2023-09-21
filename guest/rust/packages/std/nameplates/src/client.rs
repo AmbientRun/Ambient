@@ -1,13 +1,10 @@
 use ambient_api::{
     core::{
-        hierarchy::components::parent,
         player::components::{is_player, user_id},
         rendering::components::double_sided,
-        transform::components::{
-            cylindrical_billboard_z, local_to_parent, local_to_world, rotation, translation,
-        },
+        transform::components::local_to_world,
     },
-    element::{use_entity_component, use_query, use_state},
+    element::{use_entity_component, use_query},
     prelude::*,
 };
 
@@ -29,26 +26,24 @@ fn Nameplate(hooks: &mut Hooks, player_id: EntityId) -> Element {
         return Element::new();
     };
 
-    let Some(camera_inv_view) = use_entity_component(hooks, camera_id, local_to_world()).0 else {
+    let Some(camera_inv_view) = use_entity_component(hooks, camera_id, local_to_world()) else {
         return Element::new();
     };
 
     let (_, camera_rotation, _) = camera_inv_view.to_scale_rotation_translation();
     let camera_rotation_z = camera_rotation.to_euler(glam::EulerRot::ZYX).0;
 
-    let user_id = use_entity_component(hooks, player_id, user_id())
-        .0
-        .unwrap_or_else(|| "unknown".to_string());
+    let user_id =
+        use_entity_component(hooks, player_id, user_id()).unwrap_or_else(|| "unknown".to_string());
 
     let control_of_entity = use_entity_component(
         hooks,
         player_id,
         packages::game_object::player::components::control_of_entity(),
-    )
-    .0;
+    );
     let entity_id = control_of_entity.unwrap_or(player_id);
 
-    let Some(entity_ltw) = use_entity_component(hooks, entity_id, local_to_world()).0 else {
+    let Some(entity_ltw) = use_entity_component(hooks, entity_id, local_to_world()) else {
         return Element::new();
     };
 

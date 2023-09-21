@@ -25,7 +25,7 @@ pub fn main() {
 
 #[element_component]
 pub fn App(hooks: &mut Hooks) -> Element {
-    let (player_name, _) = use_entity_component(hooks, player::get_local(), player_name());
+    let player_name = use_entity_component(hooks, player::get_local(), player_name());
 
     if player_name.is_none() {
         JoinScreen::el()
@@ -121,7 +121,7 @@ fn Crosshair(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn Hud(hooks: &mut Hooks) -> Element {
-    let (local_health, _) = use_entity_component(hooks, player::get_local(), health());
+    let local_health = use_entity_component(hooks, player::get_local(), health());
 
     WindowSized::el([Dock::el([Text::el(format!(
         "health: {:?}",
