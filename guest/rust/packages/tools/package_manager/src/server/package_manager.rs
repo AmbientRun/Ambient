@@ -89,14 +89,16 @@ async fn process_request() -> anyhow::Result<PackageRemoteResponse> {
             }
         }
 
-        packages_json.push(serde_json::to_string(&PackageJson {
-            url,
-            name: manifest.package.name,
-            id: manifest.package.id.to_string(),
-            version: manifest.package.version.to_string(),
-            authors: manifest.package.authors,
-            description: manifest.package.description,
-        })?);
+        if let Some(id) = manifest.package.id {
+            packages_json.push(serde_json::to_string(&PackageJson {
+                url,
+                name: manifest.package.name,
+                id: id.to_string(),
+                version: manifest.package.version.to_string(),
+                authors: manifest.package.authors,
+                description: manifest.package.description,
+            })?);
+        }
     }
 
     Ok(PackageRemoteResponse {
