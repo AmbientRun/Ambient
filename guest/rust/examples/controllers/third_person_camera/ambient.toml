@@ -8,7 +8,7 @@ type = "Game"
 content = { type = "Playable", example = true }
 
 [dependencies]
-base_assets = { path = "../../../packages/std/base_assets", deployment = "2TUw8gb8vEm19jklIUKnyO" }
-fps_controller = { path = "../../../packages/std/fps_controller", deployment = "7D8fzGFDOopKrUsY5AKofY" }
-character_animation = { path = "../../../packages/std/character_animation", deployment = "6HS1Mf3o535O4retxpytgH" }
-hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "A8CV3CgLgnnNNSsr2m9kL" }
+base_assets = { path = "../../../packages/std/base_assets", deployment = "6qPKHQCDIi2WJintGr8yMs" }
+fps_controller = { path = "../../../packages/std/fps_controller", deployment = "5ysm5UfRaLdPFeVGMlXWis" }
+character_animation = { path = "../../../packages/std/character_animation", deployment = "WX6pD23AximbtP3Q1hB3e" }
+hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "3jJhKCyxtEKDcoQESgjzHV" }
