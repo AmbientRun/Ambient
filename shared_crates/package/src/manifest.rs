@@ -306,7 +306,7 @@ mod tests {
     fn can_parse_minimal_toml() {
         const TOML: &str = r#"
         [package]
-        id = "test"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "Test"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -316,7 +316,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: Some(PackageId("test".to_string())),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "Test".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -330,7 +330,7 @@ mod tests {
     fn will_fail_on_legacy_project_toml() {
         const TOML: &str = r#"
         [project]
-        id = "test"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "Test"
         version = "0.0.1"
         "#;
@@ -345,7 +345,7 @@ mod tests {
     fn can_parse_tictactoe_toml() {
         const TOML: &str = r#"
         [package]
-        id = "tictactoe"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -364,7 +364,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: Some(PackageId("tictactoe".to_string())),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -408,7 +408,7 @@ mod tests {
     fn can_parse_rust_build_settings() {
         const TOML: &str = r#"
         [package]
-        id = "tictactoe"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -422,7 +422,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: Some(PackageId("tictactoe".to_string())),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ambient_version: Some(
@@ -446,7 +446,7 @@ mod tests {
 
         const TOML: &str = r#"
         [package]
-        id = "my_package"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "My Package"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -476,7 +476,7 @@ mod tests {
             manifest,
             Manifest {
                 package: Package {
-                    id: Some(PackageId("my_package".to_string())),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "My Package".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -612,7 +612,7 @@ mod tests {
     fn can_parse_enums() {
         const TOML: &str = r#"
         [package]
-        id = "tictactoe"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -628,7 +628,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: Some(PackageId("tictactoe".to_string())),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -657,7 +657,7 @@ mod tests {
     fn can_parse_container_types() {
         const TOML: &str = r#"
         [package]
-        id = "test"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "Test"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -673,7 +673,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: Some(PackageId("test".to_string())),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "Test".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -734,7 +734,7 @@ mod tests {
     fn can_parse_dependencies() {
         const TOML: &str = r#"
         [package]
-        id = "dependencies"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "dependencies"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -752,7 +752,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: Some(PackageId("dependencies".to_string())),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "dependencies".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()

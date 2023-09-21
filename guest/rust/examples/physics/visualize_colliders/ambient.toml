@@ -1,5 +1,5 @@
 [package]
-id = "g11no9dcflmdb2qi7m2x7qimdzvv7bhe"
+id = "s37z23uqis7ts6ya7v2f66ni23m3upt7"
 name = "visualize_colliders"
 version = "0.0.1"
 content = { type = "Playable" }

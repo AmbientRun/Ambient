@@ -1,7 +1,7 @@
 [[pipelines]]
 type = "Models"
 sources = ["*.glb"]
-prefab_components = "{ \"ambient_example_material_overriding::is_the_best\": false }"
+prefab_components = "{ \"ib2djsnjew5tb2k5igq6le7rzjdwlvhq::is_the_best\": false }"
 
 [[pipelines.material_overrides]]
 
