@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct GeneralSettings {
+    pub user_id: Option<String>,
     pub api_token: Option<String>,
     pub sentry: Sentry,
 }

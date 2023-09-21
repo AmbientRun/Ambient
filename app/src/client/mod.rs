@@ -13,15 +13,20 @@ use ambient_element::{
     consume_context, element_component, use_effect, use_ref_with, use_spawn, use_state,
     use_state_with, Element, ElementComponentExt, Group, Hooks,
 };
-use ambient_native_std::{asset_cache::AssetCache, cb, friendly_id};
+use ambient_native_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    cb,
+};
 use ambient_network::{
     client::{client_network_stats, GameClientRenderTarget},
     hooks::use_remote_resource,
     native::client::{ClientView, ResolvedAddr},
 };
+use ambient_settings::SettingsKey;
 use ambient_sys::time::Instant;
 use ambient_ui_native::{Dock, WindowSized};
 use glam::uvec2;
+use rand::seq::SliceRandom;
 
 use crate::{
     cli::{GoldenImageCommand, RunCli},
@@ -39,10 +44,20 @@ pub fn run(
     golden_image_output_dir: Option<PathBuf>,
     mixer: Option<AudioMixer>,
 ) -> ExitStatus {
-    let user_id = run
-        .user_id
-        .clone()
-        .unwrap_or_else(|| format!("user_{}", friendly_id()));
+    let settings = SettingsKey.get(&assets);
+
+    let user_id = match run.user_id.clone().or(settings.general.user_id) {
+        Some(user_id) => user_id,
+        None => {
+            let user_id = random_username();
+            log::warn!(
+                "No `user_id` found in settings, using random username: {:?}",
+                user_id
+            );
+            user_id
+        }
+    };
+
     let headless = if run.headless {
         Some(uvec2(600, 600))
     } else {
@@ -374,5 +389,59 @@ fn systems() -> SystemGroup {
             Box::new(wasm::systems()),
             Box::new(ambient_client_shared::player::systems_final()),
         ],
+    )
+}
+
+fn random_username() -> String {
+    const ADJECTIVES: &[&str] = &[
+        "Quirky",
+        "Sneaky",
+        "Witty",
+        "Curious",
+        "Grumpy",
+        "Silly",
+        "Mischievous",
+        "Goofy",
+        "Hasty",
+        "Awkward",
+        "Zany",
+        "Peculiar",
+        "Whimsical",
+        "Bumbling",
+        "Absurd",
+        "Oddball",
+        "Clumsy",
+        "Nutty",
+        "Haphazard",
+        "Eccentric",
+    ];
+
+    const ANIMALS: &[&str] = &[
+        "Penguin",
+        "Platypus",
+        "Lemur",
+        "Armadillo",
+        "Sloth",
+        "Ostrich",
+        "Tapir",
+        "Narwhal",
+        "Chameleon",
+        "Aardvark",
+        "Quokka",
+        "Wombat",
+        "Kakapo",
+        "Capybara",
+        "Mandrill",
+        "Axolotl",
+        "Blobfish",
+        "Echidna",
+        "Wallaby",
+    ];
+
+    let mut rng = rand::thread_rng();
+    format!(
+        "{}{}",
+        ADJECTIVES.choose(&mut rng).unwrap(),
+        ANIMALS.choose(&mut rng).unwrap()
     )
 }
