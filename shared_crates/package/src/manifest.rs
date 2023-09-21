@@ -56,31 +56,84 @@ impl Manifest {
     }
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Default, Serialize)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Default, Serialize)]
 #[serde(transparent)]
+/// A checksummed package ID. Guaranteed to be a valid `SnakeCaseIdentifier` as well.
 pub struct PackageId(pub(crate) String);
+impl<'de> Deserialize<'de> for PackageId {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        PackageId::new(&String::deserialize(deserializer)?).map_err(serde::de::Error::custom)
+    }
+}
 impl PackageId {
+    const DATA_LENGTH: usize = 12;
+    const CHECKSUM_LENGTH: usize = 8;
+    const TOTAL_LENGTH: usize = Self::DATA_LENGTH + Self::CHECKSUM_LENGTH;
+
     pub fn as_str(&self) -> &str {
         &self.0
     }
 
+    /// Attempts to create a new package ID from a string.
+    pub fn new(id: &str) -> Result<Self, String> {
+        Self::validate(id)?;
+        Ok(Self(id.to_string()))
+    }
+
     /// Generates a new package ID.
-    // TODO: suffix with checksum
     pub fn generate() -> Self {
-        const DATA_LENGTH: usize = 12;
-        const CHECKSUM_LENGTH: usize = 8;
-        const TOTAL_LENGTH: usize = DATA_LENGTH + CHECKSUM_LENGTH;
+        // TODO: see if there's a more intelligent way to ensure the first character
+        // is always alphabetic
+        loop {
+            let data: [u8; Self::DATA_LENGTH] = rand::random();
+            let checksum: [u8; Self::CHECKSUM_LENGTH] = sha2::Sha256::digest(&data)
+                [0..Self::CHECKSUM_LENGTH]
+                .try_into()
+                .unwrap();
 
-        let data: [u8; DATA_LENGTH] = rand::random();
-        let checksum: [u8; CHECKSUM_LENGTH] = sha2::Sha256::digest(&data)[0..CHECKSUM_LENGTH]
-            .try_into()
-            .unwrap();
+            let mut bytes = [0u8; Self::TOTAL_LENGTH];
+            bytes[0..Self::DATA_LENGTH].copy_from_slice(&data);
+            bytes[Self::DATA_LENGTH..].copy_from_slice(&checksum);
 
-        let mut bytes = [0u8; TOTAL_LENGTH];
-        bytes[0..DATA_LENGTH].copy_from_slice(&data);
-        bytes[DATA_LENGTH..].copy_from_slice(&checksum);
+            let output = data_encoding::BASE32_NOPAD
+                .encode(&bytes)
+                .to_ascii_lowercase();
 
-        Self(data_encoding::BASE32_NOPAD.encode(&bytes).to_lowercase())
+            if output.chars().next().unwrap().is_alphabetic() {
+                return Self(output);
+            }
+        }
+    }
+
+    /// Validate that a package ID is correct.
+    pub fn validate(id: &str) -> Result<(), String> {
+        let cmd =
+            "Use `ambient package regenerate-id` to regenerate the package ID with the new format.";
+
+        let bytes = data_encoding::BASE32_NOPAD
+            .decode(id.to_ascii_uppercase().as_bytes())
+            .map_err(|e| {
+                format!(
+                    "Package ID contained invalid characters: {}. {cmd}",
+                    e.to_string()
+                )
+            })?;
+
+        let data = &bytes[0..Self::DATA_LENGTH];
+        let checksum = &bytes[Self::DATA_LENGTH..];
+
+        let expected_checksum = &sha2::Sha256::digest(data)[0..Self::CHECKSUM_LENGTH];
+        if checksum != expected_checksum {
+            return Err(format!(
+                "Package ID contained invalid checksum: expected {:?}, got {:?}. {cmd}",
+                expected_checksum, checksum
+            ));
+        }
+
+        Ok(())
     }
 }
 impl Display for PackageId {
