@@ -1,8 +1,10 @@
 use ambient_api::{
     core::{
+        app::components::name,
         model::components::model_from_url,
         physics::components::{cube_collider, plane_collider, sphere_collider},
         player::components::is_player,
+        prefab::components::prefab_from_url,
         primitives::{
             components::{cube, quad},
             concepts::Sphere,
@@ -89,13 +91,6 @@ pub fn main() {
 mod sceneloader;
 
 pub fn load_scene() {
-    use ambient_api::core::{
-        app::components::name,
-        prefab::components::prefab_from_url,
-        // physics::components::cube_collider,
-        // primitives::components::cube,
-    };
-
     // we can include the fake default floor in here for now :)
     Entity::new()
         .with(translation(), Vec3::ZERO)
@@ -143,7 +138,12 @@ pub fn load_scene() {
                     .with(translation(), node.pos.unwrap())
                     .with(rotation(), node.rot.unwrap())
                     .with(scale(), node.siz.unwrap())
-                    .with(prefab_from_url(), crate::packages::this::assets::url(&path))
+                    .with(
+                        prefab_from_url(),
+                        crate::packages::this::assets::url(
+                            ("scene/".to_owned() + &path).as_mut_str(),
+                        ),
+                    )
                     .with(cast_shadows(), ())
                     .spawn();
             }

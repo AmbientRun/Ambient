@@ -1,13 +1,22 @@
 [[pipelines]]
-sources = ["*.glb", "*.fbx"]
+sources = ["scene/*"]
 type = "Models"
-
 [pipelines.collider]
 type = "FromModel"
 
 [[pipelines]]
-type = "Audio"
+sources = ["muscle/*"]
+type = "Models"
+[[pipelines.transforms]]
+type = "RotateZ"
+deg = -90.0
 
+[[pipelines]]
+sources = ["nocoll/*"]
+type = "Models"
+
+[[pipelines]]
+type = "Audio"
 [[pipelines]]
 type = "Materials"
 

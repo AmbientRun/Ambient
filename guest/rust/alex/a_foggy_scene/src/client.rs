@@ -94,40 +94,44 @@ pub fn main() {
                     plr,
                     Entity::new()
                         .with(
+                            character_animation::components::death(),
+                            anim_url("chicken movement/Fallen Idle"),
+                        )
+                        .with(
                             character_animation::components::idle(),
-                            anim_url("movement/offensive idle"),
+                            anim_url("chicken movement/Offensive Idle"),
                         )
                         .with(
                             character_animation::components::walk_forward(),
-                            anim_url("movement/Jog Forward"),
+                            anim_url("chicken movement/Jog Forward"),
                         )
                         .with(
                             character_animation::components::walk_forward_left(),
-                            anim_url("movement/Jog Forward Diagonal"),
+                            anim_url("chicken movement/Jog Forward Diagonal (1)"),
                         )
                         .with(
                             character_animation::components::walk_forward_right(),
-                            anim_url("movement/Jog Forward Diagonal (1)"),
+                            anim_url("chicken movement/Jog Forward Diagonal"),
                         )
                         .with(
                             character_animation::components::walk_right(),
-                            anim_url("movement/Jog Strafe Right"),
+                            anim_url("chicken movement/Strafe"),
                         )
                         .with(
                             character_animation::components::walk_backward(),
-                            anim_url("movement/Jog Forward"),
+                            anim_url("chicken movement/Jog Backward"),
                         )
                         .with(
                             character_animation::components::walk_backward_left(),
-                            anim_url("movement/Jog Backward Diagonal"),
+                            anim_url("chicken movement/Jog Backward Diagonal (1)"),
                         )
                         .with(
                             character_animation::components::walk_backward_right(),
-                            anim_url("movement/Jog Backward Diagonal (1)"),
+                            anim_url("chicken movement/Jog Backward Diagonal"),
                         )
                         .with(
                             character_animation::components::walk_left(),
-                            anim_url("movement/Jog Strafe Left"),
+                            anim_url("chicken movement/Strafe (1)"),
                         ),
                 );
             }
