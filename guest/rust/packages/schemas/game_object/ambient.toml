@@ -11,7 +11,10 @@ health = { type = "F32", name = "Health", description = "This game object's heal
     "Debuggable",
     "Networked",
 ] }
-
 max_health = { type = "F32", name = "Max Health", description = "Maximum health of the object. 100 HP is \"standard.\"", attributes = [
+    "Networked",
+] }
+
+"player::control_of_entity" = { type = "EntityId", name = "Player's Control-of Entity", description = "The entity that this player is controlling.", attributes = [
     "Networked",
 ] }

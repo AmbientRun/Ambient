@@ -8,7 +8,7 @@ pub fn circle_point(radians: f32, radius: f32) -> Vec2 {
 }
 
 pub fn spawnpoints() -> &'static [(Vec3, f32, Vec3)] {
-    const INCLUDE_CORNERS: bool = true;
+    const INCLUDE_CORNERS: bool = false;
     static VALUE: Lazy<Vec<(Vec3, f32, Vec3)>> = Lazy::new(|| {
         let mut output = vec![(vec3(0.0, 0.0, 0.0), 10.0, vec3(1.0, 1.0, 1.0))];
 

@@ -21,7 +21,7 @@ use ambient_api::{
 
 use packages::{
     explosion::concepts::Explosion,
-    game_object::components::{health, max_health},
+    game_object::{components as goc, player::components as gopc},
     tangent_schema::{
         concepts::{Spawnpoint, Vehicle, VehicleClass, VehicleData},
         messages::OnDeath,
@@ -102,7 +102,7 @@ pub fn main() {
 
         // If the user opted to respawn, immediately destroy their vehicle
         if input.respawn {
-            entity::set_component(vehicle, health(), 0.0);
+            entity::set_component(vehicle, goc::health(), 0.0);
         }
     });
 
@@ -125,7 +125,7 @@ pub fn main() {
                 .map(|v| v.length())
                 .unwrap_or_default();
 
-            entity::mutate_component(id, health(), |health| {
+            entity::mutate_component(id, goc::health(), |health| {
                 *health = (*health - speed * 0.75).max(0.0);
             });
 
@@ -161,7 +161,7 @@ fn respawn_player(player_id: EntityId) {
         .unwrap_or_default();
 
     let last_distances = offsets.iter().map(|_| 0.0).collect();
-    let max_health = entity::get_component(vehicle_data_ref, max_health()).unwrap_or(100.0);
+    let max_health = entity::get_component(vehicle_data_ref, goc::max_health()).unwrap_or(100.0);
 
     // Create the vehicle before spawning it.
     let position = choose_spawn_position();
@@ -217,6 +217,7 @@ fn respawn_player(player_id: EntityId) {
     entity::add_component(player_id, pc::input_jump(), false);
     entity::add_component(player_id, pc::input_fire(), false);
     entity::add_component(player_id, pc::input_aim_direction(), Vec2::ZERO);
+    entity::add_component(player_id, gopc::control_of_entity(), vehicle_id);
 
     let _vehicle_model_id = Entity::new()
         .with(cast_shadows(), ())
@@ -269,7 +270,7 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
             if (game_time() - last_upside_down_time).as_secs_f32() > 0.5 {
                 const DAMAGE_PER_SECOND: f32 = 20.0;
 
-                entity::mutate_component(vehicle_id, health(), |health| {
+                entity::mutate_component(vehicle_id, goc::health(), |health| {
                     *health = (*health - DAMAGE_PER_SECOND * delta_time()).max(0.0);
                 });
                 return;
