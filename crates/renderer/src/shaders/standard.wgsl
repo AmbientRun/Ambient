@@ -47,7 +47,8 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
 
     let mesh_id = get_entity_primitive_mesh(entity_loc, primitive.z);
     let mesh_offset = mesh_metadatas[mesh_id].base_offset;
-    out.color = vec4f(hsv_to_rgb(vec3f(f32(entity_loc.x) / 16.0, 1.0, f32(entity_loc.y + 1u) / 4.0)), 1.0);
+    // out.color = vec4f(hsv_to_rgb(vec3f(f32(entity_loc.x) / 16.0, 1.0, f32(entity_loc.y + 1u) / 4.0)), 1.0);
+    out.color = vec4f(hsv_to_rgb(vec3f(f32(mesh_id) / 8.0, 1.0, f32(primitive.z + 1u) / 4.0)), 1.0);
 
     let clip = global_params.projection_view * world.pos;
 
