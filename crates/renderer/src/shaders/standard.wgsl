@@ -12,41 +12,41 @@ struct VertexOutput {
 
 fn get_entity_primitive_mesh(loc: vec2<u32>, index: u32) -> u32 {
     var meshes = get_entity_gpu_primitives_mesh(loc);
-    if index == 0 {
+    if index == 0u {
         return bitcast<u32>(meshes[0][0]);
-    } else if index == 1 {
+    } else if index == 1u {
         return bitcast<u32>(meshes[0][1]);
-    } else if index == 2 {
+    } else if index == 2u {
         return bitcast<u32>(meshes[0][2]);
-    } else if index == 3 {
+    } else if index == 3u {
         return bitcast<u32>(meshes[0][3]);
-    } else if index == 4 {
+    } else if index == 4u {
         return bitcast<u32>(meshes[1][0]);
-    } else if index == 5 {
+    } else if index == 5u {
         return bitcast<u32>(meshes[1][1]);
-    } else if index == 6 {
+    } else if index == 6u {
         return bitcast<u32>(meshes[1][2]);
-    } else if index == 7 {
+    } else if index == 7u {
         return bitcast<u32>(meshes[1][3]);
-    } else if index == 8 {
+    } else if index == 8u {
         return bitcast<u32>(meshes[2][0]);
-    } else if index == 9 {
+    } else if index == 9u {
         return bitcast<u32>(meshes[2][1]);
-    } else if index == 10 {
+    } else if index == 10u {
         return bitcast<u32>(meshes[2][2]);
-    } else if index == 11 {
+    } else if index == 11u {
         return bitcast<u32>(meshes[2][3]);
-    } else if index == 12 {
+    } else if index == 12u {
         return bitcast<u32>(meshes[3][0]);
-    } else if index == 13 {
+    } else if index == 13u {
         return bitcast<u32>(meshes[3][1]);
-    } else if index == 14 {
+    } else if index == 14u {
         return bitcast<u32>(meshes[3][2]);
-    } else if index == 15 {
+    } else if index == 15u {
         return bitcast<u32>(meshes[3][3]);
     } else {
         // unreachable
-        return 1000;
+        return 1000u;
     }
 }
 
