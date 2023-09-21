@@ -83,6 +83,11 @@ fn model_to_world(loc: vec2<u32>, mesh_index: u32, vertex_index: u32) -> ModelTo
 
 fn get_entity_primitive_mesh(loc: vec2<u32>, index: u32) -> u32 {
     var meshes = get_entity_gpu_primitives_mesh(loc);
+    // NOTE: Tint does not appear to support non-constant expression indexing on stack based matrices.
+    // The specification is not entirely clear on this either.
+    // <https://github.com/gfx-rs/naga/issues/920>
+    // <https://www.w3.org/TR/WGSL/#matrix-access-expr>
+    // TODO: find a way to inspect and debug Tint generated code
     if index == 0u {
         return bitcast<u32>(meshes[0][0]);
     } else if index == 1u {
