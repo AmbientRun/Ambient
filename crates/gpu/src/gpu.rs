@@ -60,6 +60,7 @@ impl Gpu {
         let instance = wgpu::Instance::new(InstanceDescriptor {
             backends,
             // NOTE: Vulkan is used for windows as a non-zero indirect `first_instance` is not supported, and we have to resort direct rendering
+            // See: <https://github.com/gfx-rs/wgpu/issues/2471>
             //
             // TODO: upgrade to Dxc? This requires us to ship additionall dll files, which may be
             // possible using an installer. Nevertheless, we are currently using Vulkan on windows
