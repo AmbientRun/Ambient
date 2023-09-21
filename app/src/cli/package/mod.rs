@@ -1,7 +1,11 @@
-use std::{net::IpAddr, path::PathBuf};
+use std::{
+    net::IpAddr,
+    path::{Path, PathBuf},
+};
 
 use ambient_native_std::asset_cache::AssetCache;
 use ambient_package::PackageId;
+use anyhow::Context;
 use clap::{Args, Subcommand};
 
 use super::PackagePath;
@@ -139,9 +143,32 @@ fn regenerate_id(package: &PackageArgs) -> anyhow::Result<()> {
         anyhow::bail!("Package does not have a manifest");
     }
 
-    let mut toml = std::fs::read_to_string(&manifest_path)?.parse::<toml_edit::Document>()?;
-    toml["package"]["id"] = toml_edit::value(PackageId::generate().to_string());
-    std::fs::write(&manifest_path, toml.to_string())?;
+    update_id_for_manifest(&manifest_path)?;
 
+    Ok(())
+}
+
+fn update_id_for_manifest(manifest_path: &Path) -> anyhow::Result<()> {
+    let mut toml = std::fs::read_to_string(&manifest_path)?.parse::<toml_edit::Document>()?;
+    // Only regenerate if an ID is already present
+    if toml
+        .get("package")
+        .and_then(|p| p.get("id"))
+        .is_some_and(|id| id.is_str())
+    {
+        toml["package"]["id"] = toml_edit::value(PackageId::generate().to_string());
+    }
+
+    if let Some(includes) = toml.get("includes").and_then(|i| i.as_table_like()) {
+        for (include_name, include_path) in includes.iter() {
+            let include_path = include_path.as_str().with_context(|| {
+                format!("Invalid path for include `{include_name}` in {manifest_path:?}: {include_path:?}",)
+            })?;
+
+            update_id_for_manifest(Path::new(include_path))?;
+        }
+    }
+
+    std::fs::write(&manifest_path, toml.to_string())?;
     Ok(())
 }
