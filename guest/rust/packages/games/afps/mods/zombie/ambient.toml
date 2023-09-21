@@ -1,5 +1,5 @@
 [package]
-id = "afps_zombie"
+id = "du7ethjmsamrvmqoznmoedkxiongpj5g"
 name = "AFPS Zombie"
 version = "0.0.1"
 content = { type = "Asset", models = true, animations = true, code = true }

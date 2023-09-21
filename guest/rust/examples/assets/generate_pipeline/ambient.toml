@@ -1,5 +1,5 @@
 [package]
-id = "ambient_example_generate_pipeline"
+id = "sssnr4szjawggp2g6drtbubls74c5gwj"
 name = "Generating pipeline toml"
 description = "Use code to generate an asset pipeline.toml file"
 version = "0.0.1"

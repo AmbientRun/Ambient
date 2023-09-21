@@ -1,5 +1,5 @@
 [package]
-id = "uojjsmn9xs1pj3xzz16rprjot0kk3p2o"
+id = "jyp2hh3fpjfe7kaos36zbdztfypqip3m"
 name = "Tangent Gun: Laser"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }

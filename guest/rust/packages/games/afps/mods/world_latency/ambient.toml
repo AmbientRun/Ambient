@@ -1,5 +1,5 @@
 [package]
-id = "afps_world_latency"
+id = "fclqpkeyujrl3jeb6na6qmkl6jsumyoq"
 name = "AFPS World Latency"
 description = "World latency is a simple utility that displays the relative latency # of world streamed from the server as seen by all players in the world."
 version = "0.0.1"

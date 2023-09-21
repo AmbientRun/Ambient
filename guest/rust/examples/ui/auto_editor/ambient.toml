@@ -1,5 +1,5 @@
 [package]
-id = "ambient_example_auto_editor"
+id = "clwaexkinp2lnxm2h6r4gznp6gqfrmne"
 name = "Auto editor"
 description = "Automatically create edit UI for any structs, enums etc."
 version = "0.0.1"

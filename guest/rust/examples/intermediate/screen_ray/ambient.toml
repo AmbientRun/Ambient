@@ -1,5 +1,5 @@
 [package]
-id = "ambient_example_screen_ray"
+id = "jkr622pbesmaaco76bjc6ll6v4t4lajh"
 name = "Screen Ray"
 description = "Intersect a ray from the screen with the world."
 version = "0.0.1"

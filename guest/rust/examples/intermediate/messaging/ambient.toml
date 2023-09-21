@@ -1,5 +1,5 @@
 [package]
-id = "ambient_example_messaging"
+id = "of4w7yibjeuokeyypqxmtgqklc6vthln"
 name = "Messaging"
 description = "Send and receive data across network and across packages."
 version = "0.0.1"

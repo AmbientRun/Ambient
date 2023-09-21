@@ -1,5 +1,5 @@
 [package]
-id = "afps_scene"
+id = "z6o5phfdxatg7vwc6haah6gxni3vf3y2"
 name = "AFPS Scene"
 version = "0.0.1"
 content = { type = "Asset", models = true, code = true }

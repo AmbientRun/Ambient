@@ -1,5 +1,5 @@
 [package]
-id = "tangent_schema"
+id = "mwrcsok65na7owrbdococ5sthr3ccskc"
 name = "Tangent Schema"
 version = "0.1.0"
 content = { type = "Asset", schema = true }

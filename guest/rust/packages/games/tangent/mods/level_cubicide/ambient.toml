@@ -1,5 +1,5 @@
 [package]
-id = "tangent_level_cubicide"
+id = "gzbamly2shtnz3siisf3mdzglsi67vul"
 name = "Tangent Level: Cubicide"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }

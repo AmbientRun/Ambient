@@ -1,5 +1,5 @@
 [package]
-id = "afps_fpsui"
+id = "d5t7njlgmc3wohivbeuag5ouetzontrm"
 name = "AFPS UI"
 version = "0.0.1"
 content = { type = "Asset", textures = true, code = true }

@@ -1,5 +1,5 @@
 [package]
-id = "tangent_ui_class_selection"
+id = "hs7ygpw4pmpsixtcohdcvzxwmrfzubvi"
 name = "Tangent UI: Class Selection"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }

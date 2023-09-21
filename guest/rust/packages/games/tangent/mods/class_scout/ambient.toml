@@ -1,5 +1,5 @@
 [package]
-id = "haq3c8ra5r7u3mhaynqqdvtcmgb6l54p"
+id = "fvn74ns4ozf3gn42vmowphmvmpsfklbi"
 name = "Tangent Class: Scout"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }

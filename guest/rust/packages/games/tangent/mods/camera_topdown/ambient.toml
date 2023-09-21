@@ -1,5 +1,5 @@
 [package]
-id = "tangent_camera_topdown"
+id = "h5q5ndu5znuaa3kicfsbrf6zmfd5ygpx"
 name = "Tangent Camera: Top-down"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
