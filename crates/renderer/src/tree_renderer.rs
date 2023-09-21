@@ -598,13 +598,6 @@ impl TreeRenderer {
 
                         render_pass.draw_indexed(
                             mesh.index_offset..(mesh.index_offset + mesh.index_count),
-                            // This was previously `0` and worked for Windows, MacOs, and MacOS + Chrome.
-                            // Changing this to `mesh.base_offset` makes it works on the web using Windows + Chrome, but breaks it for MacOs + Chrome
-                            // The indirect commands in `collect.wgsl` use an offset of 0
-                            //
-                            // The correct value should be `0`, but as said, breaks Windows +
-                            // Chrome
-                            // mesh.base_offset as i32,
                             0,
                             index as u32..(index as u32 + 1),
                         )

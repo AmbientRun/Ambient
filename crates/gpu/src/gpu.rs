@@ -46,7 +46,7 @@ impl Gpu {
         }
 
         let backends = if cfg!(target_os = "windows") {
-            wgpu::Backends::DX12
+            wgpu::Backends::VULKAN
         } else if cfg!(target_os = "macos") {
             wgpu::Backends::PRIMARY
         } else if cfg!(target_os = "unknown") {
@@ -59,15 +59,17 @@ impl Gpu {
 
         let instance = wgpu::Instance::new(InstanceDescriptor {
             backends,
+            // NOTE: Vulkan is used for windows as a non-zero indirect `first_instance` is not supported, and we have to resort direct rendering
+            //
             // TODO: upgrade to Dxc? This requires us to ship additionall dll files, which may be
             // possible using an installer. Nevertheless, we are currently using Vulkan on windows
             // due to `base_instance` being broken on windows.
             // https://docs.rs/wgpu/latest/wgpu/enum.Dx12Compiler.html
-            // dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
-            dx12_shader_compiler: wgpu::Dx12Compiler::Dxc {
-                dxil_path: Some("./dxil.dll".into()),
-                dxc_path: Some("./dxcompiler.dll".into()),
-            },
+            dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
+            // dx12_shader_compiler: wgpu::Dx12Compiler::Dxc {
+            //     dxil_path: Some("./dxil.dll".into()),
+            //     dxc_path: Some("./dxcompiler.dll".into()),
+            // },
         });
 
         let surface = window.map(|window| unsafe { instance.create_surface(window).unwrap() });
@@ -136,12 +138,14 @@ impl Gpu {
             .await
             .expect("Failed to create device");
 
-        tracing::info!("Device limits:\n{:#?}", device.limits());
+        tracing::debug!("Device limits:\n{:#?}", device.limits());
 
         let swapchain_format = surface
             .as_ref()
             .map(|surface| surface.get_capabilities(&adapter).formats[0]);
+
         tracing::debug!("Swapchain format: {swapchain_format:?}");
+
         let swapchain_mode = if surface.is_some() {
             if settings.vsync() {
                 // From wgpu docs:
