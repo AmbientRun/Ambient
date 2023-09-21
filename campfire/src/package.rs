@@ -104,10 +104,10 @@ pub fn serve(args: &Run) -> anyhow::Result<()> {
 }
 
 fn find_package(package: &String) -> anyhow::Result<PathBuf> {
-    Ok(get_all_packages(true, true, false)?
+    get_all_packages(true, true, false)?
         .into_iter()
         .find(|p| p.ends_with(package))
-        .ok_or_else(|| anyhow::anyhow!("no example found with name {}", package))?)
+        .ok_or_else(|| anyhow::anyhow!("no example found with name {}", package))
 }
 
 fn list() -> anyhow::Result<()> {

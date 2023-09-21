@@ -9,7 +9,7 @@ pub async fn open() -> anyhow::Result<()> {
         .await
         .context("Failed to read certificate file")?;
 
-    let der = X509Certificate::from_der(&cert_file).context("Failed to deserialize certificate")?;
+    let der = X509Certificate::from_der(cert_file).context("Failed to deserialize certificate")?;
 
     let pubkey = der.to_public_key_der().expect("Failed to get public key");
 

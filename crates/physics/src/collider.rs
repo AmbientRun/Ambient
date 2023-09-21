@@ -4,7 +4,7 @@ use ambient_core::{
     asset_cache,
     async_ecs::async_run,
     runtime,
-    transform::{rotation, scale, translation},
+    transform::{get_world_position, rotation, scale, translation},
 };
 use ambient_ecs::{
     components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Entity, EntityId,
@@ -183,12 +183,12 @@ pub fn server_systems() -> SystemGroup {
             query((
                 character_controller_height().changed(),
                 character_controller_radius().changed(),
-                translation(),
             ))
             .to_system(|q, world, qs, _| {
                 let all = changed_or_missing(q, world, qs, character_controller());
 
-                for (id, (height, radius, pos)) in all {
+                for (id, (height, radius)) in all {
+                    let pos = get_world_position(world, id).unwrap_or_default();
                     if let Ok(old) = world.get(id, character_controller()) {
                         old.release();
                     }
@@ -217,7 +217,12 @@ pub fn server_systems() -> SystemGroup {
                             ..Default::default()
                         });
                         world
-                            .add_component(id, character_controller(), controller)
+                            .add_components(
+                                id,
+                                Entity::new()
+                                    .with(character_controller(), controller)
+                                    .with(collider_shapes(), controller.get_actor().get_shapes()),
+                            )
                             .unwrap();
                     } else {
                         world.remove_component(id, character_controller()).unwrap();

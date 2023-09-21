@@ -3,6 +3,7 @@ id = "mkd4mhans4bdn3mvmt45vxqbxepdhys3"
 name = "Tangent Camera: Follow"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
+ambient_version = "0.3.0-nightly-2023-09-20"
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "1MdfsKM0PneOuY19MlhaOw" }
+tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }

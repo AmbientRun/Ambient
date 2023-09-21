@@ -5,7 +5,7 @@ version = "0.0.1"
 content = { type = "Asset", code = true }
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "2eD1KcHctO5dBLheldSqbA" }
-editor_schema = { path = "../../../../schemas/editor", deployment = "2VGI9Ugc9qr1n4HGsdSerK" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "5KKf99BrahlrYHLEMMj6OU" }
-character_movement = { path = "../../../../std/character_movement", deployment = "1hldhiyEiBGxy8O6aoF5t" }
+afps_schema = { path = "../../schema", deployment = "7NBTASMOE1rultxb0ShMhi" }
+editor_schema = { path = "../../../../schemas/editor", deployment = "3cmjOxOWCME7Hxi9OPpczk" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "23Br3CXehPb9wboVb2Fv5h" }
+character_movement = { path = "../../../../std/character_movement", deployment = "5aookFvtPtN9Y7ClQepFz7" }

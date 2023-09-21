@@ -1,0 +1,11 @@
+[package]
+id = "ambient_example_line"
+name = "Line"
+description = "Draw a line in 3d space."
+version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/rendering/line"
+type = "Game"
+content = { type = "Playable", example = true }
+
+[dependencies]
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "6l5txhA9WYKUam15TwGnHl" }

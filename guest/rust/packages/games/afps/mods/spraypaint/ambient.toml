@@ -3,6 +3,7 @@ id = "op2g7jibpmzgvsqh5f2gi3seux6l6o5h"
 name = "AFPS Spraypaint"
 version = "0.0.1"
 content = { type = "Asset", models = true, textures = true, code = true }
+ambient_version = "0.3.0-nightly-2023-09-20"
 
 [components]
 claymore = { type = "EntityId" }
@@ -13,5 +14,5 @@ dir = "Vec3"
 source = "EntityId"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "2eD1KcHctO5dBLheldSqbA" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "5KKf99BrahlrYHLEMMj6OU" }
+afps_schema = { path = "../../schema", deployment = "7NBTASMOE1rultxb0ShMhi" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "23Br3CXehPb9wboVb2Fv5h" }

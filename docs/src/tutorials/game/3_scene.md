@@ -66,8 +66,10 @@ bouncy_created = { type = "Duration" }
 
 Then add the following to the bouncy ball entity:
 
-```rust
-.with(bouncy_created(), game_time())
+```diff
+.with_merge(Transformable::suggested())
++ .with(bouncy_created(), game_time())
+.with(scale(), Vec3::ONE * 0.2)
 ```
 
 Finally, add this code at the end of your main function:

@@ -260,6 +260,7 @@ dependencies = [
  "puffin_http",
  "thread-priority",
  "tracing",
+ "wasm-bindgen",
  "web-sys",
  "wgpu 0.16.3",
  "winit",

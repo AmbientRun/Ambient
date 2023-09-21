@@ -6,6 +6,7 @@ version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/material_overriding"
 type = "Game"
 content = { type = "Playable", example = true }
+ambient_version = "0.3.0-nightly-2023-09-20"
 
 [components.is_the_best]
 type = "Bool"
@@ -14,4 +15,4 @@ description = "Declares whether or not the entity this is attached is the best."
 attributes = ["Networked", "Debuggable"]
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "5FW32mbhXcqn3Mtp2DsUvU" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "6l5txhA9WYKUam15TwGnHl" }
