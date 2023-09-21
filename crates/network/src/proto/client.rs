@@ -51,17 +51,28 @@ impl ClientProtoState {
 
     /// Processes an incoming control frame from the server.
     #[tracing::instrument(level = "debug")]
-    pub fn process_push(&mut self, assets: &AssetCache, frame: ServerPush) -> anyhow::Result<()> {
+    pub fn process_push(
+        &mut self,
+        assets: &AssetCache,
+        fail_on_version_mismatch: bool,
+        frame: ServerPush,
+    ) -> anyhow::Result<()> {
         match (frame, &self) {
             (ServerPush::ServerInfo(server_info), Self::Pending(_user_id)) => {
                 let current_version = ambient_version().to_string();
 
                 if server_info.version != current_version {
-                    tracing::error!(
-                        "Client version does not match server version. Server version: {:?}, Client version {:?}",
+                    let msg = format!(
+                        "Client version does not match server version.\n\nServer version: {}\nClient version: {}",
                         server_info.version,
                         current_version
                     );
+
+                    if fail_on_version_mismatch {
+                        anyhow::bail!(msg);
+                    } else {
+                        tracing::error!("{}", msg);
+                    }
                 }
 
                 tracing::debug!(content_base_url=?server_info.content_base_url, "Inserting content base url");
