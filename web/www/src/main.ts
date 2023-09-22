@@ -82,7 +82,12 @@ import("ambient_web")
             return;
         }
 
-        ambient.init({ enableLogging: true, enablePanicHook : true, logFilter: "debug" });
+        ambient.init({ 
+            enableLogging: true, 
+            enablePanicHook: true, 
+            logFilter: "debug",
+            allowVersionMismatch: true,
+        });
 
         let target = window.document.getElementById("instance-container");
 
