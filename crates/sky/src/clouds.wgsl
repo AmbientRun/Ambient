@@ -143,7 +143,6 @@ fn fs_forward_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let depth: f32 = 1.0 - textureSample(solids_screen_depth, default_sampler, in.uv);
 
     var color = get_sky_color(depth, global_params.camera_position.xyz, dir);
-    color = 1.0 - exp(-color * 0.5);
 
-    return vec4<f32>(apply_fog(color, global_params.camera_position.xyz, in.world_position.xyz), 1.0);
+    return vec4<f32>(color, 1.0);
 }

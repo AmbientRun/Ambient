@@ -123,7 +123,7 @@ fn scatter(ray_start: vec3f, ray_dir: vec3f, max_dist: f32) -> vec3f {
         let height_i = length(pos_i) - PLANET_RADIUS;
 
         // Calculate the amount of air inside this step based on height based air density falloff
-        var density = vec3f(exp(-height_i / scale_height), 0.0);
+        var density = vec3f(exp(-max(height_i, -1.0e3) / scale_height), 0.0);
 
         let denom = (ABSORPTION_HEIGHT - height_i) / ABSORPTION_FALLOFF;
         density.z = (1.0 / (denom * denom + 1.0)) * density.x;
@@ -150,7 +150,7 @@ fn scatter(ray_start: vec3f, ray_dir: vec3f, max_dist: f32) -> vec3f {
             let height_l = length(pos_l) - PLANET_RADIUS;
 
             // Do the same for the secondary ray
-            var density_l = vec3f(exp(-height_l / scale_height), 0.0);
+            var density_l = vec3f(exp(-max(height_l, -1.0e3) / scale_height), 0.0);
             var denom = (ABSORPTION_HEIGHT - height_l) / ABSORPTION_FALLOFF;
             density_l.z = (1.0 / (denom * denom + 1.0)) * density_l.x;
 
@@ -192,8 +192,8 @@ fn get_sky_color(
 ) -> vec3<f32> {
 
     let spot_rad = 1.0 - dot(forward, normalize(global_params.sun_direction.xyz));
-    let d = 2000.0;
-    let spot = exp(-pow(d * spot_rad, 3.0));
+    let di = 2000.0;
+    let spot = exp(-pow(di * spot_rad, 3.0));
 
     var max_dist = depth * global_params.camera_far;
 
@@ -201,7 +201,17 @@ fn get_sky_color(
         max_dist = 1e12;
     }
 
-    let color = (scatter(origin + vec3<f32>(0.0, 0.0, PLANET_RADIUS + 100.0), normalize(forward), max_dist) + spot) * 40.0 * global_params.sun_diffuse.rgb;
+    var color = (scatter(origin + vec3<f32>(0.0, 0.0, PLANET_RADIUS + 100.0), normalize(forward), max_dist) + spot) * 40.0 * global_params.sun_diffuse.rgb;
 
-    return color;
+    var a = dot(forward, forward);
+    var b = 2.0 * dot(forward, origin);
+    var c = dot(origin, origin) - (ATMO_RADIUS * ATMO_RADIUS);
+    var d = (b * b) - 4.0 * a * c;
+
+    var ray_len = vec2f(max((-b - sqrt(d)) / (2.0 * a), 0.0), min((-b + sqrt(d)) / (2.0 * a), max_dist));
+
+    color = 1.0 - exp(-color);
+    let fog = apply_fog(color, global_params.camera_position.xyz, global_params.camera_position.xyz + forward * ray_len.y);
+
+    return fog;
 }
