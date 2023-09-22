@@ -3,8 +3,8 @@ id = "camera"
 name = "Camera"
 description = "Camera matrices, types, parameters, and more."
 content = { type = "Asset", schema = true }
-version = "0.3.0-nightly-2023-09-20"
-ambient_version = "0.3.0-nightly-2023-09-20"
+version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-22"
 
 [components.active_camera]
 type = "F32"

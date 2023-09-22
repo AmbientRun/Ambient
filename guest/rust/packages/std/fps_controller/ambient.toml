@@ -3,7 +3,7 @@ id = "fps_controller"
 name = "fps_controller"
 version = "0.0.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-20"
+ambient_version = "0.3.0-nightly-2023-09-22"
 
 [dependencies]
 unit_schema = { path = "../../schemas/unit", deployment = "23Br3CXehPb9wboVb2Fv5h" }

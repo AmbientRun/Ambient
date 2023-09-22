@@ -3,8 +3,8 @@ id = "transform"
 name = "Transform"
 description = "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity."
 content = { type = "Asset", schema = true }
-version = "0.3.0-nightly-2023-09-20"
-ambient_version = "0.3.0-nightly-2023-09-20"
+version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-22"
 
 [components.cylindrical_billboard_z]
 type = "Empty"
