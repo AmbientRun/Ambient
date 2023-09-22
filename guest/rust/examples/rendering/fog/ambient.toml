@@ -23,4 +23,6 @@ fog_g = { type = "F32" }
 fog_b = { type = "F32" }
 orbit_turn = { type = "F32" }
 orbit_zoom = { type = "F32" }
+orbit_target_height = { type = "F32" }
+orbit_pitch = { type = "F32" }
 turntable = { type = "F32" }
