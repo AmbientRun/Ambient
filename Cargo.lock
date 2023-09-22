@@ -429,6 +429,7 @@ dependencies = [
  "ambient_shared_types",
  "ambient_ui_native",
  "glam 0.24.1",
+ "rand 0.8.5",
 ]
 
 [[package]]
@@ -5188,8 +5189,9 @@ dependencies = [
 
 [[package]]
 name = "minidumper-child"
-version = "0.2.0"
-source = "git+https://github.com/AmbientRun/minidumper-child.git#d988d6d72eea363b236bcf098650edc18dceaff9"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3bcb1f75be546cd62b76f82f6b3f73a7729089f765d158f2b776e2fc81ce9d6c"
 dependencies = [
  "crash-handler",
  "minidumper",

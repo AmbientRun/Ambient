@@ -51,7 +51,7 @@ pub fn main() {
         // Smooth out the camera movement by moving towards the target with a constant velocity
         let dt = delta_time();
         let camera_speed_ms = (target.speed * 5.0).max(2.0);
-        const CAMERA_SNAP_TIME: f32 = 0.005;
+        const CAMERA_SNAP_TIME: f32 = 0.01;
 
         let camera_snap_distance_sqr = (camera_speed_ms * CAMERA_SNAP_TIME).powi(2);
 

@@ -2,7 +2,7 @@
 
 We welcome community contributions to this project.
 
-Please talk with us on Discord beforehand if you'd like to contribute a larger piece of work. This is particularly important if your contribution involves adding new functionality to the host; our goal is to implement as much functionality on the guest as possible, so that the host can remain simple and enable a wide variety of use cases without being too opinionated.
+Please talk with us [on Discord](https://discord.gg/ambient) beforehand if you'd like to contribute a larger piece of work. This is particularly important if your contribution involves adding new functionality to the host; our goal is to implement as much functionality on the guest as possible, so that the host can remain simple and enable a wide variety of use cases without being too opinionated.
 
 ## Campfire
 

@@ -3,8 +3,8 @@ id = "ui"
 name = "UI"
 description = "User interface components"
 content = { type = "Asset", schema = true }
-version = "0.3.0-nightly-2023-09-20"
-ambient_version = "0.3.0-nightly-2023-09-20"
+version = "0.3.0-dev"
+ambient_version = "0.3.0-nightly-2023-09-22"
 
 [components.focus]
 type = "String"

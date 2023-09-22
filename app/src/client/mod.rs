@@ -49,7 +49,7 @@ pub fn run(
     let user_id = match run.user_id.clone().or(settings.general.user_id) {
         Some(user_id) => user_id,
         None => {
-            let user_id = random_username();
+            let user_id = ambient_client_shared::util::random_username();
             log::warn!(
                 "No `user_id` found in settings, using random username: {:?}",
                 user_id

@@ -3,13 +3,15 @@
 [![Crates.io](https://img.shields.io/crates/v/ambient_api)](https://crates.io/crates/ambient_api)
 [![docs.rs](https://img.shields.io/docsrs/ambient_api)](https://docs.rs/ambient_api)
 [![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](https://github.com/AmbientRun/Ambient#license)
-[![Discord](https://img.shields.io/discord/894505972289134632)](https://discord.gg/PhmPn6m8Tw)
-
-https://user-images.githubusercontent.com/707827/236472178-ed520f95-0e0a-434e-96f6-c66a6a96a8be.mp4
+[![Discord](https://img.shields.io/discord/894505972289134632)](https://discord.gg/ambient)
 
 Ambient is a runtime for building high-performance multiplayer games and 3D applications, powered by WebAssembly, Rust and WebGPU.
 
 See our [announcement blog post](https://www.ambient.run/post/introducing-ambient) for more details, or jump into our [documentation](https://ambientrun.github.io/Ambient/).
+
+## Getting started
+
+[Go the tutorial](https://ambientrun.github.io/Ambient/tutorials/game/0_intro.html)
 
 ## Design principles
 
@@ -66,9 +68,9 @@ For alternative installation options, go to the [documentation on installing](ht
 | IDE                     | 🚧     | [#694](https://github.com/AmbientRun/Ambient/issues/694)                                                                                                                                                                           |
 
 In addition to the above the following areas have umbrella issues:
-| Area           | Issue                                                    |
+| Area | Issue |
 | -------------- | -------------------------------------------------------- |
-| Networking     | [#764](https://github.com/AmbientRun/Ambient/issues/671) |
+| Networking | [#764](https://github.com/AmbientRun/Ambient/issues/671) |
 | Asset pipeline | [#764](https://github.com/AmbientRun/Ambient/issues/764) |
 
 ## Examples
