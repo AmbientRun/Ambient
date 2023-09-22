@@ -8,9 +8,9 @@ use ambient_gpu::{
 use ambient_meshes::{CubeMeshKey, SphereMeshKey};
 use ambient_native_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, math::SphericalCoords};
 use ambient_renderer::{
-    color, gpu_primitives_lod, gpu_primitives_mesh,
+    color, gpu_primitives_lod, gpu_primitives_mesh, light_ambient, light_diffuse,
     materials::pbr_material::{get_pbr_shader, PbrMaterial, PbrMaterialConfig, PbrMaterialParams},
-    primitives, RenderPrimitive, SharedMaterial,
+    primitives, sun, RenderPrimitive, SharedMaterial,
 };
 use ambient_sys::time::Instant;
 use glam::*;
@@ -34,8 +34,8 @@ async fn init(app: &mut App) {
                     normalmap: DefaultNormalMapViewKey.get(&assets),
                     metallic_roughness: PixelTextureViewKey {
                         color: uvec4(
-                            (255. * x as f32 / size as f32) as u32,
-                            (255. * y as f32 / size as f32) as u32,
+                            (255. * x as f32 / (size - 1) as f32) as u32,
+                            (255. * y as f32 / (size - 1) as f32) as u32,
                             0,
                             0,
                         ),
@@ -97,6 +97,14 @@ async fn init(app: &mut App) {
     .with(active_camera(), 0.)
     .with(main_scene(), ())
     .spawn(world);
+
+    Entity::new()
+        .with(sun(), 0.0)
+        .with(rotation(), Quat::from_rotation_y(-1.))
+        .with(main_scene(), ())
+        .with(light_diffuse(), Vec3::ONE * 5.0)
+        .with(light_ambient(), Vec3::ZERO)
+        .spawn(world);
 
     let start = Instant::now();
     app.add_system(query_mut(color(), ()).to_system(move |q, w, qs, _| {
