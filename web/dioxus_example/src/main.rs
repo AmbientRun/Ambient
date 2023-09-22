@@ -10,6 +10,7 @@ fn main() {
             enable_logging: true,
             enable_panic_hook: true,
             log_filter: None,
+            allow_version_mismatch: Some(true),
         })
         .unwrap(),
     )

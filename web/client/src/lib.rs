@@ -1,4 +1,7 @@
-use std::sync::OnceLock;
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    OnceLock,
+};
 
 use ambient_app::App;
 use ambient_cameras::UICamera;
@@ -33,8 +36,11 @@ static APP_CONTROL: OnceLock<flume::Sender<WindowCtl>> = OnceLock::new();
 pub struct Settings {
     pub enable_logging: bool,
     pub enable_panic_hook: bool,
+    pub allow_version_mismatch: Option<bool>,
     pub log_filter: Option<String>,
 }
+
+static ALLOW_VERSION_MISMATCH: AtomicBool = AtomicBool::new(false);
 
 /// Initialize ambient
 #[wasm_bindgen]
@@ -61,6 +67,10 @@ pub fn init(settings: JsValue) -> Result<(), JsValue> {
 
     if settings.enable_panic_hook {
         ambient_sys::set_panic_hook();
+    }
+
+    if let Some(allow_version_mismatch) = settings.allow_version_mismatch {
+        ALLOW_VERSION_MISMATCH.store(allow_version_mismatch, Ordering::SeqCst);
     }
 
     tracing::info!("Hello, Wasm!");
@@ -123,7 +133,10 @@ async fn run(target: Option<web_sys::HtmlElement>, server_url: String) -> anyhow
     Group(vec![
         UICamera.el().with(active_camera(), 0.),
         ambient_client_shared::player::PlayerRawInputHandler.el(),
-        WindowSized::el([MainApp::el(server_url)]),
+        WindowSized::el([MainApp::el(
+            server_url,
+            !ALLOW_VERSION_MISMATCH.load(Ordering::SeqCst),
+        )]),
     ])
     .el()
     .spawn_interactive(world);

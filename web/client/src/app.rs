@@ -9,12 +9,13 @@ use ambient_ui_native::cb;
 use std::collections::HashMap;
 
 #[element_component]
-pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {
+pub fn MainApp(_hooks: &mut Hooks, server_url: String, fail_on_version_mismatch: bool) -> Element {
     tracing::info!("Connecting to {server_url:?}");
 
     GameClientView {
         url: server_url,
         user_id: ambient_client_shared::util::random_username(),
+        fail_on_version_mismatch,
         systems_and_resources: cb(|| {
             let mut resources = Entity::new();
 
