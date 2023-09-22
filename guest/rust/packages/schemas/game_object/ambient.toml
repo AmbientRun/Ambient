@@ -1,0 +1,20 @@
+[package]
+id = "hw3bncgdihgy31w9nkv7ctshsbbyrtgm"
+name = "Game Object"
+description = "Schema for game objects"
+version = "0.0.1"
+content = { type = "Asset", schema = true }
+ambient_version = "0.3.0-dev"
+
+[components]
+health = { type = "F32", name = "Health", description = "This game object's health. \"Standard\" health is 100 HP.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+max_health = { type = "F32", name = "Max Health", description = "Maximum health of the object. 100 HP is \"standard.\"", attributes = [
+    "Networked",
+] }
+
+"player::control_of_entity" = { type = "EntityId", name = "Player's Control-of Entity", description = "The entity that this player is controlling.", attributes = [
+    "Networked",
+] }

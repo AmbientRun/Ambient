@@ -15,14 +15,17 @@ use ambient_api::{
     prelude::*,
 };
 
-use packages::afps_schema::{
-    components::{
-        self, heal_timeout, hit_freeze, player_deathcount, player_killcount, player_name,
-        player_team,
+use packages::{
+    afps_schema::{
+        components::{
+            self, heal_timeout, hit_freeze, player_deathcount, player_killcount, player_name,
+            player_team,
+        },
+        messages::{Explosion, Shoot},
     },
-    messages::{Explosion, Shoot},
+    game_object::components::health,
+    unit_schema::components::vertical_velocity,
 };
-use packages::unit_schema::components::{health, vertical_velocity};
 
 #[main]
 pub fn main() {
