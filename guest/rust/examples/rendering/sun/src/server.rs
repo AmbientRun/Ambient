@@ -32,10 +32,10 @@ pub fn main() {
         .with(translation(), vec3(0., 0., 0.01))
         .spawn();
 
-    // Entity::new()
-    //     .with(water(), ())
-    //     .with(scale(), Vec3::ONE * 2000.)
-    //     .spawn();
+    Entity::new()
+        .with(water(), ())
+        .with(scale(), Vec3::ONE * 2000.)
+        .spawn();
 
     Entity::new().with(sky(), ()).spawn();
 
