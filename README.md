@@ -5,11 +5,13 @@
 [![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](https://github.com/AmbientRun/Ambient#license)
 [![Discord](https://img.shields.io/discord/894505972289134632)](https://discord.gg/PhmPn6m8Tw)
 
-https://user-images.githubusercontent.com/707827/236472178-ed520f95-0e0a-434e-96f6-c66a6a96a8be.mp4
-
 Ambient is a runtime for building high-performance multiplayer games and 3D applications, powered by WebAssembly, Rust and WebGPU.
 
 See our [announcement blog post](https://www.ambient.run/post/introducing-ambient) for more details, or jump into our [documentation](https://ambientrun.github.io/Ambient/).
+
+## Getting started
+
+[Go the tutorial](https://ambientrun.github.io/Ambient/tutorials/game/0_intro.html)
 
 ## Design principles
 
