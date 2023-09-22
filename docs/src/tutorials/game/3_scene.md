@@ -23,7 +23,7 @@ This code will spawn 30 cubes with random positions. Try running it!
 
 > **In-depth**: A `cube_collider` is one of the basic physics primitives. For more information, consult [the reference documentation on physics](../../reference/physics.md), or try the [physics example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics).
 
-> **Challenge**: `Entity::spawn` will return an `EntityId`. Try using [`set_component`](http://docs.ambient.run/nightly/ambient_api/entity/fn.set_component.html) to set the `rotation` of the cubes.
+> **Challenge**: `Entity::spawn` will return an `EntityId`. Try using [`set_component`](https://docs.ambient.run/nightly/ambient_api/entity/fn.set_component.html) to set the `rotation` of the cubes.
 
 It should look something like this:
 

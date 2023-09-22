@@ -28,6 +28,6 @@ You should now see something like this:
 
 ![UI](ui.png)
 
-> **Challenge**: Try adding a [`Button`](http://docs.ambient.run/nightly/ambient_api/prelude/struct.Button.html), which sends a message to the server and teleports the player somewhere else when clicked. You may find [Chapter 4](./4_player_interaction.md), the [button example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/ui/button/src/client.rs) and the [todo example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/todo) useful.
+> **Challenge**: Try adding a [`Button`](https://docs.ambient.run/nightly/ambient_api/prelude/struct.Button.html), which sends a message to the server and teleports the player somewhere else when clicked. You may find [Chapter 4](./4_player_interaction.md), the [button example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/ui/button/src/client.rs) and the [todo example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/todo) useful.
 
 ## [⇾ Chapter 7: Deploying](./7_deploying.md)
