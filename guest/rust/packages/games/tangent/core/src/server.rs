@@ -78,12 +78,12 @@ pub fn main() {
             return;
         };
 
-        let Some(vehicle) = entity::get_component(player, pc::vehicle_ref()) else {
+        let Some(vehicle_id) = entity::get_component(player, pc::vehicle_ref()) else {
             return;
         };
 
         let aim_direction_limits =
-            entity::get_component(vehicle, vd::input::components::aim_direction_limits())
+            entity::get_component(vehicle_id, vd::input::components::aim_direction_limits())
                 .unwrap_or(Vec2::ONE * 20.0);
 
         entity::add_component(player, pc::input_direction(), input.direction);
@@ -94,15 +94,26 @@ pub fn main() {
             .clamp(-aim_direction_limits, aim_direction_limits);
         entity::add_component(player, pc::input_aim_direction(), aim_direction);
 
-        entity::add_component(
-            vehicle,
-            vc::aim_position(),
-            shared::calculate_aim_position(vehicle, aim_direction),
-        );
+        // This calculation is a bit circuitous, but it's simpler than breaking out the intermediate
+        // calculations
+        let p0 = shared::calculate_aim_position(vehicle_id, aim_direction, 0.0);
+        let p1 = shared::calculate_aim_position(vehicle_id, aim_direction, 1.0);
+
+        let hit = physics::raycast(p0, p1 - p0)
+            .into_iter()
+            .find(|h| h.entity != vehicle_id);
+
+        const RANGE: f32 = 1_000.0;
+        // TODO: figure out why not using a fixed long distance breaks the gun-aim calculation
+        let aim_position = shared::calculate_aim_position(vehicle_id, aim_direction, RANGE);
+        let aim_distance = hit.map(|h| h.distance).unwrap_or(RANGE);
+
+        entity::add_component(vehicle_id, vc::aim_position(), aim_position);
+        entity::add_component(vehicle_id, vc::aim_distance(), aim_distance);
 
         // If the user opted to respawn, immediately destroy their vehicle
         if input.respawn {
-            entity::set_component(vehicle, goc::health(), 0.0);
+            entity::set_component(vehicle_id, goc::health(), 0.0);
         }
     });
 

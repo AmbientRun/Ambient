@@ -109,10 +109,12 @@ game_object = { path = "../../../schemas/game_object" }
     "Networked",
 ] }
 
-# Vehicle (server-only)
-"vehicle::aim_position" = { type = "Vec3", name = "Aim Position", description = "Position of the aim target", attributes = [
+"vehicle::aim_distance" = { type = "F32", name = "Aim Distance", description = "Distance of the aim target from the vehicle", attributes = [
     "Networked",
 ] }
+
+# Vehicle (server-only)
+"vehicle::aim_position" = { type = "Vec3", name = "Aim Position", description = "Position of the aim target" }
 
 # Vehicle (client-only)
 "vehicle::client::speed_kph" = { type = "F32", name = "Speed (KPH)", description = "Speed of the vehicle in kilometers per hour." }

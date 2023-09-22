@@ -149,11 +149,15 @@ fn Crosshair(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
         use_entity_component(hooks, player::get_local(), pc::input_aim_direction())
             .unwrap_or_default();
 
+    let remote_aim_distance =
+        use_entity_component(hooks, vehicle_id, vc::aim_distance()).unwrap_or(1_000.0);
+
     let Some(active_camera_id) = camera::get_active(None) else {
         return Element::new();
     };
 
-    let aim_position = shared::calculate_aim_position(vehicle_id, input_aim_direction);
+    let aim_position =
+        shared::calculate_aim_position(vehicle_id, input_aim_direction, remote_aim_distance);
     let pos_2d = camera::world_to_screen(active_camera_id, aim_position);
 
     Group::el([
