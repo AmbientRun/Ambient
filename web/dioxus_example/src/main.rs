@@ -5,7 +5,16 @@ use wasm_bindgen::JsCast;
 use web_sys::window;
 
 fn main() {
-    ambient_web::init_ambient(true, true);
+    ambient_web::init(
+        serde_wasm_bindgen::to_value(&ambient_web::Settings {
+            enable_logging: true,
+            enable_panic_hook: true,
+            log_filter: None,
+            allow_version_mismatch: Some(true),
+        })
+        .unwrap(),
+    )
+    .unwrap();
     dioxus_web::launch(App);
 }
 

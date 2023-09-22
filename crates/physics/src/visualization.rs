@@ -1,7 +1,7 @@
 use crate::{
     collider::{collider_shapes, collider_shapes_convex},
     main_physics_scene,
-    physx::{physics_shape, rigid_actor},
+    physx::physics_shape,
     picking_scene, trigger_areas_scene,
 };
 use ambient_core::{
@@ -18,7 +18,7 @@ use ambient_gizmos::{local_gizmos, GizmoPrimitive};
 use glam::{vec4, Vec3};
 use itertools::Itertools;
 use physxx::{
-    PxActor, PxDebugLine, PxRenderBuffer, PxRigidActor, PxSceneRef, PxShape, PxShapeFlag,
+    PxActor, PxDebugLine, PxRenderBuffer, PxRigidActor, PxShape, PxShapeFlag,
     PxVisualizationParameter,
 };
 
@@ -29,14 +29,12 @@ components!("physics", {
 });
 
 pub fn run_visualize_collider(world: &mut World, entity: EntityId, enabled: bool) -> Option<()> {
-    let actor = world.get_ref(entity, rigid_actor()).ok()?;
-    let scene = actor.get_scene()?;
     for shape in world
         .get_ref(entity, collider_shapes())
         .into_iter()
         .flatten()
     {
-        visualize_shape(scene, shape, enabled);
+        visualize_shape(shape, enabled);
     }
 
     for shape in world
@@ -44,7 +42,7 @@ pub fn run_visualize_collider(world: &mut World, entity: EntityId, enabled: bool
         .into_iter()
         .flatten()
     {
-        visualize_shape(scene, shape, enabled)
+        visualize_shape(shape, enabled);
     }
 
     if enabled {
@@ -57,7 +55,8 @@ pub fn run_visualize_collider(world: &mut World, entity: EntityId, enabled: bool
     Some(())
 }
 
-fn visualize_shape(scene: PxSceneRef, shape: &PxShape, enabled: bool) {
+fn visualize_shape(shape: &PxShape, enabled: bool) -> Option<()> {
+    let scene = shape.get_actor()?.get_scene()?;
     shape.set_flag(PxShapeFlag::VISUALIZATION, enabled);
 
     scene.set_visualization_parameter(PxVisualizationParameter::SCALE, 10.0);
@@ -65,6 +64,7 @@ fn visualize_shape(scene: PxSceneRef, shape: &PxShape, enabled: bool) {
     scene.set_visualization_parameter(PxVisualizationParameter::JOINT_LIMITS, 1.0);
     // scene.set_visualization_parameter(PxVisualizationParameter::ACTOR_AXES, 1.0);
     scene.set_visualization_parameter(PxVisualizationParameter::COLLISION_SHAPES, 1.0);
+    Some(())
 }
 
 pub(crate) fn server_systems() -> SystemGroup {

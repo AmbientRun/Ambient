@@ -20,4 +20,4 @@ proc-macro-crate = { workspace = true }
 
 [dev-dependencies]
 ambient_ui_native = { path = "../../crates/ui_native" }
-pretty_assertions = "1.3"
+pretty_assertions = "1.4"

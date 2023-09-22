@@ -20,20 +20,7 @@
     "cmd": "cargo run --features tracing -- run ./guest/rust/examples/controllers/third_person_camera --debugger --clean-build"
   },
   "primitives": {
-    "cmd": "cargo build",
-    "components": {
-      "dap": {
-        "program": "./target/debug/ambient",
-        "args": [
-          "run",
-          "./guest/rust/examples/basics/primitives"
-        ],
-        "adapter": "rust",
-        "env": {
-          "RUST_LOG": "ambient_renderer=info,ambient_network=debug,info"
-        }
-      }
-    }
+    "cmd": "cargo run --features hotload-includes -- run ./guest/rust/examples/basics/primitives/"
   },
   "gi-samplers": {
     "cmd": "cargo run --release -- run --release guest/rust/examples/basics/samplers --headless --no-proxy --quic-interface-port 9009 --http-interface-port 10009 golden-image-check --timeout-seconds 30.0",
@@ -106,8 +93,8 @@
       "RUST_LOG": "ambient_network=debug,info"
     }
   },
-  "serve-physics": {
-    "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/physics/ --clean-build",
+  "serve physics": {
+    "cmd": "cargo run -- serve ./guest/rust/examples/basics/physics/ --clean-build",
     "env": {
       "RUST_LOG": "ambient_network=debug,info"
     }
@@ -181,7 +168,10 @@
     "cmd": "cargo run -- run ./guest/rust/packages/games/tictactoe"
   },
   "fog": {
-    "cmd": "cargo run -- run --release ./guest/rust/examples/rendering/fog"
+    "cmd": "cargo run -- run --release ./guest/rust/examples/rendering/fog --clean-build"
+  },
+  "run text": {
+    "cmd": "cargo run -- run --release ./guest/rust/examples/ui/text --clean-build"
   },
   "skinmesh": {
     "cmd": "cargo run -- run ./guest/rust/examples/basics/skinmesh"
@@ -244,21 +234,24 @@
     }
   },
   "open-browser": {
-    "cmd": "cargo run -p campfire --features openssl -- web open-browser"
+    "cmd": "cargo cf web open-browser"
   },
-  "build-web": {
+  "build web": {
     "cmd": "cargo cf web build"
   },
-  "check-web": {
+  "build web release": {
+    "cmd": "cargo cf web build --profile=release"
+  },
+  "check web": {
     "cmd": "cargo cf web check"
   },
-  "serve-web": {
+  "serve web": {
     "cmd": "cargo cf web serve",
     "env": {
       "RUST_LOG": "info"
     }
   },
-  "serve-web-release": {
+  "serve web release": {
     "cmd": "cargo cf web serve --profile=release",
     "env": {
       "RUST_LOG": "info"

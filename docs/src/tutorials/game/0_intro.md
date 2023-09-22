@@ -1,0 +1,15 @@
+# Tutorial: Building a game from scratch
+
+In this tutorial, we will write a simple shooting game from scratch, and in the process, we will show you the basic features of the engine, providing resources such as documentation, reference, examples, games, etc. Hopefully this will give you a good idea of how to use Ambient to make your own game.
+
+## Prerequisites
+
+You need to install Ambient first of all: see the documentation on [how to install](../../user/installing.md).
+
+If you are new to Rust, you can learn the basics of the language on [rust-lang.org](https://www.rust-lang.org/learn).
+
+> Tip: If you prefer other methods for installation, see [here](../../reference/advanced_installing.md).
+
+It's also recommended to setup your IDE for a better Ambient dev experience (see [here](../../user/setting_up_ide.html)).
+
+## [ ⇾ Chapter 1: Creating a project](./1_package.md)

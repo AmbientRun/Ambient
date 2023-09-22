@@ -24,24 +24,19 @@ pub fn main() {
 
 #[element_component]
 fn Hud(hooks: &mut Hooks) -> Element {
-    let vehicle_id = use_entity_component(hooks, player::get_local(), pc::vehicle_ref()).0;
+    let vehicle_id = use_entity_component(hooks, player::get_local(), pc::vehicle_ref());
     vehicle_id.map(VehicleHud::el).unwrap_or_default()
 }
 
 #[element_component]
 fn VehicleHud(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
-    let health = use_entity_component(hooks, vehicle_id, vc::health())
-        .0
-        .unwrap_or_default();
+    let health = use_entity_component(hooks, vehicle_id, vc::health()).unwrap_or_default();
 
     let max_health =
         use_entity_component(hooks, vehicle_id, vdc::general::components::max_health())
-            .0
             .unwrap_or_default();
 
-    let speed = use_entity_component(hooks, vehicle_id, vcc::speed_kph())
-        .0
-        .unwrap_or_default();
+    let speed = use_entity_component(hooks, vehicle_id, vcc::speed_kph()).unwrap_or_default();
 
     let health_color = vec3(0.86, 0.08, 0.24)
         .lerp(vec3(0.54, 0.72, 0.00), health / max_health)

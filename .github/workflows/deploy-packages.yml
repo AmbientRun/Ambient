@@ -17,6 +17,8 @@ env:
 jobs:
   deploy-packages:
     runs-on: ubuntu-22.04
+    env:
+      EXAMPLES_ASSETS_HOST: ${{ secrets.EXAMPLES_ASSETS_HOST }}
     steps:
       - name: Free up disk space
         run: |
@@ -72,7 +74,9 @@ jobs:
           # switch back to the main branch version
           version_majminpat=$(echo ${tag} | sed -E -e 's/^v([0-9]+\.[0-9]+\.[0-9]+).*$/\1/')
           version=${version_majminpat}-dev
-          cargo cf release update-version ${version}
+          # We do not update the Ambient versions of the packages to ensure that the nightly that they were deployed with
+          # remains active + accurate
+          cargo cf release update-version ${version} --no-package-ambient-version-update
           git commit -a -m "Revert version back to ${version}"
 
           git push --set-upstream origin ${branch}

@@ -19,11 +19,6 @@ struct VertexOutput {
     @location(7) inv_local_to_world_3: vec4<f32>,
 }
 
-fn get_entity_primitive_mesh(loc: vec2<u32>, index: u32) -> u32 {
-    var meshes = get_entity_gpu_primitives_mesh(loc);
-    return bitcast<u32>(meshes[index >> 2u][index & 3u]);
-}
-
 @vertex
 fn vs_main(in: VertexInput) -> VertexOutput {
     let primitive = primitives.data[in.instance_index];
@@ -73,10 +68,7 @@ fn decal(out: ptr<function, Decal>, in: VertexOutput) -> bool {
         in.inv_local_to_world_3,
     );
     let local_position = project_point(inv_local_to_world, world_position);
-    if local_position.x < -0.5
-    || local_position.x > 0.5
-    || local_position.y < -0.5
-    || local_position.y > 0.5 {
+    if local_position.x < -0.5 || local_position.x > 0.5 || local_position.y < -0.5 || local_position.y > 0.5 {
         return false;
     }
     let texcoord = vec2(local_position.xy + 0.5);

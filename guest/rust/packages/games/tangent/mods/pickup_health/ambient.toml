@@ -3,10 +3,11 @@ id = "tangent_pickup_health"
 name = "Tangent Pickup: Health"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
+ambient_version = "0.3.0-nightly-2023-09-22"
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
-kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio" }
+tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
+kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio" , deployment = "4i7bOwWXNKFddCEHdNRC8f" }
 
 [components]
 is_health_pickup = { type = "Empty", name = "Is Health Pickup", description = "This entity is a health pickup." }

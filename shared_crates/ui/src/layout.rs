@@ -14,7 +14,7 @@ use ambient_guest_bridge::core::{
     hierarchy::components::children,
     transform::components::{local_to_parent, local_to_world, translation},
 };
-use glam::{vec2, vec3, Mat4, Vec2, Vec3};
+use glam::{vec2, vec3, Mat4, Vec2, Vec3, Vec3Swizzles};
 use itertools::Itertools;
 
 pub use ambient_guest_bridge::core::layout::{
@@ -229,6 +229,61 @@ pub fn MeasureAbsolutePosition(
         }
     });
     inner.on_spawned(move |_, id, _| set_id(Some(id)))
+}
+
+/// Sets the `translation` of `inner` to offset its size in the selected axes.
+/// Note that you will have to use another mechanism to move the inner element as a result.
+///
+/// Consider using layout centering where possible.
+#[element_component]
+pub fn LayoutFreeCenter(
+    hooks: &mut Hooks,
+    /// The element to center. Must have the corresponding size component(s) set (`width`, `height`).
+    inner: Element,
+    /// Whether or not to center on the X axis.
+    center_x: bool,
+    /// Whether or not to center on the Y axis.
+    center_y: bool,
+) -> Element {
+    #[derive(Default, Clone, PartialEq, Debug)]
+    struct State {
+        width: f32,
+        height: f32,
+        scale: Vec2,
+    }
+
+    let (id, set_id) = use_state(hooks, None);
+    let (current, set_current) = use_state(hooks, State::default());
+
+    let mut offset = Vec3::ZERO;
+    if center_x {
+        offset.x -= (current.width / 2.0) * current.scale.x;
+    }
+    if center_y {
+        offset.y -= (current.height / 2.0) * current.scale.y;
+    }
+
+    use_frame(hooks, move |world| {
+        if let Some(id) = id {
+            let width = world.get(id, width()).unwrap_or(0.);
+            let height = world.get(id, height()).unwrap_or(0.);
+            let ltw = world.get(id, local_to_world()).unwrap_or_default();
+            let (scale, _, _) = ltw.to_scale_rotation_translation();
+
+            let state = State {
+                width,
+                height,
+                scale: scale.xy(),
+            };
+
+            if current != state {
+                set_current(state);
+            }
+        }
+    });
+    inner
+        .on_spawned(move |_, id, _| set_id(Some(id)))
+        .with(translation(), offset)
 }
 
 #[element_component]

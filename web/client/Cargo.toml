@@ -1,7 +1,7 @@
 [package]
 name = "ambient_web"
 readme = "../README.md"
-version = { workspace = true }
+version.workspace = true
 edition = "2021"
 description = "Web client for ambient"
 license = "MIT OR Apache-2.0"
@@ -14,44 +14,48 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 
-ambient_app = { workspace = true }
-ambient_audio = { workspace = true }
-ambient_cameras = { workspace = true }
-ambient_client_shared = { workspace = true }
-ambient_core = { workspace = true }
-ambient_debugger = { workspace = true }
-ambient_ecs = { workspace = true }
-ambient_ecs_editor = { workspace = true }
-ambient_element = { workspace = true }
-ambient_layout = { workspace = true }
-ambient_native_std = { workspace = true }
-ambient_network = { workspace = true }
-ambient_package_semantic_native = { workspace = true }
-ambient_primitives = { workspace = true }
-ambient_renderer = { workspace = true }
-ambient_rpc = { workspace = true }
-ambient_sys = { workspace = true }
-ambient_ui_native = { workspace = true }
-ambient_wasm = { workspace = true }
-ambient_water = { workspace = true }
-ambient_world_audio = { workspace = true }
+ambient_app.workspace = true
+ambient_audio.workspace = true
+ambient_cameras.workspace = true
+ambient_client_shared.workspace = true
+ambient_core.workspace = true
+ambient_prefab.workspace = true
+ambient_debugger.workspace = true
+ambient_ecs.workspace = true
+ambient_ecs_editor.workspace = true
+ambient_element.workspace = true
+ambient_layout.workspace = true
+ambient_native_std.workspace = true
+ambient_network.workspace = true
+ambient_package_semantic_native.workspace = true
+ambient_primitives.workspace = true
+ambient_renderer.workspace = true
+ambient_rpc.workspace = true
+ambient_sys.workspace = true
+ambient_ui_native.workspace = true
+ambient_wasm.workspace = true
+ambient_water.workspace = true
+ambient_decals.workspace = true
+ambient_world_audio.workspace = true
 cpal = { version = "0.14", features = ["wasm-bindgen"]}
-
-url = { workspace = true }
-anyhow = { workspace = true }
-glam = { workspace = true }
+flume.workspace = true
+serde.workspace = true
+url.workspace = true
+anyhow.workspace = true
+glam.workspace = true
 
 # Web specific
-wasm-bindgen = { workspace = true }
-wasm-bindgen-futures = { workspace = true }
-tracing-subscriber = { workspace = true }
-tracing-web = { workspace = true }
-time = { workspace = true }
-chrono = { workspace = true }
+wasm-bindgen.workspace = true
+wasm-bindgen-futures.workspace = true
+serde-wasm-bindgen.workspace = true
+tracing-subscriber.workspace = true
+tracing-web.workspace = true
+time.workspace = true
+chrono.workspace = true
 
-getrandom = { workspace = true }
-web-sys = { workspace = true }
+getrandom.workspace = true
+web-sys.workspace = true
 
-futures = { workspace = true }
-tracing = { workspace = true }
-js-sys = { workspace = true }
+futures.workspace = true
+tracing.workspace = true
+js-sys.workspace = true

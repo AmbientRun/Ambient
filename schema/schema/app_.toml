@@ -4,6 +4,7 @@ name = "App"
 description = "High-level state relevant to the application (including the in-development Editor)."
 content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
+ambient_version = "0.3.0-nightly-2023-09-22"
 
 [components.cursor_position]
 type = "Vec2"
@@ -59,7 +60,8 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "String"
 name = "Name"
 description = "A human-friendly name for this entity."
-attributes = ["Debuggable", "Networked", "Store"]
+# name is MaybeResource as it can be used as part of the resources entity of a prefab
+attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]
 
 [components.description]
 type = "String"

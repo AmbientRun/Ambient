@@ -20,9 +20,7 @@ pub fn main() {
 
 #[element_component]
 pub fn App(hooks: &mut Hooks) -> Element {
-    let has_class = use_entity_component(hooks, player::get_local(), pc::vehicle_class())
-        .0
-        .is_some();
+    let has_class = use_entity_component(hooks, player::get_local(), pc::vehicle_class()).is_some();
 
     let (toggle, set_toggle) = use_state(hooks, false);
     use_keyboard_input(hooks, {
@@ -50,8 +48,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 pub fn ClassSelection(hooks: &mut Hooks, hide: Cb<dyn Fn() + Send + Sync>) -> Element {
-    let (player_class_id, _) =
-        use_entity_component(hooks, player::get_local(), pc::vehicle_class());
+    let player_class_id = use_entity_component(hooks, player::get_local(), pc::vehicle_class());
 
     let mut classes = use_query(hooks, VehicleClass::as_query());
     classes.sort_by_key(|(_, c)| c.name.clone());

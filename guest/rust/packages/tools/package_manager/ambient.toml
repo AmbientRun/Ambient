@@ -3,6 +3,7 @@ id = "package_manager"
 name = "Package Manager"
 version = "0.0.1"
 content = { type = "Tool" }
+ambient_version = "0.3.0-nightly-2023-09-22"
 
 [components.mod_manager_for]
 name = "Mod Manager For"
@@ -53,4 +54,4 @@ packages = { container_type = "Vec", element_type = "String" }
 error = { container_type = "Option", element_type = "String" }
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor", deployment = "6vgY61Phll4WEX0IfQQmQl" }
+editor_schema = { path = "../../schemas/editor", deployment = "3cmjOxOWCME7Hxi9OPpczk" }

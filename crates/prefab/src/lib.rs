@@ -60,6 +60,7 @@ pub fn systems() -> SystemGroup {
 
 #[derive(Debug, Clone)]
 pub struct PrefabFromUrl(pub AssetUrl);
+
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<World>, AssetError>> for PrefabFromUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<World>, AssetError> {
@@ -73,7 +74,7 @@ impl AsyncAssetKey<Result<Arc<World>, AssetError>> for PrefabFromUrl {
         let DeserWorldWithWarnings {
             mut world,
             warnings,
-        } = tokio::task::block_in_place(|| serde_json::from_slice(&data))
+        } = ambient_sys::task::block_in_place(|| serde_json::from_slice(&data))
             .with_context(|| format!("Failed to deserialize object2 from URL {obj_url}"))?;
         warnings.log_warnings();
         for (_id, (url,), _) in query_mut((model_from_url(),), ()).iter(&mut world, None) {
@@ -83,6 +84,7 @@ impl AsyncAssetKey<Result<Arc<World>, AssetError>> for PrefabFromUrl {
                 .context("Failed to resolve model URL")?
                 .into();
         }
+        #[cfg(not(target_os = "unknown"))]
         for (_id, (def,), _) in
             query_mut((ambient_physics::collider::collider(),), ()).iter(&mut world, None)
         {

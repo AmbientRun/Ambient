@@ -29,16 +29,20 @@ fn main() -> anyhow::Result<()> {
 
     let runtime = rt.handle();
     let assets = AssetCache::new(runtime.clone());
-    let settings = SettingsKey.get(&assets);
+    let _settings = SettingsKey.get(&assets);
 
     // _guard and _handle need to be kept around for the lifetime of the application
-    let _guard;
-    let _handle;
-    if settings.general.sentry.enabled {
-        let sentry_dsn = settings.general.sentry.dsn;
+    let _guard: sentry::ClientInitGuard;
+    let _handle: Result<sentry_rust_minidump::ClientHandle, sentry_rust_minidump::Error>;
+    #[cfg(feature = "production")]
+    if _settings.general.sentry.enabled {
+        let sentry_dsn = _settings.general.sentry.dsn;
         _guard = init_sentry(&sentry_dsn);
         _handle = sentry_rust_minidump::init(&_guard);
-        log::debug!("Initialized Sentry with DSN: {:?}", sentry_dsn);
+        match _handle {
+            Ok(_) => log::debug!("Initialized Sentry with DSN: {:?}", sentry_dsn),
+            Err(err) => log::warn!("Failed to initialize Sentry: {:?}", err),
+        }
     }
 
     PhysicsKey.get(&assets); // Load physics
@@ -341,6 +345,7 @@ fn setup_logging() -> anyhow::Result<()> {
     }
 }
 
+#[cfg(feature = "production")]
 fn init_sentry(sentry_dsn: &String) -> sentry::ClientInitGuard {
     std::env::set_var("RUST_BACKTRACE", "1"); // This is needed for anyhow errors captured by sentry to get backtraces
 

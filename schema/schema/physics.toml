@@ -4,6 +4,7 @@ name = "Physics"
 description = "Physics functionality and state."
 content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
+ambient_version = "0.3.0-nightly-2023-09-22"
 
 [components.angular_velocity]
 type = "Vec3"
@@ -175,7 +176,9 @@ attributes = ["Debuggable", "Networked"]
 
 [concepts.CharacterController]
 name = "Character Controller"
-description = "A capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule."
+description = """A capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.
+
+**Note**: The character controller is not affected by gravity; you will have to manually simulate gravity by moving the character down in accordance with a vertical velocity you maintain. See the `character_movement` package for an example."""
 
 [concepts.CharacterController.components.required]
 character_controller_height = { suggested = 2.0 }

@@ -3,13 +3,14 @@ id = "o0j4qyxwhcf9vukzslsvhrkj2sv5mf4x"
 name = "Tangent Class: Tank"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
+ambient_version = "0.3.0-nightly-2023-09-22"
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "50R0JirqrBg4FxIBO7JMMd" }
+tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
 
-gun_laser = { path = "../gun_laser" }
+gun_laser = { path = "../gun_laser" , deployment = "5B4RovhibVaZsxrVcXMjf0" }
 
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit" , deployment = "5McYMEZazOLUekgEOxccrj" }
 
 [components]
 is_tank = { type = "Empty", name = "Is Tank", description = "Marks this entity as a tank.", attributes = [

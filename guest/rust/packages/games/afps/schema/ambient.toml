@@ -5,7 +5,7 @@ version = "0.0.1"
 content = { type = "Asset", schema = true }
 
 [dependencies]
-unit_schema = { path = "../../../schemas/unit", deployment = "14uOQxEDv2XDy5PUjUfIg" }
+unit_schema = { path = "../../../schemas/unit", deployment = "23Br3CXehPb9wboVb2Fv5h" }
 
 [components]
 player_model_ref = { type = "EntityId", description = "The player's whole body model id.", attributes = [

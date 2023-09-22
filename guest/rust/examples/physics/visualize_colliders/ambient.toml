@@ -1,0 +1,9 @@
+[package]
+id = "g11no9dcflmdb2qi7m2x7qimdzvv7bhe"
+name = "visualize_colliders"
+version = "0.0.1"
+content = { type = "Playable" }
+ambient_version = "0.3.0-nightly-2023-09-22"
+
+[dependencies]
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "6l5txhA9WYKUam15TwGnHl" }

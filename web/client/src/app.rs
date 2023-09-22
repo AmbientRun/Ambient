@@ -3,19 +3,19 @@ use ambient_cameras::UICamera;
 use ambient_client_shared::{game_view::GameView, player};
 use ambient_ecs::{Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_native_std::friendly_id;
 use ambient_network::{server::RpcArgs, web::client::GameClientView};
 use ambient_rpc::RpcRegistry;
-use ambient_ui_native::{cb, Dock};
+use ambient_ui_native::cb;
 use std::collections::HashMap;
 
 #[element_component]
-pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {
+pub fn MainApp(_hooks: &mut Hooks, server_url: String, fail_on_version_mismatch: bool) -> Element {
     tracing::info!("Connecting to {server_url:?}");
 
     GameClientView {
         url: server_url,
-        user_id: friendly_id(),
+        user_id: ambient_client_shared::util::random_username(),
+        fail_on_version_mismatch,
         systems_and_resources: cb(|| {
             let mut resources = Entity::new();
 
@@ -48,7 +48,7 @@ pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {
             }))
         }),
         create_rpc_registry: cb(create_server_rpc_registry),
-        inner: Dock::el(vec![GameView { show_debug: false }.el()]),
+        inner: GameView { show_debug: false }.el(),
     }
     .el()
 }
@@ -58,12 +58,13 @@ fn systems() -> SystemGroup {
     SystemGroup::new(
         "client",
         vec![
-            // Box::new(ambient_prefab::systems()),
+            Box::new(ambient_prefab::systems()),
             // Box::new(ambient_decals::client_systems()),
             Box::new(ambient_primitives::systems()),
             // Box::new(ambient_sky::systems()),
             // Box::new(ambient_water::systems()),
             // Box::new(ambient_physics::client_systems()),
+            // Box::new(ambient_gizmos::client_systems()),
             Box::new(wasm::systems()),
             Box::new(player::systems_final()),
         ],

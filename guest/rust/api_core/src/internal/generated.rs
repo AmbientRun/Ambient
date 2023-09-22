@@ -205,7 +205,7 @@ mod raw {
                 }
                 static NAME: Lazy<Component<String>> =
                     Lazy::new(|| __internal_get_component("ambient_core::app::name"));
-                #[doc = "**Name**: A human-friendly name for this entity.\n\n*Attributes*: Debuggable, Networked, Store"]
+                #[doc = "**Name**: A human-friendly name for this entity.\n\n*Attributes*: Debuggable, Networked, Store, MaybeResource"]
                 pub fn name() -> Component<String> {
                     *NAME
                 }
@@ -3274,7 +3274,7 @@ mod raw {
                     global::serde::{self, Deserialize, Serialize},
                     prelude::*,
                 };
-                #[doc = "**Character Controller**: A capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule."]
+                #[doc = "**Character Controller**: A capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n**Note**: The character controller is not affected by gravity; you will have to manually simulate gravity by moving the character down in accordance with a vertical velocity you maintain. See the `character_movement` package for an example."]
                 #[derive(Clone, Debug, Serialize, Deserialize)]
                 #[serde(crate = "self::serde")]
                 pub struct CharacterController {
