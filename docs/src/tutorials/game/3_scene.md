@@ -20,8 +20,10 @@ for _ in 0..30 {
 }
 ```
 
-> A `cube_collider` is one of the basic physics primitives. [Read more about physics here](../../reference/physics.md),
+> In depth: A `cube_collider` is one of the basic physics primitives. [Read more about physics here](../../reference/physics.md),
 > or try the [physics example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics).
+
+> Challenge: `Entity::spawn` will return an `EntityId`. Try using [`set_component`](https://docs.rs/ambient_api/0.2.1/ambient_api/entity/fn.set_component.html) to set the `rotation` of the cubes.
 
 It should look something like this:
 
