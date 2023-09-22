@@ -38,8 +38,7 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
         hooks,
         packages::this::entity(),
         packages::this::components::mod_manager_for(),
-    )
-    .0;
+    );
 
     let title = if mod_manager_for.is_some() {
         "Mod Manager".to_string()

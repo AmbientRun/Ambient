@@ -159,9 +159,8 @@ pub fn main() {
 
 #[element_component]
 pub fn App(hooks: &mut Hooks) -> Element {
-    let in_editor = use_entity_component(hooks, player::get_local(), in_editor())
-        .0
-        .unwrap_or_default();
+    let in_editor =
+        use_entity_component(hooks, player::get_local(), in_editor()).unwrap_or_default();
 
     use_keyboard_input(hooks, move |_, keycode, modifiers, pressed| {
         if modifiers == ModifiersState::empty() && keycode == Some(VirtualKeyCode::F5) && !pressed {
@@ -232,8 +231,8 @@ fn MenuBar(_hooks: &mut Hooks, menu_bar_items: HashSet<(EntityId, String)>) -> E
 #[element_component]
 fn MouseoverDisplay(hooks: &mut Hooks) -> Element {
     let player_id = player::get_local();
-    let (mouseover_position, _) = use_entity_component(hooks, player_id, mouseover_position());
-    let (camera_id, _) = use_entity_component(hooks, player_id, editor_camera());
+    let mouseover_position = use_entity_component(hooks, player_id, mouseover_position());
+    let camera_id = use_entity_component(hooks, player_id, editor_camera());
 
     let Some(mouseover_position) = mouseover_position else {
         return Element::new();
@@ -253,8 +252,8 @@ fn MouseoverDisplay(hooks: &mut Hooks) -> Element {
 #[element_component]
 fn SelectedDisplay(hooks: &mut Hooks) -> Element {
     let player_id = player::get_local();
-    let (selected_entity, _) = use_entity_component(hooks, player_id, selected_entity());
-    let (camera_id, _) = use_entity_component(hooks, player_id, editor_camera());
+    let selected_entity = use_entity_component(hooks, player_id, selected_entity());
+    let camera_id = use_entity_component(hooks, player_id, editor_camera());
 
     // TODO: is there a better way to force this element to re-render every frame?
     let rerender = use_rerender_signal(hooks);

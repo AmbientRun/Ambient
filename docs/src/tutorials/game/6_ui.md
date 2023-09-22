@@ -9,7 +9,7 @@ Add the following to `client.rs`:
 ```rust
 #[element_component]
 fn PlayerPosition(hooks: &mut Hooks) -> Element {
-    let (pos, _) = use_entity_component(hooks, player::get_local(), translation());
+    let pos = use_entity_component(hooks, player::get_local(), translation());
     Text::el(format!("Player position: {}", pos.unwrap_or_default()))
 }
 ```

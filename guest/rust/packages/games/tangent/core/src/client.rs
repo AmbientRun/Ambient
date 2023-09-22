@@ -213,7 +213,7 @@ fn handle_explosions() {
 
 #[element_component]
 fn CoreUI(_hooks: &mut Hooks) -> Element {
-    let vehicle_id = use_entity_component(_hooks, player::get_local(), pc::vehicle_ref()).0;
+    let vehicle_id = use_entity_component(_hooks, player::get_local(), pc::vehicle_ref());
 
     if let Some(vehicle_id) = vehicle_id {
         Crosshair::el(vehicle_id)
@@ -226,7 +226,6 @@ fn CoreUI(_hooks: &mut Hooks) -> Element {
 fn Crosshair(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
     let input_aim_direction =
         use_entity_component(hooks, player::get_local(), pc::input_aim_direction())
-            .0
             .unwrap_or_default();
 
     let Some(active_camera_id) = camera::get_active(None) else {
