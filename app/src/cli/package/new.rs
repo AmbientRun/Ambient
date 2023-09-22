@@ -1,11 +1,11 @@
 use std::path::Path;
 
-use ambient_native_std::ambient_version;
+use ambient_native_std::{ambient_version, asset_cache::AssetCache};
 use anyhow::Context;
 use clap::{Parser, ValueEnum};
 use convert_case::{Case, Casing};
 
-use super::PackageArgs;
+use super::{build, PackageArgs};
 
 #[derive(Parser, Clone, Debug)]
 /// Create a new Ambient package
@@ -39,7 +39,7 @@ pub enum RustTemplate {
     Quad,
 }
 
-pub(crate) fn handle(args: &New) -> anyhow::Result<()> {
+pub(crate) async fn handle(args: &New, assets: &AssetCache) -> anyhow::Result<()> {
     let package_path = args.package.package_path()?;
 
     let Some(package_path) = &package_path.fs_path else {
@@ -150,7 +150,13 @@ pub(crate) fn handle(args: &New) -> anyhow::Result<()> {
         std::fs::write(&path, contents).with_context(|| format!("Failed to create {path:?}"))?;
     }
 
-    log::info!("Package \"{name}\" created at {package_path:?}");
+    log::info!("Package \"{name}\" created; doing first build");
+
+    // Build the new package to ensure that the user can use it immediately, and to have the proc-macro
+    // ready for rust-analyzer to use
+    build::handle_inner(&args.package, &assets, false).await?;
+
+    log::info!("Package \"{name}\" built successfully - ready to go at {package_path:?}");
 
     Ok(())
 }

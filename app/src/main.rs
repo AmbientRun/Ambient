@@ -75,7 +75,9 @@ fn main() -> anyhow::Result<()> {
     match &cli.command {
         // package commands
         Commands::Package { package } => cli::package::handle(package, &rt, assets),
-        Commands::New(args) => cli::package::new::handle(args).context("Failed to create package"),
+        Commands::New(args) => rt
+            .block_on(cli::package::new::handle(args, &assets))
+            .context("Failed to create package"),
         Commands::Build(build) => rt.block_on(async {
             cli::package::build::handle(build, &assets, use_release_build)
                 .await
