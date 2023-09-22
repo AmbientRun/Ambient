@@ -43,7 +43,7 @@ pub async fn main() {
         .with(plane_collider(), ())
         .with(dynamic(), false)
         .with(scale(), Vec3::ONE * 4000.)
-        .with(color(), Vec4::ONE)
+        .with(color(), vec4(0.93, 0.75, 0.83, 1.0))
         .spawn();
 
     // Spawn spawnpoints
@@ -68,12 +68,12 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
     const CUBE_MAX_SIZE: Vec3 = vec3(7., 8., 30.);
     const FADE_DISTANCE: f32 = 2.;
 
-    let colors = [
+    let bright_colors = [vec4(0.5921569, 0.78039217, 0.8509804, 1.0)];
+
+    let accent_colors = [
         vec4(0.15686275, 0.44313726, 0.9764706, 1.0),
         vec4(0.8392157, 0.35686275, 0.26666668, 1.0),
         vec4(0.77254903, 0.8156863, 0.25882354, 1.0),
-        vec4(0.5921569, 0.78039217, 0.8509804, 1.0),
-        vec4(0.7176471, 0.20392157, 0.5372549, 1.0),
         vec4(0.7490196, 0.12941177, 0.14901961, 1.0),
     ];
 
@@ -104,13 +104,26 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
 
         let position_offset = vec3(0.0, 0.0, -CUBE_MIN_SIZE.z * 0.6);
 
+        let accent_sample = rng.gen::<f32>();
+        let color = if accent_sample > 0.3 {
+            let accent_idx = match (position.x > 0.0, position.y > 0.0) {
+                (true, true) => 3,
+                (true, false) => 2,
+                (false, true) => 1,
+                (false, false) => 0,
+            };
+            accent_colors[accent_idx]
+        } else {
+            *bright_colors.choose(rng).unwrap()
+        };
+
         make_cube(
             position.extend(0.0) + position_offset,
             size,
             false,
             // TODO: In the words of another Ambient example:
             // This is a bit... odd
-            *colors.choose(rng).unwrap() * 2.2,
+            color * 2.2,
             rng,
         );
         grid.add(position, radius);

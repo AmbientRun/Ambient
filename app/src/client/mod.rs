@@ -26,7 +26,6 @@ use ambient_settings::SettingsKey;
 use ambient_sys::time::Instant;
 use ambient_ui_native::{Dock, WindowSized};
 use glam::uvec2;
-use rand::seq::SliceRandom;
 
 use crate::{
     cli::{GoldenImageCommand, RunCli},
@@ -389,59 +388,5 @@ fn systems() -> SystemGroup {
             Box::new(wasm::systems()),
             Box::new(ambient_client_shared::player::systems_final()),
         ],
-    )
-}
-
-fn random_username() -> String {
-    const ADJECTIVES: &[&str] = &[
-        "Quirky",
-        "Sneaky",
-        "Witty",
-        "Curious",
-        "Grumpy",
-        "Silly",
-        "Mischievous",
-        "Goofy",
-        "Hasty",
-        "Awkward",
-        "Zany",
-        "Peculiar",
-        "Whimsical",
-        "Bumbling",
-        "Absurd",
-        "Oddball",
-        "Clumsy",
-        "Nutty",
-        "Haphazard",
-        "Eccentric",
-    ];
-
-    const ANIMALS: &[&str] = &[
-        "Penguin",
-        "Platypus",
-        "Lemur",
-        "Armadillo",
-        "Sloth",
-        "Ostrich",
-        "Tapir",
-        "Narwhal",
-        "Chameleon",
-        "Aardvark",
-        "Quokka",
-        "Wombat",
-        "Kakapo",
-        "Capybara",
-        "Mandrill",
-        "Axolotl",
-        "Blobfish",
-        "Echidna",
-        "Wallaby",
-    ];
-
-    let mut rng = rand::thread_rng();
-    format!(
-        "{}{}",
-        ADJECTIVES.choose(&mut rng).unwrap(),
-        ANIMALS.choose(&mut rng).unwrap()
     )
 }

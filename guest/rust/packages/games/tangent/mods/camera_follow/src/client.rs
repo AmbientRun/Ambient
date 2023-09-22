@@ -14,7 +14,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::tangent_schema::{player::components as pc, vehicle::client::components as vcc};
+use packages::tangent_schema::player::components as pc;
 
 const CAMERA_OFFSET: Vec3 = vec3(0.5, 1.8, 0.6);
 
