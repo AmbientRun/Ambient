@@ -8,7 +8,7 @@ use ambient_api::{
             cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky,
             sun,
         },
-        transform::components::{lookat_target, rotation, scale, translation},
+        transform::components::{rotation, scale, translation},
     },
     prelude::*,
 };
@@ -17,8 +17,8 @@ use packages::orbit_camera::{
     concepts::{OrbitCamera, OrbitCameraOptional},
 };
 use packages::this::components::{
-    fog_b, fog_g, fog_r, orbit_pitch, orbit_target_height, orbit_turn, orbit_zoom, sun_b, sun_g,
-    sun_r, sun_rotx, sun_roty, sun_rotz, turntable,
+    fog_b, fog_g, fog_r, orbit_turn, orbit_zoom, sun_b, sun_g, sun_r, sun_rotx, sun_roty, sun_rotz,
+    turntable,
 };
 
 #[main]
@@ -26,7 +26,7 @@ fn main() {
     let orbitcamera = OrbitCamera {
         is_orbit_camera: (),
         optional: OrbitCameraOptional {
-            camera_angle: Some(vec2(0.0, 0.0)),
+            camera_angle: Some(vec2(0.0, 15f32.to_radians())),
             lookat_target: Some(vec3(0., 0., 2.)),
             ..default()
         },
@@ -35,21 +35,17 @@ fn main() {
     .with(fog(), ())
     .with(orbit_turn(), 0.0)
     .with(orbit_zoom(), 0.0)
-    .with(orbit_pitch(), 0.40)
-    .with(orbit_target_height(), 0.02)
     .spawn();
 
-    query((
-        orbit_turn(),
-        orbit_zoom(),
-        orbit_pitch(),
-        orbit_target_height(),
-    ))
-    .each_frame(|orbitcams| {
-        for (cam, (turn, zoom, pitch, targetheight)) in orbitcams {
-            entity::add_component(cam, camera_angle(), vec2(6.28 * turn, pitch * 2. - 1.));
+    query(orbit_turn()).each_frame(|orbitcams| {
+        for (cam, turn) in orbitcams {
+            entity::add_component(cam, camera_angle(), vec2(6.28 * turn, 15f32.to_radians()));
+        }
+    });
+
+    query(orbit_zoom()).each_frame(|orbitcams| {
+        for (cam, zoom) in orbitcams {
             entity::add_component(cam, camera_distance(), (20f32).powf(1. + zoom) * 0.25);
-            entity::add_component(cam, lookat_target(), vec3(0., 0., 100.0 * targetheight));
         }
     });
 
@@ -186,14 +182,6 @@ fn App(hooks: &mut Hooks, sun: EntityId, statue: EntityId, ocam: EntityId) -> El
         FlowRow::el([
             Text::el("Orbit camera dist: "),
             Slider::new_for_entity_component(hooks, ocam, orbit_zoom()).el(),
-        ]),
-        FlowRow::el([
-            Text::el("Orbit camera pitch: "),
-            Slider::new_for_entity_component(hooks, ocam, orbit_pitch()).el(),
-        ]),
-        FlowRow::el([
-            Text::el("Orbit camera target height: "),
-            Slider::new_for_entity_component(hooks, ocam, orbit_target_height()).el(),
         ]),
         FlowRow::el([
             Text::el("Model turn: "),
