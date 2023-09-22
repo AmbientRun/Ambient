@@ -33,10 +33,10 @@ fn main() {
     }
     .make()
     .with(fog(), ())
-    .with(orbit_turn(), 0.0)
-    .with(orbit_zoom(), 0.0)
-    .with(orbit_pitch(), 0.40)
-    .with(orbit_target_height(), 0.02)
+    .with(orbit_turn(), 0.49)
+    .with(orbit_zoom(), 0.87)
+    .with(orbit_pitch(), 0.34)
+    .with(orbit_target_height(), 0.23)
     .spawn();
 
     query((
@@ -65,20 +65,20 @@ fn main() {
         .with(main_scene(), ())
         .with(light_diffuse(), Vec3::ONE)
         .with(fog_color(), vec3(1., 1., 1.))
-        .with(fog_density(), 0.1)
-        .with(fog_height_falloff(), 0.01)
-        .with(amb_r(), 0.)
-        .with(amb_g(), 0.)
-        .with(amb_b(), 0.)
-        .with(fog_r(), 1.)
-        .with(fog_g(), 1.)
-        .with(fog_b(), 1.)
+        .with(fog_density(), 0.05)
+        .with(fog_height_falloff(), 0.1)
+        .with(amb_r(), 0.50)
+        .with(amb_g(), 0.50)
+        .with(amb_b(), 0.50)
+        .with(fog_r(), 0.64)
+        .with(fog_g(), 0.64)
+        .with(fog_b(), 0.64)
         .with(sun_r(), 1.)
         .with(sun_g(), 1.)
         .with(sun_b(), 1.)
-        .with(sun_rotx(), 0.)
-        .with(sun_roty(), 1.)
-        .with(sun_rotz(), 0.)
+        .with(sun_rotx(), 0.02)
+        .with(sun_roty(), 0.74)
+        .with(sun_rotz(), 0.86)
         .spawn();
 
     query((amb_r(), amb_g(), amb_b())).each_frame(|suns| {
