@@ -16,4 +16,8 @@ The steps are as follows, where the commands are for your terminal of choice:
 
 The native client of Ambient currently runs on Windows, Linux and macOS.
 
+> **Warning**: If you are using Command Prompt on Windows, ensure that you do not have an `ambient` executable in the directory that you are running the command from.
+>
+> This is because Command Prompt will prefer the local executable over the one installed by Cargo.
+
 Next, try the [tutorial](../tutorials/game/0_intro.md) to create your first Ambient game!

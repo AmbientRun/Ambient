@@ -1,6 +1,6 @@
 # Chapter 1: Creating a package
 
-To create a new Ambient project, type the following in your terminal of choice:
+To create a new Ambient project, type the following in your terminal of choice after having [installed Ambient](../../user/installing.md):
 
 ```sh
 ambient new my_project
