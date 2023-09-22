@@ -97,8 +97,18 @@ import("ambient_web")
         }
 
         const urlParams = new URLSearchParams(window.location.search);
-        const package_id = urlParams.get('package');
-        const url = package_id && `https://api.ambient.run/servers/ensure-running?package_id=${package_id}` || "https://127.0.0.1:9000";
+        const packageId = urlParams.get('package');
+        const context = urlParams.get('context');
+
+        let params = new URLSearchParams();
+        if (packageId) {
+            params.set('package_id', packageId);
+        }
+        if (context) {
+            params.set('context', context);
+        }
+
+        const url = params.size != 0 && `https://api.ambient.run/servers/ensure-running?${params.toString()}` || "https://127.0.0.1:9000";
 
         console.log(`Connecting to ${url}`)
 
