@@ -1,5 +1,5 @@
 [package]
-id = "hzjutdjnny0qt96y0dwb7rng89vf2dl5"
+id = "per6j2iqhj3jz4da3fqr75jcj2kqjooo"
 name = "Nameplates"
 version = "0.0.1"
 content = { type = "Asset", code = true }
