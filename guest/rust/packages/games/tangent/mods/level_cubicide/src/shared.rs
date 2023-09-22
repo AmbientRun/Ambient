@@ -3,6 +3,8 @@ use std::sync::OnceLock;
 
 use ambient_api::{once_cell::sync::Lazy, prelude::*};
 
+pub const LEVEL_RADIUS: f32 = 200.;
+
 pub fn circle_point(radians: f32, radius: f32) -> Vec2 {
     vec2(radians.cos(), radians.sin()) * radius
 }
@@ -10,14 +12,16 @@ pub fn circle_point(radians: f32, radius: f32) -> Vec2 {
 pub fn spawnpoints() -> &'static [(Vec3, f32, Vec3)] {
     const INCLUDE_CORNERS: bool = true;
     static VALUE: Lazy<Vec<(Vec3, f32, Vec3)>> = Lazy::new(|| {
-        let mut output = vec![(vec3(0.0, 0.0, 0.0), 10.0, vec3(1.0, 1.0, 1.0))];
+        let mut output = vec![(vec3(0.0, 0.0, 0.0), 10.0, Vec3::ONE)];
+
+        let corner_radius = LEVEL_RADIUS * 0.8;
 
         if INCLUDE_CORNERS {
             output.extend_from_slice(&[
-                (vec3(0.0, -100.0, 0.0), 10.0, vec3(1.0, 0.0, 0.0)),
-                (vec3(0.0, 100.0, 0.0), 10.0, vec3(0.0, 1.0, 0.0)),
-                (vec3(-100.0, 0.0, 0.0), 10.0, vec3(0.0, 0.0, 1.0)),
-                (vec3(100.0, 0.0, 0.0), 10.0, vec3(1.0, 1.0, 0.0)),
+                (vec3(0.0, -corner_radius, 0.0), 10.0, Vec3::ONE),
+                (vec3(0.0, corner_radius, 0.0), 10.0, Vec3::ONE),
+                (vec3(-corner_radius, 0.0, 0.0), 10.0, Vec3::ONE),
+                (vec3(corner_radius, 0.0, 0.0), 10.0, Vec3::ONE),
             ]);
         }
 
@@ -37,11 +41,11 @@ fn sdf() -> &'static Sdf {
         let spawnpoints = spawnpoints();
         match spawnpoints {
             [] => Sdf::circle(20.0),
-            [(p, r, _)] => Sdf::translate(Sdf::circle(r + 10.), p.xy()),
+            [(p, r, _)] => Sdf::translate(Sdf::circle(r + 5.), p.xy()),
             other => {
                 let spawnpoints_sdf = other
                     .iter()
-                    .map(|(p, r, _)| Sdf::translate(Sdf::circle(r + 10.), p.xy()))
+                    .map(|(p, r, _)| Sdf::translate(Sdf::circle(r + 5.), p.xy()))
                     .reduce(Sdf::union)
                     .unwrap();
 
