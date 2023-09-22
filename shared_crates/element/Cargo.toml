@@ -9,14 +9,14 @@ rust-version = { workspace = true }
 version = { workspace = true }
 
 [dependencies]
-ambient_guest_bridge = { path = "../guest_bridge", default-features = false , version = "0.3.0-nightly-2023-09-22" }
-ambient_element_component = { path = "../element_component" , version = "0.3.0-nightly-2023-09-22" }
-ambient_cb = { path = "../../libs/cb" , version = "0.3.0-nightly-2023-09-22" }
-ambient_friendly_id = { path = "../../libs/friendly_id" , version = "0.3.0-nightly-2023-09-22" }
+ambient_guest_bridge = { path = "../guest_bridge", default-features = false , version = "0.3.0-dev" }
+ambient_element_component = { path = "../element_component" , version = "0.3.0-dev" }
+ambient_cb = { path = "../../libs/cb" , version = "0.3.0-dev" }
+ambient_friendly_id = { path = "../../libs/friendly_id" , version = "0.3.0-dev" }
 
 # Only on native
-ambient_sys = { path = "../../crates/sys", optional = true , version = "0.3.0-nightly-2023-09-22" }
-ambient_core = { path = "../../crates/core", optional = true , version = "0.3.0-nightly-2023-09-22" }
+ambient_sys = { path = "../../crates/sys", optional = true , version = "0.3.0-dev" }
+ambient_core = { path = "../../crates/core", optional = true , version = "0.3.0-dev" }
 tokio = { workspace = true, optional = true }
 
 parking_lot = { workspace = true }
