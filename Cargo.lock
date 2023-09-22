@@ -155,7 +155,6 @@ dependencies = [
  "image_hasher",
  "log",
  "parking_lot",
- "rand 0.8.5",
  "rpassword",
  "rustls-pemfile",
  "rusty-hook",
@@ -429,6 +428,7 @@ dependencies = [
  "ambient_shared_types",
  "ambient_ui_native",
  "glam 0.24.1",
+ "rand 0.8.5",
 ]
 
 [[package]]

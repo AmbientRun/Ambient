@@ -26,7 +26,6 @@ use ambient_settings::SettingsKey;
 use ambient_sys::time::Instant;
 use ambient_ui_native::{Dock, WindowSized};
 use glam::uvec2;
-use rand::seq::SliceRandom;
 
 use crate::{
     cli::{GoldenImageCommand, RunCli},
@@ -49,7 +48,7 @@ pub fn run(
     let user_id = match run.user_id.clone().or(settings.general.user_id) {
         Some(user_id) => user_id,
         None => {
-            let user_id = random_username();
+            let user_id = ambient_client_shared::util::random_username();
             log::warn!(
                 "No `user_id` found in settings, using random username: {:?}",
                 user_id
@@ -389,59 +388,5 @@ fn systems() -> SystemGroup {
             Box::new(wasm::systems()),
             Box::new(ambient_client_shared::player::systems_final()),
         ],
-    )
-}
-
-fn random_username() -> String {
-    const ADJECTIVES: &[&str] = &[
-        "Quirky",
-        "Sneaky",
-        "Witty",
-        "Curious",
-        "Grumpy",
-        "Silly",
-        "Mischievous",
-        "Goofy",
-        "Hasty",
-        "Awkward",
-        "Zany",
-        "Peculiar",
-        "Whimsical",
-        "Bumbling",
-        "Absurd",
-        "Oddball",
-        "Clumsy",
-        "Nutty",
-        "Haphazard",
-        "Eccentric",
-    ];
-
-    const ANIMALS: &[&str] = &[
-        "Penguin",
-        "Platypus",
-        "Lemur",
-        "Armadillo",
-        "Sloth",
-        "Ostrich",
-        "Tapir",
-        "Narwhal",
-        "Chameleon",
-        "Aardvark",
-        "Quokka",
-        "Wombat",
-        "Kakapo",
-        "Capybara",
-        "Mandrill",
-        "Axolotl",
-        "Blobfish",
-        "Echidna",
-        "Wallaby",
-    ];
-
-    let mut rng = rand::thread_rng();
-    format!(
-        "{}{}",
-        ADJECTIVES.choose(&mut rng).unwrap(),
-        ANIMALS.choose(&mut rng).unwrap()
     )
 }
