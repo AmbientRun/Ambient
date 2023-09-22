@@ -31,7 +31,7 @@ Entity::new()
             ..Default::default()
         },
     })
-    .with(model_from_url(), assets::url("AntiqueCamera.glb"))
+    .with(model_from_url(), packages::this::assets::url("AntiqueCamera.glb"))
     .spawn();
 ```
 
