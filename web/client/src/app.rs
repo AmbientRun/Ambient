@@ -6,16 +6,17 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_native_std::friendly_id;
 use ambient_network::{server::RpcArgs, web::client::GameClientView};
 use ambient_rpc::RpcRegistry;
-use ambient_ui_native::{cb};
+use ambient_ui_native::cb;
 use std::collections::HashMap;
 
 #[element_component]
-pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {
+pub fn MainApp(_hooks: &mut Hooks, server_url: String, fail_on_version_mismatch: bool) -> Element {
     tracing::info!("Connecting to {server_url:?}");
 
     GameClientView {
         url: server_url,
         user_id: friendly_id(),
+        fail_on_version_mismatch,
         systems_and_resources: cb(|| {
             let mut resources = Entity::new();
 
