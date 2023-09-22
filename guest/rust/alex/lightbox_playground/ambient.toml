@@ -1,0 +1,30 @@
+[package]
+id = "lightbox_playground"
+name = "Lightbox Playground"
+description = "Use sliders to alter fog settings & camera angles"
+version = "0.0.1"
+type = "Game"
+content = { type = "Playable", example = true }
+ambient_version = "0.3.0-nightly-2023-09-22"
+
+[dependencies]
+orbit_camera = { path = "../../packages/std/orbit_camera" , deployment = "6l5txhA9WYKUam15TwGnHl" }
+
+[components]
+amb_r = { type = "F32" }
+amb_g = { type = "F32" }
+amb_b = { type = "F32" }
+sun_r = { type = "F32" }
+sun_g = { type = "F32" }
+sun_b = { type = "F32" }
+sun_rotx = { type = "F32" }
+sun_roty = { type = "F32" }
+sun_rotz = { type = "F32" }
+fog_r = { type = "F32" }
+fog_g = { type = "F32" }
+fog_b = { type = "F32" }
+orbit_turn = { type = "F32" }
+orbit_zoom = { type = "F32" }
+orbit_target_height = { type = "F32" }
+orbit_pitch = { type = "F32" }
+turntable = { type = "F32" }
