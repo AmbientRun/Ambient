@@ -1,5 +1,3 @@
-const atmo_radius = 6471e3;
-const planet_radius = 6371e3;
 
 struct Node {
     density: f32,
@@ -54,116 +52,158 @@ fn node_ray(node: Node, origin: vec3<f32>, dir: vec3<f32>) -> f32 {
     return 1.0;
 }
 
-fn scattering(depth: f32, pos: vec3<f32>, direction: vec3<f32>) -> vec3<f32> {
-    let orig = pos + vec3<f32>(0.0, 0.0, planet_radius);
-    // Get atmosphere intersection
-    let ray_l = sphere_intersect(orig, direction, atmo_radius);
+const RAY_BETA: vec3f = vec3f(5.5e-6, 13.0e-6, 22.4e-6);
+const MIE_BETA: vec3f = vec3f(21e-6, 21e-6, 21e-6);
+const MIE_SCATTER: f32 = 0.7;
 
-    let dist = ray_l.y - ray_l.x;
+const AMBIENT_BETA: vec3f = vec3f(0.0, 0.0, 0.0);
+const ABSORPTION_BETA: vec3f = vec3f(2.04e-5, 4.97e-5, 1.95e-6);
 
-    let dir = normalize(direction);
+const RAY_HEIGHT: f32 = 8e3;
+const MIE_HEIGHT: f32 = 1.2e3;
 
-    let steps = 16;
-    let step_len = dist / f32(steps);
+const ABSORPTION_HEIGHT: f32 = 30e3;
+const ABSORPTION_FALLOFF: f32 = 4e3;
 
-    let light_dir = global_params.sun_direction.xyz;
-    let u = dot(dir, light_dir);
-    let g = 0.76;
-    let uu = u * u;
-    let gg = g * g;
+const ATMO_RADIUS = 6471e3;
+const PLANET_RADIUS = 6371e3;
 
-    let beta_ray = vec3<f32>(5.5e-6, 13.0e-6, 22.4e-6);
-    // let beta_ray = vec3<f32>(3.8e-6, 5.5e-7, 16.1e-6);
-    let beta_mie = vec3<f32>(21e-6);
+const STEPS_I: u32 = 16u;
+const STEPS_L: u32 = 4u;
 
-    let allow_mie = depth >= ray_l.y || depth > global_params.camera_far * 0.9;
-    // How likely is light from the sun to scatter to us
-    let phase_ray = max(3.0 / (16.0 * PI) * (1.0 + uu), 0.);
-    // 3 / (16pi) * cos2()
-    var phase_mie = max((3.0 / (8.0 * PI)) * ((1.0 - gg) * (1.0 + uu)) / ((2.0 + gg) * pow(1.0 + gg - 2.0 * g * u, 1.5)), 0.);
-    phase_mie = phase_mie * f32(allow_mie);
 
-    // Accumulation of scattered light
-    var total_ray = vec3<f32>(0.);
-    var total_mie = vec3<f32>(0.);
+/// `ray_start` relative to the planet's center
+fn scatter(ray_start: vec3f, ray_dir: vec3f, max_dist: f32) -> vec3f {
+    /// Ray sphere intersection for the viewing ray
+    var a = dot(ray_dir, ray_dir);
+    var b = 2.0 * dot(ray_dir, ray_start);
+    var c = dot(ray_start, ray_start) - (ATMO_RADIUS * ATMO_RADIUS);
+    var d = (b * b) - 4.0 * a * c;
 
-    // Optical depth
-    var rayleigh = 0.0;
-    var mie = 0.0;
-
-    let Hr = 8e3;
-    let Hm = 1.2e3;
-
-    var pos_i = 0.0;
-
-    // Primary ray
-    for (var i = 0; i < steps; i = i + 1) {
-        let p = orig + dir * pos_i;
-
-        let height = length(p) - planet_radius;
-        let hr = exp(-height / Hr) * step_len;
-        let hm = exp(-height / Hm) * step_len;
-
-        // Accumulate density along viewing ray
-        rayleigh = rayleigh + max(hr, 0.);
-        mie = mie + max(hm, 0.);
-
-        // Distance from ray sample to the atmosphere towards the sun
-        let ray = sphere_intersect(p, light_dir, atmo_radius);
-
-        // if (dist < 0.0) { return vec3<f32>(1., 0., 0.); }
-
-        // Cast ray into the sun
-        let sun_steps = 8;
-        let sun_len = ray.y / f32(sun_steps);
-        // Density along light ray
-        var l_r = 0.0;
-        var l_m = 0.0;
-
-        var pos_l = ray_l.x;
-
-        for (var j = 0; j < sun_steps; j = j + 1) {
-            // let l_pos = p + light_dir * f32(j) * sun_len;
-            let p = p + light_dir * pos_l;
-
-            let height_l = length(p) - planet_radius;
-            let h_ray = exp(-height_l / Hr) * sun_len;
-            let h_mie = exp(-height_l / Hm) * sun_len;
-
-            l_r = l_r + max(h_ray, 0.);
-            l_m = l_m + max(h_mie, 0.);
-
-            pos_l = pos_l + sun_len;
-        }
-
-        // Add the results of light integration by using the accumulated density
-        // and beta coeff
-        let tau = beta_ray * (rayleigh + l_r) + beta_mie * (mie + l_m);
-
-        let attn = exp(-tau);
-
-        total_ray = total_ray + attn * hr;
-        total_mie = total_mie + attn * hm;
-
-        // Travel forward
-        pos_i = pos_i + step_len;
+    if d < 0.0 {
+        return vec3f(1.0, 0.0, 0.0);
     }
 
-    let result = (total_ray * beta_ray * phase_ray + total_mie * beta_mie * phase_mie) * 20.0;
+    var ray_len = vec2f(max((-b - sqrt(d)) / (2.0 * a), 0.0), min((-b + sqrt(d)) / (2.0 * a), max_dist));
 
-    return result;
+    if ray_len.x > ray_len.y {
+        return vec3f(0.0, 1.0, 0.0);
+    }
+
+    /// Disable mi if the atmosphere is occluded
+    let allow_mie = max_dist > ray_len.y;
+
+    // Clamp to the atmosphere or occlusion
+    ray_len = vec2(max(ray_len.x, 0.0), min(ray_len.y, max_dist));
+
+    let step_size_i = (ray_len.y - ray_len.x) / f32(STEPS_I);
+    var ray_pos_i = ray_len.x + step_size_i * 0.5;
+
+    var total_ray = vec3f(0.0);
+    var total_mie = vec3f(0.0);
+
+    // Integrated air volume along the ray
+    var opt_i = vec3(0.0);
+
+    let scale_height = vec2f(RAY_HEIGHT, MIE_HEIGHT);
+
+    let light_dir = global_params.sun_direction.xyz;
+    // Mie scattering is proportional to the angle between the ray and the sun
+    let mu = dot(ray_dir, light_dir);
+    let mumu = mu * mu;
+
+
+    let gg = MIE_SCATTER * MIE_SCATTER;
+
+    let phase_ray = 3.0 / (16.0 * PI) * (1.0 + mumu);
+
+    let phase_mie = f32(allow_mie) * 3.0 / (25.1327412287) * ((1.0 - gg) * (mumu + 1.0)) / (pow(1.0 + gg - 2.0 * mu * MIE_SCATTER, 1.5) * (2.0 + gg));
+
+    for (var i = 0u; i < STEPS_I; i++) {
+        let pos_i = ray_start + ray_dir * ray_pos_i;
+        let height_i = length(pos_i) - PLANET_RADIUS;
+
+        // Calculate the amount of air inside this step based on height based air density falloff
+        var density = vec3f(exp(-height_i / scale_height), 0.0);
+
+        let denom = (ABSORPTION_HEIGHT - height_i) / ABSORPTION_FALLOFF;
+        density.z = (1.0 / (denom * denom + 1.0)) * density.x;
+
+        density *= step_size_i;
+
+        opt_i += density;
+
+        // ray-sphere intersect toward the sun from the current primary ray position to the edge of the atmosphere (space)
+        a = dot(light_dir, light_dir);
+        b = 2.0 * dot(light_dir, pos_i);
+        c = dot(pos_i, pos_i) - (ATMO_RADIUS * ATMO_RADIUS);
+        d = (b * b) - 4.0 * a * c;
+
+        let step_size_l: f32 = (-b + sqrt(d)) / (2.0 * a * f32(STEPS_L));
+
+        var ray_pos_l = step_size_l * 0.5;
+
+        var opt_l = vec3(0.0);
+
+        for (var l = 0u; l < STEPS_L; l++) {
+            let pos_l = pos_i + light_dir * ray_pos_l;
+
+            let height_l = length(pos_l) - PLANET_RADIUS;
+
+            // Do the same for the secondary ray
+            var density_l = vec3f(exp(-height_l / scale_height), 0.0);
+            var denom = (ABSORPTION_HEIGHT - height_l) / ABSORPTION_FALLOFF;
+            density_l.z = (1.0 / (denom * denom + 1.0)) * density_l.x;
+
+            density_l *= step_size_l;
+
+            opt_l += density_l;
+
+            ray_pos_l += step_size_l;
+        }
+
+        let attn = exp(-RAY_BETA * (opt_i.x + opt_l.x) - MIE_BETA * (opt_i.y + opt_l.y) - ABSORPTION_BETA * (opt_i.z + opt_l.z));
+
+        // accumulate the scattered light (how much will be scattered towards the camera)
+        total_ray += density.x * attn;
+        total_mie += density.y * attn;
+
+        // and increment the position on this ray
+        ray_pos_i += step_size_i;
+    }
+
+    let opacity: vec3f = exp(-(MIE_BETA * opt_i.y + RAY_BETA * opt_i.x + ABSORPTION_BETA * opt_i.z));
+
+    let res_ray: vec3f = vec3f(phase_ray * RAY_BETA * total_ray);
+    let res_mie: vec3f = vec3f(phase_mie * MIE_BETA * total_mie);
+    let res_amb: vec3f = vec3f(opt_i.x * AMBIENT_BETA);
+
+    let res = res_ray + res_mie + res_amb;
+    return res;
 }
 
+const SUN_ANG_INNER: f32 = 0.9996;
+const SUN_ANG_OUTER: f32 = 0.999;
+
+/// Depth ranges from 0..=1
 fn get_sky_color(
     depth: f32,
     origin: vec3<f32>,
     forward: vec3<f32>,
 ) -> vec3<f32> {
+
     let spot_rad = 1.0 - dot(forward, global_params.sun_direction.xyz);
     let d = 2000.0;
-    let g = 3.0;
-    let spot = exp(-pow(d * spot_rad, g));
+    let spot = exp(-pow(d * spot_rad, 3.0));
 
+    var max_dist = depth * global_params.camera_far;
 
-    return scattering(depth, origin, forward) + global_params.sun_diffuse.rgb * spot;
+    if depth > 0.9 {
+        max_dist = 1e12;
+    }
+
+    let color = (scatter(origin + vec3<f32>(0.0, 0.0, PLANET_RADIUS), normalize(forward), max_dist) + spot) * 40.0 * global_params.sun_diffuse.rgb;
+
+    let exposure = 0.5;
+    return 1.0 - exp(-color * exposure);
 }

@@ -37,6 +37,7 @@ ambient_wasm.workspace = true
 ambient_water.workspace = true
 ambient_decals.workspace = true
 ambient_world_audio.workspace = true
+ambient_sky.workspace = true
 cpal = { version = "0.14", features = ["wasm-bindgen"]}
 flume.workspace = true
 serde.workspace = true
