@@ -86,6 +86,13 @@ pub struct ClientCli {
     #[clap(short, long)]
     pub user_id: Option<String>,
 
+    /// Allows connecting to servers with a mismatched version. Only available in non-production builds.
+    ///
+    /// DO NOT USE THIS UNLESS YOU KNOW WHAT YOU ARE DOING.
+    #[cfg(not(feature = "production"))]
+    #[arg(long)]
+    pub dev_allow_version_mismatch: bool,
+
     /// Specify a trusted certificate authority
     #[arg(long)]
     pub ca: Option<PathBuf>,

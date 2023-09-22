@@ -582,10 +582,9 @@ pub fn use_query<
 }
 
 #[cfg(feature = "guest")]
-/// Use a component from an entity in the ECS, and update its state if required.
+/// Use a component from an entity in the ECS.
 ///
 /// If the entity or component does not exist, this will return `None`.
-/// The setter will add the component if it does not exist.
 pub fn use_entity_component<
     T: ambient_guest_bridge::api::ecs::SupportedValue
         + Clone
@@ -598,7 +597,7 @@ pub fn use_entity_component<
     hooks: &mut Hooks,
     id: EntityId,
     component: ambient_guest_bridge::api::ecs::Component<T>,
-) -> (Option<T>, Setter<T>) {
+) -> Option<T> {
     use ambient_guest_bridge::api::prelude::{change_query, entity};
 
     let refresh = use_rerender_signal(hooks);
@@ -612,10 +611,7 @@ pub fn use_entity_component<
         }
     });
 
-    (
-        entity::get_component(id, component),
-        cb(move |value| entity::add_component(id, component, value)),
-    )
+    entity::get_component(id, component)
 }
 
 #[cfg(feature = "guest")]
@@ -637,7 +633,10 @@ pub fn use_resource<
 ) -> (Option<T>, Setter<T>) {
     use ambient_guest_bridge::api::entity;
 
-    use_entity_component(hooks, entity::resources(), component)
+    (
+        use_entity_component(hooks, entity::resources(), component),
+        cb(move |value| entity::add_component(entity::resources(), component, value)),
+    )
 }
 
 #[cfg(feature = "guest")]

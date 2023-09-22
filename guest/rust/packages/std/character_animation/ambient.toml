@@ -3,10 +3,10 @@ id = "d3y3wbexrclipsykysumem3fthkudwx2"
 name = "Character animation"
 version = "0.0.1"
 content = { type = "Asset", animations = true, code = true }
-ambient_version = "0.3.0-nightly-2023-09-20"
+ambient_version = "0.3.0-nightly-2023-09-22"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "23Br3CXehPb9wboVb2Fv5h" }
+unit_schema = { path = "../../schemas/unit", deployment = "4WJYw13Z2XCD6EFsnFPreh" }
 
 [components]
 basic_character_animations = { type = "EntityId", description = "Apply animations to the model this points to. Parameters such as health etc. is read from the entity this component is attached to.", attributes = [

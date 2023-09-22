@@ -37,7 +37,10 @@ fn main() -> anyhow::Result<()> {
         let sentry_dsn = _settings.general.sentry.dsn;
         _guard = init_sentry(&sentry_dsn);
         _handle = sentry_rust_minidump::init(&_guard);
-        log::debug!("Initialized Sentry with DSN: {:?}", sentry_dsn);
+        match _handle {
+            Ok(_) => log::debug!("Initialized Sentry with DSN: {:?}", sentry_dsn),
+            Err(err) => log::warn!("Failed to initialize Sentry: {:?}", err),
+        }
     }
 
     PhysicsKey.get(&assets); // Load physics

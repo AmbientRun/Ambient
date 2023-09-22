@@ -13,12 +13,16 @@ use ambient_element::{
     consume_context, element_component, use_effect, use_ref_with, use_spawn, use_state,
     use_state_with, Element, ElementComponentExt, Group, Hooks,
 };
-use ambient_native_std::{asset_cache::AssetCache, cb, friendly_id};
+use ambient_native_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    cb,
+};
 use ambient_network::{
     client::{client_network_stats, GameClientRenderTarget},
     hooks::use_remote_resource,
     native::client::{ClientView, ResolvedAddr},
 };
+use ambient_settings::SettingsKey;
 use ambient_sys::time::Instant;
 use ambient_ui_native::{Dock, WindowSized};
 use glam::uvec2;
@@ -50,11 +54,20 @@ pub fn run(
         None
     };
     let mixer = audio_stream.as_ref().map(|v| v.mixer().clone());
+    let settings = SettingsKey.get(&assets);
 
-    let user_id = args
-        .user_id
-        .clone()
-        .unwrap_or_else(|| format!("user_{}", friendly_id()));
+    let user_id = match args.user_id.clone().or(settings.general.user_id) {
+        Some(user_id) => user_id,
+        None => {
+            let user_id = ambient_client_shared::util::random_username();
+            log::warn!(
+                "No `user_id` found in settings, using random username: {:?}",
+                user_id
+            );
+            user_id
+        }
+    };
+
     let headless = if args.headless {
         Some(uvec2(600, 600))
     } else {
@@ -103,9 +116,16 @@ pub fn run(
 
     *app.world.resource_mut(window_title()) = "Ambient".to_string();
 
+    #[cfg(feature = "production")]
+    let fail_on_version_mismatch = true;
+
+    #[cfg(not(feature = "production"))]
+    let fail_on_version_mismatch = !args.dev_allow_version_mismatch;
+
     MainApp {
         server_addr,
         user_id,
+        fail_on_version_mismatch,
         show_debug: is_debug,
         golden_image_cmd: args.golden_image,
         golden_image_output_dir,
@@ -161,6 +181,7 @@ fn MainApp(
     server_addr: ResolvedAddr,
     golden_image_output_dir: Option<PathBuf>,
     user_id: String,
+    fail_on_version_mismatch: bool,
     show_debug: bool,
     golden_image_cmd: Option<GoldenImageCommand>,
     cert: Option<Vec<u8>>,
@@ -174,6 +195,7 @@ fn MainApp(
         WindowSized::el([ClientView {
             server_addr,
             user_id,
+            fail_on_version_mismatch,
             // NOTE: client.game_state is **locked** and accesible through game_state.
             //
             // This is to prevent another thread from updating using the client after connection but

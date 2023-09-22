@@ -45,6 +45,7 @@ pub struct GameClientView {
     /// The url to connect to
     pub url: String,
     pub user_id: String,
+    pub fail_on_version_mismatch: bool,
     pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, Entity) + Sync + Send>,
     /// Invoked when the game client is loaded
     ///
@@ -60,6 +61,7 @@ impl ElementComponent for GameClientView {
         let Self {
             url,
             user_id,
+            fail_on_version_mismatch,
             systems_and_resources,
             on_loaded,
             create_rpc_registry,
@@ -122,6 +124,7 @@ impl ElementComponent for GameClientView {
                     conn,
                     &assets,
                     user_id,
+                    fail_on_version_mismatch,
                     move |assets, user_id| {
                         let (systems, resources) = systems_and_resources();
 
@@ -253,6 +256,7 @@ async fn handle_connection(
     mut conn: Connection,
     assets: &AssetCache,
     user_id: String,
+    fail_on_version_mismatch: bool,
     mut on_loaded: impl FnMut(&AssetCache, &str) -> anyhow::Result<(SharedClientGameState, CleanupFunc)>,
     control_rx: flume::Receiver<Control>,
     proxy_rx: flume::Receiver<ProxyMessage>,
@@ -289,7 +293,7 @@ async fn handle_connection(
     while client.is_pending() {
         tracing::info!("Waiting for server to accept connection and send server info");
         if let Some(frame) = push_recv.next().await {
-            client.process_push(&assets, frame?)?;
+            client.process_push(&assets, fail_on_version_mismatch, frame?)?;
         }
     }
 
@@ -321,7 +325,7 @@ async fn handle_connection(
     while let ClientProtoState::Connected(connected) = &mut client {
         tokio::select! {
             Some(frame) = push_recv.next() => {
-                client.process_push(&assets, frame?)?;
+                client.process_push(&assets, fail_on_version_mismatch, frame?)?;
             }
 
             Some(message) = proxy_rx.next() => {

@@ -3,4 +3,4 @@ id = "xar372tfo2oswb4pkvx7h7o3rxi6tap6"
 name = "hide_cursor"
 version = "0.0.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-20"
+ambient_version = "0.3.0-nightly-2023-09-22"

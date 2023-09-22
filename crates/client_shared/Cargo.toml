@@ -19,3 +19,4 @@ ambient_debugger = { path = "../debugger/" , version = "0.3.0-dev" }
 ambient_ecs_editor = { path = "../ecs_editor/" , version = "0.3.0-dev" }
 
 glam = { workspace = true }
+rand = { workspace = true }

@@ -5,4 +5,4 @@ authors = ["Kenney"]
 description = "https://www.kenney.nl/assets/space-kit for Ambient. (Uploaded by Ambient, not Kenney.)"
 version = "0.0.1"
 content = { type = "Asset", models = true }
-ambient_version = "0.3.0-nightly-2023-09-20"
+ambient_version = "0.3.0-nightly-2023-09-22"

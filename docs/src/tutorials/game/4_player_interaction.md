@@ -17,10 +17,10 @@ Next, we'll add some code the `client.rs` (for the first time in this tutorial!)
 
 ```rust
 Frame::subscribe(move |_| {
-    let (input, _) = input::get_delta();
+    let input = input::get();
     if input.keys.contains(&KeyCode::Q) {
         let (camera, _) = query(active_camera()).build().evaluate().pop().unwrap();
-        let ray = camera::screen_position_to_world_ray(camera, input.mouse_position);
+        let ray = camera::clip_position_to_world_ray(camera, Vec2::ZERO);
 
         Paint {
             ray_origin: ray.origin,

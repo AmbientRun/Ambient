@@ -232,11 +232,7 @@ impl TransparentRenderer {
 
                 render_pass.draw_indexed(
                     metadata.index_offset..(metadata.index_offset + metadata.index_count),
-                    if self.config.settings.is_win32_web {
-                        metadata.base_offset as i32
-                    } else {
-                        0
-                    },
+                    0,
                     (i as u32)..((i + 1) as u32),
                 );
             }
