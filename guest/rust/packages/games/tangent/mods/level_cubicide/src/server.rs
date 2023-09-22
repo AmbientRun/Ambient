@@ -5,10 +5,7 @@ use ambient_api::{
         app::components::main_scene,
         physics::components::{cube_collider, dynamic, mass, physics_controlled, plane_collider},
         primitives::components::{cube, quad},
-        rendering::components::{
-            cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky,
-            sun,
-        },
+        rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun},
         transform::components::{rotation, scale, translation},
     },
     ecs::GeneralQuery,
@@ -16,13 +13,13 @@ use ambient_api::{
     prelude::*,
     rand,
 };
-use packages::tangent_schema::concepts::Spawnpoint;
-
-use crate::packages::pickup_health::{components::is_health_pickup, concepts::HealthPickup};
+use packages::{
+    pickup_health::{components::is_health_pickup, concepts::HealthPickup},
+    tangent_schema::concepts::Spawnpoint,
+};
 
 mod shared;
-
-const LEVEL_RADIUS: f32 = 125.;
+use shared::LEVEL_RADIUS;
 
 #[main]
 pub async fn main() {
@@ -30,15 +27,13 @@ pub async fn main() {
     Entity::new().with(sky(), ()).spawn();
 
     // Make sun
-    let sky_color = vec3(0.11, 0.20, 0.27);
     Entity::new()
         .with(sun(), 0.0)
-        .with(rotation(), Quat::from_rotation_y(10f32.to_radians()))
+        .with(rotation(), Quat::from_rotation_y(-45_f32.to_radians()))
         .with(main_scene(), ())
-        .with(light_diffuse(), sky_color * 2.)
-        .with(fog_color(), sky_color)
-        .with(fog_density(), 0.05)
-        .with(fog_height_falloff(), 0.05)
+        .with(light_diffuse(), Vec3::ONE)
+        .with(fog_density(), 0.)
+        .with(main_scene(), ())
         .spawn();
 
     // Make ground
@@ -48,7 +43,7 @@ pub async fn main() {
         .with(plane_collider(), ())
         .with(dynamic(), false)
         .with(scale(), Vec3::ONE * 4000.)
-        .with(color(), sky_color.extend(1.0))
+        .with(color(), vec4(0.93, 0.75, 0.83, 1.0))
         .spawn();
 
     // Spawn spawnpoints
@@ -68,10 +63,19 @@ pub async fn main() {
 }
 
 fn make_cubes(rng: &mut dyn rand::RngCore) {
-    const TARGET_CUBE_COUNT: usize = 1000;
-    const CUBE_MIN_SIZE: Vec3 = vec3(0.5, 0.5, 0.5);
-    const CUBE_MAX_SIZE: Vec3 = vec3(5., 6., 15.);
+    const TARGET_CUBE_COUNT: usize = 500;
+    const CUBE_MIN_SIZE: Vec3 = vec3(0.5, 0.5, 2.0);
+    const CUBE_MAX_SIZE: Vec3 = vec3(7., 8., 30.);
     const FADE_DISTANCE: f32 = 2.;
+
+    let bright_colors = [vec4(0.5921569, 0.78039217, 0.8509804, 1.0)];
+
+    let accent_colors = [
+        vec4(0.15686275, 0.44313726, 0.9764706, 1.0),
+        vec4(0.8392157, 0.35686275, 0.26666668, 1.0),
+        vec4(0.77254903, 0.8156863, 0.25882354, 1.0),
+        vec4(0.7490196, 0.12941177, 0.14901961, 1.0),
+    ];
 
     // Spawn cubes until we hit the limit
     let mut grid = Grid::default();
@@ -98,7 +102,30 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
             continue;
         }
 
-        make_cube(position, size, true, rng);
+        let position_offset = vec3(0.0, 0.0, -CUBE_MIN_SIZE.z * 0.6);
+
+        let accent_sample = rng.gen::<f32>();
+        let color = if accent_sample > 0.3 {
+            let accent_idx = match (position.x > 0.0, position.y > 0.0) {
+                (true, true) => 3,
+                (true, false) => 2,
+                (false, true) => 1,
+                (false, false) => 0,
+            };
+            accent_colors[accent_idx]
+        } else {
+            *bright_colors.choose(rng).unwrap()
+        };
+
+        make_cube(
+            position.extend(0.0) + position_offset,
+            size,
+            false,
+            // TODO: In the words of another Ambient example:
+            // This is a bit... odd
+            color * 2.2,
+            rng,
+        );
         grid.add(position, radius);
     }
 
@@ -109,7 +136,7 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
         let position = shared::circle_point(angle, radius);
 
         let size = vec3(1.5, 1.5, 10.) + rng.gen::<Vec3>() * vec3(1., 1., 20.);
-        make_cube(position, size, false, rng);
+        make_cube(position.extend(0.0), size, false, Vec4::ONE, rng);
     }
 }
 
@@ -123,7 +150,7 @@ fn handle_pickups(rng: &mut dyn rand::RngCore) {
 }
 
 fn make_pickups(rng: &mut dyn rand::RngCore) {
-    let pickup_count = shared::spawnpoints().len() * 2;
+    let pickup_count = shared::spawnpoints().len() * 4;
 
     static QUERY: Lazy<GeneralQuery<Component<Vec3>>> =
         Lazy::new(|| query(translation()).requires(is_health_pickup()).build());
@@ -162,22 +189,23 @@ fn make_pickups(rng: &mut dyn rand::RngCore) {
     }
 }
 
-fn make_cube(pos: Vec2, size: Vec3, dynamic: bool, rng: &mut dyn RngCore) -> EntityId {
+fn make_cube(pos: Vec3, size: Vec3, dynamic: bool, color: Vec4, rng: &mut dyn RngCore) -> EntityId {
     const MASS_MULTIPLIER: f32 = 10.;
 
     let volume = size.dot(Vec3::ONE);
+    let pitch_amplitude: f32 = if dynamic { 5. } else { 45. };
     Entity::new()
         .with(cube(), ())
         .with(cast_shadows(), ())
         // Properties
-        .with(translation(), vec3(pos.x, pos.y, size.z / 2.))
+        .with(translation(), pos + vec3(0.0, 0.0, size.z / 2.))
         .with(
             rotation(),
-            Quat::from_rotation_x((rng.gen::<f32>() - 0.5) * 5f32.to_radians())
+            Quat::from_rotation_x((rng.gen::<f32>() - 0.5) * pitch_amplitude.to_radians())
                 * Quat::from_rotation_z(rng.gen::<f32>() * TAU),
         )
         .with(scale(), size)
-        .with(color(), (rng.gen::<Vec3>() * 0.2).extend(1.))
+        .with(self::color(), color)
         // Physics
         .with(physics_controlled(), ())
         .with(cube_collider(), Vec3::ONE)

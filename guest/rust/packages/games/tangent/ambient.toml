@@ -8,18 +8,20 @@ ambient_version = "0.3.0-nightly-2023-09-22"
 [dependencies]
 tangent_core = { path = "core", deployment = "czUZv2AKa7SNwV1QsY0xN" }
 
-tangent_camera_follow = { path = "mods/camera_follow", enabled = true , deployment = "2JxkseUmoWsbkeUUhxeyIe" }
-tangent_camera_topdown = { path = "mods/camera_topdown", enabled = false , deployment = "NTKgM9HWcjFPzL815FZV3" }
+tangent_camera_follow = { path = "mods/camera_follow", enabled = true, deployment = "2JxkseUmoWsbkeUUhxeyIe" }
+tangent_camera_topdown = { path = "mods/camera_topdown", enabled = false, deployment = "NTKgM9HWcjFPzL815FZV3" }
 
-tangent_ui_holohud = { path = "mods/ui_holohud", enabled = true , deployment = "7XlsdxSQTCqX1TO3WaLBd5" }
-tangent_ui_class_selection = { path = "mods/ui_class_selection" , deployment = "3leakFoQjAfXCKAHecSJR4" }
+tangent_ui_holohud = { path = "mods/ui_holohud", enabled = true, deployment = "7XlsdxSQTCqX1TO3WaLBd5" }
+tangent_ui_class_selection = { path = "mods/ui_class_selection", deployment = "3leakFoQjAfXCKAHecSJR4" }
 
-tangent_pickup_health = { path = "mods/pickup_health" , deployment = "7lysU5KZdkYj2rpckumEbI" }
+tangent_pickup_health = { path = "mods/pickup_health", deployment = "7lysU5KZdkYj2rpckumEbI" }
 
-tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true , deployment = "6gKASHqnzjKmGRRhAZZ0ZT" }
+tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true, deployment = "6gKASHqnzjKmGRRhAZZ0ZT" }
 
-tangent_class_assault = { path = "mods/class_assault", enabled = true , deployment = "5hAKslk8qxZseAbWNlpOYk" }
-tangent_class_scout = { path = "mods/class_scout", enabled = true , deployment = "Nx3qEbJOrSaFBe8FnV2MB" }
-tangent_class_tank = { path = "mods/class_tank", enabled = true , deployment = "5ckkjUWLrZxN7RN0DuyXUV" }
+tangent_class_assault = { path = "mods/class_assault", enabled = true, deployment = "5hAKslk8qxZseAbWNlpOYk" }
+tangent_class_scout = { path = "mods/class_scout", enabled = true, deployment = "Nx3qEbJOrSaFBe8FnV2MB" }
+tangent_class_tank = { path = "mods/class_tank", enabled = true, deployment = "5ckkjUWLrZxN7RN0DuyXUV" }
 
 package_manager = { path = "../../tools/package_manager", deployment = "5LanfDGbkMRdk27Xo2Xtxf" }
+
+nameplates = { path = "../../std/nameplates" }

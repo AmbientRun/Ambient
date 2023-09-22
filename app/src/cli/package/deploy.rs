@@ -67,7 +67,7 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                 .api_token
                 .as_ref()
                 .with_context(|| format!(
-                    "No API token provided.\n\nYou can provide one with `--token` or by specifying `general.api_token` in {:?}.\n\nCreate your API token on the Ambient website: '{}'.",
+                    "No API token provided.\n\nYou can provide one with `--token` or by specifying `general.api_token` in {:?}.\n\nSign up for an account on the Ambient website, then go to your profile page to generate an API token: '{}'.",
                     Settings::path().unwrap_or_default(),
                     ambient_shared_types::urls::AMBIENT_WEB_APP_URL
                 ))?

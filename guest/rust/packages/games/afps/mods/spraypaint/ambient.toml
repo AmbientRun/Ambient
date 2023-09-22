@@ -16,3 +16,4 @@ source = "EntityId"
 [dependencies]
 afps_schema = { path = "../../schema", deployment = "7NBTASMOE1rultxb0ShMhi" }
 unit_schema = { path = "../../../../schemas/unit", deployment = "23Br3CXehPb9wboVb2Fv5h" }
+game_object = { path = "../../../../schemas/game_object" }

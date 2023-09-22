@@ -1,4 +1,4 @@
-use std::f32::consts::FRAC_PI_2;
+use std::f32::consts::{FRAC_PI_2, PI};
 
 use ambient_api::{
     core::{
@@ -55,12 +55,13 @@ pub fn main() {
         .with(sun(), 0.0)
         .with(rotation(), Quat::IDENTITY)
         .with(main_scene(), ())
-        .with(light_diffuse(), Vec3::ONE)
+        .with(light_diffuse(), vec3(1.0, 1.0, 1.0))
         .with(fog_density(), 0.)
         .spawn();
 
     Frame::subscribe(move |_| {
-        let rot = entity::get_component(sun, rotation()).unwrap();
-        entity::set_component(sun, rotation(), rot * Quat::from_rotation_y(0.01));
+        let time = game_time().as_secs_f32();
+        let rot = Quat::from_axis_angle(vec3(0.0, 1.0, 0.4).normalize(), (time * 0.1) + PI);
+        entity::set_component(sun, rotation(), rot);
     });
 }

@@ -6,6 +6,7 @@ content = { type = "Asset", animations = true, code = true }
 ambient_version = "0.3.0-nightly-2023-09-22"
 
 [dependencies]
+game_object = { path = "../../schemas/game_object" }
 unit_schema = { path = "../../schemas/unit", deployment = "4WJYw13Z2XCD6EFsnFPreh" }
 
 [components]

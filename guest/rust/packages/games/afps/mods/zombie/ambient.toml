@@ -26,3 +26,4 @@ id = "EntityId"
 [dependencies]
 character_animation = { path = "../../../../std/character_animation", deployment = "WX6pD23AximbtP3Q1hB3e" }
 unit_schema = { path = "../../../../schemas/unit", deployment = "23Br3CXehPb9wboVb2Fv5h" }
+game_object = { path = "../../../../schemas/game_object" }

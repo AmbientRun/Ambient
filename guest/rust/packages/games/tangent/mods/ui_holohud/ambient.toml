@@ -7,3 +7,4 @@ ambient_version = "0.3.0-nightly-2023-09-22"
 
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
+game_object = { path = "../../../../schemas/game_object" }

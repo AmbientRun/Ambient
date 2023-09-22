@@ -138,9 +138,11 @@ fn fs_forward_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let dir = normalize(in.world_position.xyz - global_params.camera_position.xyz);
 
     // let color = get_sky_color(in.uv, global_params.camera_position.xyz, dir, scene, planet);
-    let depth = (1. - textureSampleLevel(solids_screen_depth, default_sampler, in.uv, 0.)) * global_params.camera_far;
-    var color = get_sky_color(depth, global_params.camera_position.xyz, dir);
-    color = 1.0 - exp(-color);
+    // NOTE: textureSampleLevel is according to spec (texture_depth_2d, sampler, coord, i32/u32) and correct by Tint, but wgpu/naga uses (texture_depth_2d, sampler, coord, f32)
+    // See: <https://www.w3.org/TR/WGSL/#texturesamplelevel>
+    let depth: f32 = 1.0 - textureSample(solids_screen_depth, default_sampler, in.uv);
 
-    return vec4<f32>(apply_fog(color, global_params.camera_position.xyz, in.world_position.xyz), 1.0);
+    var color = get_sky_color(depth, global_params.camera_position.xyz, dir);
+
+    return vec4<f32>(color, 1.0);
 }
