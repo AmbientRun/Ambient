@@ -41,7 +41,7 @@ fn screen_space_reflections(world_position: vec3<f32>, screen_ray_dir: vec3<f32>
     }
     let sc = to_spherical_coordinates(reflected_dir);
     let tc = vec2<f32>(sc.z / (PI * 2.), sc.y / (PI * 1.));
-    let sky = get_sky_color(global_params.camera_far, world_position, reflected_dir).rgb;
+    let sky = get_sky_color(global_params.camera_far, world_position, reflected_dir);
     return sky;
 }
 
