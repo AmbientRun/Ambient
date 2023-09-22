@@ -11,7 +11,7 @@ Let's add some basic obstacles to your game. Add the following code:
 for _ in 0..30 {
     Entity::new()
         .with(cube(), ())
-        .with(cube_collider(), Vec3::ONE * 0.5)
+        .with(cube_collider(), Vec3::ONE)
         .with(
             translation(),
             (rand::random::<Vec2>() * 20.0 - 10.0).extend(1.),
