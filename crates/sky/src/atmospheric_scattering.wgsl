@@ -71,7 +71,6 @@ const PLANET_RADIUS = 6371e3;
 const STEPS_I: u32 = 16u;
 const STEPS_L: u32 = 4u;
 
-
 /// `ray_start` relative to the planet's center
 fn scatter(ray_start: vec3f, ray_dir: vec3f, max_dist: f32) -> vec3f {
     /// Ray sphere intersection for the viewing ray
@@ -81,13 +80,13 @@ fn scatter(ray_start: vec3f, ray_dir: vec3f, max_dist: f32) -> vec3f {
     var d = (b * b) - 4.0 * a * c;
 
     if d < 0.0 {
-        return vec3f(1.0, 0.0, 0.0);
+        return vec3f(0.0, 0.0, 0.0);
     }
 
     var ray_len = vec2f(max((-b - sqrt(d)) / (2.0 * a), 0.0), min((-b + sqrt(d)) / (2.0 * a), max_dist));
 
     if ray_len.x > ray_len.y {
-        return vec3f(0.0, 1.0, 0.0);
+        return vec3f(0.0, 0.0, 0.0);
     }
 
     /// Disable mi if the atmosphere is occluded
@@ -107,7 +106,7 @@ fn scatter(ray_start: vec3f, ray_dir: vec3f, max_dist: f32) -> vec3f {
 
     let scale_height = vec2f(RAY_HEIGHT, MIE_HEIGHT);
 
-    let light_dir = global_params.sun_direction.xyz;
+    let light_dir = normalize(global_params.sun_direction.xyz);
     // Mie scattering is proportional to the angle between the ray and the sun
     let mu = dot(ray_dir, light_dir);
     let mumu = mu * mu;
@@ -162,7 +161,7 @@ fn scatter(ray_start: vec3f, ray_dir: vec3f, max_dist: f32) -> vec3f {
             ray_pos_l += step_size_l;
         }
 
-        let attn = exp(-RAY_BETA * (opt_i.x + opt_l.x) - MIE_BETA * (opt_i.y + opt_l.y) - ABSORPTION_BETA * (opt_i.z + opt_l.z));
+        let attn: vec3f = exp(-RAY_BETA * (opt_i.x + opt_l.x) - MIE_BETA * (opt_i.y + opt_l.y) - ABSORPTION_BETA * (opt_i.z + opt_l.z));
 
         // accumulate the scattered light (how much will be scattered towards the camera)
         total_ray += density.x * attn;
@@ -172,7 +171,7 @@ fn scatter(ray_start: vec3f, ray_dir: vec3f, max_dist: f32) -> vec3f {
         ray_pos_i += step_size_i;
     }
 
-    let opacity: vec3f = exp(-(MIE_BETA * opt_i.y + RAY_BETA * opt_i.x + ABSORPTION_BETA * opt_i.z));
+    // let opacity: vec3f = exp(-(MIE_BETA * opt_i.y + RAY_BETA * opt_i.x + ABSORPTION_BETA * opt_i.z));
 
     let res_ray: vec3f = vec3f(phase_ray * RAY_BETA * total_ray);
     let res_mie: vec3f = vec3f(phase_mie * MIE_BETA * total_mie);
@@ -192,7 +191,7 @@ fn get_sky_color(
     forward: vec3<f32>,
 ) -> vec3<f32> {
 
-    let spot_rad = 1.0 - dot(forward, global_params.sun_direction.xyz);
+    let spot_rad = 1.0 - dot(forward, normalize(global_params.sun_direction.xyz));
     let d = 2000.0;
     let spot = exp(-pow(d * spot_rad, 3.0));
 
@@ -202,8 +201,7 @@ fn get_sky_color(
         max_dist = 1e12;
     }
 
-    let color = (scatter(origin + vec3<f32>(0.0, 0.0, PLANET_RADIUS), normalize(forward), max_dist) + spot) * 40.0 * global_params.sun_diffuse.rgb;
+    let color = (scatter(origin + vec3<f32>(0.0, 0.0, PLANET_RADIUS + 100.0), normalize(forward), max_dist) + spot) * 40.0 * global_params.sun_diffuse.rgb;
 
-    let exposure = 0.5;
-    return 1.0 - exp(-color * exposure);
+    return color;
 }
