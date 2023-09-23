@@ -11,16 +11,16 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs", version = "0.3.0-dev" }
-ambient_native_std = { path = "../native_std", version = "0.3.0-dev" }
-ambient_core = { path = "../core", version = "0.3.0-dev" }
-ambient_meshes = { path = "../meshes", version = "0.3.0-dev" }
-ambient_network = { path = "../network", version = "0.3.0-dev" }
-ambient_gizmos = { path = "../gizmos", version = "0.3.0-dev" }
-ambient_model = { path = "../model", version = "0.3.0-dev" }
-ambient_primitives = { path = "../primitives", version = "0.3.0-dev" }
+ambient_ecs = { path = "../ecs", version = "0.3.0-nightly-2023-09-23" }
+ambient_native_std = { path = "../native_std", version = "0.3.0-nightly-2023-09-23" }
+ambient_core = { path = "../core", version = "0.3.0-nightly-2023-09-23" }
+ambient_meshes = { path = "../meshes", version = "0.3.0-nightly-2023-09-23" }
+ambient_network = { path = "../network", version = "0.3.0-nightly-2023-09-23" }
+ambient_gizmos = { path = "../gizmos", version = "0.3.0-nightly-2023-09-23" }
+ambient_model = { path = "../model", version = "0.3.0-nightly-2023-09-23" }
+ambient_primitives = { path = "../primitives", version = "0.3.0-nightly-2023-09-23" }
 
-physxx = { path = "../../libs/physxx", version = "0.3.0-dev" }
+physxx = { path = "../../libs/physxx", version = "0.3.0-nightly-2023-09-23" }
 serde = { workspace = true }
 glam = { workspace = true }
 itertools = { workspace = true }
