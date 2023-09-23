@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use ambient_core::{
     delta_time,
-    transform::{local_to_world, rotation, scale, translation},
+    transform::{local_to_parent, local_to_world, rotation, scale, translation},
 };
 use ambient_ecs::{
     components, ensure_has_component, query, FnSystem, QueryState, Resource, SystemGroup,
@@ -103,8 +103,10 @@ pub fn sync_ecs_physics() -> SystemGroup {
     // Though they have rotation and translation those values may not update
     // the parents will and local_to_world.changed() will need to be updated
     let hiearchy_transform_qs = Arc::new(Mutex::new(QueryState::new()));
-    let hiearchy_transform_q = query(local_to_world().changed()).incl(physics_shape());
-    let hiearchy_transform_q2 = translation_rotation_q.query.clone();
+    let hiearchy_transform_q = query(local_to_world().changed())
+        .incl(physics_shape())
+        .incl(local_to_parent());
+    let hiearchy_transform_q2 = hiearchy_transform_q.query.clone();
 
     let translation_character_qs = Arc::new(Mutex::new(QueryState::new()));
     let translation_character_q =
