@@ -1,4 +1,3 @@
-
 [package]
 name = "ambient_ecs"
 version = { workspace = true }
@@ -16,6 +15,7 @@ ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
 ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.3.0-dev" }
 ambient_package_rt = { path = "../../shared_crates/package_rt" , version = "0.3.0-dev" }
 
+as-any = { workspace = true }
 itertools = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
@@ -26,7 +26,6 @@ paste = { workspace = true }
 atomic_refcell = { workspace = true }
 serde_json = { workspace = true }
 parking_lot = { workspace = true }
-downcast-rs = { workspace = true }
 once_cell = { workspace = true }
 anyhow = { workspace = true }
 bit-set = { workspace = true }
