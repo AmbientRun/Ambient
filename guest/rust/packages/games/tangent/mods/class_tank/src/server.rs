@@ -6,7 +6,7 @@ use ambient_api::{
 use packages::{
     gun_laser::concepts::{GunLaser, GunLaserOptional},
     tangent_schema::{
-        concepts::{VehicleClass, VehicleData},
+        concepts::{VehicleClass, VehicleDef},
         vehicle::components as vc,
     },
     this::components::is_tank,
@@ -32,10 +32,7 @@ pub fn main() {
             .to_string(),
         icon_url: packages::this::assets::url("icon.png"),
 
-        model_url: packages::kenney_space_kit::assets::url("craft_miner.glb/models/main.json"),
-        model_scale: 0.5,
-
-        data_ref: VehicleData {
+        def_ref: VehicleDef {
             density: 15.0,
             cube_collider: Vec3::new(0.6, 1.0, 0.2),
             max_health: 150.0,
@@ -63,6 +60,9 @@ pub fn main() {
             linear_strength: 0.8,
             angular_strength: 0.4,
             angular_delay: Duration::from_secs_f32(0.25),
+
+            model_url: packages::kenney_space_kit::assets::url("craft_miner.glb/models/main.json"),
+            model_scale: 0.5,
         }
         .make()
         .with(is_tank(), ())
@@ -70,11 +70,11 @@ pub fn main() {
     }
     .spawn();
 
-    spawn_query(vc::data_ref())
+    spawn_query(vc::def_ref())
         .requires(vc::is_vehicle())
         .bind(|vehicles| {
-            for (vehicle_id, data_ref) in vehicles {
-                if !entity::has_component(data_ref, is_tank()) {
+            for (vehicle_id, def_ref) in vehicles {
+                if !entity::has_component(def_ref, is_tank()) {
                     continue;
                 }
 

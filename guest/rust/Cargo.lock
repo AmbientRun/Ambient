@@ -2476,6 +2476,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tangent_behavior_vehicle"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "tangent_camera_follow"
 version = "0.1.0"
 dependencies = [
@@ -2527,13 +2534,6 @@ dependencies = [
 [[package]]
 name = "tangent_level_cubicide"
 version = "0.1.0"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
-name = "tangent_physics_vehicle"
-version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]

@@ -30,8 +30,8 @@ use packages::{
     game_object::components as goc,
     pickup_health::{components::is_health_pickup, concepts::HealthPickup},
     tangent_schema::{
-        concepts::{Spawnpoint, Vehicle, VehicleClass},
-        vehicle::{components::is_vehicle, data as vd},
+        concepts::{Spawnpoint, Vehicle, VehicleClass, VehicleDef},
+        vehicle::{components::is_vehicle, def as vd},
     },
 };
 
@@ -197,23 +197,19 @@ fn handle_vehicles() {
             let Some((_, class)) = class_query.evaluate().choose(&mut thread_rng()).cloned() else {
                 return;
             };
+            let def_ref = class.def_ref;
 
-            let data_ref = class.data_ref;
-
-            let offsets = entity::get_component(data_ref, vd::thruster::components::offsets())
-                .unwrap_or_default();
-
-            let last_distances = offsets.iter().map(|_| 0.0).collect();
-            let max_health = entity::get_component(data_ref, goc::max_health()).unwrap_or(100.0);
+            let Some(def) = VehicleDef::get_spawned(def_ref) else {
+                return;
+            };
 
             let vehicle_id = Vehicle {
                 linear_velocity: default(),
                 angular_velocity: default(),
                 physics_controlled: (),
                 dynamic: true,
-                density: entity::get_component(data_ref, phyc::density()).unwrap_or_default(),
-                cube_collider: entity::get_component(data_ref, phyc::cube_collider())
-                    .unwrap_or_default(),
+                density: def.density,
+                cube_collider: def.cube_collider,
 
                 local_to_world: default(),
                 translation,
@@ -221,13 +217,13 @@ fn handle_vehicles() {
 
                 is_vehicle: (),
 
-                health: max_health,
-                max_health,
+                health: def.max_health,
+                max_health: def.max_health,
 
-                last_distances,
+                last_distances: def.offsets.iter().map(|_| 0.0).collect(),
                 last_jump_time: game_time(),
                 last_slowdown_time: game_time(),
-                data_ref,
+                def_ref,
 
                 input_direction: default(),
                 input_jump: default(),
@@ -240,13 +236,13 @@ fn handle_vehicles() {
 
             let _vehicle_model_id = Entity::new()
                 .with(cast_shadows(), ())
-                .with(model_from_url(), class.model_url)
+                .with(model_from_url(), def.model_url)
                 .with(local_to_world(), default())
                 .with(local_to_parent(), default())
                 .with(mesh_to_local(), default())
                 .with(mesh_to_world(), default())
                 .with(main_scene(), ())
-                .with(scale(), Vec3::ONE * class.model_scale)
+                .with(scale(), Vec3::ONE * def.model_scale)
                 .with(parent(), vehicle_id)
                 .spawn();
         },

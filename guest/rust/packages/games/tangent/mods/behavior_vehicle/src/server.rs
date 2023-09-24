@@ -11,7 +11,7 @@ use packages::{
     explosion::concepts::Explosion,
     game_object::components as goc,
     tangent_schema::{
-        concepts::{Vehicle, VehicleData},
+        concepts::{Vehicle, VehicleDef},
         vehicle::components as vc,
         weapon,
     },
@@ -122,7 +122,7 @@ fn process_vehicle(vehicle_id: EntityId) {
         }
     }
 
-    let Some(vd) = VehicleData::get_spawned(v.data_ref) else {
+    let Some(vd) = VehicleDef::get_spawned(v.def_ref) else {
         return;
     };
 

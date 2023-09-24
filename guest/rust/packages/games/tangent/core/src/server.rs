@@ -19,9 +19,9 @@ use ambient_api::{
 use packages::{
     game_object::{components as goc, player::components as gopc},
     tangent_schema::{
-        concepts::{Spawnpoint, Vehicle, VehicleClass, VehicleOptional},
+        concepts::{Spawnpoint, Vehicle, VehicleClass, VehicleDef, VehicleOptional},
         player::components as pc,
-        vehicle::{components as vc, data as vd},
+        vehicle::{components as vc, def as vd},
     },
     this::messages::Input,
 };
@@ -171,13 +171,11 @@ fn spawn_vehicle_for_player(player_id: EntityId) {
         return;
     };
 
-    let vehicle_data_ref = class.data_ref;
+    let def_ref = class.def_ref;
 
-    let offsets = entity::get_component(vehicle_data_ref, vd::thruster::components::offsets())
-        .unwrap_or_default();
-
-    let last_distances = offsets.iter().map(|_| 0.0).collect();
-    let max_health = entity::get_component(vehicle_data_ref, goc::max_health()).unwrap_or(100.0);
+    let Some(def) = VehicleDef::get_spawned(def_ref) else {
+        return;
+    };
 
     // Spawn the new vehicle.
     let position = choose_spawn_position();
@@ -186,9 +184,8 @@ fn spawn_vehicle_for_player(player_id: EntityId) {
         angular_velocity: default(),
         physics_controlled: (),
         dynamic: true,
-        density: entity::get_component(vehicle_data_ref, phyc::density()).unwrap_or_default(),
-        cube_collider: entity::get_component(vehicle_data_ref, phyc::cube_collider())
-            .unwrap_or_default(),
+        density: def.density,
+        cube_collider: def.cube_collider,
 
         local_to_world: default(),
         translation: position,
@@ -196,13 +193,13 @@ fn spawn_vehicle_for_player(player_id: EntityId) {
 
         is_vehicle: (),
 
-        health: max_health,
-        max_health,
+        health: def.max_health,
+        max_health: def.max_health,
 
-        last_distances,
+        last_distances: def.offsets.iter().map(|_| 0.0).collect(),
         last_jump_time: game_time(),
         last_slowdown_time: game_time(),
-        data_ref: vehicle_data_ref,
+        def_ref,
 
         input_direction: default(),
         input_jump: default(),
@@ -218,13 +215,13 @@ fn spawn_vehicle_for_player(player_id: EntityId) {
 
     let _vehicle_model_id = Entity::new()
         .with(cast_shadows(), ())
-        .with(model_from_url(), class.model_url)
+        .with(model_from_url(), def.model_url)
         .with(local_to_world(), default())
         .with(local_to_parent(), default())
         .with(mesh_to_local(), default())
         .with(mesh_to_world(), default())
         .with(main_scene(), ())
-        .with(scale(), Vec3::ONE * class.model_scale)
+        .with(scale(), Vec3::ONE * def.model_scale)
         .with(parent(), vehicle_id)
         .spawn();
 }

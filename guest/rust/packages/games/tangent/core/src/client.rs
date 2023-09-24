@@ -58,7 +58,7 @@ fn handle_input() {
 
         let aim_direction_limits = entity::get_component(
             local_vehicle,
-            packages::tangent_schema::vehicle::data::input::components::aim_direction_limits(),
+            packages::tangent_schema::vehicle::def::input::components::aim_direction_limits(),
         )
         .unwrap_or(Vec2::ONE * 20.0);
 

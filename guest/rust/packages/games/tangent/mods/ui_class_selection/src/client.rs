@@ -11,7 +11,7 @@ use ambient_api::{
     ui::{use_keyboard_input, ImageFromUrl},
 };
 use packages::tangent_schema::{
-    concepts::{VehicleClass, VehicleData},
+    concepts::{VehicleClass, VehicleDef},
     player::components as pc,
 };
 use packages::this::messages::ClassSetRequest;
@@ -95,7 +95,7 @@ pub fn Class(
 ) -> Element {
     let is_active_class = player_class_id.is_some_and(|id| id == class_id);
 
-    let Some(vd) = VehicleData::get_spawned(class.data_ref) else {
+    let Some(vd) = VehicleDef::get_spawned(class.def_ref) else {
         return Element::new();
     };
 
