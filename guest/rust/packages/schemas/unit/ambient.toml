@@ -4,7 +4,7 @@ name = "Unit"
 description = "Schema for units in games"
 version = "0.0.1"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-24"
 
 [dependencies]
 game_object = { path = "../game_object" }

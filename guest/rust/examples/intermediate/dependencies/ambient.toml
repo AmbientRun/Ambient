@@ -4,7 +4,7 @@ name = "Dependencies"
 description = "Break your project up into packages."
 version = "0.0.1"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-24"
 
 [dependencies]
 deps_assets = { path = "deps/assets" , deployment = "17lIMmgTEvZ9WH7ybvDrvN" }

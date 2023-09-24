@@ -3,8 +3,8 @@ id = "layout"
 name = "Layout"
 description = "Layout components such as flow, margins etc."
 content = { type = "Asset", schema = true }
-version = "0.3.0-dev"
-ambient_version = "0.3.0-nightly-2023-09-22"
+version = "0.3.0-nightly-2023-09-24"
+ambient_version = "0.3.0-nightly-2023-09-24"
 
 [components.align_horizontal]
 type = "Align"

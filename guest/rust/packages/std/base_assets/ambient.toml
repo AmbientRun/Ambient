@@ -3,4 +3,4 @@ id = "base_assets"
 name = "base_assets"
 version = "0.0.1"
 content = { type = "Asset", models = true }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-24"
