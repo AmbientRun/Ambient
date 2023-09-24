@@ -2,8 +2,9 @@
 id = "skpc6fwjkbidr7a6pmx4mab6zl37oiut"
 name = "Tangent Pickup: Health"
 version = "0.1.0"
-content = { type = "Mod", for_playables = ["tangent"] }
+content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
 ambient_version = "0.3.0-nightly-2023-09-22"
+authors = ["philpax"]
 
 [dependencies]
 kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "4i7bOwWXNKFddCEHdNRC8f" }

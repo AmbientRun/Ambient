@@ -2,14 +2,15 @@
 id = "j32xi2gg5rvgob2cu7uirdbtj5ce4jw7"
 name = "Tangent Class: Assault"
 version = "0.1.0"
-content = { type = "Mod", for_playables = ["tangent"] }
+content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
 ambient_version = "0.3.0-nightly-2023-09-22"
+authors = ["philpax"]
 
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
-gun_laser = { path = "../gun_laser" , deployment = "5B4RovhibVaZsxrVcXMjf0" }
+gun_laser = { path = "../gun_laser", deployment = "5B4RovhibVaZsxrVcXMjf0" }
 
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit" , deployment = "5McYMEZazOLUekgEOxccrj" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "5McYMEZazOLUekgEOxccrj" }
 
 [components]
 is_assault = { type = "Empty", name = "Is Assault", description = "Marks this entity as assault.", attributes = [

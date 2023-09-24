@@ -2,9 +2,10 @@
 id = "gzbamly2shtnz3siisf3mdzglsi67vul"
 name = "Tangent Level: Cubicide"
 version = "0.1.0"
-content = { type = "Mod", for_playables = ["tangent"] }
+content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
 ambient_version = "0.3.0-nightly-2023-09-22"
+authors = ["philpax"]
 
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
-pickup_health = { path = "../pickup_health" , deployment = "7lysU5KZdkYj2rpckumEbI" }
+pickup_health = { path = "../pickup_health", deployment = "7lysU5KZdkYj2rpckumEbI" }
