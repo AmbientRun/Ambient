@@ -18,8 +18,3 @@ kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployme
 name = "Input"
 description = "Input"
 fields = { direction = "Vec2", jump = "Bool", fire = "Bool", respawn = "Bool", aim_direction = "Vec2" }
-
-[messages.OnCollision]
-name = "On Collision"
-description = "Sent to the client when a vehicle collides with something."
-fields = { position = "Vec3", speed = "F32", vehicle_id = "EntityId" }

@@ -5,7 +5,6 @@ use ambient_api::{
         transform::components::{local_to_world, rotation, translation},
     },
     element::use_entity_component,
-    once_cell::sync::Lazy,
     prelude::*,
 };
 use packages::{
@@ -13,7 +12,7 @@ use packages::{
         player::components as pc,
         vehicle::{client::components as vcc, components as vc},
     },
-    this::messages::{Input, OnCollision},
+    this::messages::Input,
 };
 
 mod shared;
@@ -29,7 +28,6 @@ pub fn main() {
         });
 
     handle_input();
-    handle_collisions();
 
     spawn_query(translation())
         .requires(vc::player_ref())
@@ -104,31 +102,6 @@ fn handle_input() {
         );
 
         last_input = input;
-    });
-}
-
-fn handle_collisions() {
-    static SOUNDS: Lazy<[Vec<String>; 3]> = Lazy::new(|| {
-        let url = |ty, idx| {
-            packages::kenney_impact_sounds::assets::url(&format!("impactPlate_{ty}_{idx:0>3}.ogg"))
-        };
-
-        ["light", "medium", "heavy"].map(|ty| (0..5).map(|idx| url(ty, idx)).collect())
-    });
-
-    OnCollision::subscribe(|ctx, msg| {
-        if !ctx.server() {
-            return;
-        }
-
-        let impact_type = match msg.speed {
-            speed if speed < 5. => 0,
-            speed if speed < 10. => 1,
-            _ => 2,
-        };
-
-        let sound = SOUNDS[impact_type].choose(&mut thread_rng()).unwrap();
-        audio::SpatialAudioPlayer::oneshot(msg.position, sound);
     });
 }
 
