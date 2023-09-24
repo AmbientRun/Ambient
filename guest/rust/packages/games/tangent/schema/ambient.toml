@@ -17,6 +17,7 @@ game_object = { path = "../../../schemas/game_object" }
 "player::input_direction" = { type = "Vec2", name = "Input Direction", description = "Input direction" }
 "player::input_jump" = { type = "Bool", name = "Jump", description = "Jump" }
 "player::input_fire" = { type = "Bool", name = "Fire", description = "Fire" }
+"player::input_respawn" = { type = "Bool", name = "Respawn", description = "Respawn" }
 "player::input_aim_direction" = { type = "Vec2", name = "Aim Direction", description = "Aim direction in degrees from the centre" }
 "player::vehicle_class" = { type = "EntityId", name = "Vehicle Class", description = "The player's vehicle class", attributes = [
     "Networked",

@@ -80,50 +80,19 @@ pub fn main() {
 
     // When a player sends input, update their input state.
     Input::subscribe(|ctx, input| {
-        let Some(player) = ctx.client_entity_id() else {
+        let Some(player_id) = ctx.client_entity_id() else {
             return;
         };
 
-        let Some(vehicle_id) = entity::get_component(player, pc::vehicle_ref()) else {
-            return;
-        };
-
-        let aim_direction_limits =
-            entity::get_component(vehicle_id, vd::input::components::aim_direction_limits())
-                .unwrap_or(Vec2::ONE * 20.0);
-
-        entity::add_component(player, pc::input_direction(), input.direction);
-        entity::add_component(player, pc::input_jump(), input.jump);
-        entity::add_component(player, pc::input_fire(), input.fire);
-        let aim_direction = input
-            .aim_direction
-            .clamp(-aim_direction_limits, aim_direction_limits);
-        entity::add_component(player, pc::input_aim_direction(), aim_direction);
-
-        // This calculation is a bit circuitous, but it's simpler than breaking out the intermediate
-        // calculations
-        let p0 = shared::calculate_aim_position(vehicle_id, aim_direction, 0.0);
-        let p1 = shared::calculate_aim_position(vehicle_id, aim_direction, 1.0);
-
-        let hit = physics::raycast(p0, p1 - p0)
-            .into_iter()
-            .find(|h| h.entity != vehicle_id);
-
-        const RANGE: f32 = 1_000.0;
-        // TODO: figure out why not using a fixed long distance breaks the gun-aim calculation
-        let aim_position = shared::calculate_aim_position(vehicle_id, aim_direction, RANGE);
-        let aim_distance = hit.map(|h| h.distance).unwrap_or(RANGE);
-
-        // TODO: remove this once input is properly decoupled from vehicles
-        if entity::exists(vehicle_id) {
-            entity::add_component(vehicle_id, vc::aim_position(), aim_position);
-            entity::add_component(vehicle_id, vc::aim_distance(), aim_distance);
-        }
-
-        // If the user opted to respawn, immediately destroy their vehicle
-        if input.respawn {
-            entity::set_component(vehicle_id, goc::health(), 0.0);
-        }
+        entity::add_components(
+            player_id,
+            Entity::new()
+                .with(pc::input_direction(), input.direction)
+                .with(pc::input_jump(), input.jump)
+                .with(pc::input_fire(), input.fire)
+                .with(pc::input_respawn(), input.respawn)
+                .with(pc::input_aim_direction(), input.aim_direction),
+        );
     });
 
     // Sync player input state to vehicle input state.
@@ -132,19 +101,62 @@ pub fn main() {
         pc::input_jump(),
         pc::input_fire(),
         pc::input_aim_direction(),
+        pc::input_respawn(),
         pc::vehicle_ref(),
     ))
     .each_frame(|players| {
-        for (_, (input_direction, input_jump, input_fire, input_aim_direction, vehicle_ref)) in
-            players
+        for (
+            _,
+            (
+                input_direction,
+                input_jump,
+                input_fire,
+                input_aim_direction,
+                input_respawn,
+                vehicle_id,
+            ),
+        ) in players
         {
+            if !entity::exists(vehicle_id) {
+                return;
+            }
+
+            // If the user opted to respawn, immediately destroy their vehicle
+            if input_respawn {
+                entity::set_component(vehicle_id, goc::health(), 0.0);
+                return;
+            }
+
+            let aim_direction_limits =
+                entity::get_component(vehicle_id, vd::input::components::aim_direction_limits())
+                    .unwrap_or(Vec2::ONE * 20.0);
+            let input_aim_direction =
+                input_aim_direction.clamp(-aim_direction_limits, aim_direction_limits);
+
+            // This calculation is a bit circuitous, but it's simpler than breaking out the intermediate
+            // calculations
+            let p0 = shared::calculate_aim_position(vehicle_id, input_aim_direction, 0.0);
+            let p1 = shared::calculate_aim_position(vehicle_id, input_aim_direction, 1.0);
+
+            let hit = physics::raycast(p0, p1 - p0)
+                .into_iter()
+                .find(|h| h.entity != vehicle_id);
+
+            const RANGE: f32 = 1_000.0;
+            // TODO: figure out why not using a fixed long distance breaks the gun-aim calculation
+            let aim_position =
+                shared::calculate_aim_position(vehicle_id, input_aim_direction, RANGE);
+            let aim_distance = hit.map(|h| h.distance).unwrap_or(RANGE);
+
             entity::add_components(
-                vehicle_ref,
+                vehicle_id,
                 Entity::new()
                     .with(vc::input_direction(), input_direction)
                     .with(vc::input_jump(), input_jump)
                     .with(vc::input_fire(), input_fire)
-                    .with(vc::input_aim_direction(), input_aim_direction),
+                    .with(vc::input_aim_direction(), input_aim_direction)
+                    .with(vc::aim_position(), aim_position)
+                    .with(vc::aim_distance(), aim_distance),
             );
         }
     });
