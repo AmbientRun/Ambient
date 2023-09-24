@@ -11,10 +11,11 @@ hide_cursor = { path = "../../../std/hide_cursor", deployment = "3jJhKCyxtEKDcoQ
 explosion = { path = "../../../std/explosion" }
 
 game_object = { path = "../../../schemas/game_object" }
+unit_schema = { path = "../../../schemas/unit" }
 
 kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployment = "7VEdO55zqgSL75rJNg3TJ2" }
 
 [messages.Input]
 name = "Input"
 description = "Input"
-fields = { direction = "Vec2", jump = "Bool", fire = "Bool", respawn = "Bool", aim_direction = "Vec2" }
+fields = { direction = "Vec2", jump = "Bool", sprint = "Bool", fire = "Bool", respawn = "Bool", aim_direction = "Vec2" }

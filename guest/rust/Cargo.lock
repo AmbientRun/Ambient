@@ -2476,6 +2476,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tangent_behavior_character"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "tangent_behavior_vehicle"
 version = "0.3.0-dev"
 dependencies = [

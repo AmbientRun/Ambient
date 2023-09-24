@@ -17,6 +17,7 @@ game_object = { path = "../../../schemas/game_object" }
 "player::input_direction" = { type = "Vec2", name = "Input Direction", description = "Input direction" }
 "player::input_jump" = { type = "Bool", name = "Jump", description = "Jump" }
 "player::input_fire" = { type = "Bool", name = "Fire", description = "Fire" }
+"player::input_sprint" = { type = "Bool", name = "Sprint", description = "Sprint" }
 "player::input_respawn" = { type = "Bool", name = "Respawn", description = "Respawn" }
 "player::input_aim_direction" = { type = "Vec2", name = "Aim Direction", description = "Aim direction in degrees from the centre" }
 "player::class" = { type = "EntityId", name = "Class", description = "The player's class", attributes = [
@@ -35,6 +36,18 @@ game_object = { path = "../../../schemas/game_object" }
     "Networked",
 ] }
 "player::class::icon_url" = { type = "String", name = "Icon URL", description = "URL of the icon for the player class", attributes = [
+    "Networked",
+] }
+
+# Player character
+"player::character_ref" = { type = "EntityId", name = "Player's Character", description = "The player's character", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"player::character::is_character" = { type = "Empty", name = "Is Character", description = "Is a player character", attributes = [
+    "Networked",
+] }
+"player::character::player_ref" = { type = "EntityId", name = "Character's Player", description = "The player controlling the character", attributes = [
     "Networked",
 ] }
 

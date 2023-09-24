@@ -2,14 +2,9 @@ use std::{f32::consts::PI, sync::OnceLock};
 
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        hierarchy::components::parent,
-        model::components::model_from_url,
-        player::components::is_player,
-        rendering::components::cast_shadows,
-        transform::components::{
-            local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale,
-        },
+        app::components::name,
+        player::components::{is_player, user_id},
+        transform::components::{rotation, translation},
     },
     ecs::GeneralQuery,
     prelude::*,
@@ -18,11 +13,13 @@ use ambient_api::{
 use packages::{
     game_object::{components as goc, player::components as gopc},
     tangent_schema::{
-        concepts::{Spawnpoint, Vehicle, VehicleDef, VehicleOptional},
+        concepts::Spawnpoint,
+        player::character::components as pcc,
         player::components as pc,
         vehicle::{components as vc, def as vd},
     },
     this::messages::Input,
+    unit_schema::components as uc,
 };
 
 mod shared;
@@ -35,26 +32,33 @@ pub fn main() {
         .requires(is_player())
         .bind(move |players| {
             for (player_id, _class_id) in players {
-                spawn_vehicle_for_player(player_id);
+                if let Some(character_ref) = entity::get_component(player_id, pc::character_ref()) {
+                    entity::despawn_recursive(character_ref);
+                }
+
+                let character_id = Entity::new()
+                    .with(pcc::is_character(), ())
+                    .with(pcc::player_ref(), player_id)
+                    .with(translation(), choose_spawn_position())
+                    .with(
+                        name(),
+                        format!(
+                            "{}'s Character",
+                            entity::get_component(player_id, user_id())
+                                .unwrap_or_else(|| player_id.to_string())
+                        ),
+                    )
+                    .spawn();
+                entity::add_component(player_id, pc::character_ref(), character_id);
             }
         });
 
-    // When a player despawns (leaves), despawn their vehicle.
-    despawn_query(is_player()).bind(|players| {
-        for (player, ()) in players {
-            if let Some(vehicle) = entity::get_component(player, pc::vehicle_ref()) {
-                entity::despawn_recursive(vehicle);
-            }
-        }
-    });
-
-    // If a player doesn't have a vehicle, but has a class, spawn one for them.
-    query(())
-        .requires(pc::class())
-        .excludes(pc::vehicle_ref())
-        .each_frame(|players| {
-            for (player_id, _) in players {
-                spawn_vehicle_for_player(player_id);
+    // When a player despawns (leaves), despawn their character.
+    despawn_query(pc::character_ref())
+        .requires(is_player())
+        .bind(|players| {
+            for (_, character_ref) in players {
+                entity::despawn_recursive(character_ref);
             }
         });
 
@@ -89,6 +93,7 @@ pub fn main() {
                 .with(pc::input_direction(), input.direction)
                 .with(pc::input_jump(), input.jump)
                 .with(pc::input_fire(), input.fire)
+                .with(pc::input_sprint(), input.sprint)
                 .with(pc::input_respawn(), input.respawn)
                 .with(pc::input_aim_direction(), input.aim_direction),
         );
@@ -159,63 +164,65 @@ pub fn main() {
             );
         }
     });
-}
 
-fn spawn_vehicle_for_player(player_id: EntityId) {
-    let defs = entity::get_all(vd::components::is_def());
+    // Sync player input state to character input state.
+    query((
+        pc::input_direction(),
+        pc::input_jump(),
+        pc::input_fire(),
+        pc::input_sprint(),
+        pc::input_aim_direction(),
+        pc::character_ref(),
+    ))
+    .each_frame(|players| {
+        for (
+            _,
+            (
+                input_direction,
+                input_jump,
+                input_fire,
+                input_sprint,
+                input_aim_direction,
+                character_id,
+            ),
+        ) in players
+        {
+            if !entity::exists(character_id) {
+                return;
+            }
 
-    let def_ref = defs.choose(&mut thread_rng()).copied().unwrap();
+            entity::add_component(
+                character_id,
+                uc::run_direction(),
+                vec2(input_direction.y, input_direction.x),
+            );
+            entity::add_component(character_id, uc::running(), input_sprint);
+            entity::add_component(character_id, uc::shooting(), input_fire);
+            entity::add_component(
+                character_id,
+                rotation(),
+                Quat::from_rotation_z(input_aim_direction.x),
+            );
+            if let Some(head) = entity::get_component(character_id, uc::head_ref()) {
+                entity::set_component(
+                    head,
+                    rotation(),
+                    Quat::from_rotation_y(input_aim_direction.y)
+                        * Quat::from_rotation_z(PI / 2.)
+                        * Quat::from_rotation_x(PI / 2.),
+                );
+            }
 
-    let Some(def) = VehicleDef::get_spawned(def_ref) else {
-        return;
-    };
-
-    // Spawn the new vehicle.
-    let vehicle_id = Vehicle {
-        linear_velocity: default(),
-        angular_velocity: default(),
-        physics_controlled: (),
-        dynamic: true,
-        density: def.density,
-        cube_collider: def.cube_collider,
-
-        local_to_world: default(),
-        translation: choose_spawn_position() + Vec3::Z * def.target,
-        rotation: Quat::from_rotation_z(random::<f32>() * PI),
-
-        is_vehicle: (),
-
-        health: def.max_health,
-        max_health: def.max_health,
-
-        last_distances: def.offsets.iter().map(|_| 0.0).collect(),
-        last_jump_time: game_time(),
-        last_slowdown_time: game_time(),
-        def_ref,
-
-        input_direction: default(),
-        input_jump: default(),
-        input_fire: default(),
-        input_aim_direction: default(),
-
-        optional: VehicleOptional {
-            driver_ref: Some(player_id),
-            ..default()
-        },
-    }
-    .spawn();
-
-    let _vehicle_model_id = Entity::new()
-        .with(cast_shadows(), ())
-        .with(model_from_url(), def.model_url)
-        .with(local_to_world(), default())
-        .with(local_to_parent(), default())
-        .with(mesh_to_local(), default())
-        .with(mesh_to_world(), default())
-        .with(main_scene(), ())
-        .with(scale(), Vec3::ONE * def.model_scale)
-        .with(parent(), vehicle_id)
-        .spawn();
+            if input_jump {
+                if entity::get_component(character_id, uc::is_on_ground()).unwrap_or_default() {
+                    entity::add_component(character_id, uc::vertical_velocity(), 0.1);
+                    entity::add_component(character_id, uc::jumping(), true);
+                } else {
+                    entity::add_component(character_id, uc::jumping(), false);
+                }
+            }
+        }
+    });
 }
 
 fn choose_spawn_position() -> Vec3 {

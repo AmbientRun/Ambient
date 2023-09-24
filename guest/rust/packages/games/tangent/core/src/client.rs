@@ -1,5 +1,8 @@
+use std::sync::{Arc, Mutex};
+
 use ambient_api::{
     core::{
+        messages::Frame,
         physics::components::linear_velocity,
         rect::components::{background_color, line_from, line_to, line_width},
         transform::components::{local_to_world, rotation, translation},
@@ -45,22 +48,29 @@ pub fn main() {
 
 fn handle_input() {
     let mut last_input = input::get();
-    let mut aim_direction = Vec2::ZERO;
+    // The most correct thing to do would be to store this in the ECS.
+    let aim_direction = Arc::new(Mutex::new(Vec2::ZERO));
+
+    Frame::subscribe({
+        let aim_direction = aim_direction.clone();
+        move |_| {
+            let (delta, _) = input::get_delta();
+
+            let mut aim_direction = aim_direction.lock().unwrap();
+            *aim_direction += vec2(
+                delta.mouse_position.x.to_radians(),
+                delta.mouse_position.y.to_radians(),
+            );
+            aim_direction.y = aim_direction
+                .y
+                .clamp(-89f32.to_radians(), 89f32.to_radians());
+        }
+    });
+
     fixed_rate_tick(Duration::from_millis(20), move |_| {
         if !input::is_game_focused() {
             return;
         }
-
-        let Some(local_vehicle) = entity::get_component(player::get_local(), pc::vehicle_ref())
-        else {
-            return;
-        };
-
-        let aim_direction_limits = entity::get_component(
-            local_vehicle,
-            packages::tangent_schema::vehicle::def::input::components::aim_direction_limits(),
-        )
-        .unwrap_or(Vec2::ONE * 20.0);
 
         let input = input::get();
         let delta = input.delta(&last_input);
@@ -81,25 +91,15 @@ fn handle_input() {
             direction
         };
 
-        aim_direction = (aim_direction + delta.mouse_position * 0.5)
-            .clamp(-aim_direction_limits, aim_direction_limits);
-
         Input {
             direction,
             jump: input.keys.contains(&KeyCode::Space),
+            sprint: input.keys.contains(&KeyCode::LShift),
             fire: input.mouse_buttons.contains(&MouseButton::Left),
-            aim_direction,
+            aim_direction: *aim_direction.lock().unwrap(),
             respawn: delta.keys.contains(&KeyCode::K),
         }
         .send_server_unreliable();
-
-        // Ensure we have a local copy of the aim direction that always reflects the most
-        // recent state for the crosshair
-        entity::add_component(
-            player::get_local(),
-            pc::input_aim_direction(),
-            aim_direction,
-        );
 
         last_input = input;
     });

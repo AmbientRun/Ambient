@@ -25,6 +25,7 @@ class_tank = { path = "mods/class_tank", deployment = "5ckkjUWLrZxN7RN0DuyXUV" }
 vehicle_standard = { path = "mods/vehicle_standard" }
 
 behavior_vehicle = { path = "mods/behavior_vehicle" }
+behavior_character = { path = "mods/behavior_character" }
 
 package_manager = { path = "../../tools/package_manager", deployment = "5LanfDGbkMRdk27Xo2Xtxf" }
 
