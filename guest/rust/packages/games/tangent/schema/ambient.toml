@@ -87,7 +87,10 @@ game_object = { path = "../../../schemas/game_object" }
 ] }
 
 # Vehicle
-"vehicle::player_ref" = { type = "EntityId", name = "Vehicle", description = "A vehicle (and its driver)", attributes = [
+"vehicle::is_vehicle" = { type = "Empty", name = "Is Vehicle", description = "Is a vehicle", attributes = [
+    "Networked",
+] }
+"vehicle::driver_ref" = { type = "EntityId", name = "Vehicle Driver", description = "A vehicle's driver, if present", attributes = [
     "Networked",
 ] }
 "vehicle::data_ref" = { type = "EntityId", name = "Vehicle Data Ref", description = "When attached to a vehicle-specific entity (class or live vehicle), indicates that it should draw its properties from this entity.", attributes = [
@@ -110,6 +113,10 @@ game_object = { path = "../../../schemas/game_object" }
     "Networked",
 ] }
 
+"vehicle::input_direction" = { type = "Vec2", name = "Input Direction", description = "Input direction" }
+"vehicle::input_jump" = { type = "Bool", name = "Jump", description = "Jump" }
+"vehicle::input_fire" = { type = "Bool", name = "Fire", description = "Fire" }
+"vehicle::input_aim_direction" = { type = "Vec2", name = "Aim Direction", description = "Aim direction in degrees from the centre" }
 "vehicle::aim_distance" = { type = "F32", name = "Aim Distance", description = "Distance of the aim target from the vehicle", attributes = [
     "Networked",
 ] }
@@ -206,12 +213,19 @@ description = "A vehicle with a physical representation"
 "game_object::health" = {}
 "game_object::max_health" = {}
 
-"vehicle::player_ref" = {}
+"vehicle::is_vehicle" = {}
+
 "vehicle::last_distances" = {}
 "vehicle::last_jump_time" = {}
 "vehicle::last_slowdown_time" = {}
 "vehicle::data_ref" = {}
+
+"vehicle::input_direction" = {}
+"vehicle::input_jump" = {}
+"vehicle::input_fire" = {}
+"vehicle::input_aim_direction" = {}
 [concepts.Vehicle.components.optional]
+"vehicle::driver_ref" = {}
 "vehicle::last_upside_down_time" = {}
 "vehicle::aim_position" = {}
 "vehicle::aimable_weapon_refs" = {}

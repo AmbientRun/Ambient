@@ -21,7 +21,7 @@ use packages::{
     explosion::concepts::Explosion,
     game_object::{components as goc, player::components as gopc},
     tangent_schema::{
-        concepts::{Spawnpoint, Vehicle, VehicleClass},
+        concepts::{Spawnpoint, Vehicle, VehicleClass, VehicleOptional},
         messages::OnDeath,
         player::components as pc,
         vehicle::{components as vc, data as vd},
@@ -70,7 +70,7 @@ pub fn main() {
 
     // When a player('s vehicle) dies, respawn them.
     // TODO: decouple
-    query((vc::player_ref(), goc::health())).each_frame(|vehicles| {
+    query((vc::driver_ref(), goc::health())).each_frame(|vehicles| {
         for (_, (player_id, health)) in vehicles {
             if health <= 0.0 {
                 respawn_player(player_id);
@@ -122,6 +122,29 @@ pub fn main() {
             entity::set_component(vehicle_id, goc::health(), 0.0);
         }
     });
+
+    // Sync player input state to vehicle input state.
+    query((
+        pc::input_direction(),
+        pc::input_jump(),
+        pc::input_fire(),
+        pc::input_aim_direction(),
+        pc::vehicle_ref(),
+    ))
+    .each_frame(|players| {
+        for (_, (input_direction, input_jump, input_fire, input_aim_direction, vehicle_ref)) in
+            players
+        {
+            entity::add_components(
+                vehicle_ref,
+                Entity::new()
+                    .with(vc::input_direction(), input_direction)
+                    .with(vc::input_jump(), input_jump)
+                    .with(vc::input_fire(), input_fire)
+                    .with(vc::input_aim_direction(), input_aim_direction),
+            );
+        }
+    });
 }
 
 fn respawn_player(player_id: EntityId) {
@@ -141,33 +164,7 @@ fn respawn_player(player_id: EntityId) {
     let last_distances = offsets.iter().map(|_| 0.0).collect();
     let max_health = entity::get_component(vehicle_data_ref, goc::max_health()).unwrap_or(100.0);
 
-    // Create the vehicle before spawning it.
-    let position = choose_spawn_position();
-    let vehicle = Vehicle {
-        linear_velocity: default(),
-        angular_velocity: default(),
-        physics_controlled: (),
-        dynamic: true,
-        density: entity::get_component(vehicle_data_ref, phyc::density()).unwrap_or_default(),
-        cube_collider: entity::get_component(vehicle_data_ref, phyc::cube_collider())
-            .unwrap_or_default(),
-
-        local_to_world: default(),
-        translation: position,
-        rotation: Quat::from_rotation_z(random::<f32>() * PI),
-        player_ref: player_id,
-
-        health: max_health,
-        max_health,
-
-        last_distances,
-        last_jump_time: game_time(),
-        last_slowdown_time: game_time(),
-        data_ref: vehicle_data_ref,
-        optional: default(),
-    }
-    .make();
-
+    // Kill the existing vehicle if it exists.
     if let Some(existing_vehicle_id) = entity::get_component(player_id, pc::vehicle_ref()) {
         if let Some(translation) = entity::get_component(existing_vehicle_id, translation()) {
             OnDeath {
@@ -188,13 +185,43 @@ fn respawn_player(player_id: EntityId) {
         entity::despawn_recursive(existing_vehicle_id);
     }
 
-    // Spawn it in.
-    let vehicle_id = vehicle.spawn();
+    // Spawn the new vehicle.
+    let position = choose_spawn_position();
+    let vehicle_id = Vehicle {
+        linear_velocity: default(),
+        angular_velocity: default(),
+        physics_controlled: (),
+        dynamic: true,
+        density: entity::get_component(vehicle_data_ref, phyc::density()).unwrap_or_default(),
+        cube_collider: entity::get_component(vehicle_data_ref, phyc::cube_collider())
+            .unwrap_or_default(),
+
+        local_to_world: default(),
+        translation: position,
+        rotation: Quat::from_rotation_z(random::<f32>() * PI),
+
+        is_vehicle: (),
+
+        health: max_health,
+        max_health,
+
+        last_distances,
+        last_jump_time: game_time(),
+        last_slowdown_time: game_time(),
+        data_ref: vehicle_data_ref,
+
+        input_direction: default(),
+        input_jump: default(),
+        input_fire: default(),
+        input_aim_direction: default(),
+
+        optional: VehicleOptional {
+            driver_ref: Some(player_id),
+            ..default()
+        },
+    }
+    .spawn();
     entity::add_component(player_id, pc::vehicle_ref(), vehicle_id);
-    entity::add_component(player_id, pc::input_direction(), Vec2::ZERO);
-    entity::add_component(player_id, pc::input_jump(), false);
-    entity::add_component(player_id, pc::input_fire(), false);
-    entity::add_component(player_id, pc::input_aim_direction(), Vec2::ZERO);
     entity::add_component(player_id, gopc::control_of_entity(), vehicle_id);
 
     let _vehicle_model_id = Entity::new()

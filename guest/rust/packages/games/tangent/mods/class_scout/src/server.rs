@@ -72,7 +72,7 @@ pub fn main() {
     .spawn();
 
     spawn_query(vc::data_ref())
-        .requires(vc::player_ref())
+        .requires(vc::is_vehicle())
         .bind(|vehicles| {
             for (vehicle_id, data_ref) in vehicles {
                 if !entity::has_component(data_ref, is_scout()) {

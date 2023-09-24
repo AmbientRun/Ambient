@@ -11,7 +11,6 @@ use packages::{
     game_object::components as goc,
     tangent_schema::{
         concepts::{Vehicle, VehicleData},
-        player::components as pc,
         vehicle::components as vc,
         weapon,
     },
@@ -33,7 +32,7 @@ pub fn main() {
             .ids
             .iter()
             .copied()
-            .filter(|id| entity::has_component(*id, vc::player_ref()))
+            .filter(|id| entity::has_component(*id, vc::is_vehicle()))
         {
             let speed = entity::get_component(id, phyc::linear_velocity())
                 .map(|v| v.length())
@@ -53,19 +52,17 @@ pub fn main() {
     });
 
     // Process all vehicles.
-    query(vc::player_ref()).each_frame(move |vehicles| {
-        for (vehicle_id, driver_id) in vehicles {
-            process_vehicle(vehicle_id, driver_id);
-        }
-    });
+    query(())
+        .requires(vc::is_vehicle())
+        .each_frame(move |vehicles| {
+            for (vehicle_id, _) in vehicles {
+                process_vehicle(vehicle_id);
+            }
+        });
 }
 
-fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
+fn process_vehicle(vehicle_id: EntityId) {
     use entity::{get_component as get, set_component as set};
-
-    let direction = get(driver_id, pc::input_direction()).unwrap_or_default();
-    let fire = get(driver_id, pc::input_fire()).unwrap_or_default();
-
     let Some(v) = Vehicle::get_spawned(vehicle_id) else {
         return;
     };
@@ -105,7 +102,7 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
             let rot = Quat::from_rotation_arc(-Vec3::Y, aim_position_relative_to_gun.normalize());
 
             entity::set_component(weapon_id, rotation(), rot);
-            entity::add_component(weapon_id, weapon::components::fire(), fire);
+            entity::add_component(weapon_id, weapon::components::fire(), v.input_fire);
         }
     }
 
@@ -115,9 +112,7 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
 
     // Apply jump
     let vehicle_last_jump_time = get(vehicle_id, vc::last_jump_time()).unwrap_or_default();
-    if get(driver_id, pc::input_jump()).unwrap_or_default()
-        && (game_time() - vehicle_last_jump_time) > vd.jump_timeout
-    {
+    if v.input_jump && (game_time() - vehicle_last_jump_time) > vd.jump_timeout {
         let linear_velocity = get(vehicle_id, phyc::linear_velocity()).unwrap_or_default();
         let speed_multiplier = (linear_velocity.dot(v.rotation * -Vec3::Y) * 0.3).max(5.0);
 
@@ -143,7 +138,7 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
 
         let thruster_front_of_centre = offset.y < 0.0;
         let turning_strength_offset = if thruster_front_of_centre {
-            if offset.x * direction.x < 0.0 {
+            if offset.x * v.input_direction.x < 0.0 {
                 vd.turning_strength
             } else {
                 0.0
@@ -153,7 +148,7 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
         };
 
         let pitch_strength_offset = if thruster_front_of_centre {
-            direction.y * -vd.pitch_strength
+            v.input_direction.y * -vd.pitch_strength
         } else {
             0.0
         };
@@ -190,10 +185,10 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
     physics::add_force_at_position(
         vehicle_id,
         v.rotation
-            * (Vec3::Y * direction.y.abs())
+            * (Vec3::Y * v.input_direction.y.abs())
             * pitch_correction
             * distance_correction
-            * -if direction.y > 0. {
+            * -if v.input_direction.y > 0. {
                 vd.forward_force
             } else {
                 vd.backward_force
@@ -204,7 +199,7 @@ fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
     // Apply side inputs by applying an invisible force at the front of the vehicle
     physics::add_force_at_position(
         vehicle_id,
-        v.rotation * (Vec3::X * direction.x) * vd.side_force,
+        v.rotation * (Vec3::X * v.input_direction.x) * vd.side_force,
         v.translation + v.rotation * vd.side_offset.extend(0.0),
     );
 

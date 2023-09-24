@@ -20,7 +20,7 @@ mod shared;
 #[main]
 pub fn main() {
     query((rotation(), linear_velocity()))
-        .requires(vc::player_ref())
+        .requires(vc::is_vehicle())
         .each_frame(|vehicles| {
             for (id, (rot, lv)) in vehicles {
                 entity::add_component(id, vcc::speed_kph(), lv.dot(rot * -Vec3::Y) * 3.6);
@@ -30,7 +30,7 @@ pub fn main() {
     handle_input();
 
     spawn_query(translation())
-        .requires(vc::player_ref())
+        .requires(vc::is_vehicle())
         .bind(|vehicles| {
             for (_vehicle_id, translation) in vehicles {
                 audio::SpatialAudioPlayer::oneshot(
