@@ -11,7 +11,7 @@ use ambient_api::{
     ui::{use_keyboard_input, ImageFromUrl},
 };
 use packages::tangent_schema::{
-    concepts::{VehicleClass, VehicleDef},
+    concepts::{PlayerClass, VehicleDef},
     player::components as pc,
 };
 use packages::this::messages::ClassSetRequest;
@@ -23,13 +23,13 @@ pub fn main() {
 
 #[element_component]
 pub fn App(hooks: &mut Hooks) -> Element {
-    let has_class = use_entity_component(hooks, player::get_local(), pc::vehicle_class()).is_some();
+    let player_class_id = use_entity_component(hooks, player::get_local(), pc::class());
 
     let (toggle, set_toggle) = use_state(hooks, false);
     use_keyboard_input(hooks, {
         let set_toggle = set_toggle.clone();
         move |_, keycode, modifiers, pressed| {
-            if !has_class {
+            if player_class_id.is_none() {
                 return;
             }
 
@@ -42,18 +42,20 @@ pub fn App(hooks: &mut Hooks) -> Element {
         }
     });
 
-    if !has_class || toggle {
-        ClassSelection::el(cb(move || set_toggle(false)))
+    if player_class_id.is_none() || toggle {
+        ClassSelection::el(player_class_id, cb(move || set_toggle(false)))
     } else {
         Element::new()
     }
 }
 
 #[element_component]
-pub fn ClassSelection(hooks: &mut Hooks, hide: Cb<dyn Fn() + Send + Sync>) -> Element {
-    let player_class_id = use_entity_component(hooks, player::get_local(), pc::vehicle_class());
-
-    let mut classes = use_query(hooks, VehicleClass::as_query());
+pub fn ClassSelection(
+    hooks: &mut Hooks,
+    player_class_id: Option<EntityId>,
+    hide: Cb<dyn Fn() + Send + Sync>,
+) -> Element {
+    let mut classes = use_query(hooks, PlayerClass::as_query());
     classes.sort_by_key(|(_, c)| c.name.clone());
 
     WindowSized::el([with_rect(
@@ -88,22 +90,14 @@ pub fn ClassSelection(hooks: &mut Hooks, hide: Cb<dyn Fn() + Send + Sync>) -> El
 pub fn Class(
     _hooks: &mut Hooks,
     class_id: EntityId,
-    class: VehicleClass,
+    class: PlayerClass,
     player_class_id: Option<EntityId>,
     set_player_class_id: Cb<dyn Fn(EntityId) + Send + Sync>,
     hide: Cb<dyn Fn() + Send + Sync>,
 ) -> Element {
     let is_active_class = player_class_id.is_some_and(|id| id == class_id);
 
-    let Some(vd) = VehicleDef::get_spawned(class.def_ref) else {
-        return Element::new();
-    };
-
-    let stats: &[(&str, &dyn Display)] = &[
-        ("Health", &vd.max_health),
-        ("Altitude", &format!("{}m", vd.target)),
-        ("Forward Force", &vd.forward_force),
-    ];
+    let stats: &[(&str, &dyn Display)] = &[];
 
     with_rect(
         FlowRow::el([

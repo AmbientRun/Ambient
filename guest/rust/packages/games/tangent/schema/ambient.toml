@@ -19,9 +19,23 @@ game_object = { path = "../../../schemas/game_object" }
 "player::input_fire" = { type = "Bool", name = "Fire", description = "Fire" }
 "player::input_respawn" = { type = "Bool", name = "Respawn", description = "Respawn" }
 "player::input_aim_direction" = { type = "Vec2", name = "Aim Direction", description = "Aim direction in degrees from the centre" }
-"player::vehicle_class" = { type = "EntityId", name = "Vehicle Class", description = "The player's vehicle class", attributes = [
+"player::class" = { type = "EntityId", name = "Class", description = "The player's class", attributes = [
     "Networked",
     "Debuggable",
+] }
+
+# Player class
+"player::class::is_class" = { type = "Empty", name = "Is Class", description = "Is a player class", attributes = [
+    "Networked",
+] }
+"player::class::name" = { type = "String", name = "Name", description = "Name of the player class", attributes = [
+    "Networked",
+] }
+"player::class::description" = { type = "String", name = "Description", description = "Description of the player class", attributes = [
+    "Networked",
+] }
+"player::class::icon_url" = { type = "String", name = "Icon URL", description = "URL of the icon for the player class", attributes = [
+    "Networked",
 ] }
 
 # Vehicle def
@@ -87,6 +101,12 @@ game_object = { path = "../../../schemas/game_object" }
     "Networked",
 ] }
 
+"vehicle::def::is_def" = { type = "Empty", name = "Is Def", description = "Is a vehicle def", attributes = [
+    "Networked",
+] }
+"vehicle::def::name" = { type = "String", name = "Name", description = "Name of the vehicle def", attributes = [
+    "Networked",
+] }
 "vehicle::def::model_url" = { type = "String", name = "Model URL", description = "URL of the model for the vehicle def", attributes = [
     "Networked",
 ] }
@@ -134,20 +154,6 @@ game_object = { path = "../../../schemas/game_object" }
 
 # Vehicle (client-only)
 "vehicle::client::speed_kph" = { type = "F32", name = "Speed (KPH)", description = "Speed of the vehicle in kilometers per hour." }
-
-# Vehicle class
-"vehicle::class::is_class" = { type = "Empty", name = "Is Class", description = "Is a vehicle class", attributes = [
-    "Networked",
-] }
-"vehicle::class::name" = { type = "String", name = "Name", description = "Name of the vehicle class", attributes = [
-    "Networked",
-] }
-"vehicle::class::description" = { type = "String", name = "Description", description = "Description of the vehicle class", attributes = [
-    "Networked",
-] }
-"vehicle::class::icon_url" = { type = "String", name = "Icon URL", description = "URL of the icon for the vehicle class", attributes = [
-    "Networked",
-] }
 
 # Spawnpoint
 "spawnpoint::is_spawnpoint" = { type = "Empty", name = "Is Spawnpoint", description = "Is a spawnpoint", attributes = [
@@ -197,6 +203,8 @@ description = "Definition for a vehicle"
 "vehicle::def::slowdown::angular_strength" = {}
 "vehicle::def::slowdown::angular_delay" = {}
 
+"vehicle::def::is_def" = {}
+"vehicle::def::name" = {}
 "vehicle::def::model_url" = {}
 "vehicle::def::model_scale" = {}
 
@@ -235,15 +243,14 @@ description = "A vehicle with a physical representation"
 "vehicle::aim_position" = {}
 "vehicle::aimable_weapon_refs" = {}
 
-[concepts.VehicleClass]
-name = "Vehicle Class"
-description = "A vehicle class"
-[concepts.VehicleClass.components.required]
-"vehicle::class::is_class" = {}
-"vehicle::class::name" = {}
-"vehicle::class::description" = {}
-"vehicle::class::icon_url" = {}
-"vehicle::def_ref" = {}
+[concepts.PlayerClass]
+name = "Player Class"
+description = "A player class"
+[concepts.PlayerClass.components.required]
+"player::class::is_class" = {}
+"player::class::name" = {}
+"player::class::description" = {}
+"player::class::icon_url" = {}
 
 [concepts.Spawnpoint]
 name = "Spawnpoint"

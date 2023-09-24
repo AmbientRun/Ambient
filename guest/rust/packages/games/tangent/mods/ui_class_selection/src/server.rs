@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 use packages::{
-    tangent_schema::{concepts::VehicleClass, player::components::vehicle_class},
+    tangent_schema::{concepts::PlayerClass, player::components::class},
     this::messages::ClassSetRequest,
 };
 
@@ -10,10 +10,10 @@ fn main() {
         let Some(player_id) = ctx.client_entity_id() else {
             return;
         };
-        if !VehicleClass::contained_by_spawned(msg.class_id) {
+        if !PlayerClass::contained_by_spawned(msg.class_id) {
             return;
         }
 
-        entity::add_component(player_id, vehicle_class(), msg.class_id);
+        entity::add_component(player_id, class(), msg.class_id);
     });
 }

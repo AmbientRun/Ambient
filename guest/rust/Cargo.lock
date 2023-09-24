@@ -2490,13 +2490,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tangent_camera_topdown"
-version = "0.1.0"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "tangent_class_assault"
 version = "0.3.0-dev"
 dependencies = [
@@ -2555,6 +2548,13 @@ dependencies = [
 [[package]]
 name = "tangent_ui_holohud"
 version = "0.1.0"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "tangent_vehicle_standard"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]

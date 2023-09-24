@@ -27,6 +27,7 @@ pub fn main() {
             aspect_ratio_from_window: Some(entity::resources()),
             ..default()
         },
+        active_camera: -1.0,
         ..PerspectiveInfiniteReverseCamera::suggested()
     }
     .make()

@@ -18,7 +18,7 @@ use ambient_api::{
 use packages::{
     game_object::{components as goc, player::components as gopc},
     tangent_schema::{
-        concepts::{Spawnpoint, Vehicle, VehicleClass, VehicleDef, VehicleOptional},
+        concepts::{Spawnpoint, Vehicle, VehicleDef, VehicleOptional},
         player::components as pc,
         vehicle::{components as vc, def as vd},
     },
@@ -30,8 +30,8 @@ mod shared;
 #[main]
 pub fn main() {
     // When the player's class changes, respawn them.
-    change_query(pc::vehicle_class())
-        .track_change(pc::vehicle_class())
+    change_query(pc::class())
+        .track_change(pc::class())
         .requires(is_player())
         .bind(move |players| {
             for (player_id, _class_id) in players {
@@ -50,7 +50,7 @@ pub fn main() {
 
     // If a player doesn't have a vehicle, but has a class, spawn one for them.
     query(())
-        .requires(pc::vehicle_class())
+        .requires(pc::class())
         .excludes(pc::vehicle_ref())
         .each_frame(|players| {
             for (player_id, _) in players {
@@ -162,15 +162,9 @@ pub fn main() {
 }
 
 fn spawn_vehicle_for_player(player_id: EntityId) {
-    let Some(class_id) = entity::get_component(player_id, pc::vehicle_class()) else {
-        return;
-    };
+    let defs = entity::get_all(vd::components::is_def());
 
-    let Some(class) = VehicleClass::get_spawned(class_id) else {
-        return;
-    };
-
-    let def_ref = class.def_ref;
+    let def_ref = defs.choose(&mut thread_rng()).copied().unwrap();
 
     let Some(def) = VehicleDef::get_spawned(def_ref) else {
         return;

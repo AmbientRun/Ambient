@@ -27,8 +27,9 @@ use ambient_api::{
 use packages::{
     pickup_health::{components::is_health_pickup, concepts::HealthPickup},
     tangent_schema::{
-        concepts::{Spawnpoint, Vehicle, VehicleClass, VehicleDef},
+        concepts::{Spawnpoint, Vehicle, VehicleDef},
         vehicle::components::is_vehicle,
+        vehicle::def::components::is_def,
     },
 };
 
@@ -179,20 +180,17 @@ fn handle_pickups() {
 }
 
 fn handle_vehicles() {
-    let class_query = query(VehicleClass::as_query()).build();
-
     handle_respawnables(
         shared::spawnpoints().len() * 3,
         query(translation()).requires(is_vehicle()).build(),
         Duration::from_secs(30),
         40.0,
         move |translation| {
-            let Some((_, class)) = class_query.evaluate().choose(&mut thread_rng()).cloned() else {
+            let Some(def_id) = entity::get_all(is_def()).choose(&mut thread_rng()).copied() else {
                 return;
             };
-            let def_ref = class.def_ref;
 
-            let Some(def) = VehicleDef::get_spawned(def_ref) else {
+            let Some(def) = VehicleDef::get_spawned(def_id) else {
                 return;
             };
 
@@ -216,7 +214,7 @@ fn handle_vehicles() {
                 last_distances: def.offsets.iter().map(|_| 0.0).collect(),
                 last_jump_time: game_time(),
                 last_slowdown_time: game_time(),
-                def_ref,
+                def_ref: def_id,
 
                 input_direction: default(),
                 input_jump: default(),
