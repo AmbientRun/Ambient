@@ -9,3 +9,4 @@ authors = ["philpax"]
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
 pickup_health = { path = "../pickup_health", deployment = "7lysU5KZdkYj2rpckumEbI" }
+game_object = { path = "../../../../schemas/game_object" }

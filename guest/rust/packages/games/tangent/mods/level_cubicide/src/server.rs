@@ -1,24 +1,38 @@
-use std::{collections::HashMap, f32::consts::TAU};
+use std::{
+    collections::HashMap,
+    f32::consts::{PI, TAU},
+};
 
 use ambient_api::{
     core::{
         app::components::main_scene,
-        physics::components::{cube_collider, dynamic, mass, physics_controlled, plane_collider},
+        hierarchy::components::parent,
+        model::components::model_from_url,
+        physics::components::{
+            self as phyc, cube_collider, dynamic, mass, physics_controlled, plane_collider,
+        },
         primitives::{
             components::{cube, quad},
             concepts::Sphere,
         },
         rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun},
-        transform::components::{rotation, scale, translation},
+        transform::components::{
+            local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale,
+            translation,
+        },
     },
     ecs::GeneralQuery,
-    once_cell::sync::Lazy,
     prelude::*,
     rand,
 };
+
 use packages::{
+    game_object::components as goc,
     pickup_health::{components::is_health_pickup, concepts::HealthPickup},
-    tangent_schema::concepts::Spawnpoint,
+    tangent_schema::{
+        concepts::{Spawnpoint, Vehicle, VehicleClass},
+        vehicle::{components::is_vehicle, data as vd},
+    },
 };
 
 mod shared;
@@ -71,11 +85,13 @@ pub async fn main() {
     }
 
     let mut rng = rand::rngs::StdRng::seed_from_u64(42);
-    make_cubes(&mut rng);
-    handle_pickups(&mut rng);
+    let mut grid = Grid::default();
+    make_cubes(&mut rng, &mut grid);
+    handle_pickups();
+    handle_vehicles();
 }
 
-fn make_cubes(rng: &mut dyn rand::RngCore) {
+fn make_cubes(rng: &mut dyn rand::RngCore, grid: &mut Grid) {
     const TARGET_CUBE_COUNT: usize = 500;
     const CUBE_MIN_SIZE: Vec3 = vec3(0.5, 0.5, 2.0);
     const CUBE_MAX_SIZE: Vec3 = vec3(7., 8., 30.);
@@ -91,7 +107,6 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
     ];
 
     // Spawn cubes until we hit the limit
-    let mut grid = Grid::default();
     while grid.size() < TARGET_CUBE_COUNT {
         let position =
             shared::circle_point(rng.gen::<f32>() * TAU, rng.gen::<f32>() * LEVEL_RADIUS);
@@ -153,53 +168,131 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
     }
 }
 
-fn handle_pickups(rng: &mut dyn rand::RngCore) {
-    make_pickups(rng);
-
-    // Make pickups respawn
-    fixed_rate_tick(Duration::from_secs(5), |_| {
-        make_pickups(&mut thread_rng());
-    });
+fn handle_pickups() {
+    handle_respawnables(
+        shared::spawnpoints().len() * 4,
+        query(translation()).requires(is_health_pickup()).build(),
+        Duration::from_secs(5),
+        25.0,
+        |translation| {
+            HealthPickup {
+                is_health_pickup: (),
+                translation,
+                rotation: Quat::IDENTITY,
+            }
+            .spawn();
+        },
+    )
 }
 
-fn make_pickups(rng: &mut dyn rand::RngCore) {
-    let pickup_count = shared::spawnpoints().len() * 4;
+fn handle_vehicles() {
+    let class_query = query(VehicleClass::as_query()).build();
 
-    static QUERY: Lazy<GeneralQuery<Component<Vec3>>> =
-        Lazy::new(|| query(translation()).requires(is_health_pickup()).build());
+    handle_respawnables(
+        shared::spawnpoints().len() * 3,
+        query(translation()).requires(is_vehicle()).build(),
+        Duration::from_secs(30),
+        40.0,
+        move |translation| {
+            let Some((_, class)) = class_query.evaluate().choose(&mut thread_rng()).cloned() else {
+                return;
+            };
 
-    // Consider a more efficient scheme for more pickups
-    loop {
-        let existing_pickups = QUERY.evaluate();
-        if existing_pickups.len() >= pickup_count {
-            break;
+            let data_ref = class.data_ref;
+
+            let offsets = entity::get_component(data_ref, vd::thruster::components::offsets())
+                .unwrap_or_default();
+
+            let last_distances = offsets.iter().map(|_| 0.0).collect();
+            let max_health = entity::get_component(data_ref, goc::max_health()).unwrap_or(100.0);
+
+            let vehicle_id = Vehicle {
+                linear_velocity: default(),
+                angular_velocity: default(),
+                physics_controlled: (),
+                dynamic: true,
+                density: entity::get_component(data_ref, phyc::density()).unwrap_or_default(),
+                cube_collider: entity::get_component(data_ref, phyc::cube_collider())
+                    .unwrap_or_default(),
+
+                local_to_world: default(),
+                translation,
+                rotation: Quat::from_rotation_z(random::<f32>() * PI),
+
+                is_vehicle: (),
+
+                health: max_health,
+                max_health,
+
+                last_distances,
+                last_jump_time: game_time(),
+                last_slowdown_time: game_time(),
+                data_ref,
+
+                input_direction: default(),
+                input_jump: default(),
+                input_fire: default(),
+                input_aim_direction: default(),
+
+                optional: default(),
+            }
+            .spawn();
+
+            let _vehicle_model_id = Entity::new()
+                .with(cast_shadows(), ())
+                .with(model_from_url(), class.model_url)
+                .with(local_to_world(), default())
+                .with(local_to_parent(), default())
+                .with(mesh_to_local(), default())
+                .with(mesh_to_world(), default())
+                .with(main_scene(), ())
+                .with(scale(), Vec3::ONE * class.model_scale)
+                .with(parent(), vehicle_id)
+                .spawn();
+        },
+    )
+}
+
+fn handle_respawnables(
+    count: usize,
+    locate_query: GeneralQuery<Component<Vec3>>,
+    respawn_time: Duration,
+    distance_from_each_other: f32,
+    spawn: impl Fn(Vec3) + 'static,
+) {
+    let distance_from_each_other_sqr = distance_from_each_other.powi(2);
+    let respawn = move || {
+        let rng = &mut thread_rng();
+
+        let mut existing: Vec<_> = locate_query.evaluate().into_iter().map(|p| p.1).collect();
+        loop {
+            if existing.len() >= count {
+                break;
+            }
+
+            let position =
+                shared::circle_point(rng.gen::<f32>() * TAU, rng.gen::<f32>() * LEVEL_RADIUS);
+
+            let level = shared::level(position.xy());
+            if level > 0.0 {
+                continue;
+            }
+
+            let position = position.extend(1.5);
+
+            if existing.iter().any(|other_position| {
+                other_position.distance_squared(position) < distance_from_each_other_sqr
+            }) {
+                continue;
+            }
+
+            spawn(position);
+            existing.push(position);
         }
+    };
 
-        let position =
-            shared::circle_point(rng.gen::<f32>() * TAU, rng.gen::<f32>() * LEVEL_RADIUS);
-
-        let level = shared::level(position.xy());
-        if level > 0.0 {
-            continue;
-        }
-
-        let position = position.extend(1.5);
-
-        if existing_pickups
-            .into_iter()
-            .map(|(_, pos)| position.distance_squared(pos))
-            .any(|length| length < 25f32.powi(2))
-        {
-            continue;
-        }
-
-        HealthPickup {
-            is_health_pickup: (),
-            translation: position,
-            rotation: Quat::IDENTITY,
-        }
-        .spawn();
-    }
+    respawn();
+    fixed_rate_tick(respawn_time, move |_| respawn());
 }
 
 fn make_cube(pos: Vec3, size: Vec3, dynamic: bool, color: Vec4, rng: &mut dyn RngCore) -> EntityId {
