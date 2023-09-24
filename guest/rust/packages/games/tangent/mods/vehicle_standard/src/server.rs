@@ -58,7 +58,7 @@ fn make_allrounder() {
         is_def: (),
         name: "Thunderstrike".to_string(),
         model_url: packages::kenney_space_kit::assets::url("craft_speederA.glb/models/main.json"),
-        model_scale: 0.5,
+        model_scale: 1.5,
     }
     .spawn();
 
@@ -139,7 +139,7 @@ fn make_speedy() {
         is_def: (),
         name: "Swiftshadow".to_string(),
         model_url: packages::kenney_space_kit::assets::url("craft_racer.glb/models/main.json"),
-        model_scale: 0.5,
+        model_scale: 1.5,
     }
     .spawn();
 
@@ -215,7 +215,7 @@ fn make_tank() {
         is_def: (),
         name: "Ironclad".to_string(),
         model_url: packages::kenney_space_kit::assets::url("craft_miner.glb/models/main.json"),
-        model_scale: 0.5,
+        model_scale: 1.5,
     }
     .spawn();
 
