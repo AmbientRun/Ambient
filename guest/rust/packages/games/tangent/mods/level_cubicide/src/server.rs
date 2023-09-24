@@ -8,12 +8,10 @@ use ambient_api::{
         app::components::main_scene,
         hierarchy::components::parent,
         model::components::model_from_url,
-        physics::components::{
-            self as phyc, cube_collider, dynamic, mass, physics_controlled, plane_collider,
-        },
+        physics::components::{cube_collider, dynamic, mass, physics_controlled, plane_collider},
         primitives::{
             components::{cube, quad},
-            concepts::Sphere,
+            concepts::Capsule,
         },
         rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun},
         transform::components::{
@@ -27,11 +25,10 @@ use ambient_api::{
 };
 
 use packages::{
-    game_object::components as goc,
     pickup_health::{components::is_health_pickup, concepts::HealthPickup},
     tangent_schema::{
         concepts::{Spawnpoint, Vehicle, VehicleClass, VehicleDef},
-        vehicle::{components::is_vehicle, def as vd},
+        vehicle::components::is_vehicle,
     },
 };
 
@@ -72,15 +69,11 @@ pub async fn main() {
             color: color.extend(1.0),
         }
         .make()
-        .with_merge(
-            Sphere {
-                sphere: (),
-                sphere_radius: radius,
-                ..Sphere::suggested()
-            }
-            .make(),
-        )
-        .with(scale(), vec3(1.0, 1.0, 1.0 / (2.0 * radius)))
+        .with_merge(Capsule {
+            capsule_half_height: 0.1,
+            ..Capsule::suggested()
+        })
+        .with(scale(), vec3(radius, radius, 1.0))
         .spawn();
     }
 
@@ -177,7 +170,7 @@ fn handle_pickups() {
         |translation| {
             HealthPickup {
                 is_health_pickup: (),
-                translation,
+                translation: translation.extend(1.0),
                 rotation: Quat::IDENTITY,
             }
             .spawn();
@@ -212,7 +205,7 @@ fn handle_vehicles() {
                 cube_collider: def.cube_collider,
 
                 local_to_world: default(),
-                translation,
+                translation: translation.extend(def.target),
                 rotation: Quat::from_rotation_z(random::<f32>() * PI),
 
                 is_vehicle: (),
@@ -254,13 +247,17 @@ fn handle_respawnables(
     locate_query: GeneralQuery<Component<Vec3>>,
     respawn_time: Duration,
     distance_from_each_other: f32,
-    spawn: impl Fn(Vec3) + 'static,
+    spawn: impl Fn(Vec2) + 'static,
 ) {
     let distance_from_each_other_sqr = distance_from_each_other.powi(2);
     let respawn = move || {
         let rng = &mut thread_rng();
 
-        let mut existing: Vec<_> = locate_query.evaluate().into_iter().map(|p| p.1).collect();
+        let mut existing: Vec<_> = locate_query
+            .evaluate()
+            .into_iter()
+            .map(|p| p.1.xy())
+            .collect();
         loop {
             if existing.len() >= count {
                 break;
@@ -274,10 +271,8 @@ fn handle_respawnables(
                 continue;
             }
 
-            let position = position.extend(1.5);
-
             if existing.iter().any(|other_position| {
-                other_position.distance_squared(position) < distance_from_each_other_sqr
+                other_position.xy().distance_squared(position) < distance_from_each_other_sqr
             }) {
                 continue;
             }
@@ -295,7 +290,7 @@ fn make_cube(pos: Vec3, size: Vec3, dynamic: bool, color: Vec4, rng: &mut dyn Rn
     const MASS_MULTIPLIER: f32 = 10.;
 
     let volume = size.dot(Vec3::ONE);
-    let pitch_amplitude: f32 = if dynamic { 5. } else { 45. };
+    let pitch_amplitude: f32 = if dynamic { 5. } else { 60. };
     Entity::new()
         .with(cube(), ())
         .with(cast_shadows(), ())

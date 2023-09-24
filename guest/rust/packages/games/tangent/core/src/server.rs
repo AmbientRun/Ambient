@@ -5,7 +5,6 @@ use ambient_api::{
         app::components::main_scene,
         hierarchy::components::parent,
         model::components::model_from_url,
-        physics::components as phyc,
         player::components::is_player,
         rendering::components::cast_shadows,
         transform::components::{
@@ -178,7 +177,6 @@ fn spawn_vehicle_for_player(player_id: EntityId) {
     };
 
     // Spawn the new vehicle.
-    let position = choose_spawn_position();
     let vehicle_id = Vehicle {
         linear_velocity: default(),
         angular_velocity: default(),
@@ -188,7 +186,7 @@ fn spawn_vehicle_for_player(player_id: EntityId) {
         cube_collider: def.cube_collider,
 
         local_to_world: default(),
-        translation: position,
+        translation: choose_spawn_position() + Vec3::Z * def.target,
         rotation: Quat::from_rotation_z(random::<f32>() * PI),
 
         is_vehicle: (),
@@ -239,5 +237,5 @@ fn choose_spawn_position() -> Vec3 {
         return Vec3::ZERO;
     };
 
-    sp.translation + (random::<Vec2>() * 2.0 * sp.radius - sp.radius).extend(2.0)
+    sp.translation + ((random::<Vec2>() - 0.5) * 2.0 * sp.radius).extend(0.0)
 }

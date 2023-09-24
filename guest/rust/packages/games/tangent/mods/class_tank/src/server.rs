@@ -40,18 +40,18 @@ pub fn main() {
             offsets,
             k_p: 200.0,
             k_d: -400.0,
-            target: 3.0,
-            max_strength: 25.0,
+            target: 2.0,
+            max_strength: 50.0,
 
-            forward_force: 30.0,
+            forward_force: 35.0,
             backward_force: -5.0,
             forward_offset: vec2(0.0, Y_DISTANCE),
-            side_force: 50.0 / 100.0,
+            side_force: 60.0 / 100.0,
             side_offset: vec2(0.0, -Y_DISTANCE),
 
-            jump_force: 20.0,
+            jump_force: 30.0,
             pitch_strength: 10.0,
-            turning_strength: 20.0,
+            turning_strength: 30.0,
 
             jump_timeout: Duration::from_secs_f32(2.0),
 

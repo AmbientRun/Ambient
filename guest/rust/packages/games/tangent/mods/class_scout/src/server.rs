@@ -41,7 +41,7 @@ pub fn main() {
             offsets,
             k_p: 400.0,
             k_d: -800.0,
-            target: 2.0,
+            target: 1.75,
             max_strength: 25.0,
 
             forward_force: 50.0,
