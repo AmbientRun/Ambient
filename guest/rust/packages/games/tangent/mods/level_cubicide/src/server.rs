@@ -4,7 +4,10 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         physics::components::{cube_collider, dynamic, mass, physics_controlled, plane_collider},
-        primitives::components::{cube, quad},
+        primitives::{
+            components::{cube, quad},
+            concepts::Sphere,
+        },
         rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun},
         transform::components::{rotation, scale, translation},
     },
@@ -54,6 +57,16 @@ pub async fn main() {
             translation: pos,
             color: color.extend(1.0),
         }
+        .make()
+        .with_merge(
+            Sphere {
+                sphere: (),
+                sphere_radius: radius,
+                ..Sphere::suggested()
+            }
+            .make(),
+        )
+        .with(scale(), vec3(1.0, 1.0, 1.0 / (2.0 * radius)))
         .spawn();
     }
 

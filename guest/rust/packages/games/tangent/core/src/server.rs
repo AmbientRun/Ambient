@@ -7,7 +7,6 @@ use ambient_api::{
         model::components::model_from_url,
         physics::components as phyc,
         player::components::is_player,
-        primitives::concepts::Sphere,
         rendering::components::cast_shadows,
         transform::components::{
             local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation,
@@ -33,22 +32,6 @@ mod shared;
 
 #[main]
 pub fn main() {
-    // When a spawnpoint is created, give it a physical representation.
-    spawn_query(Spawnpoint::as_query()).bind(|spawnpoints| {
-        for (id, spawnpoint) in spawnpoints {
-            entity::add_components(
-                id,
-                Sphere {
-                    sphere: (),
-                    sphere_radius: spawnpoint.radius,
-                    ..Sphere::suggested()
-                }
-                .make()
-                .with(scale(), vec3(1.0, 1.0, 1.0 / (2.0 * spawnpoint.radius))),
-            );
-        }
-    });
-
     // When the player's class changes, respawn them.
     change_query(pc::vehicle_class())
         .track_change(pc::vehicle_class())
