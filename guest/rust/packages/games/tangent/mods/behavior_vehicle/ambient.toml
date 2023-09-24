@@ -1,6 +1,6 @@
 [package]
 id = "mnm43qv33k7kx235bz5hcgoguokwxzwo"
-name = "Tangent Physics: Vehicle"
+name = "Tangent Behavior: Vehicle"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
 ambient_version = "0.3.0-nightly-2023-09-22"
@@ -10,6 +10,7 @@ authors = ["philpax"]
 tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
 game_object = { path = "../../../../schemas/game_object" }
 kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "7VEdO55zqgSL75rJNg3TJ2" }
+explosion = { path = "../../../../std/explosion" }
 
 [messages.OnCollision]
 name = "On Collision"

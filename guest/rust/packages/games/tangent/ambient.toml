@@ -23,7 +23,7 @@ class_assault = { path = "mods/class_assault", enabled = true, deployment = "5hA
 class_scout = { path = "mods/class_scout", enabled = true, deployment = "Nx3qEbJOrSaFBe8FnV2MB" }
 class_tank = { path = "mods/class_tank", enabled = true, deployment = "5ckkjUWLrZxN7RN0DuyXUV" }
 
-physics_vehicle = { path = "mods/physics_vehicle", enabled = true }
+behavior_vehicle = { path = "mods/behavior_vehicle", enabled = true }
 
 package_manager = { path = "../../tools/package_manager", deployment = "5LanfDGbkMRdk27Xo2Xtxf" }
 

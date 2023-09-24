@@ -9,7 +9,7 @@ use ambient_api::{
         player::components::is_player,
         rendering::components::cast_shadows,
         transform::components::{
-            local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation,
+            local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale,
         },
     },
     ecs::GeneralQuery,
@@ -17,11 +17,9 @@ use ambient_api::{
 };
 
 use packages::{
-    explosion::concepts::Explosion,
     game_object::{components as goc, player::components as gopc},
     tangent_schema::{
         concepts::{Spawnpoint, Vehicle, VehicleClass, VehicleOptional},
-        messages::OnDeath,
         player::components as pc,
         vehicle::{components as vc, data as vd},
     },
@@ -38,7 +36,7 @@ pub fn main() {
         .requires(is_player())
         .bind(move |players| {
             for (player_id, _class_id) in players {
-                respawn_player(player_id);
+                spawn_vehicle_for_player(player_id);
             }
         });
 
@@ -51,15 +49,34 @@ pub fn main() {
         }
     });
 
-    // When a player('s vehicle) dies, respawn them.
-    // TODO: decouple
-    query((vc::driver_ref(), goc::health())).each_frame(|vehicles| {
-        for (_, (player_id, health)) in vehicles {
-            if health <= 0.0 {
-                respawn_player(player_id);
+    // If a player doesn't have a vehicle, but has a class, spawn one for them.
+    query(())
+        .requires(pc::vehicle_class())
+        .excludes(pc::vehicle_ref())
+        .each_frame(|players| {
+            for (player_id, _) in players {
+                spawn_vehicle_for_player(player_id);
             }
-        }
-    });
+        });
+
+    // Sync all vehicle-drivers back to their drivers.
+    {
+        change_query(vc::driver_ref())
+            .track_change(vc::driver_ref())
+            .bind(|vehicles| {
+                for (vehicle_id, driver_id) in vehicles {
+                    entity::add_component(driver_id, pc::vehicle_ref(), vehicle_id);
+                    entity::add_component(driver_id, gopc::control_of_entity(), vehicle_id);
+                }
+            });
+
+        despawn_query(vc::driver_ref()).bind(|vehicles| {
+            for (_, driver_id) in vehicles {
+                entity::remove_component(driver_id, pc::vehicle_ref());
+                entity::remove_component(driver_id, gopc::control_of_entity());
+            }
+        });
+    }
 
     // When a player sends input, update their input state.
     Input::subscribe(|ctx, input| {
@@ -97,8 +114,11 @@ pub fn main() {
         let aim_position = shared::calculate_aim_position(vehicle_id, aim_direction, RANGE);
         let aim_distance = hit.map(|h| h.distance).unwrap_or(RANGE);
 
-        entity::add_component(vehicle_id, vc::aim_position(), aim_position);
-        entity::add_component(vehicle_id, vc::aim_distance(), aim_distance);
+        // TODO: remove this once input is properly decoupled from vehicles
+        if entity::exists(vehicle_id) {
+            entity::add_component(vehicle_id, vc::aim_position(), aim_position);
+            entity::add_component(vehicle_id, vc::aim_distance(), aim_distance);
+        }
 
         // If the user opted to respawn, immediately destroy their vehicle
         if input.respawn {
@@ -130,7 +150,7 @@ pub fn main() {
     });
 }
 
-fn respawn_player(player_id: EntityId) {
+fn spawn_vehicle_for_player(player_id: EntityId) {
     let Some(class_id) = entity::get_component(player_id, pc::vehicle_class()) else {
         return;
     };
@@ -146,27 +166,6 @@ fn respawn_player(player_id: EntityId) {
 
     let last_distances = offsets.iter().map(|_| 0.0).collect();
     let max_health = entity::get_component(vehicle_data_ref, goc::max_health()).unwrap_or(100.0);
-
-    // Kill the existing vehicle if it exists.
-    if let Some(existing_vehicle_id) = entity::get_component(player_id, pc::vehicle_ref()) {
-        if let Some(translation) = entity::get_component(existing_vehicle_id, translation()) {
-            OnDeath {
-                position: translation,
-                player_id,
-            }
-            .send_local_broadcast(true);
-
-            Explosion {
-                is_explosion: (),
-                translation,
-                radius: 4.0,
-                damage: 25.0,
-                optional: default(),
-            }
-            .spawn();
-        }
-        entity::despawn_recursive(existing_vehicle_id);
-    }
 
     // Spawn the new vehicle.
     let position = choose_spawn_position();
@@ -204,8 +203,6 @@ fn respawn_player(player_id: EntityId) {
         },
     }
     .spawn();
-    entity::add_component(player_id, pc::vehicle_ref(), vehicle_id);
-    entity::add_component(player_id, gopc::control_of_entity(), vehicle_id);
 
     let _vehicle_model_id = Entity::new()
         .with(cast_shadows(), ())

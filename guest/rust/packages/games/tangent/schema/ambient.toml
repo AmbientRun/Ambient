@@ -250,8 +250,3 @@ description = "A spawnpoint"
 "spawnpoint::radius" = {}
 "ambient_core::transform::translation" = {}
 "ambient_core::rendering::color" = {}
-
-[messages.OnDeath]
-name = "On Death"
-description = "Sent to server modules when a vehicle is destroyed."
-fields = { position = "Vec3", player_id = "EntityId" }

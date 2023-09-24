@@ -8,6 +8,7 @@ use ambient_api::{
 };
 
 use packages::{
+    explosion::concepts::Explosion,
     game_object::components as goc,
     tangent_schema::{
         concepts::{Vehicle, VehicleData},
@@ -66,6 +67,21 @@ fn process_vehicle(vehicle_id: EntityId) {
     let Some(v) = Vehicle::get_spawned(vehicle_id) else {
         return;
     };
+
+    // If the vehicle's health is zero, despawn it and spawn an explosion.
+    if v.health <= 0.0 {
+        Explosion {
+            is_explosion: (),
+            translation: v.translation,
+            radius: 4.0,
+            damage: 25.0,
+            optional: default(),
+        }
+        .spawn();
+
+        entity::despawn_recursive(vehicle_id);
+        return;
+    }
 
     // If the vehicle's been upside down for some time, start applying damage to it.
     if (v.rotation * Vec3::Z).dot(Vec3::Z) < -0.5 {
