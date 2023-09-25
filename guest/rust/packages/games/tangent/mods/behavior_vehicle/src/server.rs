@@ -83,6 +83,10 @@ fn process_vehicle(vehicle_id: EntityId) {
         return;
     }
 
+    let Some(vd) = VehicleDef::get_spawned(v.def_ref) else {
+        return;
+    };
+
     // If the vehicle's been upside down for some time, start applying damage to it.
     if (v.rotation * Vec3::Z).dot(Vec3::Z) < -0.5 {
         if let Some(last_upside_down_time) = v.optional.last_upside_down_time {
@@ -121,10 +125,6 @@ fn process_vehicle(vehicle_id: EntityId) {
             entity::add_component(weapon_id, weapon::components::fire(), v.input_fire);
         }
     }
-
-    let Some(vd) = VehicleDef::get_spawned(v.def_ref) else {
-        return;
-    };
 
     // Apply jump
     let vehicle_last_jump_time = get(vehicle_id, vc::last_jump_time()).unwrap_or_default();
@@ -175,11 +175,11 @@ fn process_vehicle(vehicle_id: EntityId) {
             .into_iter()
             .find(|h| h.entity != vehicle_id)
         {
-            let old_distance = last_distances[index];
             let new_distance = hit.distance;
+            let old_distance = last_distances[index];
             let delta_distance = new_distance - old_distance;
 
-            let error_distance = vd.target - hit.distance;
+            let error_distance = vd.target - new_distance;
             let p = vd.k_p * error_distance;
             let d = vd.k_d * delta_distance;
             let strength = ((p + d + strength_offset) * delta_time()).clamp(-0.1, vd.max_strength);

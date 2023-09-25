@@ -95,6 +95,7 @@ fn handle_input() {
             direction,
             jump: input.keys.contains(&KeyCode::Space),
             sprint: input.keys.contains(&KeyCode::LShift),
+            use_button: input.keys.contains(&KeyCode::E),
             fire: input.mouse_buttons.contains(&MouseButton::Left),
             aim_direction: *aim_direction.lock().unwrap(),
             respawn: delta.keys.contains(&KeyCode::K),

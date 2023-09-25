@@ -4,7 +4,7 @@ use ambient_api::{
     core::{
         app::components::name,
         player::components::{is_player, user_id},
-        transform::components::{rotation, translation},
+        transform::components::{local_to_world, rotation, translation},
     },
     ecs::GeneralQuery,
     prelude::*,
@@ -93,6 +93,7 @@ pub fn main() {
                 .with(pc::input_direction(), input.direction)
                 .with(pc::input_jump(), input.jump)
                 .with(pc::input_fire(), input.fire)
+                .with(pc::input_use(), input.use_button)
                 .with(pc::input_sprint(), input.sprint)
                 .with(pc::input_respawn(), input.respawn)
                 .with(pc::input_aim_direction(), input.aim_direction),
@@ -174,6 +175,7 @@ pub fn main() {
         pc::input_aim_direction(),
         pc::character_ref(),
     ))
+    .excludes(pc::vehicle_ref())
     .each_frame(|players| {
         for (
             _,
@@ -223,6 +225,87 @@ pub fn main() {
             }
         }
     });
+
+    // If the player has a character, but no vehicle, and is currently trying to use something,
+    // check if there are any vehicles they could enter
+    query((pc::character_ref(), pc::input_use()))
+        .excludes(pc::vehicle_ref())
+        .each_frame(|players| {
+            for (player_id, (character_ref, input_use)) in players {
+                if !input_use {
+                    continue;
+                }
+
+                let Some(head_ref) = entity::get_component(character_ref, uc::head_ref()) else {
+                    continue;
+                };
+
+                let last_use_time =
+                    entity::get_component(character_ref, pcc::last_use_time()).unwrap_or_default();
+
+                if (game_time() - last_use_time) < Duration::from_secs_f32(0.5) {
+                    continue;
+                }
+
+                let Some(local_to_world) = entity::get_component(head_ref, local_to_world()) else {
+                    continue;
+                };
+
+                let (_, rotation, translation) = local_to_world.to_scale_rotation_translation();
+
+                if let Some(hit) = physics::raycast(translation, rotation * Vec3::Z)
+                    .into_iter()
+                    .filter(|h| h.entity != character_ref)
+                    .next()
+                {
+                    if entity::has_component(hit.entity, vc::is_vehicle()) {
+                        entity::add_component(hit.entity, vc::driver_ref(), player_id);
+                    }
+                }
+
+                entity::add_component(character_ref, pcc::last_use_time(), game_time());
+            }
+        });
+
+    // TEMP HACK REMOVE ME
+    // explosion gun for debugging
+
+    // If the player has a character, but no vehicle, and is currently trying to use something,
+    // check if there are any vehicles they could enter
+    query((pc::character_ref(), pc::input_fire()))
+        .excludes(pc::vehicle_ref())
+        .each_frame(|players| {
+            for (player_id, (character_ref, input_fire)) in players {
+                if !input_fire {
+                    continue;
+                }
+
+                let Some(head_ref) = entity::get_component(character_ref, uc::head_ref()) else {
+                    continue;
+                };
+
+                let Some(local_to_world) = entity::get_component(head_ref, local_to_world()) else {
+                    continue;
+                };
+
+                let (_, rotation, translation) = local_to_world.to_scale_rotation_translation();
+
+                if let Some(hit) = physics::raycast(translation, rotation * Vec3::Z)
+                    .into_iter()
+                    .filter(|h| h.entity != character_ref)
+                    .next()
+                {
+                    packages::explosion::concepts::Explosion {
+                        is_explosion: (),
+                        translation: hit.position,
+                        radius: 4.0,
+                        damage: 10.0,
+                        optional: default(),
+                    }
+                    .spawn();
+                }
+            }
+        });
 }
 
 fn choose_spawn_position() -> Vec3 {

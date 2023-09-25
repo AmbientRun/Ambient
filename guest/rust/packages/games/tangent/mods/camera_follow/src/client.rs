@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use ambient_api::{
     core::{
         camera::{
-            components::{fog, fovy},
+            components::{active_camera, fog, fovy},
             concepts::{
                 PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
             },
@@ -16,7 +16,7 @@ use ambient_api::{
 };
 use packages::tangent_schema::player::components as pc;
 
-const CAMERA_OFFSET: Vec3 = vec3(0.5, 1.8, 0.6);
+const CAMERA_OFFSET: Vec3 = vec3(1.5, 5.4, 1.8);
 
 #[main]
 pub fn main() {
@@ -37,43 +37,25 @@ pub fn main() {
     .spawn();
 
     Frame::subscribe(move |_| {
-        let Some(camera_position) = entity::get_component(camera_id, translation()) else {
-            return;
-        };
-        let Some(camera_lookat) = entity::get_component(camera_id, lookat_target()) else {
-            return;
-        };
-
         let player_id = player::get_local();
-        let target = entity::get_component(player_id, pc::vehicle_ref())
+        let vehicle_ref = entity::get_component(player_id, pc::vehicle_ref());
+        let target = vehicle_ref
             .and_then(vehicle_target)
             .unwrap_or_else(arena_target);
 
-        // Smooth out the camera movement by moving towards the target with a constant velocity
-        let dt = delta_time();
-        let camera_speed_ms = (target.speed * 5.0).max(2.0);
-        const CAMERA_SNAP_TIME: f32 = 0.01;
-
-        let camera_snap_distance_sqr = (camera_speed_ms * CAMERA_SNAP_TIME).powi(2);
-
-        // If we're almost at the target, just snap to it
-        let s = if target.position.distance_squared(camera_position) < camera_snap_distance_sqr {
-            1.0
-        } else {
-            camera_speed_ms * dt
-        };
-
-        let new_position = camera_position.lerp(target.position, s);
-        let new_lookat = camera_lookat.lerp(target.lookat, s);
-
-        entity::set_component(camera_id, translation(), new_position);
-        entity::set_component(camera_id, lookat_target(), new_lookat);
+        entity::set_component(camera_id, translation(), target.position);
+        entity::set_component(camera_id, lookat_target(), target.lookat);
         entity::set_component(camera_id, lookat_up(), Vec3::Z);
         entity::set_component(
             camera_id,
             fovy(),
             0.9 + (target.speed.abs() / 300.0).clamp(0.0, 1.0),
         );
+        entity::set_component(
+            camera_id,
+            active_camera(),
+            if vehicle_ref.is_none() { -1.0 } else { 2.0 },
+        )
     });
 }
 

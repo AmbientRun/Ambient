@@ -181,10 +181,10 @@ fn handle_pickups() {
 
 fn handle_vehicles() {
     handle_respawnables(
-        shared::spawnpoints().len() * 3,
+        shared::spawnpoints().len() * 5,
         query(translation()).requires(is_vehicle()).build(),
         Duration::from_secs(30),
-        40.0,
+        20.0,
         move |translation| {
             let Some(def_id) = entity::get_all(is_def()).choose(&mut thread_rng()).copied() else {
                 return;
@@ -203,7 +203,7 @@ fn handle_vehicles() {
                 cube_collider: def.cube_collider,
 
                 local_to_world: default(),
-                translation: translation.extend(def.target),
+                translation: translation.extend(def.target * 2.0),
                 rotation: Quat::from_rotation_z(random::<f32>() * PI),
 
                 is_vehicle: (),
