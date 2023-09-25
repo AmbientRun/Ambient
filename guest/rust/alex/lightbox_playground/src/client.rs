@@ -131,7 +131,9 @@ fn main() {
     let statue = Entity::new()
         .with(
             model_from_url(),
-            packages::this::assets::url("hermaneubis.glb"),
+            // packages::this::assets::url("hermaneubis.glb"),
+            packages::this::assets::url("cliffmesh01_fredrik.glb"),
+            // packages::this::assets::url("cliffmesh01.gltf"),
         )
         .with(translation(), vec3(0., 0., 0.))
         .with(cast_shadows(), ())
