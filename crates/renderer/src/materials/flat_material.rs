@@ -80,6 +80,7 @@ pub fn get_flat_shader_unlit(assets: &AssetCache, config: &RendererConfig) -> Ar
 }
 
 #[derive(Debug)]
+/// Creates a pvc plastic like flat material with the specified color.
 pub struct FlatMaterialKey {
     color: Vec4,
     transparent: Option<bool>,

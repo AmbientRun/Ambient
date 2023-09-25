@@ -307,9 +307,7 @@ pub struct PbrMaterialDesc {
     pub transparent: Option<bool>,
     pub alpha_cutoff: Option<f32>,
     pub double_sided: Option<bool>,
-    #[serde(default)]
     pub metallic: f32,
-    #[serde(default)]
     pub roughness: f32,
 
     pub sampler: Option<SamplerKey>,
