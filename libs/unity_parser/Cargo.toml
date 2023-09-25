@@ -13,3 +13,4 @@ yaml-rust = { workspace = true }
 itertools = { workspace = true }
 glam = { workspace = true }
 anyhow = { workspace = true }
+tracing = { workspace = true }

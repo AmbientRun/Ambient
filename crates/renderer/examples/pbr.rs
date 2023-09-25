@@ -183,11 +183,11 @@ async fn init(app: &mut App) {
         .with(sun(), 0.0)
         .with(rotation(), Quat::from_rotation_y(-1.))
         .with(main_scene(), ())
-        .with(light_diffuse(), Vec3::ONE)
+        .with(light_diffuse(), Vec3::ONE * 2.0)
         .with(light_ambient(), Vec3::ZERO)
         .spawn(world);
 
-    let start = Instant::now();
+    // let start = Instant::now();
 
     // app.add_system(query_mut(color(), ()).to_system(move |q, w, qs, _| {
     //     let t = start.elapsed().as_secs_f32();

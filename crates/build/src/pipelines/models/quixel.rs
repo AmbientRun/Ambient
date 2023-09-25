@@ -181,10 +181,9 @@ pub async fn object_pipelines_from_quixel_json(
                 metallic_roughness: Some(
                     pipe_image(&format!("{}_Roughness.jpg", quixel_id.resolution)).await?,
                 ),
-                roughness: 1.0,
-                metallic: 0.2,
                 ..Default::default()
             };
+
             let material_override = ModelImportTransform::OverrideMaterial {
                 filter: MaterialFilter::All,
                 material: Box::new(material.relative_path_from(out_materials_url)),
@@ -368,8 +367,6 @@ pub async fn object_pipelines_from_quixel_json(
                         .or_else(|| get_map_v2("components", "Roughness")),
                 )
                 .await?,
-                metallic: 0.2,
-                roughness: 1.0,
                 ..Default::default()
             }
             .relative_path_from(out_materials_url);
@@ -379,11 +376,10 @@ pub async fn object_pipelines_from_quixel_json(
                 normalmap: pipe_image_opt(get_map_v1("billboards", "Normal")).await?,
                 alpha_cutoff: Some(0.5),
                 metallic_roughness: pipe_mr_image(get_map_v1("maps", "Roughness")).await?,
-                metallic: 0.2,
-                roughness: 1.0,
                 ..Default::default()
             }
             .relative_path_from(out_materials_url);
+
             for meta in get_path(quixel, vec!["meta"]).unwrap().as_array().unwrap() {
                 if meta
                     .as_object()

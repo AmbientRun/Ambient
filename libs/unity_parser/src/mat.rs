@@ -28,22 +28,23 @@ impl Material {
             .context("m_TexEnvs not a vec")?
         {
             let (key, value) = tex.as_hash().unwrap().iter().next().unwrap();
-            let ref_ = UnityRef::from_yaml(&value["m_Texture"])?;
+            let file_ref = UnityRef::from_yaml(&value["m_Texture"])?;
             match key.as_str().context("Key not a str")? {
                 "_MainTex" => {
-                    res.main_tex = Some(ref_);
+                    res.main_tex = Some(file_ref);
                 }
                 "_BumpMap" => {
-                    res.bump_map = Some(ref_);
+                    res.bump_map = Some(file_ref);
                 }
                 "_MetalicRAOGSmothnessA" => {
-                    res.metallic_r_ao_g_smothness_a = Some(ref_);
+                    tracing::debug!(?file_ref, "Found metallic smoothness map");
+                    res.metallic_r_ao_g_smothness_a = Some(file_ref);
                 }
                 "_MetallicGlossMap" => {
-                    res.metallic_gloss_map = Some(ref_);
+                    res.metallic_gloss_map = Some(file_ref);
                 }
                 "_OcclusionMap" => {
-                    res.occlusion_map = Some(ref_);
+                    res.occlusion_map = Some(file_ref);
                 }
                 _ => {}
             }

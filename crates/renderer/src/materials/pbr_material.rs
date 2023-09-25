@@ -15,7 +15,7 @@ use ambient_native_std::{
     friendly_id, include_file,
 };
 use async_trait::async_trait;
-use glam::Vec4;
+use glam::{uvec4, Vec4};
 use serde::{Deserialize, Serialize};
 use wgpu::{util::DeviceExt, BindGroup};
 
@@ -114,18 +114,19 @@ pub struct PbrMaterialParams {
     pub base_color_factor: Vec4,
     pub emissive_factor: Vec4,
     pub alpha_cutoff: f32,
-    pub metallic: f32,
-    pub roughness: f32,
+    pub metallic_factor: f32,
+    pub roughness_factor: f32,
     pub _padding: u32,
 }
+
 impl Default for PbrMaterialParams {
     fn default() -> Self {
         Self {
             base_color_factor: Vec4::ONE,
             emissive_factor: Vec4::ZERO,
             alpha_cutoff: 0.5,
-            metallic: 1.0,
-            roughness: 1.0,
+            metallic_factor: 1.0,
+            roughness_factor: 1.0,
             _padding: Default::default(),
         }
     }
@@ -216,7 +217,7 @@ impl PbrMaterial {
                 params: PbrMaterialParams::default(),
                 base_color: texture,
                 normalmap: DefaultNormalMapViewKey.get(assets),
-                metallic_roughness: PixelTextureViewKey::white().get(assets),
+                metallic_roughness: default_metallic_roughness(assets),
                 sampler: SamplerKey::LINEAR_CLAMP_TO_EDGE.get(assets),
                 transparent: None,
                 double_sided: None,
@@ -234,6 +235,15 @@ impl PbrMaterial {
             + self.config.metallic_roughness.texture.size_in_bytes
     }
 }
+
+// Mimics the flat_material standard material
+fn default_metallic_roughness(assets: &AssetCache) -> Arc<TextureView> {
+    PixelTextureViewKey {
+        color: uvec4(0, (0.4f32 * 255.0) as u32, 0, 0),
+    }
+    .get(assets)
+}
+
 impl std::fmt::Debug for PbrMaterial {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("PbrMaterial")
@@ -292,7 +302,8 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromUrl 
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+/// Uses the asset urls to resolve to `PbrMaterialConfig` using in-memory images
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct PbrMaterialDesc {
     pub name: Option<String>,
     pub source: Option<String>,
@@ -307,11 +318,32 @@ pub struct PbrMaterialDesc {
     pub transparent: Option<bool>,
     pub alpha_cutoff: Option<f32>,
     pub double_sided: Option<bool>,
-    pub metallic: f32,
-    pub roughness: f32,
-
+    pub metallic_factor: f32,
+    pub roughness_factor: f32,
     pub sampler: Option<SamplerKey>,
 }
+
+impl Default for PbrMaterialDesc {
+    fn default() -> Self {
+        Self {
+            name: None,
+            source: None,
+            base_color: None,
+            opacity: None,
+            normalmap: None,
+            metallic_roughness: None,
+            base_color_factor: None,
+            emissive_factor: None,
+            transparent: None,
+            alpha_cutoff: None,
+            double_sided: None,
+            sampler: None,
+            metallic_factor: 1.0,
+            roughness_factor: 1.0,
+        }
+    }
+}
+
 impl PbrMaterialDesc {
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<Self> {
         Ok(Self {
@@ -344,11 +376,12 @@ impl PbrMaterialDesc {
             transparent: self.transparent,
             alpha_cutoff: self.alpha_cutoff,
             double_sided: self.double_sided,
-            metallic: self.metallic,
-            roughness: self.roughness,
             sampler: self.sampler,
+            metallic_factor: self.metallic_factor,
+            roughness_factor: self.roughness_factor,
         })
     }
+
     pub fn relative_path_from(&self, base_url: &AbsAssetUrl) -> Self {
         Self {
             name: self.name.clone(),
@@ -376,9 +409,9 @@ impl PbrMaterialDesc {
             transparent: self.transparent,
             alpha_cutoff: self.alpha_cutoff,
             double_sided: self.double_sided,
-            metallic: self.metallic,
-            roughness: self.roughness,
             sampler: self.sampler,
+            metallic_factor: self.metallic_factor,
+            roughness_factor: self.roughness_factor,
         }
     }
 }
@@ -437,7 +470,7 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
                 .create_view(&Default::default()),
             )
         } else {
-            PixelTextureViewKey::white().get(&assets)
+            default_metallic_roughness(&assets)
         };
 
         let sampler = if let Some(sampler) = self.sampler {
@@ -450,8 +483,8 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
             base_color_factor: self.base_color_factor.unwrap_or(Vec4::ONE),
             emissive_factor: self.emissive_factor.unwrap_or(Vec4::ZERO),
             alpha_cutoff: self.alpha_cutoff.unwrap_or(0.01),
-            metallic: self.metallic,
-            roughness: self.roughness,
+            metallic_factor: self.metallic_factor,
+            roughness_factor: self.roughness_factor,
             _padding: Default::default(),
         };
 
