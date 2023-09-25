@@ -34,7 +34,7 @@ fn get_material(in: MaterialInput) -> MaterialOutput {
     out.opacity = color.a;
 
     out.metallic = mr.r * pbr_params.metallic;
-    out.roughness = mr.g * pbr_params.roughness;
+    out.roughness = max(mr.g * pbr_params.roughness, 0.1);
 
     out.alpha_cutoff = pbr_params.alpha_cutoff;
     out.base_color = color.rgb;
