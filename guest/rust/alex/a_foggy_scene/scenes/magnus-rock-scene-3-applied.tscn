@@ -1,0 +1,75 @@
+[gd_scene load_steps=9 format=3 uid="uid://1yqn51ov4vil"]
+
+[ext_resource type="PackedScene" uid="uid://cvp3slow4hlnv" path="res://00_plane_roamer/roamer_3rd_person.tscn" id="1_72u2f"]
+[ext_resource type="PackedScene" uid="uid://c88rp8xrprxr6" path="res://13_MagnusRock/cliffmesh_combined_applied.glb" id="2_t7jrp"]
+[ext_resource type="PackedScene" uid="uid://deoh8vyvsfjl8" path="res://13_MagnusRock/cliffmesh_rock_applied.glb" id="3_twwn4"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_foy0d"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_wnb2o"]
+size = Vector2(9999, 9999)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_vqmnj"]
+
+[sub_resource type="Sky" id="Sky_tgj7f"]
+sky_material = SubResource("ProceduralSkyMaterial_vqmnj")
+
+[sub_resource type="Environment" id="Environment_cw8jr"]
+background_mode = 2
+sky = SubResource("Sky_tgj7f")
+
+[node name="magnus-rock-scene" type="Node3D"]
+
+[node name="floor" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="floor"]
+shape = SubResource("WorldBoundaryShape3D_foy0d")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="floor"]
+mesh = SubResource("PlaneMesh_wnb2o")
+
+[node name="Roamer3rdPerson" parent="." instance=ExtResource("1_72u2f")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.23622, 1.43814, 1.45678)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_cw8jr")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(1, 0, 0, 0, 0.819782, 0.572675, 0, -0.572675, 0.819782, 0, 0, 0)
+shadow_enabled = true
+
+[node name="cliffmesh_combined_applied" parent="." instance=ExtResource("2_t7jrp")]
+transform = Transform3D(3.24466, 0, 0, 0, 3.24466, 0, 0, 0, 3.24466, -16.7636, 0, 27.8341)
+
+[node name="cliffmesh_combined_applied2" parent="." instance=ExtResource("2_t7jrp")]
+transform = Transform3D(-0.785178, 0, 4.24803, 0, 4.31998, 0, -4.24803, 0, -0.785178, -36.5031, 0, 50.112)
+
+[node name="cliffmesh_combined_applied3" parent="." instance=ExtResource("2_t7jrp")]
+transform = Transform3D(-5.52811, 0, -3.74732, 0, 6.67851, 0, 3.74732, 0, -5.52811, -77.9331, 0, 38.8531)
+
+[node name="cliffmesh_combined_applied4" parent="." instance=ExtResource("2_t7jrp")]
+transform = Transform3D(-7.29731, 0, 4.77341, 0, 8.71988, 0, -4.77341, 0, -7.29731, -57.186, 0, -146.043)
+
+[node name="cliffmesh_combined_applied5" parent="." instance=ExtResource("2_t7jrp")]
+transform = Transform3D(-5.30679, 0, -2.56106, 0, 5.89246, 0, 2.56106, 0, -5.30679, 18.809, 0, -113.595)
+
+[node name="cliffmesh_rock_applied" parent="." instance=ExtResource("3_twwn4")]
+transform = Transform3D(2.35132, 0, 0, 0, 2.35132, 0, 0, 0, 2.35132, 22.3903, 0, -6.58563)
+
+[node name="cliffmesh_rock_applied3" parent="." instance=ExtResource("3_twwn4")]
+transform = Transform3D(0.322504, 0, 6.56356, 0, 6.57148, 0, -6.56356, 0, 0.322504, -100.913, -9.99871, 2.76921)
+
+[node name="cliffmesh_rock_applied4" parent="." instance=ExtResource("3_twwn4")]
+transform = Transform3D(-7.47912, 0, 0.509875, 0, 7.49648, 0, -0.509875, 0, -7.47912, -109.729, -5.15252, -43.5321)
+
+[node name="cliffmesh_rock_applied5" parent="." instance=ExtResource("3_twwn4")]
+transform = Transform3D(3.9502, 0, -6.37127, 0, 7.49648, 0, 6.37127, 0, 3.9502, -102.129, -5.15252, -119.446)
+
+[node name="cliffmesh_rock_applied2" parent="." instance=ExtResource("3_twwn4")]
+transform = Transform3D(-1.06661, 0, -4.1557, 0, 4.29039, 0, 4.1557, 0, -1.06661, 30.7495, 0, 13.1561)
+
+[node name="cliffmesh_rock_applied6" parent="." instance=ExtResource("3_twwn4")]
+transform = Transform3D(-0.948043, 0, -3.69372, 0, 3.81345, 0, 3.69372, 0, -0.948043, -10.3482, 0, -171.793)
+
+[node name="cliffmesh_rock_applied7" parent="." instance=ExtResource("3_twwn4")]
+transform = Transform3D(1.96436, 0, -3.26859, 0, 3.81345, 0, 3.26859, 0, 1.96436, 16.1578, 0, -159.083)

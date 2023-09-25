@@ -101,7 +101,7 @@ pub fn load_scene() {
         .spawn();
 
     let nodes = crate::sceneloader::scene_contents_to_nodes(include_str!(
-        "../scenes/snowstorm_mounds.tscn"
+        "../scenes/magnus-rock-scene-3-applied.tscn"
     ));
 
     for (_key, node) in nodes {
