@@ -209,7 +209,7 @@ impl UIExt for Element {
     }
 }
 
-/// Helper wrapper around [Hooks::use_runtime_message] that listens to `WindowKeyboardInput` messages
+/// Helper wrapper around [use_runtime_message] that listens to `WindowKeyboardInput` messages
 /// and parses them for you.
 ///
 /// The boolean is whether or not the button was pressed (true) or released (false).

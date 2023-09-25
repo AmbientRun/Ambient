@@ -6,7 +6,6 @@ use std::{
     marker::PhantomData,
 };
 
-use downcast_rs::Downcast;
 use parking_lot::MappedRwLockReadGuard;
 use serde::{
     self,
@@ -22,11 +21,7 @@ use crate::{
 
 use ambient_shared_types::ComponentIndex;
 
-pub trait ComponentValueBase: Send + Sync + Downcast + 'static {
-    fn type_name(&self) -> &'static str {
-        std::any::type_name::<Self>()
-    }
-}
+pub trait ComponentValueBase: Send + Sync + as_any::AsAny {}
 
 impl<T: Send + Sync + 'static> ComponentValueBase for T {}
 pub trait ComponentValue: ComponentValueBase + Clone {}

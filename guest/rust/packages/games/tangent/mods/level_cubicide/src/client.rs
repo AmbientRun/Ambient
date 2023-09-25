@@ -1,6 +1,6 @@
 use ambient_api::{
     core::{
-        rendering::components::{double_sided, fog_density, sun},
+        rendering::components::double_sided,
         transform::components::{rotation, translation},
     },
     element::{use_frame, use_rerender_signal},
@@ -20,29 +20,6 @@ fn main() {
     player.set_looping(true);
     player.set_amplitude(0.3);
     player.play(packages::this::assets::url("22331__black-boe__wind.ogg"));
-
-    // Automatically adjust the density of the fog on a cycle
-    query(sun()).each_frame(move |suns| {
-        const BASE: f32 = 0.02;
-        const AMPLITUDE: f32 = 0.06;
-        // How many metres the player can travel before the fog is at its maximum density
-        const TRANSITION_LENGTH: f32 = 4.0;
-
-        let Some(local_translation) =
-            local_vehicle().and_then(|v| entity::get_component(v, translation()))
-        else {
-            return;
-        };
-
-        let sdf = shared::level(local_translation.xy());
-
-        for (sun_id, _) in suns {
-            // If the player is in the level carve-out, the fog should be light.
-            // Otherwise, it should be heavy.
-            let new_density = BASE + AMPLITUDE * (sdf / TRANSITION_LENGTH).clamp(0.0, 1.0);
-            entity::set_component(sun_id, fog_density(), new_density)
-        }
-    });
 
     if RENDER_LEVEL_BOUNDARIES {
         LevelBoundaries.el().spawn_interactive();

@@ -79,6 +79,8 @@ members = [
     "packages/std/fps_controller",
     "packages/std/orbit_camera",
     "packages/std/hide_cursor",
+    "packages/std/explosion",
+    "packages/std/nameplates",
 
     # Packages (tools)
     "packages/tools/console",

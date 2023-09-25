@@ -15,14 +15,11 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::packages::{
-    character_animation,
-    unit_schema::components::{running, speed, vertical_velocity},
-};
-use packages::unit_schema::components::{health, run_direction};
 use packages::{
-    character_animation::components::basic_character_animations,
+    character_animation::{self, components::basic_character_animations},
+    game_object::components::health,
     this::{assets, components},
+    unit_schema::components::{run_direction, running, speed, vertical_velocity},
 };
 
 #[main]

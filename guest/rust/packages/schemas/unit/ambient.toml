@@ -4,7 +4,10 @@ name = "Unit"
 description = "Schema for units in games"
 version = "0.0.1"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-25"
+
+[dependencies]
+game_object = { path = "../game_object" , deployment = "1CmZBBe5nc3Cvgkbug6TgJ" }
 
 [components]
 run_direction = { type = "Vec2", attributes = ["Debuggable", "Networked"] }
@@ -20,7 +23,6 @@ strafe_speed_multiplier = { type = "F32", description = "The speed the unit can 
     "Debuggable",
     "Networked",
 ] }
-health = { type = "F32", attributes = ["Debuggable", "Networked"] }
 
 jumping = { type = "Bool", attributes = ["Debuggable", "Networked"] }
 running = { type = "Bool", attributes = ["Debuggable", "Networked"] }

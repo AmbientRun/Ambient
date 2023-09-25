@@ -135,7 +135,7 @@ fn generate_one(
 
         quote! {
             #[doc = #doc_comment]
-            #[derive(Clone, Debug, Serialize, Deserialize)]
+            #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
             #[serde(crate = "self::serde")]
             pub struct #concept_id {
                 #(#components)*
@@ -153,7 +153,7 @@ fn generate_one(
 
         Some(quote! {
             #[doc = #doc_comment]
-            #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+            #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
             #[serde(crate = "self::serde")]
             pub struct #concept_optional_id {
                 #(#components)*

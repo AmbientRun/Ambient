@@ -8,9 +8,10 @@ use ambient_api::{
     prelude::*,
 };
 use packages::{
+    game_object::components::health,
     this::assets,
     this::components::*,
-    unit_schema::components::{health, jumping, run_direction, running},
+    unit_schema::components::{jumping, run_direction, running},
 };
 use std::{
     collections::HashMap,

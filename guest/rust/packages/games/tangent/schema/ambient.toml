@@ -4,6 +4,9 @@ name = "Tangent Schema"
 version = "0.1.0"
 content = { type = "Asset", schema = true }
 
+[dependencies]
+game_object = { path = "../../../schemas/game_object" , deployment = "1CmZBBe5nc3Cvgkbug6TgJ" }
+
 [components]
 # Player
 "player::vehicle_ref" = { type = "EntityId", name = "Player's Vehicle", description = "The player's vehicle", attributes = [
@@ -20,10 +23,6 @@ content = { type = "Asset", schema = true }
 ] }
 
 # Vehicle data
-"vehicle::data::general::max_health" = { type = "F32", name = "Max Health", description = "Maximum health of the vehicle", attributes = [
-    "Networked",
-] }
-
 "vehicle::data::thruster::offsets" = { type = { type = "Vec", element_type = "Vec2" }, name = "Thruster Offsets", description = "Offsets of the thrusters from the center of the vehicle", attributes = [
     "Networked",
 ] }
@@ -90,11 +89,10 @@ content = { type = "Asset", schema = true }
 "vehicle::player_ref" = { type = "EntityId", name = "Vehicle", description = "A vehicle (and its driver)", attributes = [
     "Networked",
 ] }
-"vehicle::aimable_weapon_refs" = { type = { type = "Vec", element_type = "EntityId" }, name = "Aimable Weapon Refs", description = "All aimable weapons for this vehicle. If present in this array, their rotations will be automatically updated to match the aim position. Assumes that the weapons are a child of the vehicle.", attributes = [
+"vehicle::data_ref" = { type = "EntityId", name = "Vehicle Data Ref", description = "When attached to a vehicle-specific entity (class or live vehicle), indicates that it should draw its properties from this entity.", attributes = [
     "Networked",
 ] }
-
-"vehicle::health" = { type = "F32", name = "Health", description = "Health of the vehicle", attributes = [
+"vehicle::aimable_weapon_refs" = { type = { type = "Vec", element_type = "EntityId" }, name = "Aimable Weapon Refs", description = "All aimable weapons for this vehicle. If present in this array, their rotations will be automatically updated to match the aim position. Assumes that the weapons are a child of the vehicle.", attributes = [
     "Networked",
 ] }
 
@@ -111,10 +109,12 @@ content = { type = "Asset", schema = true }
     "Networked",
 ] }
 
-# Vehicle (server-only)
-"vehicle::aim_position" = { type = "Vec3", name = "Aim Position", description = "Position of the aim target", attributes = [
+"vehicle::aim_distance" = { type = "F32", name = "Aim Distance", description = "Distance of the aim target from the vehicle", attributes = [
     "Networked",
 ] }
+
+# Vehicle (server-only)
+"vehicle::aim_position" = { type = "Vec3", name = "Aim Position", description = "Position of the aim target" }
 
 # Vehicle (client-only)
 "vehicle::client::speed_kph" = { type = "F32", name = "Speed (KPH)", description = "Speed of the vehicle in kilometers per hour." }
@@ -147,17 +147,10 @@ content = { type = "Asset", schema = true }
     "Networked",
 ] }
 
-# Explosion
-"explosion::is_explosion" = { type = "Empty", name = "Is Explosion", description = "Is an explosion", attributes = [
+# Weapon
+"weapon::fire" = { type = "Bool", name = "Fire", description = "When on, the weapon will attempt to fire.", attributes = [
     "Networked",
 ] }
-"explosion::radius" = { type = "F32", name = "Radius", description = "Radius of the explosion", attributes = [
-    "Networked",
-] }
-"explosion::damage" = { type = "F32", name = "Damage", description = "Damage of the explosion", attributes = [
-    "Networked",
-] }
-"explosion::created_at" = { type = "Duration", name = "Created At", description = "Time the explosion was created. Must be manually attached using a spawn_query as time is not synchronized between client and server at time of writing." }
 
 [concepts.VehicleData]
 name = "Vehicle Data"
@@ -166,7 +159,7 @@ description = "Data for a vehicle"
 "ambient_core::physics::density" = {}
 "ambient_core::physics::cube_collider" = {}
 
-"vehicle::data::general::max_health" = {}
+"game_object::max_health" = {}
 
 "vehicle::data::thruster::offsets" = {}
 "vehicle::data::thruster::k_p" = {}
@@ -197,21 +190,26 @@ description = "Data for a vehicle"
 [concepts.Vehicle]
 name = "Vehicle"
 description = "A vehicle with a physical representation"
-extends = ["VehicleData"]
 [concepts.Vehicle.components.required]
 "ambient_core::physics::linear_velocity" = {}
 "ambient_core::physics::angular_velocity" = {}
 "ambient_core::physics::physics_controlled" = {}
 "ambient_core::physics::dynamic" = {}
+"ambient_core::physics::density" = {}
+"ambient_core::physics::cube_collider" = {}
 
+"ambient_core::transform::local_to_world" = {}
 "ambient_core::transform::translation" = {}
 "ambient_core::transform::rotation" = {}
 
+"game_object::health" = {}
+"game_object::max_health" = {}
+
 "vehicle::player_ref" = {}
-"vehicle::health" = {}
 "vehicle::last_distances" = {}
 "vehicle::last_jump_time" = {}
 "vehicle::last_slowdown_time" = {}
+"vehicle::data_ref" = {}
 [concepts.Vehicle.components.optional]
 "vehicle::last_upside_down_time" = {}
 "vehicle::aim_position" = {}
@@ -220,8 +218,6 @@ extends = ["VehicleData"]
 [concepts.VehicleClass]
 name = "Vehicle Class"
 description = "A vehicle class"
-extends = ["VehicleData"]
-
 [concepts.VehicleClass.components.required]
 "vehicle::class::is_class" = {}
 "vehicle::class::name" = {}
@@ -229,6 +225,7 @@ extends = ["VehicleData"]
 "vehicle::class::icon_url" = {}
 "vehicle::class::model_url" = {}
 "vehicle::class::model_scale" = {}
+"vehicle::data_ref" = {}
 
 [concepts.Spawnpoint]
 name = "Spawnpoint"
@@ -239,22 +236,7 @@ description = "A spawnpoint"
 "ambient_core::transform::translation" = {}
 "ambient_core::rendering::color" = {}
 
-[concepts.Explosion]
-name = "Explosion"
-description = "An explosion"
-[concepts.Explosion.components.required]
-"explosion::is_explosion" = {}
-"explosion::radius" = {}
-"explosion::damage" = {}
-"ambient_core::transform::translation" = {}
-[concepts.Explosion.components.optional]
-"explosion::created_at" = {}
-
 [messages.OnDeath]
 name = "On Death"
 description = "Sent to server modules when a vehicle is destroyed."
 fields = { position = "Vec3", player_id = "EntityId" }
-
-[messages."weapon::Fire"]
-description = "A request to fire a weapon."
-fields = { weapon_id = "EntityId" }

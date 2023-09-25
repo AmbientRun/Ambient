@@ -41,7 +41,7 @@ fn screen_space_reflections(world_position: vec3<f32>, screen_ray_dir: vec3<f32>
     }
     let sc = to_spherical_coordinates(reflected_dir);
     let tc = vec2<f32>(sc.z / (PI * 2.), sc.y / (PI * 1.));
-    let sky = get_sky_color(global_params.camera_far, world_position, reflected_dir).rgb;
+    let sky = get_sky_color(global_params.camera_far, world_position, reflected_dir);
     return sky;
 }
 
@@ -50,8 +50,12 @@ fn get_material(in: MaterialInput) -> MaterialOutput {
 
     let screen_size = vec2<f32>(textureDimensions(solids_screen_depth));
 
-    let normal_t1 = textureSample(normals_texture, default_sampler, in.world_position.xy * 0.05 + vec2<f32>(global_params.time * 0.01, 0.)).xyz;
-    let normal_t2 = textureSample(normals_texture, default_sampler, in.world_position.xy * 0.1 + vec2<f32>(0., global_params.time * 0.02)).xyz;
+    let normal_uv1 = in.world_position.xy * 0.05 + vec2<f32>(global_params.time * 0.01, 0.0);
+    let normal_uv2 = in.world_position.xy * 0.13 + vec2<f32>(0.0, global_params.time * 0.024);
+
+    let normal_t1 = textureSample(normals_texture, default_sampler, fract(normal_uv1)).xyz;
+    let normal_t2 = textureSample(normals_texture, default_sampler, fract(normal_uv2)).xyz;
+
     let normal_t = (normal_t1 + normal_t2) / 2.;
     let normal = normalize(normal_t * 2. - 1.);
 

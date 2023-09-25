@@ -27,11 +27,6 @@ use serde::{Deserialize, Serialize};
 trait AssetHolder: as_any::AsAny + Sync + Send {}
 impl<T: Clone + Sync + Send + Any + 'static> AssetHolder for T {}
 
-impl as_any::Downcast for dyn AssetHolder {}
-impl as_any::Downcast for dyn AssetHolder + Send {}
-impl as_any::Downcast for dyn AssetHolder + Sync {}
-impl as_any::Downcast for dyn AssetHolder + Send + Sync {}
-
 #[derive(Clone)]
 struct LoadPayload {
     asset_key: AssetKey,
