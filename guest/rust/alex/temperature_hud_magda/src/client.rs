@@ -207,6 +207,6 @@ pub fn TemperatureDisplayUI(hooks: &mut Hooks) -> Element {
 
 fn floatemp_to_string(floatemp: f32) -> String {
     let decitemp = (floatemp * 10.).floor() as u32;
-    println!("{},{}°C", decitemp / 10, decitemp % 10);
+    // println!("{},{}°C", decitemp / 10, decitemp % 10);
     format!("{},{}°C", decitemp / 10, decitemp % 10)
 }
