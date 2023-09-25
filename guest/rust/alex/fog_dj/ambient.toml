@@ -1,0 +1,23 @@
+[package]
+id = "edlg8y3r4hoboa51qrzhg3198gmev4l7"
+name = "fog_dj"
+version = "0.0.1"
+content = { type = "Asset", code = true }
+ambient_version = "0.3.0-nightly-2023-09-25"
+
+[components]
+
+fog_dj_for = { type = "EntityId" }
+
+amb_r = { type = "F32" }
+amb_g = { type = "F32" }
+amb_b = { type = "F32" }
+fog_r = { type = "F32" }
+fog_g = { type = "F32" }
+fog_b = { type = "F32" }
+sun_r = { type = "F32" }
+sun_g = { type = "F32" }
+sun_b = { type = "F32" }
+sun_rotx = { type = "F32" }
+sun_roty = { type = "F32" }
+sun_rotz = { type = "F32" }

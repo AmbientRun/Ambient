@@ -3,6 +3,7 @@ members = [
 
     # Alex's stuff
     "alex/a_foggy_scene",
+    "alex/fog_dj",
     "alex/a_nice_scene",
     "alex/just_fog",
     "alex/temperature",
