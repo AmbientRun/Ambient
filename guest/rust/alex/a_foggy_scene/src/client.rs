@@ -70,6 +70,13 @@ pub fn main() {
 
         /* USE DJ FOR CONTROLLING FOG AND SUN */
         {
+            entity::add_components(
+                packages::fog_dj::entity(),
+                Entity::new()
+                    .with(packages::fog_dj::components::grey_fog(), ())
+                    .with(packages::fog_dj::components::grey_amb(), ())
+                    .with(packages::fog_dj::components::grey_sun(), ()),
+            );
             entity::add_component(
                 packages::fog_dj::entity(),
                 packages::fog_dj::components::fog_dj_for(),
