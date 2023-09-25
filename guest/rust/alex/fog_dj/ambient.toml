@@ -8,6 +8,9 @@ ambient_version = "0.3.0-nightly-2023-09-25"
 [components]
 
 fog_dj_for = { type = "EntityId" }
+grey_amb = { type = "Empty" }
+grey_fog = { type = "Empty" }
+grey_sun = { type = "Empty" }
 
 amb_r = { type = "F32" }
 amb_g = { type = "F32" }

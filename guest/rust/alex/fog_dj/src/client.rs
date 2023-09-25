@@ -9,8 +9,8 @@ use ambient_api::{
     prelude::*,
 };
 use packages::this::components::{
-    amb_b, amb_g, amb_r, fog_b, fog_dj_for, fog_g, fog_r, sun_b, sun_g, sun_r, sun_rotx, sun_roty,
-    sun_rotz,
+    amb_b, amb_g, amb_r, fog_b, fog_dj_for, fog_g, fog_r, grey_amb, grey_fog, grey_sun, sun_b,
+    sun_g, sun_r, sun_rotx, sun_roty, sun_rotz,
 };
 
 #[main]
@@ -49,20 +49,29 @@ async fn main() {
     App::el(dj).spawn_interactive();
 
     query((sun_r(), sun_g(), sun_b())).each_frame(|djs| {
-        for (dj, (sr, sg, sb)) in djs {
-            entity::add_component(dj, light_diffuse(), vec3(sr, sg, sb));
+        for (dj, (cr, cg, cb)) in djs {
+            match entity::has_component(dj, grey_sun()) {
+                false => entity::add_component(dj, light_diffuse(), vec3(cr, cg, cb)),
+                true => entity::add_component(dj, light_diffuse(), Vec3::splat(cr)),
+            }
         }
     });
 
     query((amb_r(), amb_g(), amb_b())).each_frame(|djs| {
-        for (dj, (ar, ag, ab)) in djs {
-            entity::add_component(dj, light_ambient(), vec3(ar, ag, ab));
+        for (dj, (cr, cg, cb)) in djs {
+            match entity::has_component(dj, grey_amb()) {
+                false => entity::add_component(dj, light_ambient(), vec3(cr, cg, cb)),
+                true => entity::add_component(dj, light_ambient(), Vec3::splat(cr)),
+            }
         }
     });
 
     query((fog_r(), fog_g(), fog_b())).each_frame(|djs| {
-        for (dj, (fr, fg, fb)) in djs {
-            entity::add_component(dj, fog_color(), vec3(fr, fg, fb));
+        for (dj, (cr, cg, cb)) in djs {
+            match entity::has_component(dj, grey_fog()) {
+                false => entity::add_component(dj, fog_color(), vec3(cr, cg, cb)),
+                true => entity::add_component(dj, fog_color(), Vec3::splat(cr)),
+            }
         }
     });
 
@@ -98,9 +107,72 @@ async fn main() {
     });
 }
 
+fn make_color_rows(
+    hooks: &mut Hooks,
+    dj: &EntityId,
+    grey_component: Component<()>,
+    r_component: Component<f32>,
+    g_component: Component<f32>,
+    b_component: Component<f32>,
+    feature_name: String,
+) -> [Element; 3] {
+    match entity::has_component(*dj, grey_component) {
+        true => [
+            FlowRow::el([
+                Text::el(feature_name + " brightness: "),
+                Slider::new_for_entity_component(hooks, *dj, r_component).el(),
+            ]),
+            Text::el(""),
+            Text::el(""),
+        ],
+        false => [
+            FlowRow::el([
+                Text::el(feature_name.clone() + " colour (R): "),
+                Slider::new_for_entity_component(hooks, *dj, r_component).el(),
+            ]),
+            FlowRow::el([
+                Text::el(feature_name.clone() + " colour (G): "),
+                Slider::new_for_entity_component(hooks, *dj, g_component).el(),
+            ]),
+            FlowRow::el([
+                Text::el(feature_name.clone() + " colour (B): "),
+                Slider::new_for_entity_component(hooks, *dj, b_component).el(),
+            ]),
+        ],
+    }
+}
+
 #[element_component]
 fn App(hooks: &mut Hooks, dj: EntityId) -> Element {
-    FlowColumn::el([
+    let fog_color_rows = make_color_rows(
+        hooks,
+        &dj,
+        grey_fog(),
+        fog_r(),
+        fog_g(),
+        fog_b(),
+        "Fog".into(),
+    );
+    let amb_color_rows = make_color_rows(
+        hooks,
+        &dj,
+        grey_amb(),
+        amb_r(),
+        amb_g(),
+        amb_b(),
+        "Ambient light".into(),
+    );
+    let sun_color_rows = make_color_rows(
+        hooks,
+        &dj,
+        grey_sun(),
+        sun_r(),
+        sun_g(),
+        sun_b(),
+        "Sunlight".into(),
+    );
+
+    let rows = [
         FlowRow::el([
             Text::el("Fog density: "),
             Slider::new_for_entity_component(hooks, dj, fog_density()).el(),
@@ -109,42 +181,9 @@ fn App(hooks: &mut Hooks, dj: EntityId) -> Element {
             Text::el("Fog height falloff: "),
             Slider::new_for_entity_component(hooks, dj, fog_height_falloff()).el(),
         ]),
-        FlowRow::el([
-            Text::el("Fog colour (fog_r): "),
-            Slider::new_for_entity_component(hooks, dj, fog_r()).el(),
-        ]),
-        FlowRow::el([
-            Text::el("Fog colour (fog_g): "),
-            Slider::new_for_entity_component(hooks, dj, fog_g()).el(),
-        ]),
-        FlowRow::el([
-            Text::el("Fog colour (fog_b): "),
-            Slider::new_for_entity_component(hooks, dj, fog_b()).el(),
-        ]),
-        FlowRow::el([
-            Text::el("Sunlight colour (sun_r): "),
-            Slider::new_for_entity_component(hooks, dj, sun_r()).el(),
-        ]),
-        FlowRow::el([
-            Text::el("Sunlight colour (sun_g): "),
-            Slider::new_for_entity_component(hooks, dj, sun_g()).el(),
-        ]),
-        FlowRow::el([
-            Text::el("Sunlight colour (sun_b): "),
-            Slider::new_for_entity_component(hooks, dj, sun_b()).el(),
-        ]),
-        FlowRow::el([
-            Text::el("Ambient colour (amb_r): "),
-            Slider::new_for_entity_component(hooks, dj, amb_r()).el(),
-        ]),
-        FlowRow::el([
-            Text::el("Ambient colour (amb_g): "),
-            Slider::new_for_entity_component(hooks, dj, amb_g()).el(),
-        ]),
-        FlowRow::el([
-            Text::el("Ambient colour (amb_b): "),
-            Slider::new_for_entity_component(hooks, dj, amb_b()).el(),
-        ]),
+        FlowColumn::el(fog_color_rows),
+        FlowColumn::el(amb_color_rows),
+        FlowColumn::el(sun_color_rows),
         FlowRow::el([
             Text::el("Sun angle (sun_rotx): "),
             Slider::new_for_entity_component(hooks, dj, sun_rotx()).el(),
@@ -157,7 +196,9 @@ fn App(hooks: &mut Hooks, dj: EntityId) -> Element {
             Text::el("Sun angle (sun_rotz): "),
             Slider::new_for_entity_component(hooks, dj, sun_rotz()).el(),
         ]),
-    ])
-    .with_background(vec4(0., 0., 0., 0.9))
-    .with_padding_even(10.)
+    ];
+
+    FlowColumn::el(rows)
+        .with_background(vec4(0., 0., 0., 0.9))
+        .with_padding_even(10.)
 }
