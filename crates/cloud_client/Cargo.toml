@@ -10,9 +10,9 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_asset_cache = { path = "../asset_cache/", version = "0.3.0-nightly-2023-09-25" }
-ambient_native_std = { path = "../native_std", version = "0.3.0-nightly-2023-09-25" }
-ambient_sys = { path = "../sys", version = "0.3.0-nightly-2023-09-25" }
+ambient_asset_cache = { path = "../asset_cache/", version = "0.3.0-dev" }
+ambient_native_std = { path = "../native_std", version = "0.3.0-dev" }
+ambient_sys = { path = "../sys", version = "0.3.0-dev" }
 
 anyhow = { workspace = true }
 log = { workspace = true }
