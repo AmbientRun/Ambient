@@ -6,7 +6,7 @@ version = "0.0.3"
 content = { type = "Playable" }
 
 [dependencies]
-base_assets = { path = "../../packages/std/base_assets" }
+# base_assets = { path = "../../packages/std/base_assets" }
 # character_animation = { path = "../../packages/std/character_animation" }
 # character_movement = { path = "../../packages/std/character_movement" }
 # hide_cursor = { path = "../../packages/std/hide_cursor" }
@@ -25,8 +25,8 @@ character_animation = { deployment = "6HS1Mf3o535O4retxpytgH" } # updated Sept 2
 hide_cursor = { deployment = "A8CV3CgLgnnNNSsr2m9kL" } # updated Sept 20
 package_manager = { deployment = "4iENoKFy5uyYGLCVUTfZKz" } # updated Sept 20 - awkward due to not being asset? no copy button
 
-temperature = { path = "../temperature" , deployment = "7M5covvdAHztisIXs2Tdbn" }
-temperature_hud = { path = "../temperature_hud_magda" , deployment = "3IkgWPKIjnzCXwt7IjDqr9" }
+temperature = { path = "../temperature" , deployment = "nb2mw2fGIW4jmORAtyObz" }
+temperature_hud = { path = "../temperature_hud_magda" , deployment = "1JHgEozP6X8MO7wxVH5K5q" }
 
 [components]
 effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
