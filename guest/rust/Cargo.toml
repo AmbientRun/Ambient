@@ -95,30 +95,30 @@ resolver = "2"
 
 [workspace.package]
 rust-version = "1.70.0"
-version = "0.3.0-nightly-2023-09-25"
+version = "0.3.0-dev"
 
 [workspace.dependencies]
-ambient_api = { path = "api", version = "0.3.0-nightly-2023-09-25" }
-ambient_api_core = { path = "api_core", version = "0.3.0-nightly-2023-09-25" }
-ambient_api_macros = { path = "api_core/api_macros", version = "0.3.0-nightly-2023-09-25" }
+ambient_api = { path = "api", version = "0.3.0-dev" }
+ambient_api_core = { path = "api_core", version = "0.3.0-dev" }
+ambient_api_macros = { path = "api_core/api_macros", version = "0.3.0-dev" }
 
-ambient_package = { path = "../../shared_crates/package", version = "0.3.0-nightly-2023-09-25" }
-ambient_package_macro_common = { path = "../../shared_crates/package_macro_common", version = "0.3.0-nightly-2023-09-25" }
-ambient_package_rt = { path = "../../shared_crates/package_rt", version = "0.3.0-nightly-2023-09-25" }
-ambient_shared_types = { path = "../../shared_crates/shared_types", version = "0.3.0-nightly-2023-09-25" }
-ambient_ui = { path = "../../shared_crates/ui", version = "0.3.0-nightly-2023-09-25", features = [
+ambient_package = { path = "../../shared_crates/package", version = "0.3.0-dev" }
+ambient_package_macro_common = { path = "../../shared_crates/package_macro_common", version = "0.3.0-dev" }
+ambient_package_rt = { path = "../../shared_crates/package_rt", version = "0.3.0-dev" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", version = "0.3.0-dev" }
+ambient_ui = { path = "../../shared_crates/ui", version = "0.3.0-dev", features = [
     "guest",
 ] }
-ambient_element = { path = "../../shared_crates/element", version = "0.3.0-nightly-2023-09-25", default-features = false, features = [
+ambient_element = { path = "../../shared_crates/element", version = "0.3.0-dev", default-features = false, features = [
     "guest",
 ] }
-ambient_editor_derive = { path = "../../shared_crates/editor_derive", version = "0.3.0-nightly-2023-09-25" }
-ambient_schema = { path = "../../shared_crates/schema", version = "0.3.0-nightly-2023-09-25" }
+ambient_editor_derive = { path = "../../shared_crates/editor_derive", version = "0.3.0-dev" }
+ambient_schema = { path = "../../shared_crates/schema", version = "0.3.0-dev" }
 
-ambient_pipeline_types = { path = "../../crates/pipeline_types", version = "0.3.0-nightly-2023-09-25" }
+ambient_pipeline_types = { path = "../../crates/pipeline_types", version = "0.3.0-dev" }
 
-ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.3.0-nightly-2023-09-25" }
-ambient_cb = { path = "../../libs/cb", version = "0.3.0-nightly-2023-09-25" }
+ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.3.0-dev" }
+ambient_cb = { path = "../../libs/cb", version = "0.3.0-dev" }
 
 anyhow = "1.0"
 thiserror = "1.0"
