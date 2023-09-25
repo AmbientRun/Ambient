@@ -8,59 +8,43 @@ use packages::{
     tangent_schema::{concepts::VehicleDef, vehicle::components as vc},
 };
 
+const DEF_HOTRELOADING: bool = true;
+
 #[main]
 pub fn main() {
     make_allrounder();
     make_speedy();
     make_tank();
+
+    if DEF_HOTRELOADING {
+        let defs_query = query(VehicleDef::as_query()).build();
+        for (_id, def) in defs_query.evaluate() {
+            std::fs::write(
+                format!("{}.json", def.name),
+                serde_json::to_string_pretty(&def).unwrap(),
+            )
+            .unwrap();
+        }
+        fixed_rate_tick(Duration::from_secs(2), move |_| {
+            for (id, def) in defs_query.evaluate() {
+                let mut new_def = serde_json::from_str::<VehicleDef>(
+                    &std::fs::read_to_string(format!("{}.json", def.name)).unwrap(),
+                )
+                .unwrap();
+                new_def.model_url = def.model_url.clone();
+                if new_def != def {
+                    entity::add_components(id, new_def);
+                    println!("Reloaded {}", def.name);
+                }
+            }
+        });
+    }
 }
 
 fn make_allrounder() {
-    const X_DISTANCE: f32 = 0.1;
-    const Y_DISTANCE: f32 = 0.4;
-
-    let offsets = vec![
-        vec2(-X_DISTANCE, -Y_DISTANCE),
-        vec2(X_DISTANCE, -Y_DISTANCE),
-        vec2(X_DISTANCE, Y_DISTANCE),
-        vec2(-X_DISTANCE, Y_DISTANCE),
-    ];
-
-    let def = VehicleDef {
-        density: 12.0,
-        cube_collider: Vec3::new(0.6, 1.0, 0.2),
-        max_health: 100.0,
-
-        offsets,
-        k_p: 300.0,
-        k_d: -600.0,
-        target: 1.75,
-        max_strength: 25.0,
-
-        forward_force: 40.0,
-        backward_force: -10.0,
-        forward_offset: vec2(0.0, Y_DISTANCE),
-        side_force: 75.0 / 100.0,
-        side_offset: vec2(0.0, -Y_DISTANCE),
-
-        jump_force: 50.0,
-        pitch_strength: 10.0,
-        turning_strength: 20.0,
-
-        aim_direction_limits: Vec2::ONE * 15f32,
-
-        jump_timeout: Duration::from_secs_f32(2.0),
-
-        linear_strength: 0.8,
-        angular_strength: 0.4,
-        angular_delay: Duration::from_secs_f32(0.25),
-
-        is_def: (),
-        name: "Thunderstrike".to_string(),
-        model_url: packages::kenney_space_kit::assets::url("craft_speederA.glb/models/main.json"),
-        model_scale: 1.5,
-    }
-    .spawn();
+    let mut def = serde_json::from_str::<VehicleDef>(include_str!("Thunderstrike.json")).unwrap();
+    def.model_url = packages::kenney_space_kit::assets::url("craft_speederA.glb/models/main.json");
+    let def = def.spawn();
 
     spawn_query(vc::def_ref())
         .requires(vc::is_vehicle())
@@ -97,51 +81,9 @@ fn make_allrounder() {
 }
 
 fn make_speedy() {
-    const X_DISTANCE: f32 = 0.1;
-    const Y_DISTANCE: f32 = 0.4;
-
-    let offsets = vec![
-        vec2(-X_DISTANCE, -Y_DISTANCE),
-        vec2(X_DISTANCE, -Y_DISTANCE),
-        vec2(X_DISTANCE, Y_DISTANCE),
-        vec2(-X_DISTANCE, Y_DISTANCE),
-    ];
-
-    let def = VehicleDef {
-        density: 10.0,
-        cube_collider: Vec3::new(0.6, 1.0, 0.2),
-        max_health: 70.0,
-
-        offsets,
-        k_p: 400.0,
-        k_d: -800.0,
-        target: 1.75,
-        max_strength: 25.0,
-
-        forward_force: 50.0,
-        backward_force: -20.0,
-        forward_offset: vec2(0.0, Y_DISTANCE),
-        side_force: 100.0 / 100.0,
-        side_offset: vec2(0.0, -Y_DISTANCE),
-
-        jump_force: 70.0,
-        pitch_strength: 10.0,
-        turning_strength: 20.0,
-
-        jump_timeout: Duration::from_secs_f32(2.0),
-
-        aim_direction_limits: Vec2::ONE * 10f32,
-
-        linear_strength: 0.8,
-        angular_strength: 0.4,
-        angular_delay: Duration::from_secs_f32(0.25),
-
-        is_def: (),
-        name: "Swiftshadow".to_string(),
-        model_url: packages::kenney_space_kit::assets::url("craft_racer.glb/models/main.json"),
-        model_scale: 1.5,
-    }
-    .spawn();
+    let mut def = serde_json::from_str::<VehicleDef>(include_str!("Swiftshadow.json")).unwrap();
+    def.model_url = packages::kenney_space_kit::assets::url("craft_racer.glb/models/main.json");
+    let def = def.spawn();
 
     spawn_query(vc::def_ref())
         .requires(vc::is_vehicle())
@@ -173,51 +115,9 @@ fn make_speedy() {
 }
 
 fn make_tank() {
-    const X_DISTANCE: f32 = 0.1;
-    const Y_DISTANCE: f32 = 0.4;
-
-    let offsets = vec![
-        vec2(-X_DISTANCE, -Y_DISTANCE),
-        vec2(X_DISTANCE, -Y_DISTANCE),
-        vec2(X_DISTANCE, Y_DISTANCE),
-        vec2(-X_DISTANCE, Y_DISTANCE),
-    ];
-
-    let def = VehicleDef {
-        density: 15.0,
-        cube_collider: Vec3::new(0.6, 1.0, 0.2),
-        max_health: 150.0,
-
-        offsets,
-        k_p: 200.0,
-        k_d: -400.0,
-        target: 2.0,
-        max_strength: 50.0,
-
-        forward_force: 35.0,
-        backward_force: -5.0,
-        forward_offset: vec2(0.0, Y_DISTANCE),
-        side_force: 60.0 / 100.0,
-        side_offset: vec2(0.0, -Y_DISTANCE),
-
-        jump_force: 30.0,
-        pitch_strength: 10.0,
-        turning_strength: 30.0,
-
-        jump_timeout: Duration::from_secs_f32(2.0),
-
-        aim_direction_limits: Vec2::ONE * 20f32,
-
-        linear_strength: 0.8,
-        angular_strength: 0.4,
-        angular_delay: Duration::from_secs_f32(0.25),
-
-        is_def: (),
-        name: "Ironclad".to_string(),
-        model_url: packages::kenney_space_kit::assets::url("craft_miner.glb/models/main.json"),
-        model_scale: 1.5,
-    }
-    .spawn();
+    let mut def = serde_json::from_str::<VehicleDef>(include_str!("Ironclad.json")).unwrap();
+    def.model_url = packages::kenney_space_kit::assets::url("craft_miner.glb/models/main.json");
+    let def = def.spawn();
 
     spawn_query(vc::def_ref())
         .requires(vc::is_vehicle())

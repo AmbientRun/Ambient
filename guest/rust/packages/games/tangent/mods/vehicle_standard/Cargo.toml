@@ -3,11 +3,12 @@ name = "tangent_vehicle_standard"
 
 edition = "2021"
 publish = false
-rust-version = {workspace = true}
-version = {workspace = true}
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
 ambient_api = { path = "../../../../../api" }
+serde_json = { version = "1.0" }
 
 [[bin]]
 name = "tangent_vehicle_standard_client"

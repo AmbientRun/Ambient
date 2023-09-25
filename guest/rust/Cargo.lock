@@ -2564,6 +2564,7 @@ name = "tangent_vehicle_standard"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
+ "serde_json",
 ]
 
 [[package]]
