@@ -482,7 +482,7 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
         let params = PbrMaterialParams {
             base_color_factor: self.base_color_factor.unwrap_or(Vec4::ONE),
             emissive_factor: self.emissive_factor.unwrap_or(Vec4::ZERO),
-            alpha_cutoff: self.alpha_cutoff.unwrap_or(0.01),
+            alpha_cutoff: self.alpha_cutoff.unwrap_or(0.9),
             metallic_factor: self.metallic_factor,
             roughness_factor: self.roughness_factor,
             _padding: Default::default(),
