@@ -6,7 +6,7 @@ content = { type = "Tool" }
 ambient_version = "0.3.0-nightly-2023-09-25"
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor" , deployment = "3cmjOxOWCME7Hxi9OPpczk" }
+editor_schema = { path = "../../schemas/editor" , deployment = "1jCktUGX9cLdmit0DlLUDl" }
 
 [components]
 # Player components

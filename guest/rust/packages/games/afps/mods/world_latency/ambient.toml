@@ -16,4 +16,4 @@ server_frame = { type = "U64", description = "Current server frame number", attr
 frame = "U64"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "7NBTASMOE1rultxb0ShMhi" }
+afps_schema = { path = "../../schema", deployment = "6S7iNbq0rpchAatPE4C9yt" }

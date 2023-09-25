@@ -6,10 +6,10 @@ content = { type = "Mod", for_playables = ["tangent"] }
 ambient_version = "0.3.0-nightly-2023-09-25"
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
-gun_laser = { path = "../gun_laser" , deployment = "5B4RovhibVaZsxrVcXMjf0" }
+tangent_schema = { path = "../../schema", deployment = "6P8ktRttET5itdy2U5ZjUC" }
+gun_laser = { path = "../gun_laser" , deployment = "5DPRYkBbMGdTmaIJ2pRMKh" }
 
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit" , deployment = "5McYMEZazOLUekgEOxccrj" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit" , deployment = "6mE0au27OAtrZly7z6qX0t" }
 
 [components]
 is_scout = { type = "Empty", name = "Is Scout", description = "Marks this entity as a scout.", attributes = [
