@@ -5,7 +5,7 @@ description = "Render a character model, with animations."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-25"
 
 [messages]
 SetController = { name = "Set controller", description = "Sets the animation controller.", fields = { value = "U32" } }

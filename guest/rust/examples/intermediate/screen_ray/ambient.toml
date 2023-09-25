@@ -6,7 +6,7 @@ version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/screen_ray"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-25"
 
 [messages.Input.fields]
 ray_origin = "Vec3"

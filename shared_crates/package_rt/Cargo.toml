@@ -14,4 +14,4 @@ thiserror = { workspace = true }
 ulid = { workspace = true }
 paste = { workspace = true }
 
-ambient_shared_types = { path = "../shared_types", version = "0.3.0-dev" }
+ambient_shared_types = { path = "../shared_types", version = "0.3.0-nightly-2023-09-25" }
