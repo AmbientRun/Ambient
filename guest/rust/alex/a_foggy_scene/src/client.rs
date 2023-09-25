@@ -1,16 +1,13 @@
-use std::f32::consts::{E, PI};
+use std::f32::consts::PI;
 
 use ambient_api::{
     core::{
         audio::components::amplitude,
         camera::components::{fog, perspective_infinite_reverse},
         player::components::is_player,
-        primitives::{components::cube, concepts::Sphere},
-        rendering::components::{
-            cast_shadows, color, fog_color, fog_density, light_ambient, outline,
-            pbr_material_from_url, transparency_group,
-        },
-        transform::components::{local_to_world, scale, spherical_billboard, translation},
+        primitives::concepts::Sphere,
+        rendering::components::{color, fog_color, fog_density, light_ambient, transparency_group},
+        transform::components::{local_to_world, scale, translation},
     },
     prelude::*,
 };
