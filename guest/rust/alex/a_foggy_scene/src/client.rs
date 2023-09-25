@@ -67,20 +67,33 @@ pub fn main() {
             *amp =
                 *amp * 0.8 + 0.2 * (0.05 + game_time().as_secs_f32().sin() * 0.05 + coldness * 1.5)
         });
-        if coldness < 0.60 {
-            let t = coldness / 0.60;
-            entity::mutate_component(sun, fog_density(), |foggy| {
-                *foggy = *foggy * 0.9 + 0.1 * (0.01 + 0.18 * t);
-            });
-        } else {
-            let t = (coldness - 0.60) / (1. - 0.60);
-            entity::set_component(sun, fog_density(), 0.20 + 0.80 * t * t);
+
+        /* USE DJ FOR CONTROLLING FOG AND SUN */
+        {
+            entity::add_component(
+                packages::fog_dj::entity(),
+                packages::fog_dj::components::fog_dj_for(),
+                sun,
+            );
         }
-        // let desired_fog_colour =
-        //     vec3(0.75, 0.45, 0.75).lerp(vec3(0.60, 1.00, 1.00), coldness.sqrt());
-        // entity::mutate_component(sun, fog_color(), |color| {
-        //     *color = color.lerp(desired_fog_colour, 0.1)
-        // });
+
+        // /* USE COLDNESS FOR MODULATING FOG (GAME FEEDBACK) */
+        // {
+        //     if coldness < 0.60 {
+        //         let t = coldness / 0.60;
+        //         entity::mutate_component(sun, fog_density(), |foggy| {
+        //             *foggy = *foggy * 0.9 + 0.1 * (0.01 + 0.18 * t);
+        //         });
+        //     } else {
+        //         let t = (coldness - 0.60) / (1. - 0.60);
+        //         entity::set_component(sun, fog_density(), 0.20 + 0.80 * t * t);
+        //     }
+        //     // let desired_fog_colour =
+        //     //     vec3(0.75, 0.45, 0.75).lerp(vec3(0.60, 1.00, 1.00), coldness.sqrt());
+        //     // entity::mutate_component(sun, fog_color(), |color| {
+        //     //     *color = color.lerp(desired_fog_colour, 0.1)
+        //     // });
+        // }
     });
 
     spawn_query(())

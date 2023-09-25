@@ -27,6 +27,7 @@ package_manager = { deployment = "4iENoKFy5uyYGLCVUTfZKz" } # updated Sept 20 - 
 
 temperature = { path = "../temperature" , deployment = "nb2mw2fGIW4jmORAtyObz" }
 temperature_hud = { path = "../temperature_hud_magda" , deployment = "1JHgEozP6X8MO7wxVH5K5q" }
+fog_dj = { path = "../fog_dj" }
 
 [components]
 effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
