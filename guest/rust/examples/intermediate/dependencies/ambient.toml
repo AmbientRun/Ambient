@@ -4,9 +4,9 @@ name = "Dependencies"
 description = "Break your project up into packages."
 version = "0.0.1"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-25"
 
 [dependencies]
-deps_assets = { path = "deps/assets" , deployment = "17lIMmgTEvZ9WH7ybvDrvN" }
-deps_code = { path = "deps/code" , deployment = "26oqUT4ph8Omk4XitYMPy1" }
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "4uXq7s5YziBkQOC3vLgCpi" }
+deps_assets = { path = "deps/assets" , deployment = "OUmGgMFoVcjyGOFaO4FqA" }
+deps_code = { path = "deps/code" , deployment = "zaxJtru0kFAHg8wDUH1xZ" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "3ZJmMNytF0Lb34dCWfGpRW" }

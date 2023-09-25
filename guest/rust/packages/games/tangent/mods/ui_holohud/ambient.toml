@@ -3,8 +3,8 @@ id = "tangent_ui_holohud"
 name = "Tangent HUD: Hologram"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-25"
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
-game_object = { path = "../../../../schemas/game_object" }
+tangent_schema = { path = "../../schema", deployment = "6FbrTymXy9MqljSi1e5jnw" }
+game_object = { path = "../../../../schemas/game_object" , deployment = "1CmZBBe5nc3Cvgkbug6TgJ" }

@@ -4,7 +4,7 @@ name = "Physics"
 description = "Physics functionality and state."
 content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-25"
 
 [components.angular_velocity]
 type = "Vec3"
