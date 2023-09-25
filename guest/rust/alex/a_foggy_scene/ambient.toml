@@ -29,6 +29,8 @@ temperature = { path = "../temperature" , deployment = "nb2mw2fGIW4jmORAtyObz" }
 temperature_hud = { path = "../temperature_hud_magda" , deployment = "1JHgEozP6X8MO7wxVH5K5q" }
 fog_dj = { path = "../fog_dj" }
 
+nameplates = { path = "../../packages/std/nameplates" }
+
 [components]
 effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
 is_crackling_campfire_spatial_audio = { type = "Empty" } # sound source
