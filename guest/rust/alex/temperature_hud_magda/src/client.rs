@@ -56,7 +56,7 @@ pub fn NameplateUI(hooks: &mut Hooks, camera: EntityId) -> Element {
                 .with(font_size(), fsize * 0.45)
                 .with(font_family(), FONT_PATH_CHANGE_THIS.into())])
             .with_background(C_ALLWHITE.extend(1.)),
-            FlowRow::el([Text::el(format!("PLAYER_{}", uid))
+            FlowRow::el([Text::el(format!("{}", uid))
                 .with(color(), C_ALLBLACK.extend(1.))
                 .with(font_size(), fsize * 0.65)
                 .with(font_family(), FONT_PATH_CHANGE_THIS.into())])
