@@ -10,7 +10,8 @@ tests = [
 
     "examples/assets/basic_model",
     "examples/assets/material_overriding",
-    "examples/assets/unity",
+    # Secretes aren't passed to external PRs so we can't download the assets for this for PRs
+    # "examples/assets/unity",
 
     "examples/physics/visualize_colliders",
 
