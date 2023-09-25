@@ -3,7 +3,7 @@ name = "Entity Component System"
 description = "Core components for the ECS and entities."
 content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-25"
 
 [components.dont_despawn_on_unload]
 type = "Empty"

@@ -25,7 +25,6 @@ use ambient_gpu_ecs::{
 };
 use ambient_native_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, Cb};
 use derive_more::*;
-use downcast_rs::{impl_downcast, DowncastSync};
 use glam::{uvec4, UVec2, UVec4, Vec3};
 use serde::{Deserialize, Serialize};
 
@@ -285,7 +284,8 @@ impl SharedMaterial {
     }
 
     pub fn borrow_downcast<T: Material>(&self) -> &T {
-        self.0.downcast_ref::<T>().unwrap()
+        use as_any::Downcast;
+        (*self.0).downcast_ref::<T>().unwrap()
     }
 }
 
@@ -414,7 +414,7 @@ pub struct MaterialShader {
     pub shader: Arc<ShaderModule>,
 }
 
-pub trait Material: Debug + Sync + Send + DowncastSync {
+pub trait Material: Debug + Sync + Send + as_any::AsAny {
     fn id(&self) -> &str;
 
     fn name(&self) -> &str {
@@ -440,8 +440,6 @@ pub trait Material: Debug + Sync + Send + DowncastSync {
         None
     }
 }
-
-impl_downcast!(sync Material);
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 #[repr(u32)]
