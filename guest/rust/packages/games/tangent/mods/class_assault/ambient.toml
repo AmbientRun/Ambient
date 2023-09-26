@@ -1,5 +1,5 @@
 [package]
-id = "ob731abrl0d51ihp3zgx1e8qtdiv7f12"
+id = "j32xi2gg5rvgob2cu7uirdbtj5ce4jw7"
 name = "Tangent Class: Assault"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }

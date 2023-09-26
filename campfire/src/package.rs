@@ -30,6 +30,8 @@ pub enum Package {
         #[arg(long)]
         include_examples: bool,
     },
+    /// Regenerate IDs for all packages
+    RegenerateIds,
 }
 
 #[derive(Parser, Clone)]
@@ -66,6 +68,7 @@ pub fn main(args: &Package) -> anyhow::Result<()> {
             token,
             include_examples,
         } => deploy_all(token, *include_examples),
+        Package::RegenerateIds => regenerate_ids(),
     }
 }
 
@@ -214,6 +217,26 @@ pub fn get_all_packages(
                     }
                 }
             }
+
+            {
+                let core_path = package_path.join("core");
+                if core_path.is_dir() {
+                    if core_path.join("ambient.toml").is_file() {
+                        package_paths.push(core_path);
+                    } else {
+                        for core_package in all_directories_in(&core_path)? {
+                            package_paths.push(core_package.path());
+                        }
+                    }
+                }
+            }
+
+            {
+                let schema_path = package_path.join("schema");
+                if schema_path.is_dir() {
+                    package_paths.push(schema_path);
+                }
+            }
         }
     }
     if include_examples {
@@ -256,4 +279,13 @@ fn get_all_examples(include_testcases: bool) -> anyhow::Result<Vec<PathBuf>> {
     examples.sort_by_key(|path| path.clone());
 
     Ok(examples)
+}
+
+fn regenerate_ids() -> anyhow::Result<()> {
+    for path in get_all_packages(true, true, true)? {
+        println!("Regenerating ID for {path:?}");
+        run_ambient(&["package", "regenerate-id", &path.to_string_lossy()], true)?;
+    }
+
+    Ok(())
 }

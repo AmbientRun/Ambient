@@ -1,5 +1,5 @@
 [package]
-id = "hide_cursor"
+id = "xar372tfo2oswb4pkvx7h7o3rxi6tap6"
 name = "hide_cursor"
 version = "0.0.1"
 content = { type = "Asset", code = true }

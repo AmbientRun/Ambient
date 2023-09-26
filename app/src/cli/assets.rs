@@ -1,12 +1,13 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
+use ambient_native_std::asset_cache::AssetCache;
 use anyhow::Context;
 use clap::{Args, Subcommand};
 
 use super::PackagePath;
 
 #[derive(Subcommand, Clone, Debug)]
-pub enum AssetCommand {
+pub enum Assets {
     /// Migrate json pipelines to toml
     #[command(name = "migrate-pipelines-toml")]
     MigratePipelinesToml(MigrateOptions),
@@ -17,14 +18,14 @@ pub enum AssetCommand {
 
 #[derive(Args, Clone, Debug)]
 pub struct MigrateOptions {
-    #[arg(index = 1, default_value = "./assets")]
+    #[arg(default_value = "./assets")]
     /// The path to the assets folder
     pub path: PathBuf,
 }
 
 #[derive(Args, Clone, Debug)]
 pub struct ImportOptions {
-    #[arg(index = 1)]
+    #[arg()]
     /// The path to the assets you want to import
     pub path: PathBuf,
     #[arg(long)]
@@ -35,41 +36,45 @@ pub struct ImportOptions {
     pub collider_from_model: bool,
 }
 
-pub async fn handle(command: &AssetCommand, assets: &crate::AssetCache) -> anyhow::Result<()> {
+pub async fn handle(command: &Assets, assets: &AssetCache) -> anyhow::Result<()> {
     match command {
-        AssetCommand::MigratePipelinesToml(opt) => {
-            let path = PackagePath::new_local(opt.path.clone())?;
-            ambient_build::migrate::toml::process(path.fs_path.unwrap())
-                .await
-                .context("Failed to migrate pipelines")?;
+        Assets::MigratePipelinesToml(opt) => {
+            migrate_pipelines_toml(opt).await?;
         }
-        AssetCommand::Import(opt) => match opt.path.extension() {
-            Some(ext) => {
-                if ext == "wav" || ext == "mp3" || ext == "ogg" {
-                    let convert = opt.convert_audio;
-                    ambient_build::pipelines::import_audio(opt.path.clone(), convert)
-                        .context("Failed to import audio")?;
-                } else if ext == "fbx" || ext == "glb" || ext == "gltf" || ext == "obj" {
-                    let collider_from_model = opt.collider_from_model;
-                    ambient_build::pipelines::import_model(opt.path.clone(), collider_from_model)
-                        .context("Failed to import models")?;
-                } else if ext == "jpg" || ext == "png" || ext == "gif" || ext == "webp" {
-                    // TODO: import textures API may change, so this is just a placeholder
-                    todo!();
-                } else {
-                    anyhow::bail!("Unsupported file type");
-                }
-                ambient_build::build_assets(
-                    assets,
-                    &PathBuf::from("assets"),
-                    &PathBuf::from("build"),
-                    true,
-                )
-                .await?;
-            }
-            None => anyhow::bail!("Unknown file type"),
-        },
+        Assets::Import(opt) => import(opt, assets).await?,
     }
+
+    Ok(())
+}
+
+async fn migrate_pipelines_toml(opt: &MigrateOptions) -> Result<(), anyhow::Error> {
+    let path = PackagePath::new_local(opt.path.clone())?;
+    ambient_build::migrate::toml::process(path.fs_path.unwrap())
+        .await
+        .context("Failed to migrate pipelines")?;
+    Ok(())
+}
+
+async fn import(opt: &ImportOptions, assets: &AssetCache) -> anyhow::Result<()> {
+    let Some(ext) = opt.path.extension() else {
+        anyhow::bail!("Unknown file type");
+    };
+
+    if ext == "wav" || ext == "mp3" || ext == "ogg" {
+        let convert = opt.convert_audio;
+        ambient_build::pipelines::import_audio(opt.path.clone(), convert)
+            .context("Failed to import audio")?;
+    } else if ext == "fbx" || ext == "glb" || ext == "gltf" || ext == "obj" {
+        let collider_from_model = opt.collider_from_model;
+        ambient_build::pipelines::import_model(opt.path.clone(), collider_from_model)
+            .context("Failed to import models")?;
+    } else if ext == "jpg" || ext == "png" || ext == "gif" || ext == "webp" {
+        // TODO: import textures API may change, so this is just a placeholder
+        todo!();
+    } else {
+        anyhow::bail!("Unsupported file type");
+    }
+    ambient_build::build_assets(assets, Path::new("assets"), Path::new("build"), true).await?;
 
     Ok(())
 }

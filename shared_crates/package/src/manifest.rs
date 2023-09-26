@@ -1,19 +1,19 @@
 use std::{collections::HashMap, fmt::Display, path::PathBuf};
 
 use indexmap::IndexMap;
-use rand::{seq::SliceRandom, Rng};
+use semver::{Version, VersionReq};
 use serde::{Deserialize, Serialize};
+use sha2::Digest;
 use thiserror::Error;
 use url::Url;
 
 use crate::{
     Component, Concept, Enum, ItemPathBuf, Message, PascalCaseIdentifier, SnakeCaseIdentifier,
 };
-use semver::{Version, VersionReq};
 
 #[derive(Error, Debug, PartialEq)]
 pub enum ManifestParseError {
-    #[error("manifest was not valid TOML")]
+    #[error("manifest was not valid TOML: {0}")]
     TomlError(#[from] toml::de::Error),
     #[error("manifest contains a project and/or an ember section; projects/embers have been renamed to packages")]
     ProjectEmberRenamedToPackageError,
@@ -56,36 +56,84 @@ impl Manifest {
     }
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Default, Serialize)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Default, Serialize)]
 #[serde(transparent)]
+/// A checksummed package ID. Guaranteed to be a valid `SnakeCaseIdentifier` as well.
 pub struct PackageId(pub(crate) String);
+impl<'de> Deserialize<'de> for PackageId {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        PackageId::new(&String::deserialize(deserializer)?).map_err(serde::de::Error::custom)
+    }
+}
 impl PackageId {
+    const DATA_LENGTH: usize = 12;
+    const CHECKSUM_LENGTH: usize = 8;
+    const TOTAL_LENGTH: usize = Self::DATA_LENGTH + Self::CHECKSUM_LENGTH;
+
     pub fn as_str(&self) -> &str {
         &self.0
     }
 
-    /// Generates a new package ID.
-    // TODO: suffix with checksum
-    pub fn generate() -> Self {
-        const NUMERALS: [u8; 10] = [b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'];
-        const ALPHABET: [u8; 26] = [
-            b'a', b'b', b'c', b'd', b'e', b'f', b'g', b'h', b'i', b'j', b'k', b'l', b'm', b'n',
-            b'o', b'p', b'q', b'r', b's', b't', b'u', b'v', b'w', b'x', b'y', b'z',
-        ];
+    /// Attempts to create a new package ID from a string.
+    pub fn new(id: &str) -> Result<Self, String> {
+        Self::validate(id)?;
+        Ok(Self(id.to_string()))
+    }
 
-        let mut rng = rand::thread_rng();
-        let mut output = vec![0u8; 32];
-        output[0] = *ALPHABET.choose(&mut rng).unwrap();
-        for i in 1..output.len() {
-            let idx = rng.gen_range(0..(NUMERALS.len() + ALPHABET.len()));
-            output[i] = if idx < NUMERALS.len() {
-                NUMERALS[idx]
-            } else {
-                ALPHABET[idx - NUMERALS.len()]
-            };
+    /// Generates a new package ID.
+    pub fn generate() -> Self {
+        // TODO: see if there's a more intelligent way to ensure the first character
+        // is always alphabetic
+        loop {
+            let data: [u8; Self::DATA_LENGTH] = rand::random();
+            let checksum: [u8; Self::CHECKSUM_LENGTH] = sha2::Sha256::digest(&data)
+                [0..Self::CHECKSUM_LENGTH]
+                .try_into()
+                .unwrap();
+
+            let mut bytes = [0u8; Self::TOTAL_LENGTH];
+            bytes[0..Self::DATA_LENGTH].copy_from_slice(&data);
+            bytes[Self::DATA_LENGTH..].copy_from_slice(&checksum);
+
+            let output = data_encoding::BASE32_NOPAD
+                .encode(&bytes)
+                .to_ascii_lowercase();
+
+            if output.chars().next().unwrap().is_alphabetic() {
+                return Self(output);
+            }
+        }
+    }
+
+    /// Validate that a package ID is correct.
+    pub fn validate(id: &str) -> Result<(), String> {
+        let cmd =
+            "Use `ambient package regenerate-id` to regenerate the package ID with the new format.";
+
+        let bytes = data_encoding::BASE32_NOPAD
+            .decode(id.to_ascii_uppercase().as_bytes())
+            .map_err(|e| {
+                format!(
+                    "Package ID contained invalid characters: {}. {cmd}",
+                    e.to_string()
+                )
+            })?;
+
+        let data = &bytes[0..Self::DATA_LENGTH];
+        let checksum = &bytes[Self::DATA_LENGTH..];
+
+        let expected_checksum = &sha2::Sha256::digest(data)[0..Self::CHECKSUM_LENGTH];
+        if checksum != expected_checksum {
+            return Err(format!(
+                "Package ID contained invalid checksum: expected {:?}, got {:?}. {cmd}",
+                expected_checksum, checksum
+            ));
         }
 
-        Self(String::from_utf8(output).unwrap())
+        Ok(())
     }
 }
 impl Display for PackageId {
@@ -93,10 +141,17 @@ impl Display for PackageId {
         self.0.fmt(f)
     }
 }
+impl From<PackageId> for SnakeCaseIdentifier {
+    fn from(id: PackageId) -> Self {
+        SnakeCaseIdentifier(id.0)
+    }
+}
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Package {
-    pub id: PackageId,
+    /// The ID can be optional if and only if the package is `ambient_core` or an include.
+    #[serde(default)]
+    pub id: Option<PackageId>,
     pub name: String,
     pub version: Version,
     pub description: Option<String>,
@@ -251,7 +306,7 @@ mod tests {
     fn can_parse_minimal_toml() {
         const TOML: &str = r#"
         [package]
-        id = "test"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "Test"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -261,7 +316,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: PackageId("test".to_string()),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "Test".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -275,7 +330,7 @@ mod tests {
     fn will_fail_on_legacy_project_toml() {
         const TOML: &str = r#"
         [project]
-        id = "test"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "Test"
         version = "0.0.1"
         "#;
@@ -290,7 +345,7 @@ mod tests {
     fn can_parse_tictactoe_toml() {
         const TOML: &str = r#"
         [package]
-        id = "tictactoe"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -309,7 +364,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: PackageId("tictactoe".to_string()),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -353,7 +408,7 @@ mod tests {
     fn can_parse_rust_build_settings() {
         const TOML: &str = r#"
         [package]
-        id = "tictactoe"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -367,7 +422,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: PackageId("tictactoe".to_string()),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ambient_version: Some(
@@ -391,7 +446,7 @@ mod tests {
 
         const TOML: &str = r#"
         [package]
-        id = "my_package"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "My Package"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -421,7 +476,7 @@ mod tests {
             manifest,
             Manifest {
                 package: Package {
-                    id: PackageId("my_package".to_string()),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "My Package".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -557,7 +612,7 @@ mod tests {
     fn can_parse_enums() {
         const TOML: &str = r#"
         [package]
-        id = "tictactoe"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "Tic Tac Toe"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -573,7 +628,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: PackageId("tictactoe".to_string()),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "Tic Tac Toe".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -602,7 +657,7 @@ mod tests {
     fn can_parse_container_types() {
         const TOML: &str = r#"
         [package]
-        id = "test"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "Test"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -618,7 +673,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: PackageId("test".to_string()),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "Test".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
@@ -679,7 +734,7 @@ mod tests {
     fn can_parse_dependencies() {
         const TOML: &str = r#"
         [package]
-        id = "dependencies"
+        id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
         name = "dependencies"
         version = "0.0.1"
         content = { type = "Playable" }
@@ -697,7 +752,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 package: Package {
-                    id: PackageId("dependencies".to_string()),
+                    id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "dependencies".to_string(),
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()

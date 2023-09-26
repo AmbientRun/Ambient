@@ -1,30 +1,50 @@
-use std::path::PathBuf;
-
 use ambient_native_std::asset_cache::AssetCache;
 use anyhow::Context;
+use clap::Parser;
 
 use crate::{
     server::{self, ServerHandle},
     shared::certs::{CERT, CERT_KEY},
 };
 
-use super::{build::BuildDirectories, HostCli};
+use super::{
+    build::{self, BuildDirectories},
+    HostCli, PackageArgs,
+};
+
+#[derive(Parser, Clone, Debug)]
+/// Builds and runs the package in server-only mode
+pub struct Serve {
+    #[command(flatten)]
+    pub package: PackageArgs,
+
+    #[command(flatten)]
+    pub host: HostCli,
+}
 
 pub async fn handle(
+    serve: &Serve,
+    assets: AssetCache,
+    release_build: bool,
+) -> anyhow::Result<ServerHandle> {
+    handle_inner(&serve.package, &serve.host, assets, release_build).await
+}
+
+pub async fn handle_inner(
+    package: &PackageArgs,
     host: &HostCli,
-    view_asset_path: Option<PathBuf>,
-    directories: BuildDirectories,
-    assets: &AssetCache,
+    assets: AssetCache,
+    release_build: bool,
 ) -> anyhow::Result<ServerHandle> {
     let BuildDirectories {
         build_root_path,
         main_package_path,
         main_package_name: _,
-    } = directories;
+    } = build::handle_inner(package, &assets, release_build).await?;
 
     let manifest = match main_package_path
         .push("ambient.toml")?
-        .download_string(assets)
+        .download_string(&assets)
         .await
     {
         Ok(toml) => ambient_package::Manifest::parse(&toml)?,
@@ -39,11 +59,10 @@ pub async fn handle(
         .unwrap_or(std::env::current_dir()?);
 
     let server_handle = server::start(
-        assets.clone(),
+        assets,
         host,
         build_root_path,
         main_package_path,
-        view_asset_path,
         working_directory,
         manifest,
         crypto,

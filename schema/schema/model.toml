@@ -1,5 +1,4 @@
 [package]
-id = "model"
 name = "Model"
 description = "Information about models attached to entities."
 content = { type = "Asset", schema = true }

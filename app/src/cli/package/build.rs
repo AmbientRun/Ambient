@@ -1,5 +1,4 @@
-use std::path::PathBuf;
-use std::{collections::HashSet, future::Future};
+use std::{collections::HashSet, future::Future, path::PathBuf};
 
 use ambient_build::BuildResult;
 use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
@@ -7,8 +6,16 @@ use ambient_package::BuildSettings;
 use ambient_package_semantic::RetrievableFile;
 
 use anyhow::Context;
+use clap::Parser;
 
-use super::PackageCli;
+use super::PackageArgs;
+
+#[derive(Parser, Clone, Debug)]
+/// Builds the package
+pub struct Build {
+    #[command(flatten)]
+    pub package: PackageArgs,
+}
 
 pub struct BuildDirectories {
     /// The location where all built packages are stored. Used for the HTTP host.
@@ -29,7 +36,15 @@ impl BuildDirectories {
 }
 
 pub async fn handle(
-    package_cli: &PackageCli,
+    build: &Build,
+    assets: &AssetCache,
+    release_build: bool,
+) -> anyhow::Result<BuildDirectories> {
+    handle_inner(&build.package, assets, release_build).await
+}
+
+pub async fn handle_inner(
+    package_cli: &PackageArgs,
     assets: &AssetCache,
     release_build: bool,
 ) -> anyhow::Result<BuildDirectories> {
@@ -50,7 +65,7 @@ pub async fn handle(
     let build_wasm_only = package_cli.build_wasm_only;
     let clean_build = package_cli.clean_build;
 
-    build(
+    self::build(
         assets,
         main_package_fs_path,
         clean_build,
