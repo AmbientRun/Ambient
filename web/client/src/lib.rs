@@ -24,7 +24,7 @@ mod wasm;
 
 static APP_CONTROL: OnceLock<flume::Sender<WindowCtl>> = OnceLock::new();
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 /// This is inteded to be used by a loosely typed settings object from javascript allow for
 /// backwards and forwards compatibility when new fields are added to the settings object in a
@@ -34,6 +34,7 @@ pub struct Settings {
     enable_panic_hook: bool,
     allow_version_mismatch: bool,
     log_filter: Option<String>,
+    debugger: bool,
 }
 
 #[wasm_bindgen]
@@ -46,7 +47,7 @@ pub async fn start(target: Option<web_sys::HtmlElement>, server_url: String, set
 
     init(&settings).expect("Failed to initialize ambient");
 
-    if let Err(err) = run(target, server_url, &settings).await {
+    if let Err(err) = run(target, server_url, settings).await {
         tracing::error!("{err:?}")
     }
 }
@@ -76,8 +77,6 @@ fn init(settings: &Settings) -> Result<(), JsValue> {
         ambient_sys::set_panic_hook();
     }
 
-    tracing::info!("Hello, Wasm!");
-
     ambient_ecs::init_components();
     ambient_core::init_all_components();
     ambient_water::init_components();
@@ -104,7 +103,7 @@ pub fn stop() {
 async fn run(
     target: Option<web_sys::HtmlElement>,
     server_url: String,
-    settings: &Settings,
+    settings: Settings,
 ) -> anyhow::Result<()> {
     let (ctl_tx, ctl_rx) = flume::unbounded();
 
@@ -131,7 +130,7 @@ async fn run(
     Group(vec![
         UICamera.el().with(active_camera(), 0.),
         ambient_client_shared::player::PlayerRawInputHandler.el(),
-        WindowSized::el([MainApp::el(server_url, !settings.allow_version_mismatch)]),
+        WindowSized::el([MainApp::el(server_url, settings)]),
     ])
     .el()
     .spawn_interactive(world);
