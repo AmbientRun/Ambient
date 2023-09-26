@@ -2621,6 +2621,13 @@ mod raw {
                     once_cell::sync::Lazy,
                     prelude::*,
                 };
+                static MAIN_PACKAGE_ID: Lazy<Component<EntityId>> = Lazy::new(|| {
+                    __internal_get_component("ambient_core::package::main_package_id")
+                });
+                #[doc = "**Main Package ID**: The ID of the main package.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn main_package_id() -> Component<EntityId> {
+                    *MAIN_PACKAGE_ID
+                }
                 static IS_PACKAGE: Lazy<Component<()>> =
                     Lazy::new(|| __internal_get_component("ambient_core::package::is_package"));
                 #[doc = "**Is Package**: Whether or not this entity is a package.\n\n*Attributes*: Debuggable, Networked"]

@@ -15,6 +15,12 @@ Tool = "A tool."
 Mod = "A mod."
 
 [components]
+[components.main_package_id]
+type = "EntityId"
+name = "Main Package ID"
+description = "The ID of the main package."
+attributes = ["Debuggable", "Networked"]
+
 [components.is_package]
 type = "Empty"
 name = "Is Package"
