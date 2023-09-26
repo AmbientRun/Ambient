@@ -3,6 +3,7 @@ use ambient_api::{
     prelude::*,
 };
 
+use super::window_style;
 use crate::packages::this::messages;
 
 #[element_component]
@@ -21,12 +22,14 @@ fn PackageLoadDialog(hooks: &mut Hooks) -> Element {
     });
 
     let close = cb(move || set_visible(false));
-    Window::el(
-        "Package load".to_string(),
-        visible,
-        Some(close.clone()),
-        PackageLoadDialogInner::el(close),
-    )
+    Window {
+        title: "Package load".to_string(),
+        visible: visible,
+        close: Some(close.clone()),
+        style: Some(window_style()),
+        child: PackageLoadDialogInner::el(close),
+    }
+    .el()
 }
 
 #[element_component]
@@ -66,12 +69,14 @@ fn ErrorMessage(hooks: &mut Hooks) -> Element {
         }
     });
     let close = cb(move || set_reason(None));
-    Window::el(
-        "Package load fail".to_string(),
-        reason.is_some(),
-        Some(close.clone()),
-        ErrorMessageInner::el(reason.unwrap_or_default(), close),
-    )
+    Window {
+        title: "Package load fail".to_string(),
+        visible: reason.is_some(),
+        close: Some(close.clone()),
+        style: Some(window_style()),
+        child: ErrorMessageInner::el(reason.unwrap_or_default(), close),
+    }
+    .el()
 }
 
 #[element_component]

@@ -9,6 +9,8 @@ version = "0.0.1"
 ambient_api = { workspace = true }
 ambient_package = { workspace = true }
 ambient_shared_types = { workspace = true }
+ambient_color = { workspace = true }
+ambient_design_tokens = { git = "https://github.com/AmbientRun/DesignTokens.git" }
 
 toml = "0.7"
 serde = { version = "1.0", features = ["derive"] }

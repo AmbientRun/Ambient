@@ -15,7 +15,10 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::packages::this::messages::{PackageSetEnabled, PackageShow, WasmReload, WasmSetEnabled};
+use crate::{
+    client::window_style,
+    packages::this::messages::{PackageSetEnabled, PackageShow, WasmReload, WasmSetEnabled},
+};
 
 #[element_component]
 pub fn PackageViews(hooks: &mut Hooks) -> Element {
@@ -35,15 +38,17 @@ pub fn PackageViews(hooks: &mut Hooks) -> Element {
         let package_visible = visible_packages.lock().contains(&package);
 
         to_owned!(rerender, visible_packages);
-        Window::el(
-            name,
-            package_visible,
-            Some(cb(move || {
+        Window {
+            title: name,
+            visible: package_visible,
+            style: Some(window_style()),
+            close: Some(cb(move || {
                 visible_packages.lock().remove(&package);
                 rerender();
             })),
-            PackageViewInner::el(package),
-        )
+            child: PackageViewInner::el(package),
+        }
+        .el()
     }))
 }
 

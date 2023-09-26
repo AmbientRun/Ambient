@@ -119,6 +119,7 @@ ambient_pipeline_types = { path = "../../crates/pipeline_types", version = "0.3.
 
 ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.3.0-dev" }
 ambient_cb = { path = "../../libs/cb", version = "0.3.0-dev" }
+ambient_color = { path = "../../libs/color", version = "0.3.0-dev" }
 
 anyhow = "1.0"
 thiserror = "1.0"

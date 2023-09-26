@@ -30,7 +30,7 @@ use crate::{
     shared::PackageJson,
 };
 
-use super::use_hotkey_toggle;
+use super::{use_hotkey_toggle, window_style};
 
 #[element_component]
 pub fn PackageManager(hooks: &mut Hooks) -> Element {
@@ -52,18 +52,20 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
         move || set_visible(!visible)
     });
 
-    Window::el(
-        title.clone(),
+    Window {
+        title: title.clone(),
         visible,
-        Some(cb(move || set_visible(false))),
-        if let Some(mod_manager_for) = mod_manager_for {
+        close: Some(cb(move || set_visible(false))),
+        style: Some(window_style()),
+        child: if let Some(mod_manager_for) = mod_manager_for {
             ModManagerInner::el(mod_manager_for)
         } else {
             PackageManagerInner::el()
         }
         .with(space_between_items(), 4.0)
         .with_margin_even(STREET),
-    )
+    }
+    .el()
 }
 
 #[element_component]
