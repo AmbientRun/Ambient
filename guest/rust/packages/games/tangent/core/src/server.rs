@@ -13,6 +13,7 @@ use ambient_api::{
 
 use packages::{
     game_object::{components as goc, player::components as gopc},
+    nameplates::components::height_offset,
     tangent_schema::{
         concepts::Spawnpoint,
         player::character::components as pcc,
@@ -40,6 +41,7 @@ pub fn main() {
                 let character_id = Entity::new()
                     .with(pcc::is_character(), ())
                     .with(pcc::player_ref(), player_id)
+                    .with(height_offset(), 2.0)
                     .with(translation(), choose_spawn_position())
                     .with(
                         name(),
@@ -51,6 +53,7 @@ pub fn main() {
                     )
                     .spawn();
                 entity::add_component(player_id, pc::character_ref(), character_id);
+                entity::add_component(player_id, gopc::control_of_entity(), character_id);
             }
         });
 
@@ -84,12 +87,13 @@ pub fn main() {
         despawn_query(vc::driver_ref()).bind(|vehicles| {
             for (vehicle_id, driver_id) in vehicles {
                 entity::remove_component(driver_id, pc::vehicle_ref());
-                entity::remove_component(driver_id, gopc::control_of_entity());
 
                 let Some(character_id) = entity::get_component(driver_id, pc::character_ref())
                 else {
                     continue;
                 };
+                entity::add_component(driver_id, gopc::control_of_entity(), character_id);
+
                 let Some(present_vehicle_id) = entity::get_component(character_id, parent()) else {
                     continue;
                 };

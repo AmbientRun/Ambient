@@ -13,6 +13,7 @@ unit_schema = { path = "../../../schemas/unit" }
 
 explosion = { path = "../../../std/explosion", deployment = "4AJQwLstaVFyxviCqYBMTq" }
 hide_cursor = { path = "../../../std/hide_cursor", deployment = "nCIEbcEeBgSVOjy3dS4rF" }
+nameplates = { path = "../../../std/nameplates", deployment = "1M2x4RcsrSyVlNXEi4UpCo" }
 
 kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployment = "s69YYpDgUiMJlWsbN5xnU" }
 

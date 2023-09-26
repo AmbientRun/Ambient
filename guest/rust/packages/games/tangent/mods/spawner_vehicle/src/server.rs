@@ -64,7 +64,8 @@ pub fn main() {
             },
         }
         .make()
-        .with(packages::nameplates::components::height_offset(), 0.5)
+        .with(packages::nameplates::components::height_offset(), 1.25)
+        .with(packages::nameplates::components::text_size(), 4.0)
         .spawn();
 
         let _vehicle_model_id = Entity::new()
