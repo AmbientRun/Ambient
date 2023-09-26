@@ -3,8 +3,9 @@ use std::{f32::consts::PI, sync::OnceLock};
 use ambient_api::{
     core::{
         app::components::name,
+        hierarchy::components::parent,
         player::components::{is_player, user_id},
-        transform::components::{local_to_world, rotation, translation},
+        transform::components::{local_to_parent, local_to_world, rotation, translation},
     },
     ecs::GeneralQuery,
     prelude::*,
@@ -70,13 +71,43 @@ pub fn main() {
                 for (vehicle_id, driver_id) in vehicles {
                     entity::add_component(driver_id, pc::vehicle_ref(), vehicle_id);
                     entity::add_component(driver_id, gopc::control_of_entity(), vehicle_id);
+
+                    if let Some(character_id) =
+                        entity::get_component(driver_id, pc::character_ref())
+                    {
+                        entity::add_component(character_id, parent(), vehicle_id);
+                        entity::add_component(character_id, local_to_parent(), default());
+                    }
                 }
             });
 
         despawn_query(vc::driver_ref()).bind(|vehicles| {
-            for (_, driver_id) in vehicles {
+            for (vehicle_id, driver_id) in vehicles {
                 entity::remove_component(driver_id, pc::vehicle_ref());
                 entity::remove_component(driver_id, gopc::control_of_entity());
+
+                let Some(character_id) = entity::get_component(driver_id, pc::character_ref())
+                else {
+                    continue;
+                };
+                let Some(present_vehicle_id) = entity::get_component(character_id, parent()) else {
+                    continue;
+                };
+                if present_vehicle_id != vehicle_id {
+                    continue;
+                }
+                entity::remove_component(character_id, local_to_parent());
+                entity::remove_component(character_id, parent());
+
+                let Some(position) = entity::get_component(vehicle_id, translation()) else {
+                    continue;
+                };
+
+                entity::set_component(
+                    character_id,
+                    translation(),
+                    position + Vec3::Z * 2.0 + Vec3::Y * 0.5,
+                );
             }
         });
     }
@@ -226,27 +257,28 @@ pub fn main() {
         }
     });
 
-    // If the player has a character, but no vehicle, and is currently trying to use something,
-    // check if there are any vehicles they could enter
-    query((pc::character_ref(), pc::input_use()))
-        .excludes(pc::vehicle_ref())
-        .each_frame(|players| {
-            for (player_id, (character_ref, input_use)) in players {
-                if !input_use {
-                    continue;
-                }
+    // Handle use key
+    query((pc::character_ref(), pc::input_use())).each_frame(|players| {
+        for (player_id, (character_ref, input_use)) in players {
+            if !input_use {
+                continue;
+            }
 
-                let Some(head_ref) = entity::get_component(character_ref, uc::head_ref()) else {
-                    continue;
-                };
+            let Some(head_ref) = entity::get_component(character_ref, uc::head_ref()) else {
+                continue;
+            };
 
-                let last_use_time =
-                    entity::get_component(character_ref, pcc::last_use_time()).unwrap_or_default();
+            let last_use_time =
+                entity::get_component(character_ref, pcc::last_use_time()).unwrap_or_default();
 
-                if (game_time() - last_use_time) < Duration::from_secs_f32(0.5) {
-                    continue;
-                }
+            if (game_time() - last_use_time) < Duration::from_secs_f32(0.5) {
+                continue;
+            }
 
+            if let Some(vehicle_id) = entity::get_component(player_id, pc::vehicle_ref()) {
+                // Remove the driving component `driver_ref` so that `vehicle_ref` is updated
+                entity::remove_component(vehicle_id, vc::driver_ref());
+            } else {
                 let Some(local_to_world) = entity::get_component(head_ref, local_to_world()) else {
                     continue;
                 };
@@ -261,16 +293,14 @@ pub fn main() {
                         entity::add_component(hit.entity, vc::driver_ref(), player_id);
                     }
                 }
-
-                entity::add_component(character_ref, pcc::last_use_time(), game_time());
             }
-        });
+
+            entity::add_component(character_ref, pcc::last_use_time(), game_time());
+        }
+    });
 
     // TEMP HACK REMOVE ME
     // explosion gun for debugging
-
-    // If the player has a character, but no vehicle, and is currently trying to use something,
-    // check if there are any vehicles they could enter
     query((pc::character_ref(), pc::input_fire()))
         .excludes(pc::vehicle_ref())
         .each_frame(|players| {
