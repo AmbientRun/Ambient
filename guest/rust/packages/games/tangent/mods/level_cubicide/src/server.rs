@@ -3,6 +3,7 @@ use std::{collections::HashMap, f32::consts::TAU};
 use ambient_api::{
     core::{
         app::components::main_scene,
+        messages::Frame,
         physics::components::{cube_collider, dynamic, mass, physics_controlled, plane_collider},
         primitives::{
             components::{cube, quad},
@@ -164,6 +165,8 @@ fn handle_pickups() {
                 rotation: Quat::IDENTITY,
             }
             .spawn();
+
+            Ok(())
         },
     )
 }
@@ -176,7 +179,7 @@ fn handle_vehicles() {
         20.0,
         move |translation| {
             let Some(def_id) = entity::get_all(is_def()).choose(&mut thread_rng()).copied() else {
-                return;
+                return Err(());
             };
 
             VehicleSpawn {
@@ -184,6 +187,8 @@ fn handle_vehicles() {
                 position: translation.extend(0.0),
             }
             .send_local_broadcast(false);
+
+            Ok(())
         },
     )
 }
@@ -193,10 +198,17 @@ fn handle_respawnables(
     locate_query: GeneralQuery<Component<Vec3>>,
     respawn_time: Duration,
     distance_from_each_other: f32,
-    spawn: impl Fn(Vec2) + 'static,
+    // If spawn returns an `Err`, it will try again in one second
+    // instead of in `respawn_time`.
+    spawn: impl Fn(Vec2) -> Result<(), ()> + 'static,
 ) {
     let distance_from_each_other_sqr = distance_from_each_other.powi(2);
-    let respawn = move || {
+    let mut next_respawn_time = game_time();
+    let mut respawn = move || {
+        if game_time() < next_respawn_time {
+            return;
+        }
+
         let rng = &mut thread_rng();
 
         let mut existing: Vec<_> = locate_query
@@ -223,13 +235,22 @@ fn handle_respawnables(
                 continue;
             }
 
-            spawn(position);
-            existing.push(position);
+            match spawn(position) {
+                Ok(_) => {
+                    existing.push(position);
+                }
+                Err(_) => {
+                    next_respawn_time = game_time() + Duration::from_secs(1);
+                    return;
+                }
+            }
+
+            next_respawn_time = game_time() + respawn_time;
         }
     };
 
     respawn();
-    fixed_rate_tick(respawn_time, move |_| respawn());
+    Frame::subscribe(move |_| respawn());
 }
 
 fn make_cube(pos: Vec3, size: Vec3, dynamic: bool, color: Vec4, rng: &mut dyn RngCore) -> EntityId {
