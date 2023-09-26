@@ -23,5 +23,3 @@ tangent_class_scout = { path = "mods/class_scout", enabled = true, deployment = 
 tangent_class_tank = { path = "mods/class_tank", enabled = true, deployment = "weNuAR3XztXfWx3SVT7DN" }
 
 package_manager = { path = "../../tools/package_manager", deployment = "7a7ta4gOPEpDpIAbC6IK2S" }
-
-nameplates = { path = "../../std/nameplates" , deployment = "1M2x4RcsrSyVlNXEi4UpCo" }

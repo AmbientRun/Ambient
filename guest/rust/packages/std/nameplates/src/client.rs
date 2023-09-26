@@ -1,12 +1,14 @@
 use ambient_api::{
     core::{
         player::components::{is_player, user_id},
-        rendering::components::double_sided,
+        rendering::components::{double_sided, local_bounding_aabb_max},
         transform::components::local_to_world,
     },
     element::{use_entity_component, use_query},
     prelude::*,
 };
+
+use packages::this::components::{height_offset, text_size};
 
 #[main]
 pub fn main() {
@@ -49,15 +51,20 @@ fn Nameplate(hooks: &mut Hooks, player_id: EntityId) -> Element {
 
     let (_, _, entity_translation) = entity_ltw.to_scale_rotation_translation();
 
-    let nameplate_translation = entity_translation + vec3(0.0, 0.0, 0.5);
+    let height_offset_value = use_entity_component(hooks, entity_id, height_offset());
+    let local_bounding_z =
+        use_entity_component(hooks, entity_id, local_bounding_aabb_max()).map(|m| m.z);
+    let height_offset = height_offset_value.or(local_bounding_z).unwrap_or(2.0);
+
+    let text_size = use_entity_component(hooks, entity_id, text_size()).unwrap_or(2.0);
+
+    let nameplate_translation = entity_translation + height_offset * Vec3::Z;
     let nameplate_rotation =
         Quat::from_rotation_z(camera_rotation_z) * Quat::from_rotation_x(90f32.to_degrees());
 
     Element::new()
         .children(vec![LayoutFreeCenter::el(
-            Text3D::el(user_id, 2.0)
-                .with(double_sided(), true)
-                .init(width(), 1.0),
+            Text3D::el(user_id, text_size).with(double_sided(), true),
             true,
             true,
         )])
