@@ -35,7 +35,7 @@ use ambient_native_std::{
 use ambient_procedurals::{procedural_storage, ProceduralStorage};
 use ambient_renderer::lod::lod_system;
 use ambient_settings::SettingsKey;
-use ambient_sys::task::RuntimeHandle;
+use ambient_sys::{task::RuntimeHandle, time::Instant};
 
 use glam::{uvec2, vec2, IVec2, UVec2, Vec2};
 use parking_lot::Mutex;
@@ -512,6 +512,7 @@ impl AppBuilder {
             _puffin: puffin_server,
             modifiers: Default::default(),
             ctl_rx,
+            current_time: Instant::now(),
             update_title_with_fps_stats: self.update_title_with_fps_stats,
             #[cfg(target_os = "unknown")]
             drop_handles,
@@ -564,6 +565,7 @@ pub struct App {
     update_title_with_fps_stats: bool,
     #[cfg(target_os = "unknown")]
     drop_handles: Vec<Box<dyn std::fmt::Debug>>,
+    current_time: Instant,
 }
 
 impl std::fmt::Debug for App {
@@ -688,9 +690,16 @@ impl App {
         self.window_event_systems.run(world, event);
         match event {
             Event::MainEventsCleared => {
+                let frame_start = Instant::now();
+                let outside_frame = frame_start.duration_since(self.current_time);
+                self.current_time = frame_start;
+
+                tracing::debug!(?outside_frame, "time outside frame");
+                tracing::trace!(?event, "event");
+
                 // Handle window control events
                 for v in self.ctl_rx.try_iter() {
-                    tracing::debug!("Window control: {v:?}");
+                    tracing::trace!(?v, "window control");
                     match v {
                         WindowCtl::GrabCursor(mode) => {
                             if let Some(window) = &self.window {
@@ -777,6 +786,14 @@ impl App {
                 if let Some(window) = &self.window {
                     window.request_redraw();
                 }
+
+                let frame_end = Instant::now();
+
+                let elapsed = frame_end.duration_since(frame_start);
+
+                tracing::debug!(?elapsed, "frame time");
+                self.current_time = frame_end;
+
                 profiling::finish_frame!();
             }
 
