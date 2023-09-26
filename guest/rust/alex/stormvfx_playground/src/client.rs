@@ -3,7 +3,9 @@ use ambient_api::{
         hierarchy::components::parent,
         primitives::concepts::Sphere,
         transform::{
-            components::{local_to_parent, local_to_world, rotation, scale, translation},
+            components::{
+                local_to_parent, local_to_world, lookat_target, rotation, scale, translation,
+            },
             concepts::{Transformable, TransformableOptional},
         },
     },
@@ -25,8 +27,21 @@ pub fn main() {
     }
     .make()
     .with(local_to_world(), Mat4::IDENTITY)
+    .with(scale(), Vec3::splat(0.02))
     .spawn();
-    for _ in 1..100 {
+
+    // if let Some(camera) = camera::get_active(None) {
+    //     if let Some(camera_pos) = entity::get_component(camera, translation()) {
+    //         println!("GOT CAMERA POS, STORM'S LOOKIN' RIGHT AT YA :)");
+    //         entity::add_component(stormparent, lookat_target(), camera_pos);
+    //     } else {
+    //         println!("/!\\ CAMERA FOUND BUT NO POSITION, STORM HAS NO ROTATION LOOKAT");
+    //     }
+    // } else {
+    //     println!("/!\\ NO CAMERA FOUND, STORM HAS NO ROTATION LOOKAT");
+    // }
+
+    for _ in 1..400 {
         let drop = Entity::new()
             .with_merge(Transformable::suggested().make())
             .with_merge(Sphere::suggested().make())
@@ -66,26 +81,27 @@ fn advance_drop(drop: EntityId, params: Option<(Vec3, f32, f32)>, delta: f32) {
     } else {
         entity::set_component(drop, dropage(), age2);
         entity::mutate_component(drop, translation(), |pos| *pos = *pos + vel * delta);
-        entity::set_component(drop, scale(), Vec3::splat((age2 * 3.14).sin()));
+        entity::set_component(drop, scale(), 5.0 * Vec3::splat((age2 * 3.14).sin()));
     }
 }
 
 fn get_random_drop_start() -> Entity {
+    let startpos = vec3(rand_range(-50., 50.), rand_range(-50., 50.), -50.);
+    let startvel = vec3(
+        rand_range(-10., 10.),
+        rand_range(-10., 10.),
+        rand_range(20., 80.),
+    );
+    let agerate = random::<f32>() * 0.5 + 0.5;
+    let lifetime = 1. / agerate;
     Entity::new()
         .with(
             translation(),
-            vec3(0., rand_range(-50., 50.), rand_range(-50., 50.)),
+            startpos + startvel * random::<f32>() / lifetime,
         )
         .with(dropage(), 0.)
-        .with(dropagerate(), random::<f32>() * 0.5 + 0.5)
-        .with(
-            dropvel(),
-            vec3(
-                rand_range(-10., -40.),
-                rand_range(-10., 10.),
-                rand_range(-10., 10.),
-            ),
-        )
+        .with(dropagerate(), agerate)
+        .with(dropvel(), startvel)
         .with(scale(), Vec3::ZERO)
 }
 
