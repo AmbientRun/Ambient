@@ -92,15 +92,14 @@ pub fn use_state_with<T: Clone + Debug + Send + 'static>(
     hooks.state_index += 1;
     let value = {
         let instance = hooks.tree.instances.get_mut(&hooks.instance_id).unwrap();
-        if let Some(value) = instance.hooks_state.get(index) {
-            value
+        let value: &(dyn AnyCloneable + Send) = if let Some(value) = instance.hooks_state.get(index)
+        {
+            &**value
         } else {
             instance.hooks_state.push(Box::new(init(hooks.world)));
-            instance.hooks_state.last().unwrap()
-        }
-        .downcast_ref::<T>()
-        .unwrap()
-        .clone()
+            &**instance.hooks_state.last().unwrap()
+        };
+        value.downcast_ref::<T>().unwrap().clone()
     };
     let environment = hooks.environment.clone();
     let element = hooks.instance_id.clone();
@@ -165,7 +164,7 @@ pub fn consume_context<T: Clone + Debug + Sync + Send + 'static>(
             let instance = hooks.tree.instances.get_mut(&provider).unwrap();
             let ctx = instance.hooks_context_state.get_mut(&type_id).unwrap();
             ctx.listeners.insert(hooks.instance_id.clone());
-            ctx.value.downcast_ref::<T>().unwrap().clone()
+            (*ctx.value).downcast_ref::<T>().unwrap().clone()
         };
         {
             let instance = hooks.tree.instances.get_mut(&hooks.instance_id).unwrap();

@@ -168,7 +168,9 @@ struct MainFsOut {
 
 fn apply_fog(color: vec3<f32>, camera_pos: vec3<f32>, world_pos: vec3<f32>) -> vec3<f32> {
     // From https://developer.amd.com/wordpress/media/2012/10/Wenzel-Real-time_Atmospheric_Effects_in_Games.pdf
-    let camera_to_world_pos = world_pos - camera_pos;
+    let wpos = vec3(world_pos.xy, max(world_pos.z, 0.0));
+
+    let camera_to_world_pos = wpos - camera_pos;
     let vol_fog_height_density_at_viewer = exp(-global_params.fog_height_falloff * camera_pos.z);
 
     var fog_int = length(camera_to_world_pos) * vol_fog_height_density_at_viewer;

@@ -76,10 +76,6 @@ pub use ambient_guest_bridge::core::app::components::{element, element_unmanaged
 /// A trait for types that can be converted to `Any` and can also be cloned.
 pub trait AnyCloneable: AsAny + Clone + std::fmt::Debug {}
 impl<T: Clone + std::fmt::Debug + Any + 'static> AnyCloneable for T {}
-impl as_any::Downcast for dyn AnyCloneable {}
-impl as_any::Downcast for dyn AnyCloneable + Send {}
-impl as_any::Downcast for dyn AnyCloneable + Sync {}
-impl as_any::Downcast for dyn AnyCloneable + Send + Sync {}
 
 type InstanceId = String;
 

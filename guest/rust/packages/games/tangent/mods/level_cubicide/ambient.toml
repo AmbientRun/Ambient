@@ -3,8 +3,8 @@ id = "tangent_level_cubicide"
 name = "Tangent Level: Cubicide"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-26"
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
-pickup_health = { path = "../pickup_health" , deployment = "7lysU5KZdkYj2rpckumEbI" }
+tangent_schema = { path = "../../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
+pickup_health = { path = "../pickup_health" , deployment = "1roz8LFVjLVFsz623D4B2E" }

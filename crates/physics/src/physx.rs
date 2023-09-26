@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use ambient_core::{
     delta_time,
-    transform::{rotation, scale, translation},
+    transform::{local_to_parent, local_to_world, rotation, scale, translation},
 };
 use ambient_ecs::{
     components, ensure_has_component, query, FnSystem, QueryState, Resource, SystemGroup,
@@ -99,6 +99,15 @@ pub fn sync_ecs_physics() -> SystemGroup {
         query((translation().changed(), rotation().changed())).incl(physics_shape());
     let translation_rotation_q2 = translation_rotation_q.query.clone();
 
+    // we need a seperate query here for child entities
+    // Though they have rotation and translation those values may not update
+    // the parents will and local_to_world.changed() will need to be updated
+    let hiearchy_transform_qs = Arc::new(Mutex::new(QueryState::new()));
+    let hiearchy_transform_q = query(local_to_world().changed())
+        .incl(physics_shape())
+        .incl(local_to_parent());
+    let hiearchy_transform_q2 = hiearchy_transform_q.query.clone();
+
     let translation_character_qs = Arc::new(Mutex::new(QueryState::new()));
     let translation_character_q =
         query((translation().changed(), character_controller().changed()))
@@ -149,6 +158,7 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     let mut qs = translation_rotation_qs.lock();
                     for (id, (&pos, &rot)) in q.iter(world, Some(&mut *qs)) {
                         let is_kinematic = world.has_component(id, kinematic());
+
                         if let Ok(body) = world.get(id, rigid_dynamic()) {
                             let pose = PxTransform::new(pos, rot);
                             if is_kinematic {
@@ -176,6 +186,46 @@ pub fn sync_ecs_physics() -> SystemGroup {
                                 }
                             } else {
                                 // update_actor_entity_transforms(world, actor);
+                            }
+                        }
+                    }
+                }
+            }),
+            hiearchy_transform_q.to_system({
+                let hiearchy_transform_qs = hiearchy_transform_qs.clone();
+                move |q, world, _, _| {
+                    let mut qs = hiearchy_transform_qs.lock();
+                    for (id, &localworld) in q.iter(world, Some(&mut *qs)) {
+                        let is_kinematic = world.has_component(id, kinematic());
+                        let (_scale, rot, pos) = localworld.to_scale_rotation_translation();
+                        if let Ok(body) = world.get(id, rigid_dynamic()) {
+                            //                            println!("child physx is dynamic {:?} ", id);
+                            let pose = PxTransform::new(pos, rot);
+                            if is_kinematic {
+                                body.set_kinematic_target(&pose);
+                            } else {
+                                body.set_global_pose(&pose, true);
+                                body.set_linear_velocity(Vec3::ZERO, true);
+                                body.set_angular_velocity(Vec3::ZERO, true);
+                            }
+                        } else if let Ok(body) = world.get(id, rigid_static()) {
+                            //                            println!("child physx is static {:?} ", id);
+                            body.set_global_pose(&PxTransform::new(pos, rot), true);
+                        } else if let Ok(shape) = world.get_ref(id, physics_shape()) {
+                            //                            println!("child physx has a shape? {:?} ", id);
+                            let actor = shape.get_actor().unwrap();
+                            let pose = PxTransform::new(pos, rot);
+                            if !is_kinematic {
+                                actor.set_global_pose(&pose, true);
+                            }
+                            if let Some(body) = actor.to_rigid_dynamic() {
+                                if is_kinematic {
+                                    body.set_kinematic_target(&pose);
+                                } else {
+                                    // Stop any rb movement when translating
+                                    body.set_linear_velocity(Vec3::ZERO, true);
+                                    body.set_angular_velocity(Vec3::ZERO, true);
+                                }
                             }
                         }
                     }
@@ -375,6 +425,8 @@ pub fn sync_ecs_physics() -> SystemGroup {
                 // Fast forward queries
                 let mut translation_rotation_qs = translation_rotation_qs.lock();
                 for _ in translation_rotation_q2.iter(world, Some(&mut *translation_rotation_qs)) {}
+                let mut hiearchy_transform_qs = hiearchy_transform_qs.lock();
+                for _ in hiearchy_transform_q2.iter(world, Some(&mut *hiearchy_transform_qs)) {}
                 let mut translation_character_qs = translation_character_qs.lock();
                 for _ in translation_character_q2.iter(world, Some(&mut *translation_character_qs))
                 {

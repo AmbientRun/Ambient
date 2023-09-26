@@ -5,6 +5,6 @@ version = "0.0.1"
 content = { type = "Asset", textures = true, code = true }
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "7NBTASMOE1rultxb0ShMhi" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "23Br3CXehPb9wboVb2Fv5h" }
-game_object = { path = "../../../../schemas/game_object" }
+afps_schema = { path = "../../schema", deployment = "4A7TadpebaQENMsoxC9lMg" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "7OrjknspjVQ3VtTeb53sv9" }
+game_object = { path = "../../../../schemas/game_object" , deployment = "pNjDPAc7LUs8IgPYlwJmS" }

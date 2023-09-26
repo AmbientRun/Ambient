@@ -3,7 +3,7 @@ id = "character_movement"
 name = "character_movement"
 version = "0.0.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-26"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "4WJYw13Z2XCD6EFsnFPreh" }
+unit_schema = { path = "../../schemas/unit", deployment = "7OrjknspjVQ3VtTeb53sv9" }

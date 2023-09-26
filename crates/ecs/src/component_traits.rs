@@ -1,6 +1,5 @@
 use std::{self, any::Any};
 
-use downcast_rs::impl_downcast;
 use serde::{de::DeserializeOwned, Deserializer, Serializer};
 
 use super::*;
@@ -15,8 +14,6 @@ impl<T: ComponentValue + Serialize + DeserializeOwned + Clone + std::fmt::Debug>
     for T
 {
 }
-
-impl_downcast!(ComponentValueBase);
 
 impl<T: ComponentValue> Serialize for Component<T> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {

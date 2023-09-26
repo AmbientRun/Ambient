@@ -556,13 +556,13 @@ dependencies = [
  "ambient_shared_types",
  "ambient_sys",
  "anyhow",
+ "as-any",
  "atomic_refcell",
  "bincode",
  "bit-set",
  "bit-vec",
  "byteorder",
  "data-encoding",
- "downcast-rs",
  "erased-serde",
  "glam 0.24.1",
  "itertools",
@@ -1021,6 +1021,7 @@ dependencies = [
  "ambient_ui_native",
  "ambient_world_audio",
  "anyhow",
+ "as-any",
  "async-trait",
  "bincode",
  "bytes",
@@ -1299,10 +1300,10 @@ dependencies = [
  "ambient_std",
  "ambient_sys",
  "anyhow",
+ "as-any",
  "async-trait",
  "bytemuck",
  "derive_more",
- "downcast-rs",
  "env_logger 0.10.0",
  "glam 0.24.1",
  "itertools",
@@ -1827,9 +1828,9 @@ dependencies = [
 
 [[package]]
 name = "as-any"
-version = "0.2.1"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "088ccb346677e658e7ccd9627c62576fba881f4db7fab71fa9e21bf31c0aa4cb"
+checksum = "5b8a30a44e99a1c83ccb2a6298c563c888952a1c9134953db26876528f84c93a"
 
 [[package]]
 name = "ash"

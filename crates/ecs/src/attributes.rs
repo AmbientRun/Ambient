@@ -1,23 +1,17 @@
 use std::{
-    any::{type_name, Any, TypeId},
+    any::{Any, TypeId},
     collections::HashMap,
     fmt::Debug,
     sync::Arc,
 };
 
-use downcast_rs::{impl_downcast, Downcast};
+use as_any::{AsAny, Downcast};
 use serde::{Deserialize, Serialize};
 
 use crate::{ComponentDesc, ComponentEntry, ComponentValue, EnumComponent};
 
 /// Represents a single attribute attached to a component
-pub trait ComponentAttribute: 'static + Send + Sync + Downcast {
-    fn type_name(&self) -> &'static str {
-        type_name::<Self>()
-    }
-}
-
-impl_downcast!(ComponentAttribute);
+pub trait ComponentAttribute: 'static + Send + Sync + AsAny {}
 
 #[derive(Default, Clone)]
 pub struct AttributeStore {
@@ -46,7 +40,7 @@ impl AttributeStore {
     pub fn get<A: ComponentAttribute>(&self) -> Option<&A> {
         self.inner
             .get(&TypeId::of::<A>())
-            .map(|v| v.downcast_ref::<A>().expect("Invalid type"))
+            .map(|v| (**v).downcast_ref::<A>().expect("Invalid type"))
     }
 
     pub fn has<A: ComponentAttribute>(&self) -> bool {
@@ -107,7 +101,7 @@ where
 {
     fn construct(store: &mut AttributeStore, _: ()) {
         store.set(Self {
-            ser: |v| v.downcast_ref::<T>() as &dyn erased_serde::Serialize,
+            ser: |v| (*v).downcast_ref::<T>() as &dyn erased_serde::Serialize,
             deser: |desc, deserializer| {
                 let value = T::deserialize(deserializer)?;
                 let entry = ComponentEntry::from_raw_parts(desc, value);
@@ -167,7 +161,7 @@ where
 {
     fn construct(store: &mut AttributeStore, _: ()) {
         store.set(Self {
-            debug: |entry| entry.downcast_ref::<T>().unwrap() as &dyn Debug,
+            debug: |entry| (*entry).downcast_ref::<T>().unwrap() as &dyn Debug,
         })
     }
 }
@@ -311,7 +305,7 @@ where
 {
     fn construct(store: &mut AttributeStore, _: ()) {
         store.set(Self {
-            to_u32: |entry| entry.downcast_ref::<T>().unwrap().to_u32(),
+            to_u32: |entry| (*entry).downcast_ref::<T>().unwrap().to_u32(),
             from_u32: |desc, value| Some(ComponentEntry::from_raw_parts(desc, T::from_u32(value)?)),
         })
     }

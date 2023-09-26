@@ -225,8 +225,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev vulkan-validationlayers-dev mesa-vulkan-drivers libasound2-dev
-      - name: Download assets
-        run: cd guest/rust/examples/assets/unity && ./download.sh
       - name: Run golden image tests
         run: cargo campfire-slim golden-images --ambient-path=./ambient check
       - uses: actions/upload-artifact@v3
