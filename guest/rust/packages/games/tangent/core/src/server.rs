@@ -75,17 +75,27 @@ pub fn main() {
                     entity::add_component(driver_id, pc::vehicle_ref(), vehicle_id);
                     entity::add_component(driver_id, gopc::control_of_entity(), vehicle_id);
 
-                    if let Some(character_id) =
-                        entity::get_component(driver_id, pc::character_ref())
-                    {
-                        entity::add_component(character_id, parent(), vehicle_id);
-                        entity::add_component(character_id, local_to_parent(), default());
-                    }
+                    let Some(character_id) = entity::get_component(driver_id, pc::character_ref())
+                    else {
+                        continue;
+                    };
+
+                    entity::add_components(
+                        character_id,
+                        Entity::new()
+                            .with(parent(), vehicle_id)
+                            .with(local_to_parent(), default())
+                            .with(translation(), Vec3::Z)
+                            .with(rotation(), Quat::from_rotation_z(-90f32.to_radians()))
+                            .with(uc::run_direction(), Vec2::ZERO)
+                            .with(uc::running(), false)
+                            .with(uc::shooting(), false),
+                    );
                 }
             });
 
-        despawn_query(vc::driver_ref()).bind(|vehicles| {
-            for (vehicle_id, driver_id) in vehicles {
+        despawn_query((vc::driver_ref(), translation(), rotation())).bind(|vehicles| {
+            for (vehicle_id, (driver_id, position, rot)) in vehicles {
                 entity::remove_component(driver_id, pc::vehicle_ref());
 
                 let Some(character_id) = entity::get_component(driver_id, pc::character_ref())
@@ -103,14 +113,15 @@ pub fn main() {
                 entity::remove_component(character_id, local_to_parent());
                 entity::remove_component(character_id, parent());
 
-                let Some(position) = entity::get_component(vehicle_id, translation()) else {
-                    continue;
-                };
-
                 entity::set_component(
                     character_id,
                     translation(),
                     position + Vec3::Z * 2.0 + Vec3::Y * 0.5,
+                );
+                entity::set_component(
+                    character_id,
+                    rotation(),
+                    Quat::from_rotation_z(-90f32.to_radians()) * rot,
                 );
             }
         });
@@ -228,18 +239,18 @@ pub fn main() {
                 return;
             }
 
-            entity::add_component(
+            entity::add_components(
                 character_id,
-                uc::run_direction(),
-                vec2(input_direction.y, input_direction.x),
+                Entity::new()
+                    .with(
+                        uc::run_direction(),
+                        vec2(input_direction.y, input_direction.x),
+                    )
+                    .with(uc::running(), input_sprint)
+                    .with(uc::shooting(), input_fire)
+                    .with(rotation(), Quat::from_rotation_z(input_aim_direction.x)),
             );
-            entity::add_component(character_id, uc::running(), input_sprint);
-            entity::add_component(character_id, uc::shooting(), input_fire);
-            entity::add_component(
-                character_id,
-                rotation(),
-                Quat::from_rotation_z(input_aim_direction.x),
-            );
+
             if let Some(head) = entity::get_component(character_id, uc::head_ref()) {
                 entity::set_component(
                     head,

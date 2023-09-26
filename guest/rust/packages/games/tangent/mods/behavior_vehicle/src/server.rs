@@ -1,5 +1,6 @@
 use ambient_api::{
     core::{
+        hierarchy::components::{children, parent},
         messages::Collision,
         physics::components as phyc,
         transform::components::{local_to_world, rotation, translation},
@@ -12,6 +13,7 @@ use packages::{
     game_object::components as goc,
     tangent_schema::{
         concepts::{Vehicle, VehicleDef},
+        player::components as pc,
         vehicle::components as vc,
         weapon,
     },
@@ -79,7 +81,30 @@ fn process_vehicle(vehicle_id: EntityId) {
         }
         .spawn();
 
-        entity::despawn_recursive(vehicle_id);
+        // Ensure we decouple the driver from the vehicle so that it doesn't get despawned
+        let character_id = v
+            .optional
+            .driver_ref
+            .and_then(|id| entity::get_component(id, pc::character_ref()));
+        if let Some(character_id) = character_id {
+            entity::remove_component(character_id, parent());
+            println!("Decoupled driver from vehicle {character_id}");
+        }
+
+        if let Some(res) = entity::despawn(vehicle_id) {
+            if let Some(children) = res.get_ref(children()) {
+                for c in children {
+                    if character_id == Some(*c) {
+                        println!("Skipping despawn of driver {c}");
+                        continue;
+                    } else {
+                        println!("Despawning child {c}");
+                    }
+
+                    entity::despawn_recursive(*c);
+                }
+            }
+        };
         return;
     }
 

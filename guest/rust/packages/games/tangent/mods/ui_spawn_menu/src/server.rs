@@ -25,7 +25,7 @@ pub fn main() {
         VehicleSpawn {
             def_id: msg.def_id,
             position: translation,
-            rotation: Some(rotation),
+            rotation: Some(Quat::from_rotation_z(90f32.to_radians()) * rotation),
             driver_id: Some(player_id),
         }
         .send_local_broadcast(false);
