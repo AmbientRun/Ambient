@@ -14,3 +14,5 @@ wasm-pack.log
 www/.bin/create-wasm-app.js
 third_person_camera.cap
 *.dll
+
+guest/rust/examples/assets/unity/assets/TreePack
