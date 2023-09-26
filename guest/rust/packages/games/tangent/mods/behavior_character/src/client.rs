@@ -20,7 +20,7 @@ pub fn main() {
 
             let camera = PerspectiveInfiniteReverseCamera {
                 optional: PerspectiveInfiniteReverseCameraOptional {
-                    translation: Some(vec3(1.0, 0.0, -1.5)),
+                    translation: Some(vec3(1.0, 0.0, -2.5)),
                     main_scene: Some(()),
                     aspect_ratio_from_window: Some(entity::resources()),
                     ..default()
