@@ -7,9 +7,9 @@ rust-version.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
-ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
-ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
+ambient_ecs = { path = "../ecs" , version = "0.3.0-nightly-2023-09-26" }
+ambient_gpu = { path = "../gpu" , version = "0.3.0-nightly-2023-09-26" }
+ambient_native_std = { path = "../native_std" , version = "0.3.0-nightly-2023-09-26" }
 derive_more = { workspace = true }
 glam = { workspace = true }
 itertools = { workspace = true }
