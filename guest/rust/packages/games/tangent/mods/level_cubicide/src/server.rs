@@ -7,7 +7,7 @@ use ambient_api::{
         physics::components::{cube_collider, dynamic, mass, physics_controlled, plane_collider},
         primitives::{
             components::{cube, quad},
-            concepts::Capsule,
+            concepts::Sphere,
         },
         rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun},
         transform::components::{rotation, scale, translation},
@@ -62,11 +62,8 @@ pub async fn main() {
             color: color.extend(1.0),
         }
         .make()
-        .with_merge(Capsule {
-            capsule_half_height: 0.1,
-            ..Capsule::suggested()
-        })
-        .with(scale(), vec3(radius, radius, 1.0))
+        .with_merge(Sphere::suggested())
+        .with(scale(), vec3(radius, radius, 0.1))
         .spawn();
     }
 

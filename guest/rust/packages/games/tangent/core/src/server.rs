@@ -3,9 +3,8 @@ use std::{f32::consts::PI, sync::OnceLock};
 use ambient_api::{
     core::{
         app::components::name,
-        hierarchy::components::parent,
         player::components::{is_player, user_id},
-        transform::components::{local_to_parent, local_to_world, rotation, translation},
+        transform::components::{local_to_world, rotation, scale, translation},
     },
     ecs::GeneralQuery,
     prelude::*,
@@ -83,19 +82,16 @@ pub fn main() {
                     entity::add_components(
                         character_id,
                         Entity::new()
-                            .with(parent(), vehicle_id)
-                            .with(local_to_parent(), default())
-                            .with(translation(), Vec3::Z)
-                            .with(rotation(), Quat::from_rotation_z(-90f32.to_radians()))
                             .with(uc::run_direction(), Vec2::ZERO)
                             .with(uc::running(), false)
-                            .with(uc::shooting(), false),
+                            .with(uc::shooting(), false)
+                            .with(scale(), Vec3::ONE * 0.01),
                     );
                 }
             });
 
-        despawn_query((vc::driver_ref(), translation(), rotation())).bind(|vehicles| {
-            for (vehicle_id, (driver_id, position, rot)) in vehicles {
+        despawn_query(vc::driver_ref()).bind(|vehicles| {
+            for (_vehicle_id, driver_id) in vehicles {
                 entity::remove_component(driver_id, pc::vehicle_ref());
 
                 let Some(character_id) = entity::get_component(driver_id, pc::character_ref())
@@ -103,29 +99,39 @@ pub fn main() {
                     continue;
                 };
                 entity::add_component(driver_id, gopc::control_of_entity(), character_id);
-
-                let Some(present_vehicle_id) = entity::get_component(character_id, parent()) else {
-                    continue;
-                };
-                if present_vehicle_id != vehicle_id {
-                    continue;
-                }
-                entity::remove_component(character_id, local_to_parent());
-                entity::remove_component(character_id, parent());
-
-                entity::set_component(
-                    character_id,
-                    translation(),
-                    position + Vec3::Z * 2.0 + Vec3::Y * 0.5,
-                );
-                entity::set_component(
-                    character_id,
-                    rotation(),
-                    Quat::from_rotation_z(-90f32.to_radians()) * rot,
-                );
+                entity::set_component(character_id, scale(), Vec3::ONE);
             }
         });
     }
+
+    // Move characters with their vehicles (parenting of character controllers doesn't work)
+    query((pc::character_ref(), pc::vehicle_ref())).each_frame(|players| {
+        for (_, (character_ref, vehicle_ref)) in players {
+            if !entity::exists(vehicle_ref) {
+                continue;
+            }
+
+            let Some(vehicle_translation) = entity::get_component(vehicle_ref, translation())
+            else {
+                continue;
+            };
+
+            let Some(vehicle_rotation) = entity::get_component(vehicle_ref, rotation()) else {
+                continue;
+            };
+
+            entity::set_component(
+                character_ref,
+                translation(),
+                vehicle_translation + vehicle_rotation * Vec3::Z,
+            );
+            entity::set_component(
+                character_ref,
+                rotation(),
+                Quat::from_rotation_z(-90f32.to_radians()) * vehicle_rotation,
+            );
+        }
+    });
 
     // When a player sends input, update their input state.
     Input::subscribe(|ctx, input| {
