@@ -27,13 +27,6 @@ async fn init(app: &mut App) {
     let size = 9;
     let max = size - 1;
 
-    // let red = SharedMaterial::new(FlatMaterial::new(
-    //     &gpu,
-    //     &assets,
-    //     vec4(1., 0., 0., 1.),
-    //     Some(false),
-    // ));
-
     let metallic = SharedMaterial::new(PbrMaterial::new(
         &gpu,
         &assets,
@@ -186,18 +179,6 @@ async fn init(app: &mut App) {
         .with(light_diffuse(), Vec3::ONE * 2.0)
         .with(light_ambient(), Vec3::ZERO)
         .spawn(world);
-
-    // let start = Instant::now();
-
-    // app.add_system(query_mut(color(), ()).to_system(move |q, w, qs, _| {
-    //     let t = start.elapsed().as_secs_f32();
-
-    //     let color = Color::hsl(t * 10.0 % 360.0, 0.5, 0.5).as_rgba_f32().into();
-
-    //     for (_, c, ()) in q.iter(w, qs) {
-    //         *c = color;
-    //     }
-    // }));
 }
 
 fn main() {
