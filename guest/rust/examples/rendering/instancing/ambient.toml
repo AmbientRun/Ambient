@@ -4,7 +4,7 @@ name = "Instancing"
 description = "Render lots of objects with a single draw call."
 version = "0.0.1"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-26"
 
 [components]
 instance_index = { type = "Uvec3", name = "Instance Index" }

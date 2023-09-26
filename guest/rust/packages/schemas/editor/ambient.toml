@@ -4,7 +4,7 @@ name = "Editor Schema"
 version = "0.0.1"
 description = "Schema for the editor."
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-26"
 
 [components]
 # Player components

@@ -3,10 +3,10 @@ id = "cneomdouziieskjvs3szwmigzotofjzs"
 name = "Explosion"
 version = "0.0.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-26"
 
 [dependencies]
-game_object = { path = "../../schemas/game_object" , deployment = "1CmZBBe5nc3Cvgkbug6TgJ" }
+game_object = { path = "../../schemas/game_object" , deployment = "pNjDPAc7LUs8IgPYlwJmS" }
 
 [components]
 is_explosion = { type = "Empty", name = "Is Explosion", description = "Is an explosion", attributes = [
