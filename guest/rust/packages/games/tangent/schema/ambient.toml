@@ -5,7 +5,7 @@ version = "0.1.0"
 content = { type = "Asset", schema = true }
 
 [dependencies]
-game_object = { path = "../../../schemas/game_object" , deployment = "1CmZBBe5nc3Cvgkbug6TgJ" }
+game_object = { path = "../../../schemas/game_object" , deployment = "pNjDPAc7LUs8IgPYlwJmS" }
 
 [components]
 # Player

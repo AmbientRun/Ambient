@@ -4,7 +4,7 @@ name = "Model"
 description = "Information about models attached to entities."
 content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-26"
 
 [components.model_animatable]
 type = "Bool"
