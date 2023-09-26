@@ -597,7 +597,7 @@ pub fn use_entity_component<
     id: EntityId,
     component: ambient_guest_bridge::api::ecs::Component<T>,
 ) -> Option<T> {
-    use ambient_guest_bridge::api::prelude::{change_query, entity};
+    use ambient_guest_bridge::api::prelude::{change_query, despawn_query, entity};
 
     let refresh = use_rerender_signal(hooks);
     use_spawn(hooks, move |_| {
@@ -605,8 +605,13 @@ pub fn use_entity_component<
             let refresh = refresh.clone();
             move |_| refresh()
         });
+        let d = despawn_query(component).bind({
+            let refresh = refresh.clone();
+            move |_| refresh()
+        });
         move |_| {
             c.stop();
+            d.stop();
         }
     });
 
@@ -646,7 +651,7 @@ pub fn use_entity_concept<C: ambient_guest_bridge::api::ecs::ConceptComponents>(
     hooks: &mut Hooks,
     id: EntityId,
 ) -> Option<C> {
-    use ambient_guest_bridge::api::prelude::change_query;
+    use ambient_guest_bridge::api::prelude::{change_query, despawn_query};
 
     let refresh = use_rerender_signal(hooks);
     use_spawn(hooks, move |_| {
@@ -658,8 +663,13 @@ pub fn use_entity_concept<C: ambient_guest_bridge::api::ecs::ConceptComponents>(
                 let refresh = refresh.clone();
                 move |_| refresh()
             });
+        let d = despawn_query(C::required()).bind({
+            let refresh = refresh.clone();
+            move |_| refresh()
+        });
         move |_| {
             c.stop();
+            d.stop();
         }
     });
 
