@@ -88,17 +88,13 @@ fn process_vehicle(vehicle_id: EntityId) {
             .and_then(|id| entity::get_component(id, pc::character_ref()));
         if let Some(character_id) = character_id {
             entity::remove_component(character_id, parent());
-            println!("Decoupled driver from vehicle {character_id}");
         }
 
         if let Some(res) = entity::despawn(vehicle_id) {
             if let Some(children) = res.get_ref(children()) {
                 for c in children {
                     if character_id == Some(*c) {
-                        println!("Skipping despawn of driver {c}");
                         continue;
-                    } else {
-                        println!("Despawning child {c}");
                     }
 
                     entity::despawn_recursive(*c);
