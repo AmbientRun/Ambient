@@ -80,9 +80,9 @@ pub fn Toggle(
         .with(border_radius(), Vec4::ONE * outer_height / 2.)
         .children(vec![Rectangle::el()
             .hex_background(if value {
-                SEMANTIC_MAININVERTED_SURFACE_SECONDARY
-            } else {
                 SEMANTIC_MAIN_SURFACE_SECONDARY
+            } else {
+                SEMANTIC_MAININVERTED_SURFACE_SECONDARY
             })
             .with(width(), thumb)
             .with(height(), thumb)

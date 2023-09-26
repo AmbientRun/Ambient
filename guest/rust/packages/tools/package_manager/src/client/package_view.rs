@@ -15,7 +15,6 @@ use ambient_api::{
     },
     prelude::*,
 };
-use ambient_brand_theme::window_style;
 
 #[element_component]
 pub fn PackageViews(hooks: &mut Hooks) -> Element {
@@ -38,7 +37,7 @@ pub fn PackageViews(hooks: &mut Hooks) -> Element {
         Window {
             title: name,
             visible: package_visible,
-            style: Some(window_style()),
+            style: None,
             close: Some(cb(move || {
                 visible_packages.lock().remove(&package);
                 rerender();

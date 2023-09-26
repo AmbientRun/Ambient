@@ -260,7 +260,6 @@ fn PackageList(_hooks: &mut Hooks, packages: Vec<DisplayPackage>) -> Element {
         sep,
     ))
     .with(space_between_items(), 0.0)
-    .with(min_width(), 400.0)
 }
 
 #[element_component]
@@ -293,7 +292,7 @@ fn Package(_hooks: &mut Hooks, package: DisplayPackage) -> Element {
             },
         ])
         .with(space_between_items(), 4.0)
-        .with(width(), 400.)
+        .with(width(), 250.)
         .with(fit_horizontal(), Fit::None),
         // Buttons
         Toggle::el(

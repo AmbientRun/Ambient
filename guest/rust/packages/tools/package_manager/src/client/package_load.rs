@@ -4,7 +4,6 @@ use ambient_api::{
 };
 
 use crate::packages::this::messages;
-use ambient_brand_theme::window_style;
 
 #[element_component]
 pub fn PackageLoad(_hooks: &mut Hooks) -> Element {
@@ -26,7 +25,7 @@ fn PackageLoadDialog(hooks: &mut Hooks) -> Element {
         title: "Package load".to_string(),
         visible: visible,
         close: Some(close.clone()),
-        style: Some(window_style()),
+        style: None,
         child: PackageLoadDialogInner::el(close),
     }
     .el()
@@ -73,7 +72,7 @@ fn ErrorMessage(hooks: &mut Hooks) -> Element {
         title: "Package load fail".to_string(),
         visible: reason.is_some(),
         close: Some(close.clone()),
-        style: Some(window_style()),
+        style: None,
         child: ErrorMessageInner::el(reason.unwrap_or_default(), close),
     }
     .el()
