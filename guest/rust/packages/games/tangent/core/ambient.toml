@@ -21,3 +21,8 @@ kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployme
 name = "Input"
 description = "Input"
 fields = { direction = "Vec2", jump = "Bool", fire = "Bool", use_button = "Bool", sprint = "Bool", respawn = "Bool", aim_direction = "Vec2" }
+
+[messages.UseFailed]
+name = "Use Failed"
+description = "Sent from the server to the client when a use action fails."
+fields = {}

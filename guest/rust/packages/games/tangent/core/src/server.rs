@@ -20,7 +20,7 @@ use packages::{
         player::components as pc,
         vehicle::{components as vc, def as vd},
     },
-    this::messages::Input,
+    this::messages::{Input, UseFailed},
     unit_schema::components as uc,
 };
 
@@ -263,14 +263,12 @@ pub fn main() {
 
     // Handle use key
     query((pc::character_ref(), pc::input_use())).each_frame(|players| {
+        const MAX_USE_DISTANCE: f32 = 3.0;
+
         for (player_id, (character_ref, input_use)) in players {
             if !input_use {
                 continue;
             }
-
-            let Some(head_ref) = entity::get_component(character_ref, uc::head_ref()) else {
-                continue;
-            };
 
             let last_use_time =
                 entity::get_component(character_ref, pcc::last_use_time()).unwrap_or_default();
@@ -279,26 +277,39 @@ pub fn main() {
                 continue;
             }
 
-            if let Some(vehicle_id) = entity::get_component(player_id, pc::vehicle_ref()) {
-                // Remove the driving component `driver_ref` so that `vehicle_ref` is updated
-                entity::remove_component(vehicle_id, vc::driver_ref());
-            } else {
-                let Some(local_to_world) = entity::get_component(head_ref, local_to_world()) else {
-                    continue;
-                };
+            match entity::get_component(player_id, pc::vehicle_ref()) {
+                Some(vehicle_id) => {
+                    // Remove the driving component `driver_ref` so that `vehicle_ref` is updated
+                    entity::remove_component(vehicle_id, vc::driver_ref());
+                }
+                _ => {
+                    let Some(head_ref) = entity::get_component(character_ref, uc::head_ref())
+                    else {
+                        continue;
+                    };
 
-                let (_, rotation, translation) = local_to_world.to_scale_rotation_translation();
+                    let Some(local_to_world) = entity::get_component(head_ref, local_to_world())
+                    else {
+                        continue;
+                    };
 
-                if let Some(hit) = physics::raycast(translation, rotation * Vec3::Z)
-                    .into_iter()
-                    .find(|h| h.entity != character_ref)
-                {
-                    if entity::has_component(hit.entity, vc::is_vehicle()) {
-                        entity::add_component(hit.entity, vc::driver_ref(), player_id);
+                    let (_, rotation, translation) = local_to_world.to_scale_rotation_translation();
+                    let hit = physics::raycast(translation, rotation * Vec3::Z)
+                        .into_iter()
+                        .find(|h| h.entity != character_ref && h.distance < MAX_USE_DISTANCE);
+
+                    match hit {
+                        Some(hit) if entity::has_component(hit.entity, vc::is_vehicle()) => {
+                            entity::add_component(hit.entity, vc::driver_ref(), player_id);
+                        }
+                        _ => {
+                            UseFailed.send_client_targeted_reliable(
+                                entity::get_component(player_id, user_id()).unwrap(),
+                            );
+                        }
                     }
                 }
             }
-
             entity::add_component(character_ref, pcc::last_use_time(), game_time());
         }
     });

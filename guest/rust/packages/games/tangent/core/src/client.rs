@@ -11,11 +11,12 @@ use ambient_api::{
     prelude::*,
 };
 use packages::{
+    game_object::player::components as gopc,
     tangent_schema::{
         player::components as pc,
         vehicle::{client::components as vcc, components as vc},
     },
-    this::messages::Input,
+    this::messages::{Input, UseFailed},
 };
 
 mod shared;
@@ -32,16 +33,23 @@ pub fn main() {
 
     handle_input();
 
-    spawn_query(translation())
-        .requires(vc::is_vehicle())
-        .bind(|vehicles| {
-            for (_vehicle_id, translation) in vehicles {
-                audio::SpatialAudioPlayer::oneshot(
-                    translation,
-                    packages::kenney_impact_sounds::assets::url("ImpactMining_003.ogg"),
-                );
-            }
-        });
+    UseFailed::subscribe(|ctx, _msg| {
+        if !ctx.server() {
+            return;
+        }
+
+        let Some(translation) =
+            entity::get_component(player::get_local(), gopc::control_of_entity())
+                .and_then(|e| entity::get_component(e, translation()))
+        else {
+            return;
+        };
+
+        audio::SpatialAudioPlayer::oneshot(
+            translation,
+            packages::kenney_impact_sounds::assets::url("impactGlass_light_004.ogg"),
+        );
+    });
 
     CoreUI.el().spawn_interactive();
 }
