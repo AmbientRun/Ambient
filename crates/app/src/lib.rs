@@ -9,13 +9,13 @@ use ambient_core::{
     camera::camera_systems,
     frame_index,
     hierarchy::dump_world_hierarchy_to_user,
-    name, refcount_system, remove_at_time_system, runtime,
+    name, performance_samples, refcount_system, remove_at_time_system, runtime,
     transform::TransformSystem,
     window::{
         cursor_position, get_window_sizes, window_logical_size, window_physical_size,
         window_scale_factor, ExitStatus, WindowCtl,
     },
-    ClientTimeResourcesSystem, RuntimeKey,
+    ClientTimeResourcesSystem, PerformanceSample, RuntimeKey,
 };
 use ambient_ecs::{
     components, generated::ui::components::focus, world_events, Debuggable, DynSystem, Entity,
@@ -57,6 +57,7 @@ components!("app", {
     @[MakeDefault[default_title], Debuggable, MaybeResource]
     window_title: String,
     fps_stats: FpsSample,
+
 });
 
 pub fn init_all_components() {
@@ -158,6 +159,7 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(self::runtime(), resources.runtime)
         .with(self::window_title(), "".to_string())
         .with(self::fps_stats(), FpsSample::default())
+        .with(self::performance_samples(), Vec::new())
         .with(self::asset_cache(), resources.assets.clone())
         .with(world_events(), Default::default())
         .with(frame_index(), 0_usize)
@@ -688,13 +690,14 @@ impl App {
         world.resource(gpu()).device.poll(wgpu::Maintain::Poll);
 
         self.window_event_systems.run(world, event);
+
         match event {
             Event::MainEventsCleared => {
                 let frame_start = Instant::now();
-                let outside_frame = frame_start.duration_since(self.current_time);
+                let external_time = frame_start.duration_since(self.current_time);
                 self.current_time = frame_start;
 
-                tracing::debug!(?outside_frame, "time outside frame");
+                tracing::debug!(?external_time, "time outside frame");
                 tracing::trace!(?event, "event");
 
                 // Handle window control events
@@ -789,10 +792,21 @@ impl App {
 
                 let frame_end = Instant::now();
 
-                let elapsed = frame_end.duration_since(frame_start);
+                let frame_time = frame_end.duration_since(frame_start);
 
-                tracing::debug!(?elapsed, "frame time");
+                tracing::debug!(?frame_time, "frame time");
                 self.current_time = frame_end;
+
+                let samples = world.resource_mut(performance_samples());
+
+                if samples.len() >= 128 {
+                    samples.remove(0);
+                }
+
+                samples.push(PerformanceSample {
+                    frame_time,
+                    external_time,
+                });
 
                 profiling::finish_frame!();
             }

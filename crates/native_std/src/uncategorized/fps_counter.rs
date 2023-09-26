@@ -59,6 +59,7 @@ pub struct FpsSample {
     pub slowest_frame: Duration,
     pub active_time: Duration,
 }
+
 impl FpsSample {
     pub fn fps(&self) -> f32 {
         (self.n_frames as f32) / self.duration.as_secs_f32()
