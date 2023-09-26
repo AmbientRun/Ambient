@@ -1,11 +1,10 @@
 use ambient_api::{
     core::{
         hierarchy::components::parent,
+        model::components::model_from_url,
         primitives::concepts::Sphere,
         transform::{
-            components::{
-                local_to_parent, local_to_world, lookat_target, rotation, scale, translation,
-            },
+            components::{local_to_parent, local_to_world, rotation, scale, translation},
             concepts::{Transformable, TransformableOptional},
         },
     },
@@ -13,7 +12,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use packages::this::components::{dropage, dropagerate, dropvel};
+use packages::this::components::{dropage, dropagerate, dropbill, dropvel};
 
 #[main]
 pub fn main() {
@@ -27,7 +26,7 @@ pub fn main() {
     }
     .make()
     .with(local_to_world(), Mat4::IDENTITY)
-    .with(scale(), Vec3::splat(0.02))
+    .with(scale(), Vec3::splat(0.05))
     .spawn();
 
     // if let Some(camera) = camera::get_active(None) {
@@ -44,9 +43,14 @@ pub fn main() {
     for _ in 1..400 {
         let drop = Entity::new()
             .with_merge(Transformable::suggested().make())
-            .with_merge(Sphere::suggested().make())
+            .with(
+                model_from_url(),
+                packages::this::assets::url("fuzzy_circle_plane.glb"),
+            )
+            // .with_merge(Sphere::suggested().make())
             .with(local_to_parent(), Mat4::IDENTITY)
             .with(parent(), stormparent)
+            .with(dropbill(), Quat::IDENTITY)
             .with_merge(get_random_drop_start())
             .spawn();
         advance_drop(drop, None, random::<f32>() * 2.);
@@ -62,6 +66,20 @@ pub fn main() {
     query((dropvel(), dropage(), dropagerate())).each_frame(|drops| {
         for (drop, (vel, age, agerate)) in drops {
             advance_drop(drop, Some((vel, age, agerate)), delta_time());
+        }
+    });
+    query(dropbill()).each_frame(|drops| {
+        if let Some(camera) = camera::get_active(None) {
+            if let Some(camera_inv_view) = entity::get_component(camera, local_to_world()) {
+                let (_, camera_rotation, _) = camera_inv_view.to_scale_rotation_translation();
+                for (drop, billboard_base_rotation) in drops {
+                    entity::add_component(
+                        drop,
+                        rotation(),
+                        camera_rotation * billboard_base_rotation,
+                    );
+                }
+            }
         }
     });
 }
