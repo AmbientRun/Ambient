@@ -84,11 +84,13 @@ pub fn main() {
         }
     });
 
-    spawn_query(cast_shadows()).bind(|shadecasters| {
-        for (shadecaster, _) in shadecasters {
-            entity::remove_component(shadecaster, cast_shadows());
-        }
-    });
+    spawn_query(cast_shadows())
+        .requires(dropbill())
+        .bind(|drops| {
+            for (drop, _) in drops {
+                entity::remove_component(drop, cast_shadows());
+            }
+        });
 }
 
 fn advance_drop(drop: EntityId, params: Option<(Vec3, f32, f32)>, delta: f32) {
