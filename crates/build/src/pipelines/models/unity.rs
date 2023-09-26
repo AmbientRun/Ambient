@@ -286,6 +286,7 @@ impl UnityMaterials {
             let mat = unity_parser::mat::Material::from_yaml(&docs[0])?;
             let metallic_r_ao_g_smothness_a =
                 if let Some(file) = get_texture(&mat.metallic_r_ao_g_smothness_a) {
+                    tracing::debug!(?file, "Found metallic smoothness map");
                     Some((
                         download_image(self.ctx.assets(), file).await?.into_rgba8(),
                         file,
@@ -329,26 +330,34 @@ impl UnityMaterials {
             } else {
                 None
             };
+
+            // Metallic is the red channel
+            // Ambient occlusion is the green
+            // Smoothness is the alpha channel
             let metallic_roughness = if let Some((mut maos, file)) = metallic_r_ao_g_smothness_a {
                 // metalic_r_ao_g_smothness_a -> metalic_r_roughness_g
                 for p in maos.pixels_mut() {
-                    p[1] = p[3];
+                    p[1] = 255 - std::mem::take(&mut p[3]);
                 }
+
                 Some((maos, file.clone()))
             } else if let Some((mut mg, file)) = metallic_gloss_map {
                 for p in mg.pixels_mut() {
                     p[1] = 255 - p[3];
                 }
+
                 Some((mg, file.clone()))
             } else {
                 None
             };
+
             let normalmap = if let Some(file) = get_texture(&mat.bump_map) {
                 let image = download_image(self.ctx.assets(), file).await?.into_rgba8();
                 Some((image, file.clone()))
             } else {
                 None
             };
+
             let get_image = |image_and_file: Option<(image::RgbaImage, AbsAssetUrl)>| {
                 if let Some((mut image, file)) = image_and_file {
                     let out_image_path = self
@@ -385,15 +394,11 @@ impl UnityMaterials {
                 base_color: base_color.map(|x| x.into()),
                 normalmap: normalmap.map(|x| x.into()),
                 metallic_roughness: metallic_roughness.map(|x| x.into()),
-                opacity: None,
-                base_color_factor: None,
-                emissive_factor: None,
-                transparent: None,
                 alpha_cutoff: mat.alpha_cutoff,
-                double_sided: Some(true), // TODO: Double sided is configured in the shader in unity, so hard to know. Maybe make user configureable
-                metallic: 1.,
-                roughness: 1.,
+                // TODO: Double sided is configured in the shader in unity, so hard to know. Maybe make user configureable
+                double_sided: Some(true),
                 sampler: Some(SamplerKey::LINEAR_REPEAT),
+                ..Default::default()
             };
             self.materials.insert(name.to_string(), mat.clone());
             Ok(mat)

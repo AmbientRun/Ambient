@@ -214,8 +214,8 @@ pub async fn to_mat(
         transparent: pipeline.transparent,
         alpha_cutoff: pipeline.alpha_cutoff,
         double_sided: pipeline.double_sided,
-        metallic: pipeline.metallic.unwrap_or(1.),
-        roughness: pipeline.roughness.unwrap_or(1.),
+        metallic_factor: pipeline.metallic_factor.unwrap_or(1.0),
+        roughness_factor: pipeline.roughness_factor.unwrap_or(1.0),
         sampler: pipeline.sampler.map(|sampler| SamplerKey {
             address_mode_u: sampler.address_mode_u,
             address_mode_v: sampler.address_mode_v,

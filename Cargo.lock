@@ -1558,6 +1558,7 @@ dependencies = [
  "anyhow",
  "glam 0.24.1",
  "itertools",
+ "tracing",
  "yaml-rust-davvid",
 ]
 
