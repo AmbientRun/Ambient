@@ -157,7 +157,7 @@ impl RetrievableFile {
     pub fn as_remote_url(&self) -> Option<Url> {
         match self.as_local_or_remote()? {
             LocalOrRemote::Local(_) => None,
-            LocalOrRemote::Remote(v) => Some(v.clone()),
+            LocalOrRemote::Remote(v) => Some(v),
         }
     }
 }

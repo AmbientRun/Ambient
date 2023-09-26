@@ -261,7 +261,7 @@ impl Dependency {
         if let Some(url) = self.url.clone() {
             Some(url)
         } else if let Some(deployment) = self.deployment.as_ref() {
-            Url::parse(&ambient_shared_types::urls::deployment_url(&deployment)).ok()
+            Url::parse(&ambient_shared_types::urls::deployment_url(deployment)).ok()
         } else {
             None
         }
