@@ -91,7 +91,7 @@ pub fn Window(
             close
                 .map(|close| {
                     Button::new(" X ", move |_| close())
-                        .style(ButtonStyle::Card)
+                        .style(ButtonStyle::Flat)
                         .el()
                 })
                 .unwrap_or_default(),

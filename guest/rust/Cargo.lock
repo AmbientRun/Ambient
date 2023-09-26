@@ -182,7 +182,7 @@ dependencies = [
  "csscolorparser",
  "deunicode",
  "indexmap 1.9.3",
- "itertools",
+ "itertools 0.10.5",
  "peg",
  "serde",
  "serde_json",
@@ -211,7 +211,7 @@ dependencies = [
  "atomic_refcell",
  "derivative",
  "dyn-clonable",
- "itertools",
+ "itertools 0.10.5",
  "parking_lot",
  "profiling",
  "tracing",
@@ -221,7 +221,7 @@ dependencies = [
 name = "ambient_element_component"
 version = "0.3.0-dev"
 dependencies = [
- "itertools",
+ "itertools 0.10.5",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
@@ -667,7 +667,7 @@ dependencies = [
 name = "ambient_std"
 version = "0.3.0-dev"
 dependencies = [
- "itertools",
+ "itertools 0.10.5",
  "thiserror",
 ]
 
@@ -682,7 +682,7 @@ dependencies = [
 name = "ambient_time"
 version = "0.3.0-dev"
 dependencies = [
- "itertools",
+ "itertools 0.10.5",
  "thiserror",
 ]
 
@@ -701,7 +701,7 @@ dependencies = [
  "futures",
  "glam",
  "indexmap 2.0.0",
- "itertools",
+ "itertools 0.10.5",
  "parking_lot",
  "rand 0.8.5",
  "serde",
@@ -1519,6 +1519,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1750,6 +1759,7 @@ dependencies = [
  "ambient_design_tokens",
  "ambient_package",
  "ambient_shared_types",
+ "itertools 0.11.0",
  "serde",
  "serde_json",
  "toml 0.7.8",

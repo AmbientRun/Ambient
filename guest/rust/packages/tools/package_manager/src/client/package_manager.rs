@@ -38,6 +38,7 @@ use ambient_design_tokens::{
         SEMANTIC_MAIN_SURFACE_SECONDARY,
     },
 };
+use itertools::Itertools;
 
 use super::{ambient_internal_theme::window_style, use_hotkey_toggle};
 
@@ -73,7 +74,7 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
             PackageManagerInner::el()
         }
         .with(space_between_items(), 4.0)
-        .with_margin_even(STREET),
+        .with_margin_even(8.),
     }
     .el()
 }
@@ -262,8 +263,13 @@ fn PackageList(_hooks: &mut Hooks, packages: Vec<DisplayPackage>) -> Element {
     let mut packages = packages;
     packages.sort_by_key(|package| package.name.clone());
 
-    FlowColumn::el(packages.into_iter().map(Package::el))
-        .with(space_between_items(), 8.0)
+    let sep = Rectangle::el()
+        .hex_background(SEMANTIC_MAIN_ELEMENTS_INACTIVE)
+        .with(height(), 1.)
+        .with(fit_horizontal(), Fit::Parent);
+
+    FlowColumn::el(packages.into_iter().map(Package::el).intersperse(sep))
+        .with(space_between_items(), 0.0)
         .with(min_width(), 400.0)
 }
 
@@ -274,58 +280,52 @@ fn Package(_hooks: &mut Hooks, package: DisplayPackage) -> Element {
         _ => false,
     };
 
-    FlowColumn::el([
-        FlowRow::el([
-            // Header
-            FlowColumn::el([
-                Text::el(package.name.to_uppercase())
-                    .mono_s_500upp()
-                    .hex_text_color(SEMANTIC_MAIN_ELEMENTS_PRIMARY),
-                Text::el(if package.authors.is_empty() {
-                    "No authors specified".to_string().to_uppercase()
-                } else {
-                    package.authors.join(", ").to_uppercase()
-                })
+    FlowRow::el([
+        // Header
+        FlowColumn::el([
+            Text::el(package.name.to_uppercase())
                 .mono_s_500upp()
-                .hex_text_color(SEMANTIC_MAIN_ELEMENTS_TERTIARY),
-                // Description
-                // Text::el(package.description.as_deref().unwrap_or("No description")),
-            ])
-            .with(space_between_items(), 4.0)
-            .with(width(), 400.)
-            .with(fit_horizontal(), Fit::None),
-            // Buttons
-            Toggle::el(
-                enabled,
-                cb(move |_| match &package.source {
-                    DisplayPackageSource::Local { id, enabled } => {
-                        let id = *id;
-                        let enabled = *enabled;
-                        PackageSetEnabled {
-                            id,
-                            enabled: !enabled,
-                        }
-                        .send_server_reliable()
-                    }
-                    DisplayPackageSource::Remote { url } => {
-                        let url = url.to_string();
-                        PackageLoad {
-                            url: url.clone(),
-                            enabled: true,
-                        }
-                        .send_server_reliable();
-                    }
-                }),
-            ),
+                .hex_text_color(SEMANTIC_MAIN_ELEMENTS_PRIMARY),
+            Text::el(if package.authors.is_empty() {
+                "No authors specified".to_string().to_uppercase()
+            } else {
+                package.authors.join(", ").to_uppercase()
+            })
+            .mono_s_500upp()
+            .hex_text_color(SEMANTIC_MAIN_ELEMENTS_TERTIARY),
+            // Description
+            // Text::el(package.description.as_deref().unwrap_or("No description")),
         ])
-        .with(space_between_items(), 4.0),
-        Rectangle::el()
-            .hex_background(SEMANTIC_MAIN_ELEMENTS_INACTIVE)
-            .with(height(), 1.)
-            .with(fit_horizontal(), Fit::Parent),
+        .with(space_between_items(), 4.0)
+        .with(width(), 400.)
+        .with(fit_horizontal(), Fit::None),
+        // Buttons
+        Toggle::el(
+            enabled,
+            cb(move |_| match &package.source {
+                DisplayPackageSource::Local { id, enabled } => {
+                    let id = *id;
+                    let enabled = *enabled;
+                    PackageSetEnabled {
+                        id,
+                        enabled: !enabled,
+                    }
+                    .send_server_reliable()
+                }
+                DisplayPackageSource::Remote { url } => {
+                    let url = url.to_string();
+                    PackageLoad {
+                        url: url.clone(),
+                        enabled: true,
+                    }
+                    .send_server_reliable();
+                }
+            }),
+        ),
     ])
+    .with(space_between_items(), 4.0)
     .with(fit_horizontal(), Fit::Children)
-    .with_padding_even(8.0)
+    .with(padding(), vec4(12., 4., 12., 4.))
 }
 
 // TODO: is there a way to share this?
