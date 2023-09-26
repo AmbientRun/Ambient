@@ -255,8 +255,7 @@ pub fn main() {
 
                 if let Some(hit) = physics::raycast(translation, rotation * Vec3::Z)
                     .into_iter()
-                    .filter(|h| h.entity != character_ref)
-                    .next()
+                    .find(|h| h.entity != character_ref)
                 {
                     if entity::has_component(hit.entity, vc::is_vehicle()) {
                         entity::add_component(hit.entity, vc::driver_ref(), player_id);
@@ -275,7 +274,7 @@ pub fn main() {
     query((pc::character_ref(), pc::input_fire()))
         .excludes(pc::vehicle_ref())
         .each_frame(|players| {
-            for (player_id, (character_ref, input_fire)) in players {
+            for (_player_id, (character_ref, input_fire)) in players {
                 if !input_fire {
                     continue;
                 }
@@ -292,8 +291,7 @@ pub fn main() {
 
                 if let Some(hit) = physics::raycast(translation, rotation * Vec3::Z)
                     .into_iter()
-                    .filter(|h| h.entity != character_ref)
-                    .next()
+                    .find(|h| h.entity != character_ref)
                 {
                     packages::explosion::concepts::Explosion {
                         is_explosion: (),

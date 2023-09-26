@@ -10,10 +10,7 @@ use ambient_api::{
     prelude::*,
     ui::{use_keyboard_input, ImageFromUrl},
 };
-use packages::tangent_schema::{
-    concepts::{PlayerClass, VehicleDef},
-    player::components as pc,
-};
+use packages::tangent_schema::{concepts::PlayerClass, player::components as pc};
 use packages::this::messages::ClassSetRequest;
 
 #[main]
