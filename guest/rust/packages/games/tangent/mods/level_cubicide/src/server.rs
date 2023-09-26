@@ -143,9 +143,7 @@ fn make_cubes(rng: &mut dyn rand::RngCore, grid: &mut Grid) {
             position.extend(0.0) + position_offset,
             size,
             false,
-            // TODO: In the words of another Ambient example:
-            // This is a bit... odd
-            color * 2.2,
+            color,
             rng,
         );
         grid.add(position, radius);
@@ -223,6 +221,8 @@ fn handle_vehicles() {
 
                 optional: default(),
             }
+            .make()
+            .with(packages::nameplates::components::height_offset(), 0.5)
             .spawn();
 
             let _vehicle_model_id = Entity::new()

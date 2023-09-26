@@ -4219,6 +4219,52 @@ mod raw {
                 pub fn scissors_recursive() -> Component<UVec4> {
                     *SCISSORS_RECURSIVE
                 }
+                static LOCAL_BOUNDING_AABB_MIN: Lazy<Component<Vec3>> = Lazy::new(|| {
+                    __internal_get_component("ambient_core::rendering::local_bounding_aabb_min")
+                });
+                #[doc = "**Local bounding AABB min**: The minimum point of the local AABB of this entity.\n\n*Attributes*: Debuggable"]
+                pub fn local_bounding_aabb_min() -> Component<Vec3> {
+                    *LOCAL_BOUNDING_AABB_MIN
+                }
+                static LOCAL_BOUNDING_AABB_MAX: Lazy<Component<Vec3>> = Lazy::new(|| {
+                    __internal_get_component("ambient_core::rendering::local_bounding_aabb_max")
+                });
+                #[doc = "**Local bounding AABB max**: The maximum point of the local AABB of this entity.\n\n*Attributes*: Debuggable"]
+                pub fn local_bounding_aabb_max() -> Component<Vec3> {
+                    *LOCAL_BOUNDING_AABB_MAX
+                }
+                static WORLD_BOUNDING_AABB_MIN: Lazy<Component<Vec3>> = Lazy::new(|| {
+                    __internal_get_component("ambient_core::rendering::world_bounding_aabb_min")
+                });
+                #[doc = "**World bounding AABB min**: The minimum point of the world AABB of this entity.\n\n*Attributes*: Debuggable"]
+                pub fn world_bounding_aabb_min() -> Component<Vec3> {
+                    *WORLD_BOUNDING_AABB_MIN
+                }
+                static WORLD_BOUNDING_AABB_MAX: Lazy<Component<Vec3>> = Lazy::new(|| {
+                    __internal_get_component("ambient_core::rendering::world_bounding_aabb_max")
+                });
+                #[doc = "**World bounding AABB max**: The maximum point of the world AABB of this entity.\n\n*Attributes*: Debuggable"]
+                pub fn world_bounding_aabb_max() -> Component<Vec3> {
+                    *WORLD_BOUNDING_AABB_MAX
+                }
+                static WORLD_BOUNDING_SPHERE_CENTER: Lazy<Component<Vec3>> = Lazy::new(|| {
+                    __internal_get_component(
+                        "ambient_core::rendering::world_bounding_sphere_center",
+                    )
+                });
+                #[doc = "**World bounding sphere center**: The center of the world bounding sphere of this entity.\n\n*Attributes*: Debuggable"]
+                pub fn world_bounding_sphere_center() -> Component<Vec3> {
+                    *WORLD_BOUNDING_SPHERE_CENTER
+                }
+                static WORLD_BOUNDING_SPHERE_RADIUS: Lazy<Component<f32>> = Lazy::new(|| {
+                    __internal_get_component(
+                        "ambient_core::rendering::world_bounding_sphere_radius",
+                    )
+                });
+                #[doc = "**World bounding sphere radius**: The radius of the world bounding sphere of this entity.\n\n*Attributes*: Debuggable"]
+                pub fn world_bounding_sphere_radius() -> Component<f32> {
+                    *WORLD_BOUNDING_SPHERE_RADIUS
+                }
             }
         }
         pub mod text {

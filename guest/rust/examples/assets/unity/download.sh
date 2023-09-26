@@ -1,3 +1,8 @@
+if [ -z "${EXAMPLES_ASSETS_HOST}" ]; then
+    echo "EXAMPLES_ASSETS_HOST is not set"
+    exit 1
+fi
+
 export BASE="${EXAMPLES_ASSETS_HOST}/unity/Dynamic%20Nature%20-%20Mountain%20Tree%20Pack"
 for value in \
     /Prefabs/Standard/Fir_01_Plant.prefab \

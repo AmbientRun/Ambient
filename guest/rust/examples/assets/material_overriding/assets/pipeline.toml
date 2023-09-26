@@ -12,5 +12,5 @@ type = "All"
 name = "Planks"
 base_color = "./Planks037B_1K-PNG/Planks037B_1K_Color.png"
 normalmap = "./Planks037B_1K-PNG/Planks037B_1K_NormalGL.png"
-roughness = 0.5
-metallic = 0.0
+roughness_factor = 1.0
+metallic_factor = 0.0

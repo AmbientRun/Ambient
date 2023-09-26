@@ -19,5 +19,5 @@ name = "Material"
 base_color = "Material_Base_Color.png"
 normalmap = "Material_Normal.png"
 metallic_roughness = "Material_Roughness.png"
-roughness = 0.5
-metallic = 0.0
+roughness_factor = 0.5
+metallic_factor = 0.0

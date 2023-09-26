@@ -28,5 +28,3 @@ behavior_vehicle = { path = "mods/behavior_vehicle" }
 behavior_character = { path = "mods/behavior_character" }
 
 package_manager = { path = "../../tools/package_manager", deployment = "7a7ta4gOPEpDpIAbC6IK2S" }
-
-nameplates = { path = "../../std/nameplates" , deployment = "1M2x4RcsrSyVlNXEi4UpCo" }

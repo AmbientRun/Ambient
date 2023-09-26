@@ -1,8 +1,13 @@
 use std::{collections::HashSet, sync::Arc};
 
 use ambient_ecs::{
-    components, query_mut, Debuggable, EntityId, FramedEventsReader, MaybeResource, Networked,
-    Store, System, SystemGroup, World,
+    components,
+    generated::rendering::components::{
+        local_bounding_aabb_max, local_bounding_aabb_min, world_bounding_aabb_max,
+        world_bounding_aabb_min, world_bounding_sphere_center, world_bounding_sphere_radius,
+    },
+    query, query_mut, Debuggable, EntityId, FramedEventsReader, MaybeResource, Networked, Store,
+    System, SystemGroup, World,
 };
 use ambient_native_std::{
     shapes::{Sphere, AABB},
@@ -36,17 +41,56 @@ gpu_components! {
 pub fn bounding_systems() -> SystemGroup {
     SystemGroup::new(
         "bounding",
-        vec![query_mut(
-            (world_bounding_aabb(), world_bounding_sphere()),
-            (local_bounding_aabb().changed(), local_to_world().changed()),
-        )
-        .to_system(|q, world, qs, _| {
-            for (_, (world_aabb, world_sphere), (aabb, local_to_world)) in q.iter(world, qs) {
-                let world_box = aabb.transform(local_to_world);
-                *world_aabb = world_box.to_aabb();
-                *world_sphere = world_box.to_sphere();
-            }
-        })],
+        vec![
+            query_mut(
+                (world_bounding_aabb(), world_bounding_sphere()),
+                (local_bounding_aabb().changed(), local_to_world().changed()),
+            )
+            .to_system(|q, world, qs, _| {
+                for (_, (world_aabb, world_sphere), (aabb, local_to_world)) in q.iter(world, qs) {
+                    let world_box = aabb.transform(local_to_world);
+                    *world_aabb = world_box.to_aabb();
+                    *world_sphere = world_box.to_sphere();
+                }
+            }),
+            // Systems for syncing the structured components to the piecewise components, so
+            // that the guest can access them
+            Box::new(SystemGroup::new(
+                "piecewise_sync",
+                vec![
+                    query(local_bounding_aabb().changed()).to_system(|q, world, qs, _| {
+                        for (id, aabb) in q.collect_cloned(world, qs) {
+                            world
+                                .add_component(id, local_bounding_aabb_min(), aabb.min)
+                                .ok();
+                            world
+                                .add_component(id, local_bounding_aabb_max(), aabb.max)
+                                .ok();
+                        }
+                    }),
+                    query(world_bounding_aabb().changed()).to_system(|q, world, qs, _| {
+                        for (id, aabb) in q.collect_cloned(world, qs) {
+                            world
+                                .add_component(id, world_bounding_aabb_min(), aabb.min)
+                                .ok();
+                            world
+                                .add_component(id, world_bounding_aabb_max(), aabb.max)
+                                .ok();
+                        }
+                    }),
+                    query(world_bounding_sphere().changed()).to_system(|q, world, qs, _| {
+                        for (id, sphere) in q.collect_cloned(world, qs) {
+                            world
+                                .add_component(id, world_bounding_sphere_center(), sphere.center)
+                                .ok();
+                            world
+                                .add_component(id, world_bounding_sphere_radius(), sphere.radius)
+                                .ok();
+                        }
+                    }),
+                ],
+            )),
+        ],
     )
 }
 

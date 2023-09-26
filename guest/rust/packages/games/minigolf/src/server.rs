@@ -156,8 +156,7 @@ pub fn main() {
                 .with(player_camera_state(), camera_state)
                 .spawn();
 
-                // TODO: This is a bit... odd
-                entity::add_component(player, player_color(), next_color * 2.2);
+                entity::add_component(player, player_color(), next_color);
 
                 let text = make_text()
                     .with(color(), next_color)
