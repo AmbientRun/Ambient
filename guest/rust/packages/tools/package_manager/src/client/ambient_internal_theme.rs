@@ -6,7 +6,7 @@ use ambient_api::{
         rendering::components::color,
         text::components::{font_family, font_size},
     },
-    prelude::{cb, element_component, vec4, Cb, Element, Hooks, WindowStyle},
+    prelude::{cb, element_component, Cb, Element, Hooks, WindowStyle},
     ui::{Rectangle, UIExt},
 };
 use ambient_color::Color;
@@ -29,8 +29,10 @@ pub trait AmbientInternalStyle {
     fn hex_background(self, hex: &str) -> Self;
     fn hex_text_color(self, hex: &str) -> Self;
     fn mono(self) -> Self;
+    fn font_body_medium(self) -> Self;
     fn mono_xs_500upp(self) -> Self;
     fn mono_s_500upp(self) -> Self;
+    fn body_s_500(self) -> Self;
 }
 impl AmbientInternalStyle for Element {
     fn hex_background(self, hex: &str) -> Self {
@@ -42,11 +44,17 @@ impl AmbientInternalStyle for Element {
     fn mono(self) -> Self {
         self.with(font_family(), "https://internal-content.fra1.cdn.digitaloceanspaces.com/fonts/DiatypeMono/ABCDiatypeMono-Medium.otf".to_string())
     }
+    fn font_body_medium(self) -> Self {
+        self.with(font_family(), "https://internal-content.fra1.cdn.digitaloceanspaces.com/fonts/ABCDiatypeVariable/Diatype/ABCDiatype-Medium.otf".to_string())
+    }
     fn mono_xs_500upp(self) -> Self {
         self.mono().with(font_size(), 12.8)
     }
     fn mono_s_500upp(self) -> Self {
         self.mono().with(font_size(), 16.)
+    }
+    fn body_s_500(self) -> Self {
+        self.font_body_medium().with(font_size(), 16.)
     }
 }
 
@@ -54,7 +62,7 @@ pub const SEMANTIC_MAIN_ELEMENTS_TERTIARY: &str = "#595959";
 
 #[element_component]
 pub fn Toggle(
-    hooks: &mut Hooks,
+    _hooks: &mut Hooks,
     value: bool,
     on_change: Cb<dyn Fn(bool) + Sync + Send>,
 ) -> Element {

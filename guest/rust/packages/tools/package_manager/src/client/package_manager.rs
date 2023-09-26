@@ -6,39 +6,27 @@ use crate::{
     },
     packages::{
         self,
-        this::{
-            assets,
-            messages::{
-                PackageLoad, PackageLoadShow, PackageRemoteRequest, PackageRemoteResponse,
-                PackageSetEnabled, PackageShow,
-            },
+        this::messages::{
+            PackageLoad, PackageLoadShow, PackageRemoteRequest, PackageRemoteResponse,
+            PackageSetEnabled,
         },
     },
     shared::PackageJson,
 };
 use ambient_api::{
-    core::{
-        package::{
-            components::{description, for_playables, id, is_package},
-            concepts::Package as PackageConcept,
-        },
-        rect::components::background_color,
-        text::{components::font_style, types::FontStyle},
+    core::package::{
+        components::{description, for_playables, id, is_package},
+        concepts::Package as PackageConcept,
     },
     element::{
         use_effect, use_entity_component, use_module_message, use_query, use_spawn, use_state,
     },
     prelude::*,
-    ui::ImageFromUrl,
 };
 use ambient_design_tokens::{
-    BRANDLIGHT::SEMANTIC_MAIN_ELEMENTS_INACTIVE,
-    LIGHT::{
-        SEMANTIC_MAIN_ELEMENTS_PRIMARY, SEMANTIC_MAIN_SURFACE_PRIMARY,
-        SEMANTIC_MAIN_SURFACE_SECONDARY,
-    },
+    BRANDLIGHT::{SEMANTIC_MAIN_ELEMENTS_INACTIVE, SEMANTIC_MAIN_ELEMENTS_SECONDARY},
+    LIGHT::SEMANTIC_MAIN_ELEMENTS_PRIMARY,
 };
-use itertools::Itertools;
 
 use super::{ambient_internal_theme::window_style, use_hotkey_toggle};
 
@@ -153,7 +141,7 @@ fn PackagesLocal(hooks: &mut Hooks, mod_manager_for: Option<EntityId>) -> Elemen
                     enabled: package.enabled,
                 },
                 name: package.name,
-                version: package.version,
+                // version: package.version,
                 authors: package.authors,
                 description,
             }
@@ -232,7 +220,7 @@ fn PackagesRemote(hooks: &mut Hooks, filter_away_local: bool) -> Element {
                         url: package.url.clone(),
                     },
                     name: package.name,
-                    version: package.version,
+                    // version: package.version,
                     authors: package.authors,
                     description: package.description,
                 })
@@ -247,7 +235,7 @@ fn PackagesRemote(hooks: &mut Hooks, filter_away_local: bool) -> Element {
 struct DisplayPackage {
     source: DisplayPackageSource,
     name: String,
-    version: String,
+    // version: String,
     authors: Vec<String>,
     description: Option<String>,
 }
@@ -268,9 +256,12 @@ fn PackageList(_hooks: &mut Hooks, packages: Vec<DisplayPackage>) -> Element {
         .with(height(), 1.)
         .with(fit_horizontal(), Fit::Parent);
 
-    FlowColumn::el(packages.into_iter().map(Package::el).intersperse(sep))
-        .with(space_between_items(), 0.0)
-        .with(min_width(), 400.0)
+    FlowColumn::el(itertools::intersperse(
+        packages.into_iter().map(Package::el),
+        sep,
+    ))
+    .with(space_between_items(), 0.0)
+    .with(min_width(), 400.0)
 }
 
 #[element_component]
@@ -294,7 +285,13 @@ fn Package(_hooks: &mut Hooks, package: DisplayPackage) -> Element {
             .mono_s_500upp()
             .hex_text_color(SEMANTIC_MAIN_ELEMENTS_TERTIARY),
             // Description
-            // Text::el(package.description.as_deref().unwrap_or("No description")),
+            if let Some(desc) = package.description {
+                Text::el(desc)
+                    .body_s_500()
+                    .hex_text_color(SEMANTIC_MAIN_ELEMENTS_SECONDARY)
+            } else {
+                Element::new()
+            },
         ])
         .with(space_between_items(), 4.0)
         .with(width(), 400.)
