@@ -1,0 +1,24 @@
+[package]
+name = "stormvfx_playground"
+
+edition = "2021"
+publish = false
+rust-version = {workspace = true}
+version = {workspace = true}
+
+[dependencies]
+ambient_api = { path = "../../api" }
+
+[[bin]]
+name = "stormvfx_playground_client"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "stormvfx_playground_server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

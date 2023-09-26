@@ -10,6 +10,7 @@ members = [
     "alex/temperature_hud_magda",
     "alex/lightbox_playground",
     "alex/matgen_playground",
+    "alex/stormvfx_playground",
 
     "api",
     "api_core",
