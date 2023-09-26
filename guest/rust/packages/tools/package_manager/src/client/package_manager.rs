@@ -44,7 +44,8 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
         "Mod Manager".to_string()
     } else {
         "Package Manager".to_string()
-    };
+    }
+    .to_uppercase();
 
     let (visible, set_visible) = use_hotkey_toggle(hooks, VirtualKeyCode::F4);
     use_editor_menu_bar(hooks, title.clone(), {
