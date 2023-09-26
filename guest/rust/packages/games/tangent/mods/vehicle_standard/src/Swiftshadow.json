@@ -1,5 +1,5 @@
 {
-  "density": 3.3333333,
+  "density": 10.0,
   "cube_collider": [1.8000001, 3.0, 0.6],
   "max_health": 70.0,
   "offsets": [

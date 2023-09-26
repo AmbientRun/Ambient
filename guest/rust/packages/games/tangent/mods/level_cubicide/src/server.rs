@@ -1,23 +1,15 @@
-use std::{
-    collections::HashMap,
-    f32::consts::{PI, TAU},
-};
+use std::{collections::HashMap, f32::consts::TAU};
 
 use ambient_api::{
     core::{
         app::components::main_scene,
-        hierarchy::components::parent,
-        model::components::model_from_url,
         physics::components::{cube_collider, dynamic, mass, physics_controlled, plane_collider},
         primitives::{
             components::{cube, quad},
             concepts::Capsule,
         },
         rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun},
-        transform::components::{
-            local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale,
-            translation,
-        },
+        transform::components::{rotation, scale, translation},
     },
     ecs::GeneralQuery,
     prelude::*,
@@ -26,10 +18,9 @@ use ambient_api::{
 
 use packages::{
     pickup_health::{components::is_health_pickup, concepts::HealthPickup},
+    spawner_vehicle::messages::VehicleSpawn,
     tangent_schema::{
-        concepts::{Spawnpoint, Vehicle, VehicleDef},
-        vehicle::components::is_vehicle,
-        vehicle::def::components::is_def,
+        concepts::Spawnpoint, vehicle::components::is_vehicle, vehicle::def::components::is_def,
     },
 };
 
@@ -188,54 +179,11 @@ fn handle_vehicles() {
                 return;
             };
 
-            let Some(def) = VehicleDef::get_spawned(def_id) else {
-                return;
-            };
-
-            let vehicle_id = Vehicle {
-                linear_velocity: default(),
-                angular_velocity: default(),
-                physics_controlled: (),
-                dynamic: true,
-                density: def.density,
-                cube_collider: def.cube_collider,
-
-                local_to_world: default(),
-                translation: translation.extend(def.target * 2.0),
-                rotation: Quat::from_rotation_z(random::<f32>() * PI),
-
-                is_vehicle: (),
-
-                health: def.max_health,
-                max_health: def.max_health,
-
-                last_distances: def.offsets.iter().map(|_| 0.0).collect(),
-                last_jump_time: game_time(),
-                last_slowdown_time: game_time(),
-                def_ref: def_id,
-
-                input_direction: default(),
-                input_jump: default(),
-                input_fire: default(),
-                input_aim_direction: default(),
-
-                optional: default(),
+            VehicleSpawn {
+                def_id,
+                position: translation.extend(0.0),
             }
-            .make()
-            .with(packages::nameplates::components::height_offset(), 0.5)
-            .spawn();
-
-            let _vehicle_model_id = Entity::new()
-                .with(cast_shadows(), ())
-                .with(model_from_url(), def.model_url)
-                .with(local_to_world(), default())
-                .with(local_to_parent(), default())
-                .with(mesh_to_local(), default())
-                .with(mesh_to_world(), default())
-                .with(main_scene(), ())
-                .with(scale(), Vec3::ONE * def.model_scale)
-                .with(parent(), vehicle_id)
-                .spawn();
+            .send_local_broadcast(false);
         },
     )
 }
