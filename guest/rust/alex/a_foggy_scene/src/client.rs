@@ -29,15 +29,7 @@ pub fn main() {
             if let Some((camera, _)) = cameras.into_iter().next() {
                 entity::add_component(camera, fog(), ());
 
-                spawn_query(ambient_loop()).bind(move |ambient_loopers| {
-                    for (looper, loop_path) in ambient_loopers {
-                        let spatial_audio_player = audio::SpatialAudioPlayer::new();
-                        spatial_audio_player.set_amplitude(2.0);
-                        spatial_audio_player.set_looping(true);
-                        spatial_audio_player.set_listener(camera);
-                        spatial_audio_player.play_sound_on_entity(loop_path, looper);
-                    }
-                });
+                init_ambient_loopers_req_camera(camera);
 
                 entity::add_component(
                     packages::temperature_hud::entity(),
@@ -103,56 +95,42 @@ pub fn main() {
         // }
     });
 
+    let chicken_anims = make_chicken_anims();
+
     spawn_query(())
         .requires((is_player(), basic_character_animations()))
-        .bind(|plrs| {
+        .bind(move |plrs| {
             for (plr, _) in plrs {
-                entity::add_components(
-                    plr,
-                    Entity::new()
-                        .with(
-                            character_animation::components::death(),
-                            anim_url("chicken movement/Fallen Idle"),
-                        )
-                        .with(
-                            character_animation::components::idle(),
-                            anim_url("chicken movement/Offensive Idle"),
-                        )
-                        .with(
-                            character_animation::components::walk_forward(),
-                            anim_url("chicken movement/Jog Forward"),
-                        )
-                        .with(
-                            character_animation::components::walk_forward_left(),
-                            anim_url("chicken movement/Jog Forward Diagonal (1)"),
-                        )
-                        .with(
-                            character_animation::components::walk_forward_right(),
-                            anim_url("chicken movement/Jog Forward Diagonal"),
-                        )
-                        .with(
-                            character_animation::components::walk_right(),
-                            anim_url("chicken movement/Strafe"),
-                        )
-                        .with(
-                            character_animation::components::walk_backward(),
-                            anim_url("chicken movement/Jog Backward"),
-                        )
-                        .with(
-                            character_animation::components::walk_backward_left(),
-                            anim_url("chicken movement/Jog Backward Diagonal (1)"),
-                        )
-                        .with(
-                            character_animation::components::walk_backward_right(),
-                            anim_url("chicken movement/Jog Backward Diagonal"),
-                        )
-                        .with(
-                            character_animation::components::walk_left(),
-                            anim_url("chicken movement/Strafe (1)"),
-                        ),
-                );
+                entity::add_components(plr, chicken_anims.clone());
             }
         });
+}
+
+fn make_chicken_anims() -> Entity {
+    const CHKN_PREFIX: &str = "chicken movement/";
+    use character_animation::components::*;
+    fn anim_chkn(name: &str) -> String {
+        anim_url((CHKN_PREFIX.to_string() + name).as_mut_str())
+    }
+    Entity::new()
+        .with(death(), anim_chkn("Fallen Idle"))
+        .with(idle(), anim_chkn("Offensive Idle"))
+        .with(walk_forward(), anim_chkn("Jog Forward"))
+        .with(walk_forward_left(), anim_chkn("Jog Forward Diagonal (1)"))
+        .with(walk_forward_right(), anim_chkn("Jog Forward Diagonal"))
+        .with(walk_right(), anim_chkn("Strafe"))
+        .with(walk_backward(), anim_chkn("Jog Backward"))
+        .with(walk_backward_left(), anim_chkn("Jog Backward Diagonal (1)"))
+        .with(walk_backward_right(), anim_chkn("Jog Backward Diagonal"))
+        .with(walk_left(), anim_chkn("Strafe (1)"))
+        .with(run_forward(), anim_chkn("Jog Forward"))
+        .with(run_forward_left(), anim_chkn("Jog Forward Diagonal (1)"))
+        .with(run_forward_right(), anim_chkn("Jog Forward Diagonal"))
+        .with(run_right(), anim_chkn("Strafe"))
+        .with(run_backward(), anim_chkn("Jog Backward"))
+        .with(run_backward_left(), anim_chkn("Jog Backward Diagonal (1)"))
+        .with(run_backward_right(), anim_chkn("Jog Backward Diagonal"))
+        .with(run_left(), anim_chkn("Strafe (1)"))
 }
 
 fn anim_url(name: &str) -> String {
@@ -207,7 +185,7 @@ fn visualize_sources_of_warmth() {
         temperature_src_radius(),
     ))
     .bind(|heat_sources| {
-        for (heat_source, (pos, heat, radius)) in heat_sources {
+        for (heat_source, (_pos, heat, radius)) in heat_sources {
             if heat > 2.2 {
                 // campfire
                 spawn_heat_visualizing_sphere(heat_source, radius * 0.30, 0.);
@@ -269,4 +247,16 @@ fn spawn_heat_visualizing_sphere(
     .spawn();
     entity::add_child(heat_source, sphere);
     sphere
+}
+
+fn init_ambient_loopers_req_camera(camera: EntityId) {
+    spawn_query(ambient_loop()).bind(move |ambient_loopers| {
+        for (looper, loop_path) in ambient_loopers {
+            let spatial_audio_player = audio::SpatialAudioPlayer::new();
+            spatial_audio_player.set_amplitude(2.0);
+            spatial_audio_player.set_looping(true);
+            spatial_audio_player.set_listener(camera);
+            spatial_audio_player.play_sound_on_entity(loop_path, looper);
+        }
+    });
 }
