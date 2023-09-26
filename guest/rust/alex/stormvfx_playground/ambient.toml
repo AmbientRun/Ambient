@@ -9,4 +9,4 @@ ambient_version = "0.3.0-nightly-2023-09-25"
 dropvel = { type = "Vec3" }
 dropage = { type = "F32" }
 dropagerate = { type = "F32" }
-dropbill = { type = "Quat" }
+dropbill = { type = "Quat", description = "Billboarding for storm 'droplets'. Value is base rotation." }
