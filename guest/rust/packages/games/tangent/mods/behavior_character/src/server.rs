@@ -14,12 +14,13 @@ use ambient_api::{
 };
 use packages::{
     character_animation::components::basic_character_animations,
-    tangent_schema::player::character::components::is_character, unit_schema::components as uc,
+    tangent_schema::{character::components::is_character, concepts::Character},
+    unit_schema::components as uc,
 };
 
 #[main]
 pub fn main() {
-    spawn_query(is_character()).bind(move |characters| {
+    spawn_query(Character::as_query()).bind(move |characters| {
         for (id, _) in characters {
             entity::add_components(
                 id,

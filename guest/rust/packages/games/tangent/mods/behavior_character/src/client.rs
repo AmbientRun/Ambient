@@ -8,13 +8,11 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::{
-    tangent_schema::player::character::components as pcc, unit_schema::components as uc,
-};
+use packages::{tangent_schema::character::components as cc, unit_schema::components as uc};
 
 #[main]
 pub fn main() {
-    spawn_query((pcc::is_character(), pcc::player_ref(), uc::head_ref())).bind(move |characters| {
+    spawn_query((cc::is_character(), cc::player_ref(), uc::head_ref())).bind(move |characters| {
         for (_, (_, player_ref, head)) in characters {
             if player_ref != player::get_local() {
                 continue;

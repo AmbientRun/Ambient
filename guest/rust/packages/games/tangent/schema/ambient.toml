@@ -6,7 +6,7 @@ content = { type = "Asset", schema = true }
 authors = ["philpax"]
 
 [dependencies]
-game_object = { path = "../../../schemas/game_object" , deployment = "pNjDPAc7LUs8IgPYlwJmS" }
+game_object = { path = "../../../schemas/game_object", deployment = "pNjDPAc7LUs8IgPYlwJmS" }
 
 [components]
 # Player
@@ -14,7 +14,11 @@ game_object = { path = "../../../schemas/game_object" , deployment = "pNjDPAc7LU
     "Networked",
     "Debuggable",
 ] }
-"player::class" = { type = "EntityId", name = "Class", description = "The player's class", attributes = [
+"player::character_ref" = { type = "EntityId", name = "Player's Character", description = "The player's character", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"player::class_ref" = { type = "EntityId", name = "Class", description = "The player's class", attributes = [
     "Networked",
     "Debuggable",
 ] }
@@ -58,24 +62,31 @@ game_object = { path = "../../../schemas/game_object" , deployment = "pNjDPAc7LU
     "Networked",
     "Debuggable",
 ] }
+"player::class::def_ref" = { type = "EntityId", name = "Class Definition Ref", description = "When attached to a class, indicates that it should draw its properties from this entity.", attributes = [
+    "Networked",
+    "Debuggable",
+] }
 
 # Player character
-"player::character_ref" = { type = "EntityId", name = "Player's Character", description = "The player's character", attributes = [
+# Character
+"character::is_character" = { type = "Empty", name = "Is Character", description = "Is a player character", attributes = [
     "Networked",
     "Debuggable",
 ] }
-"player::character::is_character" = { type = "Empty", name = "Is Character", description = "Is a player character", attributes = [
+"character::player_ref" = { type = "EntityId", name = "Character's Player", description = "The player controlling the character", attributes = [
     "Networked",
     "Debuggable",
 ] }
-"player::character::player_ref" = { type = "EntityId", name = "Character's Player", description = "The player controlling the character", attributes = [
+"character::last_use_time" = { type = "Duration", name = "Last Use Time", description = "The last time the player tried to use something", attributes = [
     "Networked",
     "Debuggable",
 ] }
-"player::character::last_use_time" = { type = "Duration", name = "Last Use Time", description = "The last time the player tried to use something", attributes = [
+"character::def_ref" = { type = "EntityId", name = "Character Definition Ref", description = "When attached to a character, indicates that it should draw its properties from this entity.", attributes = [
     "Networked",
     "Debuggable",
 ] }
+
+# Character def
 
 # Vehicle def
 "vehicle::def::thruster::offsets" = { type = { type = "Vec", element_type = "Vec2" }, name = "Thruster Offsets", description = "Offsets of the thrusters from the center of the vehicle", attributes = [
@@ -184,7 +195,7 @@ game_object = { path = "../../../schemas/game_object" , deployment = "pNjDPAc7LU
     "Networked",
     "Debuggable",
 ] }
-"vehicle::def_ref" = { type = "EntityId", name = "Vehicle Definition Ref", description = "When attached to a vehicle-specific entity (class or live vehicle), indicates that it should draw its properties from this entity.", attributes = [
+"vehicle::def_ref" = { type = "EntityId", name = "Vehicle Definition Ref", description = "When attached to a vehicle entity, indicates that it should draw its properties from this entity.", attributes = [
     "Networked",
     "Debuggable",
 ] }
@@ -248,6 +259,38 @@ game_object = { path = "../../../schemas/game_object" , deployment = "pNjDPAc7LU
     "Networked",
     "Debuggable",
 ] }
+
+[concepts.PlayerClass]
+name = "Player Class"
+description = "A player class"
+[concepts.PlayerClass.components.required]
+"player::class::is_class" = {}
+"player::class::name" = {}
+"player::class::description" = {}
+"player::class::icon_url" = {}
+"player::class::def_ref" = {}
+
+[concepts.Character]
+name = "Character"
+description = "A character with a physical representation"
+[concepts.Character.components.required]
+"ambient_core::transform::translation" = {}
+"ambient_core::transform::rotation" = {}
+
+"game_object::health" = {}
+"game_object::max_health" = {}
+
+"character::is_character" = {}
+"character::player_ref" = {}
+"character::def_ref" = {}
+[concepts.Character.components.optional]
+"character::last_use_time" = {}
+
+[concepts.CharacterDef]
+name = "Character Definition"
+description = "Definition for a character"
+[concepts.CharacterDef.components.required]
+"game_object::max_health" = {}
 
 [concepts.VehicleDef]
 name = "Vehicle Definition"
@@ -323,15 +366,6 @@ description = "A vehicle with a physical representation"
 "vehicle::last_upside_down_time" = {}
 "vehicle::aim_position" = {}
 "vehicle::aimable_weapon_refs" = {}
-
-[concepts.PlayerClass]
-name = "Player Class"
-description = "A player class"
-[concepts.PlayerClass.components.required]
-"player::class::is_class" = {}
-"player::class::name" = {}
-"player::class::description" = {}
-"player::class::icon_url" = {}
 
 [concepts.Spawnpoint]
 name = "Spawnpoint"

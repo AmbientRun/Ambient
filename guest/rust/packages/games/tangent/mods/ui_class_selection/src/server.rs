@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 use packages::{
-    tangent_schema::{concepts::PlayerClass, player::components::class},
+    tangent_schema::{concepts::PlayerClass, player::components::class_ref},
     this::messages::ClassSetRequest,
 };
 
@@ -14,6 +14,6 @@ fn main() {
             return;
         }
 
-        entity::add_component(player_id, class(), msg.class_id);
+        entity::add_component(player_id, class_ref(), msg.class_id);
     });
 }

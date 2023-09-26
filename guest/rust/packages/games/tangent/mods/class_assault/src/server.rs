@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 
-use packages::tangent_schema::concepts::PlayerClass;
+use packages::tangent_schema::concepts::{CharacterDef, PlayerClass};
 
 #[main]
 pub fn main() {
@@ -10,6 +10,7 @@ pub fn main() {
         name: "Assault".to_string(),
         description: "A versatile choice for those who seek balance in speed, firepower, and maneuverability.".to_string(),
         icon_url: packages::this::assets::url("icon.png"),
+        def_ref: CharacterDef { max_health: 100.0 }.spawn(),
     }
     .spawn();
 }

@@ -20,7 +20,7 @@ pub fn main() {
 
 #[element_component]
 pub fn App(hooks: &mut Hooks) -> Element {
-    let player_class_id = use_entity_component(hooks, player::get_local(), pc::class());
+    let player_class_id = use_entity_component(hooks, player::get_local(), pc::class_ref());
 
     let (toggle, set_toggle) = use_state(hooks, false);
     use_keyboard_input(hooks, {

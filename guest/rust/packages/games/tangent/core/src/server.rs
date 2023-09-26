@@ -14,8 +14,8 @@ use packages::{
     game_object::{components as goc, player::components as gopc},
     nameplates::components::height_offset,
     tangent_schema::{
-        concepts::Spawnpoint,
-        player::character::components as pcc,
+        character::components as cc,
+        concepts::{Character, CharacterDef, PlayerClass, Spawnpoint},
         player::components as pc,
         vehicle::{components as vc, def as vd},
     },
@@ -28,29 +28,44 @@ mod shared;
 #[main]
 pub fn main() {
     // When the player's class changes, respawn them.
-    change_query(pc::class())
-        .track_change(pc::class())
+    change_query(pc::class_ref())
+        .track_change(pc::class_ref())
         .requires(is_player())
         .bind(move |players| {
-            for (player_id, _class_id) in players {
+            for (player_id, class_id) in players {
                 if let Some(character_ref) = entity::get_component(player_id, pc::character_ref()) {
                     entity::despawn_recursive(character_ref);
                 }
 
-                let character_id = Entity::new()
-                    .with(pcc::is_character(), ())
-                    .with(pcc::player_ref(), player_id)
-                    .with(height_offset(), 2.0)
-                    .with(translation(), choose_spawn_position())
-                    .with(
-                        name(),
-                        format!(
-                            "{}'s Character",
-                            entity::get_component(player_id, user_id())
-                                .unwrap_or_else(|| player_id.to_string())
-                        ),
-                    )
-                    .spawn();
+                let Some(class) = PlayerClass::get_spawned(class_id) else {
+                    continue;
+                };
+
+                let Some(def) = CharacterDef::get_spawned(class.def_ref) else {
+                    continue;
+                };
+
+                let character_id = Character {
+                    translation: choose_spawn_position(),
+                    rotation: Quat::IDENTITY,
+                    health: def.max_health,
+                    max_health: def.max_health,
+                    is_character: (),
+                    player_ref: player_id,
+                    def_ref: class.def_ref,
+                    optional: default(),
+                }
+                .make()
+                .with(height_offset(), 2.0)
+                .with(
+                    name(),
+                    format!(
+                        "{}'s Character",
+                        entity::get_component(player_id, user_id())
+                            .unwrap_or_else(|| player_id.to_string())
+                    ),
+                )
+                .spawn();
                 entity::add_component(player_id, pc::character_ref(), character_id);
                 entity::add_component(player_id, gopc::control_of_entity(), character_id);
             }
@@ -288,7 +303,7 @@ pub fn main() {
             }
 
             let last_use_time =
-                entity::get_component(character_ref, pcc::last_use_time()).unwrap_or_default();
+                entity::get_component(character_ref, cc::last_use_time()).unwrap_or_default();
 
             if (game_time() - last_use_time) < Duration::from_secs_f32(0.5) {
                 continue;
@@ -327,7 +342,7 @@ pub fn main() {
                     }
                 }
             }
-            entity::add_component(character_ref, pcc::last_use_time(), game_time());
+            entity::add_component(character_ref, cc::last_use_time(), game_time());
         }
     });
 
