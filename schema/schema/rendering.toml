@@ -139,3 +139,39 @@ description = """
 If attached, this entity and all of its children will be rendered with an scissor with the rect specified.
 You do not need to attach `scissors` if you have attached `scissors_recursive`."""
 attributes = ["Debuggable", "Networked", "Store"]
+
+[components.local_bounding_aabb_min]
+type = "Vec3"
+name = "Local bounding AABB min"
+description = "The minimum point of the local AABB of this entity."
+attributes = ["Debuggable"]
+
+[components.local_bounding_aabb_max]
+type = "Vec3"
+name = "Local bounding AABB max"
+description = "The maximum point of the local AABB of this entity."
+attributes = ["Debuggable"]
+
+[components.world_bounding_aabb_min]
+type = "Vec3"
+name = "World bounding AABB min"
+description = "The minimum point of the world AABB of this entity."
+attributes = ["Debuggable"]
+
+[components.world_bounding_aabb_max]
+type = "Vec3"
+name = "World bounding AABB max"
+description = "The maximum point of the world AABB of this entity."
+attributes = ["Debuggable"]
+
+[components.world_bounding_sphere_center]
+type = "Vec3"
+name = "World bounding sphere center"
+description = "The center of the world bounding sphere of this entity."
+attributes = ["Debuggable"]
+
+[components.world_bounding_sphere_radius]
+type = "F32"
+name = "World bounding sphere radius"
+description = "The radius of the world bounding sphere of this entity."
+attributes = ["Debuggable"]
