@@ -1,5 +1,4 @@
 [package]
-id = "camera"
 name = "Camera"
 description = "Camera matrices, types, parameters, and more."
 content = { type = "Asset", schema = true }

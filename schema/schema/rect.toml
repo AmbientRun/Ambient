@@ -1,5 +1,4 @@
 [package]
-id = "rect"
 name = "Rect"
 description = "Rounded corners rectangle rendering components, with an optional border."
 content = { type = "Asset", schema = true }

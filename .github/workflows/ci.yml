@@ -249,6 +249,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: dtolnay/rust-toolchain@stable
+      - run: rustup target add --toolchain stable wasm32-wasi
       - uses: actions/checkout@v3
       - name: Rust cache
         uses: Leafwing-Studios/cargo-cache@v1.1.0

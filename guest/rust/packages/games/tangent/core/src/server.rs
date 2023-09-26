@@ -199,7 +199,8 @@ fn respawn_player(player_id: EntityId) {
         data_ref: vehicle_data_ref,
         optional: default(),
     }
-    .make();
+    .make()
+    .with(packages::nameplates::components::height_offset(), 0.5);
 
     if let Some(existing_vehicle_id) = entity::get_component(player_id, pc::vehicle_ref()) {
         if let Some(translation) = entity::get_component(existing_vehicle_id, translation()) {

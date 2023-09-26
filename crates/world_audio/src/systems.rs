@@ -249,8 +249,7 @@ fn process_player(world: &mut World, player: EntityId, url: &str) {
     let assets = world.resource(asset_cache()).clone();
     let runtime = world.resource(runtime()).clone();
     let async_run = world.resource(async_run()).clone();
-    let url =
-        unwrap_log_warn!(AbsAssetUrl::from_str(&url).and_then(|u| u.to_download_url(&assets)));
+    let url = unwrap_log_warn!(AbsAssetUrl::from_str(url).and_then(|u| u.to_download_url(&assets)));
 
     runtime.spawn(async move {
         let track = unwrap_log_warn!(AudioFromUrl { url: url.clone() }.get(&assets).await);

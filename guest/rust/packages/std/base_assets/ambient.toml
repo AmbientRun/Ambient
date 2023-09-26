@@ -1,5 +1,5 @@
 [package]
-id = "base_assets"
+id = "n7a4j7htvenss35tsnfvegbhxuwij5il"
 name = "base_assets"
 version = "0.0.1"
 content = { type = "Asset", models = true }

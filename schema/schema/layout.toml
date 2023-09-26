@@ -1,5 +1,4 @@
 [package]
-id = "layout"
 name = "Layout"
 description = "Layout components such as flow, margins etc."
 content = { type = "Asset", schema = true }

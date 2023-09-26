@@ -1,5 +1,5 @@
 [package]
-id = "ambient_example_instancing"
+id = "vacm77n5q7uil3giqf6wasadjq32mqr3"
 name = "Instancing"
 description = "Render lots of objects with a single draw call."
 version = "0.0.1"

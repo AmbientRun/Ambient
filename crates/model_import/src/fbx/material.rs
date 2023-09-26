@@ -184,13 +184,13 @@ impl FbxMaterial {
             double_sided: None,
             transparent: Some(false),
             alpha_cutoff: Some(0.5),
-            metallic: 0.0,
+            metallic_factor: 1.0,
             opacity: None,
-            roughness: self
+            roughness_factor: self
                 .textures
                 .get(SPECULAR_COLOR_KEY)
                 .map(|_| 1.)
-                .unwrap_or(0.8),
+                .unwrap_or(1.0),
 
             // TODO: Each FBX texture knows its sampler modes, but Ambient's
             // current material model assumes a single sampler for all textures

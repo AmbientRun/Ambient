@@ -1,5 +1,4 @@
 [package]
-id = "package"
 name = "Package"
 description = "Package-related state and functionality."
 content = { type = "Asset", schema = true }

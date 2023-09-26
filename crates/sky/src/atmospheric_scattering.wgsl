@@ -114,18 +114,18 @@ fn scatter(ray_start: vec3f, ray_dir: vec3f, max_dist: f32) -> vec3f {
 
     let gg = MIE_SCATTER * MIE_SCATTER;
 
-    let phase_ray = 3.0 / (16.0 * PI) * (1.0 + mumu);
+    let phase_ray = 3.0 / (50.2654824574) * (1.0 + mumu);
 
     let phase_mie = f32(allow_mie) * 3.0 / (25.1327412287) * ((1.0 - gg) * (mumu + 1.0)) / (pow(1.0 + gg - 2.0 * mu * MIE_SCATTER, 1.5) * (2.0 + gg));
 
     for (var i = 0u; i < STEPS_I; i++) {
-        let pos_i = ray_start + ray_dir * ray_pos_i;
-        let height_i = length(pos_i) - PLANET_RADIUS;
+        let pos_i: vec3f = ray_start + ray_dir * ray_pos_i;
+        let height_i: f32 = length(pos_i) - PLANET_RADIUS;
 
         // Calculate the amount of air inside this step based on height based air density falloff
-        var density = vec3f(exp(-max(height_i, -1.0e3) / scale_height), 0.0);
+        var density: vec3f = vec3f(exp(-max(height_i, -1.0e3) / scale_height), 0.0);
 
-        let denom = (ABSORPTION_HEIGHT - height_i) / ABSORPTION_FALLOFF;
+        let denom: f32 = (ABSORPTION_HEIGHT - height_i) / ABSORPTION_FALLOFF;
         density.z = (1.0 / (denom * denom + 1.0)) * density.x;
 
         density *= step_size_i;
@@ -142,7 +142,7 @@ fn scatter(ray_start: vec3f, ray_dir: vec3f, max_dist: f32) -> vec3f {
 
         var ray_pos_l = step_size_l * 0.5;
 
-        var opt_l = vec3(0.0);
+        var opt_l: vec3f = vec3(0.0);
 
         for (var l = 0u; l < STEPS_L; l++) {
             let pos_l = pos_i + light_dir * ray_pos_l;
@@ -150,8 +150,8 @@ fn scatter(ray_start: vec3f, ray_dir: vec3f, max_dist: f32) -> vec3f {
             let height_l = length(pos_l) - PLANET_RADIUS;
 
             // Do the same for the secondary ray
-            var density_l = vec3f(exp(-max(height_l, -1.0e3) / scale_height), 0.0);
-            var denom = (ABSORPTION_HEIGHT - height_l) / ABSORPTION_FALLOFF;
+            var density_l: vec3f = vec3f(exp(-max(height_l, -1.0e3) / scale_height), 0.0);
+            var denom: f32 = (ABSORPTION_HEIGHT - height_l) / ABSORPTION_FALLOFF;
             density_l.z = (1.0 / (denom * denom + 1.0)) * density_l.x;
 
             density_l *= step_size_l;
@@ -210,7 +210,7 @@ fn get_sky_color(
 
     var ray_len = vec2f(max((-b - sqrt(d)) / (2.0 * a), 0.0), min((-b + sqrt(d)) / (2.0 * a), max_dist));
 
-    color = 1.0 - exp(-color);
+    color = pow(1.0 - exp(-color), vec3f(2.2));
     let fog = apply_fog(color, global_params.camera_position.xyz, global_params.camera_position.xyz + forward * ray_len.y);
 
     return fog;

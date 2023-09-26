@@ -1,5 +1,5 @@
 [package]
-id = "tangent_camera_follow"
+id = "mkd4mhans4bdn3mvmt45vxqbxepdhys3"
 name = "Tangent Camera: Follow"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }

@@ -280,8 +280,8 @@ pub async fn import(
             emissive_factor: Some(glam::Vec3::from_slice(&mat.emissive_factor()).extend(0.)),
             transparent: Some(mat.alpha_mode() == gltf::material::AlphaMode::Blend),
             alpha_cutoff: mat.alpha_cutoff(),
-            metallic: pbr.metallic_factor(),
-            roughness: pbr.roughness_factor(),
+            metallic_factor: pbr.metallic_factor(),
+            roughness_factor: pbr.roughness_factor(),
             base_color: pbr
                 .base_color_texture()
                 .and_then(|x| images.get(x.texture().index()))
