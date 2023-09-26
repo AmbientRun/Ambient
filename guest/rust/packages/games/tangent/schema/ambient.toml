@@ -6,7 +6,7 @@ content = { type = "Asset", schema = true }
 authors = ["philpax"]
 
 [dependencies]
-game_object = { path = "../../../schemas/game_object" }
+game_object = { path = "../../../schemas/game_object" , deployment = "pNjDPAc7LUs8IgPYlwJmS" }
 
 [components]
 # Player

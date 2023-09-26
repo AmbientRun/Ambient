@@ -225,8 +225,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev vulkan-validationlayers-dev mesa-vulkan-drivers libasound2-dev
-      - name: Download assets
-        run: cd guest/rust/examples/assets/unity && ./download.sh
       - name: Run golden image tests
         run: cargo campfire-slim golden-images --ambient-path=./ambient check
       - uses: actions/upload-artifact@v3
@@ -251,6 +249,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: dtolnay/rust-toolchain@stable
+      - run: rustup target add --toolchain stable wasm32-wasi
       - uses: actions/checkout@v3
       - name: Rust cache
         uses: Leafwing-Studios/cargo-cache@v1.1.0

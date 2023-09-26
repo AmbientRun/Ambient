@@ -7,7 +7,7 @@ ambient_version = "0.3.0-nightly-2023-09-22"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
+tangent_schema = { path = "../../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
 
 gun_laser = { path = "../gun_laser", deployment = "5B4RovhibVaZsxrVcXMjf0" }
 

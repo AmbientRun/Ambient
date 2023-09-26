@@ -6,14 +6,14 @@ content = { type = "Playable" }
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
-hide_cursor = { path = "../../../std/hide_cursor", deployment = "3jJhKCyxtEKDcoQESgjzHV" }
-explosion = { path = "../../../std/explosion" }
+tangent_schema = { path = "../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
+hide_cursor = { path = "../../../std/hide_cursor", deployment = "nCIEbcEeBgSVOjy3dS4rF" }
+explosion = { path = "../../../std/explosion" , deployment = "4AJQwLstaVFyxviCqYBMTq" }
 
 game_object = { path = "../../../schemas/game_object" }
 unit_schema = { path = "../../../schemas/unit" }
 
-kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployment = "7VEdO55zqgSL75rJNg3TJ2" }
+kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployment = "s69YYpDgUiMJlWsbN5xnU" }
 
 [messages.Input]
 name = "Input"

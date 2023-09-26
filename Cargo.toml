@@ -42,7 +42,7 @@ log = "0.4"
 dyn-clonable = "0.9.0"
 semver = { version = "1.0", features = ["serde"] }
 paste = "1.0"
-as-any = "0.2.1"
+as-any = "0.3.1"
 closure = "0.3.0"
 serde = { version = "1.0", features = ["derive", "rc"] }
 serde_bytes = "0.11.12"
@@ -71,7 +71,6 @@ thiserror = "1.0"
 thread-priority = "0.10.0"
 once_cell = { version = "1.18.0", features = ["parking_lot"] }
 smallvec = "1.11.1"
-downcast-rs = "1.2.0"
 yaml-rust = { version = "0.5", package = "yaml-rust-davvid" }
 maplit = "1.0.2"
 chrono = { version = "0.4", default-features = false, features = [

@@ -172,7 +172,7 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
             |package_manifest_path, build_path, was_built| {
                 // After build, deploy the package.
                 let manifest_path_to_deployment_id = manifest_path_to_deployment_id.clone();
-                let package_path = package_path.clone();
+                let package_path = package_manifest_path.parent().unwrap().to_owned();
                 async move {
                     let deployment = if was_built {
                         let deployment = ambient_deploy::deploy(
