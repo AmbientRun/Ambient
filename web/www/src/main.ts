@@ -82,12 +82,13 @@ import("ambient_web")
             return;
         }
 
-        ambient.init({ 
+        let settings = { 
             enableLogging: true, 
             enablePanicHook: true, 
             logFilter: "debug",
             allowVersionMismatch: true,
-        });
+            debugger: true
+        };
 
         let target = window.document.getElementById("instance-container");
 
@@ -112,6 +113,6 @@ import("ambient_web")
 
         console.log(`Connecting to ${url}`)
 
-        ambient.start(target, url);
+        ambient.start(target, url, settings);
         // setupAudio();
     });
