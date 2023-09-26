@@ -10,6 +10,7 @@ use ambient_api::{
     ui::{Rectangle, UIExt},
 };
 use ambient_color::Color;
+pub use ambient_design_tokens as design_tokens;
 use ambient_design_tokens::LIGHT::{
     SEMANTIC_MAININVERTED_SURFACE_SECONDARY, SEMANTIC_MAIN_ELEMENTS_PRIMARY,
     SEMANTIC_MAIN_SURFACE_PRIMARY, SEMANTIC_MAIN_SURFACE_SECONDARY,

@@ -3,8 +3,8 @@ use ambient_api::{
     prelude::*,
 };
 
-use super::ambient_internal_theme::window_style;
 use crate::packages::this::messages;
+use ambient_brand_theme::window_style;
 
 #[element_component]
 pub fn PackageLoad(_hooks: &mut Hooks) -> Element {

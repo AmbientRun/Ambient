@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use crate::packages::this::messages::{PackageSetEnabled, PackageShow, WasmReload, WasmSetEnabled};
 use ambient_api::{
     core::{
         package::{
@@ -14,11 +15,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-
-use crate::{
-    client::ambient_internal_theme::window_style,
-    packages::this::messages::{PackageSetEnabled, PackageShow, WasmReload, WasmSetEnabled},
-};
+use ambient_brand_theme::window_style;
 
 #[element_component]
 pub fn PackageViews(hooks: &mut Hooks) -> Element {

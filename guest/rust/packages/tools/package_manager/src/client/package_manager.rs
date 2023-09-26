@@ -1,9 +1,4 @@
-use std::{collections::HashSet, fmt};
-
 use crate::{
-    client::ambient_internal_theme::{
-        AmbientInternalStyle, Toggle, SEMANTIC_MAIN_ELEMENTS_TERTIARY,
-    },
     packages::{
         self,
         this::messages::{
@@ -23,12 +18,16 @@ use ambient_api::{
     },
     prelude::*,
 };
-use ambient_design_tokens::{
+use ambient_brand_theme::design_tokens::{
     BRANDLIGHT::{SEMANTIC_MAIN_ELEMENTS_INACTIVE, SEMANTIC_MAIN_ELEMENTS_SECONDARY},
     LIGHT::SEMANTIC_MAIN_ELEMENTS_PRIMARY,
 };
+use ambient_brand_theme::{
+    window_style, AmbientInternalStyle, Toggle, SEMANTIC_MAIN_ELEMENTS_TERTIARY,
+};
+use std::{collections::HashSet, fmt};
 
-use super::{ambient_internal_theme::window_style, use_hotkey_toggle};
+use super::use_hotkey_toggle;
 
 #[element_component]
 pub fn PackageManager(hooks: &mut Hooks) -> Element {
