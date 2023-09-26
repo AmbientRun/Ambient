@@ -201,5 +201,11 @@ wit-bindgen-core = "0.9.0"
 wit-bindgen-rust = "0.9.0"
 wit-component = "0.11.0"
 
+[profile.dev.package.cranelift-codegen]
+opt-level = 3
+
+[profile.dev.package.cranelift-wasm]
+opt-level = 3
+
 [profile.release]
 incremental = true

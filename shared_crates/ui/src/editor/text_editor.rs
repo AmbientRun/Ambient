@@ -74,8 +74,6 @@ pub fn TextEditor(
         }
     });
 
-    let on_sumbit_clone = on_submit.clone();
-
     use_runtime_message::<messages::WindowKeyboardCharacter>(hooks, {
         to_owned![intermediate_value, on_change, cursor_position];
         move |_world, event| {
@@ -84,25 +82,10 @@ pub fn TextEditor(
                 return;
             }
 
-            // TODO: completely not working on web
-            // TODO: del not working on macos
-            if c == '\u{7f}' || c == '\u{8}' {
-                if *cursor_position.lock() > 0 {
-                    let mut value = intermediate_value.lock();
-                    value.remove(*cursor_position.lock() - 1);
-                    *cursor_position.lock() -= 1;
-                    on_change.0(value.clone());
-                }
-            } else if c == '\r' {
-                if let Some(on_submit) = &on_sumbit_clone {
-                    on_submit.0(intermediate_value.lock().clone());
-                }
-            } else if c != '\t' && c != '\n' && c != '\r' {
-                let mut value = intermediate_value.lock();
-                value.insert(*cursor_position.lock(), c);
-                *cursor_position.lock() += 1;
-                on_change.0(value.clone());
-            }
+            let mut value = intermediate_value.lock();
+            value.insert(*cursor_position.lock(), c);
+            *cursor_position.lock() += 1;
+            on_change.0(value.clone());
         }
     });
     use_keyboard_input(hooks, {
@@ -153,7 +136,6 @@ pub fn TextEditor(
                             rerender();
                         }
                     }
-                    #[cfg(target_os = "unknown")]
                     VirtualKeyCode::Back => {
                         if pressed && *cursor_position.lock() > 0 {
                             let mut value = intermediate_value.lock();
@@ -162,7 +144,6 @@ pub fn TextEditor(
                             on_change.0(value.clone());
                         }
                     }
-                    #[cfg(target_os = "unknown")]
                     VirtualKeyCode::Delete => {
                         if pressed && *cursor_position.lock() < intermediate_value.lock().len() {
                             let mut value = intermediate_value.lock();
@@ -170,7 +151,6 @@ pub fn TextEditor(
                             on_change.0(value.clone());
                         }
                     }
-                    #[cfg(target_os = "unknown")]
                     VirtualKeyCode::Return => {
                         if pressed && !command {
                             if let Some(on_submit) = on_submit.clone() {

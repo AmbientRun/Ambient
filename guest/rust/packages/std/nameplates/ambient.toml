@@ -6,4 +6,14 @@ content = { type = "Asset", code = true }
 ambient_version = "0.3.0-nightly-2023-09-26"
 
 [dependencies]
-game_object = { path = "../../schemas/game_object" , deployment = "pNjDPAc7LUs8IgPYlwJmS" }
+game_object = { path = "../../schemas/game_object", deployment = "pNjDPAc7LUs8IgPYlwJmS" }
+
+[components]
+height_offset = { type = "F32", name = "Nameplate Height Offset", description = "The height offset from the base of this entity at which to render a nameplate. If not specified, it will default to this entity's local bounding AABB Z, and if that's not available, it will default to a constant.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+text_size = { type = "F32", name = "Nameplate Text Size", description = "The text size of the nameplate to render. If not specified, it will default to 2.0.", attributes = [
+    "Debuggable",
+    "Networked",
+] }

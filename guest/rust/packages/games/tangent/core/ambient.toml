@@ -6,12 +6,15 @@ content = { type = "Playable" }
 
 [dependencies]
 tangent_schema = { path = "../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
-hide_cursor = { path = "../../../std/hide_cursor", deployment = "nCIEbcEeBgSVOjy3dS4rF" }
-explosion = { path = "../../../std/explosion" , deployment = "4AJQwLstaVFyxviCqYBMTq" }
 
-game_object = { path = "../../../schemas/game_object" , deployment = "pNjDPAc7LUs8IgPYlwJmS" }
+hide_cursor = { path = "../../../std/hide_cursor", deployment = "nCIEbcEeBgSVOjy3dS4rF" }
+explosion = { path = "../../../std/explosion", deployment = "4AJQwLstaVFyxviCqYBMTq" }
+nameplates = { path = "../../../std/nameplates", deployment = "1M2x4RcsrSyVlNXEi4UpCo" }
+
+game_object = { path = "../../../schemas/game_object", deployment = "pNjDPAc7LUs8IgPYlwJmS" }
 
 kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployment = "s69YYpDgUiMJlWsbN5xnU" }
+
 
 [messages.Input]
 name = "Input"
