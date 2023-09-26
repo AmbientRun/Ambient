@@ -1,14 +1,18 @@
+use ambient_api::core::rect::components::border_radius;
+use ambient_api::core::transform::components::translation;
+use ambient_api::prelude::*;
 use ambient_api::{
     core::{
         rendering::components::color,
         text::components::{font_family, font_size},
     },
-    prelude::{cb, vec4, Element, WindowStyle},
-    ui::UIExt,
+    prelude::{cb, element_component, vec4, Cb, Element, Hooks, WindowStyle},
+    ui::{Rectangle, UIExt},
 };
 use ambient_color::Color;
 use ambient_design_tokens::LIGHT::{
-    SEMANTIC_MAIN_ELEMENTS_PRIMARY, SEMANTIC_MAIN_SURFACE_PRIMARY, SEMANTIC_MAIN_SURFACE_SECONDARY,
+    SEMANTIC_MAININVERTED_SURFACE_SECONDARY, SEMANTIC_MAIN_ELEMENTS_PRIMARY,
+    SEMANTIC_MAIN_SURFACE_PRIMARY, SEMANTIC_MAIN_SURFACE_SECONDARY,
 };
 pub fn window_style() -> WindowStyle {
     WindowStyle {
@@ -47,3 +51,44 @@ impl AmbientInternalStyle for Element {
 }
 
 pub const SEMANTIC_MAIN_ELEMENTS_TERTIARY: &str = "#595959";
+
+#[element_component]
+pub fn Toggle(
+    hooks: &mut Hooks,
+    value: bool,
+    on_change: Cb<dyn Fn(bool) + Sync + Send>,
+) -> Element {
+    let outer_width = 54.;
+    let outer_height = 32.;
+    let thumb = 24.;
+    let thumb_margin = 2.;
+    let right = outer_width - thumb - thumb_margin;
+    let left = thumb_margin;
+    Rectangle::el()
+        .hex_background(SEMANTIC_MAIN_SURFACE_PRIMARY)
+        .with(width(), outer_width)
+        .with(height(), outer_height)
+        .with(border_radius(), Vec4::ONE * outer_height / 2.)
+        .children(vec![Rectangle::el()
+            .hex_background(if value {
+                SEMANTIC_MAININVERTED_SURFACE_SECONDARY
+            } else {
+                SEMANTIC_MAIN_SURFACE_SECONDARY
+            })
+            .with(width(), thumb)
+            .with(height(), thumb)
+            .with(border_radius(), Vec4::ONE * thumb / 2.)
+            .with(
+                translation(),
+                vec3(
+                    if value { left } else { right },
+                    (outer_height - thumb) / 2.,
+                    -0.0001,
+                ),
+            )])
+        .with_clickarea()
+        .on_mouse_down(move |_, _, _| {
+            on_change(!value);
+        })
+        .el()
+}

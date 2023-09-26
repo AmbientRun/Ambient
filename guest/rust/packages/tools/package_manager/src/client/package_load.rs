@@ -42,7 +42,7 @@ fn PackageLoadDialogInner(hooks: &mut Hooks, close: Cb<dyn Fn() + Sync + Send>) 
             .auto_focus()
             .placeholder(Some("URL/deployment ID"))
             .on_submit(move |url| {
-                messages::PackageLoad { url }.send_server_reliable();
+                messages::PackageLoad { url, enabled: true }.send_server_reliable();
                 set_url(String::new());
                 close();
             })

@@ -1,7 +1,9 @@
 use std::{collections::HashSet, fmt};
 
 use crate::{
-    client::ambient_internal_theme::{AmbientInternalStyle, SEMANTIC_MAIN_ELEMENTS_TERTIARY},
+    client::ambient_internal_theme::{
+        AmbientInternalStyle, Toggle, SEMANTIC_MAIN_ELEMENTS_TERTIARY,
+    },
     packages::{
         self,
         this::{
@@ -29,8 +31,12 @@ use ambient_api::{
     prelude::*,
     ui::ImageFromUrl,
 };
-use ambient_design_tokens::LIGHT::{
-    SEMANTIC_MAIN_ELEMENTS_PRIMARY, SEMANTIC_MAIN_SURFACE_PRIMARY, SEMANTIC_MAIN_SURFACE_SECONDARY,
+use ambient_design_tokens::{
+    BRANDLIGHT::SEMANTIC_MAIN_ELEMENTS_INACTIVE,
+    LIGHT::{
+        SEMANTIC_MAIN_ELEMENTS_PRIMARY, SEMANTIC_MAIN_SURFACE_PRIMARY,
+        SEMANTIC_MAIN_SURFACE_SECONDARY,
+    },
 };
 
 use super::{ambient_internal_theme::window_style, use_hotkey_toggle};
@@ -61,8 +67,8 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
         visible,
         close: Some(cb(move || set_visible(false))),
         style: Some(window_style()),
-        child: if let Some(mod_manager_for) = mod_manager_for {
-            ModManagerInner::el(mod_manager_for)
+        child: if let Some(_) = mod_manager_for {
+            ModManagerInner::el()
         } else {
             PackageManagerInner::el()
         }
@@ -73,7 +79,7 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
 }
 
 #[element_component]
-fn ModManagerInner(_hooks: &mut Hooks, mod_manager_for: EntityId) -> Element {
+fn ModManagerInner(_hooks: &mut Hooks) -> Element {
     FlowColumn::el([PackagesRemote::el(false)])
 }
 
@@ -100,7 +106,15 @@ fn PackageManagerInner(_hooks: &mut Hooks) -> Element {
 
     Tabs::new()
         .with_tab(ListTab::Local, || PackagesLocal::el(None))
-        .with_tab(ListTab::Remote, || PackagesRemote::el(true))
+        .with_tab(ListTab::Remote, || {
+            FlowColumn::el(vec![
+                PackagesRemote::el(true),
+                Button::new("Load package from URL", |_| {
+                    PackageLoadShow.send_local(crate::packages::this::entity())
+                })
+                .el(),
+            ])
+        })
         .el()
 }
 
@@ -200,37 +214,31 @@ fn PackagesRemote(hooks: &mut Hooks, filter_away_local: bool) -> Element {
     let loaded_package_ids: HashSet<String> =
         HashSet::from_iter(loaded_packages.into_iter().map(|(_, (_, id))| id));
 
-    FlowColumn::el([
-        match remote_packages {
-            PackagesState::Loading => Text::el("Loading..."),
-            PackagesState::Loaded(remote_packages) => PackageList::el(
-                remote_packages
-                    .into_iter()
-                    .filter(|package| {
-                        if filter_away_local {
-                            !loaded_package_ids.contains(&package.id)
-                        } else {
-                            true
-                        }
-                    })
-                    .map(|package| DisplayPackage {
-                        source: DisplayPackageSource::Remote {
-                            url: package.url.clone(),
-                        },
-                        name: package.name,
-                        version: package.version,
-                        authors: package.authors,
-                        description: package.description,
-                    })
-                    .collect(),
-            ),
-            PackagesState::Error(error) => Text::el(error),
-        },
-        Button::new("Load package from URL", |_| {
-            PackageLoadShow.send_local(crate::packages::this::entity())
-        })
-        .el(),
-    ])
+    FlowColumn::el([match remote_packages {
+        PackagesState::Loading => Text::el("Loading..."),
+        PackagesState::Loaded(remote_packages) => PackageList::el(
+            remote_packages
+                .into_iter()
+                .filter(|package| {
+                    if filter_away_local {
+                        !loaded_package_ids.contains(&package.id)
+                    } else {
+                        true
+                    }
+                })
+                .map(|package| DisplayPackage {
+                    source: DisplayPackageSource::Remote {
+                        url: package.url.clone(),
+                    },
+                    name: package.name,
+                    version: package.version,
+                    authors: package.authors,
+                    description: package.description,
+                })
+                .collect(),
+        ),
+        PackagesState::Error(error) => Text::el(error),
+    }])
     .with(space_between_items(), 8.0)
 }
 
@@ -261,14 +269,12 @@ fn PackageList(_hooks: &mut Hooks, packages: Vec<DisplayPackage>) -> Element {
 
 #[element_component]
 fn Package(_hooks: &mut Hooks, package: DisplayPackage) -> Element {
-    fn button(text: impl Into<String>, action: impl Fn() + Send + Sync + 'static) -> Element {
-        Button::new(text.into(), move |_| action())
-            .style(ButtonStyle::Inline)
-            .el()
-    }
+    let enabled = match &package.source {
+        DisplayPackageSource::Local { enabled, .. } => *enabled,
+        _ => false,
+    };
 
-    with_rect(FlowRow::el([
-        // Contents
+    FlowColumn::el([
         FlowRow::el([
             // Header
             FlowColumn::el([
@@ -285,38 +291,40 @@ fn Package(_hooks: &mut Hooks, package: DisplayPackage) -> Element {
                 // Description
                 // Text::el(package.description.as_deref().unwrap_or("No description")),
             ])
-            .with(space_between_items(), 4.0),
+            .with(space_between_items(), 4.0)
+            .with(width(), 400.)
+            .with(fit_horizontal(), Fit::None),
             // Buttons
-            match &package.source {
-                DisplayPackageSource::Local { id, enabled } => {
-                    let id = *id;
-                    let enabled = *enabled;
-                    FlowRow::el([
-                        button(if enabled { "Disable" } else { "Enable" }, move || {
-                            PackageSetEnabled {
-                                id,
-                                enabled: !enabled,
-                            }
-                            .send_server_reliable();
-                        }),
-                        button("View", move || {
-                            PackageShow { id }.send_local(crate::packages::this::entity())
-                        }),
-                    ])
-                    .with(space_between_items(), 8.0)
-                }
-                DisplayPackageSource::Remote { url } => {
-                    let url = url.to_string();
-                    button("Load", move || {
-                        PackageLoad { url: url.clone() }.send_server_reliable();
-                    })
-                }
-            },
+            Toggle::el(
+                enabled,
+                cb(move |_| match &package.source {
+                    DisplayPackageSource::Local { id, enabled } => {
+                        let id = *id;
+                        let enabled = *enabled;
+                        PackageSetEnabled {
+                            id,
+                            enabled: !enabled,
+                        }
+                        .send_server_reliable()
+                    }
+                    DisplayPackageSource::Remote { url } => {
+                        let url = url.to_string();
+                        PackageLoad {
+                            url: url.clone(),
+                            enabled: true,
+                        }
+                        .send_server_reliable();
+                    }
+                }),
+            ),
         ])
         .with(space_between_items(), 4.0),
-    ]))
-    .with(space_between_items(), 8.0)
-    .with(fit_horizontal(), Fit::Parent)
+        Rectangle::el()
+            .hex_background(SEMANTIC_MAIN_ELEMENTS_INACTIVE)
+            .with(height(), 1.)
+            .with(fit_horizontal(), Fit::Parent),
+    ])
+    .with(fit_horizontal(), Fit::Children)
     .with_padding_even(8.0)
 }
 

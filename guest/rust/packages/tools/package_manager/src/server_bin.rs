@@ -28,7 +28,7 @@ pub async fn main() {
         for i in 0..4 {
             Package {
                 is_package: (),
-                enabled: true,
+                enabled: i % 2 == 0,
                 id: format!("package{i}"),
                 name: format!("Loaded Package {i}"),
                 version: "0.0.1".to_string(),

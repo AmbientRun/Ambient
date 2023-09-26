@@ -13,6 +13,7 @@ attributes = ["Networked", "Debuggable"]
 
 [messages.PackageLoad.fields]
 url = "String"
+enabled = "Bool"
 
 [messages.PackageLoadSuccess.fields]
 id = "EntityId"
