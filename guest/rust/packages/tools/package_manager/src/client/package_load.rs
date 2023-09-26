@@ -23,7 +23,7 @@ fn PackageLoadDialog(hooks: &mut Hooks) -> Element {
     let close = cb(move || set_visible(false));
     Window {
         title: "Package load".to_string(),
-        visible: visible,
+        visible,
         close: Some(close.clone()),
         style: None,
         child: PackageLoadDialogInner::el(close),

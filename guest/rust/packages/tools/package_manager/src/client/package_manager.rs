@@ -55,7 +55,7 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
         visible,
         close: Some(cb(move || set_visible(false))),
         style: Some(window_style()),
-        child: if let Some(_) = mod_manager_for {
+        child: if mod_manager_for.is_some() {
             ModManagerInner::el()
         } else {
             PackageManagerInner::el()
