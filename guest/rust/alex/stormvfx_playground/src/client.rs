@@ -27,7 +27,8 @@ pub fn main() {
     }
     .make()
     .with(local_to_world(), Mat4::IDENTITY)
-    .with(scale(), Vec3::splat(0.05))
+    .with(scale(), Vec3::splat(0.02))
+    // .with(rotation(), Quat::from_rotation_x(1.67)) // tilt on its side
     .spawn();
 
     // if let Some(camera) = camera::get_active(None) {
@@ -57,12 +58,12 @@ pub fn main() {
         advance_drop(drop, None, random::<f32>() * 2.);
     }
 
-    ambient_api::core::messages::Frame::subscribe(move |_| {
-        entity::mutate_component(stormparent, rotation(), |rot| {
-            let dt = delta_time();
-            *rot = Quat::from_euler(EulerRot::XYZ, 0.02 * dt, 0.01 * dt, 0.05 * dt) * *rot;
-        });
-    });
+    // ambient_api::core::messages::Frame::subscribe(move |_| {
+    //     entity::mutate_component(stormparent, rotation(), |rot| {
+    //         let dt = delta_time();
+    //         *rot = Quat::from_euler(EulerRot::XYZ, 0.02 * dt, 0.01 * dt, 0.05 * dt) * *rot;
+    //     });
+    // });
 
     query((dropvel(), dropage(), dropagerate())).each_frame(|drops| {
         for (drop, (vel, age, agerate)) in drops {
@@ -108,7 +109,7 @@ fn advance_drop(drop: EntityId, params: Option<(Vec3, f32, f32)>, delta: f32) {
     } else {
         entity::set_component(drop, dropage(), age2);
         entity::mutate_component(drop, translation(), |pos| *pos = *pos + vel * delta);
-        entity::set_component(drop, scale(), 5.0 * Vec3::splat((age2 * 3.14).sin()));
+        entity::set_component(drop, scale(), 3.0 * Vec3::splat((age2 * 3.14).sin()));
     }
 }
 
