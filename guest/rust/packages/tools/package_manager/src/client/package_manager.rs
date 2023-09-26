@@ -1,5 +1,19 @@
 use std::{collections::HashSet, fmt};
 
+use crate::{
+    client::ambient_internal_theme::{AmbientInternalStyle, SEMANTIC_MAIN_ELEMENTS_TERTIARY},
+    packages::{
+        self,
+        this::{
+            assets,
+            messages::{
+                PackageLoad, PackageLoadShow, PackageRemoteRequest, PackageRemoteResponse,
+                PackageSetEnabled, PackageShow,
+            },
+        },
+    },
+    shared::PackageJson,
+};
 use ambient_api::{
     core::{
         package::{
@@ -15,22 +29,11 @@ use ambient_api::{
     prelude::*,
     ui::ImageFromUrl,
 };
-
-use crate::{
-    packages::{
-        self,
-        this::{
-            assets,
-            messages::{
-                PackageLoad, PackageLoadShow, PackageRemoteRequest, PackageRemoteResponse,
-                PackageSetEnabled, PackageShow,
-            },
-        },
-    },
-    shared::PackageJson,
+use ambient_design_tokens::LIGHT::{
+    SEMANTIC_MAIN_ELEMENTS_PRIMARY, SEMANTIC_MAIN_SURFACE_PRIMARY, SEMANTIC_MAIN_SURFACE_SECONDARY,
 };
 
-use super::{use_hotkey_toggle, window_style};
+use super::{ambient_internal_theme::window_style, use_hotkey_toggle};
 
 #[element_component]
 pub fn PackageManager(hooks: &mut Hooks) -> Element {
@@ -71,12 +74,7 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn ModManagerInner(_hooks: &mut Hooks, mod_manager_for: EntityId) -> Element {
-    FlowColumn::el([
-        Text::el("Local").header_style(),
-        PackagesLocal::el(Some(mod_manager_for)),
-        Text::el("Remote").header_style(),
-        PackagesRemote::el(),
-    ])
+    FlowColumn::el([PackagesRemote::el(false)])
 }
 
 #[element_component]
@@ -102,7 +100,7 @@ fn PackageManagerInner(_hooks: &mut Hooks) -> Element {
 
     Tabs::new()
         .with_tab(ListTab::Local, || PackagesLocal::el(None))
-        .with_tab(ListTab::Remote, PackagesRemote::el)
+        .with_tab(ListTab::Remote, || PackagesRemote::el(true))
         .el()
 }
 
@@ -195,7 +193,7 @@ fn use_remote_packages(hooks: &mut Hooks) -> PackagesState {
 }
 
 #[element_component]
-fn PackagesRemote(hooks: &mut Hooks) -> Element {
+fn PackagesRemote(hooks: &mut Hooks, filter_away_local: bool) -> Element {
     let remote_packages = use_remote_packages(hooks);
     let loaded_packages = use_query(hooks, (is_package(), id()));
 
@@ -208,7 +206,13 @@ fn PackagesRemote(hooks: &mut Hooks) -> Element {
             PackagesState::Loaded(remote_packages) => PackageList::el(
                 remote_packages
                     .into_iter()
-                    .filter(|package| !loaded_package_ids.contains(&package.id))
+                    .filter(|package| {
+                        if filter_away_local {
+                            !loaded_package_ids.contains(&package.id)
+                        } else {
+                            true
+                        }
+                    })
                     .map(|package| DisplayPackage {
                         source: DisplayPackageSource::Remote {
                             url: package.url.clone(),
@@ -264,30 +268,24 @@ fn Package(_hooks: &mut Hooks, package: DisplayPackage) -> Element {
     }
 
     with_rect(FlowRow::el([
-        // Image (ideally, this would be the package icon)
-        ImageFromUrl {
-            url: assets::url("construction.png"),
-        }
-        .el()
-        .with(width(), 64.0)
-        .with(height(), 64.0),
         // Contents
-        FlowColumn::el([
+        FlowRow::el([
             // Header
-            FlowRow::el([
-                Text::el(package.name).with(font_style(), FontStyle::Bold),
-                Text::el(package.version),
-                Text::el("by"),
+            FlowColumn::el([
+                Text::el(package.name.to_uppercase())
+                    .mono_s_500upp()
+                    .hex_text_color(SEMANTIC_MAIN_ELEMENTS_PRIMARY),
                 Text::el(if package.authors.is_empty() {
-                    "No authors specified".to_string()
+                    "No authors specified".to_string().to_uppercase()
                 } else {
-                    package.authors.join(", ")
+                    package.authors.join(", ").to_uppercase()
                 })
-                .with(font_style(), FontStyle::Italic),
+                .mono_s_500upp()
+                .hex_text_color(SEMANTIC_MAIN_ELEMENTS_TERTIARY),
+                // Description
+                // Text::el(package.description.as_deref().unwrap_or("No description")),
             ])
             .with(space_between_items(), 4.0),
-            // Description
-            Text::el(package.description.as_deref().unwrap_or("No description")),
             // Buttons
             match &package.source {
                 DisplayPackageSource::Local { id, enabled } => {
@@ -318,7 +316,6 @@ fn Package(_hooks: &mut Hooks, package: DisplayPackage) -> Element {
         .with(space_between_items(), 4.0),
     ]))
     .with(space_between_items(), 8.0)
-    .with(background_color(), vec4(0., 0., 0., 0.5))
     .with(fit_horizontal(), Fit::Parent)
     .with_padding_even(8.0)
 }

@@ -16,7 +16,7 @@ use ambient_api::{
 };
 
 use crate::{
-    client::window_style,
+    client::ambient_internal_theme::window_style,
     packages::this::messages::{PackageSetEnabled, PackageShow, WasmReload, WasmSetEnabled},
 };
 

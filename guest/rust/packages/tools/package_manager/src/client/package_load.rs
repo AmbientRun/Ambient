@@ -3,7 +3,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use super::window_style;
+use super::ambient_internal_theme::window_style;
 use crate::packages::this::messages;
 
 #[element_component]
