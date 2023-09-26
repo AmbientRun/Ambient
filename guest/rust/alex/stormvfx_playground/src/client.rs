@@ -3,6 +3,7 @@ use ambient_api::{
         hierarchy::components::parent,
         model::components::model_from_url,
         primitives::concepts::Sphere,
+        rendering::components::cast_shadows,
         transform::{
             components::{local_to_parent, local_to_world, rotation, scale, translation},
             concepts::{Transformable, TransformableOptional},
@@ -80,6 +81,12 @@ pub fn main() {
                     );
                 }
             }
+        }
+    });
+
+    spawn_query(cast_shadows()).bind(|shadecasters| {
+        for (shadecaster, _) in shadecasters {
+            entity::remove_component(shadecaster, cast_shadows());
         }
     });
 }

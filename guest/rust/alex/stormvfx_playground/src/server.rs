@@ -24,10 +24,10 @@ pub fn main() {
     .with(lookat_target(), vec3(0., 0., 0.))
     .spawn();
 
-    Entity::new()
-        .with(translation(), vec3(0., 0., 0.))
-        .with(quad(), ())
-        .spawn();
+    // Entity::new()
+    //     .with(translation(), vec3(0., 0., 0.))
+    //     .with(quad(), ())
+    //     .spawn();
 
     println!("Hello, Ambient!");
 }
