@@ -60,7 +60,7 @@ impl Settings {
                                 ..Default::default()
                             };
 
-                            settings.write_to_file(Some(path.clone()))?;
+                            settings.write_to_file(Some(path))?;
 
                             settings
                         } else {
@@ -72,7 +72,7 @@ impl Settings {
             }
             Err(e) if e.kind() == ErrorKind::NotFound => {
                 let settings = Settings::default();
-                settings.write_to_file(Some(path.clone()))?;
+                settings.write_to_file(Some(path))?;
                 Ok(settings)
             }
             Err(e) => Err(e).with_context(|| format!("Error reading settings file at {path:?}")),

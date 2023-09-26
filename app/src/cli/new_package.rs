@@ -49,12 +49,12 @@ pub(crate) fn handle(package_path: &PackagePath, args: &NewPackageCli) -> anyhow
             .context("Package path has no terminating segment")?,
     );
 
-    if package_path.is_dir() && std::fs::read_dir(&package_path)?.next().is_some() {
+    if package_path.is_dir() && std::fs::read_dir(package_path)?.next().is_some() {
         anyhow::bail!("package path {package_path:?} is not empty");
     }
 
     let id = ambient_package::PackageId::generate();
-    let snake_case_name = name.to_case(Case::Snake).replace(":", "");
+    let snake_case_name = name.to_case(Case::Snake).replace(':', "");
 
     // Build a list of files to write to disk, then write them all at once.
     macro_rules! template_file {
@@ -147,7 +147,7 @@ pub(crate) fn handle(package_path: &PackagePath, args: &NewPackageCli) -> anyhow
 }
 
 fn build_cargo_toml(
-    package_path: &std::path::PathBuf,
+    package_path: &std::path::Path,
     api_path: Option<&str>,
     snake_case_name: String,
 ) -> String {

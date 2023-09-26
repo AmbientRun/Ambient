@@ -36,7 +36,6 @@ pub async fn handle(
 
     let working_directory = main_package_path
         .to_file_path()?
-        .clone()
         .unwrap_or(std::env::current_dir()?);
 
     let server_handle = server::start(
