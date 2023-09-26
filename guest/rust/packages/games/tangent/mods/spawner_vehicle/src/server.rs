@@ -14,7 +14,7 @@ use ambient_api::{
 };
 
 use packages::{
-    tangent_schema::concepts::{Vehicle, VehicleDef},
+    tangent_schema::concepts::{Vehicle, VehicleDef, VehicleOptional},
     this::messages::VehicleSpawn,
 };
 
@@ -39,7 +39,9 @@ pub fn main() {
 
             local_to_world: default(),
             translation: msg.position + Vec3::Z * (def.target * 2.0),
-            rotation: Quat::from_rotation_z(random::<f32>() * PI),
+            rotation: msg
+                .rotation
+                .unwrap_or_else(|| Quat::from_rotation_z(random::<f32>() * PI)),
 
             is_vehicle: (),
 
@@ -56,7 +58,10 @@ pub fn main() {
             input_fire: default(),
             input_aim_direction: default(),
 
-            optional: default(),
+            optional: VehicleOptional {
+                driver_ref: msg.driver_id,
+                ..default()
+            },
         }
         .make()
         .with(packages::nameplates::components::height_offset(), 0.5)

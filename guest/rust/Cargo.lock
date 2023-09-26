@@ -2567,6 +2567,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tangent_ui_spawn_menu"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "tangent_vehicle_standard"
 version = "0.3.0-dev"
 dependencies = [

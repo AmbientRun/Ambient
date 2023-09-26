@@ -185,6 +185,8 @@ fn handle_vehicles() {
             VehicleSpawn {
                 def_id,
                 position: translation.extend(0.0),
+                rotation: None,
+                driver_id: None,
             }
             .send_local_broadcast(false);
 

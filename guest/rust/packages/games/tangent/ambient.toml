@@ -13,6 +13,7 @@ camera_follow = { path = "mods/camera_follow", deployment = "2JxkseUmoWsbkeUUhxe
 
 ui_holohud = { path = "mods/ui_holohud", deployment = "7XlsdxSQTCqX1TO3WaLBd5" }
 ui_class_selection = { path = "mods/ui_class_selection", deployment = "3leakFoQjAfXCKAHecSJR4" }
+ui_spawn_menu = { path = "mods/ui_spawn_menu" }
 
 pickup_health = { path = "mods/pickup_health", deployment = "7lysU5KZdkYj2rpckumEbI" }
 

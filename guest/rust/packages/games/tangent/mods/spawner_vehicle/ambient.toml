@@ -14,4 +14,4 @@ nameplates = { path = "../../../../std/nameplates", deployment = "1M2x4RcsrSyVlN
 [messages.VehicleSpawn]
 name = "Vehicle Spawn"
 description = "Spawns the vehicle from the given definition."
-fields = { def_id = "EntityId", position = "Vec3" }
+fields = { def_id = "EntityId", position = "Vec3", rotation = { container_type = "Option", element_type = "Quat" }, driver_id = { container_type = "Option", element_type = "EntityId" } }
