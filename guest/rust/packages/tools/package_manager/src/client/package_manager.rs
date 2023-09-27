@@ -238,13 +238,7 @@ fn PackagesRemote(
         PackagesState::Loading => return Text::el("Loading..."),
         PackagesState::Loaded(remote_packages) => remote_packages
             .into_iter()
-            .filter(|package| {
-                if loaded_package_ids.contains(&package.id) {
-                    include_local
-                } else {
-                    true
-                }
-            })
+            .filter(|package| !loaded_package_ids.contains(&package.id))
             .map(|package| DisplayPackage {
                 source: DisplayPackageSource::Remote {
                     url: package.url.clone(),
