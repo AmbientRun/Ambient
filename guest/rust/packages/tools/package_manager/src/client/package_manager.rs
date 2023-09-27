@@ -297,11 +297,15 @@ fn PackageList(_hooks: &mut Hooks, packages: Vec<DisplayPackage>) -> Element {
         .with(height(), 1.)
         .with(fit_horizontal(), Fit::Parent);
 
-    FlowColumn::el(itertools::intersperse(
-        packages.into_iter().map(Package::el),
-        sep,
-    ))
-    .with(space_between_items(), 0.0)
+    ScrollArea::el(
+        ScrollAreaSizing::FitChildrenWidth,
+        FlowColumn::el(itertools::intersperse(
+            packages.into_iter().map(Package::el),
+            sep,
+        ))
+        .with(space_between_items(), 0.0),
+    )
+    .with(height(), 400.)
 }
 
 #[element_component]
