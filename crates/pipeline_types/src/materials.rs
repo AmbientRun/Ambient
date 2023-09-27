@@ -42,6 +42,9 @@ pub struct PipelinePbrMaterial {
     pub normalmap: Option<String>,
     /// The metallic roughness map of this material.
     ///
+    /// Defaults to `0.0, 0.4`, a PVC plastic like material
+    ///
+    /// # Channels
     /// r: metallic
     /// g: roughness
     pub metallic_roughness: Option<String>,
@@ -58,10 +61,10 @@ pub struct PipelinePbrMaterial {
     pub alpha_cutoff: Option<f32>,
     /// Whether or not this material is double-sided. Defaults to false for PBR.
     pub double_sided: Option<bool>,
-    /// The metallic coefficient of this material. Defaults to 1 for PBR.
-    pub metallic: Option<f32>,
-    /// The roughness coefficient of this material. Defaults to 1 for PBR.
-    pub roughness: Option<f32>,
+    /// Metallic map multiplier. Defaults to `1.0`
+    pub metallic_factor: Option<f32>,
+    /// Roughness map multiplier. Defaults to `1.0`
+    pub roughness_factor: Option<f32>,
 
     // Non-PBR properties that get translated to PBR.
     /// The non-PBR specular map of this material. If specified, it will be translated to a PBR equivalent.

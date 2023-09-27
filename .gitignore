@@ -16,3 +16,4 @@ third_person_camera.cap
 *.dll
 
 guest/rust/examples/assets/unity/assets/TreePack
+fail_screenshot.png

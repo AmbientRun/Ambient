@@ -1,5 +1,5 @@
 [package]
-id = "ambient_example_input"
+id = "d563xtcr72ovuuhfkvsgag6z3wiy5jwr"
 name = "Input"
 description = "Read keyboard and mouse inputs from the player."
 version = "0.0.1"

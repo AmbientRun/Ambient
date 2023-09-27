@@ -155,7 +155,7 @@ fn generate_scope(
             }
 
             let id = make_path(scope.data.id.as_str());
-            let inner = generate_scope(context, items, type_printer, &scope)?;
+            let inner = generate_scope(context, items, type_printer, scope)?;
             if inner.is_empty() {
                 return Ok(quote! {});
             }

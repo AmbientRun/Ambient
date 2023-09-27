@@ -1,5 +1,4 @@
 [package]
-id = "ui"
 name = "UI"
 description = "User interface components"
 content = { type = "Asset", schema = true }

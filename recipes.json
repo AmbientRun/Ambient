@@ -212,6 +212,9 @@
       }
     }
   },
+  "pbr": {
+    "cmd": "cargo run -p ambient_renderer --example pbr"
+  },
   "check-all": {
     "cmd": "cargo check --workspace --all-targets"
   },

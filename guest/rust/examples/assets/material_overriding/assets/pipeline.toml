@@ -1,7 +1,7 @@
 [[pipelines]]
 type = "Models"
 sources = ["*.glb"]
-prefab_components = "{ \"ambient_example_material_overriding::is_the_best\": false }"
+prefab_components = "{ \"ib2djsnjew5tb2k5igq6le7rzjdwlvhq::is_the_best\": false }"
 
 [[pipelines.material_overrides]]
 
@@ -12,5 +12,5 @@ type = "All"
 name = "Planks"
 base_color = "./Planks037B_1K-PNG/Planks037B_1K_Color.png"
 normalmap = "./Planks037B_1K-PNG/Planks037B_1K_NormalGL.png"
-roughness = 0.5
-metallic = 0.0
+roughness_factor = 1.0
+metallic_factor = 0.0

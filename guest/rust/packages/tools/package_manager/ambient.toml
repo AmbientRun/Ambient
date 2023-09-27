@@ -1,5 +1,5 @@
 [package]
-id = "package_manager"
+id = "hr4pxz7kfhzgimicoyh65ydel3aehuhk"
 name = "Package Manager"
 version = "0.0.1"
 content = { type = "Tool" }
@@ -13,6 +13,7 @@ attributes = ["Networked", "Debuggable"]
 
 [messages.PackageLoad.fields]
 url = "String"
+enabled = "Bool"
 
 [messages.PackageLoadSuccess.fields]
 id = "EntityId"

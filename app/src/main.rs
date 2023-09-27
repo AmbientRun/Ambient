@@ -1,9 +1,8 @@
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::{ContentBaseUrlKey, UsingLocalDebugAssetsKey},
-    download_asset::{AssetsCacheOnDisk, ReqwestClientKey},
+    download_asset::AssetsCacheOnDisk,
 };
-use ambient_network::native::client::ResolvedAddr;
 use ambient_settings::SettingsKey;
 use clap::Parser;
 
@@ -17,8 +16,7 @@ use anyhow::Context;
 use cli::{Cli, Commands};
 use log::LevelFilter;
 use serde::Deserialize;
-use server::{ServerHandle, QUIC_INTERFACE_PORT};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 fn main() -> anyhow::Result<()> {
     let rt = ambient_sys::task::make_native_multithreaded_runtime()?;
@@ -62,6 +60,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     // Update some ~~global variables~~ asset keys with package-path derived state
+    let use_release_build = cli.use_release_build();
     if let Some(package_path) = cli.package().map(|p| p.package_path()).transpose()? {
         if package_path.is_remote() {
             // package path is a URL, so let's use it as the content base URL
@@ -70,138 +69,40 @@ fn main() -> anyhow::Result<()> {
 
         // Store a flag that we are using local debug assets
         // Used for emitting warnings when local debug assets are sent to remote clients
-        UsingLocalDebugAssetsKey.insert(
-            &assets,
-            !package_path.is_remote() && !cli.use_release_build(),
-        );
+        UsingLocalDebugAssetsKey.insert(&assets, !package_path.is_remote() && !use_release_build);
     }
 
-    let release_build = cli.use_release_build();
     match &cli.command {
-        // commands that immediately exit
-        Commands::New { package, args } => {
-            let package_path = package.package_path()?;
-            cli::new_package::handle(&package_path, args).context("Failed to create package")
-        }
-        Commands::Assets { command } => rt.block_on(cli::assets::handle(command, &assets)),
-        Commands::Build { package } => rt.block_on(async {
-            cli::build::handle(package, &assets, release_build)
+        // package commands
+        Commands::Package { package } => cli::package::handle(package, &rt, assets),
+        Commands::New(args) => rt
+            .block_on(cli::package::new::handle(args, &assets))
+            .context("Failed to create package"),
+        Commands::Build(build) => rt.block_on(async {
+            cli::package::build::handle(build, &assets, use_release_build)
                 .await
                 .map(|_| ())
         }),
-        Commands::Deploy {
-            package,
-            extra_packages,
-            api_server,
-            token,
-            force_upload,
-            ensure_running,
-            context,
-        } => rt.block_on(async {
-            cli::deploy::handle(
-                package,
-                extra_packages,
-                &assets,
-                token.as_deref(),
-                api_server,
-                release_build,
-                *force_upload,
-                *ensure_running,
-                context,
+        Commands::Deploy(deploy) => rt.block_on(cli::package::deploy::handle(
+            deploy,
+            &assets,
+            use_release_build,
+        )),
+        Commands::Serve(serve) => rt.block_on(async {
+            Ok(
+                cli::package::serve::handle(serve, assets, use_release_build)
+                    .await?
+                    .join()
+                    .await?,
             )
-            .await
         }),
+        Commands::Run(run) => cli::package::run::handle(&rt, run, assets, use_release_build),
+
+        // non-package commands
+        Commands::Assets { assets: command } => rt.block_on(cli::assets::handle(command, &assets)),
         Commands::Login => rt.block_on(cli::login::handle(&assets)),
-
-        // client
-        Commands::Join { run, host } => {
-            let server_addr = rt.block_on(determine_join_addr(&assets, host.as_ref()))?;
-            cli::client::handle(run, &rt, assets, server_addr, None)
-        }
-
-        // server
-        Commands::Serve { package, host } => rt.block_on(async {
-            let server_handle = run_server(&assets, release_build, package, host, None).await?;
-            Ok(server_handle.join().await?)
-        }),
-
-        // client+server
-        Commands::Run { package, host, run } => {
-            run_client_and_server(&rt, assets, release_build, package, host, run, None)
-        }
-        Commands::View {
-            package,
-            host,
-            run,
-            asset_path,
-        } => {
-            let path = Some(asset_path.clone());
-            run_client_and_server(&rt, assets, release_build, package, host, run, path)
-        }
+        Commands::Join(join) => cli::join::handle(join, &rt, assets),
     }
-}
-
-async fn determine_join_addr(
-    assets: &AssetCache,
-    host: Option<&String>,
-) -> anyhow::Result<ResolvedAddr> {
-    match host.cloned() {
-        Some(mut host) => {
-            if host.starts_with("http://") || host.starts_with("https://") {
-                tracing::info!("NOTE: Joining server by http url is still experimental and can be removed without warning.");
-
-                let reqwest = &ReqwestClientKey.get(assets);
-                host = reqwest.get(host).send().await?.text().await?;
-
-                if host.is_empty() {
-                    anyhow::bail!("Failed to resolve host");
-                }
-            }
-            if !host.contains(':') {
-                host = format!("{host}:{QUIC_INTERFACE_PORT}");
-            }
-            ResolvedAddr::lookup_host(&host).await
-        }
-        None => Ok(ResolvedAddr::localhost_with_port(QUIC_INTERFACE_PORT)),
-    }
-}
-
-async fn run_server(
-    assets: &AssetCache,
-    release_build: bool,
-    package: &cli::PackageCli,
-    host: &cli::HostCli,
-    view_asset_path: Option<PathBuf>,
-) -> anyhow::Result<ServerHandle> {
-    let dirs = cli::build::handle(package, assets, release_build).await?;
-    cli::server::handle(host, view_asset_path, dirs, assets).await
-}
-
-fn run_client_and_server(
-    rt: &tokio::runtime::Runtime,
-    assets: AssetCache,
-    release_build: bool,
-    package: &cli::PackageCli,
-    host: &cli::HostCli,
-    run: &cli::RunCli,
-    view_asset_path: Option<PathBuf>,
-) -> anyhow::Result<()> {
-    let server_handle = rt.block_on(run_server(
-        &assets,
-        release_build,
-        package,
-        host,
-        view_asset_path,
-    ))?;
-
-    let package_path = package.package_path()?;
-    cli::client::handle(
-        run,
-        rt,
-        assets,
-        server_handle.resolve_as_localhost(),
-        package_path.fs_path,
-    )
 }
 
 #[derive(Deserialize)]

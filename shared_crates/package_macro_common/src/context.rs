@@ -72,7 +72,7 @@ impl Context {
             &fully_qualified_display_path
         };
 
-        let path = make_path(&fully_qualified_display_path);
+        let path = make_path(fully_qualified_display_path);
 
         Ok(quote! { #path_prefix #path })
     }

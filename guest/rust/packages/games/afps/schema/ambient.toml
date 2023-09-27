@@ -1,5 +1,5 @@
 [package]
-id = "afps_schema"
+id = "thx4rfn4t3nbt4lbgub5bs7bejlawjk3"
 name = "AFPS Schema"
 version = "0.0.1"
 content = { type = "Asset", schema = true }

@@ -1,5 +1,5 @@
 [package]
-id = "ambient_example_deps_assets"
+id = "viyiawgsl5lsiul6pup6pyv6bbt6o3vw"
 name = "Dependencies (Assets)"
 version = "0.0.1"
 content = { type = "Asset", models = true }

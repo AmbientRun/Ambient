@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use ambient_package::{BuildMetadata, Manifest, PackageId, SnakeCaseIdentifier};
+use ambient_package::{BuildMetadata, Identifier, Manifest, SnakeCaseIdentifier};
 use ambient_std::path;
 use thiserror::Error;
 use url::Url;
@@ -18,17 +18,26 @@ use semver::Version;
 
 #[derive(Clone, PartialEq, Debug, Eq, Hash)]
 pub struct PackageLocator {
-    pub id: PackageId,
+    pub id: Identifier,
     pub version: Version,
     pub source: RetrievableFile,
 }
 impl PackageLocator {
-    pub fn from_manifest(manifest: &Manifest, source: RetrievableFile) -> Self {
-        Self {
-            id: manifest.package.id.clone(),
+    pub fn from_manifest(
+        manifest: &Manifest,
+        source: RetrievableFile,
+        id_override: Option<Identifier>,
+    ) -> Option<Self> {
+        Some(Self {
+            id: manifest
+                .package
+                .id
+                .clone()
+                .map(Identifier::from)
+                .or(id_override)?,
             version: manifest.package.version.clone(),
             source,
-        }
+        })
     }
 }
 impl Display for PackageLocator {
@@ -148,7 +157,7 @@ impl RetrievableFile {
     pub fn as_remote_url(&self) -> Option<Url> {
         match self.as_local_or_remote()? {
             LocalOrRemote::Local(_) => None,
-            LocalOrRemote::Remote(v) => Some(v.clone()),
+            LocalOrRemote::Remote(v) => Some(v),
         }
     }
 }

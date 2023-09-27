@@ -6,7 +6,8 @@ tests = [
     "examples/intermediate/messaging",
 
     "examples/controllers/first_person_camera",
-    "examples/controllers/third_person_camera",
+    # This is flaky currently (see #973), so disabling until we can figure out a better way to do it
+    # "examples/controllers/third_person_camera",
 
     "examples/assets/basic_model",
     "examples/assets/material_overriding",

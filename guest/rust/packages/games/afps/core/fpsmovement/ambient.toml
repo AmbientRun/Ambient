@@ -1,5 +1,5 @@
 [package]
-id = "afps_fpsmovement"
+id = "ldju5agsejzafvrl4qz6np6gerpokcah"
 name = "AFPS Movmement"
 version = "0.0.1"
 content = { type = "Asset", code = true }

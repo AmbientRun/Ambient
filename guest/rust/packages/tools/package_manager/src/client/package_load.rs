@@ -21,12 +21,14 @@ fn PackageLoadDialog(hooks: &mut Hooks) -> Element {
     });
 
     let close = cb(move || set_visible(false));
-    Window::el(
-        "Package load".to_string(),
+    Window {
+        title: "Package load".to_string(),
         visible,
-        Some(close.clone()),
-        PackageLoadDialogInner::el(close),
-    )
+        close: Some(close.clone()),
+        style: None,
+        child: PackageLoadDialogInner::el(close),
+    }
+    .el()
 }
 
 #[element_component]
@@ -39,7 +41,7 @@ fn PackageLoadDialogInner(hooks: &mut Hooks, close: Cb<dyn Fn() + Sync + Send>) 
             .auto_focus()
             .placeholder(Some("URL/deployment ID"))
             .on_submit(move |url| {
-                messages::PackageLoad { url }.send_server_reliable();
+                messages::PackageLoad { url, enabled: true }.send_server_reliable();
                 set_url(String::new());
                 close();
             })
@@ -66,12 +68,14 @@ fn ErrorMessage(hooks: &mut Hooks) -> Element {
         }
     });
     let close = cb(move || set_reason(None));
-    Window::el(
-        "Package load fail".to_string(),
-        reason.is_some(),
-        Some(close.clone()),
-        ErrorMessageInner::el(reason.unwrap_or_default(), close),
-    )
+    Window {
+        title: "Package load fail".to_string(),
+        visible: reason.is_some(),
+        close: Some(close.clone()),
+        style: None,
+        child: ErrorMessageInner::el(reason.unwrap_or_default(), close),
+    }
+    .el()
 }
 
 #[element_component]

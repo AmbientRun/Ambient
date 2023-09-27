@@ -9,7 +9,7 @@ use anyhow::Context as AnyhowContext;
 use async_recursion::async_recursion;
 
 use ambient_package::{
-    BuildMetadata, ComponentType, Identifier, ItemPath, ItemPathBuf, Manifest, PackageId,
+    BuildMetadata, ComponentType, Identifier, ItemPath, ItemPathBuf, Manifest,
     PascalCaseIdentifier, SnakeCaseIdentifier,
 };
 use ambient_shared_types::primitive_component_definitions;
@@ -61,6 +61,10 @@ pub fn schema() -> &'static Schema {
 
 #[derive(Error, Debug)]
 pub enum PackageAddError {
+    #[error(
+        "The manifest in {include_source} does not have an ID, and no ID override was provided"
+    )]
+    MissingId { include_source: RetrievableFile },
     #[error("Failed to parse manifest from `{manifest_path}`")]
     ManifestParseError {
         manifest_path: RetrievableFile,
@@ -144,7 +148,7 @@ pub struct Semantic {
     pub root_scope_id: ItemId<Scope>,
     pub packages: HashMap<PackageLocator, ItemId<Package>>,
     /// Used to determine if there are any existing packages with this ID
-    pub id_to_locator: HashMap<PackageId, PackageLocator>,
+    pub id_to_locator: HashMap<Identifier, PackageLocator>,
     pub ambient_package_id: ItemId<Package>,
     pub standard_definitions: StandardDefinitions,
     ignore_local_dependencies: bool,
@@ -190,7 +194,23 @@ impl Semantic {
             }
         })?;
 
-        let locator = PackageLocator::from_manifest(&manifest, retrievable_manifest.clone());
+        // If and only if this is the root Ambient core manifest, override its ID.
+        // Otherwise, leave it alone.
+        let id_override = match &retrievable_manifest {
+            RetrievableFile::Ambient(path) if path == Path::new("ambient.toml") => Some(
+                Identifier::from(SnakeCaseIdentifier::new("ambient_core").unwrap()),
+            ),
+            _ => None,
+        };
+
+        let locator = PackageLocator::from_manifest(
+            &manifest,
+            retrievable_manifest.clone(),
+            id_override.clone(),
+        )
+        .ok_or_else(|| PackageAddError::MissingId {
+            include_source: retrievable_manifest.clone(),
+        })?;
 
         if let Some(id) = self.packages.get(&locator) {
             return Ok(*id);
@@ -221,7 +241,12 @@ impl Semantic {
             .transpose()?;
 
         let scope_id = self
-            .add_scope_from_manifest_with_includes(None, &manifest, retrievable_manifest.clone())
+            .add_scope_from_manifest_with_includes(
+                None,
+                &manifest,
+                retrievable_manifest.clone(),
+                id_override,
+            )
             .await?;
 
         let manifest_dependencies = manifest.dependencies.clone();
@@ -420,10 +445,15 @@ impl Semantic {
         parent_id: Option<ItemId<Scope>>,
         manifest: &Manifest,
         source: RetrievableFile,
+        id_override: Option<Identifier>,
     ) -> Result<ItemId<Scope>, PackageAddError> {
         let includes = manifest.includes.clone();
-        let scope_id =
-            self.add_scope_from_manifest_without_includes(parent_id, manifest, source.clone())?;
+        let scope_id = self.add_scope_from_manifest_without_includes(
+            parent_id,
+            manifest,
+            source.clone(),
+            id_override,
+        )?;
 
         let mut include_names: Vec<_> = includes.keys().collect();
         include_names.sort();
@@ -452,6 +482,7 @@ impl Semantic {
                     Some(scope_id),
                     &include_manifest,
                     include_source,
+                    Some(include_name.clone().into()),
                 )
                 .await?;
 
@@ -469,6 +500,7 @@ impl Semantic {
         parent_id: Option<ItemId<Scope>>,
         manifest: &Manifest,
         source: RetrievableFile,
+        id_override: Option<Identifier>,
     ) -> Result<ItemId<Scope>, PackageAddError> {
         let item_source = match source {
             RetrievableFile::Ambient(_) => ItemSource::Ambient,
@@ -476,7 +508,15 @@ impl Semantic {
         };
         let scope_id = self.items.add(Scope::new(ItemData {
             parent_id,
-            id: manifest.package.id.clone().into(),
+            id: manifest
+                .package
+                .id
+                .clone()
+                .map(Identifier::from)
+                .or(id_override)
+                .ok_or_else(|| PackageAddError::MissingId {
+                    include_source: source.clone(),
+                })?,
             source: item_source,
         }));
 
