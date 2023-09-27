@@ -1,4 +1,9 @@
-use ambient_api::{core::package::components::name, package, prelude::*};
+use ambient_api::{
+    core::package::components::{enabled, name},
+    entity::add_component,
+    package,
+    prelude::*,
+};
 
 use crate::packages::this::messages::{PackageLoad, PackageLoadFailure, PackageLoadSuccess};
 
@@ -22,6 +27,7 @@ pub fn main() {
         run_async(async move {
             match package::load(&url).await {
                 Ok(id) => {
+                    add_component(id, enabled(), msg.enabled);
                     PackageLoadSuccess::new(
                         id,
                         entity::get_component(id, name()).unwrap_or_default(),
