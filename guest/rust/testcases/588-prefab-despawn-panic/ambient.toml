@@ -5,4 +5,4 @@ version = "0.0.1"
 description = "Reproduces https://github.com/AmbientRun/Ambient/issues/588"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/testcases/588-prefab-despawn-panic"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-27"
+ambient_version = "0.3.0-internal-tangent-020"

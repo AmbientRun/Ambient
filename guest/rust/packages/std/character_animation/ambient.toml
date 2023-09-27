@@ -3,7 +3,7 @@ id = "d3y3wbexrclipsykysumem3fthkudwx2"
 name = "Character animation"
 version = "0.0.1"
 content = { type = "Asset", animations = true, code = true }
-ambient_version = "0.3.0-nightly-2023-09-27"
+ambient_version = "0.3.0-internal-tangent-020"
 
 [dependencies]
 game_object = { path = "../../schemas/game_object" , deployment = "5u6YZMdgL39661DtibYw9O" }

@@ -5,4 +5,4 @@ authors = ["Kenney"]
 description = "https://www.kenney.nl/assets/impact-sounds for Ambient. (Uploaded by Ambient, not Kenney.)"
 version = "0.0.1"
 content = { type = "Asset", audio = true }
-ambient_version = "0.3.0-nightly-2023-09-27"
+ambient_version = "0.3.0-internal-tangent-020"

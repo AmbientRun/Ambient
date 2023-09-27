@@ -6,7 +6,7 @@ version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/clientside"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-27"
+ambient_version = "0.3.0-internal-tangent-020"
 
 [components]
 grid_side_length = { name = "Grid Side Length", description = "The length of a grid side, ignoring the centre (i.e. if this is 10, the total axis length is 21)", type = "I32", attributes = [
