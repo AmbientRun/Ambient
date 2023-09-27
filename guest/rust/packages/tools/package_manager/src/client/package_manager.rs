@@ -9,9 +9,15 @@ use crate::{
     shared::PackageJson,
 };
 use ambient_api::{
-    core::package::{
-        components::{description, for_playables, id, is_package},
-        concepts::Package as PackageConcept,
+    core::{
+        package::{
+            components::{description, for_playables, id, is_package},
+            concepts::Package as PackageConcept,
+        },
+        ui::{
+            components::{focus, focusable},
+            messages::FocusChanged,
+        },
     },
     element::{
         use_effect, use_entity_component, use_module_message, use_query, use_spawn, use_state,
@@ -64,6 +70,15 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
         .with_margin_even(8.),
     }
     .el()
+    .with(focusable(), hooks.instance_id().to_string())
+    .on_spawned(|_, _id, instance_id| {
+        entity::set_component(entity::resources(), focus(), instance_id.to_string());
+        FocusChanged {
+            from_external: false,
+            focus: instance_id.to_string(),
+        }
+        .send_local_broadcast(true);
+    })
 }
 
 #[element_component]

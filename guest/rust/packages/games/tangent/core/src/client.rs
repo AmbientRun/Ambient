@@ -7,6 +7,7 @@ use ambient_api::{
         rect::components::{background_color, line_from, line_to, line_width},
         transform::components::{local_to_world, rotation, translation},
     },
+    element::{use_frame, use_state},
     prelude::*,
     ui::use_window_logical_resolution,
 };
@@ -120,7 +121,17 @@ fn handle_input() {
 #[element_component]
 fn CoreUI(hooks: &mut Hooks) -> Element {
     let size = use_window_logical_resolution(hooks);
-    Crosshair::el(size.as_vec2() / 2.0)
+    let (visible, set_visible) = use_state(hooks, false);
+
+    use_frame(hooks, move |_| {
+        set_visible(input::is_game_focused());
+    });
+
+    if visible {
+        Crosshair::el(size.as_vec2() / 2.0)
+    } else {
+        Element::new()
+    }
 }
 
 #[element_component]

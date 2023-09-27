@@ -220,7 +220,7 @@ impl Element {
         self.config.despawner = Arc::new(handler);
         self
     }
-    /// Set the callback to call when the element is spawned.
+    /// Set the callback to call when the element is spawned. The third argument is the instance ID.
     pub fn on_spawned<F: Fn(&mut World, EntityId, &str) + Sync + Send + 'static>(
         mut self,
         handler: F,
@@ -228,7 +228,7 @@ impl Element {
         self.config.on_spawned = Some(Arc::new(handler));
         self
     }
-    /// Set the callback to call when the element is despawned.
+    /// Set the callback to call when the element is despawned. The third argument is the instance ID.
     pub fn on_despawn<F: Fn(&mut World, EntityId, &str) + Sync + Send + 'static>(
         mut self,
         handler: F,
