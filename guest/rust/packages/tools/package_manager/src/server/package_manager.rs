@@ -18,26 +18,44 @@ struct PackageListApiJson {
     content: Vec<String>,
 }
 
-pub fn main() {
+pub fn main(send_dummy_data: bool) {
     PackageSetEnabled::subscribe(|_, msg| {
         entity::set_component(msg.id, enabled(), msg.enabled);
     });
 
-    PackageRemoteRequest::subscribe(|ctx, _| {
+    PackageRemoteRequest::subscribe(move |ctx, _| {
         let Some(user_id) = ctx.client_user_id() else {
             return;
         };
 
-        run_async(async move {
-            match process_request().await {
-                Ok(msg) => msg,
-                Err(err) => PackageRemoteResponse {
-                    packages: vec![],
-                    error: Some(err.to_string()),
-                },
+        if send_dummy_data {
+            PackageRemoteResponse {
+                packages: (0..4)
+                    .map(|p| PackageJson {
+                        url: format!("http://not.a.valid.url/{p}"),
+                        name: format!("Unloaded Package {p}"),
+                        id: format!("unloadedpackage{p}"),
+                        version: "0.0.1".to_string(),
+                        authors: vec!["Ambient".to_string()],
+                        description: Some(format!("Description for UP{p}")),
+                    })
+                    .map(|p| serde_json::to_string(&p).unwrap())
+                    .collect(),
+                error: None,
             }
             .send_client_targeted_reliable(user_id)
-        });
+        } else {
+            run_async(async move {
+                match process_request().await {
+                    Ok(msg) => msg,
+                    Err(err) => PackageRemoteResponse {
+                        packages: vec![],
+                        error: Some(err.to_string()),
+                    },
+                }
+                .send_client_targeted_reliable(user_id)
+            });
+        }
     });
 }
 

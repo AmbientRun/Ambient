@@ -142,7 +142,7 @@ impl shared::wit::server_http::Host for Bindings {
 
 impl shared::wit::server_ambient_package::Host for Bindings {
     fn load(&mut self, url: String) -> anyhow::Result<()> {
-        ambient_package_semantic_native::add(self.world_mut(), url)?;
+        ambient_package_semantic_native::add(self.world_mut(), url, false)?;
         Ok(())
     }
 }
