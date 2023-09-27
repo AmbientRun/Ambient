@@ -148,6 +148,7 @@ dependencies = [
  "anyhow",
  "axum",
  "clap 4.4.2",
+ "colored",
  "convert_case 0.6.0",
  "env_logger 0.10.0",
  "glam 0.24.1",

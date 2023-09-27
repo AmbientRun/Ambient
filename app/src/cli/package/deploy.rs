@@ -10,6 +10,7 @@ use parking_lot::Mutex;
 use crate::cli::{package::build, PackagePath};
 
 use super::PackageArgs;
+use colored::Colorize;
 
 #[derive(Parser, Clone, Debug)]
 /// Deploys the package
@@ -235,15 +236,13 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                         .id
                         .expect("no package ID - this is a bug")
                         .as_str(),
-                    Some(deployment_id.as_str()),
+                    None,
                 );
 
                 log::info!("Package \"{main_package_name}\" deployed successfully!");
                 log::info!("  Deployment ID: {deployment_id}");
-                log::info!("  Deploy URL: '{deploy_url}'");
-                log::info!("  Web URL: '{web_url}'");
-                log::info!("  Run: ambient run '{deploy_url}'");
                 log::info!("  Join: ambient join '{ensure_running_url}'");
+                log::info!("  Web URL: '{}'", web_url.bright_green());
 
                 if first_deployment_id.is_none() {
                     first_deployment_id = Some(deployment_id);
