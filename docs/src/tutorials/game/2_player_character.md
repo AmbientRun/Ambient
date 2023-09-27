@@ -19,6 +19,8 @@ This will create a basic ground plane for us. Note that you will have also remov
 
 > **Tip**: When you save the file, the components are likely to have red squiggly lines under the components; that's because they aren't imported yet. Click one of them, then hit `Ctrl-.` (or `Cmd-.` on macOS) and choose "Import ...".
 
+> **In-depth**: Visit the [full api reference docs](https://docs.rs/ambient_api/latest/ambient_api/) for details on how `Entity`, `.with` and `.spawn` works.
+
 > **In-depth**: Entities are the basic unit in an ECS. You can think of the ECS as a database, where _entities_ are rows, and _components_ (`quad`, `scale`, `color` and `plane_collider` in this case) are columns.
 >
 > Components are always pure data; they don't have any functionallity on their own. Instead, you typically write queries that read and write from the ECS (_systems_). [Read more about the ECS here](../../reference/ecs.md).
