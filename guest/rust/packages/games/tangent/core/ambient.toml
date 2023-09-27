@@ -20,7 +20,17 @@ kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployme
 [messages.Input]
 name = "Input"
 description = "Input"
-fields = { direction = "Vec2", jump = "Bool", fire = "Bool", use_button = "Bool", sprint = "Bool", respawn = "Bool", aim_direction = "Vec2" }
+[messages.Input.fields]
+direction = "Vec2"
+jump = "Bool"
+fire = "Bool"
+use_button = "Bool"
+sprint = "Bool"
+respawn = "Bool"
+aim_direction = "Vec2"
+# Let's not trust the client in the future
+aim_ray_origin = "Vec3"
+aim_ray_direction = "Vec3"
 
 [messages.UseFailed]
 name = "Use Failed"

@@ -63,7 +63,7 @@ fn make_allrounder() {
                             damage: 20.0,
                             time_between_shots: Duration::from_millis(250),
                             optional: GunLaserOptional {
-                                translation: Some(vec3(i as f32 * 0.05, -0.45, 0.0)),
+                                translation: Some(vec3(i as f32 * 0.15, -1.35, 0.0)),
                                 rotation: Some(default()),
                                 ..default()
                             },
@@ -99,7 +99,7 @@ fn make_speedy() {
                     damage: 20.0,
                     time_between_shots: Duration::from_millis(500),
                     optional: GunLaserOptional {
-                        translation: Some(vec3(0.0, -0.55, 0.1)),
+                        translation: Some(vec3(0.0, -1.65, 0.3)),
                         rotation: Some(default()),
                         ..default()
                     },
@@ -133,7 +133,7 @@ fn make_tank() {
                     damage: 60.0,
                     time_between_shots: Duration::from_millis(1250),
                     optional: GunLaserOptional {
-                        translation: Some(vec3(0.0, -0.45, 0.05)),
+                        translation: Some(vec3(0.0, -1.35, 0.15)),
                         rotation: Some(default()),
                         ..default()
                     },

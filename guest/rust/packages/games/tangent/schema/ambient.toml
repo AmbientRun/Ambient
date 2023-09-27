@@ -44,6 +44,12 @@ game_object = { path = "../../../schemas/game_object", deployment = "pNjDPAc7LUs
 "player::input_aim_direction" = { type = "Vec2", name = "Aim Direction", description = "Aim direction in degrees from the centre", attributes = [
     "Debuggable",
 ] }
+"player::input_aim_ray_origin" = { type = "Vec3", name = "Aim Ray Origin", description = "Origin of the aim ray", attributes = [
+    "Debuggable",
+] }
+"player::input_aim_ray_direction" = { type = "Vec3", name = "Aim Ray Direction", description = "Direction of the aim ray", attributes = [
+    "Debuggable",
+] }
 
 # Player class
 "player::class::is_class" = { type = "Empty", name = "Is Class", description = "Is a player class", attributes = [
@@ -234,16 +240,10 @@ game_object = { path = "../../../schemas/game_object", deployment = "pNjDPAc7LUs
 "vehicle::input_fire" = { type = "Bool", name = "Fire", description = "Fire", attributes = [
     "Debuggable",
 ] }
-"vehicle::input_aim_direction" = { type = "Vec2", name = "Aim Direction", description = "Aim direction in degrees from the centre", attributes = [
-    "Debuggable",
-] }
-"vehicle::aim_distance" = { type = "F32", name = "Aim Distance", description = "Distance of the aim target from the vehicle", attributes = [
-    "Networked",
-    "Debuggable",
-] }
-
 # Vehicle (server-only)
-"vehicle::aim_position" = { type = "Vec3", name = "Aim Position", description = "Position of the aim target" }
+"vehicle::aim_position" = { type = "Vec3", name = "Aim Position", description = "Position of the aim target", attributes = [
+    "Debuggable",
+] }
 
 # Vehicle (client-only)
 "vehicle::client::speed_kph" = { type = "F32", name = "Speed (KPH)", description = "Speed of the vehicle in kilometers per hour." }
@@ -364,7 +364,6 @@ description = "A vehicle with a physical representation"
 "vehicle::input_direction" = {}
 "vehicle::input_jump" = {}
 "vehicle::input_fire" = {}
-"vehicle::input_aim_direction" = {}
 [concepts.Vehicle.components.optional]
 "vehicle::driver_ref" = {}
 "vehicle::last_upside_down_time" = {}

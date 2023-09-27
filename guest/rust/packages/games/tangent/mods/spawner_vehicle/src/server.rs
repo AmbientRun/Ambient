@@ -56,7 +56,6 @@ pub fn main() {
             input_direction: default(),
             input_jump: default(),
             input_fire: default(),
-            input_aim_direction: default(),
 
             optional: VehicleOptional {
                 driver_ref: msg.driver_id,

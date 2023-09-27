@@ -7,19 +7,14 @@ use ambient_api::{
         rect::components::{background_color, line_from, line_to, line_width},
         transform::components::{local_to_world, rotation, translation},
     },
-    element::use_entity_component,
     prelude::*,
+    ui::use_window_logical_resolution,
 };
 use packages::{
     game_object::player::components as gopc,
-    tangent_schema::{
-        player::components as pc,
-        vehicle::{client::components as vcc, components as vc},
-    },
+    tangent_schema::vehicle::{client::components as vcc, components as vc},
     this::messages::{Input, UseFailed},
 };
-
-mod shared;
 
 #[main]
 pub fn main() {
@@ -80,6 +75,12 @@ fn handle_input() {
             return;
         }
 
+        let Some(camera_id) = camera::get_active(None) else {
+            return;
+        };
+
+        let camera_ray = camera::clip_position_to_world_ray(camera_id, Vec2::ZERO);
+
         let input = input::get();
         let delta = input.delta(&last_input);
         let direction = {
@@ -107,6 +108,8 @@ fn handle_input() {
             fire: input.mouse_buttons.contains(&MouseButton::Left),
             aim_direction: *aim_direction.lock().unwrap(),
             respawn: delta.keys.contains(&KeyCode::K),
+            aim_ray_origin: camera_ray.origin,
+            aim_ray_direction: camera_ray.dir,
         }
         .send_server_unreliable();
 
@@ -115,33 +118,13 @@ fn handle_input() {
 }
 
 #[element_component]
-fn CoreUI(_hooks: &mut Hooks) -> Element {
-    let vehicle_id = use_entity_component(_hooks, player::get_local(), pc::vehicle_ref());
-
-    if let Some(vehicle_id) = vehicle_id {
-        Crosshair::el(vehicle_id)
-    } else {
-        Element::new()
-    }
+fn CoreUI(hooks: &mut Hooks) -> Element {
+    let size = use_window_logical_resolution(hooks);
+    Crosshair::el(size.as_vec2() / 2.0)
 }
 
 #[element_component]
-fn Crosshair(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
-    let input_aim_direction =
-        use_entity_component(hooks, player::get_local(), pc::input_aim_direction())
-            .unwrap_or_default();
-
-    let remote_aim_distance =
-        use_entity_component(hooks, vehicle_id, vc::aim_distance()).unwrap_or(1_000.0);
-
-    let Some(active_camera_id) = camera::get_active(None) else {
-        return Element::new();
-    };
-
-    let aim_position =
-        shared::calculate_aim_position(vehicle_id, input_aim_direction, remote_aim_distance);
-    let pos_2d = camera::world_to_screen(active_camera_id, aim_position);
-
+fn Crosshair(_hooks: &mut Hooks, aim_position_2d: Vec2) -> Element {
     Group::el([
         Line.el()
             .with(line_from(), vec3(-10.0, -10.0, 0.))
@@ -154,6 +137,6 @@ fn Crosshair(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
             .with(line_width(), 1.)
             .with(background_color(), vec4(1., 1., 1., 1.)),
     ])
-    .with(translation(), pos_2d.extend(0.1))
+    .with(translation(), aim_position_2d.extend(0.1))
     .with(local_to_world(), default())
 }

@@ -137,7 +137,7 @@ fn process_vehicle(vehicle_id: EntityId) {
             let (_, _, weapon_position) = weapon_ltw.to_scale_rotation_translation();
 
             let inv_local_to_world =
-                Mat4::from_rotation_translation(-v.rotation, -weapon_position).transpose();
+                Mat4::from_rotation_translation(v.rotation, weapon_position).inverse();
 
             let aim_position_relative_to_gun = inv_local_to_world.transform_point3(aim_position);
             let rot = Quat::from_rotation_arc(-Vec3::Y, aim_position_relative_to_gun.normalize());

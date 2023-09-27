@@ -17,13 +17,11 @@ use packages::{
         character::components as cc,
         concepts::{Character, CharacterDef, PlayerClass, Spawnpoint},
         player::components as pc,
-        vehicle::{components as vc, def as vd},
+        vehicle::components as vc,
     },
     this::messages::{Input, UseFailed},
     unit_schema::components as uc,
 };
-
-mod shared;
 
 #[main]
 pub fn main() {
@@ -147,7 +145,9 @@ pub fn main() {
                 .with(pc::input_use(), input.use_button)
                 .with(pc::input_sprint(), input.sprint)
                 .with(pc::input_respawn(), input.respawn)
-                .with(pc::input_aim_direction(), input.aim_direction),
+                .with(pc::input_aim_direction(), input.aim_direction)
+                .with(pc::input_aim_ray_origin(), input.aim_ray_origin)
+                .with(pc::input_aim_ray_direction(), input.aim_ray_direction),
         );
     });
 
@@ -156,19 +156,21 @@ pub fn main() {
         pc::input_direction(),
         pc::input_jump(),
         pc::input_fire(),
-        pc::input_aim_direction(),
         pc::input_respawn(),
+        pc::input_aim_ray_origin(),
+        pc::input_aim_ray_direction(),
         pc::vehicle_ref(),
     ))
     .each_frame(|players| {
         for (
-            _,
+            player_id,
             (
                 input_direction,
                 input_jump,
                 input_fire,
-                input_aim_direction,
                 input_respawn,
+                aim_ray_origin,
+                aim_ray_direction,
                 vehicle_id,
             ),
         ) in players
@@ -183,37 +185,24 @@ pub fn main() {
                 return;
             }
 
-            let aim_direction_limits =
-                entity::get_component(vehicle_id, vd::input::components::aim_direction_limits())
-                    .unwrap_or(Vec2::ONE * 20.0);
-            let input_aim_direction =
-                input_aim_direction.clamp(-aim_direction_limits, aim_direction_limits);
-
-            // This calculation is a bit circuitous, but it's simpler than breaking out the intermediate
-            // calculations
-            let p0 = shared::calculate_aim_position(vehicle_id, input_aim_direction, 0.0);
-            let p1 = shared::calculate_aim_position(vehicle_id, input_aim_direction, 1.0);
-
-            let hit = physics::raycast(p0, p1 - p0)
-                .into_iter()
-                .find(|h| h.entity != vehicle_id);
-
-            const RANGE: f32 = 1_000.0;
-            // TODO: figure out why not using a fixed long distance breaks the gun-aim calculation
-            let aim_position =
-                shared::calculate_aim_position(vehicle_id, input_aim_direction, RANGE);
-            let aim_distance = hit.map(|h| h.distance).unwrap_or(RANGE);
-
             entity::add_components(
                 vehicle_id,
                 Entity::new()
                     .with(vc::input_direction(), input_direction)
                     .with(vc::input_jump(), input_jump)
-                    .with(vc::input_fire(), input_fire)
-                    .with(vc::input_aim_direction(), input_aim_direction)
-                    .with(vc::aim_position(), aim_position)
-                    .with(vc::aim_distance(), aim_distance),
+                    .with(vc::input_fire(), input_fire),
             );
+
+            let hit = physics::raycast(aim_ray_origin, aim_ray_direction)
+                .into_iter()
+                .find(|hit| {
+                    !(entity::get_component(hit.entity, cc::player_ref()) == Some(player_id)
+                        || entity::get_component(hit.entity, vc::driver_ref()) == Some(player_id))
+                });
+
+            if let Some(hit) = hit {
+                entity::add_component(vehicle_id, vc::aim_position(), hit.position);
+            }
         }
     });
 
@@ -278,16 +267,26 @@ pub fn main() {
     });
 
     // Handle use key
-    query((pc::character_ref(), pc::input_use())).each_frame(|players| {
+    query((
+        pc::character_ref(),
+        pc::input_aim_ray_origin(),
+        pc::input_aim_ray_direction(),
+        pc::input_use(),
+    ))
+    .each_frame(|players| {
         const MAX_USE_DISTANCE: f32 = 3.0;
+        const MAX_USE_DISTANCE_SQR: f32 = MAX_USE_DISTANCE * MAX_USE_DISTANCE;
 
-        for (player_id, (character_ref, input_use)) in players {
+        for (player_id, (character_ref, ray_origin, ray_direction, input_use)) in players {
             if !input_use {
                 continue;
             }
 
             let last_use_time =
                 entity::get_component(character_ref, cc::last_use_time()).unwrap_or_default();
+
+            let character_translation = entity::get_component(character_ref, translation())
+                .unwrap_or(ray_origin + 2.0 * ray_direction);
 
             if (game_time() - last_use_time) < Duration::from_secs_f32(0.5) {
                 continue;
@@ -299,20 +298,13 @@ pub fn main() {
                     entity::remove_component(vehicle_id, vc::driver_ref());
                 }
                 _ => {
-                    let Some(head_ref) = entity::get_component(character_ref, uc::head_ref())
-                    else {
-                        continue;
-                    };
-
-                    let Some(local_to_world) = entity::get_component(head_ref, local_to_world())
-                    else {
-                        continue;
-                    };
-
-                    let (_, rotation, translation) = local_to_world.to_scale_rotation_translation();
-                    let hit = physics::raycast(translation, rotation * Vec3::Z)
+                    let hit = physics::raycast(ray_origin, ray_direction)
                         .into_iter()
-                        .find(|h| h.entity != character_ref && h.distance < MAX_USE_DISTANCE);
+                        .find(|h| {
+                            h.entity != character_ref
+                                && h.position.distance_squared(character_translation)
+                                    < MAX_USE_DISTANCE_SQR
+                        });
 
                     match hit {
                         Some(hit) if entity::has_component(hit.entity, vc::is_vehicle()) => {
@@ -329,42 +321,6 @@ pub fn main() {
             entity::add_component(character_ref, cc::last_use_time(), game_time());
         }
     });
-
-    // TEMP HACK REMOVE ME
-    // explosion gun for debugging
-    query((pc::character_ref(), pc::input_fire()))
-        .excludes(pc::vehicle_ref())
-        .each_frame(|players| {
-            for (_player_id, (character_ref, input_fire)) in players {
-                if !input_fire {
-                    continue;
-                }
-
-                let Some(head_ref) = entity::get_component(character_ref, uc::head_ref()) else {
-                    continue;
-                };
-
-                let Some(local_to_world) = entity::get_component(head_ref, local_to_world()) else {
-                    continue;
-                };
-
-                let (_, rotation, translation) = local_to_world.to_scale_rotation_translation();
-
-                if let Some(hit) = physics::raycast(translation, rotation * Vec3::Z)
-                    .into_iter()
-                    .find(|h| h.entity != character_ref)
-                {
-                    packages::explosion::concepts::Explosion {
-                        is_explosion: (),
-                        translation: hit.position,
-                        radius: 4.0,
-                        damage: 10.0,
-                        optional: default(),
-                    }
-                    .spawn();
-                }
-            }
-        });
 }
 
 fn respawn_player(player_id: EntityId, class_id: EntityId) {
