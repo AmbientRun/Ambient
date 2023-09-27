@@ -6,20 +6,20 @@ content = { type = "Playable" }
 ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-tangent_core = { path = "core", deployment = "64LOc76QBWGyRjG5bGxfTU" }
+tangent_core = { path = "core", deployment = "5wwU3bGUsXZOoH4xSa3wyz" }
 
-tangent_camera_follow = { path = "mods/camera_follow", enabled = true, deployment = "5domDA5nAbQTvmoHNHBoji" }
-tangent_camera_topdown = { path = "mods/camera_topdown", enabled = false, deployment = "4XBGwOEVQHm0o2XmE6H5nA" }
+tangent_camera_follow = { path = "mods/camera_follow", enabled = true, deployment = "6VRWsVbP3MTUngp3yCtg4W" }
+tangent_camera_topdown = { path = "mods/camera_topdown", enabled = false, deployment = "6f4EQ11EAntNOvexgkydEr" }
 
-tangent_ui_holohud = { path = "mods/ui_holohud", enabled = true, deployment = "461dTLRsS1U00NAyJmCTFb" }
-tangent_ui_class_selection = { path = "mods/ui_class_selection", deployment = "7IjnyoHxYys8q8eMisIWvD" }
+tangent_ui_holohud = { path = "mods/ui_holohud", enabled = true, deployment = "3vhBzJavlERH7uvyMthXZG" }
+tangent_ui_class_selection = { path = "mods/ui_class_selection", deployment = "1ppPInuET1I7OUNCaIK91g" }
 
-tangent_pickup_health = { path = "mods/pickup_health", deployment = "1roz8LFVjLVFsz623D4B2E" }
+tangent_pickup_health = { path = "mods/pickup_health", deployment = "54RAGUaELoP5pmuIMmux2U" }
 
-tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true, deployment = "11JJR3L2g6yQnNX1SA6Ize" }
+tangent_level_cubicide = { path = "mods/level_cubicide", enabled = true, deployment = "7N9iuZYDZ4uM0m2jBjD1Yf" }
 
-tangent_class_assault = { path = "mods/class_assault", enabled = true, deployment = "71rMKXSRGCJqbgVaRvGeXK" }
-tangent_class_scout = { path = "mods/class_scout", enabled = true, deployment = "xlzNlJVBcN8iLk189vMd5" }
-tangent_class_tank = { path = "mods/class_tank", enabled = true, deployment = "weNuAR3XztXfWx3SVT7DN" }
+tangent_class_assault = { path = "mods/class_assault", enabled = true, deployment = "6EhUbm2If8d560bEJvqbJU" }
+tangent_class_scout = { path = "mods/class_scout", enabled = true, deployment = "GnhgH90ZXbQOknqJpyyrI" }
+tangent_class_tank = { path = "mods/class_tank", enabled = true, deployment = "7HrLNgVQVgYdgJTIRefE2z" }
 
-package_manager = { path = "../../tools/package_manager", deployment = "7a7ta4gOPEpDpIAbC6IK2S" }
+package_manager = { path = "../../tools/package_manager", deployment = "scChmqT301aU5xO75pVCb" }

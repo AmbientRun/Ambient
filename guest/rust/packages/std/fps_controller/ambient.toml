@@ -6,8 +6,8 @@ content = { type = "Asset", code = true }
 ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "7OrjknspjVQ3VtTeb53sv9" }
-character_movement = { path = "../character_movement", deployment = "nDTRynEF50GinMG0QDPu1" }
+unit_schema = { path = "../../schemas/unit", deployment = "6uREFp7FrxwZMJKHyq3Elx" }
+character_movement = { path = "../character_movement", deployment = "N8mRTcGfKObyiciqXGJTi" }
 
 [components]
 use_fps_controller = { type = "Empty", attributes = [
