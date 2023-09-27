@@ -1,10 +1,9 @@
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        hierarchy::components::parent,
         rendering::components::color,
-        transform::components::{
-            local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, translation,
+        text::{
+            components::{font_size, font_style},
+            types::FontStyle,
         },
     },
     element::use_entity_component,
@@ -49,26 +48,24 @@ fn VehicleHud(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
         .extend(1.0);
     let speed_color = Vec4::ONE;
 
-    Group::el([
-        Text3D::el(name.to_string(), 3.0)
-            .with(color(), speed_color)
-            .with(translation(), vec3(0.0, 0.3, 0.0))
-            .with(rotation(), Quat::from_rotation_x(90.0f32.to_radians())),
-        Text3D::el(format!("{health:.0}"), 4.5)
+    WindowSized::el([Dock::el([FlowRow::el([
+        Text::el(format!("{health:.0}"))
             .with(color(), health_color)
-            .with(translation(), vec3(0.0, -0.12, 0.0)),
-        Text3D::el(format!("{speed:.1}"), 3.0)
-            .with(color(), speed_color)
-            .with(translation(), vec3(0.0, 0.12, 0.0)),
+            .with(font_size(), 36.0),
+        FlowColumn::el([
+            Text::el(name.to_string())
+                .with(color(), Vec4::ONE)
+                .with(font_size(), 18.0)
+                .with(font_style(), FontStyle::Italic),
+            Text::el(format!("{speed:.1}"))
+                .with(color(), speed_color)
+                .with(font_size(), 18.0),
+        ]),
     ])
-    .with(local_to_world(), default())
-    .with(local_to_parent(), default())
-    .with(mesh_to_local(), default())
-    .with(mesh_to_world(), default())
-    .with(main_scene(), ())
-    .with(translation(), vec3(0.0, 2.25, 0.75))
-    .with(rotation(), Quat::from_rotation_x(-90.0f32.to_radians()))
-    .with(parent(), vehicle_id)
+    .with(space_between_items(), 8.)
+    .with(docking(), Docking::Bottom)
+    .with_margin_even(10.)])
+    .with_padding_even(STREET)])
 }
 
 #[element_component]
@@ -81,18 +78,10 @@ fn CharacterHud(hooks: &mut Hooks, character_id: EntityId) -> Element {
         .lerp(vec3(0.54, 0.72, 0.00), health / max_health)
         .extend(1.0);
 
-    Group::el([Text3D::el(format!("{health:.0}"), 4.0)
+    WindowSized::el([Dock::el([FlowRow::el([Text::el(format!("{health:.0}"))
         .with(color(), health_color)
-        .with(translation(), vec3(0.0, 0.0, 0.0))])
-    .with(local_to_world(), default())
-    .with(local_to_parent(), default())
-    .with(mesh_to_local(), default())
-    .with(mesh_to_world(), default())
-    .with(main_scene(), ())
-    .with(translation(), vec3(-0.25, 0.0, 1.5))
-    .with(
-        rotation(),
-        Quat::from_rotation_z(90f32.to_radians()) * Quat::from_rotation_x(-90.0f32.to_radians()),
-    )
-    .with(parent(), character_id)
+        .with(font_size(), 36.0)])
+    .with(docking(), Docking::Bottom)
+    .with_margin_even(10.)])
+    .with_padding_even(STREET)])
 }

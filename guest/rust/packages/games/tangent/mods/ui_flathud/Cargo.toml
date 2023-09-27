@@ -1,0 +1,19 @@
+[package]
+name = "tangent_ui_flat_hud"
+
+edition = "2021"
+publish = false
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+ambient_api = { path = "../../../../../api" }
+
+[[bin]]
+name = "tangent_ui_flat_hud_client"
+path = "src/client.rs"
+required-features = ["client"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

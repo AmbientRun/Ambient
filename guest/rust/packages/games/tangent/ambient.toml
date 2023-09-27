@@ -11,7 +11,8 @@ core = { path = "core", deployment = "czUZv2AKa7SNwV1QsY0xN" }
 
 camera_follow = { path = "mods/camera_follow", deployment = "2JxkseUmoWsbkeUUhxeyIe" }
 
-ui_holohud = { path = "mods/ui_holohud", deployment = "7XlsdxSQTCqX1TO3WaLBd5" }
+ui_holohud = { path = "mods/ui_holohud", enabled = false }
+ui_flathud = { path = "mods/ui_flathud", enabled = true }
 ui_class_selection = { path = "mods/ui_class_selection", deployment = "3leakFoQjAfXCKAHecSJR4" }
 ui_spawn_menu = { path = "mods/ui_spawn_menu" }
 
