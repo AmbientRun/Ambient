@@ -3,7 +3,7 @@ id = "gzbamly2shtnz3siisf3mdzglsi67vul"
 name = "Tangent Level: Cubicide"
 version = "0.1.0"
 content = { type = "Mod", for_playables = ["tangent"] }
-ambient_version = "0.3.0-nightly-2023-09-26"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
