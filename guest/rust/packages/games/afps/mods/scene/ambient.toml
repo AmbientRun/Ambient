@@ -3,7 +3,7 @@ id = "z6o5phfdxatg7vwc6haah6gxni3vf3y2"
 name = "AFPS Scene"
 version = "0.0.1"
 content = { type = "Asset", models = true, code = true }
-ambient_version = "0.3.0-nightly-2023-09-26"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "4A7TadpebaQENMsoxC9lMg" }
+afps_schema = { path = "../../schema", deployment = "6oJ853GOWW90aLSxTt39kq" }
