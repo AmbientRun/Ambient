@@ -13,7 +13,7 @@ This will automatically download the source, compile and install Ambient from yo
 This is the recommended method of installing Ambient from source if the downloadable binaries are insufficient. The latest published release should be used unless you have a specific reason to use the development version.
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.3.0-nightly-2023-09-27 ambient
+cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.3.0-dev ambient
 ```
 
 ### Installing the latest development version
