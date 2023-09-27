@@ -1,7 +1,4 @@
-use ambient_api::{
-    core::transform::components::{local_to_world, translation},
-    prelude::*,
-};
+use ambient_api::{core::transform::components::local_to_world, prelude::*};
 use packages::this::messages::Fire;
 
 #[main]
