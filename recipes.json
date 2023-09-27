@@ -50,10 +50,7 @@
       "join",
       "localhost:9000",
       "--debugger"
-    ],
-    "env": {
-      "RUST_LOG": "info"
-    }
+    ]
   },
   "debug-join": {
     "cmd": [
@@ -102,16 +99,10 @@
     }
   },
   "serve third-person-camera release": {
-    "cmd": "cargo run --release serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build",
-    "env": {
-      "RUST_LOG": "info,ambient_network=info"
-    }
+    "cmd": "cargo run --release serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build"
   },
   "serve-third-person-camera": {
-    "cmd": "cargo run serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build",
-    "env": {
-      "RUST_LOG": "info,ambient_network=info"
-    }
+    "cmd": "cargo run serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build"
   },
   "samplers": {
     "cmd": [
@@ -263,7 +254,7 @@
     }
   },
   "serve web release": {
-    "cmd": "cargo cf web serve --profile=release",
+    "cmd": "cargo cf web serve --profile=profiling",
     "env": {
       "RUST_LOG": "info"
     }

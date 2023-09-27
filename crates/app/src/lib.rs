@@ -696,7 +696,6 @@ impl App {
                 let frame_start = Instant::now();
                 let external_time = frame_start.duration_since(self.current_time);
 
-                tracing::debug!(?external_time, "time outside frame");
                 tracing::trace!(?event, "event");
 
                 // Handle window control events
@@ -793,7 +792,7 @@ impl App {
 
                 let frame_time = frame_end.duration_since(self.current_time);
 
-                tracing::debug!(?frame_time, "frame time");
+                tracing::debug!(?external_time, ?frame_time, "frame time");
                 self.current_time = frame_end;
 
                 let samples = world.resource_mut(performance_samples());
