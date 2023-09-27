@@ -1,7 +1,7 @@
 [package]
 id = "j32xi2gg5rvgob2cu7uirdbtj5ce4jw7"
 name = "Tangent Class: Assault"
-version = "0.1.0"
+version = "0.2.0"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
 ambient_version = "0.3.0-nightly-2023-09-22"
 authors = ["philpax"]

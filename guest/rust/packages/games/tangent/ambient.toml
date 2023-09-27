@@ -1,7 +1,7 @@
 [package]
 id = "t5qdqwpkoxtelvafs7qpvzhaoperwfpt"
 name = "Tangent"
-version = "0.1.0"
+version = "0.2.0"
 content = { type = "Playable" }
 ambient_version = "0.3.0-nightly-2023-09-22"
 authors = ["philpax"]
