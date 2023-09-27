@@ -38,6 +38,7 @@ pub static GLOBAL_TIMER: Lazy<TimersHandle> = Lazy::new(Timers::start);
 // }
 
 pub fn sleep_label(duration: Duration, label: &'static str) -> Sleep {
+    tracing::info!(?duration, "sleep");
     Sleep::new(&GLOBAL_TIMER, Instant::now() + duration, label)
 }
 
@@ -45,6 +46,7 @@ struct TimerEntry {
     waker: AtomicWaker,
     finished: AtomicBool,
     _pinned: PhantomPinned,
+    label: &'static str,
 }
 
 new_key_type! {
@@ -87,7 +89,13 @@ impl Inner {
 
     fn remove(&self, deadline: Instant, timer: *const TimerEntry) {
         tracing::info!(?deadline, "remove timer");
-        self.heap.lock().remove(&Entry { deadline, timer });
+        let removed = self.heap.lock().remove(&Entry { deadline, timer });
+        let label = unsafe { &*timer }.label;
+        if removed {
+            tracing::info!(label, "removed timer");
+        } else {
+            tracing::info!(label, "timer not present to remove");
+        }
     }
 }
 
@@ -156,6 +164,8 @@ impl Timers {
             // Sleep removes the timer when dropped
             // Drop is guaranteed due to Sleep being pinned when registered
             let timer = unsafe { &*(entry.timer) };
+
+            tracing::info!(label = timer.label, "timer fired");
 
             // Wake the future waiting on the timer
             timer.finished.store(true, Ordering::SeqCst);
@@ -288,6 +298,7 @@ impl Sleep {
                 waker: AtomicWaker::new(),
                 finished: AtomicBool::new(false),
                 _pinned: PhantomPinned,
+                label,
             }),
             deadline,
             registered: false,
@@ -357,6 +368,8 @@ impl Future for Sleep {
 #[pinned_drop]
 impl PinnedDrop for Sleep {
     fn drop(self: Pin<&mut Self>) {
+        tracing::debug!(self.label, self.registered, "dropping sleep");
+
         if self.registered {
             self.unregister();
         }
