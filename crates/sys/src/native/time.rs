@@ -109,6 +109,10 @@ pub fn sleep(duration: Duration) -> tokio::time::Sleep {
     tokio::time::sleep(duration)
 }
 
+pub fn sleep_label(duration: Duration, _: &'static str) -> tokio::time::Sleep {
+    tokio::time::sleep(duration)
+}
+
 pub struct Interval {
     inner: tokio::time::Interval,
 }

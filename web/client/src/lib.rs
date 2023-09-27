@@ -1,4 +1,4 @@
-use std::sync::OnceLock;
+use std::{sync::OnceLock, time::Duration};
 
 use ambient_app::App;
 use ambient_cameras::UICamera;
@@ -6,11 +6,13 @@ use ambient_core::{
     camera::active_camera,
     window::{ExitStatus, WindowCtl},
 };
+use ambient_sys::time::{interval, sleep_label, Interval};
 use ambient_ui_native::{
     element::{ElementComponentExt, Group},
     WindowSized,
 };
 use app::MainApp;
+use futures::StreamExt;
 use tracing_subscriber::{
     filter::{LevelFilter, Targets},
     prelude::*,
@@ -111,9 +113,15 @@ async fn run(
         .set(ctl_tx.clone())
         .map_err(|_| anyhow::Error::msg("App already initialized"))?;
 
-    use ambient_sys::timer::TimerWheel;
-    ambient_sys::task::spawn(TimerWheel::new().start());
+    tracing::info!("Sleeping");
+    sleep_label(Duration::from_secs(5), "test").await;
+    tracing::info!("Good morning");
 
+    wasm_bindgen_futures::spawn_local({
+        interval(Duration::from_secs(1)).for_each(|deadline| async move {
+            tracing::info!(?deadline, "Tick");
+        })
+    });
     use anyhow::Context;
     let mut app = App::builder()
         .ui_renderer(true)

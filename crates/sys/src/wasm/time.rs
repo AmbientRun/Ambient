@@ -1,5 +1,4 @@
 use std::{
-    mem,
     ops::{Add, Sub},
     time::{Duration, SystemTimeError},
 };
@@ -7,11 +6,17 @@ use std::{
 use ordered_float::NotNan;
 
 /// A measurement of a monotonically nondecreasing clock. Opaque and useful only with [Duration].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Instant(
     /// Time in milliseconds
     NotNan<f64>,
 );
+
+impl std::fmt::Debug for Instant {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("Instant").field(&*self.0).finish()
+    }
+}
 
 impl Sub for Instant {
     type Output = Duration;
@@ -97,43 +102,42 @@ impl SystemTime {
     }
 }
 
-pub fn schedule_wakeup<F: 'static + Send + FnOnce()>(dur: Duration, callback: F) {
-    let timer = gloo::timers::callback::Timeout::new(dur.as_millis().try_into().unwrap(), callback);
-    mem::forget(timer);
-}
+// pub fn schedule_wakeup<F: 'static + Send + FnOnce()>(dur: Duration, callback: F) {
+//     /// TODO: remove?
+//     let timer = gloo_timers::callback::Timeout::new(dur.as_millis().try_into().unwrap(), callback);
+//     mem::forget(timer);
+// }
 
-use crate::{
-    timer::{self, get_global_timers, Sleep},
-    MissedTickBehavior,
-};
-pub fn sleep_until(instant: Instant) -> Sleep {
-    Sleep::new_at(&get_global_timers().expect("No timers"), instant)
-}
+// use crate::MissedTickBehavior;
 
-pub fn sleep(dur: Duration) -> Sleep {
-    Sleep::new(&get_global_timers().expect("No timers"), dur)
-}
+// pub fn sleep_until(instant: Instant) -> Sleep {
+//     Sleep::new_at(&get_global_timers().expect("No timers"), instant)
+// }
 
-pub struct Interval {
-    inner: timer::Interval,
-}
+// pub fn sleep(dur: Duration) -> Sleep {
+//     Sleep::new(&get_global_timers().expect("No timers"), dur)
+// }
 
-impl Interval {
-    pub fn new(period: Duration) -> Self {
-        Self::new_at(Instant::now(), period)
-    }
+// pub struct Interval {
+//     inner: timer::Interval,
+// }
 
-    pub fn new_at(start: Instant, period: Duration) -> Self {
-        Self {
-            inner: timer::Interval::new_at(&get_global_timers().expect("No timers"), start, period),
-        }
-    }
+// impl Interval {
+//     pub fn new(period: Duration) -> Self {
+//         Self::new_at(Instant::now(), period)
+//     }
 
-    pub async fn tick(&mut self) -> Instant {
-        self.inner.tick().await
-    }
+//     pub fn new_at(start: Instant, period: Duration) -> Self {
+//         Self {
+//             inner: timer::Interval::new_at(&get_global_timers().expect("No timers"), start, period),
+//         }
+//     }
 
-    pub fn set_missed_tick_behavior(&mut self, behavior: MissedTickBehavior) {
-        self.inner.set_missed_tick_behavior(behavior)
-    }
-}
+//     pub async fn tick(&mut self) -> Instant {
+//         self.inner.tick().await
+//     }
+
+//     pub fn set_missed_tick_behavior(&mut self, behavior: MissedTickBehavior) {
+//         self.inner.set_missed_tick_behavior(behavior)
+//     }
+// }

@@ -136,6 +136,7 @@ impl TimerWheel {
         let mut store = self.timers.inner.lock();
         let store = &mut *store;
 
+        tracing::debug!("Updating timers: {}", store.heap.len());
         let mut dur = None;
         while let Some(v) = store.heap.peek_mut() {
             // The deadline stored in the key may be out of date and only serves as a hint

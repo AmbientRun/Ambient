@@ -2,7 +2,7 @@ pub mod control;
 mod missed_tick;
 pub mod task;
 pub mod time;
-pub mod timer;
+// pub mod timer;
 
 pub use missed_tick::MissedTickBehavior;
 

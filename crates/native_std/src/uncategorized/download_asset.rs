@@ -124,7 +124,11 @@ pub(crate) async fn download<T: 'static + Send, F: Future<Output = anyhow::Resul
                         "Failed to read body of {url_str}, retrying ({i}/{max_retries}): {:?}",
                         err
                     );
-                    ambient_sys::time::sleep(Duration::from_millis(2u64.pow(i))).await;
+                    ambient_sys::time::sleep_label(
+                        Duration::from_millis(2u64.pow(i)),
+                        "download retry",
+                    )
+                    .await;
                 }
             }
         }
