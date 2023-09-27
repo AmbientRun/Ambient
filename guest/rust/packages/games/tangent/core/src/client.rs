@@ -1,27 +1,25 @@
+use std::sync::{Arc, Mutex};
+
 use ambient_api::{
     core::{
+        messages::Frame,
         physics::components::linear_velocity,
         rect::components::{background_color, line_from, line_to, line_width},
         transform::components::{local_to_world, rotation, translation},
     },
-    element::use_entity_component,
-    once_cell::sync::Lazy,
     prelude::*,
+    ui::use_window_logical_resolution,
 };
 use packages::{
-    tangent_schema::{
-        player::components as pc,
-        vehicle::{client::components as vcc, components as vc},
-    },
-    this::messages::{Input, OnCollision},
+    game_object::player::components as gopc,
+    tangent_schema::vehicle::{client::components as vcc, components as vc},
+    this::messages::{Input, UseFailed},
 };
-
-mod shared;
 
 #[main]
 pub fn main() {
     query((rotation(), linear_velocity()))
-        .requires(vc::player_ref())
+        .requires(vc::is_vehicle())
         .each_frame(|vehicles| {
             for (id, (rot, lv)) in vehicles {
                 entity::add_component(id, vcc::speed_kph(), lv.dot(rot * -Vec3::Y) * 3.6);
@@ -29,40 +27,59 @@ pub fn main() {
         });
 
     handle_input();
-    handle_collisions();
 
-    spawn_query(translation())
-        .requires(vc::player_ref())
-        .bind(|vehicles| {
-            for (_vehicle_id, translation) in vehicles {
-                audio::SpatialAudioPlayer::oneshot(
-                    translation,
-                    packages::kenney_impact_sounds::assets::url("ImpactMining_003.ogg"),
-                );
-            }
-        });
+    UseFailed::subscribe(|ctx, _msg| {
+        if !ctx.server() {
+            return;
+        }
+
+        let Some(translation) =
+            entity::get_component(player::get_local(), gopc::control_of_entity())
+                .and_then(|e| entity::get_component(e, translation()))
+        else {
+            return;
+        };
+
+        audio::SpatialAudioPlayer::oneshot(
+            translation,
+            packages::kenney_impact_sounds::assets::url("impactGlass_light_004.ogg"),
+        );
+    });
 
     CoreUI.el().spawn_interactive();
 }
 
 fn handle_input() {
     let mut last_input = input::get();
-    let mut aim_direction = Vec2::ZERO;
+    // The most correct thing to do would be to store this in the ECS.
+    let aim_direction = Arc::new(Mutex::new(Vec2::ZERO));
+
+    Frame::subscribe({
+        let aim_direction = aim_direction.clone();
+        move |_| {
+            let (delta, _) = input::get_delta();
+
+            let mut aim_direction = aim_direction.lock().unwrap();
+            *aim_direction += vec2(
+                delta.mouse_position.x.to_radians(),
+                delta.mouse_position.y.to_radians(),
+            );
+            aim_direction.y = aim_direction
+                .y
+                .clamp(-89f32.to_radians(), 89f32.to_radians());
+        }
+    });
+
     fixed_rate_tick(Duration::from_millis(20), move |_| {
         if !input::is_game_focused() {
             return;
         }
 
-        let Some(local_vehicle) = entity::get_component(player::get_local(), pc::vehicle_ref())
-        else {
+        let Some(camera_id) = camera::get_active(None) else {
             return;
         };
 
-        let aim_direction_limits = entity::get_component(
-            local_vehicle,
-            packages::tangent_schema::vehicle::data::input::components::aim_direction_limits(),
-        )
-        .unwrap_or(Vec2::ONE * 20.0);
+        let camera_ray = camera::clip_position_to_world_ray(camera_id, Vec2::ZERO);
 
         let input = input::get();
         let delta = input.delta(&last_input);
@@ -83,83 +100,31 @@ fn handle_input() {
             direction
         };
 
-        aim_direction = (aim_direction + delta.mouse_position * 0.5)
-            .clamp(-aim_direction_limits, aim_direction_limits);
-
         Input {
             direction,
             jump: input.keys.contains(&KeyCode::Space),
+            sprint: input.keys.contains(&KeyCode::LShift),
+            use_button: input.keys.contains(&KeyCode::E),
             fire: input.mouse_buttons.contains(&MouseButton::Left),
-            aim_direction,
+            aim_direction: *aim_direction.lock().unwrap(),
             respawn: delta.keys.contains(&KeyCode::K),
+            aim_ray_origin: camera_ray.origin,
+            aim_ray_direction: camera_ray.dir,
         }
         .send_server_unreliable();
-
-        // Ensure we have a local copy of the aim direction that always reflects the most
-        // recent state for the crosshair
-        entity::add_component(
-            player::get_local(),
-            pc::input_aim_direction(),
-            aim_direction,
-        );
 
         last_input = input;
     });
 }
 
-fn handle_collisions() {
-    static SOUNDS: Lazy<[Vec<String>; 3]> = Lazy::new(|| {
-        let url = |ty, idx| {
-            packages::kenney_impact_sounds::assets::url(&format!("impactPlate_{ty}_{idx:0>3}.ogg"))
-        };
-
-        ["light", "medium", "heavy"].map(|ty| (0..5).map(|idx| url(ty, idx)).collect())
-    });
-
-    OnCollision::subscribe(|ctx, msg| {
-        if !ctx.server() {
-            return;
-        }
-
-        let impact_type = match msg.speed {
-            speed if speed < 5. => 0,
-            speed if speed < 10. => 1,
-            _ => 2,
-        };
-
-        let sound = SOUNDS[impact_type].choose(&mut thread_rng()).unwrap();
-        audio::SpatialAudioPlayer::oneshot(msg.position, sound);
-    });
+#[element_component]
+fn CoreUI(hooks: &mut Hooks) -> Element {
+    let size = use_window_logical_resolution(hooks);
+    Crosshair::el(size.as_vec2() / 2.0)
 }
 
 #[element_component]
-fn CoreUI(_hooks: &mut Hooks) -> Element {
-    let vehicle_id = use_entity_component(_hooks, player::get_local(), pc::vehicle_ref());
-
-    if let Some(vehicle_id) = vehicle_id {
-        Crosshair::el(vehicle_id)
-    } else {
-        Element::new()
-    }
-}
-
-#[element_component]
-fn Crosshair(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
-    let input_aim_direction =
-        use_entity_component(hooks, player::get_local(), pc::input_aim_direction())
-            .unwrap_or_default();
-
-    let remote_aim_distance =
-        use_entity_component(hooks, vehicle_id, vc::aim_distance()).unwrap_or(1_000.0);
-
-    let Some(active_camera_id) = camera::get_active(None) else {
-        return Element::new();
-    };
-
-    let aim_position =
-        shared::calculate_aim_position(vehicle_id, input_aim_direction, remote_aim_distance);
-    let pos_2d = camera::world_to_screen(active_camera_id, aim_position);
-
+fn Crosshair(_hooks: &mut Hooks, aim_position_2d: Vec2) -> Element {
     Group::el([
         Line.el()
             .with(line_from(), vec3(-10.0, -10.0, 0.))
@@ -172,6 +137,6 @@ fn Crosshair(hooks: &mut Hooks, vehicle_id: EntityId) -> Element {
             .with(line_width(), 1.)
             .with(background_color(), vec4(1., 1., 1., 1.)),
     ])
-    .with(translation(), pos_2d.extend(0.1))
+    .with(translation(), aim_position_2d.extend(0.1))
     .with(local_to_world(), default())
 }

@@ -90,9 +90,9 @@ pub trait ConceptSuggested: Concept {
 /// Provides component tuples for this concept.
 pub trait ConceptComponents: Concept {
     /// A tuple of the required components for this concept.
-    type Required: ComponentsTuple;
+    type Required: ComponentsTuple + Copy + 'static;
     /// A tuple of the optional components for this concept.
-    type Optional: ComponentsTuple;
+    type Optional: ComponentsTuple + Copy + 'static;
 
     /// Returns a tuple of the required components for this concept.
     fn required() -> Self::Required;

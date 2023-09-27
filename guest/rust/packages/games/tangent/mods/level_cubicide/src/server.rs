@@ -3,19 +3,26 @@ use std::{collections::HashMap, f32::consts::TAU};
 use ambient_api::{
     core::{
         app::components::main_scene,
+        messages::Frame,
         physics::components::{cube_collider, dynamic, mass, physics_controlled, plane_collider},
-        primitives::components::{cube, quad},
+        primitives::{
+            components::{cube, quad},
+            concepts::Sphere,
+        },
         rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun},
         transform::components::{rotation, scale, translation},
     },
     ecs::GeneralQuery,
-    once_cell::sync::Lazy,
     prelude::*,
     rand,
 };
+
 use packages::{
     pickup_health::{components::is_health_pickup, concepts::HealthPickup},
-    tangent_schema::concepts::Spawnpoint,
+    spawner_vehicle::messages::VehicleSpawn,
+    tangent_schema::{
+        concepts::Spawnpoint, vehicle::components::is_vehicle, vehicle::def::components::is_def,
+    },
 };
 
 mod shared;
@@ -54,15 +61,20 @@ pub async fn main() {
             translation: pos,
             color: color.extend(1.0),
         }
+        .make()
+        .with_merge(Sphere::suggested())
+        .with(scale(), vec3(radius, radius, 0.1))
         .spawn();
     }
 
     let mut rng = rand::rngs::StdRng::seed_from_u64(42);
-    make_cubes(&mut rng);
-    handle_pickups(&mut rng);
+    let mut grid = Grid::default();
+    make_cubes(&mut rng, &mut grid);
+    handle_pickups();
+    handle_vehicles();
 }
 
-fn make_cubes(rng: &mut dyn rand::RngCore) {
+fn make_cubes(rng: &mut dyn rand::RngCore, grid: &mut Grid) {
     const TARGET_CUBE_COUNT: usize = 500;
     const CUBE_MIN_SIZE: Vec3 = vec3(0.5, 0.5, 2.0);
     const CUBE_MAX_SIZE: Vec3 = vec3(7., 8., 30.);
@@ -78,7 +90,6 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
     ];
 
     // Spawn cubes until we hit the limit
-    let mut grid = Grid::default();
     while grid.size() < TARGET_CUBE_COUNT {
         let position =
             shared::circle_point(rng.gen::<f32>() * TAU, rng.gen::<f32>() * LEVEL_RADIUS);
@@ -138,60 +149,114 @@ fn make_cubes(rng: &mut dyn rand::RngCore) {
     }
 }
 
-fn handle_pickups(rng: &mut dyn rand::RngCore) {
-    make_pickups(rng);
+fn handle_pickups() {
+    handle_respawnables(
+        shared::spawnpoints().len() * 4,
+        query(translation()).requires(is_health_pickup()).build(),
+        Duration::from_secs(5),
+        25.0,
+        |translation| {
+            HealthPickup {
+                is_health_pickup: (),
+                translation: translation.extend(1.0),
+                rotation: Quat::IDENTITY,
+            }
+            .spawn();
 
-    // Make pickups respawn
-    fixed_rate_tick(Duration::from_secs(5), |_| {
-        make_pickups(&mut thread_rng());
-    });
+            Ok(())
+        },
+    )
 }
 
-fn make_pickups(rng: &mut dyn rand::RngCore) {
-    let pickup_count = shared::spawnpoints().len() * 4;
+fn handle_vehicles() {
+    handle_respawnables(
+        shared::spawnpoints().len() * 3,
+        query(translation()).requires(is_vehicle()).build(),
+        Duration::from_secs(30),
+        20.0,
+        move |translation| {
+            let Some(def_id) = entity::get_all(is_def()).choose(&mut thread_rng()).copied() else {
+                return Err(());
+            };
 
-    static QUERY: Lazy<GeneralQuery<Component<Vec3>>> =
-        Lazy::new(|| query(translation()).requires(is_health_pickup()).build());
+            VehicleSpawn {
+                def_id,
+                position: translation.extend(0.0),
+                rotation: None,
+                driver_id: None,
+            }
+            .send_local_broadcast(false);
 
-    // Consider a more efficient scheme for more pickups
-    loop {
-        let existing_pickups = QUERY.evaluate();
-        if existing_pickups.len() >= pickup_count {
-            break;
+            Ok(())
+        },
+    )
+}
+
+fn handle_respawnables(
+    count: usize,
+    locate_query: GeneralQuery<Component<Vec3>>,
+    respawn_time: Duration,
+    distance_from_each_other: f32,
+    // If spawn returns an `Err`, it will try again in one second
+    // instead of in `respawn_time`.
+    spawn: impl Fn(Vec2) -> Result<(), ()> + 'static,
+) {
+    let distance_from_each_other_sqr = distance_from_each_other.powi(2);
+    let mut next_respawn_time = game_time();
+    let mut respawn = move || {
+        if game_time() < next_respawn_time {
+            return;
         }
 
-        let position =
-            shared::circle_point(rng.gen::<f32>() * TAU, rng.gen::<f32>() * LEVEL_RADIUS);
+        let rng = &mut thread_rng();
 
-        let level = shared::level(position.xy());
-        if level > 0.0 {
-            continue;
-        }
-
-        let position = position.extend(1.5);
-
-        if existing_pickups
+        let mut existing: Vec<_> = locate_query
+            .evaluate()
             .into_iter()
-            .map(|(_, pos)| position.distance_squared(pos))
-            .any(|length| length < 25f32.powi(2))
-        {
-            continue;
-        }
+            .map(|p| p.1.xy())
+            .collect();
+        loop {
+            if existing.len() >= count {
+                break;
+            }
 
-        HealthPickup {
-            is_health_pickup: (),
-            translation: position,
-            rotation: Quat::IDENTITY,
+            let position =
+                shared::circle_point(rng.gen::<f32>() * TAU, rng.gen::<f32>() * LEVEL_RADIUS);
+
+            let level = shared::level(position.xy());
+            if level > 0.0 {
+                continue;
+            }
+
+            if existing.iter().any(|other_position| {
+                other_position.xy().distance_squared(position) < distance_from_each_other_sqr
+            }) {
+                continue;
+            }
+
+            match spawn(position) {
+                Ok(_) => {
+                    existing.push(position);
+                }
+                Err(_) => {
+                    next_respawn_time = game_time() + Duration::from_secs(1);
+                    return;
+                }
+            }
+
+            next_respawn_time = game_time() + respawn_time;
         }
-        .spawn();
-    }
+    };
+
+    respawn();
+    Frame::subscribe(move |_| respawn());
 }
 
 fn make_cube(pos: Vec3, size: Vec3, dynamic: bool, color: Vec4, rng: &mut dyn RngCore) -> EntityId {
     const MASS_MULTIPLIER: f32 = 10.;
 
     let volume = size.dot(Vec3::ONE);
-    let pitch_amplitude: f32 = if dynamic { 5. } else { 45. };
+    let pitch_amplitude: f32 = if dynamic { 5. } else { 60. };
     Entity::new()
         .with(cube(), ())
         .with(cast_shadows(), ())

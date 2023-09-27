@@ -1,17 +1,13 @@
 [package]
 id = "fvn74ns4ozf3gn42vmowphmvmpsfklbi"
 name = "Tangent Class: Scout"
-version = "0.1.0"
-content = { type = "Mod", for_playables = ["tangent"] }
-ambient_version = "0.3.0-nightly-2023-09-27"
+version = "0.2.0"
+content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
+ambient_version = "0.3.0-nightly-2023-09-22"
+authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "7YPmYzcR9cLJbWjFpYaeoF" }
-gun_laser = { path = "../gun_laser" , deployment = "2scQwhAMaqaxvpvceVzil6" }
+tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
+gun_laser = { path = "../gun_laser", deployment = "5B4RovhibVaZsxrVcXMjf0" }
 
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit" , deployment = "VTjgVXCKoijpjiyV5aAPf" }
-
-[components]
-is_scout = { type = "Empty", name = "Is Scout", description = "Marks this entity as a scout.", attributes = [
-    "Networked",
-] }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "5McYMEZazOLUekgEOxccrj" }

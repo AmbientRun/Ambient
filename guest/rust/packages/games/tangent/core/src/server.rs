@@ -2,246 +2,362 @@ use std::{f32::consts::PI, sync::OnceLock};
 
 use ambient_api::{
     core::{
-        app::components::main_scene,
-        hierarchy::components::parent,
-        messages::Collision,
-        model::components::model_from_url,
-        physics::components as phyc,
-        player::components::is_player,
-        primitives::concepts::Sphere,
-        rendering::components::cast_shadows,
-        transform::components::{
-            local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale,
-            translation,
-        },
+        app::components::name,
+        player::components::{is_player, user_id},
+        transform::components::{rotation, scale, translation},
     },
     ecs::GeneralQuery,
     prelude::*,
 };
 
 use packages::{
-    explosion::concepts::Explosion,
     game_object::{components as goc, player::components as gopc},
+    nameplates::components::height_offset,
     tangent_schema::{
-        concepts::{Spawnpoint, Vehicle, VehicleClass, VehicleData},
-        messages::OnDeath,
+        character::components as cc,
+        concepts::{Character, CharacterDef, PlayerClass, Spawnpoint},
         player::components as pc,
-        vehicle::{components as vc, data as vd},
+        vehicle::components as vc,
     },
-    this::messages::{Input, OnCollision},
+    this::messages::{Input, UseFailed},
+    unit_schema::components as uc,
 };
-
-use crate::packages::tangent_schema::weapon;
-
-mod shared;
 
 #[main]
 pub fn main() {
-    // When a spawnpoint is created, give it a physical representation.
-    spawn_query(Spawnpoint::as_query()).bind(|spawnpoints| {
-        for (id, spawnpoint) in spawnpoints {
-            entity::add_components(
-                id,
-                Sphere {
-                    sphere: (),
-                    sphere_radius: spawnpoint.radius,
-                    ..Sphere::suggested()
-                }
-                .make()
-                .with(scale(), vec3(1.0, 1.0, 1.0 / (2.0 * spawnpoint.radius))),
-            );
-        }
-    });
-
     // When the player's class changes, respawn them.
-    change_query(pc::vehicle_class())
-        .track_change(pc::vehicle_class())
+    change_query(pc::class_ref())
+        .track_change(pc::class_ref())
         .requires(is_player())
         .bind(move |players| {
-            for (player_id, _class_id) in players {
-                respawn_player(player_id);
+            for (player_id, class_id) in players {
+                respawn_player(player_id, class_id);
             }
         });
 
-    // When a player despawns (leaves), despawn their vehicle.
-    despawn_query(is_player()).bind(|players| {
-        for (player, ()) in players {
-            if let Some(vehicle) = entity::get_component(player, pc::vehicle_ref()) {
-                entity::despawn_recursive(vehicle);
+    // When a player despawns (leaves), despawn their character.
+    despawn_query(pc::character_ref())
+        .requires(is_player())
+        .bind(|players| {
+            for (_, character_ref) in players {
+                entity::despawn_recursive(character_ref);
             }
+        });
+
+    // If the player's character is dead, respawn them.
+    change_query((cc::player_ref(), goc::health()))
+        .track_change(goc::health())
+        .requires(cc::is_character())
+        .bind(|characters| {
+            for (_character_id, (player_id, health)) in characters {
+                if health > 0.0 {
+                    continue;
+                }
+
+                let Some(class_id) = entity::get_component(player_id, pc::class_ref()) else {
+                    continue;
+                };
+
+                respawn_player(player_id, class_id);
+            }
+        });
+
+    // Sync all vehicle-drivers back to their drivers.
+    {
+        change_query(vc::driver_ref())
+            .track_change(vc::driver_ref())
+            .bind(|vehicles| {
+                for (vehicle_id, driver_id) in vehicles {
+                    entity::add_component(driver_id, pc::vehicle_ref(), vehicle_id);
+                    entity::add_component(driver_id, gopc::control_of_entity(), vehicle_id);
+
+                    let Some(character_id) = entity::get_component(driver_id, pc::character_ref())
+                    else {
+                        continue;
+                    };
+
+                    entity::add_components(
+                        character_id,
+                        Entity::new()
+                            .with(uc::run_direction(), Vec2::ZERO)
+                            .with(uc::running(), false)
+                            .with(uc::shooting(), false)
+                            .with(scale(), Vec3::ONE * 0.01),
+                    );
+                }
+            });
+
+        despawn_query(vc::driver_ref()).bind(|vehicles| {
+            for (_vehicle_id, driver_id) in vehicles {
+                entity::remove_component(driver_id, pc::vehicle_ref());
+
+                let Some(character_id) = entity::get_component(driver_id, pc::character_ref())
+                else {
+                    continue;
+                };
+                entity::add_component(driver_id, gopc::control_of_entity(), character_id);
+                entity::set_component(character_id, scale(), Vec3::ONE);
+            }
+        });
+    }
+
+    // Move characters with their vehicles (parenting of character controllers doesn't work)
+    query((pc::character_ref(), pc::vehicle_ref())).each_frame(|players| {
+        for (_, (character_ref, vehicle_ref)) in players {
+            if !entity::exists(vehicle_ref) {
+                continue;
+            }
+
+            let Some(vehicle_translation) = entity::get_component(vehicle_ref, translation())
+            else {
+                continue;
+            };
+
+            let Some(vehicle_rotation) = entity::get_component(vehicle_ref, rotation()) else {
+                continue;
+            };
+
+            entity::set_component(
+                character_ref,
+                translation(),
+                vehicle_translation + vehicle_rotation * Vec3::Z,
+            );
+            entity::set_component(
+                character_ref,
+                rotation(),
+                Quat::from_rotation_z(-90f32.to_radians()) * vehicle_rotation,
+            );
         }
     });
 
     // When a player sends input, update their input state.
     Input::subscribe(|ctx, input| {
-        let Some(player) = ctx.client_entity_id() else {
+        let Some(player_id) = ctx.client_entity_id() else {
             return;
         };
 
-        let Some(vehicle_id) = entity::get_component(player, pc::vehicle_ref()) else {
-            return;
-        };
-
-        let aim_direction_limits =
-            entity::get_component(vehicle_id, vd::input::components::aim_direction_limits())
-                .unwrap_or(Vec2::ONE * 20.0);
-
-        entity::add_component(player, pc::input_direction(), input.direction);
-        entity::add_component(player, pc::input_jump(), input.jump);
-        entity::add_component(player, pc::input_fire(), input.fire);
-        let aim_direction = input
-            .aim_direction
-            .clamp(-aim_direction_limits, aim_direction_limits);
-        entity::add_component(player, pc::input_aim_direction(), aim_direction);
-
-        // This calculation is a bit circuitous, but it's simpler than breaking out the intermediate
-        // calculations
-        let p0 = shared::calculate_aim_position(vehicle_id, aim_direction, 0.0);
-        let p1 = shared::calculate_aim_position(vehicle_id, aim_direction, 1.0);
-
-        let hit = physics::raycast(p0, p1 - p0)
-            .into_iter()
-            .find(|h| h.entity != vehicle_id);
-
-        const RANGE: f32 = 1_000.0;
-        // TODO: figure out why not using a fixed long distance breaks the gun-aim calculation
-        let aim_position = shared::calculate_aim_position(vehicle_id, aim_direction, RANGE);
-        let aim_distance = hit.map(|h| h.distance).unwrap_or(RANGE);
-
-        entity::add_component(vehicle_id, vc::aim_position(), aim_position);
-        entity::add_component(vehicle_id, vc::aim_distance(), aim_distance);
-
-        // If the user opted to respawn, immediately destroy their vehicle
-        if input.respawn {
-            entity::set_component(vehicle_id, goc::health(), 0.0);
-        }
+        entity::add_components(
+            player_id,
+            Entity::new()
+                .with(pc::input_direction(), input.direction)
+                .with(pc::input_jump(), input.jump)
+                .with(pc::input_fire(), input.fire)
+                .with(pc::input_use(), input.use_button)
+                .with(pc::input_sprint(), input.sprint)
+                .with(pc::input_respawn(), input.respawn)
+                .with(pc::input_aim_direction(), input.aim_direction)
+                .with(pc::input_aim_ray_origin(), input.aim_ray_origin)
+                .with(pc::input_aim_ray_direction(), input.aim_ray_direction),
+        );
     });
 
-    // When a collision occurs involving a vehicle, damage it.
-    Collision::subscribe(|msg| {
-        let avg_position = msg
-            .ids
-            .iter()
-            .flat_map(|id| entity::get_component(*id, translation()))
-            .reduce(|a, b| (a + b) / 2.0)
-            .unwrap_or_default();
-
-        for id in msg
-            .ids
-            .iter()
-            .copied()
-            .filter(|id| entity::has_component(*id, vc::player_ref()))
+    // Sync player input state to vehicle input state.
+    query((
+        pc::input_direction(),
+        pc::input_jump(),
+        pc::input_fire(),
+        pc::input_respawn(),
+        pc::input_aim_ray_origin(),
+        pc::input_aim_ray_direction(),
+        pc::vehicle_ref(),
+    ))
+    .each_frame(|players| {
+        for (
+            player_id,
+            (
+                input_direction,
+                input_jump,
+                input_fire,
+                input_respawn,
+                aim_ray_origin,
+                aim_ray_direction,
+                vehicle_id,
+            ),
+        ) in players
         {
-            let speed = entity::get_component(id, phyc::linear_velocity())
-                .map(|v| v.length())
-                .unwrap_or_default();
-
-            entity::mutate_component(id, goc::health(), |health| {
-                *health = (*health - speed * 0.75).max(0.0);
-            });
-
-            OnCollision {
-                position: avg_position,
-                speed,
-                vehicle_id: id,
+            if !entity::exists(vehicle_id) {
+                return;
             }
-            .send_client_broadcast_unreliable();
+
+            // If the user opted to respawn, immediately destroy their vehicle
+            if input_respawn {
+                entity::set_component(vehicle_id, goc::health(), 0.0);
+                return;
+            }
+
+            entity::add_components(
+                vehicle_id,
+                Entity::new()
+                    .with(vc::input_direction(), input_direction)
+                    .with(vc::input_jump(), input_jump)
+                    .with(vc::input_fire(), input_fire),
+            );
+
+            let hit = physics::raycast(aim_ray_origin, aim_ray_direction)
+                .into_iter()
+                .find(|hit| {
+                    !(entity::get_component(hit.entity, cc::player_ref()) == Some(player_id)
+                        || entity::get_component(hit.entity, vc::driver_ref()) == Some(player_id))
+                });
+
+            if let Some(hit) = hit {
+                entity::add_component(vehicle_id, vc::aim_position(), hit.position);
+            }
         }
     });
 
-    // Process all vehicles.
-    query(vc::player_ref()).each_frame(move |vehicles| {
-        for (vehicle_id, driver_id) in vehicles {
-            process_vehicle(vehicle_id, driver_id);
+    // Sync player input state to character input state.
+    query((
+        pc::input_direction(),
+        pc::input_jump(),
+        pc::input_fire(),
+        pc::input_sprint(),
+        pc::input_aim_direction(),
+        pc::character_ref(),
+    ))
+    .excludes(pc::vehicle_ref())
+    .each_frame(|players| {
+        for (
+            _,
+            (
+                input_direction,
+                input_jump,
+                input_fire,
+                input_sprint,
+                input_aim_direction,
+                character_id,
+            ),
+        ) in players
+        {
+            if !entity::exists(character_id) {
+                return;
+            }
+
+            entity::add_components(
+                character_id,
+                Entity::new()
+                    .with(
+                        uc::run_direction(),
+                        vec2(input_direction.y, input_direction.x),
+                    )
+                    .with(uc::running(), input_sprint)
+                    .with(uc::shooting(), input_fire)
+                    .with(rotation(), Quat::from_rotation_z(input_aim_direction.x)),
+            );
+
+            if let Some(head) = entity::get_component(character_id, uc::head_ref()) {
+                entity::set_component(
+                    head,
+                    rotation(),
+                    Quat::from_rotation_y(input_aim_direction.y)
+                        * Quat::from_rotation_z(PI / 2.)
+                        * Quat::from_rotation_x(PI / 2.),
+                );
+            }
+
+            if input_jump {
+                if entity::get_component(character_id, uc::is_on_ground()).unwrap_or_default() {
+                    entity::add_component(character_id, uc::vertical_velocity(), 0.1);
+                    entity::add_component(character_id, uc::jumping(), true);
+                } else {
+                    entity::add_component(character_id, uc::jumping(), false);
+                }
+            }
+        }
+    });
+
+    // Handle use key
+    query((
+        pc::character_ref(),
+        pc::input_aim_ray_origin(),
+        pc::input_aim_ray_direction(),
+        pc::input_use(),
+    ))
+    .each_frame(|players| {
+        const MAX_USE_DISTANCE: f32 = 3.0;
+        const MAX_USE_DISTANCE_SQR: f32 = MAX_USE_DISTANCE * MAX_USE_DISTANCE;
+
+        for (player_id, (character_ref, ray_origin, ray_direction, input_use)) in players {
+            if !input_use {
+                continue;
+            }
+
+            let last_use_time =
+                entity::get_component(character_ref, cc::last_use_time()).unwrap_or_default();
+
+            let character_translation = entity::get_component(character_ref, translation())
+                .unwrap_or(ray_origin + 2.0 * ray_direction);
+
+            if (game_time() - last_use_time) < Duration::from_secs_f32(0.5) {
+                continue;
+            }
+
+            match entity::get_component(player_id, pc::vehicle_ref()) {
+                Some(vehicle_id) => {
+                    // Remove the driving component `driver_ref` so that `vehicle_ref` is updated
+                    entity::remove_component(vehicle_id, vc::driver_ref());
+                }
+                _ => {
+                    let hit = physics::raycast(ray_origin, ray_direction)
+                        .into_iter()
+                        .find(|h| {
+                            h.entity != character_ref
+                                && h.position.distance_squared(character_translation)
+                                    < MAX_USE_DISTANCE_SQR
+                        });
+
+                    match hit {
+                        Some(hit) if entity::has_component(hit.entity, vc::is_vehicle()) => {
+                            entity::add_component(hit.entity, vc::driver_ref(), player_id);
+                        }
+                        _ => {
+                            UseFailed.send_client_targeted_reliable(
+                                entity::get_component(player_id, user_id()).unwrap(),
+                            );
+                        }
+                    }
+                }
+            }
+            entity::add_component(character_ref, cc::last_use_time(), game_time());
         }
     });
 }
 
-fn respawn_player(player_id: EntityId) {
-    let Some(class_id) = entity::get_component(player_id, pc::vehicle_class()) else {
+fn respawn_player(player_id: EntityId, class_id: EntityId) {
+    if let Some(character_ref) = entity::get_component(player_id, pc::character_ref()) {
+        entity::despawn_recursive(character_ref);
+    }
+
+    let Some(class) = PlayerClass::get_spawned(class_id) else {
         return;
     };
 
-    let Some(class) = VehicleClass::get_spawned(class_id) else {
+    let Some(def) = CharacterDef::get_spawned(class.def_ref) else {
         return;
     };
 
-    let vehicle_data_ref = class.data_ref;
-
-    let offsets = entity::get_component(vehicle_data_ref, vd::thruster::components::offsets())
-        .unwrap_or_default();
-
-    let last_distances = offsets.iter().map(|_| 0.0).collect();
-    let max_health = entity::get_component(vehicle_data_ref, goc::max_health()).unwrap_or(100.0);
-
-    // Create the vehicle before spawning it.
-    let position = choose_spawn_position();
-    let vehicle = Vehicle {
-        linear_velocity: default(),
-        angular_velocity: default(),
-        physics_controlled: (),
-        dynamic: true,
-        density: entity::get_component(vehicle_data_ref, phyc::density()).unwrap_or_default(),
-        cube_collider: entity::get_component(vehicle_data_ref, phyc::cube_collider())
-            .unwrap_or_default(),
-
-        local_to_world: default(),
-        translation: position,
-        rotation: Quat::from_rotation_z(random::<f32>() * PI),
+    let character_id = Character {
+        translation: choose_spawn_position(),
+        rotation: Quat::IDENTITY,
+        health: def.max_health,
+        max_health: def.max_health,
+        is_character: (),
         player_ref: player_id,
-
-        health: max_health,
-        max_health,
-
-        last_distances,
-        last_jump_time: game_time(),
-        last_slowdown_time: game_time(),
-        data_ref: vehicle_data_ref,
+        def_ref: class.def_ref,
         optional: default(),
     }
     .make()
-    .with(packages::nameplates::components::height_offset(), 0.5);
-
-    if let Some(existing_vehicle_id) = entity::get_component(player_id, pc::vehicle_ref()) {
-        if let Some(translation) = entity::get_component(existing_vehicle_id, translation()) {
-            OnDeath {
-                position: translation,
-                player_id,
-            }
-            .send_local_broadcast(true);
-
-            Explosion {
-                is_explosion: (),
-                translation,
-                radius: 4.0,
-                damage: 25.0,
-                optional: default(),
-            }
-            .spawn();
-        }
-        entity::despawn_recursive(existing_vehicle_id);
-    }
-
-    // Spawn it in.
-    let vehicle_id = vehicle.spawn();
-    entity::add_component(player_id, pc::vehicle_ref(), vehicle_id);
-    entity::add_component(player_id, pc::input_direction(), Vec2::ZERO);
-    entity::add_component(player_id, pc::input_jump(), false);
-    entity::add_component(player_id, pc::input_fire(), false);
-    entity::add_component(player_id, pc::input_aim_direction(), Vec2::ZERO);
-    entity::add_component(player_id, gopc::control_of_entity(), vehicle_id);
-
-    let _vehicle_model_id = Entity::new()
-        .with(cast_shadows(), ())
-        .with(model_from_url(), class.model_url)
-        .with(local_to_world(), default())
-        .with(local_to_parent(), default())
-        .with(mesh_to_local(), default())
-        .with(mesh_to_world(), default())
-        .with(main_scene(), ())
-        .with(scale(), Vec3::ONE * class.model_scale)
-        .with(parent(), vehicle_id)
-        .spawn();
+    .with(height_offset(), 2.0)
+    .with(
+        name(),
+        format!(
+            "{}'s Character",
+            entity::get_component(player_id, user_id()).unwrap_or_else(|| player_id.to_string())
+        ),
+    )
+    .spawn();
+    entity::add_component(player_id, pc::character_ref(), character_id);
+    entity::add_component(player_id, gopc::control_of_entity(), character_id);
 }
 
 fn choose_spawn_position() -> Vec3 {
@@ -257,177 +373,5 @@ fn choose_spawn_position() -> Vec3 {
         return Vec3::ZERO;
     };
 
-    sp.translation + (random::<Vec2>() * 2.0 * sp.radius - sp.radius).extend(2.0)
-}
-
-fn process_vehicle(vehicle_id: EntityId, driver_id: EntityId) {
-    use entity::{get_component as get, set_component as set};
-
-    let direction = get(driver_id, pc::input_direction()).unwrap_or_default();
-    let fire = get(driver_id, pc::input_fire()).unwrap_or_default();
-
-    let Some(v) = Vehicle::get_spawned(vehicle_id) else {
-        return;
-    };
-
-    // If the vehicle's health is at zero, respawn it.
-    if v.health <= 0.0 {
-        respawn_player(driver_id);
-        return;
-    }
-
-    // If the vehicle's been upside down for some time, start applying damage to it.
-    if (v.rotation * Vec3::Z).dot(Vec3::Z) < -0.5 {
-        if let Some(last_upside_down_time) = v.optional.last_upside_down_time {
-            if (game_time() - last_upside_down_time).as_secs_f32() > 0.5 {
-                const DAMAGE_PER_SECOND: f32 = 20.0;
-
-                entity::mutate_component(vehicle_id, goc::health(), |health| {
-                    *health = (*health - DAMAGE_PER_SECOND * delta_time()).max(0.0);
-                });
-                return;
-            }
-        } else {
-            entity::add_component(vehicle_id, vc::last_upside_down_time(), game_time());
-        }
-    } else {
-        entity::remove_component(vehicle_id, vc::last_upside_down_time());
-    }
-
-    // Process gun aiming and shooting
-    if let Some((aimable_weapon_refs, aim_position)) =
-        v.optional.aimable_weapon_refs.zip(v.optional.aim_position)
-    {
-        for weapon_id in aimable_weapon_refs {
-            let Some(weapon_ltw) = entity::get_component(weapon_id, local_to_world()) else {
-                continue;
-            };
-
-            let (_, _, weapon_position) = weapon_ltw.to_scale_rotation_translation();
-
-            let inv_local_to_world =
-                Mat4::from_rotation_translation(-v.rotation, -weapon_position).transpose();
-
-            let aim_position_relative_to_gun = inv_local_to_world.transform_point3(aim_position);
-            let rot = Quat::from_rotation_arc(-Vec3::Y, aim_position_relative_to_gun.normalize());
-
-            entity::set_component(weapon_id, rotation(), rot);
-            entity::add_component(weapon_id, weapon::components::fire(), fire);
-        }
-    }
-
-    let Some(vd) = VehicleData::get_spawned(v.data_ref) else {
-        return;
-    };
-
-    // Apply jump
-    let vehicle_last_jump_time = get(vehicle_id, vc::last_jump_time()).unwrap_or_default();
-    if get(driver_id, pc::input_jump()).unwrap_or_default()
-        && (game_time() - vehicle_last_jump_time) > vd.jump_timeout
-    {
-        let linear_velocity = get(vehicle_id, phyc::linear_velocity()).unwrap_or_default();
-        let speed_multiplier = (linear_velocity.dot(v.rotation * -Vec3::Y) * 0.3).max(5.0);
-
-        set(vehicle_id, vc::last_jump_time(), game_time());
-        physics::add_force(
-            vehicle_id,
-            v.rotation * Vec3::Z * vd.jump_force * speed_multiplier,
-        );
-    };
-
-    // Apply per-thruster forces
-    let mut last_distances = v.last_distances;
-    let mut avg_distance = 0.0;
-    for (index, thruster_offset) in vd.offsets.iter().enumerate() {
-        let offset = thruster_offset.extend(0.0);
-
-        let probe_start = v.translation + v.rotation * (offset - Vec3::Z * 0.1);
-        let probe_direction = v.rotation * Vec3::Z * -1.0;
-
-        if probe_direction.z > 0.0 {
-            continue;
-        }
-
-        let thruster_front_of_centre = offset.y < 0.0;
-        let turning_strength_offset = if thruster_front_of_centre {
-            if offset.x * direction.x < 0.0 {
-                vd.turning_strength
-            } else {
-                0.0
-            }
-        } else {
-            0.0
-        };
-
-        let pitch_strength_offset = if thruster_front_of_centre {
-            direction.y * -vd.pitch_strength
-        } else {
-            0.0
-        };
-
-        let strength_offset = turning_strength_offset + pitch_strength_offset;
-
-        if let Some(hit) = physics::raycast(probe_start, probe_direction)
-            .into_iter()
-            .find(|h| h.entity != vehicle_id)
-        {
-            let old_distance = last_distances[index];
-            let new_distance = hit.distance;
-            let delta_distance = new_distance - old_distance;
-
-            let error_distance = vd.target - hit.distance;
-            let p = vd.k_p * error_distance;
-            let d = vd.k_d * delta_distance;
-            let strength = ((p + d + strength_offset) * delta_time()).clamp(-0.1, vd.max_strength);
-
-            let force = -probe_direction * strength;
-            let position = v.translation + v.rotation * offset;
-            physics::add_force_at_position(vehicle_id, force, position);
-
-            avg_distance = (avg_distance + new_distance) / 2.0;
-            last_distances[index] = new_distance;
-        }
-    }
-    set(vehicle_id, vc::last_distances(), last_distances);
-
-    // Apply forward inputs by applying an invisible force at the back of the vehicle
-    let pitch = v.rotation.to_euler(glam::EulerRot::YXZ).1;
-    let pitch_correction = pitch.cos().powi(3).max(0.0);
-    let distance_correction = 1.0 - ((vd.target - avg_distance).abs() / vd.target).clamp(0.0, 1.0);
-    physics::add_force_at_position(
-        vehicle_id,
-        v.rotation
-            * (Vec3::Y * direction.y.abs())
-            * pitch_correction
-            * distance_correction
-            * -if direction.y > 0. {
-                vd.forward_force
-            } else {
-                vd.backward_force
-            },
-        v.translation + v.rotation * vd.forward_offset.extend(0.0),
-    );
-
-    // Apply side inputs by applying an invisible force at the front of the vehicle
-    physics::add_force_at_position(
-        vehicle_id,
-        v.rotation * (Vec3::X * direction.x) * vd.side_force,
-        v.translation + v.rotation * vd.side_offset.extend(0.0),
-    );
-
-    // Apply a constant slowdown force
-    physics::add_force(
-        vehicle_id,
-        -get(vehicle_id, phyc::linear_velocity()).unwrap_or_default() * vd.linear_strength,
-    );
-
-    // Dampen the angular velocity every so often
-    let vehicle_last_slowdown_time = get(vehicle_id, vc::last_slowdown_time()).unwrap_or_default();
-
-    if (game_time() - vehicle_last_slowdown_time) > vd.angular_delay {
-        entity::mutate_component(vehicle_id, phyc::angular_velocity(), |av| {
-            *av -= *av * vd.angular_strength;
-        });
-        set(vehicle_id, vc::last_slowdown_time(), game_time());
-    }
+    sp.translation + ((random::<Vec2>() - 0.5) * 2.0 * sp.radius).extend(0.0)
 }

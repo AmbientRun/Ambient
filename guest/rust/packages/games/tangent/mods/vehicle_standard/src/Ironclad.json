@@ -1,0 +1,38 @@
+{
+  "density": 15.0,
+  "cube_collider": [1.8000001, 3.0, 0.6],
+  "max_health": 150.0,
+  "offsets": [
+    [-0.3, -1.2],
+    [0.3, -1.2],
+    [0.3, 1.2],
+    [-0.3, 1.2]
+  ],
+  "k_p": 8000.0,
+  "k_d": -2000.0,
+  "target": 2.0,
+  "max_strength": 50000.0,
+  "forward_force": 600.0,
+  "backward_force": -200.0,
+  "forward_offset": [0.0, 1.2],
+  "side_force": 80.0,
+  "side_offset": [-0.3, -1.2],
+  "jump_force": 1000.0,
+  "aim_direction_limits": [20.0, 20.0],
+  "pitch_strength": 180.0,
+  "turning_strength": 360.0,
+  "jump_timeout": {
+    "secs": 2,
+    "nanos": 0
+  },
+  "linear_strength": 25.0,
+  "angular_strength": 0.2,
+  "angular_delay": {
+    "secs": 0,
+    "nanos": 250000000
+  },
+  "is_def": null,
+  "name": "Ironclad",
+  "model_url": "ambient-assets:/llhdryqkfsr6gy4f26wbolh4kfwnzn3c/assets/craft_miner.glb/models/main.json",
+  "model_scale": 1.5
+}
