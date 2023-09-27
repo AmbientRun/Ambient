@@ -14,21 +14,25 @@ use ambient_api::{
 };
 use packages::{
     character_animation::components::basic_character_animations,
-    tangent_schema::{character::components::is_character, concepts::Character},
+    tangent_schema::{
+        character::components::is_character,
+        concepts::{Character, CharacterDef},
+    },
     unit_schema::components as uc,
 };
 
 #[main]
 pub fn main() {
     spawn_query(Character::as_query()).bind(move |characters| {
-        for (id, _) in characters {
+        for (id, character) in characters {
+            let Some(def) = CharacterDef::get_spawned(character.def_ref) else {
+                continue;
+            };
+
             entity::add_components(
                 id,
                 Entity::new()
-                    .with(
-                        model_from_url(),
-                        packages::base_assets::assets::url("Y Bot.fbx"),
-                    )
+                    .with(model_from_url(), def.model_url)
                     .with(basic_character_animations(), id)
                     .with_merge(CharacterController {
                         character_controller_height: 2.,

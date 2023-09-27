@@ -11,7 +11,11 @@ pub fn main() {
         description: "Swift and elusive, ideal for hit-and-run tactics and recon missions."
             .to_string(),
         icon_url: packages::this::assets::url("icon.png"),
-        def_ref: CharacterDef { max_health: 70.0 }.spawn(),
+        def_ref: CharacterDef {
+            max_health: 70.0,
+            model_url: packages::this::assets::url("akai_e_espiritu.fbx"),
+        }
+        .spawn(),
     }
     .spawn();
 }

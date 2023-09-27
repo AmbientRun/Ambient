@@ -11,7 +11,7 @@ pub fn main() {
         description: "A juggernaut on the battlefield, built to withstand punishment and deal massive damage."
             .to_string(),
         icon_url: packages::this::assets::url("icon.png"),
-        def_ref: CharacterDef { max_health: 150.0 }.spawn(),
+        def_ref: CharacterDef { max_health: 150.0, model_url: packages::this::assets::url("Mutant.fbx") }.spawn(),
     }
     .spawn();
 }

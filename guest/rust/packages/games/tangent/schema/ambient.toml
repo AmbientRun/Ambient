@@ -97,6 +97,10 @@ game_object = { path = "../../../schemas/game_object", deployment = "pNjDPAc7LUs
 ] }
 
 # Character def
+"character::def::model_url" = { type = "String", name = "Model URL", description = "URL of the model for the character def", attributes = [
+    "Networked",
+    "Debuggable",
+] }
 
 # Vehicle def
 "vehicle::def::thruster::offsets" = { type = { type = "Vec", element_type = "Vec2" }, name = "Thruster Offsets", description = "Offsets of the thrusters from the center of the vehicle", attributes = [
@@ -295,6 +299,7 @@ name = "Character Definition"
 description = "Definition for a character"
 [concepts.CharacterDef.components.required]
 "game_object::max_health" = {}
+"character::def::model_url" = {}
 
 [concepts.VehicleDef]
 name = "Vehicle Definition"
