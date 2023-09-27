@@ -170,7 +170,7 @@ fn handle_pickups() {
 
 fn handle_vehicles() {
     handle_respawnables(
-        shared::spawnpoints().len() * 5,
+        shared::spawnpoints().len() * 3,
         query(translation()).requires(is_vehicle()).build(),
         Duration::from_secs(30),
         20.0,

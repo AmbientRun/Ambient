@@ -14,14 +14,14 @@ camera_follow = { path = "mods/camera_follow", deployment = "2JxkseUmoWsbkeUUhxe
 ui_holohud = { path = "mods/ui_holohud", enabled = false }
 ui_flathud = { path = "mods/ui_flathud", enabled = true }
 ui_class_selection = { path = "mods/ui_class_selection", deployment = "3leakFoQjAfXCKAHecSJR4" }
-ui_spawn_menu = { path = "mods/ui_spawn_menu" }
+ui_spawn_menu = { path = "mods/ui_spawn_menu", enabled = false }
 
 pickup_health = { path = "mods/pickup_health", deployment = "7lysU5KZdkYj2rpckumEbI" }
 
 level_cubicide = { path = "mods/level_cubicide", deployment = "6gKASHqnzjKmGRRhAZZ0ZT" }
 
 class_assault = { path = "mods/class_assault", deployment = "5hAKslk8qxZseAbWNlpOYk" }
-class_scout = { path = "mods/class_scout", deployment = "Nx3qEbJOrSaFBe8FnV2MB" }
+class_scout = { path = "mods/class_scout", deployment = "Nx3qEbJOrSaFBe8FnV2MB", enabled = false }
 class_tank = { path = "mods/class_tank", deployment = "5ckkjUWLrZxN7RN0DuyXUV" }
 
 vehicle_standard = { path = "mods/vehicle_standard" }
