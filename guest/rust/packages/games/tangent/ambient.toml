@@ -31,4 +31,6 @@ behavior_character = { path = "mods/behavior_character" }
 
 gameplay_firerain = { path = "mods/gameplay_firerain", enabled = false }
 
+reskin_classes = { path = "mods/reskin_classes", enabled = false }
+
 package_manager = { path = "../../tools/package_manager", deployment = "7a7ta4gOPEpDpIAbC6IK2S" }
