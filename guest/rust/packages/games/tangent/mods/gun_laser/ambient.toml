@@ -6,11 +6,11 @@ content = { type = "Mod", for_playables = ["tangent"] }
 ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "3eWwbpPTrEt4WQgDi4QfP" }
-kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "2YYcOI53Zx2Rr5q7TwqH26" }
+tangent_schema = { path = "../../schema", deployment = "6uLU1Mayi2XK7QJQ6gDB08" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "5K0BVIeVR7RAeXfGo8ZfKd" }
+kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "fix1Z4o5fwF4ikPYBGSq9" }
 
-explosion = { path = "../../../../std/explosion" , deployment = "4AJQwLstaVFyxviCqYBMTq" }
+explosion = { path = "../../../../std/explosion" , deployment = "2D92ADnhy8grs3gigflx8d" }
 
 [components]
 is_gun_laser = { type = "Empty", name = "Is Gun (Laser)", description = "This entity is a laser gun." }

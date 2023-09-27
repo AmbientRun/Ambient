@@ -6,5 +6,5 @@ content = { type = "Mod", for_playables = ["tangent"] }
 ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
-pickup_health = { path = "../pickup_health" , deployment = "1roz8LFVjLVFsz623D4B2E" }
+tangent_schema = { path = "../../schema", deployment = "6uLU1Mayi2XK7QJQ6gDB08" }
+pickup_health = { path = "../pickup_health" , deployment = "1ULFoohG94zxoOpGjTevIq" }

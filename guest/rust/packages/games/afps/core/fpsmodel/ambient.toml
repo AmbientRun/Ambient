@@ -6,8 +6,8 @@ content = { type = "Asset", models = true, code = true }
 ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "4A7TadpebaQENMsoxC9lMg" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "7OrjknspjVQ3VtTeb53sv9" }
-character_animation = { path = "../../../../std/character_animation", deployment = "2uZBscuADZJ06xsrpMZxIX" }
-base_assets = { path = "../../../../std/base_assets", deployment = "6F4xGOFrNLu84TYilhdvtx" }
-fps_controller = { path = "../../../../std/fps_controller", deployment = "56x4L50jHS5ZzMrJbsb3ms" }
+afps_schema = { path = "../../schema", deployment = "5CiwbQLkIaq13FGcrn7QZJ" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "4L6IB1XpGsoirjWn6iDWgP" }
+character_animation = { path = "../../../../std/character_animation", deployment = "6vNyGp7GlmKlEnp9AFTn0n" }
+base_assets = { path = "../../../../std/base_assets", deployment = "31hOEOMbZQBYGyML2qmWej" }
+fps_controller = { path = "../../../../std/fps_controller", deployment = "3UaO8nb8pjmymZlnk64fJx" }

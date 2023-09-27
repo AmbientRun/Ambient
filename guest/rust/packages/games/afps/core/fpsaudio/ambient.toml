@@ -6,5 +6,5 @@ content = { type = "Asset", audio = true, code = true }
 ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "4A7TadpebaQENMsoxC9lMg" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "7OrjknspjVQ3VtTeb53sv9" }
+afps_schema = { path = "../../schema", deployment = "5CiwbQLkIaq13FGcrn7QZJ" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "4L6IB1XpGsoirjWn6iDWgP" }

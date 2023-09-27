@@ -6,7 +6,7 @@ content = { type = "Asset", code = true }
 ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "4A7TadpebaQENMsoxC9lMg" }
-editor_schema = { path = "../../../../schemas/editor", deployment = "2IWfVw4CxBwCuNnuyyoQiP" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "7OrjknspjVQ3VtTeb53sv9" }
-character_movement = { path = "../../../../std/character_movement", deployment = "nDTRynEF50GinMG0QDPu1" }
+afps_schema = { path = "../../schema", deployment = "5CiwbQLkIaq13FGcrn7QZJ" }
+editor_schema = { path = "../../../../schemas/editor", deployment = "6RuXJXT0ZJEw2fzFr0zmHq" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "4L6IB1XpGsoirjWn6iDWgP" }
+character_movement = { path = "../../../../std/character_movement", deployment = "4KqK0oYEOHYjrFx1RQLuLj" }

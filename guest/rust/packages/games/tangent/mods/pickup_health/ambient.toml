@@ -6,8 +6,8 @@ content = { type = "Mod", for_playables = ["tangent"] }
 ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "2YYcOI53Zx2Rr5q7TwqH26" }
-game_object = { path = "../../../../schemas/game_object" , deployment = "pNjDPAc7LUs8IgPYlwJmS" }
+kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "fix1Z4o5fwF4ikPYBGSq9" }
+game_object = { path = "../../../../schemas/game_object" , deployment = "5ROav5DQ5GipqTrniHH8SJ" }
 
 [components]
 is_health_pickup = { type = "Empty", name = "Is Health Pickup", description = "This entity is a health pickup." }

@@ -24,6 +24,6 @@ zombie_model_ref = { type = "EntityId", attributes = [
 id = "EntityId"
 
 [dependencies]
-character_animation = { path = "../../../../std/character_animation", deployment = "2uZBscuADZJ06xsrpMZxIX" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "7OrjknspjVQ3VtTeb53sv9" }
-game_object = { path = "../../../../schemas/game_object" , deployment = "pNjDPAc7LUs8IgPYlwJmS" }
+character_animation = { path = "../../../../std/character_animation", deployment = "6vNyGp7GlmKlEnp9AFTn0n" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "4L6IB1XpGsoirjWn6iDWgP" }
+game_object = { path = "../../../../schemas/game_object" , deployment = "5ROav5DQ5GipqTrniHH8SJ" }

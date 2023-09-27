@@ -6,11 +6,11 @@ content = { type = "Mod", for_playables = ["tangent"] }
 ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
+tangent_schema = { path = "../../schema", deployment = "6uLU1Mayi2XK7QJQ6gDB08" }
 
-gun_laser = { path = "../gun_laser" , deployment = "V2GIRAucHPFnZAkVBdz9o" }
+gun_laser = { path = "../gun_laser" , deployment = "680xTINqv7MgzU2w1PstuK" }
 
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit" , deployment = "3eWwbpPTrEt4WQgDi4QfP" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit" , deployment = "5K0BVIeVR7RAeXfGo8ZfKd" }
 
 [components]
 is_tank = { type = "Empty", name = "Is Tank", description = "Marks this entity as a tank.", attributes = [
