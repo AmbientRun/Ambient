@@ -4,7 +4,7 @@ use ambient_api::{
     core::{
         app::components::name,
         player::components::{is_player, user_id},
-        transform::components::{local_to_world, rotation, scale, translation},
+        transform::components::{rotation, scale, translation},
     },
     ecs::GeneralQuery,
     prelude::*,

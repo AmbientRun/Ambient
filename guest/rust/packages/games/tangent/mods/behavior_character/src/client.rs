@@ -1,8 +1,11 @@
 use ambient_api::{
     core::{
         app::components::name,
-        camera::concepts::{
-            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
+        camera::{
+            components::fog,
+            concepts::{
+                PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
+            },
         },
         transform::components::local_to_parent,
     },
@@ -30,6 +33,7 @@ pub fn main() {
             .make()
             .with(local_to_parent(), Default::default())
             .with(name(), "Camera".to_string())
+            .with(fog(), ())
             .spawn();
 
             entity::add_child(head, camera);
