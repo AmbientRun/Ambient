@@ -112,7 +112,7 @@ pub fn Toggle(
             .with(
                 translation(),
                 vec3(
-                    if value { left } else { right },
+                    if value { right } else { left },
                     (outer_height - thumb) / 2.,
                     -0.0001,
                 ),
