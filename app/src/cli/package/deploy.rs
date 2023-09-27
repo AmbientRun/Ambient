@@ -241,6 +241,7 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
 
                 log::info!("Package \"{main_package_name}\" deployed successfully!");
                 log::info!("  Deployment ID: {deployment_id}");
+                log::info!("  Join: ambient join '{ensure_running_url}'");
                 log::info!("  Web URL: '{}'", web_url.bright_green());
 
                 if first_deployment_id.is_none() {
