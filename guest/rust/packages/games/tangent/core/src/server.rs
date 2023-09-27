@@ -33,41 +33,7 @@ pub fn main() {
         .requires(is_player())
         .bind(move |players| {
             for (player_id, class_id) in players {
-                if let Some(character_ref) = entity::get_component(player_id, pc::character_ref()) {
-                    entity::despawn_recursive(character_ref);
-                }
-
-                let Some(class) = PlayerClass::get_spawned(class_id) else {
-                    continue;
-                };
-
-                let Some(def) = CharacterDef::get_spawned(class.def_ref) else {
-                    continue;
-                };
-
-                let character_id = Character {
-                    translation: choose_spawn_position(),
-                    rotation: Quat::IDENTITY,
-                    health: def.max_health,
-                    max_health: def.max_health,
-                    is_character: (),
-                    player_ref: player_id,
-                    def_ref: class.def_ref,
-                    optional: default(),
-                }
-                .make()
-                .with(height_offset(), 2.0)
-                .with(
-                    name(),
-                    format!(
-                        "{}'s Character",
-                        entity::get_component(player_id, user_id())
-                            .unwrap_or_else(|| player_id.to_string())
-                    ),
-                )
-                .spawn();
-                entity::add_component(player_id, pc::character_ref(), character_id);
-                entity::add_component(player_id, gopc::control_of_entity(), character_id);
+                respawn_player(player_id, class_id);
             }
         });
 
@@ -77,6 +43,24 @@ pub fn main() {
         .bind(|players| {
             for (_, character_ref) in players {
                 entity::despawn_recursive(character_ref);
+            }
+        });
+
+    // If the player's character is dead, respawn them.
+    change_query((cc::player_ref(), goc::health()))
+        .track_change(goc::health())
+        .requires(cc::is_character())
+        .bind(|characters| {
+            for (_character_id, (player_id, health)) in characters {
+                if health > 0.0 {
+                    continue;
+                }
+
+                let Some(class_id) = entity::get_component(player_id, pc::class_ref()) else {
+                    continue;
+                };
+
+                respawn_player(player_id, class_id);
             }
         });
 
@@ -381,6 +365,43 @@ pub fn main() {
                 }
             }
         });
+}
+
+fn respawn_player(player_id: EntityId, class_id: EntityId) {
+    if let Some(character_ref) = entity::get_component(player_id, pc::character_ref()) {
+        entity::despawn_recursive(character_ref);
+    }
+
+    let Some(class) = PlayerClass::get_spawned(class_id) else {
+        return;
+    };
+
+    let Some(def) = CharacterDef::get_spawned(class.def_ref) else {
+        return;
+    };
+
+    let character_id = Character {
+        translation: choose_spawn_position(),
+        rotation: Quat::IDENTITY,
+        health: def.max_health,
+        max_health: def.max_health,
+        is_character: (),
+        player_ref: player_id,
+        def_ref: class.def_ref,
+        optional: default(),
+    }
+    .make()
+    .with(height_offset(), 2.0)
+    .with(
+        name(),
+        format!(
+            "{}'s Character",
+            entity::get_component(player_id, user_id()).unwrap_or_else(|| player_id.to_string())
+        ),
+    )
+    .spawn();
+    entity::add_component(player_id, pc::character_ref(), character_id);
+    entity::add_component(player_id, gopc::control_of_entity(), character_id);
 }
 
 fn choose_spawn_position() -> Vec3 {

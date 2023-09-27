@@ -31,7 +31,21 @@ pub fn main() {
             .with(local_to_parent(), Default::default())
             .with(name(), "Camera".to_string())
             .spawn();
+
             entity::add_child(head, camera);
+            entity::add_component(
+                head,
+                packages::tangent_schema::character::head::components::camera_ref(),
+                camera,
+            );
         }
     });
+
+    despawn_query(packages::tangent_schema::character::head::components::camera_ref()).bind(
+        |heads| {
+            for (_, camera_id) in heads {
+                entity::despawn(camera_id);
+            }
+        },
+    );
 }

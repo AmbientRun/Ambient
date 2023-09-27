@@ -67,7 +67,6 @@ game_object = { path = "../../../schemas/game_object", deployment = "pNjDPAc7LUs
     "Debuggable",
 ] }
 
-# Player character
 # Character
 "character::is_character" = { type = "Empty", name = "Is Character", description = "Is a player character", attributes = [
     "Networked",
@@ -82,6 +81,11 @@ game_object = { path = "../../../schemas/game_object", deployment = "pNjDPAc7LUs
     "Debuggable",
 ] }
 "character::def_ref" = { type = "EntityId", name = "Character Definition Ref", description = "When attached to a character, indicates that it should draw its properties from this entity.", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+"character::head::camera_ref" = { type = "EntityId", name = "Head Camera", description = "The camera attached to the character's head", attributes = [
     "Networked",
     "Debuggable",
 ] }
