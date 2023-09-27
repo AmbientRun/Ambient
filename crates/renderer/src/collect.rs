@@ -64,8 +64,6 @@ impl DrawCountState {
             return;
         }
 
-        tracing::debug!(?counts, "Updating counts");
-
         self.last_tick = tick;
         self.counts = counts;
     }

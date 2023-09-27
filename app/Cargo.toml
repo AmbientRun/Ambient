@@ -66,6 +66,7 @@ toml_edit = { workspace = true }
 rpassword = { workspace = true }
 sentry = { workspace = true }
 sentry-rust-minidump = { workspace = true }
+colored = { workspace = true }
 
 [dev-dependencies]
 glam = { workspace = true }

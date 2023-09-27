@@ -3,7 +3,7 @@ description = "Contains all core components for the Ambient runtime."
 name = "Core Components"
 version = "0.3.0-dev"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.0-nightly-2023-09-26"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [includes]
 animation = "schema/animation.toml"

@@ -31,16 +31,29 @@ pub struct WindowStyle {
     /// Body style
     pub body: Cb<dyn Fn(Element) -> Element + Send + Sync>,
     /// Title bar style
-    pub title_bar: Cb<dyn Fn(Element) -> Element + Send + Sync>,
-    /// Title text style
-    pub title_text: Cb<dyn Fn(Element) -> Element + Send + Sync>,
+    pub title_bar: Cb<dyn Fn(String, Option<Cb<dyn Fn() + Send + Sync>>) -> Element + Send + Sync>,
 }
 impl Default for WindowStyle {
     fn default() -> Self {
         Self {
             body: cb(|e| e),
-            title_bar: cb(|e| e),
-            title_text: cb(|e| e),
+            title_bar: cb(|title, close| {
+                with_rect(FlowRow::el([
+                    close
+                        .map(|close| {
+                            Button::new(" X ", move |_| close())
+                                .style(ButtonStyle::Card)
+                                .el()
+                        })
+                        .unwrap_or_default(),
+                    Text::el(title)
+                        .with_margin_even(4.0)
+                        .with(font_style(), FontStyle::Bold)
+                        .with(font_size(), 14.),
+                ]))
+                .with_background(vec4(0.0, 0.0, 0.0, 0.5))
+                .with(fit_horizontal(), Fit::Parent)
+            }),
         }
     }
 }
@@ -86,33 +99,15 @@ pub fn Window(
 
     let style = style.unwrap_or_default();
 
-    let title = (style.title_bar)(
-        with_rect(FlowRow::el([
-            close
-                .map(|close| {
-                    Button::new(" X ", move |_| close())
-                        .style(ButtonStyle::Flat)
-                        .el()
-                })
-                .unwrap_or_default(),
-            (style.title_text)(
-                Text::el(title)
-                    .with_margin_even(4.0)
-                    .with(font_style(), FontStyle::Bold)
-                    .with(font_size(), 14.),
-            ),
-        ]))
-        .with_background(vec4(0.0, 0.0, 0.0, 0.5))
-        .with(fit_horizontal(), Fit::Parent),
-    )
-    .with(focusable(), hooks.instance_id().to_string())
-    .with_clickarea()
-    .on_mouse_input(move |_world, _, input, button| {
-        if button == MouseButton::Left {
-            set_dragging(input == MouseInput::Pressed);
-        }
-    })
-    .el();
+    let title = (style.title_bar)(title, close)
+        .with(focusable(), hooks.instance_id().to_string())
+        .with_clickarea()
+        .on_mouse_input(move |_world, _, input, button| {
+            if button == MouseButton::Left {
+                set_dragging(input == MouseInput::Pressed);
+            }
+        })
+        .el();
 
     (style.body)(
         with_rect(FlowColumn::el([title, child])).with_background(vec4(0.0, 0.0, 0.0, 0.5)),

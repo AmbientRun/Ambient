@@ -9,3 +9,6 @@ title = "Ambient Documentation"
 additional-css = ["style.min.css"] # adapt from rhai book
 git-repository-url = "https://github.com/AmbientRun/Ambient"
 curly-quotes = true
+
+[output.html.playground]
+runnable = false
