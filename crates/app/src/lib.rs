@@ -695,7 +695,6 @@ impl App {
             Event::MainEventsCleared => {
                 let frame_start = Instant::now();
                 let external_time = frame_start.duration_since(self.current_time);
-                self.current_time = frame_start;
 
                 tracing::debug!(?external_time, "time outside frame");
                 tracing::trace!(?event, "event");
@@ -792,7 +791,7 @@ impl App {
 
                 let frame_end = Instant::now();
 
-                let frame_time = frame_end.duration_since(frame_start);
+                let frame_time = frame_end.duration_since(self.current_time);
 
                 tracing::debug!(?frame_time, "frame time");
                 self.current_time = frame_end;

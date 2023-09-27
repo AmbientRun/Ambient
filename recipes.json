@@ -44,13 +44,15 @@
     "cmd": [
       "cargo",
       "run",
+      "--features",
+      "profile",
       "--release",
       "join",
       "localhost:9000",
       "--debugger"
     ],
     "env": {
-      "RUST_LOG": "ambient_renderer=debug,ambient_gpu=debug,info"
+      "RUST_LOG": "info"
     }
   },
   "debug-join": {
@@ -97,6 +99,12 @@
     "cmd": "cargo run -- serve ./guest/rust/examples/basics/physics/ --clean-build",
     "env": {
       "RUST_LOG": "ambient_network=debug,info"
+    }
+  },
+  "serve third-person-camera release": {
+    "cmd": "cargo run --release serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build",
+    "env": {
+      "RUST_LOG": "info,ambient_network=info"
     }
   },
   "serve-third-person-camera": {
