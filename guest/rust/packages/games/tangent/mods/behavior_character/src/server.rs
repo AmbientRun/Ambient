@@ -47,6 +47,9 @@ pub fn main() {
                             scale: None,
                         },
                     })
+                    .with(uc::speed(), def.speed)
+                    .with(uc::run_speed_multiplier(), def.run_speed_multiplier)
+                    .with(uc::strafe_speed_multiplier(), def.strafe_speed_multiplier)
                     .with(uc::run_direction(), Vec2::ZERO)
                     .with(uc::vertical_velocity(), 0.)
                     .with(uc::running(), false)

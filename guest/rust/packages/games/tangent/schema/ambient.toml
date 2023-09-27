@@ -7,6 +7,7 @@ authors = ["philpax"]
 
 [dependencies]
 game_object = { path = "../../../schemas/game_object", deployment = "pNjDPAc7LUs8IgPYlwJmS" }
+unit = { path = "../../../schemas/unit" }
 
 [components]
 # Player
@@ -300,6 +301,10 @@ description = "Definition for a character"
 [concepts.CharacterDef.components.required]
 "game_object::max_health" = {}
 "character::def::model_url" = {}
+
+"unit::speed" = {}
+"unit::run_speed_multiplier" = {}
+"unit::strafe_speed_multiplier" = {}
 
 [concepts.VehicleDef]
 name = "Vehicle Definition"

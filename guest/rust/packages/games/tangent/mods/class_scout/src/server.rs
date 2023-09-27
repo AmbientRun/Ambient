@@ -14,6 +14,9 @@ pub fn main() {
         def_ref: CharacterDef {
             max_health: 70.0,
             model_url: packages::this::assets::url("akai_e_espiritu.fbx"),
+            speed: 0.12,
+            run_speed_multiplier: 1.8,
+            strafe_speed_multiplier: 0.9,
         }
         .spawn(),
     }
