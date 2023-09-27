@@ -1,20 +1,10 @@
 #![allow(non_snake_case)]
 use dioxus::prelude::*;
-use wasm_bindgen::JsCast;
+use wasm_bindgen::{JsCast, JsValue};
 
 use web_sys::window;
 
 fn main() {
-    ambient_web::init(
-        serde_wasm_bindgen::to_value(&ambient_web::Settings {
-            enable_logging: true,
-            enable_panic_hook: true,
-            log_filter: None,
-            allow_version_mismatch: Some(true),
-        })
-        .unwrap(),
-    )
-    .unwrap();
     dioxus_web::launch(App);
 }
 
@@ -40,7 +30,7 @@ fn Ambient(cx: Scope) -> Element {
                     .unwrap()
                     .dyn_into::<web_sys::HtmlElement>()
                     .unwrap();
-                ambient_web::start(Some(element), "127.0.0.1:9000".into()).await;
+                ambient_web::start(Some(element), "127.0.0.1:9000".into(), JsValue::NULL).await;
             }
         }
     });
