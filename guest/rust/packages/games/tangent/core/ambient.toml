@@ -3,17 +3,18 @@ id = "itzh3wovmdje4ttrmo6wrravaaxp6b52"
 name = "Tangent Core"
 version = "0.1.0"
 content = { type = "Playable" }
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-tangent_schema = { path = "../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
+tangent_schema = { path = "../schema", deployment = "7YPmYzcR9cLJbWjFpYaeoF" }
 
-hide_cursor = { path = "../../../std/hide_cursor", deployment = "nCIEbcEeBgSVOjy3dS4rF" }
-explosion = { path = "../../../std/explosion", deployment = "4AJQwLstaVFyxviCqYBMTq" }
-nameplates = { path = "../../../std/nameplates", deployment = "1M2x4RcsrSyVlNXEi4UpCo" }
+hide_cursor = { path = "../../../std/hide_cursor", deployment = "5uynORVgMZnztsyftUrkTC" }
+explosion = { path = "../../../std/explosion", deployment = "30AozGemOXXsQ5vHtHUlJW" }
+nameplates = { path = "../../../std/nameplates", deployment = "1VhdFRYSMofQKnVDHVM7lp" }
 
-game_object = { path = "../../../schemas/game_object", deployment = "pNjDPAc7LUs8IgPYlwJmS" }
+game_object = { path = "../../../schemas/game_object", deployment = "5u6YZMdgL39661DtibYw9O" }
 
-kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployment = "s69YYpDgUiMJlWsbN5xnU" }
+kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployment = "2Ei2T1tUGWZCcCWvTZlX7j" }
 
 
 [messages.Input]
