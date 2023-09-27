@@ -14,7 +14,7 @@ use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKey};
 
-use serde::{Deserialize, Serialize};
+use serde::{de, Deserialize, Serialize};
 
 pub mod async_ecs;
 pub mod bounding;
@@ -61,7 +61,16 @@ components!("app", {
     last_frame_time: Instant,
     @[Resource, Debuggable]
     frame_index: usize,
+
+    @[Resource]
+    performance_samples: Vec<PerformanceSample>,
 });
+
+#[derive(Debug, Clone)]
+pub struct PerformanceSample {
+    pub frame_time: Duration,
+    pub external_time: Duration,
+}
 
 pub fn init_all_components() {
     init_components();

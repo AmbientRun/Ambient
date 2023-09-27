@@ -1,7 +1,4 @@
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    OnceLock,
-};
+use std::sync::OnceLock;
 
 use ambient_app::App;
 use ambient_cameras::UICamera;
@@ -27,26 +24,36 @@ mod wasm;
 
 static APP_CONTROL: OnceLock<flume::Sender<WindowCtl>> = OnceLock::new();
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-/// TODO: make private if no longer needed by the dioxus example?
 /// This is inteded to be used by a loosely typed settings object from javascript allow for
 /// backwards and forwards compatibility when new fields are added to the settings object in a
 /// "best fit" approach, similar to the `settings` in the LanguageServerProtocol spec.
 pub struct Settings {
-    pub enable_logging: bool,
-    pub enable_panic_hook: bool,
-    pub allow_version_mismatch: Option<bool>,
-    pub log_filter: Option<String>,
+    enable_logging: bool,
+    enable_panic_hook: bool,
+    allow_version_mismatch: bool,
+    log_filter: Option<String>,
+    debugger: bool,
 }
 
-static ALLOW_VERSION_MISMATCH: AtomicBool = AtomicBool::new(false);
+#[wasm_bindgen]
+/// Starts execution of the ambient client and connects to the specified URL
+///
+/// TODO: The `MainApp` setup will move to an Ambient package and this will only load the runtime
+pub async fn start(target: Option<web_sys::HtmlElement>, server_url: String, settings: JsValue) {
+    let settings: Settings =
+        serde_wasm_bindgen::from_value(settings).expect("settings can be parsed from object");
+
+    init(&settings).expect("Failed to initialize ambient");
+
+    if let Err(err) = run(target, server_url, settings).await {
+        tracing::error!("{err:?}")
+    }
+}
 
 /// Initialize ambient
-#[wasm_bindgen]
-pub fn init(settings: JsValue) -> Result<(), JsValue> {
-    let settings: Settings = serde_wasm_bindgen::from_value(settings)?;
-
+fn init(settings: &Settings) -> Result<(), JsValue> {
     if settings.enable_logging {
         let fmt_layer = tracing_subscriber::fmt::layer()
             .with_ansi(true) // Only partially supported, but works on Chrome
@@ -55,6 +62,7 @@ pub fn init(settings: JsValue) -> Result<(), JsValue> {
 
         let filter = settings
             .log_filter
+            .as_ref()
             .map(|v| {
                 v.parse::<Targets>()
                     .map_err(|_| JsValue::from("Failed to parse filtering directive"))
@@ -68,12 +76,6 @@ pub fn init(settings: JsValue) -> Result<(), JsValue> {
     if settings.enable_panic_hook {
         ambient_sys::set_panic_hook();
     }
-
-    if let Some(allow_version_mismatch) = settings.allow_version_mismatch {
-        ALLOW_VERSION_MISMATCH.store(allow_version_mismatch, Ordering::SeqCst);
-    }
-
-    tracing::info!("Hello, Wasm!");
 
     ambient_ecs::init_components();
     ambient_core::init_all_components();
@@ -90,16 +92,6 @@ pub fn init(settings: JsValue) -> Result<(), JsValue> {
 }
 
 #[wasm_bindgen]
-/// Starts execution of the ambient client and connects to the specified URL
-///
-/// TODO: The `MainApp` setup will move to an Ambient package and this will only load the runtime
-pub async fn start(target: Option<web_sys::HtmlElement>, server_url: String) {
-    if let Err(err) = run(target, server_url).await {
-        tracing::error!("{err:?}")
-    }
-}
-
-#[wasm_bindgen]
 pub fn stop() {
     if let Some(ctl_tx) = APP_CONTROL.get() {
         let _ = ctl_tx.send(WindowCtl::ExitProcess(ExitStatus::SUCCESS));
@@ -108,7 +100,11 @@ pub fn stop() {
     }
 }
 
-async fn run(target: Option<web_sys::HtmlElement>, server_url: String) -> anyhow::Result<()> {
+async fn run(
+    target: Option<web_sys::HtmlElement>,
+    server_url: String,
+    settings: Settings,
+) -> anyhow::Result<()> {
     let (ctl_tx, ctl_rx) = flume::unbounded();
 
     APP_CONTROL
@@ -134,10 +130,7 @@ async fn run(target: Option<web_sys::HtmlElement>, server_url: String) -> anyhow
     Group(vec![
         UICamera.el().with(active_camera(), 0.),
         ambient_client_shared::player::PlayerRawInputHandler.el(),
-        WindowSized::el([MainApp::el(
-            server_url,
-            !ALLOW_VERSION_MISMATCH.load(Ordering::SeqCst),
-        )]),
+        WindowSized::el([MainApp::el(server_url, settings)]),
     ])
     .el()
     .spawn_interactive(world);

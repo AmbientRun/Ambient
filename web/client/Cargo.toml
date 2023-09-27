@@ -60,3 +60,16 @@ web-sys.workspace = true
 futures.workspace = true
 tracing.workspace = true
 js-sys.workspace = true
+
+[profile.profiling]
+debug = true
+
+[profile.dev]
+# Enable small levels of optimazations for the debug mode, this is fine as we can't really attach a debugger in the first place, so inlining and reordering operations are ok.
+opt-level = 1
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ['-O4']
+
+[package.metadata.wasm-pack.profile.profiling]
+wasm-opt = ['-O4', '-g']

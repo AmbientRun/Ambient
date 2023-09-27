@@ -11,10 +11,17 @@ pub(crate) enum Target {
     Standalone,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+pub(crate) enum Profile {
+    Dev,
+    Release,
+    Profiling,
+}
+
 #[derive(Debug, Args, Clone)]
 pub struct BuildOptions {
     #[arg(long, default_value = "dev")]
-    pub profile: String,
+    pub(crate) profile: Profile,
     #[arg(long, default_value = "pkg")]
     pub pkg_name: String,
     #[arg(long, value_enum, default_value = "bundler")]
@@ -30,14 +37,16 @@ impl BuildOptions {
             .current_dir("web")
             .kill_on_drop(true);
 
-        match &self.profile[..] {
-            "dev" | "debug" => {
+        match &self.profile {
+            Profile::Dev => {
                 // default
             }
-            "release" => {
+            Profile::Release => {
                 command.arg("--release");
             }
-            v => anyhow::bail!("Unknown profile: {v:?}"),
+            Profile::Profiling => {
+                command.args(["--profile=profiling"]);
+            }
         };
 
         let res = command.spawn()?.wait().await?;
@@ -59,10 +68,10 @@ impl BuildOptions {
             .current_dir("web")
             .kill_on_drop(true);
 
-        match &self.profile[..] {
-            "dev" | "debug" => command.arg("--dev"),
-            "release" => command.arg("--release"),
-            v => anyhow::bail!("Unknown profile: {v:?}"),
+        match &self.profile {
+            Profile::Dev => command.arg("--dev"),
+            Profile::Release => command.arg("--release"),
+            Profile::Profiling => command.arg("--profiling"),
         };
 
         match self.target {
@@ -80,7 +89,7 @@ impl BuildOptions {
 
         command.arg("--out-dir").arg(output_path.clone());
 
-        eprintln!("Building web client");
+        eprintln!("Building web client {command:?}");
 
         let res = command.spawn()?.wait().await?;
 
