@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_ecs::{generated::network::components::is_remote_entity, ComponentRegistry, Entity};
+use ambient_ecs::{generated::network::components::is_remote_entity, Entity};
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::ContentBaseUrlKey,
@@ -77,15 +77,6 @@ impl ClientProtoState {
 
                 tracing::debug!(content_base_url=?server_info.content_base_url, "Inserting content base url");
                 ContentBaseUrlKey.insert(assets, server_info.content_base_url.clone());
-                match server_info.external_components.into_inner() {
-                    Ok(external_components) => {
-                        tracing::debug!(?external_components, "Adding external components");
-                        ComponentRegistry::get_mut().add_external(external_components);
-                    }
-                    Err(msg) => {
-                        anyhow::bail!("Failed to deserialize external components: {}", msg);
-                    }
-                }
 
                 *self = Self::Connected(ConnectedClient {
                     diff_serializer: Default::default(),

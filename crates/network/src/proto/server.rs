@@ -1,10 +1,11 @@
 use std::sync::Arc;
 
 use ambient_core::player::get_by_user_id;
-use ambient_ecs::{FrozenWorldDiff, WorldDiff, WorldStreamFilter};
+use ambient_ecs::{ComponentRegistry, FrozenWorldDiff, WorldDiff, WorldStreamFilter};
 use ambient_native_std::{fps_counter::FpsSample, log_result};
 use anyhow::Context;
 use bytes::Bytes;
+use flume::Receiver;
 use futures::{Stream, StreamExt};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
 use tracing::{debug_span, Instrument};
@@ -362,41 +363,59 @@ pub async fn handle_diffs<S>(
 ) where
     S: Unpin + AsyncWrite,
 {
+    let (external_components_rx, external_components_trigger) =
+        create_external_components_trigger();
+    external_components_trigger.as_ref()(); // make sure that external components are sent over
+    ComponentRegistry::get_mut()
+        .on_external_components_change
+        .add(external_components_trigger.clone());
+    scopeguard::defer! {
+        ComponentRegistry::get_mut().on_external_components_change.remove(external_components_trigger);
+    }
+
     let mut deduplicator = WorldDiffDeduplicator::default();
     let mut serializer = DiffSerializer::default();
     #[cfg(debug_assertions)]
     let mut deserializer = DiffSerializer::default();
-    while let Ok(diff) = diffs_rx.recv_async().await {
-        let msg = {
-            let _span = tracing::debug_span!("handle_diffs prep").entered();
 
-            // get all diffs waiting in the channel to clear the queue
-            let mut diffs = Vec::with_capacity(diffs_rx.len() + 1);
-            diffs.push(diff);
-            diffs.extend(diffs_rx.drain());
-
-            // merge them together, deduplicate and serialize
-            let merged_diff = FrozenWorldDiff::merge(&diffs);
-            let merged_diffs_count = merged_diff.changes.len();
-            let final_diff = deduplicator.deduplicate(merged_diff);
-            let msg = serializer.serialize(&final_diff).unwrap();
-            tracing::trace!(
-                diffs_count = diffs.len(),
-                merged_diffs_count,
-                final_diffs_count = final_diff.changes.len(),
-                bytes = msg.len(),
-            );
-            #[cfg(debug_assertions)]
-            {
-                let deserialized = deserializer.deserialize(msg.clone());
-                debug_assert!(
-                    deserialized.is_ok(),
-                    "Diff should deserialize as WorldDiff correctly: {:?}",
-                    deserialized,
-                );
+    loop {
+        let msg = tokio::select! {
+            _ = external_components_rx.recv_async() => {
+                serializer.serialize_external_components().unwrap()
             }
-            msg
+            Ok(diff) = diffs_rx.recv_async() => {
+                let _span = tracing::debug_span!("handle_diffs prep").entered();
+
+                // get all diffs waiting in the channel to clear the queue
+                let mut diffs = Vec::with_capacity(diffs_rx.len() + 1);
+                diffs.push(diff);
+                diffs.extend(diffs_rx.drain());
+
+                // merge them together, deduplicate and serialize
+                let merged_diff = FrozenWorldDiff::merge(&diffs);
+                let merged_diffs_count = merged_diff.changes.len();
+                let final_diff = deduplicator.deduplicate(merged_diff);
+                let msg = serializer.serialize(&final_diff).unwrap();
+                tracing::trace!(
+                    diffs_count = diffs.len(),
+                    merged_diffs_count,
+                    final_diffs_count = final_diff.changes.len(),
+                    bytes = msg.len(),
+                );
+
+                msg
+            }
         };
+
+        #[cfg(debug_assertions)]
+        {
+            let deserialized = deserializer.deserialize(msg.clone());
+            debug_assert!(
+                deserialized.is_ok(),
+                "Diff should deserialize as WorldDiff correctly: {:?}",
+                deserialized,
+            );
+        }
 
         let span = tracing::debug_span!("send_world_diff");
         tracing::trace!(diff=?msg);
@@ -405,4 +424,14 @@ pub async fn handle_diffs<S>(
             break;
         }
     }
+}
+
+fn create_external_components_trigger() -> (Receiver<()>, Arc<dyn Fn() + Send + Sync>) {
+    let (tx, rx) = flume::unbounded();
+    (
+        rx,
+        Arc::new(move || {
+            let _ = tx.send(());
+        }),
+    )
 }

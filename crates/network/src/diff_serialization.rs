@@ -2,8 +2,8 @@
 use std::collections::HashMap;
 
 use ambient_ecs::{
-    with_component_registry, ComponentDesc, ComponentEntry, Entity, EntityId, Serializable,
-    WorldChange, WorldDiff, WorldDiffView,
+    with_component_registry, ComponentDesc, ComponentEntry, ComponentRegistry, Entity, EntityId,
+    External, ExternalComponentDesc, Serializable, WorldChange, WorldDiff, WorldDiffView,
 };
 use bincode::Options;
 use bytes::Bytes;
@@ -173,6 +173,39 @@ impl<'de> serde::Deserialize<'de> for WorldChangeTag {
     }
 }
 
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+enum UnknownComponent {
+    Internal(String),
+    External(ExternalComponentDesc),
+}
+impl UnknownComponent {
+    fn into_path(self) -> String {
+        match self {
+            Self::Internal(path) | Self::External(ExternalComponentDesc { path, .. }) => path,
+        }
+    }
+
+    fn external(&self) -> Option<ExternalComponentDesc> {
+        if let Self::External(desc) = self {
+            Some(desc.clone())
+        } else {
+            None
+        }
+    }
+}
+impl From<&ComponentDesc> for UnknownComponent {
+    fn from(desc: &ComponentDesc) -> Self {
+        if desc.has_attribute::<External>() {
+            let pc = ComponentRegistry::get()
+                .get_primitive_component(desc.index())
+                .expect("Component should have been registered");
+            Self::External((&pc).into())
+        } else {
+            Self::Internal(desc.path())
+        }
+    }
+}
+
 /// `DiffSerializer` is optimized for serializing `WorldDiff` for transfer over network.
 ///
 /// Compared to the regular text serialization of components it makes a few optimisations like:
@@ -257,27 +290,59 @@ impl std::fmt::Debug for DiffSerializer {
     }
 }
 impl DiffSerializer {
+    fn serialize_parts(
+        &mut self,
+        unknown_components: HashMap<u32, UnknownComponent>,
+        diff: &NetworkedWorldDiff,
+    ) -> Result<Bytes, bincode::Error> {
+        // serialize unknown components so that deserialize can map idx to component path
+        let mut buffer = bincode_options().serialize(&unknown_components)?;
+        // keep them
+        self.known_component_paths.extend(
+            unknown_components
+                .into_iter()
+                .map(|(k, v)| (k, v.into_path())),
+        );
+        // serialize the actual change
+        buffer.extend_from_slice(&bincode_options().serialize(&diff)?);
+        Ok(buffer.into())
+    }
+
+    pub fn serialize_external_components(&mut self) -> Result<Bytes, bincode::Error> {
+        // get all external components that we haven't seen before
+        let unknown_components = self.collect_all_unknown_external_components();
+        // create dummy diff
+        let diff = WorldDiffView::default();
+        // serialize everything
+        self.serialize_parts(unknown_components, &NetworkedWorldDiff(&diff))
+    }
+
+    fn collect_all_unknown_external_components(&self) -> HashMap<u32, UnknownComponent> {
+        ComponentRegistry::get()
+            .all_external()
+            .filter_map(|(external, desc)| {
+                (!self.known_component_paths.contains_key(&desc.index()))
+                    .then_some((desc.index(), UnknownComponent::External(external)))
+            })
+            .collect()
+    }
+
     pub fn serialize(&mut self, diff: &WorldDiffView) -> Result<Bytes, bincode::Error> {
         // get all component that we haven't seen before
         let unknown_components =
             self.collect_unknown_components(diff.changes.iter().map(AsRef::as_ref));
-        // serialize them so that deserialize can map idx to component path
-        let mut buffer = bincode_options().serialize(&unknown_components)?;
-        // keep them
-        self.known_component_paths.extend(unknown_components);
-        // serialize the actual change
-        buffer.extend_from_slice(&bincode_options().serialize(&NetworkedWorldDiff(diff))?);
-        Ok(buffer.into())
+        // serialize everything
+        self.serialize_parts(unknown_components, &NetworkedWorldDiff(diff))
     }
 
-    fn collect_unknown_components<'a, I>(&self, changes: I) -> HashMap<u32, String>
+    fn collect_unknown_components<'a, I>(&self, changes: I) -> HashMap<u32, UnknownComponent>
     where
         I: Iterator<Item = &'a WorldChange>,
     {
         let mut result = HashMap::new();
         let mut collect = |desc: &ComponentDesc| {
             if !self.known_component_paths.contains_key(&desc.index()) {
-                result.insert(desc.index(), desc.path());
+                result.insert(desc.index(), desc.into());
             }
         };
 
@@ -305,8 +370,19 @@ impl DiffSerializer {
         let mut deserializer =
             bincode::Deserializer::with_reader(message.as_ref(), bincode_options());
         // deserialize component paths we should know about
-        let unknown_components = HashMap::<u32, String>::deserialize(&mut deserializer)?;
-        self.known_component_paths.extend(unknown_components);
+        let unknown_components = HashMap::<u32, UnknownComponent>::deserialize(&mut deserializer)?;
+        let external_components: Vec<_> = unknown_components
+            .iter()
+            .filter_map(|(_, v)| v.external())
+            .collect();
+        if !external_components.is_empty() {
+            ComponentRegistry::get_mut().add_external(external_components);
+        }
+        self.known_component_paths.extend(
+            unknown_components
+                .into_iter()
+                .map(|(k, v)| (k, v.into_path())),
+        );
         // deserialize the actual changes
         deserializer.deserialize_seq(NetworkedChangesVisitor::from(&*self))
     }

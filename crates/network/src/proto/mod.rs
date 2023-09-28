@@ -1,9 +1,5 @@
 use ambient_core::main_package_name;
-use ambient_ecs::{ComponentRegistry, ExternalComponentDesc};
 use ambient_native_std::{ambient_version, asset_url::AbsAssetUrl};
-use itertools::Itertools;
-
-use crate::serialization::FailableDeserialization;
 
 pub mod client;
 pub mod server;
@@ -27,7 +23,7 @@ pub enum ServerPush {
 
 /// Miscellaneous information about the server that needs to be sent to the client during the handshake.
 /// Note: This has to deserialize correctly between versions of the server and client for us to be able to show a nice error message.
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct ServerInfo {
     /// The name of the main package. Used by the client to figure out what to title its window. Defaults to "Ambient".
     pub main_package_name: String,
@@ -39,17 +35,6 @@ pub struct ServerInfo {
     /// Defaults to the version of the crate.
     /// TODO: use semver
     pub version: String,
-    pub external_components: FailableDeserialization<Vec<ExternalComponentDesc>>,
-}
-
-impl std::fmt::Debug for ServerInfo {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ServerInfo")
-            .field("main_package_name", &self.main_package_name)
-            .field("content_base_url", &self.content_base_url)
-            .field("version", &self.version)
-            .finish_non_exhaustive()
-    }
 }
 
 impl ServerInfo {
@@ -59,17 +44,11 @@ impl ServerInfo {
             .get(crate::server::MAIN_INSTANCE_ID)
             .unwrap();
         let world = &instance.world;
-        let external_components = ComponentRegistry::get()
-            .all_external()
-            .map(|x| x.0)
-            .collect_vec()
-            .into();
 
         Self {
             main_package_name: world.resource(main_package_name()).clone(),
             content_base_url,
             version: ambient_version().to_string(),
-            external_components,
         }
     }
 }
