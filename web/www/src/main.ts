@@ -82,12 +82,12 @@ import("ambient_web")
             return;
         }
 
-        let settings = { 
-            enableLogging: true, 
-            enablePanicHook: true, 
+        let settings = {
+            enableLogging: true,
+            enablePanicHook: true,
             logFilter: "debug",
             allowVersionMismatch: true,
-            debugger: true
+            debugger: false
         };
 
         let target = window.document.getElementById("instance-container");
