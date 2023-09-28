@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "lldb",
+            "request": "launch",
+            "program": "ambient",
+            "args": [
+                "run"
+            ],
+        },
+        {
+            "name": "Debugger",
+            "type": "lldb",
+            "request": "launch",
+            "program": "ambient",
+            "args": [
+                "run",
+                "--debugger"
+            ],
+        },
+    ]
+}

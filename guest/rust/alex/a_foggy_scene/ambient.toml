@@ -25,8 +25,8 @@ package_manager = { path = "../../packages/tools/package_manager" }
 # hide_cursor = { deployment = "A8CV3CgLgnnNNSsr2m9kL" } # updated Sept 20
 # package_manager = { deployment = "4iENoKFy5uyYGLCVUTfZKz" } # updated Sept 20 - awkward due to not being asset? no copy button
 
-temperature = { path = "../temperature" , deployment = "nb2mw2fGIW4jmORAtyObz" }
-temperature_hud = { path = "../temperature_hud_magda" , deployment = "1JHgEozP6X8MO7wxVH5K5q" }
+temperature = { path = "../temperature" }
+temperature_hud = { path = "../temperature_hud_magda_rewrite" }
 fog_dj = { path = "../fog_dj" }
 
 nameplates = { path = "../../packages/std/nameplates" }

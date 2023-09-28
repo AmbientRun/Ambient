@@ -1,0 +1,12 @@
+[package]
+id = "f2wyaaettsnwm4mexf4y3733neyoushy"
+name = "temperature_hud_magda_rewrite"
+version = "0.0.1"
+content = { type = "Asset", code = true }
+ambient_version = "0.3.0-nightly-2023-09-28"
+
+[dependencies]
+temperature = { path = "../temperature" }
+
+[components]
+active_camera = { type = "EntityId" }

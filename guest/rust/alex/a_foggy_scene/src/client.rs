@@ -41,6 +41,22 @@ pub fn main() {
 
     let sun = make_my_local_sun_with_sky();
 
+    /* USE DJ FOR CONTROLLING FOG AND SUN */
+    {
+        entity::add_components(
+            packages::fog_dj::entity(),
+            Entity::new()
+                .with(packages::fog_dj::components::grey_fog(), ())
+                .with(packages::fog_dj::components::grey_amb(), ())
+                .with(packages::fog_dj::components::grey_sun(), ()),
+        );
+        entity::add_component(
+            packages::fog_dj::entity(),
+            packages::fog_dj::components::fog_dj_for(),
+            sun,
+        );
+    }
+
     let storm_sound_player = audio::AudioPlayer::new();
     storm_sound_player.set_looping(true);
     storm_sound_player.set_amplitude(0.0);
@@ -59,22 +75,6 @@ pub fn main() {
             *amp =
                 *amp * 0.8 + 0.2 * (0.05 + game_time().as_secs_f32().sin() * 0.05 + coldness * 1.5)
         });
-
-        /* USE DJ FOR CONTROLLING FOG AND SUN */
-        {
-            entity::add_components(
-                packages::fog_dj::entity(),
-                Entity::new()
-                    .with(packages::fog_dj::components::grey_fog(), ())
-                    .with(packages::fog_dj::components::grey_amb(), ())
-                    .with(packages::fog_dj::components::grey_sun(), ()),
-            );
-            entity::add_component(
-                packages::fog_dj::entity(),
-                packages::fog_dj::components::fog_dj_for(),
-                sun,
-            );
-        }
 
         // /* USE COLDNESS FOR MODULATING FOG (GAME FEEDBACK) */
         // {
