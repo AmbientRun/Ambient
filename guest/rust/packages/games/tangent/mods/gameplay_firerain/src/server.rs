@@ -2,13 +2,15 @@ use ambient_api::{
     core::{
         ecs::components::remove_at_game_time,
         messages::ModuleUnload,
-        physics::components::{density, dynamic, linear_velocity, sphere_collider},
+        model::components::model_from_url,
+        physics::components::{
+            collider_loaded, density, dynamic, linear_velocity, sphere_collider,
+        },
         player::components::is_player,
-        primitives::concepts::Sphere,
         rendering::components::{
             color, fog_color, fog_density, fog_height_falloff, light_diffuse, sun,
         },
-        transform::components::translation,
+        transform::components::{rotation, scale, translation},
     },
     prelude::*,
     rand,
@@ -38,7 +40,7 @@ pub fn main() {
 
     let players_query = query(is_player()).build();
 
-    fixed_rate_tick(Duration::from_millis(50), move |_| {
+    fixed_rate_tick(Duration::from_millis(250), move |_| {
         for (player_id, _) in players_query.evaluate() {
             let Some(player_position) = entity::get_component(player_id, vehicle_ref())
                 .or_else(|| entity::get_component(player_id, character_ref()))
@@ -49,31 +51,34 @@ pub fn main() {
 
             let distribution = 40.0;
             let mut rng = rand::thread_rng();
-            let base_offset = vec3(0.0, -100.0, 100.0);
-            let offset = base_offset
-                + vec3(
-                    rng.gen_range(-distribution..=distribution),
-                    rng.gen_range(-distribution..=distribution),
-                    rng.gen_range(-distribution..=distribution),
-                );
+            let base_offset = vec3(0.0, 0.0, 100.0);
+            let offset = base_offset + distribution * (random::<Vec3>() * 2.0 - 1.0);
 
             let position = player_position + offset;
 
             let radius = rng.gen_range(0.2..=1.0);
 
-            Sphere {
-                sphere_radius: radius,
-                ..Sphere::suggested()
-            }
-            .make()
-            .with(color(), new_color.extend(1.0))
-            .with(sphere_collider(), radius)
-            .with(density(), 40.0)
-            .with(translation(), position)
-            .with(dynamic(), true)
-            .with(linear_velocity(), -offset * 0.2)
-            .with(remove_at_game_time(), game_time() + Duration::from_secs(10))
-            .spawn();
+            Entity::new()
+                .with(
+                    model_from_url(),
+                    packages::this::assets::url(&format!(
+                        "stone_{}.fbx",
+                        (1..=3).choose(&mut thread_rng()).unwrap()
+                    )),
+                )
+                .with(color(), new_color.extend(1.0))
+                .with(sphere_collider(), 0.5)
+                .with(translation(), position)
+                .with(rotation(), random())
+                .with(scale(), Vec3::ONE * radius)
+                .with(density(), 100.0)
+                .with(dynamic(), true)
+                .with(
+                    linear_velocity(),
+                    -20.0 * Vec3::Z + 5.0 * (random::<Vec3>() * 2.0 - 1.0),
+                )
+                .with(remove_at_game_time(), game_time() + Duration::from_secs(10))
+                .spawn();
         }
     });
 
