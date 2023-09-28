@@ -12,7 +12,7 @@ pub fn main() {
         icon_url: packages::this::assets::url("icon.png"),
         def_ref: CharacterDef {
             max_health: 150.0,
-            model_url: packages::this::assets::url("Mutant.fbx"),
+            model_url: packages::this::assets::url("Ch03_nonPBR.fbx"),
             speed: 0.04,
             run_speed_multiplier: 1.2,
             strafe_speed_multiplier: 0.6,

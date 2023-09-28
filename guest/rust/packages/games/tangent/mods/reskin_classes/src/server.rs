@@ -24,8 +24,8 @@ pub fn main() {
         };
 
         let new_model_url = match class.name.as_str() {
-            "Assault" => packages::this::assets::url("Ch29_nonPBR.fbx"),
-            "Tank" => packages::this::assets::url("Ch03_nonPBR.fbx"),
+            "Assault" => packages::this::assets::url("castle_guard_01.fbx"),
+            "Tank" => packages::this::assets::url("Mutant.fbx"),
             _ => continue,
         };
 

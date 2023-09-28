@@ -12,7 +12,7 @@ pub fn main() {
         icon_url: packages::this::assets::url("icon.png"),
         def_ref: CharacterDef {
             max_health: 100.0,
-            model_url: packages::this::assets::url("castle_guard_01.fbx"),
+            model_url: packages::this::assets::url("Ch29_nonPBR.fbx"),
             speed: 0.06,
             run_speed_multiplier: 1.5,
             strafe_speed_multiplier: 0.8,

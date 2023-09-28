@@ -3,9 +3,7 @@ use ambient_api::{
         ecs::components::remove_at_game_time,
         messages::ModuleUnload,
         model::components::model_from_url,
-        physics::components::{
-            collider_loaded, density, dynamic, linear_velocity, sphere_collider,
-        },
+        physics::components::{density, dynamic, linear_velocity, sphere_collider},
         player::components::is_player,
         rendering::components::{
             color, fog_color, fog_density, fog_height_falloff, light_diffuse, sun,
