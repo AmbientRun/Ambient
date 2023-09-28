@@ -1,17 +1,22 @@
 use std::{
-    mem,
-    ops::{Add, Sub},
+    ops::{Add, AddAssign, Sub},
     time::{Duration, SystemTimeError},
 };
 
 use ordered_float::NotNan;
 
 /// A measurement of a monotonically nondecreasing clock. Opaque and useful only with [Duration].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Instant(
     /// Time in milliseconds
     NotNan<f64>,
 );
+
+impl std::fmt::Debug for Instant {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("Instant").field(&*self.0).finish()
+    }
+}
 
 impl Sub for Instant {
     type Output = Duration;
@@ -26,6 +31,12 @@ impl Add<Duration> for Instant {
 
     fn add(self, rhs: Duration) -> Self::Output {
         Self(self.0 + rhs.as_nanos() as f64 / 1e6)
+    }
+}
+
+impl AddAssign<Duration> for Instant {
+    fn add_assign(&mut self, rhs: Duration) {
+        *self = *self + rhs;
     }
 }
 
@@ -94,46 +105,5 @@ impl SystemTime {
         Ok(Duration::from_nanos(
             ((*self.0 - *earlier.0).max(0.0) * 1e6) as _,
         ))
-    }
-}
-
-pub fn schedule_wakeup<F: 'static + Send + FnOnce()>(dur: Duration, callback: F) {
-    let timer = gloo::timers::callback::Timeout::new(dur.as_millis().try_into().unwrap(), callback);
-    mem::forget(timer);
-}
-
-use crate::{
-    timer::{self, get_global_timers, Sleep},
-    MissedTickBehavior,
-};
-pub fn sleep_until(instant: Instant) -> Sleep {
-    Sleep::new_at(&get_global_timers().expect("No timers"), instant)
-}
-
-pub fn sleep(dur: Duration) -> Sleep {
-    Sleep::new(&get_global_timers().expect("No timers"), dur)
-}
-
-pub struct Interval {
-    inner: timer::Interval,
-}
-
-impl Interval {
-    pub fn new(period: Duration) -> Self {
-        Self::new_at(Instant::now(), period)
-    }
-
-    pub fn new_at(start: Instant, period: Duration) -> Self {
-        Self {
-            inner: timer::Interval::new_at(&get_global_timers().expect("No timers"), start, period),
-        }
-    }
-
-    pub async fn tick(&mut self) -> Instant {
-        self.inner.tick().await
-    }
-
-    pub fn set_missed_tick_behavior(&mut self, behavior: MissedTickBehavior) {
-        self.inner.set_missed_tick_behavior(behavior)
     }
 }

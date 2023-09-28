@@ -7,14 +7,15 @@ use std::{
     task::{Poll, Waker},
 };
 
-use futures::Future;
+use futures::{task::AtomicWaker, Future};
 use parking_lot::Mutex;
 use pin_project::{pin_project, pinned_drop};
 
 use crate::task::JoinError;
 
 struct InnerState<T> {
-    waker: Mutex<Option<Waker>>,
+    task_waker: AtomicWaker,
+    handle_waker: AtomicWaker,
     res: Mutex<Option<Result<T, JoinError>>>,
     woken: AtomicBool,
     aborted: AtomicBool,
@@ -50,21 +51,20 @@ impl<T> Default for ControlRegistration<T> {
 impl<T> InnerState<T> {
     fn new() -> Self {
         Self {
-            waker: Mutex::new(None),
+            task_waker: AtomicWaker::new(),
+            handle_waker: AtomicWaker::new(),
             res: Mutex::new(None),
             woken: AtomicBool::new(false),
             aborted: AtomicBool::new(false),
         }
     }
 
-    fn wake(&self) {
+    fn wake_handle(&self) {
         // Set woken regardless of waker, since the task can complete before the JoinHandle is
         // polled
         self.woken.store(true, Ordering::SeqCst);
 
-        if let Some(waker) = &mut *self.waker.lock() {
-            waker.wake_by_ref();
-        }
+        self.handle_waker.wake();
     }
 }
 
@@ -84,7 +84,7 @@ impl<F, T> PinnedDrop for ControlledFuture<F, T> {
             // Cancelled on behalf of the executor
             *res = Some(Err(JoinError::Aborted));
 
-            self.state.wake();
+            self.state.wake_handle();
         }
     }
 }
@@ -98,18 +98,21 @@ where
     fn poll(self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Self::Output> {
         let p = self.project();
 
-        if p.state.aborted.load(Ordering::Relaxed) {
+        p.state.task_waker.register(cx.waker());
+
+        if p.state.aborted.load(Ordering::SeqCst) {
             let mut res = p.state.res.lock();
             *res = Some(Err(JoinError::Aborted));
 
-            p.state.wake();
+            p.state.wake_handle();
+
             Poll::Ready(())
         } else if let Poll::Ready(value) = p.fut.poll(cx) {
             let mut res = p.state.res.lock();
             assert!(res.is_none(), "Future completed twice");
             *res = Some(Ok(value));
 
-            p.state.wake();
+            p.state.wake_handle();
 
             Poll::Ready(())
         } else {
@@ -138,7 +141,9 @@ impl<T: std::fmt::Debug> std::fmt::Debug for ControlHandle<T> {
 impl<T> ControlHandle<T> {
     /// Remotely cancel the future
     pub fn abort(&self) {
-        self.state.aborted.store(true, Ordering::Relaxed);
+        self.state.aborted.store(true, Ordering::SeqCst);
+
+        self.state.task_waker.wake();
     }
 
     /// Returns true if the controlled future is currently finished or aborted
@@ -166,7 +171,7 @@ impl<T> Future for ControlHandle<T> {
             Poll::Ready(value)
         } else {
             // Set a waker
-            *self.state.waker.lock() = Some(cx.waker().clone());
+            self.state.handle_waker.register(cx.waker());
             Poll::Pending
         }
     }

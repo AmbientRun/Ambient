@@ -135,7 +135,7 @@ impl ConnectedClient {
     ) -> anyhow::Result<()> {
         let diff = self.diff_serializer.deserialize(diff)?;
         let mut gs = state.lock();
-        tracing::debug!(diff=?diff.len(), "Applying diff");
+        tracing::trace!(diff=?diff.len(), "Applying diff");
         diff.apply(&mut gs.world, Entity::new().with(is_remote_entity(), ()));
         Ok(())
     }

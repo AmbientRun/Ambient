@@ -37,7 +37,6 @@ impl Material {
                     res.bump_map = Some(file_ref);
                 }
                 "_MetalicRAOGSmothnessA" => {
-                    tracing::debug!(?file_ref, "Found metallic smoothness map");
                     res.metallic_r_ao_g_smothness_a = Some(file_ref);
                 }
                 "_MetallicGlossMap" => {

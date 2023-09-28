@@ -1,6 +1,6 @@
 #![allow(clippy::disallowed_types)]
 use std::{
-    ops::{Add, Sub},
+    ops::{Add, AddAssign, Sub},
     time::{Duration, SystemTimeError},
 };
 
@@ -32,6 +32,12 @@ impl Add<Duration> for Instant {
 
     fn add(self, rhs: Duration) -> Self::Output {
         Self(self.0 + rhs)
+    }
+}
+
+impl AddAssign<Duration> for Instant {
+    fn add_assign(&mut self, rhs: Duration) {
+        *self = *self + rhs;
     }
 }
 
@@ -106,6 +112,10 @@ pub fn sleep_until(deadline: Instant) -> tokio::time::Sleep {
 
 #[inline]
 pub fn sleep(duration: Duration) -> tokio::time::Sleep {
+    tokio::time::sleep(duration)
+}
+
+pub fn sleep_label(duration: Duration, _: &'static str) -> tokio::time::Sleep {
     tokio::time::sleep(duration)
 }
 

@@ -221,7 +221,11 @@ pub fn audio_systems() -> SystemGroup {
                         let sr = *sr_arc_clone.lock();
                         if let Some((count, sr)) = count.zip(sr) {
                             let dur = count as f32 / sr as f32 * 1.001;
-                            ambient_sys::time::sleep(std::time::Duration::from_secs_f32(dur)).await;
+                            ambient_sys::time::sleep_label(
+                                std::time::Duration::from_secs_f32(dur),
+                                "audio",
+                            )
+                            .await;
                             async_run.run(move |world| {
                                 if let Some(id) = id_arc_clone.lock().take() {
                                     world.despawn(id);
