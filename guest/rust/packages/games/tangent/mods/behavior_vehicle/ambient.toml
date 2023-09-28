@@ -3,14 +3,14 @@ id = "mnm43qv33k7kx235bz5hcgoguokwxzwo"
 name = "Tangent Behavior: Vehicle"
 version = "0.2.0"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-28"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
-game_object = { path = "../../../../schemas/game_object" }
-kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "7VEdO55zqgSL75rJNg3TJ2" }
-explosion = { path = "../../../../std/explosion" }
+tangent_schema = { path = "../../schema", deployment = "3Wpx1zwYuxtR3BmKlDvZsZ" }
+game_object = { path = "../../../../schemas/game_object" , deployment = "2H5s0Iq3fZwagFmlT2KstX" }
+kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "6Vtf828FNyeYkTyuJJEyGT" }
+explosion = { path = "../../../../std/explosion" , deployment = "6cQ5FagCw1W7S1MTq2iu7J" }
 
 [messages.OnCollision]
 name = "On Collision"

@@ -3,11 +3,11 @@ id = "vuph6dqdj6li4apmcgomn3faudcbfz56"
 name = "fps_controller"
 version = "0.0.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-27"
+ambient_version = "0.3.0-nightly-2023-09-28"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "6uREFp7FrxwZMJKHyq3Elx" }
-character_movement = { path = "../character_movement", deployment = "N8mRTcGfKObyiciqXGJTi" }
+unit_schema = { path = "../../schemas/unit", deployment = "5A0rsH8nDtTze7x3wuLVUJ" }
+character_movement = { path = "../character_movement", deployment = "65qFP0ojyEvExelrBrad9T" }
 
 [components]
 use_fps_controller = { type = "Empty", attributes = [

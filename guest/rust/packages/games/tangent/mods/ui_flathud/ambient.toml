@@ -3,9 +3,9 @@ id = "zlu324bqcibov3o4co42eriyfhcnzsus"
 name = "Tangent UI: Flat HUD"
 version = "0.2.0"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-28"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
-game_object = { path = "../../../../schemas/game_object", deployment = "pNjDPAc7LUs8IgPYlwJmS" }
+tangent_schema = { path = "../../schema", deployment = "3Wpx1zwYuxtR3BmKlDvZsZ" }
+game_object = { path = "../../../../schemas/game_object", deployment = "2H5s0Iq3fZwagFmlT2KstX" }

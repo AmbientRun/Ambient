@@ -3,12 +3,12 @@ id = "ys6g5noe72fbhnoj6l3psjq75knd7gko"
 name = "Tangent Class: Tank"
 version = "0.2.0"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-28"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
+tangent_schema = { path = "../../schema", deployment = "3Wpx1zwYuxtR3BmKlDvZsZ" }
 
-gun_laser = { path = "../gun_laser", deployment = "5B4RovhibVaZsxrVcXMjf0" }
+gun_laser = { path = "../gun_laser", deployment = "2hxjolldV6OIbuR6rZFUBK" }
 
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "5McYMEZazOLUekgEOxccrj" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "1Iol5aKOUc7ogK4Cmycq7z" }

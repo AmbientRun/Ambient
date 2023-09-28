@@ -3,10 +3,10 @@ id = "ldju5agsejzafvrl4qz6np6gerpokcah"
 name = "AFPS Movmement"
 version = "0.0.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-27"
+ambient_version = "0.3.0-nightly-2023-09-28"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "6oJ853GOWW90aLSxTt39kq" }
-editor_schema = { path = "../../../../schemas/editor", deployment = "5UhNyYwg0huTaK1HPeoQhd" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "6uREFp7FrxwZMJKHyq3Elx" }
-character_movement = { path = "../../../../std/character_movement", deployment = "N8mRTcGfKObyiciqXGJTi" }
+afps_schema = { path = "../../schema", deployment = "3kFlkcMc5qDzvlWFfoEEAh" }
+editor_schema = { path = "../../../../schemas/editor", deployment = "4WEcPL05lzEVFcZlLqXAEG" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "5A0rsH8nDtTze7x3wuLVUJ" }
+character_movement = { path = "../../../../std/character_movement", deployment = "65qFP0ojyEvExelrBrad9T" }

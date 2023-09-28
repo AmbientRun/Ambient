@@ -4,10 +4,11 @@ name = "Tangent Schema"
 version = "0.2.0"
 content = { type = "Asset", schema = true }
 authors = ["philpax"]
+ambient_version = "0.3.0-nightly-2023-09-28"
 
 [dependencies]
-game_object = { path = "../../../schemas/game_object", deployment = "pNjDPAc7LUs8IgPYlwJmS" }
-unit = { path = "../../../schemas/unit" }
+game_object = { path = "../../../schemas/game_object", deployment = "2H5s0Iq3fZwagFmlT2KstX" }
+unit = { path = "../../../schemas/unit" , deployment = "5A0rsH8nDtTze7x3wuLVUJ" }
 
 [components]
 # Player

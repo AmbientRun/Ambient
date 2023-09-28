@@ -3,13 +3,13 @@ id = "roosvvawp6sjvlolokk5qyafl5vp2su7"
 name = "Tangent Spawner: Vehicle"
 version = "0.0.1"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-28"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
+tangent_schema = { path = "../../schema", deployment = "3Wpx1zwYuxtR3BmKlDvZsZ" }
 
-nameplates = { path = "../../../../std/nameplates", deployment = "1M2x4RcsrSyVlNXEi4UpCo" }
+nameplates = { path = "../../../../std/nameplates", deployment = "4ZKPRHYFEHzL2FBWi6vxdC" }
 
 [messages.VehicleSpawn]
 name = "Vehicle Spawn"
