@@ -13,6 +13,7 @@ use ambient_api::{
     prelude::*,
 };
 use packages::{
+    character_animation::components as cac,
     character_animation::components::basic_character_animations,
     tangent_schema::{
         character::components::is_character,
@@ -53,7 +54,104 @@ pub fn main() {
                     .with(uc::run_direction(), Vec2::ZERO)
                     .with(uc::vertical_velocity(), 0.)
                     .with(uc::running(), false)
-                    .with(uc::jumping(), false),
+                    .with(uc::jumping(), false)
+                    // Animations
+                    .with(
+                        cac::idle(),
+                        packages::this::assets::url("Idle.fbx/animations/mixamo.com.anim"),
+                    )
+                    .with(
+                        cac::jump(),
+                        packages::this::assets::url("Jump.fbx/animations/mixamo.com.anim"),
+                    )
+                    .with(
+                        cac::walk_forward(),
+                        packages::this::assets::url("Walking.fbx/animations/mixamo.com.anim"),
+                    )
+                    .with(
+                        cac::walk_backward(),
+                        packages::this::assets::url(
+                            "Walking_Backward.fbx/animations/mixamo.com.anim",
+                        ),
+                    )
+                    .with(
+                        cac::walk_left(),
+                        packages::this::assets::url(
+                            "Left_Strafe_Walk.fbx/animations/mixamo.com.anim",
+                        ),
+                    )
+                    .with(
+                        cac::walk_right(),
+                        packages::this::assets::url(
+                            "Right_Strafe_Walking.fbx/animations/mixamo.com.anim",
+                        ),
+                    )
+                    .with(
+                        cac::walk_forward_left(),
+                        packages::this::assets::url(
+                            "Left_Strafe_Walk.fbx/animations/mixamo.com.anim",
+                        ),
+                    )
+                    .with(
+                        cac::walk_forward_right(),
+                        packages::this::assets::url(
+                            "Right_Strafe_Walking.fbx/animations/mixamo.com.anim",
+                        ),
+                    )
+                    .with(
+                        cac::walk_backward_left(),
+                        packages::this::assets::url(
+                            "Left_Strafe_Walk.fbx/animations/mixamo.com.anim",
+                        ),
+                    )
+                    .with(
+                        cac::walk_backward_right(),
+                        packages::this::assets::url(
+                            "Right_Strafe_Walking.fbx/animations/mixamo.com.anim",
+                        ),
+                    )
+                    .with(
+                        cac::run_forward(),
+                        packages::this::assets::url("Running_1.fbx/animations/mixamo.com.anim"),
+                    )
+                    .with(
+                        cac::run_left(),
+                        packages::this::assets::url("Left_Strafe.fbx/animations/mixamo.com.anim"),
+                    )
+                    .with(
+                        cac::run_right(),
+                        packages::this::assets::url("Right_Strafe.fbx/animations/mixamo.com.anim"),
+                    )
+                    .with(
+                        cac::run_forward_left(),
+                        packages::this::assets::url(
+                            "Jog_Forward_Diagonal_left.fbx/animations/mixamo.com.anim",
+                        ),
+                    )
+                    .with(
+                        cac::run_forward_right(),
+                        packages::this::assets::url(
+                            "Jog_Forward_Diagonal_right.fbx/animations/mixamo.com.anim",
+                        ),
+                    )
+                    .with(
+                        cac::run_backward_left(),
+                        packages::this::assets::url(
+                            "Jog_Backward_Diagonal_left.fbx/animations/mixamo.com.anim",
+                        ),
+                    )
+                    .with(
+                        cac::run_backward_right(),
+                        packages::this::assets::url(
+                            "Jog_Backward_Diagonal_right.fbx/animations/mixamo.com.anim",
+                        ),
+                    )
+                    .with(
+                        cac::run_backward(),
+                        packages::this::assets::url(
+                            "Running_Backward.fbx/animations/mixamo.com.anim",
+                        ),
+                    ),
             );
         }
     });

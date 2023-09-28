@@ -6,7 +6,7 @@ content = { type = "Asset", animations = true, code = true }
 ambient_version = "0.3.0-nightly-2023-09-28"
 
 [dependencies]
-game_object = { path = "../../schemas/game_object" , deployment = "2H5s0Iq3fZwagFmlT2KstX" }
+game_object = { path = "../../schemas/game_object", deployment = "2H5s0Iq3fZwagFmlT2KstX" }
 unit_schema = { path = "../../schemas/unit", deployment = "5A0rsH8nDtTze7x3wuLVUJ" }
 
 [components]
@@ -16,24 +16,81 @@ basic_character_animations = { type = "EntityId", description = "Apply animation
 ] }
 
 # Overrides for the default animations
-walk_forward = { type = "String", description = "Url to animation" }
-walk_backward = { type = "String", description = "Url to animation" }
-walk_left = { type = "String", description = "Url to animation" }
-walk_right = { type = "String", description = "Url to animation" }
-walk_forward_left = { type = "String", description = "Url to animation" }
-walk_forward_right = { type = "String", description = "Url to animation" }
-walk_backward_left = { type = "String", description = "Url to animation" }
-walk_backward_right = { type = "String", description = "Url to animation" }
+walk_forward = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+walk_backward = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+walk_left = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+walk_right = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+walk_forward_left = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+walk_forward_right = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+walk_backward_left = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+walk_backward_right = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
 
-run_forward = { type = "String", description = "Url to animation" }
-run_backward = { type = "String", description = "Url to animation" }
-run_left = { type = "String", description = "Url to animation" }
-run_right = { type = "String", description = "Url to animation" }
-run_forward_left = { type = "String", description = "Url to animation" }
-run_forward_right = { type = "String", description = "Url to animation" }
-run_backward_left = { type = "String", description = "Url to animation" }
-run_backward_right = { type = "String", description = "Url to animation" }
+run_forward = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_backward = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_left = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_right = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_forward_left = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_forward_right = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_backward_left = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_backward_right = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
 
-idle = { type = "String", description = "Url to animation" }
-death = { type = "String", description = "Url to animation" }
-jump = { type = "String", description = "Url to animation" }
+idle = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+death = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+jump = { type = "String", description = "Url to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
