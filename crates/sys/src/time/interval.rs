@@ -7,7 +7,10 @@ use std::{
 use futures::{ready, Future, Stream};
 use pin_project::pin_project;
 
-use crate::time::{Sleep, TimersHandle, GLOBAL_TIMER};
+use crate::{
+    time::{Sleep, TimersHandle, GLOBAL_TIMER},
+    MissedTickBehavior,
+};
 
 use super::Instant;
 
@@ -25,6 +28,7 @@ pub fn interval_at(start: Instant, period: Duration) -> Interval {
 pub struct Interval {
     sleep: Pin<Box<Sleep>>,
     period: Duration,
+    missed_tick_behavior: MissedTickBehavior,
 }
 
 impl Interval {
@@ -39,6 +43,7 @@ impl Interval {
         Self {
             sleep: Box::pin(Sleep::new(handle, start, label)),
             period,
+            missed_tick_behavior: MissedTickBehavior::Burst,
         }
     }
 
@@ -52,8 +57,13 @@ impl Interval {
         // Wait until the next tick
         ready!(self.sleep.as_mut().poll(cx));
 
+        let now = Instant::now();
+
         // Calculate the next deadline
-        let new_deadline = deadline + self.period;
+        // let new_deadline = deadline + self.period;
+        let new_deadline = self
+            .missed_tick_behavior
+            .next_timeout(deadline, now, self.period);
 
         // Reset the timer
         // Note: will not be registered until the interval is polled again

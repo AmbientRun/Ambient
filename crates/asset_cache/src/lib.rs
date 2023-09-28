@@ -323,8 +323,6 @@ impl AssetCache {
         let asset_key = AssetKey::new(key.key());
 
         let load = || {
-            tracing::debug!("Loading asset: {asset_key:?}");
-
             // No future loading the value was found.
             //
             // Initiate the loading
@@ -470,10 +468,8 @@ impl AssetCache {
                     dur = dur.min(max_keepalive);
                 }
 
-                tracing::info!(?asset_key, ?dur, "spawn keepalive");
                 let task = self.runtime.spawn(async move {
                     time::sleep_label(dur, "asset keepalive").await;
-                    tracing::debug!("Keepalive timed out for {asset_key:?}");
                     drop((keepalive_ref, guard));
                 });
 

@@ -1,5 +1,5 @@
 use std::{
-    ops::{Add, Sub},
+    ops::{Add, AddAssign, Sub},
     time::{Duration, SystemTimeError},
 };
 
@@ -31,6 +31,12 @@ impl Add<Duration> for Instant {
 
     fn add(self, rhs: Duration) -> Self::Output {
         Self(self.0 + rhs.as_nanos() as f64 / 1e6)
+    }
+}
+
+impl AddAssign<Duration> for Instant {
+    fn add_assign(&mut self, rhs: Duration) {
+        *self = *self + rhs;
     }
 }
 
