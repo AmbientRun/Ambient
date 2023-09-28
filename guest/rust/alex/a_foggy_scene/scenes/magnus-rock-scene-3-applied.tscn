@@ -1,8 +1,12 @@
-[gd_scene load_steps=9 format=3 uid="uid://1yqn51ov4vil"]
+[gd_scene load_steps=13 format=3 uid="uid://1yqn51ov4vil"]
 
 [ext_resource type="PackedScene" uid="uid://cvp3slow4hlnv" path="res://00_plane_roamer/roamer_3rd_person.tscn" id="1_72u2f"]
 [ext_resource type="PackedScene" uid="uid://c88rp8xrprxr6" path="res://13_MagnusRock/cliffmesh_combined_applied.glb" id="2_t7jrp"]
 [ext_resource type="PackedScene" uid="uid://deoh8vyvsfjl8" path="res://13_MagnusRock/cliffmesh_rock_applied.glb" id="3_twwn4"]
+[ext_resource type="PackedScene" path="res://13_MagnusRock/rocks01_b_dry.glb" id="4_sycas"]
+[ext_resource type="PackedScene" uid="uid://c3i0e1n6p1d8m" path="res://13_MagnusRock/rocks01_b.glb" id="5_btdbp"]
+[ext_resource type="PackedScene" uid="uid://bx3cj14trqqnw" path="res://13_MagnusRock/rocks01_a.glb" id="6_5js3s"]
+[ext_resource type="PackedScene" uid="uid://pxnvigllt46f" path="res://13_MagnusRock/rocks01_a_dry.glb" id="7_sakac"]
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_foy0d"]
 
@@ -73,3 +77,15 @@ transform = Transform3D(-0.948043, 0, -3.69372, 0, 3.81345, 0, 3.69372, 0, -0.94
 
 [node name="cliffmesh_rock_applied7" parent="." instance=ExtResource("3_twwn4")]
 transform = Transform3D(1.96436, 0, -3.26859, 0, 3.81345, 0, 3.26859, 0, 1.96436, 16.1578, 0, -159.083)
+
+[node name="rocks01_b_dry" parent="." instance=ExtResource("4_sycas")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.6839, 1.02126, -28.4785)
+
+[node name="rocks01_b" parent="." instance=ExtResource("5_btdbp")]
+transform = Transform3D(0.986412, 0, 1.11757, 0, 1.49063, 0, -1.11757, 0, 0.986412, -8.18571, -0.152459, -28.3221)
+
+[node name="rocks01_a" parent="." instance=ExtResource("6_5js3s")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.98107, 0, -24.3993)
+
+[node name="rocks01_a_dry" parent="." instance=ExtResource("7_sakac")]
+transform = Transform3D(-0.615097, 0, 2.6647, 0, 2.73477, 0, -2.6647, 0, -0.615097, 4.45853, 3.7834, -35.3677)
