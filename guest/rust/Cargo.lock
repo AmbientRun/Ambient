@@ -2593,6 +2593,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tangent_camera_topdown"
+version = "0.1.0"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "tangent_class_assault"
 version = "0.3.0-dev"
 dependencies = [
@@ -2644,6 +2651,13 @@ dependencies = [
 [[package]]
 name = "tangent_pickup_health"
 version = "0.1.0"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "tangent_reskin_classes"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
