@@ -8,7 +8,6 @@ members = [
     "alex/just_fog",
     "alex/temperature",
     "alex/temperature_hud_magda",
-    "alex/temperature_hud_magda_rewrite",
     "alex/lightbox_playground",
     "alex/matgen_playground",
     "alex/stormvfx_playground",
