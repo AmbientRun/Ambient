@@ -141,7 +141,6 @@ impl<T: std::fmt::Debug> std::fmt::Debug for ControlHandle<T> {
 impl<T> ControlHandle<T> {
     /// Remotely cancel the future
     pub fn abort(&self) {
-        tracing::debug!("aborting controlled task");
         self.state.aborted.store(true, Ordering::SeqCst);
 
         self.state.task_waker.wake();

@@ -69,7 +69,7 @@ debug = true
 # opt-level = 1
 
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ['-O3']
+wasm-opt = ['-O4']
 
 [package.metadata.wasm-pack.profile.profiling]
-wasm-opt = ['-g']
+wasm-opt = ['-O4', '-g']

@@ -131,9 +131,7 @@ async fn run(
         .set(ctl_tx.clone())
         .map_err(|_| anyhow::Error::msg("App already initialized"))?;
 
-    tracing::info!("Sleeping");
-    sleep_label(Duration::from_secs(5), "test").await;
-    tracing::info!("Good morning");
+
 
     let mut app = App::builder()
         .ui_renderer(true)
