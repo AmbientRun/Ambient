@@ -1,12 +1,12 @@
 [package]
-id = "ambient_example_dependencies"
+id = "xjoy27d3i4hc4l7fmlm5pacc2cmxlnlw"
 name = "Dependencies"
 description = "Break your project up into packages."
 version = "0.0.1"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-deps_assets = { path = "deps/assets" , deployment = "OUmGgMFoVcjyGOFaO4FqA" }
-deps_code = { path = "deps/code" , deployment = "zaxJtru0kFAHg8wDUH1xZ" }
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "3ZJmMNytF0Lb34dCWfGpRW" }
+deps_assets = { path = "deps/assets" , deployment = "2SQAH9LpviEGEe5G3UnUFu" }
+deps_code = { path = "deps/code" , deployment = "6oyIM3GMhKy3wJfxraUlG1" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "3qM4NIHpLsJ1ZIFWbKH6iH" }

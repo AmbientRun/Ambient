@@ -1,8 +1,8 @@
 [package]
-id = "kenney_digital_audio"
+id = "k7svgbw5j6orlwzj45koeownlodsdbth"
 name = "Kenney's Digital Audio"
 authors = ["Kenney"]
 description = "https://www.kenney.nl/assets/digital-audio for Ambient. (Uploaded by Ambient, not Kenney.)"
 version = "0.0.1"
 content = { type = "Asset", audio = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"

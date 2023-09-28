@@ -6,3 +6,11 @@ output_decals = false
 type = "Single"
 name = "icon"
 base_color = "icon.png"
+
+[[pipelines]]
+type = "Models"
+sources = ["*.fbx"]
+
+[[pipelines.transforms]]
+type = "RotateZ"
+deg = -90.0

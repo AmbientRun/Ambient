@@ -1,10 +1,10 @@
 [package]
-id = "orbit_camera"
+id = "tijz7x6fimbgu24sbbtp4nllhfxbgblp"
 name = "Orbit Camera"
 description = "Implements a clientside-only orbit camera."
 version = "0.0.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [components]
 is_orbit_camera = { type = "Empty", attributes = ["Debuggable", "Networked"] }

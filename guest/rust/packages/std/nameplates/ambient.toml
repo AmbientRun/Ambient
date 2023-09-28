@@ -1,9 +1,19 @@
 [package]
-id = "hzjutdjnny0qt96y0dwb7rng89vf2dl5"
+id = "per6j2iqhj3jz4da3fqr75jcj2kqjooo"
 name = "Nameplates"
 version = "0.0.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-game_object = { path = "../../schemas/game_object" , deployment = "1CmZBBe5nc3Cvgkbug6TgJ" }
+game_object = { path = "../../schemas/game_object", deployment = "5u6YZMdgL39661DtibYw9O" }
+
+[components]
+height_offset = { type = "F32", name = "Nameplate Height Offset", description = "The height offset from the base of this entity at which to render a nameplate. If not specified, it will default to this entity's local bounding AABB Z, and if that's not available, it will default to a constant.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+text_size = { type = "F32", name = "Nameplate Text Size", description = "The text size of the nameplate to render. If not specified, it will default to 2.0.", attributes = [
+    "Debuggable",
+    "Networked",
+] }

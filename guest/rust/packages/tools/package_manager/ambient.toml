@@ -1,9 +1,9 @@
 [package]
-id = "package_manager"
+id = "hr4pxz7kfhzgimicoyh65ydel3aehuhk"
 name = "Package Manager"
 version = "0.0.1"
 content = { type = "Tool" }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [components.mod_manager_for]
 name = "Mod Manager For"
@@ -13,6 +13,7 @@ attributes = ["Networked", "Debuggable"]
 
 [messages.PackageLoad.fields]
 url = "String"
+enabled = "Bool"
 
 [messages.PackageLoadSuccess.fields]
 id = "EntityId"
@@ -54,4 +55,4 @@ packages = { container_type = "Vec", element_type = "String" }
 error = { container_type = "Option", element_type = "String" }
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor", deployment = "1HBE25i0ibZ8zYLBH76FO7" }
+editor_schema = { path = "../../schemas/editor", deployment = "5UhNyYwg0huTaK1HPeoQhd" }

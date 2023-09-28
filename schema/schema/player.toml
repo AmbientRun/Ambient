@@ -1,10 +1,9 @@
 [package]
-id = "player"
 name = "Player"
 description = "Components that are attached to player entities."
 content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [components.local_user_id]
 type = "String"

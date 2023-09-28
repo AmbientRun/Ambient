@@ -1,4 +1,3 @@
-use crate::packages::this::components::player_camera_ref;
 use ambient_api::{
     core::{
         app::components::name,
@@ -15,7 +14,7 @@ use ambient_api::{
 };
 use packages::{
     this::{
-        components::{camera_distance, player_intermediate_rotation},
+        components::{camera_distance, player_camera_ref, player_intermediate_rotation},
         messages::{Input, Jump},
     },
     unit_schema::components::head_ref,

@@ -1,8 +1,8 @@
 [package]
-id = "wrzx497nolk2dynyy6cs25v0u25qrpp9"
+id = "llhdryqkfsr6gy4f26wbolh4kfwnzn3c"
 name = "Kenney's Space Kit"
 authors = ["Kenney"]
 description = "https://www.kenney.nl/assets/space-kit for Ambient. (Uploaded by Ambient, not Kenney.)"
 version = "0.0.1"
 content = { type = "Asset", models = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"

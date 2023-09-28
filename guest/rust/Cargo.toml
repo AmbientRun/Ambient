@@ -102,6 +102,9 @@ members = [
 
     "packages/games/afps/core/*",
     "packages/games/afps/mods/*",
+
+    # Crates
+    "crates/brand_theme",
 ]
 resolver = "2"
 
@@ -113,6 +116,7 @@ version = "0.3.0-dev"
 ambient_api = { path = "api", version = "0.3.0-dev" }
 ambient_api_core = { path = "api_core", version = "0.3.0-dev" }
 ambient_api_macros = { path = "api_core/api_macros", version = "0.3.0-dev" }
+ambient_brand_theme = { path = "crates/brand_theme", version = "0.3.0-dev" }
 
 ambient_package = { path = "../../shared_crates/package", version = "0.3.0-dev" }
 ambient_package_macro_common = { path = "../../shared_crates/package_macro_common", version = "0.3.0-dev" }
@@ -131,6 +135,7 @@ ambient_pipeline_types = { path = "../../crates/pipeline_types", version = "0.3.
 
 ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.3.0-dev" }
 ambient_cb = { path = "../../libs/cb", version = "0.3.0-dev" }
+ambient_color = { path = "../../libs/color", version = "0.3.0-dev" }
 
 anyhow = "1.0"
 thiserror = "1.0"

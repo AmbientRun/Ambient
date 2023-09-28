@@ -81,6 +81,21 @@ impl System<Event<'static, ()>> for InputSystem {
                         .add_message(messages::WindowFocusChange::new(focused));
                 }
                 WindowEvent::ReceivedCharacter(c) => {
+                    // HACK: Drop the following characters as they will be produced
+                    // by `KeyboardInput` instead.
+                    if [
+                        '\u{1b}', // Escape
+                        '\t',     // Tab
+                        '\u{7f}', // Delete
+                        '\u{8}',  // Backspace
+                        '\r',     // Return
+                        '\n',     // Newline
+                    ]
+                    .contains(c)
+                    {
+                        return;
+                    }
+
                     world
                         .resource_mut(world_events())
                         .add_message(messages::WindowKeyboardCharacter::new(c.to_string()));

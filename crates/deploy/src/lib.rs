@@ -11,6 +11,7 @@ use std::{
 
 use ambient_native_std::RUNTIME_USER_AGENT;
 use ambient_package::Manifest;
+use anyhow::Context;
 use md5::Digest;
 use tokio_stream::StreamExt;
 use tonic::{
@@ -36,20 +37,24 @@ const REQUIRED_FILES: [&str; 2] = ["ambient.toml", "metadata.toml"];
 pub async fn deploy(
     api_server: &str,
     auth_token: &str,
-    path: impl AsRef<Path>,
-    package_root: impl AsRef<Path>,
+    path: &Path,
+    package_root: &Path,
     force_upload: bool,
 ) -> anyhow::Result<(String, Manifest)> {
-    let manifest =
-        Manifest::parse(&tokio::fs::read_to_string(path.as_ref().join("ambient.toml")).await?)?;
+    let manifest = Manifest::parse(&tokio::fs::read_to_string(path.join("ambient.toml")).await?)?;
 
-    let package_id = manifest.package.id.to_string();
+    let package_id = manifest
+        .package
+        .id
+        .as_ref()
+        .with_context(|| format!("The package at {path:?} does not have a valid ID"))?
+        .to_string();
     log::info!(
         "Deploying package \"{}\" ({})",
         manifest.package.name,
         package_id
     );
-    let base_path = path.as_ref().to_owned();
+    let base_path = path.to_owned();
 
     for (dependency_id, dependency) in &manifest.dependencies {
         if !dependency.has_remote_dependency() {

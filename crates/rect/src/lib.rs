@@ -9,7 +9,7 @@ use ambient_core::{
     ui_scene,
 };
 use ambient_ecs::{
-    ensure_has_component, ensure_has_component_with_default, query, query_mut, Entity, SystemGroup,
+    ensure_has_component, ensure_has_component_with_default, query, Entity, SystemGroup,
 };
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},

@@ -1,12 +1,13 @@
 [package]
-id = "tangent_ui_class_selection"
+id = "hs7ygpw4pmpsixtcohdcvzxwmrfzubvi"
 name = "Tangent UI: Class Selection"
-version = "0.1.0"
-content = { type = "Mod", for_playables = ["tangent"] }
-ambient_version = "0.3.0-nightly-2023-09-25"
+version = "0.2.0"
+content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
+ambient_version = "0.3.0-nightly-2023-09-22"
+authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "6FbrTymXy9MqljSi1e5jnw" }
+tangent_schema = { path = "../../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
 
 [messages.ClassSetRequest]
 description = "Sent by the client to request a class set change."

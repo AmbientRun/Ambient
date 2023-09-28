@@ -1,24 +1,38 @@
 [package]
-id = "tangent_core"
+id = "itzh3wovmdje4ttrmo6wrravaaxp6b52"
 name = "Tangent Core"
-version = "0.1.0"
+version = "0.2.0"
 content = { type = "Playable" }
+authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../schema", deployment = "6FbrTymXy9MqljSi1e5jnw" }
-hide_cursor = { path = "../../../std/hide_cursor", deployment = "2QnbDbu7sIjXeXaCvtzI2a" }
-explosion = { path = "../../../std/explosion" , deployment = "7c5WxQXnwtda5MkQ4uTnXY" }
+tangent_schema = { path = "../schema", deployment = "4IxIfegkn18Nmf5GPlWoA" }
 
-game_object = { path = "../../../schemas/game_object" , deployment = "1CmZBBe5nc3Cvgkbug6TgJ" }
+game_object = { path = "../../../schemas/game_object" }
+unit_schema = { path = "../../../schemas/unit" }
 
-kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployment = "1PhiEC01Wxr93SRBqwqEQh" }
+explosion = { path = "../../../std/explosion", deployment = "4AJQwLstaVFyxviCqYBMTq" }
+hide_cursor = { path = "../../../std/hide_cursor", deployment = "nCIEbcEeBgSVOjy3dS4rF" }
+nameplates = { path = "../../../std/nameplates", deployment = "1M2x4RcsrSyVlNXEi4UpCo" }
+
+kenney_impact_sounds = { path = "../../../assets/kenney_impact_sounds", deployment = "s69YYpDgUiMJlWsbN5xnU" }
 
 [messages.Input]
 name = "Input"
 description = "Input"
-fields = { direction = "Vec2", jump = "Bool", fire = "Bool", respawn = "Bool", aim_direction = "Vec2" }
+[messages.Input.fields]
+direction = "Vec2"
+jump = "Bool"
+fire = "Bool"
+use_button = "Bool"
+sprint = "Bool"
+respawn = "Bool"
+aim_direction = "Vec2"
+# Let's not trust the client in the future
+aim_ray_origin = "Vec3"
+aim_ray_direction = "Vec3"
 
-[messages.OnCollision]
-name = "On Collision"
-description = "Sent to the client when a vehicle collides with something."
-fields = { position = "Vec3", speed = "F32", vehicle_id = "EntityId" }
+[messages.UseFailed]
+name = "Use Failed"
+description = "Sent from the server to the client when a use action fails."
+fields = {}

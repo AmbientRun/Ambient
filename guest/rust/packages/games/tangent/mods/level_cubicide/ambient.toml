@@ -1,10 +1,15 @@
 [package]
-id = "tangent_level_cubicide"
+id = "gzbamly2shtnz3siisf3mdzglsi67vul"
 name = "Tangent Level: Cubicide"
-version = "0.1.0"
-content = { type = "Mod", for_playables = ["tangent"] }
-ambient_version = "0.3.0-nightly-2023-09-25"
+version = "0.2.0"
+content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
+ambient_version = "0.3.0-nightly-2023-09-22"
+authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "6FbrTymXy9MqljSi1e5jnw" }
-pickup_health = { path = "../pickup_health" , deployment = "1GcsfKqt66m7cFIdimzlcn" }
+tangent_schema = { path = "../../schema", deployment = "3xeZXaO08dyvd1pFyf8cGS" }
+
+pickup_health = { path = "../pickup_health", deployment = "7lysU5KZdkYj2rpckumEbI" }
+spawner_vehicle = { path = "../spawner_vehicle" }
+
+game_object = { path = "../../../../schemas/game_object" }

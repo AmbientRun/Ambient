@@ -1,4 +1,4 @@
-use ambient_api::{core::transform::components::translation, prelude::*};
+use ambient_api::{core::transform::components::local_to_world, prelude::*};
 use packages::this::messages::Fire;
 
 #[main]
@@ -8,9 +8,11 @@ pub fn main() {
             return;
         }
 
-        let Some(translation) = entity::get_component(msg.weapon_id, translation()) else {
+        let Some(local_to_world) = entity::get_component(msg.weapon_id, local_to_world()) else {
             return;
         };
+
+        let (_, _, translation) = local_to_world.to_scale_rotation_translation();
 
         audio::SpatialAudioPlayer::oneshot(
             translation,

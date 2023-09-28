@@ -1,4 +1,4 @@
-use crate::wasm;
+use crate::{wasm, Settings};
 use ambient_cameras::UICamera;
 use ambient_client_shared::{game_view::GameView, player};
 use ambient_ecs::{Entity, SystemGroup};
@@ -9,13 +9,13 @@ use ambient_ui_native::cb;
 use std::collections::HashMap;
 
 #[element_component]
-pub fn MainApp(_hooks: &mut Hooks, server_url: String, fail_on_version_mismatch: bool) -> Element {
+pub fn MainApp(_hooks: &mut Hooks, server_url: String, settings: Settings) -> Element {
     tracing::info!("Connecting to {server_url:?}");
 
     GameClientView {
         url: server_url,
         user_id: ambient_client_shared::util::random_username(),
-        fail_on_version_mismatch,
+        fail_on_version_mismatch: !settings.allow_version_mismatch,
         systems_and_resources: cb(|| {
             let mut resources = Entity::new();
 
@@ -48,7 +48,10 @@ pub fn MainApp(_hooks: &mut Hooks, server_url: String, fail_on_version_mismatch:
             }))
         }),
         create_rpc_registry: cb(create_server_rpc_registry),
-        inner: GameView { show_debug: false }.el(),
+        inner: GameView {
+            show_debug: settings.debugger,
+        }
+        .el(),
     }
     .el()
 }

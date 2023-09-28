@@ -117,6 +117,9 @@ impl Color {
     /// New `Color` from sRGB colorspace.
     pub fn hex<T: AsRef<str>>(hex: T) -> Result<Color, HexColorError> {
         let hex = hex.as_ref();
+        if hex.chars().next() == Some('#') {
+            return Self::hex(&hex[1..]);
+        }
 
         // RGB
         if hex.len() == 3 {
@@ -1308,5 +1311,13 @@ mod tests {
         mutated_color *= transformation;
 
         assert_eq!(starting_color * transformation, mutated_color,);
+    }
+
+    #[test]
+    fn leading_hash() {
+        assert_eq!(
+            Color::hex("#ff00ff").unwrap(),
+            Color::hex("ff00ff").unwrap()
+        );
     }
 }

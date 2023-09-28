@@ -1,11 +1,11 @@
 [package]
-id = "ambient_example_deps_code"
+id = "t33j53muycmj4i66en5lheneowad5hbz"
 name = "Dependencies (Code)"
 version = "0.0.1"
 content = { type = "Asset", code = true }
 
 [dependencies]
-ambient_example_deps_assets = { path = "../assets" , deployment = "OUmGgMFoVcjyGOFaO4FqA" }
+ambient_example_deps_assets = { path = "../assets" , deployment = "2SQAH9LpviEGEe5G3UnUFu" }
 
 [components]
 spawned_by_us = { type = "Empty" }

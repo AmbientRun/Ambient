@@ -70,7 +70,11 @@ pub async fn initialize(
         )),
     );
 
-    add(world, main_package_path.push("ambient.toml")?.to_string())?;
+    add(
+        world,
+        main_package_path.push("ambient.toml")?.to_string(),
+        true,
+    )?;
 
     Ok(())
 }
@@ -95,7 +99,7 @@ pub fn server_systems() -> SystemGroup {
 }
 
 #[cfg(target_os = "unknown")]
-pub fn add(_world: &mut World, _url: String) -> Result<(), url::ParseError> {
+pub fn add(_world: &mut World, _url: String, _main_package: bool) -> Result<(), url::ParseError> {
     // The future that the host implementation uses is not `Send`, so we can't spawn it on the
     // WASM client. We're disabling it for now.
     unimplemented!("package loading is not supported on WASM as it is a server-only operation")
@@ -104,7 +108,7 @@ pub fn add(_world: &mut World, _url: String) -> Result<(), url::ParseError> {
 // A string is used instead of an AbsAssetUrl to allow WASM to call this and have its original URL
 // passed all the way through.
 #[cfg(not(target_os = "unknown"))]
-pub fn add(world: &mut World, url: String) -> Result<(), url::ParseError> {
+pub fn add(world: &mut World, url: String, main_package: bool) -> Result<(), url::ParseError> {
     let semantic = world_semantic(world);
     let async_run = world.resource(async_run()).clone();
 
@@ -132,6 +136,10 @@ pub fn add(world: &mut World, url: String) -> Result<(), url::ParseError> {
 
             match sync_semantic_to_world(world, package_item_id) {
                 Ok(id) => {
+                    if main_package {
+                        world.add_resource(main_package_id(), id);
+                    }
+
                     world
                         .resource_mut(world_events())
                         .add_message(PackageLoadSuccess {

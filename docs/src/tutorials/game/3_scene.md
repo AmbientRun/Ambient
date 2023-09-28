@@ -34,7 +34,7 @@ It should look something like this:
 We can also spawn some interactive physics elements. Add the following to make it rain bouncy balls:
 
 ```rust
-Frame::subscribe(|_| {
+fixed_rate_tick(Duration::from_secs_f32(0.5), |_| {
     Entity::new()
         .with_merge(Sphere::suggested())
         .with_merge(Transformable::suggested())

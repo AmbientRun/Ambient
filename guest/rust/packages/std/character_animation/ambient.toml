@@ -1,13 +1,13 @@
 [package]
-id = "character_animation"
+id = "d3y3wbexrclipsykysumem3fthkudwx2"
 name = "Character animation"
 version = "0.0.1"
 content = { type = "Asset", animations = true, code = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-game_object = { path = "../../schemas/game_object" , deployment = "1CmZBBe5nc3Cvgkbug6TgJ" }
-unit_schema = { path = "../../schemas/unit", deployment = "6GMmWFdt6R1EFENX4eGZNy" }
+game_object = { path = "../../schemas/game_object" , deployment = "5u6YZMdgL39661DtibYw9O" }
+unit_schema = { path = "../../schemas/unit", deployment = "6uREFp7FrxwZMJKHyq3Elx" }
 
 [components]
 basic_character_animations = { type = "EntityId", description = "Apply animations to the model this points to. Parameters such as health etc. is read from the entity this component is attached to.", attributes = [

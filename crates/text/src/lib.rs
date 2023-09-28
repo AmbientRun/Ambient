@@ -182,7 +182,13 @@ impl AsyncAssetKey<Arc<FontArc>> for FontDef {
                 };
                 Arc::new(FontArc::try_from_slice(font).unwrap())
             }
-            FontFamily::Custom(url) => FontFromUrl(url.clone()).get(&assets).await.unwrap(),
+            FontFamily::Custom(url) => match FontFromUrl(url.clone()).get(&assets).await {
+                Ok(font) => font,
+                Err(err) => {
+                    log::error!("Failed to fetch font at {url}: {err}; using fallback font");
+                    FontDef(FontFamily::Default, self.1).get(&assets).await
+                }
+            },
         }
     }
 }

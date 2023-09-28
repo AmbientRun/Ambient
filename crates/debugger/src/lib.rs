@@ -1,18 +1,22 @@
-use std::sync::Arc;
+use std::{
+    fmt::{Debug, Display},
+    sync::Arc,
+    time::Duration,
+};
 
 use ambient_core::{
     asset_cache,
     bounding::world_bounding_sphere,
     camera::shadow_cameras_from_world,
     hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_user},
-    main_scene,
+    main_scene, performance_samples,
     player::local_user_id,
     runtime,
 };
 use ambient_ecs::{query, World};
 use ambient_element::{
-    consume_context, element_component, use_state, use_state_with, Element, ElementComponentExt,
-    Hooks,
+    consume_context, element_component, use_frame, use_state, use_state_with, Element,
+    ElementComponentExt, Hooks,
 };
 use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_native_std::{asset_cache::AssetCache, color::Color, Cb};
@@ -23,7 +27,7 @@ use ambient_shared_types::{ModifiersState, VirtualKeyCode};
 use ambient_std::line_uid;
 use ambient_ui_native::{
     fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit,
-    FlowColumn, FlowRow, Image, UIExt,
+    FlowColumn, FlowRow, Image, Text, UIExt,
 };
 use glam::Vec3;
 
@@ -77,6 +81,80 @@ fn dump_to_user(_assets: &AssetCache, _label: &'static str, s: String) {
     }
 }
 
+#[derive(Debug, Clone)]
+struct Measurement {
+    min: Duration,
+    max: Duration,
+    current: Duration,
+    sum: Duration,
+    count: usize,
+}
+
+impl Measurement {
+    fn new() -> Self {
+        Self {
+            min: Duration::MAX,
+            max: Duration::ZERO,
+            current: Duration::ZERO,
+            sum: Duration::ZERO,
+            count: 0,
+        }
+    }
+
+    fn apply(&mut self, value: Duration) {
+        self.min = self.min.min(value);
+        self.max = self.max.max(value);
+        self.current = value;
+        self.sum += value;
+        self.count += 1;
+    }
+
+    fn avg(&self) -> Duration {
+        self.sum.checked_div(self.count as u32).unwrap_or_default()
+    }
+}
+
+impl std::fmt::Display for Measurement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("min: ")?;
+        Debug::fmt(&self.min, f)?;
+        f.write_str(" max: ")?;
+        Debug::fmt(&self.max, f)?;
+        f.write_str(" avg: ")?;
+        Debug::fmt(&self.avg(), f)?;
+        f.write_str(" current: ")?;
+        Debug::fmt(&self.current, f)?;
+
+        Ok(())
+    }
+}
+
+#[element_component]
+pub fn AppStatsView(hooks: &mut Hooks) -> Element {
+    let (measurements, set_measurements) =
+        use_state(hooks, (Measurement::new(), Measurement::new()));
+
+    use_frame(hooks, move |w| {
+        let samples = w.resource(performance_samples());
+
+        let mut frame_time = Measurement::new();
+        let mut external_time = Measurement::new();
+        assert!(samples.len() <= 128);
+
+        for sample in samples {
+            frame_time.apply(sample.frame_time);
+            external_time.apply(sample.external_time);
+        }
+
+        set_measurements((frame_time, external_time))
+    });
+
+    FlowColumn::el(vec![
+        Text::el(format!("Frame time    {:<8.1}", measurements.0)),
+        Text::el(format!("External time {:<8.1}", measurements.1)),
+    ])
+}
+
 #[element_component]
 pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show_shadows, set_show_shadows) = use_state(hooks, false);
@@ -84,6 +162,7 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
 
     FlowColumn::el([
         FlowRow(vec![
+            AppStatsView.el(),
             Button::new("Dump Client World", {
                 let get_state = get_state.clone();
                 move |_world| {

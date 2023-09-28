@@ -2,6 +2,7 @@ use ambient_api::{
     core::{
         app::components::main_scene,
         ecs::components::remove_at_game_time,
+        hierarchy::components::parent,
         model::components::model_from_url,
         rect::components::{line_from, line_to, line_width},
         rendering::components::{cast_shadows, color, double_sided},
@@ -54,6 +55,8 @@ pub fn main() {
                     return;
                 };
 
+                let parent = entity::get_component(weapon_id, parent());
+
                 if optional
                     .last_shot_time
                     .is_some_and(|lst| game_time() < lst + time_between_shots)
@@ -63,9 +66,11 @@ pub fn main() {
 
                 Fire { weapon_id }.send_client_broadcast_unreliable();
 
-                let p0 = local_to_world.transform_point3(vec3(0.0, -0.1, 0.1));
+                let p0 = local_to_world.transform_point3(vec3(0.0, -0.5, 0.1));
                 let dir = local_to_world.transform_vector3(-Vec3::Y);
-                let p1 = physics::raycast_first(p0, dir)
+                let p1 = physics::raycast(p0, dir)
+                    .into_iter()
+                    .find(|h| h.entity != weapon_id && Some(h.entity) != parent)
                     .map(|h| h.position)
                     .unwrap_or_else(|| p0 + dir * 1_000_000.0);
 

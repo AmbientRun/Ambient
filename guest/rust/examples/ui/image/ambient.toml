@@ -1,9 +1,9 @@
 [package]
-id = "ambient_example_image"
+id = "t6vnxnggki32io3sobzeawxn5peyw3e3"
 name = "Image"
 description = "Using a 2d image in the UI."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/image"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"

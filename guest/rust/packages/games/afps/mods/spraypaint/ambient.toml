@@ -1,9 +1,9 @@
 [package]
-id = "afps_spraypaint"
+id = "op2g7jibpmzgvsqh5f2gi3seux6l6o5h"
 name = "AFPS Spraypaint"
 version = "0.0.1"
 content = { type = "Asset", models = true, textures = true, code = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [components]
 claymore = { type = "EntityId" }
@@ -14,6 +14,6 @@ dir = "Vec3"
 source = "EntityId"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "5OFWo076JAHpJGqIpc1cf8" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "6GMmWFdt6R1EFENX4eGZNy" }
-game_object = { path = "../../../../schemas/game_object" , deployment = "1CmZBBe5nc3Cvgkbug6TgJ" }
+afps_schema = { path = "../../schema", deployment = "6oJ853GOWW90aLSxTt39kq" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "6uREFp7FrxwZMJKHyq3Elx" }
+game_object = { path = "../../../../schemas/game_object" , deployment = "5u6YZMdgL39661DtibYw9O" }

@@ -1,0 +1,19 @@
+[package]
+name = "tangent_spawner_vehicle"
+
+edition = "2021"
+publish = false
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+ambient_api = { path = "../../../../../api" }
+
+[[bin]]
+name = "tangent_spawner_vehicle_server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

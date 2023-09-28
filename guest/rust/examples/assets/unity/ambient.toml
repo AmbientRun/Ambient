@@ -1,7 +1,7 @@
 [package]
-id = "ambient_example_unity"
+id = "tt7dtctg4qbptrbe6uahkx2lyuudy2gb"
 name = "Unity"
 description = "Load and spawn a Unity prefab"
 version = "0.0.1"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"

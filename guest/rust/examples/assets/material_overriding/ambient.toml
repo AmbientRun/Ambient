@@ -1,12 +1,12 @@
 [package]
-id = "ambient_example_material_overriding"
+id = "ib2djsnjew5tb2k5igq6le7rzjdwlvhq"
 name = "Material overriding"
 description = "This shows how to combine a model with textures."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/material_overriding"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [components.is_the_best]
 type = "Bool"
@@ -15,4 +15,4 @@ description = "Declares whether or not the entity this is attached is the best."
 attributes = ["Networked", "Debuggable"]
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "3ZJmMNytF0Lb34dCWfGpRW" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "3qM4NIHpLsJ1ZIFWbKH6iH" }

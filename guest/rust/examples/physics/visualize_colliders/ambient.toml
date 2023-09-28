@@ -1,9 +1,9 @@
 [package]
-id = "g11no9dcflmdb2qi7m2x7qimdzvv7bhe"
+id = "s37z23uqis7ts6ya7v2f66ni23m3upt7"
 name = "visualize_colliders"
 version = "0.0.1"
 content = { type = "Playable" }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "3ZJmMNytF0Lb34dCWfGpRW" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "3qM4NIHpLsJ1ZIFWbKH6iH" }

@@ -1,12 +1,12 @@
 [package]
-id = "ambient_example_todo"
+id = "jruv4zn5tfe2s3kpyhhq7z3uezbi27cv"
 name = "Todo"
 description = "Classic todo example, but in multiplayer."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/todo"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-25"
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [messages.NewItem]
 description = "Add a new todo item"

@@ -148,6 +148,7 @@ dependencies = [
  "anyhow",
  "axum",
  "clap 4.4.2",
+ "colored",
  "convert_case 0.6.0",
  "env_logger 0.10.0",
  "glam 0.24.1",
@@ -1065,6 +1066,7 @@ dependencies = [
  "ambient_shared_types",
  "chrono",
  "convert_case 0.6.0",
+ "data-encoding",
  "indexmap 2.0.0",
  "once_cell",
  "paste",
@@ -1074,6 +1076,7 @@ dependencies = [
  "semver 1.0.18",
  "serde",
  "serde_json",
+ "sha2",
  "syn 1.0.109",
  "thiserror",
  "toml 0.7.8",
@@ -1558,6 +1561,7 @@ dependencies = [
  "anyhow",
  "glam 0.24.1",
  "itertools",
+ "tracing",
  "yaml-rust-davvid",
 ]
 

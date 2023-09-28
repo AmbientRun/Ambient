@@ -44,14 +44,13 @@
     "cmd": [
       "cargo",
       "run",
+      "--features",
+      "profile",
       "--release",
       "join",
       "localhost:9000",
       "--debugger"
-    ],
-    "env": {
-      "RUST_LOG": "ambient_renderer=debug,ambient_gpu=debug,info"
-    }
+    ]
   },
   "debug-join": {
     "cmd": [
@@ -99,11 +98,11 @@
       "RUST_LOG": "ambient_network=debug,info"
     }
   },
+  "serve third-person-camera release": {
+    "cmd": "cargo run --release serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build"
+  },
   "serve-third-person-camera": {
-    "cmd": "cargo run serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build",
-    "env": {
-      "RUST_LOG": "info,ambient_network=info"
-    }
+    "cmd": "cargo run serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build"
   },
   "samplers": {
     "cmd": [
@@ -212,6 +211,9 @@
       }
     }
   },
+  "pbr": {
+    "cmd": "cargo run -p ambient_renderer --example pbr"
+  },
   "check-all": {
     "cmd": "cargo check --workspace --all-targets"
   },
@@ -252,7 +254,7 @@
     }
   },
   "serve web release": {
-    "cmd": "cargo cf web serve --profile=release",
+    "cmd": "cargo cf web serve --profile=profiling",
     "env": {
       "RUST_LOG": "info"
     }

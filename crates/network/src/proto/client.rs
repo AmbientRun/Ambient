@@ -137,7 +137,6 @@ impl ClientProtoState {
 }
 
 impl ConnectedClient {
-    #[tracing::instrument(level = "debug")]
     pub fn process_diff(
         &mut self,
         state: &SharedClientGameState,
@@ -151,7 +150,6 @@ impl ConnectedClient {
     }
 
     /// Processes an incoming datagram
-    #[tracing::instrument(level = "debug")]
     pub fn process_datagram(
         &mut self,
         state: &SharedClientGameState,

@@ -1,12 +1,13 @@
 [package]
-id = "afps_fpsmodel"
+id = "avztzukrpdpswuxb6s3paryhp4wmlckj"
 name = "AFPS Model"
 version = "0.0.1"
 content = { type = "Asset", models = true, code = true }
+ambient_version = "0.3.0-nightly-2023-09-27"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "5OFWo076JAHpJGqIpc1cf8" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "6GMmWFdt6R1EFENX4eGZNy" }
-character_animation = { path = "../../../../std/character_animation", deployment = "6OGUjzgFfQMMODSjQe2aqO" }
-base_assets = { path = "../../../../std/base_assets", deployment = "4Y7rUf6hfIwse7bLio4ses" }
-fps_controller = { path = "../../../../std/fps_controller", deployment = "1Dj90ayYdu1w4j6omgLBRL" }
+afps_schema = { path = "../../schema", deployment = "6oJ853GOWW90aLSxTt39kq" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "6uREFp7FrxwZMJKHyq3Elx" }
+character_animation = { path = "../../../../std/character_animation", deployment = "5p8nQOS7BpEWT7LkdsGpA2" }
+base_assets = { path = "../../../../std/base_assets", deployment = "2PZXMl7xWd5x4CqFuTVdIX" }
+fps_controller = { path = "../../../../std/fps_controller", deployment = "6YqjnsFnn4ACTNttCnKuqY" }

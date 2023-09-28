@@ -2,6 +2,7 @@ use std::{future::Future, pin::Pin, task::Poll};
 
 use derive_more::{Deref, From};
 use futures::FutureExt;
+use pin_project::pin_project;
 
 use crate::{control::ControlHandle, platform};
 pub use platform::task::wasm_nonsend;
@@ -218,3 +219,33 @@ impl<'a, T> Future for PlatformBoxFuture<'a, T> {
         self.0.poll_unpin(cx)
     }
 }
+
+/// A cooperative future
+#[pin_project]
+pub struct Cooperative<F> {
+    max_budget: usize,
+    current_budget: usize,
+    #[pin]
+    fut: F,
+}
+
+impl<F> Cooperative<F> {
+    pub fn new(fut: F) -> Self {
+        Self {
+            max_budget: 1024,
+            current_budget: 1024,
+            fut,
+        }
+    }
+
+    pub fn with_budget(mut self, budget: usize) -> Self {
+        self.max_budget = budget;
+        self
+    }
+}
+
+// impl<F: Future> Future for Cooperative<F> {
+//     type Output = F::Output;
+
+//     fn poll(self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Self::Output> {}
+// }
