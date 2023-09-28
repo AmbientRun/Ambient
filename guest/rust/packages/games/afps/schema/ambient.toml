@@ -6,7 +6,7 @@ content = { type = "Asset", schema = true }
 ambient_version = "0.3.0-nightly-2023-09-28"
 
 [dependencies]
-unit_schema = { path = "../../../schemas/unit", deployment = "6uREFp7FrxwZMJKHyq3Elx" }
+unit_schema = { path = "../../../schemas/unit", deployment = "5A0rsH8nDtTze7x3wuLVUJ" }
 
 [components]
 player_model_ref = { type = "EntityId", description = "The player's whole body model id.", attributes = [

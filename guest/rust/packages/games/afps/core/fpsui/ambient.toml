@@ -6,6 +6,6 @@ content = { type = "Asset", textures = true, code = true }
 ambient_version = "0.3.0-nightly-2023-09-28"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "6oJ853GOWW90aLSxTt39kq" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "6uREFp7FrxwZMJKHyq3Elx" }
-game_object = { path = "../../../../schemas/game_object" , deployment = "5u6YZMdgL39661DtibYw9O" }
+afps_schema = { path = "../../schema", deployment = "3kFlkcMc5qDzvlWFfoEEAh" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "5A0rsH8nDtTze7x3wuLVUJ" }
+game_object = { path = "../../../../schemas/game_object" , deployment = "2H5s0Iq3fZwagFmlT2KstX" }
