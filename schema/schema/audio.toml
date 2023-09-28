@@ -2,7 +2,7 @@
 name = "Audio"
 description = "Audio functionality and state."
 content = { type = "Asset", schema = true }
-version = "0.3.0-nightly-2023-09-28"
+version = "0.3.0-dev"
 ambient_version = "0.3.0-nightly-2023-09-28"
 
 [components.is_audio_player]

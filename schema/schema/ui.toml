@@ -2,7 +2,7 @@
 name = "UI"
 description = "User interface components"
 content = { type = "Asset", schema = true }
-version = "0.3.0-nightly-2023-09-28"
+version = "0.3.0-dev"
 ambient_version = "0.3.0-nightly-2023-09-28"
 
 [components.focus]
