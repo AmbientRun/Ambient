@@ -6,7 +6,6 @@ members = [
     "alex/fog_dj",
     "alex/a_nice_scene",
     "alex/just_fog",
-    "alex/custom_nameplates",
     "alex/temperature",
     "alex/temperature_hud_magda",
     "alex/lightbox_playground",
