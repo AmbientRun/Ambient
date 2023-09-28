@@ -27,18 +27,12 @@ pub use interval::{interval, interval_at, Interval};
 
 pub static GLOBAL_TIMER: Lazy<TimersHandle> = Lazy::new(Timers::start);
 
-// #[deprecated(note = "use labeled sleep")]
-// pub fn sleep_until(deadline: Instant) -> Sleep {
-//     Sleep::new(&GLOBAL_TIMER, deadline, "unknown until")
-// }
-
-// #[deprecated(note = "use labeled sleep")]
-// pub fn sleep(duration: Duration) -> Sleep {
-//     Sleep::new(&GLOBAL_TIMER, Instant::now() + duration, "unknown")
-// }
-
 pub fn sleep_label(duration: Duration, label: &'static str) -> Sleep {
     Sleep::new(&GLOBAL_TIMER, Instant::now() + duration, label)
+}
+
+pub fn sleep_until_label(deadline: Instant, label: &'static str) -> Sleep {
+    Sleep::new(&GLOBAL_TIMER, deadline, label)
 }
 
 struct TimerEntry {
