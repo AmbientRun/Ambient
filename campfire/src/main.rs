@@ -1,7 +1,17 @@
 use std::process::ExitCode;
 
-use campfire::{cli::Cli, doc, golden_images, install, package, release, web};
+pub mod cli;
+pub mod doc;
+pub mod golden_images;
+pub mod install;
+pub mod join;
+pub mod package;
+pub mod release;
+pub mod util;
+pub mod web;
+
 use clap::Parser;
+use cli::Cli;
 
 async fn run() -> anyhow::Result<()> {
     if !std::path::Path::new("schema/ambient.toml").exists() {
@@ -18,6 +28,7 @@ async fn run() -> anyhow::Result<()> {
         Cli::GoldenImages(gi) => golden_images::main(&gi).await,
         Cli::Release(re) => release::main(&re),
         Cli::Install(install) => install::main(&install),
+        Cli::Join(join) => join::main(&join),
 
         Cli::Clean => package::clean(),
         Cli::Run(run) => package::run(&run),

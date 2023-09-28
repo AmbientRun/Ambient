@@ -35,20 +35,26 @@ pub fn main() {
             );
 
             for (entity_id, (translation, health, max_health)) in candidates.iter().copied() {
-                if pickup.translation.distance(translation) > 3.0 {
+                if pickup.translation.distance_squared(translation) > 3f32.powi(2) {
+                    continue;
+                }
+
+                if health == 0.0 {
                     continue;
                 }
 
                 let new_health = (health + 25.0).clamp(0.0, max_health);
-                if health != new_health {
-                    entity::set_component(entity_id, self::health(), new_health);
-                    entity::despawn_recursive(id);
-
-                    OnHealthPickup {
-                        position: pickup.translation,
-                    }
-                    .send_client_broadcast_unreliable();
+                if health == new_health {
+                    continue;
                 }
+
+                entity::set_component(entity_id, self::health(), new_health);
+                entity::despawn_recursive(id);
+
+                OnHealthPickup {
+                    position: pickup.translation,
+                }
+                .send_client_broadcast_unreliable();
             }
         }
     });

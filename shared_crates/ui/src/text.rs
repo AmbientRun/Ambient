@@ -89,4 +89,5 @@ pub fn Text3D(
         .with(self::text(), text)
         .with(self::scale(), Vec3::ONE * (scale / 1_000.))
         .init(width(), 1.0)
+        .init(height(), 1.0)
 }

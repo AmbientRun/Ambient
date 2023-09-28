@@ -32,16 +32,19 @@ pub enum RenderMode {
 
 impl RenderMode {
     pub const fn instrinsic_render_mode() -> Self {
+        // All backends are now using Direct rendering due to a one frame lag flickering bug with culling in the indirect rendering path.
         cfg_if::cfg_if! {
             if #[cfg(any(target_os = "windows", target_os = "linux"))] {
-                Self::MultiIndirect
+                //Self::MultiIndirect
+                Self::Direct
             } else if #[cfg(target_os = "macos")] {
-                Self::Indirect
+                //Self::Indirect
+                Self::Direct
             } else if #[cfg(target_os = "unknown")] {
                 // Chrome uses DirectX12 which does not correctly implement `INDIRECT_FIRST_INSTANCE` which causes the wrong instance index to be passed to indirect draws.
                 // This in turn causes a dispatch of X vertices to unconditionally use instance/entity 0, and therefore the wrong mesh for the dispatch count.
                 // Not good
-               Self::Direct
+                Self::Direct
             } else {
                 Self::Direct
             }

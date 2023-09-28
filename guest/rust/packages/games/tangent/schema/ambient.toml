@@ -1,12 +1,14 @@
 [package]
 id = "mwrcsok65na7owrbdococ5sthr3ccskc"
 name = "Tangent Schema"
-version = "0.1.0"
+version = "0.2.0"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.0-nightly-2023-09-27"
+authors = ["philpax"]
+ambient_version = "0.3.0-nightly-2023-09-28"
 
 [dependencies]
-game_object = { path = "../../../schemas/game_object" , deployment = "5u6YZMdgL39661DtibYw9O" }
+game_object = { path = "../../../schemas/game_object", deployment = "2H5s0Iq3fZwagFmlT2KstX" }
+unit = { path = "../../../schemas/unit" , deployment = "5A0rsH8nDtTze7x3wuLVUJ" }
 
 [components]
 # Player
@@ -14,179 +16,336 @@ game_object = { path = "../../../schemas/game_object" , deployment = "5u6YZMdgL3
     "Networked",
     "Debuggable",
 ] }
-"player::input_direction" = { type = "Vec2", name = "Input Direction", description = "Input direction" }
-"player::input_jump" = { type = "Bool", name = "Jump", description = "Jump" }
-"player::input_fire" = { type = "Bool", name = "Fire", description = "Fire" }
-"player::input_aim_direction" = { type = "Vec2", name = "Aim Direction", description = "Aim direction in degrees from the centre" }
-"player::vehicle_class" = { type = "EntityId", name = "Vehicle Class", description = "The player's vehicle class", attributes = [
+"player::character_ref" = { type = "EntityId", name = "Player's Character", description = "The player's character", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"player::class_ref" = { type = "EntityId", name = "Class", description = "The player's class", attributes = [
     "Networked",
     "Debuggable",
 ] }
 
-# Vehicle data
-"vehicle::data::thruster::offsets" = { type = { type = "Vec", element_type = "Vec2" }, name = "Thruster Offsets", description = "Offsets of the thrusters from the center of the vehicle", attributes = [
-    "Networked",
+"player::input_direction" = { type = "Vec2", name = "Input Direction", description = "Input direction", attributes = [
+    "Debuggable",
 ] }
-"vehicle::data::thruster::k_p" = { type = "F32", name = "Thruster K_p", description = "Proportional gain for the thrusters", attributes = [
-    "Networked",
+"player::input_jump" = { type = "Bool", name = "Jump", description = "Jump", attributes = [
+    "Debuggable",
 ] }
-"vehicle::data::thruster::k_d" = { type = "F32", name = "Thruster K_d", description = "Derivative gain for the thrusters", attributes = [
-    "Networked",
+"player::input_fire" = { type = "Bool", name = "Fire", description = "Fire", attributes = [
+    "Debuggable",
 ] }
-"vehicle::data::thruster::target" = { type = "F32", name = "Thruster Target Altitude", description = "Target altitude for the thrusters", attributes = [
-    "Networked",
+"player::input_use" = { type = "Bool", name = "Use", description = "Use", attributes = [
+    "Debuggable",
 ] }
-"vehicle::data::thruster::max_strength" = { type = "F32", name = "Thruster Max Strength", description = "Maximum strength of the thrusters", attributes = [
-    "Networked",
+"player::input_sprint" = { type = "Bool", name = "Sprint", description = "Sprint", attributes = [
+    "Debuggable",
 ] }
-
-"vehicle::data::input::forward_force" = { type = "F32", name = "Forward Force", description = "Forward force applied to the vehicle on input", attributes = [
-    "Networked",
+"player::input_respawn" = { type = "Bool", name = "Respawn", description = "Respawn", attributes = [
+    "Debuggable",
 ] }
-"vehicle::data::input::backward_force" = { type = "F32", name = "Backward Force", description = "Backward force applied to the vehicle on input", attributes = [
-    "Networked",
+"player::input_aim_direction" = { type = "Vec2", name = "Aim Direction", description = "Aim direction in degrees from the centre", attributes = [
+    "Debuggable",
 ] }
-"vehicle::data::input::forward_offset" = { type = "Vec2", name = "Forward Offset", description = "Offset of the forward force from the center of the vehicle. Typically at the back of the vehicle.", attributes = [
-    "Networked",
+"player::input_aim_ray_origin" = { type = "Vec3", name = "Aim Ray Origin", description = "Origin of the aim ray", attributes = [
+    "Debuggable",
 ] }
-
-"vehicle::data::input::side_force" = { type = "F32", name = "Side Force", description = "Side force applied to the vehicle on input", attributes = [
-    "Networked",
-] }
-"vehicle::data::input::side_offset" = { type = "Vec2", name = "Side Offset", description = "Offset of the side force from the center of the vehicle. Typically at the front of the vehicle.", attributes = [
-    "Networked",
+"player::input_aim_ray_direction" = { type = "Vec3", name = "Aim Ray Direction", description = "Direction of the aim ray", attributes = [
+    "Debuggable",
 ] }
 
-"vehicle::data::input::jump_force" = { type = "F32", name = "Jump Force", description = "Jump force applied to the vehicle on input", attributes = [
+# Player class
+"player::class::is_class" = { type = "Empty", name = "Is Class", description = "Is a player class", attributes = [
     "Networked",
+    "Debuggable",
+] }
+"player::class::name" = { type = "String", name = "Name", description = "Name of the player class", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"player::class::description" = { type = "String", name = "Description", description = "Description of the player class", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"player::class::icon_url" = { type = "String", name = "Icon URL", description = "URL of the icon for the player class", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"player::class::def_ref" = { type = "EntityId", name = "Class Definition Ref", description = "When attached to a class, indicates that it should draw its properties from this entity.", attributes = [
+    "Networked",
+    "Debuggable",
 ] }
 
-"vehicle::data::input::pitch_strength" = { type = "F32", name = "Pitch Strength", description = "Strength of the pitch applied to the applicable thrusters of the vehicle on input", attributes = [
+# Character
+"character::is_character" = { type = "Empty", name = "Is Character", description = "Is a player character", attributes = [
     "Networked",
+    "Debuggable",
 ] }
-"vehicle::data::input::turning_strength" = { type = "F32", name = "Turning Strength", description = "Strength of the turning applied to the applicable thrusters of the vehicle on input", attributes = [
+"character::player_ref" = { type = "EntityId", name = "Character's Player", description = "The player controlling the character", attributes = [
     "Networked",
+    "Debuggable",
+] }
+"character::last_use_time" = { type = "Duration", name = "Last Use Time", description = "The last time the player tried to use something", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"character::def_ref" = { type = "EntityId", name = "Character Definition Ref", description = "When attached to a character, indicates that it should draw its properties from this entity.", attributes = [
+    "Networked",
+    "Debuggable",
 ] }
 
-"vehicle::data::input::jump_timeout" = { type = "Duration", name = "Jump Timeout", description = "Timeout between jumps", attributes = [
+"character::head::camera_ref" = { type = "EntityId", name = "Head Camera", description = "The camera attached to the character's head", attributes = [
     "Networked",
+    "Debuggable",
 ] }
 
-"vehicle::data::input::aim_direction_limits" = { type = "Vec2", name = "Aim Direction Limits", description = "Limits of the aim direction in degrees from the centre", attributes = [
+# Character def
+"character::def::model_url" = { type = "String", name = "Model URL", description = "URL of the model for the character def", attributes = [
     "Networked",
+    "Debuggable",
 ] }
 
-"vehicle::data::slowdown::linear_strength" = { type = "F32", name = "Linear Strength", description = "Strength of the linear slowdown applied to the vehicle", attributes = [
+# Vehicle def
+"vehicle::def::thruster::offsets" = { type = { type = "Vec", element_type = "Vec2" }, name = "Thruster Offsets", description = "Offsets of the thrusters from the center of the vehicle", attributes = [
     "Networked",
+    "Debuggable",
 ] }
-"vehicle::data::slowdown::angular_strength" = { type = "F32", name = "Angular Strength", description = "Strength of the angular slowdown applied to the vehicle", attributes = [
+"vehicle::def::thruster::k_p" = { type = "F32", name = "Thruster K_p", description = "Proportional gain for the thrusters", attributes = [
     "Networked",
+    "Debuggable",
 ] }
-"vehicle::data::slowdown::angular_delay" = { type = "Duration", name = "Angular Delay", description = "Time to wait before applying angular slowdown", attributes = [
+"vehicle::def::thruster::k_d" = { type = "F32", name = "Thruster K_d", description = "Derivative gain for the thrusters", attributes = [
     "Networked",
+    "Debuggable",
+] }
+"vehicle::def::thruster::target" = { type = "F32", name = "Thruster Target Altitude", description = "Target altitude for the thrusters", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"vehicle::def::thruster::max_strength" = { type = "F32", name = "Thruster Max Strength", description = "Maximum strength of the thrusters", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+"vehicle::def::input::forward_force" = { type = "F32", name = "Forward Force", description = "Forward force applied to the vehicle on input", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"vehicle::def::input::backward_force" = { type = "F32", name = "Backward Force", description = "Backward force applied to the vehicle on input", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"vehicle::def::input::forward_offset" = { type = "Vec2", name = "Forward Offset", description = "Offset of the forward force from the center of the vehicle. Typically at the back of the vehicle.", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+"vehicle::def::input::side_force" = { type = "F32", name = "Side Force", description = "Side force applied to the vehicle on input", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"vehicle::def::input::side_offset" = { type = "Vec2", name = "Side Offset", description = "Offset of the side force from the center of the vehicle. Typically at the front of the vehicle.", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+"vehicle::def::input::jump_force" = { type = "F32", name = "Jump Force", description = "Jump force applied to the vehicle on input", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+"vehicle::def::input::pitch_strength" = { type = "F32", name = "Pitch Strength", description = "Strength of the pitch applied to the applicable thrusters of the vehicle on input", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"vehicle::def::input::turning_strength" = { type = "F32", name = "Turning Strength", description = "Strength of the turning applied to the applicable thrusters of the vehicle on input", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+"vehicle::def::input::jump_timeout" = { type = "Duration", name = "Jump Timeout", description = "Timeout between jumps", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+"vehicle::def::input::aim_direction_limits" = { type = "Vec2", name = "Aim Direction Limits", description = "Limits of the aim direction in degrees from the centre", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+"vehicle::def::slowdown::linear_strength" = { type = "F32", name = "Linear Strength", description = "Strength of the linear slowdown applied to the vehicle", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"vehicle::def::slowdown::angular_strength" = { type = "F32", name = "Angular Strength", description = "Strength of the angular slowdown applied to the vehicle", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"vehicle::def::slowdown::angular_delay" = { type = "Duration", name = "Angular Delay", description = "Time to wait before applying angular slowdown", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+
+"vehicle::def::is_def" = { type = "Empty", name = "Is Def", description = "Is a vehicle def", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"vehicle::def::name" = { type = "String", name = "Name", description = "Name of the vehicle def", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"vehicle::def::model_url" = { type = "String", name = "Model URL", description = "URL of the model for the vehicle def", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+"vehicle::def::model_scale" = { type = "F32", name = "Model Scale", description = "Scale of the model for the vehicle def", attributes = [
+    "Networked",
+    "Debuggable",
 ] }
 
 # Vehicle
-"vehicle::player_ref" = { type = "EntityId", name = "Vehicle", description = "A vehicle (and its driver)", attributes = [
+"vehicle::is_vehicle" = { type = "Empty", name = "Is Vehicle", description = "Is a vehicle", attributes = [
     "Networked",
+    "Debuggable",
 ] }
-"vehicle::data_ref" = { type = "EntityId", name = "Vehicle Data Ref", description = "When attached to a vehicle-specific entity (class or live vehicle), indicates that it should draw its properties from this entity.", attributes = [
+"vehicle::driver_ref" = { type = "EntityId", name = "Vehicle Driver", description = "A vehicle's driver, if present", attributes = [
     "Networked",
+    "Debuggable",
+] }
+"vehicle::def_ref" = { type = "EntityId", name = "Vehicle Definition Ref", description = "When attached to a vehicle entity, indicates that it should draw its properties from this entity.", attributes = [
+    "Networked",
+    "Debuggable",
 ] }
 "vehicle::aimable_weapon_refs" = { type = { type = "Vec", element_type = "EntityId" }, name = "Aimable Weapon Refs", description = "All aimable weapons for this vehicle. If present in this array, their rotations will be automatically updated to match the aim position. Assumes that the weapons are a child of the vehicle.", attributes = [
     "Networked",
+    "Debuggable",
 ] }
 
 "vehicle::last_distances" = { type = { type = "Vec", element_type = "F32" }, name = "Last Distances", description = "Distances from the ground for each vehicle probe", attributes = [
     "Networked",
+    "Debuggable",
 ] }
 "vehicle::last_jump_time" = { type = "Duration", name = "Last Jump Time", description = "The last time the player jumped", attributes = [
     "Networked",
+    "Debuggable",
 ] }
 "vehicle::last_slowdown_time" = { type = "Duration", name = "Last Slowdown Time", description = "The last time the player's vehicle was slowed down", attributes = [
     "Networked",
+    "Debuggable",
 ] }
 "vehicle::last_upside_down_time" = { type = "Duration", name = "Last Upside Down Time", description = "The last time the player's vehicle was known to be upside down. Added when first detected, removed when no longer the case. Used to respawn the vehicle after some time.", attributes = [
     "Networked",
+    "Debuggable",
 ] }
 
-"vehicle::aim_distance" = { type = "F32", name = "Aim Distance", description = "Distance of the aim target from the vehicle", attributes = [
-    "Networked",
+"vehicle::input_direction" = { type = "Vec2", name = "Input Direction", description = "Input direction", attributes = [
+    "Debuggable",
 ] }
-
+"vehicle::input_jump" = { type = "Bool", name = "Jump", description = "Jump", attributes = [
+    "Debuggable",
+] }
+"vehicle::input_fire" = { type = "Bool", name = "Fire", description = "Fire", attributes = [
+    "Debuggable",
+] }
 # Vehicle (server-only)
-"vehicle::aim_position" = { type = "Vec3", name = "Aim Position", description = "Position of the aim target" }
+"vehicle::aim_position" = { type = "Vec3", name = "Aim Position", description = "Position of the aim target", attributes = [
+    "Debuggable",
+] }
 
 # Vehicle (client-only)
 "vehicle::client::speed_kph" = { type = "F32", name = "Speed (KPH)", description = "Speed of the vehicle in kilometers per hour." }
 
-# Vehicle class
-"vehicle::class::is_class" = { type = "Empty", name = "Is Class", description = "Is a vehicle class", attributes = [
-    "Networked",
-] }
-"vehicle::class::name" = { type = "String", name = "Name", description = "Name of the vehicle class", attributes = [
-    "Networked",
-] }
-"vehicle::class::description" = { type = "String", name = "Description", description = "Description of the vehicle class", attributes = [
-    "Networked",
-] }
-"vehicle::class::icon_url" = { type = "String", name = "Icon URL", description = "URL of the icon for the vehicle class", attributes = [
-    "Networked",
-] }
-"vehicle::class::model_url" = { type = "String", name = "Model URL", description = "URL of the model for the vehicle class", attributes = [
-    "Networked",
-] }
-"vehicle::class::model_scale" = { type = "F32", name = "Model Scale", description = "Scale of the model for the vehicle class", attributes = [
-    "Networked",
-] }
-
 # Spawnpoint
 "spawnpoint::is_spawnpoint" = { type = "Empty", name = "Is Spawnpoint", description = "Is a spawnpoint", attributes = [
     "Networked",
+    "Debuggable",
 ] }
 "spawnpoint::radius" = { type = "F32", name = "Radius", description = "Radius of the spawnpoint", attributes = [
     "Networked",
+    "Debuggable",
 ] }
 
 # Weapon
 "weapon::fire" = { type = "Bool", name = "Fire", description = "When on, the weapon will attempt to fire.", attributes = [
     "Networked",
+    "Debuggable",
 ] }
 
-[concepts.VehicleData]
-name = "Vehicle Data"
-description = "Data for a vehicle"
-[concepts.VehicleData.components.required]
+[concepts.PlayerClass]
+name = "Player Class"
+description = "A player class"
+[concepts.PlayerClass.components.required]
+"player::class::is_class" = {}
+"player::class::name" = {}
+"player::class::description" = {}
+"player::class::icon_url" = {}
+"player::class::def_ref" = {}
+
+[concepts.Character]
+name = "Character"
+description = "A character with a physical representation"
+[concepts.Character.components.required]
+"ambient_core::transform::translation" = {}
+"ambient_core::transform::rotation" = {}
+
+"game_object::health" = {}
+"game_object::max_health" = {}
+
+"character::is_character" = {}
+"character::player_ref" = {}
+"character::def_ref" = {}
+[concepts.Character.components.optional]
+"character::last_use_time" = {}
+
+[concepts.CharacterDef]
+name = "Character Definition"
+description = "Definition for a character"
+[concepts.CharacterDef.components.required]
+"game_object::max_health" = {}
+"character::def::model_url" = {}
+
+"unit::speed" = {}
+"unit::run_speed_multiplier" = {}
+"unit::strafe_speed_multiplier" = {}
+
+[concepts.VehicleDef]
+name = "Vehicle Definition"
+description = "Definition for a vehicle"
+[concepts.VehicleDef.components.required]
 "ambient_core::physics::density" = {}
 "ambient_core::physics::cube_collider" = {}
 
 "game_object::max_health" = {}
 
-"vehicle::data::thruster::offsets" = {}
-"vehicle::data::thruster::k_p" = {}
-"vehicle::data::thruster::k_d" = {}
-"vehicle::data::thruster::target" = {}
-"vehicle::data::thruster::max_strength" = {}
+"vehicle::def::thruster::offsets" = {}
+"vehicle::def::thruster::k_p" = {}
+"vehicle::def::thruster::k_d" = {}
+"vehicle::def::thruster::target" = {}
+"vehicle::def::thruster::max_strength" = {}
 
-"vehicle::data::input::forward_force" = {}
-"vehicle::data::input::backward_force" = {}
-"vehicle::data::input::forward_offset" = {}
+"vehicle::def::input::forward_force" = {}
+"vehicle::def::input::backward_force" = {}
+"vehicle::def::input::forward_offset" = {}
 
-"vehicle::data::input::side_force" = {}
-"vehicle::data::input::side_offset" = {}
+"vehicle::def::input::side_force" = {}
+"vehicle::def::input::side_offset" = {}
 
-"vehicle::data::input::jump_force" = {}
+"vehicle::def::input::jump_force" = {}
 
-"vehicle::data::input::aim_direction_limits" = {}
+"vehicle::def::input::aim_direction_limits" = {}
 
-"vehicle::data::input::pitch_strength" = {}
-"vehicle::data::input::turning_strength" = {}
+"vehicle::def::input::pitch_strength" = {}
+"vehicle::def::input::turning_strength" = {}
 
-"vehicle::data::input::jump_timeout" = {}
+"vehicle::def::input::jump_timeout" = {}
 
-"vehicle::data::slowdown::linear_strength" = {}
-"vehicle::data::slowdown::angular_strength" = {}
-"vehicle::data::slowdown::angular_delay" = {}
+"vehicle::def::slowdown::linear_strength" = {}
+"vehicle::def::slowdown::angular_strength" = {}
+"vehicle::def::slowdown::angular_delay" = {}
+
+"vehicle::def::is_def" = {}
+"vehicle::def::name" = {}
+"vehicle::def::model_url" = {}
+"vehicle::def::model_scale" = {}
 
 [concepts.Vehicle]
 name = "Vehicle"
@@ -206,27 +365,21 @@ description = "A vehicle with a physical representation"
 "game_object::health" = {}
 "game_object::max_health" = {}
 
-"vehicle::player_ref" = {}
+"vehicle::is_vehicle" = {}
+
 "vehicle::last_distances" = {}
 "vehicle::last_jump_time" = {}
 "vehicle::last_slowdown_time" = {}
-"vehicle::data_ref" = {}
+"vehicle::def_ref" = {}
+
+"vehicle::input_direction" = {}
+"vehicle::input_jump" = {}
+"vehicle::input_fire" = {}
 [concepts.Vehicle.components.optional]
+"vehicle::driver_ref" = {}
 "vehicle::last_upside_down_time" = {}
 "vehicle::aim_position" = {}
 "vehicle::aimable_weapon_refs" = {}
-
-[concepts.VehicleClass]
-name = "Vehicle Class"
-description = "A vehicle class"
-[concepts.VehicleClass.components.required]
-"vehicle::class::is_class" = {}
-"vehicle::class::name" = {}
-"vehicle::class::description" = {}
-"vehicle::class::icon_url" = {}
-"vehicle::class::model_url" = {}
-"vehicle::class::model_scale" = {}
-"vehicle::data_ref" = {}
 
 [concepts.Spawnpoint]
 name = "Spawnpoint"
@@ -236,8 +389,3 @@ description = "A spawnpoint"
 "spawnpoint::radius" = {}
 "ambient_core::transform::translation" = {}
 "ambient_core::rendering::color" = {}
-
-[messages.OnDeath]
-name = "On Death"
-description = "Sent to server modules when a vehicle is destroyed."
-fields = { position = "Vec3", player_id = "EntityId" }

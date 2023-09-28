@@ -11,6 +11,7 @@ use ambient_ui_native::{
     element::{ElementComponentExt, Group},
     WindowSized,
 };
+use anyhow::Context;
 use app::MainApp;
 use futures::StreamExt;
 use tracing_subscriber::{
@@ -32,30 +33,52 @@ static APP_CONTROL: OnceLock<flume::Sender<WindowCtl>> = OnceLock::new();
 /// backwards and forwards compatibility when new fields are added to the settings object in a
 /// "best fit" approach, similar to the `settings` in the LanguageServerProtocol spec.
 pub struct Settings {
+    #[serde(default = "default_true")]
     enable_logging: bool,
+    #[serde(default = "default_true")]
     enable_panic_hook: bool,
+    #[serde(default)]
     allow_version_mismatch: bool,
-    log_filter: Option<String>,
+    #[serde(default = "default_filter")]
+    log_filter: String,
+    #[serde(default)]
     debugger: bool,
+}
+
+fn default_filter() -> String {
+    "info".into()
+}
+
+fn default_true() -> bool {
+    true
 }
 
 #[wasm_bindgen]
 /// Starts execution of the ambient client and connects to the specified URL
 ///
 /// TODO: The `MainApp` setup will move to an Ambient package and this will only load the runtime
-pub async fn start(target: Option<web_sys::HtmlElement>, server_url: String, settings: JsValue) {
-    let settings: Settings =
-        serde_wasm_bindgen::from_value(settings).expect("settings can be parsed from object");
+///
+/// Finishes once the app has been built and initialized
+pub async fn start(
+    target: Option<web_sys::HtmlElement>,
+    server_url: String,
+    settings: JsValue,
+) -> Result<(), JsValue> {
+    let settings: Settings = serde_wasm_bindgen::from_value(settings)?;
 
-    init(&settings).expect("Failed to initialize ambient");
+    init(&settings)
+        .context("Failed to initialize ambient")
+        .map_err(|e| format!("{e:?}"))?;
 
-    if let Err(err) = run(target, server_url, settings).await {
-        tracing::error!("{err:?}")
-    }
+    run(target, server_url, settings)
+        .await
+        .map_err(|e| format!("{e:?}"))?;
+
+    Ok(())
 }
 
 /// Initialize ambient
-fn init(settings: &Settings) -> Result<(), JsValue> {
+fn init(settings: &Settings) -> anyhow::Result<()> {
     if settings.enable_logging {
         let fmt_layer = tracing_subscriber::fmt::layer()
             .with_ansi(true) // Only partially supported, but works on Chrome
@@ -64,13 +87,8 @@ fn init(settings: &Settings) -> Result<(), JsValue> {
 
         let filter = settings
             .log_filter
-            .as_ref()
-            .map(|v| {
-                v.parse::<Targets>()
-                    .map_err(|_| JsValue::from("Failed to parse filtering directive"))
-            })
-            .transpose()?
-            .unwrap_or_else(|| Targets::new().with_default(LevelFilter::INFO));
+            .parse::<Targets>()
+            .context("Failed to parse filtering directive")?;
 
         registry().with(filter).with(fmt_layer).init();
     }
@@ -117,12 +135,6 @@ async fn run(
     sleep_label(Duration::from_secs(5), "test").await;
     tracing::info!("Good morning");
 
-    wasm_bindgen_futures::spawn_local({
-        interval(Duration::from_secs(1)).for_each(|deadline| async move {
-            tracing::info!(?deadline, "Tick");
-        })
-    });
-    use anyhow::Context;
     let mut app = App::builder()
         .ui_renderer(true)
         .parent_element(target)
@@ -130,8 +142,6 @@ async fn run(
         .build()
         .await
         .context("Failed to build app")?;
-
-    tracing::info!("Finished building app");
 
     let world = &mut app.world;
 

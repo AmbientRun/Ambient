@@ -9,9 +9,15 @@ use crate::{
     shared::PackageJson,
 };
 use ambient_api::{
-    core::package::{
-        components::{description, for_playables, id, is_package},
-        concepts::Package as PackageConcept,
+    core::{
+        package::{
+            components::{description, for_playables, id, is_package},
+            concepts::Package as PackageConcept,
+        },
+        ui::{
+            components::{focus, focusable},
+            messages::FocusChanged,
+        },
     },
     element::{
         use_effect, use_entity_component, use_module_message, use_query, use_spawn, use_state,
@@ -56,7 +62,7 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
         close: Some(cb(move || set_visible(false))),
         style: Some(window_style()),
         child: if mod_manager_for.is_some() {
-            ModManagerInner::el()
+            ModManagerInner::el(mod_manager_for)
         } else {
             PackageManagerInner::el()
         }
@@ -64,11 +70,20 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
         .with_margin_even(8.),
     }
     .el()
+    .with(focusable(), hooks.instance_id().to_string())
+    .on_spawned(|_, _id, instance_id| {
+        entity::set_component(entity::resources(), focus(), instance_id.to_string());
+        FocusChanged {
+            from_external: false,
+            focus: instance_id.to_string(),
+        }
+        .send_local_broadcast(true);
+    })
 }
 
 #[element_component]
-fn ModManagerInner(_hooks: &mut Hooks) -> Element {
-    FlowColumn::el([PackagesRemote::el(false)])
+fn ModManagerInner(_hooks: &mut Hooks, mod_manager_for: Option<EntityId>) -> Element {
+    FlowColumn::el([PackagesRemote::el(true, mod_manager_for)])
 }
 
 #[element_component]
@@ -96,7 +111,7 @@ fn PackageManagerInner(_hooks: &mut Hooks) -> Element {
         .with_tab(ListTab::Local, || PackagesLocal::el(None))
         .with_tab(ListTab::Remote, || {
             FlowColumn::el(vec![
-                PackagesRemote::el(true),
+                PackagesRemote::el(false, None),
                 Button::new("Load package from URL", |_| {
                     PackageLoadShow.send_local(crate::packages::this::entity())
                 })
@@ -108,12 +123,24 @@ fn PackageManagerInner(_hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn PackagesLocal(hooks: &mut Hooks, mod_manager_for: Option<EntityId>) -> Element {
+    let display_packages = use_local_packages(hooks, mod_manager_for);
+
+    match display_packages {
+        Ok(packages) => PackageList::el(packages),
+        Err(err) => Text::el(err),
+    }
+}
+
+fn use_local_packages(
+    hooks: &mut Hooks,
+    mod_manager_for: Option<EntityId>,
+) -> Result<Vec<DisplayPackage>, String> {
     let packages = use_query(hooks, PackageConcept::as_query());
 
     let mod_manager_for = match mod_manager_for {
         Some(mod_manager_for) => match entity::get_component(mod_manager_for, id()) {
             Some(id) => Some(id),
-            None => return Text::el("Could not get ID of main package to mod"),
+            None => return Err("Could not get ID of main package to mod".to_string()),
         },
         None => None,
     };
@@ -147,7 +174,7 @@ fn PackagesLocal(hooks: &mut Hooks, mod_manager_for: Option<EntityId>) -> Elemen
         })
         .collect();
 
-    PackageList::el(display_packages)
+    Ok(display_packages)
 }
 
 #[derive(Clone, Debug)]
@@ -195,39 +222,48 @@ fn use_remote_packages(hooks: &mut Hooks) -> PackagesState {
 }
 
 #[element_component]
-fn PackagesRemote(hooks: &mut Hooks, filter_away_local: bool) -> Element {
+fn PackagesRemote(
+    hooks: &mut Hooks,
+    include_local: bool,
+    mod_manager_for: Option<EntityId>,
+) -> Element {
+    let local_packages = use_local_packages(hooks, mod_manager_for);
     let remote_packages = use_remote_packages(hooks);
     let loaded_packages = use_query(hooks, (is_package(), id()));
 
     let loaded_package_ids: HashSet<String> =
         HashSet::from_iter(loaded_packages.into_iter().map(|(_, (_, id))| id));
 
-    FlowColumn::el([match remote_packages {
-        PackagesState::Loading => Text::el("Loading..."),
-        PackagesState::Loaded(remote_packages) => PackageList::el(
-            remote_packages
-                .into_iter()
-                .filter(|package| {
-                    if filter_away_local {
-                        !loaded_package_ids.contains(&package.id)
-                    } else {
-                        true
-                    }
-                })
-                .map(|package| DisplayPackage {
-                    source: DisplayPackageSource::Remote {
-                        url: package.url.clone(),
-                    },
-                    name: package.name,
-                    // version: package.version,
-                    authors: package.authors,
-                    description: package.description,
-                })
-                .collect(),
-        ),
-        PackagesState::Error(error) => Text::el(error),
-    }])
-    .with(space_between_items(), 8.0)
+    let remote_packages: Vec<_> = match remote_packages {
+        PackagesState::Loading => return Text::el("Loading..."),
+        PackagesState::Loaded(remote_packages) => remote_packages
+            .into_iter()
+            .filter(|package| !loaded_package_ids.contains(&package.id))
+            .map(|package| DisplayPackage {
+                source: DisplayPackageSource::Remote {
+                    url: package.url.clone(),
+                },
+                name: package.name,
+                // version: package.version,
+                authors: package.authors,
+                description: package.description,
+            })
+            .collect(),
+        PackagesState::Error(error) => return Text::el(error),
+    };
+
+    let packages = if include_local {
+        let mut packages = remote_packages;
+        if let Ok(local_packages) = local_packages {
+            packages.extend(local_packages);
+        }
+        packages.sort_by_key(|p| p.name.clone());
+        packages
+    } else {
+        remote_packages
+    };
+
+    FlowColumn::el([PackageList::el(packages)]).with(space_between_items(), 8.0)
 }
 
 #[derive(Clone, Debug)]
@@ -255,11 +291,15 @@ fn PackageList(_hooks: &mut Hooks, packages: Vec<DisplayPackage>) -> Element {
         .with(height(), 1.)
         .with(fit_horizontal(), Fit::Parent);
 
-    FlowColumn::el(itertools::intersperse(
-        packages.into_iter().map(Package::el),
-        sep,
-    ))
-    .with(space_between_items(), 0.0)
+    ScrollArea::el(
+        ScrollAreaSizing::FitChildrenWidth,
+        FlowColumn::el(itertools::intersperse(
+            packages.into_iter().map(Package::el),
+            sep,
+        ))
+        .with(space_between_items(), 0.0),
+    )
+    .with(height(), 400.)
 }
 
 #[element_component]
@@ -269,6 +309,7 @@ fn Package(_hooks: &mut Hooks, package: DisplayPackage) -> Element {
         _ => false,
     };
 
+    const MAX_WIDTH: f32 = 400.;
     FlowRow::el([
         // Header
         FlowColumn::el([
@@ -287,12 +328,13 @@ fn Package(_hooks: &mut Hooks, package: DisplayPackage) -> Element {
                 Text::el(desc)
                     .body_s_500()
                     .hex_text_color(SEMANTIC_MAIN_ELEMENTS_SECONDARY)
+                    .with(max_width(), MAX_WIDTH)
             } else {
                 Element::new()
             },
         ])
         .with(space_between_items(), 4.0)
-        .with(width(), 250.)
+        .with(width(), MAX_WIDTH)
         .with(fit_horizontal(), Fit::None),
         // Buttons
         Toggle::el(

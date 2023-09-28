@@ -1,0 +1,18 @@
+[package]
+id = "roosvvawp6sjvlolokk5qyafl5vp2su7"
+name = "Tangent Spawner: Vehicle"
+description = "Handles vehicle spawning for Tangent."
+version = "0.0.1"
+content = { type = "Asset", code = true }
+ambient_version = "0.3.0-nightly-2023-09-28"
+authors = ["philpax"]
+
+[dependencies]
+tangent_schema = { path = "../../schema", deployment = "3Wpx1zwYuxtR3BmKlDvZsZ" }
+
+nameplates = { path = "../../../../std/nameplates", deployment = "4ZKPRHYFEHzL2FBWi6vxdC" }
+
+[messages.VehicleSpawn]
+name = "Vehicle Spawn"
+description = "Spawns the vehicle from the given definition."
+fields = { def_id = "EntityId", position = "Vec3", rotation = { container_type = "Option", element_type = "Quat" }, driver_id = { container_type = "Option", element_type = "EntityId" } }

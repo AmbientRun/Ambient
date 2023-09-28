@@ -1,0 +1,38 @@
+{
+  "density": 10.0,
+  "cube_collider": [1.8000001, 3.0, 0.6],
+  "max_health": 70.0,
+  "offsets": [
+    [-0.3, -1.2],
+    [0.3, -1.2],
+    [0.3, 1.2],
+    [-0.3, 1.2]
+  ],
+  "k_p": 10000.0,
+  "k_d": -5000.0,
+  "target": 1.75,
+  "max_strength": 50000.0,
+  "forward_force": 1250.0,
+  "backward_force": -200.0,
+  "forward_offset": [0.0, 1.2],
+  "side_force": 80.0,
+  "side_offset": [-0.3, -1.2],
+  "jump_force": 1500.0,
+  "aim_direction_limits": [10.0, 10.0],
+  "pitch_strength": 600.0,
+  "turning_strength": 400.0,
+  "jump_timeout": {
+    "secs": 2,
+    "nanos": 0
+  },
+  "linear_strength": 20.0,
+  "angular_strength": 0.35,
+  "angular_delay": {
+    "secs": 0,
+    "nanos": 250000000
+  },
+  "is_def": null,
+  "name": "Swiftshadow",
+  "model_url": "ambient-assets:/llhdryqkfsr6gy4f26wbolh4kfwnzn3c/assets/craft_racer.glb/models/main.json",
+  "model_scale": 1.5
+}

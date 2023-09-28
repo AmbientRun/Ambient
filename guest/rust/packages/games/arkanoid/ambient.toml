@@ -5,8 +5,8 @@ description = "The classic."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/arkanoid"
 type = "Game"
-content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-27"
+content = { type = "Playable" }
+ambient_version = "0.3.0-nightly-2023-09-28"
 
 [components]
 player_movement_direction = { type = "F32", name = "Player Movement Direction", description = "Direction of player movement" }

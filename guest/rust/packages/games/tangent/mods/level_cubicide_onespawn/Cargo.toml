@@ -1,0 +1,19 @@
+[package]
+name = "tangent_level_cubicide_one_spawn"
+
+edition = "2021"
+publish = false
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+ambient_api = { path = "../../../../../api" }
+
+[[bin]]
+name = "tangent_level_cubicide_one_spawn_server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

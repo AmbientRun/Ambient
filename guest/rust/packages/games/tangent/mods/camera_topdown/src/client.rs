@@ -1,7 +1,7 @@
 use ambient_api::{
     core::{
         camera::{
-            components::fog,
+            components::{active_camera, fog},
             concepts::{
                 PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
             },
@@ -11,28 +11,30 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::tangent_schema::{player::components as pc, vehicle::client::components as vcc};
+use packages::tangent_schema::{player::components as pc, vehicle::client::components::speed_kph};
 
 #[main]
 pub fn main() {
     let camera_id = PerspectiveInfiniteReverseCamera {
         optional: PerspectiveInfiniteReverseCameraOptional {
-            translation: Some(vec3(0., 0., 10.)),
+            translation: Some(vec3(0., 0., 20.)),
             main_scene: Some(()),
             aspect_ratio_from_window: Some(entity::resources()),
             ..default()
         },
+        active_camera: -1.0,
         ..PerspectiveInfiniteReverseCamera::suggested()
     }
     .make()
     .with(fog(), ())
     .with(lookat_target(), vec3(0., 0., 0.))
-    .with(lookat_up(), vec3(0., -1., 0.))
+    .with(lookat_up(), -Vec3::Y)
     .spawn();
 
     Frame::subscribe(move |_| {
         let player_id = player::get_local();
         let Some(vehicle_id) = entity::get_component(player_id, pc::vehicle_ref()) else {
+            entity::set_component(camera_id, active_camera(), -1.0);
             return;
         };
         let Some(vehicle_position) = entity::get_component(vehicle_id, translation()) else {
@@ -41,7 +43,7 @@ pub fn main() {
         let Some(vehicle_rotation) = entity::get_component(vehicle_id, rotation()) else {
             return;
         };
-        let Some(vehicle_speed_kph) = entity::get_component(vehicle_id, vcc::speed_kph()) else {
+        let Some(vehicle_speed_kph) = entity::get_component(vehicle_id, speed_kph()) else {
             return;
         };
 
@@ -59,5 +61,6 @@ pub fn main() {
         );
         entity::set_component(camera_id, lookat_target(), base);
         entity::set_component(camera_id, lookat_up(), vehicle_yaw_rot * -Vec3::Y);
+        entity::set_component(camera_id, active_camera(), 5.0);
     });
 }

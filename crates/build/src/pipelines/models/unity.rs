@@ -64,7 +64,13 @@ pub async fn pipeline(
                     if let Ok(base_file) = ctx.get_downloadable_url(&base_file).cloned() {
                         Some(async move {
                             let docs = download_unity_yaml(ctx.assets(), &file).await?;
-                            Ok((docs[0]["guid"].as_str().unwrap().to_string(), base_file))
+                            Ok((
+                                docs[0]["guid"]
+                                    .as_str()
+                                    .expect(format!("Failed to find GUID in {file}").as_str())
+                                    .to_string(),
+                                base_file,
+                            ))
                         })
                     } else {
                         None

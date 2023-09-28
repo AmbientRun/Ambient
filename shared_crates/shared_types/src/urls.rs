@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 pub const AMBIENT_WEB_APP_URL: &str = "https://ambient-733e7.web.app";
 pub const ASSETS_URL: &str = "https://assets.ambient.run";
 pub const API_URL: &str = "https://api.ambient.run";
@@ -20,11 +22,25 @@ pub fn deployment_url(deployment_id: &str) -> String {
     format!("{ASSETS_URL}/{deployment_id}")
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ServerSelector<'a> {
+    Deployment(&'a str),
+    Package(&'a str),
+}
+impl Display for ServerSelector<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ServerSelector::Deployment(id) => write!(f, "deployment_id={id}"),
+            ServerSelector::Package(id) => write!(f, "package_id={id}"),
+        }
+    }
+}
+
 /// The URL for a ensure-running server for a deployed package.
 ///
 /// When connecting to this URL, a server will be started if one is not already running.
-pub fn ensure_running_url(deployment_id: &str) -> String {
-    format!("{API_URL}/servers/ensure-running?deployment_id={deployment_id}")
+pub fn ensure_running_url(selector: ServerSelector) -> String {
+    format!("{API_URL}/servers/ensure-running?{selector}")
 }
 
 /// Replicated from `AmbientFbSchema::DbPackageContent`
