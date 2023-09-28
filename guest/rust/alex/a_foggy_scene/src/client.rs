@@ -29,6 +29,10 @@ pub fn main() {
             if let Some((camera, _)) = cameras.into_iter().next() {
                 entity::add_component(camera, fog(), ());
 
+                use packages::temperature_hud::{components::hud_camera, entity};
+
+                entity::add_component(entity(), hud_camera(), camera);
+
                 init_ambient_loopers_req_camera(camera);
             }
         });

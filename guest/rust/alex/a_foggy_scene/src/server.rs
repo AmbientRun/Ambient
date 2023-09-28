@@ -9,7 +9,7 @@ use ambient_api::{
             components::{cube, quad},
             concepts::Sphere,
         },
-        rendering::components::{cast_shadows, color, outline_recursive, transparency_group},
+        rendering::components::{cast_shadows, color},
         transform::components::{rotation, scale, translation},
     },
     prelude::*,

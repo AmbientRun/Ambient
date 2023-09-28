@@ -30,7 +30,7 @@ temperature_hud = { path = "../temperature_hud_magda" }
 fog_dj = { path = "../fog_dj" }
 
 # nameplates = { path = "../../packages/std/nameplates" }
-nameplates = { path = "../custom_nameplates" }
+# nameplates = { path = "../custom_nameplates" }
 
 [components]
 effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness

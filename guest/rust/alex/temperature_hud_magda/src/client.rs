@@ -5,22 +5,28 @@ use ambient_api::{
         rect::components::background_color,
         rendering::components::color,
         text::components::{font_family, font_size},
-        transform::components::translation,
+        transform::components::{local_to_world, translation},
     },
+    element::use_entity_component,
     prelude::*,
     ui::ImageFromUrl,
 };
 
 use packages::temperature::components::temperature;
+use packages::this::components::hud_camera;
 
 const FONT_PATH_CHANGE_THIS: &str =
     "https://jetsam.droqen.com/2023-0918-ambient-game-font-test/ABCDiatype-Regular.otf";
 
 #[main]
-pub fn main() {
+pub async fn main() {
     TemperatureDisplayUI::el().spawn_interactive();
 
-    if let Some(camera) = camera::get_active(None) {
+    let me = packages::this::entity();
+
+    let _ = entity::wait_for_component(me, hud_camera()).await;
+
+    if let Some(camera) = entity::get_component(me, hud_camera()) {
         NameplateUI::el(camera).spawn_interactive();
     } else {
         panic!("No active camera found");
@@ -30,10 +36,33 @@ pub fn main() {
 // DISPLAYS NAMEPLATE & TEMP above players' heads
 #[element_component]
 pub fn NameplateUI(hooks: &mut Hooks, camera: EntityId) -> Element {
+    let Some(camera_inv_view) = use_entity_component(hooks, camera, local_to_world()) else {
+        return Element::new();
+    };
+
+    let (_, camera_rotation, _) = camera_inv_view.to_scale_rotation_translation();
+    let camera_rotation_z = camera_rotation.to_euler(glam::EulerRot::ZYX).0;
+
+    println!("{camera_rotation_z}");
+
     let screen_size = entity::get_component(entity::resources(), window_physical_size()).unwrap();
     let players = ambient_api::element::use_query(hooks, (user_id(), translation(), temperature()));
     let fsize = screen_size.y as f32 * 0.05;
     Group::el(players.iter().map(move |(_plr, (uid, pos, player_temp))| {
+        // let Some(camera_inv_view) = use_entity_component(hooks, camera_id, local_to_world()) else {
+        //     return Element::new();
+        // };
+
+        let player_nameplate_screen_pos = camera::world_to_screen(camera, *pos + vec3(0., 0., 2.));
+
+        let player_nameplate_ui_pos = vec3(
+            player_nameplate_screen_pos.x as f32,
+            player_nameplate_screen_pos.y as f32,
+            0.0,
+        );
+        // let player_nameplate_rot =
+        //     Quat::from_rotation_z(camera_rotation_z) * Quat::from_rotation_x(90f32.to_degrees());
+
         FlowColumn::el([
             ImageFromUrl {
                 url: packages::this::assets::url("ok_star.png"),
@@ -56,11 +85,15 @@ pub fn NameplateUI(hooks: &mut Hooks, camera: EntityId) -> Element {
         .with(align_vertical(), Align::End)
         .with(width(), 400.0)
         .with(height(), fsize * 0.15)
-        .with(
-            translation(),
-            camera::world_to_screen(camera, *pos + vec3(0., 0., 2.)).extend(0.)
-                + vec3(-200.0, 0., 0.),
-        )
+        .with(translation(), player_nameplate_ui_pos)
+        // .with(
+        //     local_to_world(),
+        //     Mat4::from_scale_rotation_translation(
+        //         Vec3::ONE,
+        //         player_nameplate_rot,
+        //         player_nameplate_pos,
+        //     ),
+        // )
     }))
 }
 
