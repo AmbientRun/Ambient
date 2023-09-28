@@ -309,6 +309,7 @@ fn Package(_hooks: &mut Hooks, package: DisplayPackage) -> Element {
         _ => false,
     };
 
+    const MAX_WIDTH: f32 = 400.;
     FlowRow::el([
         // Header
         FlowColumn::el([
@@ -327,12 +328,13 @@ fn Package(_hooks: &mut Hooks, package: DisplayPackage) -> Element {
                 Text::el(desc)
                     .body_s_500()
                     .hex_text_color(SEMANTIC_MAIN_ELEMENTS_SECONDARY)
+                    .with(max_width(), MAX_WIDTH)
             } else {
                 Element::new()
             },
         ])
         .with(space_between_items(), 4.0)
-        .with(width(), 400.)
+        .with(width(), MAX_WIDTH)
         .with(fit_horizontal(), Fit::None),
         // Buttons
         Toggle::el(
