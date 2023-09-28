@@ -236,7 +236,7 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                         .id
                         .expect("no package ID - this is a bug")
                         .as_str(),
-                    None,
+                    Some(&deployment_id),
                 );
 
                 log::info!("Package \"{main_package_name}\" deployed successfully!");
