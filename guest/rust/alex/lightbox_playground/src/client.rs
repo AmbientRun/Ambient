@@ -135,7 +135,8 @@ fn main() {
             // packages::this::assets::url("hermaneubis_yellow.glb"),
             // packages::this::assets::url("cliffmesh01_fredrik.glb"),
             // packages::this::assets::url("cliffmesh01.gltf"),
-            packages::this::assets::url("cliffmesh_fredrik_then_alex_2.glb"),
+            // packages::this::assets::url("cliffmesh_fredrik_then_alex_2.glb"),
+            packages::this::assets::url("colour_chicken.glb"),
         )
         .with(translation(), vec3(0., 0., 0.))
         .with(cast_shadows(), ())
