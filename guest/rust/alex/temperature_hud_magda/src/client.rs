@@ -96,7 +96,7 @@ fn remap(value: f32, low1: f32, high1: f32, low2: f32, high2: f32) -> f32 {
 // DISPLAYS TEMPERATURE of player
 #[element_component]
 pub fn TemperatureDisplayUI(hooks: &mut Hooks) -> Element {
-    let (player_temp, _) =
+    let player_temp =
         ambient_api::element::use_entity_component(hooks, player::get_local(), temperature());
 
     let screen_size = entity::get_component(entity::resources(), window_physical_size()).unwrap();

@@ -26,7 +26,7 @@ package_manager = { path = "../../packages/tools/package_manager" }
 # package_manager = { deployment = "4iENoKFy5uyYGLCVUTfZKz" } # updated Sept 20 - awkward due to not being asset? no copy button
 
 temperature = { path = "../temperature" }
-temperature_hud = { path = "../temperature_hud_magda_rewrite" }
+temperature_hud = { path = "../temperature_hud_magda" }
 fog_dj = { path = "../fog_dj" }
 
 nameplates = { path = "../../packages/std/nameplates" }
