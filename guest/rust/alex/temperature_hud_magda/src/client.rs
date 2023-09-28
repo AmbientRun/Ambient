@@ -20,21 +20,11 @@ const FONT_PATH_CHANGE_THIS: &str =
 pub fn main() {
     TemperatureDisplayUI::el().spawn_interactive();
 
-    run_async(async {
-        let _ = entity::wait_for_component(
-            packages::this::entity(),
-            packages::this::components::active_camera(),
-        )
-        .await;
-        if let Some(camera) = entity::get_component(
-            packages::this::entity(),
-            packages::this::components::active_camera(),
-        ) {
-            NameplateUI::el(camera).spawn_interactive();
-        } else {
-            panic!("No camera even after await");
-        }
-    });
+    if let Some(camera) = camera::get_active(None) {
+        NameplateUI::el(camera).spawn_interactive();
+    } else {
+        panic!("No active camera found");
+    }
 }
 
 // DISPLAYS NAMEPLATE & TEMP above players' heads

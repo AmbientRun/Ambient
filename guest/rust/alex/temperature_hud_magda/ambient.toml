@@ -7,6 +7,3 @@ ambient_version = "0.3.0-nightly-2023-09-18"
 
 [dependencies]
 temperature = { path = "../temperature" , deployment = "nb2mw2fGIW4jmORAtyObz" }
-
-[components]
-active_camera = { type = "EntityId" }

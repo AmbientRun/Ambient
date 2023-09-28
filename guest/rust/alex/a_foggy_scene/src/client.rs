@@ -30,12 +30,6 @@ pub fn main() {
                 entity::add_component(camera, fog(), ());
 
                 init_ambient_loopers_req_camera(camera);
-
-                entity::add_component(
-                    packages::temperature_hud::entity(),
-                    packages::temperature_hud::components::active_camera(),
-                    camera,
-                );
             }
         });
 
