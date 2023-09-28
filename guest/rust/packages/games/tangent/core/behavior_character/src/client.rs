@@ -16,7 +16,7 @@ use packages::{tangent_schema::character::components as cc, unit_schema::compone
 #[main]
 pub fn main() {
     spawn_query((cc::is_character(), cc::player_ref(), uc::head_ref())).bind(move |characters| {
-        for (character_id, (_, player_ref, head)) in characters {
+        for (_character_id, (_, player_ref, head)) in characters {
             if player_ref != player::get_local() {
                 continue;
             }
