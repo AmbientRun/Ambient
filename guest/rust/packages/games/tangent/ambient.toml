@@ -35,3 +35,4 @@ gameplay_firerain = { path = "mods/gameplay_firerain", enabled = false, deployme
 reskin_classes = { path = "mods/reskin_classes", enabled = false, deployment = "14fYPeXOrxC0ot1hCH5c2G" }
 
 package_manager = { path = "../../tools/package_manager", deployment = "4WLcujkP2WGpapbv5DXYsK" }
+editor = { path = "../../tools/editor", deployment = "2yetaCQ5dvxosvKGw1p5ZF" }
