@@ -36,20 +36,20 @@ pub fn main() {
     let sun = make_my_local_sun_with_sky();
 
     /* USE DJ FOR CONTROLLING FOG AND SUN */
-    {
-        entity::add_components(
-            packages::fog_dj::entity(),
-            Entity::new()
-                .with(packages::fog_dj::components::grey_fog(), ())
-                .with(packages::fog_dj::components::grey_amb(), ())
-                .with(packages::fog_dj::components::grey_sun(), ()),
-        );
-        entity::add_component(
-            packages::fog_dj::entity(),
-            packages::fog_dj::components::fog_dj_for(),
-            sun,
-        );
-    }
+    // {
+    //     entity::add_components(
+    //         packages::fog_dj::entity(),
+    //         Entity::new()
+    //             .with(packages::fog_dj::components::grey_fog(), ())
+    //             .with(packages::fog_dj::components::grey_amb(), ())
+    //             .with(packages::fog_dj::components::grey_sun(), ()),
+    //     );
+    //     entity::add_component(
+    //         packages::fog_dj::entity(),
+    //         packages::fog_dj::components::fog_dj_for(),
+    //         sun,
+    //     );
+    // }
 
     let storm_sound_player = audio::AudioPlayer::new();
     storm_sound_player.set_looping(true);
@@ -71,22 +71,22 @@ pub fn main() {
         });
 
         // /* USE COLDNESS FOR MODULATING FOG (GAME FEEDBACK) */
-        // {
-        //     if coldness < 0.60 {
-        //         let t = coldness / 0.60;
-        //         entity::mutate_component(sun, fog_density(), |foggy| {
-        //             *foggy = *foggy * 0.9 + 0.1 * (0.01 + 0.18 * t);
-        //         });
-        //     } else {
-        //         let t = (coldness - 0.60) / (1. - 0.60);
-        //         entity::set_component(sun, fog_density(), 0.20 + 0.80 * t * t);
-        //     }
-        //     // let desired_fog_colour =
-        //     //     vec3(0.75, 0.45, 0.75).lerp(vec3(0.60, 1.00, 1.00), coldness.sqrt());
-        //     // entity::mutate_component(sun, fog_color(), |color| {
-        //     //     *color = color.lerp(desired_fog_colour, 0.1)
-        //     // });
-        // }
+        {
+            if coldness < 0.60 {
+                let t = coldness / 0.60;
+                entity::mutate_component(sun, fog_density(), |foggy| {
+                    *foggy = *foggy * 0.9 + 0.1 * (0.01 + 0.18 * t);
+                });
+            } else {
+                let t = (coldness - 0.60) / (1. - 0.60);
+                entity::set_component(sun, fog_density(), 0.20 + 0.80 * t * t);
+            }
+            // let desired_fog_colour =
+            //     vec3(0.75, 0.45, 0.75).lerp(vec3(0.60, 1.00, 1.00), coldness.sqrt());
+            // entity::mutate_component(sun, fog_color(), |color| {
+            //     *color = color.lerp(desired_fog_colour, 0.1)
+            // });
+        }
     });
 
     let chicken_anims = make_chicken_anims();
