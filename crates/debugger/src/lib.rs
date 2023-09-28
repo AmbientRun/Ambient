@@ -1,8 +1,4 @@
-use std::{
-    fmt::{Debug, Display},
-    sync::Arc,
-    time::Duration,
-};
+use std::{fmt::Debug, sync::Arc, time::Duration};
 
 use ambient_core::{
     asset_cache,

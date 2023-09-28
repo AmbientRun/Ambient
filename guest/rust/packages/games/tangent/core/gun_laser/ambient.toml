@@ -1,0 +1,37 @@
+[package]
+id = "jyp2hh3fpjfe7kaos36zbdztfypqip3m"
+name = "Tangent Gun: Laser"
+description = "Implements laser guns."
+version = "0.2.0"
+content = { type = "Asset", code = true }
+ambient_version = "0.3.0-nightly-2023-09-28"
+authors = ["philpax"]
+
+[dependencies]
+tangent_schema = { path = "../../schema", deployment = "3Wpx1zwYuxtR3BmKlDvZsZ" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "1Iol5aKOUc7ogK4Cmycq7z" }
+kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "cAkW5LANvgHrzeeWo6hph" }
+
+explosion = { path = "../../../../std/explosion", deployment = "6cQ5FagCw1W7S1MTq2iu7J" }
+
+[components]
+is_gun_laser = { type = "Empty", name = "Is Gun (Laser)", description = "This entity is a laser gun." }
+damage = { type = "F32", name = "Damage", description = "The amount of damage this gun does." }
+time_between_shots = { type = "Duration", name = "Time Between Shots", description = "The amount of time between shots." }
+last_shot_time = { type = "Duration", name = "Last Shot Time", description = "The time of the last shot." }
+
+[concepts.GunLaser]
+name = "Gun Laser"
+description = "A laser gun."
+extends = ["ambient_core::transform::Transformable"]
+[concepts.GunLaser.components.required]
+is_gun_laser = {}
+damage = {}
+time_between_shots = {}
+[concepts.GunLaser.components.optional]
+last_shot_time = {}
+
+[messages.Fire]
+description = "Sent to the client-side when a gun is fired."
+[messages.Fire.fields]
+weapon_id = "EntityId"

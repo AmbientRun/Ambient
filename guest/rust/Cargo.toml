@@ -91,7 +91,7 @@ members = [
 
     # Packages (games)
     "packages/games/tangent",
-    "packages/games/tangent/core",
+    "packages/games/tangent/core/*",
     "packages/games/tangent/mods/*",
 
     "packages/games/minigolf",

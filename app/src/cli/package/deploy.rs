@@ -227,8 +227,9 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                 deployment_id,
                 manifest,
             } => {
-                let ensure_running_url =
-                    ambient_shared_types::urls::ensure_running_url(&deployment_id);
+                let ensure_running_url = ambient_shared_types::urls::ensure_running_url(
+                    ambient_shared_types::urls::ServerSelector::Deployment(&deployment_id),
+                );
                 let web_url = ambient_shared_types::urls::web_package_url(
                     manifest
                         .package

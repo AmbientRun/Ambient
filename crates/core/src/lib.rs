@@ -14,7 +14,7 @@ use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKey};
 
-use serde::{de, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 pub mod async_ecs;
 pub mod bounding;

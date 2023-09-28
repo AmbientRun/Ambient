@@ -1,0 +1,40 @@
+[package]
+id = "itzh3wovmdje4ttrmo6wrravaaxp6b52"
+name = "Tangent Core"
+description = "The core of Tangent. The connective glue between all the other packages. (Will likely be split up.)"
+version = "0.2.0"
+content = { type = "Asset", code = true }
+authors = ["philpax"]
+ambient_version = "0.3.0-nightly-2023-09-28"
+
+[dependencies]
+tangent_schema = { path = "../../schema", deployment = "3Wpx1zwYuxtR3BmKlDvZsZ" }
+
+game_object = { path = "../../../../schemas/game_object", deployment = "2H5s0Iq3fZwagFmlT2KstX" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "5A0rsH8nDtTze7x3wuLVUJ" }
+
+explosion = { path = "../../../../std/explosion", deployment = "6cQ5FagCw1W7S1MTq2iu7J" }
+hide_cursor = { path = "../../../../std/hide_cursor", deployment = "3iTshr0ssOKLeg7W7mh7aU" }
+nameplates = { path = "../../../../std/nameplates", deployment = "4ZKPRHYFEHzL2FBWi6vxdC" }
+
+kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "6Vtf828FNyeYkTyuJJEyGT" }
+
+[messages.Input]
+name = "Input"
+description = "Input"
+[messages.Input.fields]
+direction = "Vec2"
+jump = "Bool"
+fire = "Bool"
+use_button = "Bool"
+sprint = "Bool"
+respawn = "Bool"
+aim_direction = "Vec2"
+# Let's not trust the client in the future
+aim_ray_origin = "Vec3"
+aim_ray_direction = "Vec3"
+
+[messages.UseFailed]
+name = "Use Failed"
+description = "Sent from the server to the client when a use action fails."
+fields = {}

@@ -3,22 +3,22 @@ id = "qvd3idif3tkax2on2bw6ia3uf6al2tyv"
 name = "afps"
 version = "0.0.1"
 content = { type = "Playable" }
-ambient_version = "0.3.0-nightly-2023-09-27"
+ambient_version = "0.3.0-nightly-2023-09-28"
 
 [dependencies]
-character_animation = { path = "../../std/character_animation", deployment = "5p8nQOS7BpEWT7LkdsGpA2" }
-hide_cursor = { path = "../../std/hide_cursor", deployment = "5uynORVgMZnztsyftUrkTC" }
-fpsaudio = { path = "core/fpsaudio", deployment = "6nnbarbJ5l92AYw5cwT6mj" }
-fpsmodel = { path = "core/fpsmodel", deployment = "7Y19yCpm15HyGftQLYadIN" }
-fpsmovement = { path = "core/fpsmovement", deployment = "5djQuP8sqXRVgqHKO5Pv4F" }
-fpsrule = { path = "core/fpsrule", deployment = "7MBKIKwWtrwBz0jpxUcCZ9" }
-fpsui = { path = "core/fpsui", deployment = "1jOd6nilJhc7ujzrzKOfxA" }
+character_animation = { path = "../../std/character_animation", deployment = "s1HU95RShblqYqSuG4Vk1" }
+hide_cursor = { path = "../../std/hide_cursor", deployment = "3iTshr0ssOKLeg7W7mh7aU" }
+fpsaudio = { path = "core/fpsaudio", deployment = "7Og16w4cPe8vbsIIHkhZnh" }
+fpsmodel = { path = "core/fpsmodel", deployment = "6Ba37bY8WAsFSIQHaKSpgP" }
+fpsmovement = { path = "core/fpsmovement", deployment = "3uMBRvXbHAMFdFd5AKrBZR" }
+fpsrule = { path = "core/fpsrule", deployment = "4vLSDpDWXwhNpUMA4stKNx" }
+fpsui = { path = "core/fpsui", deployment = "1vfkEFKOdG3LD6ycpO7Iur" }
 
-console = { path = "../../tools/console", deployment = "5iHOmoSVmQLMX0bNOizld9" }
-package_manager = { path = "../../tools/package_manager", deployment = "scChmqT301aU5xO75pVCb" }
-editor = { path = "../../tools/editor", deployment = "5KyKagoVkQhy6vUPMPd5Xn" }
+console = { path = "../../tools/console", deployment = "30HijrNCSxLqyNHjFa5qfI" }
+package_manager = { path = "../../tools/package_manager", deployment = "4WLcujkP2WGpapbv5DXYsK" }
+editor = { path = "../../tools/editor", deployment = "5eCO6p1MJwWSRxD47PonQQ" }
 
-scene = { path = "mods/scene", deployment = "4c8VhbDNn0ghcRCCQpNS1x" }
-spraypaint = { path = "mods/spraypaint", deployment = "7UBrLJyQPY2PnHkUudxv0G" }
-zombie = { path = "mods/zombie", deployment = "4anGLBJ4aZEfXc5LWbJEnm" }
-world_latency = { path = "mods/world_latency", deployment = "1bNNZhtOOj8xKKa2kCyLOe" }
+scene = { path = "mods/scene", deployment = "2EUH1vXPNMeDTAAy7agrV" }
+spraypaint = { path = "mods/spraypaint", deployment = "1XmaCyMsPWcKuvWY2ocV6y" }
+zombie = { path = "mods/zombie", deployment = "4rfAg744bySlW5bMGJ718G" }
+world_latency = { path = "mods/world_latency", deployment = "2QnzGQvrvFunMN915Rf2tv" }

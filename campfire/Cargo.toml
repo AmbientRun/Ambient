@@ -33,6 +33,9 @@ spki = "0.7"
 notify = { version = "6.1", optional = true }
 flume = { version = "0.11", optional = true }
 
+# Hope this won't cause any issues!
+ambient_shared_types = { path = "../shared_crates/shared_types" }
+
 [target.'cfg(target_os="windows")'.dependencies]
 dunce = "1.0"
 

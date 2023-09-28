@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 use std::sync::OnceLock;
 
+use crate::packages;
 use ambient_api::{once_cell::sync::Lazy, prelude::*};
 
 pub const LEVEL_RADIUS: f32 = 200.;
@@ -10,13 +11,17 @@ pub fn circle_point(radians: f32, radius: f32) -> Vec2 {
 }
 
 pub fn spawnpoints() -> &'static [(Vec3, f32, Vec3)] {
-    const INCLUDE_CORNERS: bool = true;
     static VALUE: Lazy<Vec<(Vec3, f32, Vec3)>> = Lazy::new(|| {
         let mut output = vec![(vec3(0.0, 0.0, 0.0), 10.0, Vec3::ONE)];
 
         let corner_radius = LEVEL_RADIUS * 0.8;
 
-        if INCLUDE_CORNERS {
+        if entity::get_component(
+            packages::this::entity(),
+            packages::this::components::include_corners(),
+        )
+        .unwrap_or(true)
+        {
             output.extend_from_slice(&[
                 (vec3(0.0, -corner_radius, 0.0), 10.0, Vec3::ONE),
                 (vec3(0.0, corner_radius, 0.0), 10.0, Vec3::ONE),
