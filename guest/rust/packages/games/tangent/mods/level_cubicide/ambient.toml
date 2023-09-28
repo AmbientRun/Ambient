@@ -9,9 +9,9 @@ authors = ["philpax"]
 
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "3Wpx1zwYuxtR3BmKlDvZsZ" }
+spawner_vehicle = { path = "../../core/spawner_vehicle", deployment = "7EIeOEFBlxudAl5boN5dvp" }
 
 pickup_health = { path = "../pickup_health", deployment = "1ct9hSTsYA0GsGIJrYhkm1" }
-spawner_vehicle = { path = "../spawner_vehicle", deployment = "7EIeOEFBlxudAl5boN5dvp" }
 
 game_object = { path = "../../../../schemas/game_object", deployment = "2H5s0Iq3fZwagFmlT2KstX" }
 

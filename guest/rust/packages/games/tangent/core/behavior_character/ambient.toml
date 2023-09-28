@@ -3,7 +3,7 @@ id = "xgafi5ckk5vhxscb6tqubfvy2fwfyqxo"
 name = "Tangent Behavior: Character"
 description = "Implements the character behavior for Tangent."
 version = "0.2.0"
-content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
+content = { type = "Asset", code = true }
 ambient_version = "0.3.0-nightly-2023-09-28"
 authors = ["philpax"]
 

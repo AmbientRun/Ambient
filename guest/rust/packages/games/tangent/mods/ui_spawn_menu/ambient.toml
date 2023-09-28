@@ -10,7 +10,7 @@ authors = ["philpax"]
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "3Wpx1zwYuxtR3BmKlDvZsZ" }
 
-spawner_vehicle = { path = "../spawner_vehicle", deployment = "7EIeOEFBlxudAl5boN5dvp" }
+spawner_vehicle = { path = "../../core/spawner_vehicle", deployment = "7EIeOEFBlxudAl5boN5dvp" }
 
 [messages.VehicleSpawnRequest]
 description = "Sent by the client to request a vehicle spawn."
