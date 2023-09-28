@@ -152,6 +152,7 @@ fn update_version(
 
     if !no_package_ambient_version_update {
         fn add_ambient_version(toml: &mut toml_edit::Document, new_version: &str) {
+            toml["package"]["version"] = toml_edit::value(new_version);
             toml["package"]["ambient_version"] = toml_edit::value(new_version);
         }
 
