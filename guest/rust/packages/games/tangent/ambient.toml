@@ -20,6 +20,7 @@ ui_spawn_menu = { path = "mods/ui_spawn_menu", enabled = false, deployment = "2h
 pickup_health = { path = "mods/pickup_health", deployment = "1ct9hSTsYA0GsGIJrYhkm1" }
 
 level_cubicide = { path = "mods/level_cubicide", deployment = "3wHmIe0OFIWCh8V0Jfi5nb" }
+level_cubicide_onespawn = { path = "mods/level_cubicide_onespawn", enabled = false }
 
 class_assault = { path = "mods/class_assault", deployment = "55ZvUEUVLjK9Ya8BFXj83W" }
 class_scout = { path = "mods/class_scout", deployment = "P8h1ScWBE8lGnMzR6W6zx", enabled = false }

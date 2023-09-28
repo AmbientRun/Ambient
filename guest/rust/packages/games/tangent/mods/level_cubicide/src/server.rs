@@ -151,10 +151,10 @@ fn make_cubes(rng: &mut dyn rand::RngCore, grid: &mut Grid) {
 
 fn handle_pickups() {
     handle_respawnables(
-        shared::spawnpoints().len() * 4,
+        shared::spawnpoints().len() * 3,
         query(translation()).requires(is_health_pickup()).build(),
         Duration::from_secs(5),
-        25.0,
+        12.5,
         |translation| {
             HealthPickup {
                 is_health_pickup: (),
@@ -170,10 +170,10 @@ fn handle_pickups() {
 
 fn handle_vehicles() {
     handle_respawnables(
-        shared::spawnpoints().len() * 3,
+        shared::spawnpoints().len() * 2,
         query(translation()).requires(is_vehicle()).build(),
         Duration::from_secs(30),
-        20.0,
+        10.0,
         move |translation| {
             let Some(def_id) = entity::get_all(is_def()).choose(&mut thread_rng()).copied() else {
                 return Err(());
