@@ -3,7 +3,7 @@ id = "per6j2iqhj3jz4da3fqr75jcj2kqjooo"
 name = "Nameplates"
 version = "0.0.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-27"
+ambient_version = "0.3.0-nightly-2023-09-28"
 
 [dependencies]
 game_object = { path = "../../schemas/game_object", deployment = "5u6YZMdgL39661DtibYw9O" }

@@ -3,7 +3,7 @@ id = "xadcwjtmzuagnoydry5h4psaph3hccbw"
 name = "Tangent UI: HoloHUD"
 version = "0.2.0"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-28"
 authors = ["philpax"]
 
 [dependencies]

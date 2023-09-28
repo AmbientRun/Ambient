@@ -3,7 +3,7 @@ id = "mx4o7x2s4zqc6pxmsfcb7hznbv4chxe5"
 name = "Tangent Vehicle: Standard"
 version = "0.0.1"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-nightly-2023-09-22"
+ambient_version = "0.3.0-nightly-2023-09-28"
 authors = ["philpax"]
 
 [dependencies]

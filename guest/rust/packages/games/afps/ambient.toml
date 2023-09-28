@@ -3,7 +3,7 @@ id = "qvd3idif3tkax2on2bw6ia3uf6al2tyv"
 name = "afps"
 version = "0.0.1"
 content = { type = "Playable" }
-ambient_version = "0.3.0-nightly-2023-09-27"
+ambient_version = "0.3.0-nightly-2023-09-28"
 
 [dependencies]
 character_animation = { path = "../../std/character_animation", deployment = "5p8nQOS7BpEWT7LkdsGpA2" }
