@@ -1,6 +1,7 @@
 [package]
 id = "vvuixyn4jy3xv4ij4hi75atzfwk2j37k"
 name = "Tangent Camera: Top-down"
+description = "Implements a top-down vehicle camera. Takes precedence over the follow camera."
 version = "0.2.0"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
 ambient_version = "0.3.0-internal-tangent-020"
