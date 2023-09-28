@@ -5,7 +5,7 @@ description = "Minimal multiplayer pong."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/pong"
 type = "Game"
-content = { type = "Playable", example = true }
+content = { type = "Playable" }
 ambient_version = "0.3.0-nightly-2023-09-28"
 
 [components]
