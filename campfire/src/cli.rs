@@ -1,6 +1,6 @@
 use clap::Parser;
 
-use crate::{doc, golden_images, install, package, release, web};
+use crate::{doc, golden_images, install, join, package, release, web};
 
 #[derive(Parser, Clone)]
 #[command(author, version, about, long_about = None, propagate_version = true, trailing_var_arg = true)]
@@ -18,6 +18,8 @@ pub enum Cli {
     Release(release::Release),
     /// Helper to install specific versions of Ambient
     Install(install::Install),
+    /// Helper to join a server by various means
+    Join(join::Join),
 
     #[command(subcommand)]
     /// Web-related functionality
