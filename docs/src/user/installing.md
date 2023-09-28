@@ -20,4 +20,4 @@ The native client of Ambient currently runs on Windows, Linux and macOS.
 >
 > This is because Command Prompt will prefer the local executable over the one installed by Cargo.
 
-Next, try the [tutorial](../tutorial/0_intro.md) to create your first Ambient game!
+Next, try the [tutorial](../tutorials/game/0_intro.md) to create your first Ambient game!
