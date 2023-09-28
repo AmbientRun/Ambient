@@ -363,14 +363,14 @@ pub async fn handle_diffs<S>(
 ) where
     S: Unpin + AsyncWrite,
 {
-    let (external_components_rx, external_components_handler) =
+    let (external_components_rx, external_components_trigger) =
         create_external_components_trigger();
-    external_components_handler.as_ref()(); // make sure that external components are sent over
+    external_components_trigger.as_ref()(); // make sure that external components are sent over
     ComponentRegistry::get_mut()
         .on_external_components_change
-        .add(external_components_handler.clone());
+        .add(external_components_trigger.clone());
     scopeguard::defer! {
-        ComponentRegistry::get_mut().on_external_components_change.remove(external_components_handler);
+        ComponentRegistry::get_mut().on_external_components_change.remove(external_components_trigger);
     }
 
     let mut deduplicator = WorldDiffDeduplicator::default();
