@@ -5,7 +5,7 @@ description = "The core of Tangent. The connective glue between all the other pa
 version = "0.2.0"
 content = { type = "Asset", code = true }
 authors = ["philpax"]
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-internal-video-2023-09-28"
 
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "3Wpx1zwYuxtR3BmKlDvZsZ" }

@@ -3,4 +3,4 @@ id = "n7a4j7htvenss35tsnfvegbhxuwij5il"
 name = "base_assets"
 version = "0.0.1"
 content = { type = "Asset", models = true }
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-internal-video-2023-09-28"

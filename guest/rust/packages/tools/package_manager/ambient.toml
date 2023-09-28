@@ -3,7 +3,7 @@ id = "hr4pxz7kfhzgimicoyh65ydel3aehuhk"
 name = "Package Manager"
 version = "0.0.1"
 content = { type = "Tool" }
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-internal-video-2023-09-28"
 
 [components.mod_manager_for]
 name = "Mod Manager For"

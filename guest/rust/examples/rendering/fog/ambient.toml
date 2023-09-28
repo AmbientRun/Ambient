@@ -6,7 +6,7 @@ version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/fog"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-internal-video-2023-09-28"
 
 [dependencies]
 orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "48IGEwBMoV0IQhNOsnTgDs" }

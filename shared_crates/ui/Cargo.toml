@@ -14,17 +14,17 @@ targets = ["wasm32-wasi"]
 
 [dependencies]
 # Shared
-ambient_element = { path = "../element", default-features = false, version = "0.3.0-dev" }
-ambient_guest_bridge = { path = "../guest_bridge", default-features = false, version = "0.3.0-dev" }
+ambient_element = { path = "../element", default-features = false, version = "0.3.0-internal-video-2023-09-28" }
+ambient_guest_bridge = { path = "../guest_bridge", default-features = false, version = "0.3.0-internal-video-2023-09-28" }
 
-ambient_cb = { path = "../../libs/cb", version = "0.3.0-dev" }
-ambient_color = { path = "../../libs/color", version = "0.3.0-dev" }
-ambient_math = { path = "../../libs/math", version = "0.3.0-dev" }
-ambient_time = { path = "../../libs/time", version = "0.3.0-dev" }
-ambient_shared_types = { path = "../shared_types", version = "0.3.0-dev" }
+ambient_cb = { path = "../../libs/cb", version = "0.3.0-internal-video-2023-09-28" }
+ambient_color = { path = "../../libs/color", version = "0.3.0-internal-video-2023-09-28" }
+ambient_math = { path = "../../libs/math", version = "0.3.0-internal-video-2023-09-28" }
+ambient_time = { path = "../../libs/time", version = "0.3.0-internal-video-2023-09-28" }
+ambient_shared_types = { path = "../shared_types", version = "0.3.0-internal-video-2023-09-28" }
 
 # Host only
-ambient_sys = { path = "../../crates/sys", optional = true, version = "0.3.0-dev" }
+ambient_sys = { path = "../../crates/sys", optional = true, version = "0.3.0-internal-video-2023-09-28" }
 
 glam = { workspace = true }
 itertools = { workspace = true }

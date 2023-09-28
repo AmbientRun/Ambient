@@ -4,7 +4,7 @@ name = "Tangent Class: Scout"
 description = "Defines the Scout class, which is fast but weak."
 version = "0.2.0"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-internal-video-2023-09-28"
 authors = ["philpax"]
 
 [dependencies]
