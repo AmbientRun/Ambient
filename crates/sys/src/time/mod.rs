@@ -38,7 +38,6 @@ pub static GLOBAL_TIMER: Lazy<TimersHandle> = Lazy::new(Timers::start);
 // }
 
 pub fn sleep_label(duration: Duration, label: &'static str) -> Sleep {
-    tracing::info!(?duration, "sleep");
     Sleep::new(&GLOBAL_TIMER, Instant::now() + duration, label)
 }
 
@@ -81,21 +80,14 @@ struct Inner {
 
 impl Inner {
     pub fn register(&self, deadline: Instant, timer: *const TimerEntry) {
-        tracing::info!(?deadline, "register timer");
         self.heap.lock().insert(Entry { deadline, timer });
 
         self.waker.wake();
     }
 
     fn remove(&self, deadline: Instant, timer: *const TimerEntry) {
-        tracing::info!(?deadline, "remove timer");
         let removed = self.heap.lock().remove(&Entry { deadline, timer });
         let label = unsafe { &*timer }.label;
-        if removed {
-            tracing::info!(label, "removed timer");
-        } else {
-            tracing::info!(label, "timer not present to remove");
-        }
     }
 }
 
@@ -151,26 +143,30 @@ impl Timers {
         let mut heap = self.inner.heap.lock();
 
         tracing::debug!(count = heap.len(), "Timers::tick");
+        let time_end = time + Duration::from_millis(10);
+        let mut count = 0;
         while let Some(entry) = heap.first() {
             // All deadlines before now have been handled
-            if entry.deadline > time {
+            if entry.deadline > time_end {
+                tracing::debug!(?count, "expired timers this tick");
                 return Ok(Some(entry.deadline));
             }
+            count += 1;
 
             let entry = heap.pop_first().unwrap();
-            tracing::info!(?entry.deadline, "popped timer");
             // Fire and wake the timer
             // # Safety
             // Sleep removes the timer when dropped
             // Drop is guaranteed due to Sleep being pinned when registered
             let timer = unsafe { &*(entry.timer) };
 
-            tracing::info!(label = timer.label, "timer fired");
-
+            tracing::debug!(label=?timer.label, deadline=?entry.deadline, ?time, "Timer expired" );
             // Wake the future waiting on the timer
             timer.finished.store(true, Ordering::SeqCst);
             timer.waker.wake();
         }
+
+        tracing::debug!(?count, "expired timers this tick");
 
         if self.inner.handle_count.load(Ordering::SeqCst) == 0 {
             return Err(TimersFinished);
@@ -243,7 +239,6 @@ impl Future for AsyncReactor {
         let next = match self.timers.tick(now, cx.waker()) {
             Ok(v) => v,
             Err(_) => {
-                tracing::info!("No more timers");
                 return Poll::Ready(());
             }
         };
@@ -291,7 +286,6 @@ impl std::fmt::Debug for Sleep {
 
 impl Sleep {
     pub(crate) fn new(handle: &TimersHandle, deadline: Instant, label: &'static str) -> Self {
-        tracing::info!(?label, ?deadline, "Sleep::new");
         Self {
             shared: handle.inner.clone(),
             timer: Box::new(TimerEntry {
@@ -368,8 +362,6 @@ impl Future for Sleep {
 #[pinned_drop]
 impl PinnedDrop for Sleep {
     fn drop(self: Pin<&mut Self>) {
-        tracing::debug!(self.label, self.registered, "dropping sleep");
-
         if self.registered {
             self.unregister();
         }

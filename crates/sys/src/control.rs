@@ -101,11 +101,11 @@ where
         p.state.task_waker.register(cx.waker());
 
         if p.state.aborted.load(Ordering::SeqCst) {
-            tracing::info!("Future aborted");
             let mut res = p.state.res.lock();
             *res = Some(Err(JoinError::Aborted));
 
             p.state.wake_handle();
+
             Poll::Ready(())
         } else if let Poll::Ready(value) = p.fut.poll(cx) {
             let mut res = p.state.res.lock();

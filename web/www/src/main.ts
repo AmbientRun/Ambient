@@ -85,7 +85,7 @@ import("ambient_web")
         let settings = { 
             enableLogging: true, 
             enablePanicHook: true, 
-            logFilter: "info",
+            logFilter: "debug",
             allowVersionMismatch: true,
             debugger: true
         };
