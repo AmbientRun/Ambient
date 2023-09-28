@@ -63,7 +63,9 @@ pub(crate) async fn handle(args: &New, assets: &AssetCache) -> anyhow::Result<()
     }
 
     let id = ambient_package::PackageId::generate();
-    let snake_case_name = name.to_case(Case::Snake).replace(':', "");
+    let snake_case_name = name
+        .to_case(Case::Snake)
+        .replace(|c: char| !(c.is_ascii_alphanumeric() || c == '_'), "");
 
     // Build a list of files to write to disk, then write them all at once.
     macro_rules! template_file {
