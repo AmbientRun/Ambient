@@ -1,5 +1,5 @@
 [package]
-id = "temperature"
+id = "kdsmhu7kju6zl33nhdzppikjurrehyi7"
 name = "temperature"
 version = "0.0.1"
 content = { type = "Asset", code = true, schema = true }

@@ -1,5 +1,5 @@
 [package]
-id = "wsjcczg7u35a2l0t87psd00evbzz8lqx"
+id = "fwy4g5akerd7yjuluoch7vw34sieh2fy"
 name = "matgen_playground"
 version = "0.0.1"
 content = { type = "Playable" }
