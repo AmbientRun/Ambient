@@ -2,8 +2,8 @@
 id = "lxik5hg25fs2gfcsqxj7dytf7dbvnhzx"
 name = "Text"
 description = "Different fonts, sizes and colors etc."
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/text"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"

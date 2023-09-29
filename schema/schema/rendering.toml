@@ -2,8 +2,8 @@
 name = "Rendering"
 description = "Rendering-related state, including global rendering parameters and per-entity state."
 content = { type = "Asset", schema = true }
-version = "0.3.0-rc.1"
-ambient_version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
+ambient_version = "0.3.0-rc.2"
 
 [components.cast_shadows]
 type = "Empty"

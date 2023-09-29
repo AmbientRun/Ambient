@@ -1,6 +1,6 @@
 [package]
 id = "xar372tfo2oswb4pkvx7h7o3rxi6tap6"
 name = "hide_cursor"
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"

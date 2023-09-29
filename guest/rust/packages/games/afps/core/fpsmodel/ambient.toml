@@ -1,9 +1,9 @@
 [package]
 id = "avztzukrpdpswuxb6s3paryhp4wmlckj"
 name = "AFPS Model"
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 content = { type = "Asset", models = true, code = true }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 
 [dependencies]
 afps_schema = { path = "../../schema", deployment = "3l25ZYqAEJRrwFjKp7doH6" }

@@ -2,8 +2,8 @@
 id = "gcmnpmewi3axaamblf5zeldtwk4u2u3m"
 name = "Button"
 description = "Well.. it's a button"
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/button"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"

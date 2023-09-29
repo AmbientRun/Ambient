@@ -1,9 +1,9 @@
 [package]
 id = "d3y3wbexrclipsykysumem3fthkudwx2"
 name = "Character animation"
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 content = { type = "Asset", animations = true, code = true }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 
 [dependencies]
 game_object = { path = "../../schemas/game_object", deployment = "2WcOC2EQMAIb0xgV54fEPq" }

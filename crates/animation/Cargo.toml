@@ -10,10 +10,10 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_model = { path = "../model" , version = "0.3.0-rc.1" }
-ambient_native_std = { path = "../native_std" , version = "0.3.0-rc.1" }
-ambient_ecs = { path = "../ecs" , version = "0.3.0-rc.1" }
-ambient_core = { path = "../core" , version = "0.3.0-rc.1" }
+ambient_model = { path = "../model" , version = "0.3.0-rc.2" }
+ambient_native_std = { path = "../native_std" , version = "0.3.0-rc.2" }
+ambient_ecs = { path = "../ecs" , version = "0.3.0-rc.2" }
+ambient_core = { path = "../core" , version = "0.3.0-rc.2" }
 glam = { workspace = true }
 ordered-float = { workspace = true }
 serde = { workspace = true }

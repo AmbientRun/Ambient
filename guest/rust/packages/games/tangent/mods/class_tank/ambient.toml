@@ -2,9 +2,9 @@
 id = "ys6g5noe72fbhnoj6l3psjq75knd7gko"
 name = "Tangent Class: Tank"
 description = "Defines the Tank class, which is strong but slow."
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 authors = ["philpax"]
 
 [dependencies]

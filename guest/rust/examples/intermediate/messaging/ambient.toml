@@ -2,11 +2,11 @@
 id = "of4w7yibjeuokeyypqxmtgqklc6vthln"
 name = "Messaging"
 description = "Send and receive data across network and across packages."
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/messaging"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 
 [messages.Hello]
 name = "Hello"

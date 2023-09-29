@@ -1,9 +1,9 @@
 [package]
 id = "wqkvthxjifxdwgi4hc4efmtjct6tljbw"
 name = "Console"
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 content = { type = "Tool" }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 
 [messages.ConsoleServerInput.fields]
 input = "String"

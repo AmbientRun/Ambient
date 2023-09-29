@@ -2,8 +2,8 @@
 id = "jmqsaivuk3nzk3inbdfj5mx4kqjmofdv"
 name = "Audio control"
 description = "Test out volume and panning."
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/audio_ctrl"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"

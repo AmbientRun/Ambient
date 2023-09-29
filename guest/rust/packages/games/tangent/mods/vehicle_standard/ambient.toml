@@ -2,9 +2,9 @@
 id = "mx4o7x2s4zqc6pxmsfcb7hznbv4chxe5"
 name = "Tangent Vehicle: Standard"
 description = "Standard vehicle definitions for Tangent."
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 authors = ["philpax"]
 
 [dependencies]

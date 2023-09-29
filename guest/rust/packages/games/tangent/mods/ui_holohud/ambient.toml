@@ -2,9 +2,9 @@
 id = "xadcwjtmzuagnoydry5h4psaph3hccbw"
 name = "Tangent UI: HoloHUD"
 description = "A holographic HUD for Tangent where all information is presented on objects."
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 authors = ["philpax"]
 
 [dependencies]

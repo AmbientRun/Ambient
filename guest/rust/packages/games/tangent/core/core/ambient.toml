@@ -2,10 +2,10 @@
 id = "itzh3wovmdje4ttrmo6wrravaaxp6b52"
 name = "Tangent Core"
 description = "The core of Tangent. The connective glue between all the other packages. (Will likely be split up.)"
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 content = { type = "Asset", code = true }
 authors = ["philpax"]
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 
 [dependencies]
 tangent_schema = { path = "../../schema", deployment = "1kQKQ7jGQCUkcK95amFI85" }

@@ -2,9 +2,9 @@
 id = "j32xi2gg5rvgob2cu7uirdbtj5ce4jw7"
 name = "Tangent Class: Assault"
 description = "Defines the Assault class, which is a balanced all-rounder."
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 authors = ["philpax"]
 
 [dependencies]

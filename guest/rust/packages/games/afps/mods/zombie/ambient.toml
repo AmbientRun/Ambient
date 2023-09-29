@@ -1,9 +1,9 @@
 [package]
 id = "du7ethjmsamrvmqoznmoedkxiongpj5g"
 name = "AFPS Zombie"
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 content = { type = "Asset", models = true, animations = true, code = true }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 
 [components]
 is_zombie = { type = "Empty", attributes = ["Networked", "Debuggable"] }

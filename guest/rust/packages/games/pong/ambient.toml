@@ -2,11 +2,11 @@
 id = "h3gv2vnpcajq75woh5nmiemeahfpaku4"
 name = "Pong"
 description = "Minimal multiplayer pong."
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/pong"
 type = "Game"
 content = { type = "Playable" }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 
 [components]
 player_movement_direction = { type = "F32", name = "Player Movement Direction", description = "Direction of player movement" }

@@ -2,9 +2,9 @@
 id = "fclqpkeyujrl3jeb6na6qmkl6jsumyoq"
 name = "AFPS World Latency"
 description = "World latency is a simple utility that displays the relative latency # of world streamed from the server as seen by all players in the world."
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 content = { type = "Tool" }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 
 [components]
 server_frame = { type = "U64", description = "Current server frame number", attributes = [

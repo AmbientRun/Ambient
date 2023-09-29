@@ -1,10 +1,10 @@
 [package]
 id = "n7xfnlfzdmnvj7bqasfdhqftbtdi27ah"
 name = "Editor Schema"
-version = "0.3.0-rc.1"
+version = "0.3.0-rc.2"
 description = "Schema for the editor."
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.2"
 
 [components]
 # Player components
