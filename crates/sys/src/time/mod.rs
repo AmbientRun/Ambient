@@ -80,8 +80,7 @@ impl Inner {
     }
 
     fn remove(&self, deadline: Instant, timer: *const TimerEntry) {
-        let removed = self.heap.lock().remove(&Entry { deadline, timer });
-        let label = unsafe { &*timer }.label;
+        self.heap.lock().remove(&Entry { deadline, timer });
     }
 }
 
@@ -207,7 +206,7 @@ impl Timers {
     }
 
     #[cfg(target_os = "unknown")]
-    pub fn run_wasm(mut self) -> impl Future<Output = ()> {
+    pub fn run_wasm(self) -> impl Future<Output = ()> {
         let reactor = AsyncReactor {
             timers: self,
             timeout: None,

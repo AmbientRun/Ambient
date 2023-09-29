@@ -517,7 +517,7 @@ impl AppBuilder {
             current_time: Instant::now(),
             update_title_with_fps_stats: self.update_title_with_fps_stats,
             #[cfg(target_os = "unknown")]
-            drop_handles,
+            _drop_handles: drop_handles,
         })
     }
 
@@ -566,7 +566,7 @@ pub struct App {
     window_focused: bool,
     update_title_with_fps_stats: bool,
     #[cfg(target_os = "unknown")]
-    drop_handles: Vec<Box<dyn std::fmt::Debug>>,
+    _drop_handles: Vec<Box<dyn std::fmt::Debug>>,
     current_time: Instant,
 }
 
