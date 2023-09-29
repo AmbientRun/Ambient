@@ -2,10 +2,9 @@ use ambient_api::{
     core::{
         app::components::window_physical_size,
         player::components::user_id,
-        rect::components::background_color,
         rendering::components::color,
         text::components::{font_family, font_size},
-        transform::components::{local_to_world, translation},
+        transform::components::{local_to_world, scale, translation},
     },
     element::use_entity_component,
     prelude::*,
@@ -13,7 +12,7 @@ use ambient_api::{
 };
 
 use packages::temperature::components::temperature;
-use packages::this::components::hud_camera;
+use packages::this::components::{hud_camera, hud_hide};
 
 const FONT_PATH_CHANGE_THIS: &str =
     "https://jetsam.droqen.com/2023-0918-ambient-game-font-test/ABCDiatype-Regular.otf";
@@ -31,6 +30,18 @@ pub async fn main() {
     } else {
         panic!("No active camera found");
     }
+
+    ambient_api::core::messages::Frame::subscribe(|_| {
+        let (delta, _input) = input::get_delta();
+        if delta.keys.contains(&KeyCode::H) {
+            entity::mutate_component_with_default(
+                packages::this::entity(),
+                hud_hide(),
+                true,
+                |hide| *hide = !*hide,
+            );
+        }
+    });
 }
 
 // DISPLAYS NAMEPLATE & TEMP above players' heads
@@ -40,18 +51,41 @@ pub fn NameplateUI(hooks: &mut Hooks, camera: EntityId) -> Element {
         return Element::new();
     };
 
-    let (_, camera_rotation, _) = camera_inv_view.to_scale_rotation_translation();
-    let camera_rotation_z = camera_rotation.to_euler(glam::EulerRot::ZYX).0;
+    if let Some(hide) = use_entity_component(hooks, packages::this::entity(), hud_hide()) {
+        if hide {
+            return Element::new();
+        }
+    }
 
-    println!("{camera_rotation_z}");
+    // let (_, camera_rotation, _) = camera_inv_view.to_scale_rotation_translation();
+    // let _camera_rotation_z = camera_rotation.to_euler(glam::EulerRot::ZYX).0;
+
+    let (_, _, camera_translation) = camera_inv_view.to_scale_rotation_translation();
+
+    // let Some(_) = use_entity_component(hooks, camera, local_to_world()) else {
+    //     return Element::new();
+    // };
 
     let screen_size = entity::get_component(entity::resources(), window_physical_size()).unwrap();
     let players = ambient_api::element::use_query(hooks, (user_id(), translation(), temperature()));
-    let fsize = screen_size.y as f32 * 0.05;
+    let fsize = screen_size.y as f32 * 0.04;
     Group::el(players.iter().map(move |(_plr, (uid, pos, player_temp))| {
         // let Some(camera_inv_view) = use_entity_component(hooks, camera_id, local_to_world()) else {
         //     return Element::new();
         // };
+
+        let dist_from_camera = pos.distance(camera_translation);
+
+        let mut nameplate_scale = 0.;
+
+        if dist_from_camera > 0. && dist_from_camera < 30. {
+            nameplate_scale = remap(dist_from_camera, 5., 20., 1.0, 0.7).clamp(0.6, 1.0);
+            nameplate_scale *= nameplate_scale;
+        }
+
+        if nameplate_scale <= 0. {
+            return Element::new();
+        }
 
         let player_nameplate_screen_pos = camera::world_to_screen(camera, *pos + vec3(0., 0., 2.));
 
@@ -72,28 +106,25 @@ pub fn NameplateUI(hooks: &mut Hooks, camera: EntityId) -> Element {
             .with(height(), 24.0),
             FlowRow::el([Text::el(floatemp_to_string(*player_temp))
                 .with(color(), C_ALLBLACK.extend(1.))
-                .with(font_size(), fsize * 0.45)
+                .with(font_size(), fsize * 0.45 * nameplate_scale)
                 .with(font_family(), FONT_PATH_CHANGE_THIS.into())])
             .with_background(C_ALLWHITE.extend(1.)),
             FlowRow::el([Text::el(format!("{}", uid))
                 .with(color(), C_ALLBLACK.extend(1.))
-                .with(font_size(), fsize * 0.65)
+                .with(font_size(), fsize * 0.65 * nameplate_scale)
                 .with(font_family(), FONT_PATH_CHANGE_THIS.into())])
             .with_background(C_ALLWHITE.extend(1.)),
         ])
+        .with(fit_vertical(), Fit::None)
+        .with(fit_horizontal(), Fit::None)
         .with(align_horizontal(), Align::Center)
         .with(align_vertical(), Align::End)
-        .with(width(), 400.0)
-        .with(height(), fsize * 0.15)
-        .with(translation(), player_nameplate_ui_pos)
-        // .with(
-        //     local_to_world(),
-        //     Mat4::from_scale_rotation_translation(
-        //         Vec3::ONE,
-        //         player_nameplate_rot,
-        //         player_nameplate_pos,
-        //     ),
-        // )
+        .with(width(), 400. * nameplate_scale)
+        .with(height(), 200. * nameplate_scale)
+        .with(
+            translation(),
+            player_nameplate_ui_pos + vec3(-200. * nameplate_scale, -200. * nameplate_scale, 0.),
+        )
     }))
 }
 
@@ -121,6 +152,12 @@ fn remap(value: f32, low1: f32, high1: f32, low2: f32, high2: f32) -> f32 {
 pub fn TemperatureDisplayUI(hooks: &mut Hooks) -> Element {
     let player_temp =
         ambient_api::element::use_entity_component(hooks, player::get_local(), temperature());
+
+    if let Some(hide) = use_entity_component(hooks, packages::this::entity(), hud_hide()) {
+        if hide {
+            return Element::new();
+        }
+    }
 
     let screen_size = entity::get_component(entity::resources(), window_physical_size()).unwrap();
 

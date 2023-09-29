@@ -6,7 +6,8 @@ content = { type = "Playable" }
 ambient_version = "0.3.0-nightly-2023-09-18"
 
 [dependencies]
-temperature = { path = "../temperature" , deployment = "nb2mw2fGIW4jmORAtyObz" }
+temperature = { path = "../temperature" , deployment = "5wJt3UkQJ90EhEfX0e3P8x" }
 
 [components]
 hud_camera = { type = "EntityId" }
+hud_hide = { type = "Bool" }
