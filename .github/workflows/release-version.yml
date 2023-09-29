@@ -158,4 +158,4 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: rustup target add --toolchain stable wasm32-wasi
       - name: Release all packages required for API
-        run: cargo run -p campfire-slim release publish --execute
+        run: cargo campfire-slim release publish --execute
