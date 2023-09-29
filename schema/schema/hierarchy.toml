@@ -2,8 +2,8 @@
 name = "Hierarchy"
 description = "Parent/child relationships."
 content = { type = "Asset", schema = true }
-version = "0.3.0-dev"
-ambient_version = "0.3.0-nightly-2023-09-29"
+version = "0.3.0-rc.1"
+ambient_version = "0.3.0-rc.1"
 
 [components.parent]
 type = "EntityId"

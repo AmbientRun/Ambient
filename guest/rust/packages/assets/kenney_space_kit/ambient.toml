@@ -3,6 +3,6 @@ id = "llhdryqkfsr6gy4f26wbolh4kfwnzn3c"
 name = "Kenney's Space Kit"
 authors = ["Kenney"]
 description = "https://www.kenney.nl/assets/space-kit for Ambient. (Uploaded by Ambient, not Kenney.)"
-version = "0.0.1"
+version = "0.3.0-rc.1"
 content = { type = "Asset", models = true }
-ambient_version = "0.3.0-nightly-2023-09-29"
+ambient_version = "0.3.0-rc.1"

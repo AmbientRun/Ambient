@@ -1,9 +1,9 @@
 [package]
 id = "vuph6dqdj6li4apmcgomn3faudcbfz56"
 name = "fps_controller"
-version = "0.0.1"
+version = "0.3.0-rc.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-29"
+ambient_version = "0.3.0-rc.1"
 
 [dependencies]
 unit_schema = { path = "../../schemas/unit", deployment = "1PkJdEGkTknbNs8vGxbPyN" }

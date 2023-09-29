@@ -2,8 +2,8 @@
 id = "n3xokyl3yn4vd3lzfjlvbbtgnnmqlnjo"
 name = "Rect"
 description = "A rectangle with border, rounded corners and background image."
-version = "0.0.1"
+version = "0.3.0-rc.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/rect"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-29"
+ambient_version = "0.3.0-rc.1"

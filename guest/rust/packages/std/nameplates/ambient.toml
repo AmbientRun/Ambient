@@ -1,9 +1,9 @@
 [package]
 id = "per6j2iqhj3jz4da3fqr75jcj2kqjooo"
 name = "Nameplates"
-version = "0.0.1"
+version = "0.3.0-rc.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-29"
+ambient_version = "0.3.0-rc.1"
 
 [dependencies]
 game_object = { path = "../../schemas/game_object", deployment = "2WcOC2EQMAIb0xgV54fEPq" }

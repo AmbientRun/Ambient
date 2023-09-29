@@ -2,9 +2,9 @@
 id = "hs7ygpw4pmpsixtcohdcvzxwmrfzubvi"
 name = "Tangent UI: Class Selection"
 description = "Implements the class selection UI."
-version = "0.2.0"
+version = "0.3.0-rc.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-29"
+ambient_version = "0.3.0-rc.1"
 authors = ["philpax"]
 
 [dependencies]

@@ -2,8 +2,8 @@
 id = "pdgdtcgm5fxbrhvdcliwz2eogtihrqo3"
 name = "Dock Layout"
 description = "Top-down layout."
-version = "0.0.1"
+version = "0.3.0-rc.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/dock_layout"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-29"
+ambient_version = "0.3.0-rc.1"

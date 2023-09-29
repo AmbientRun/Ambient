@@ -2,9 +2,9 @@
 id = "afl5yv5ya35vbuaj3aido22cwjzat25z"
 name = "Unit"
 description = "Schema for units in games"
-version = "0.0.1"
+version = "0.3.0-rc.1"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.0-nightly-2023-09-29"
+ambient_version = "0.3.0-rc.1"
 
 [dependencies]
 game_object = { path = "../game_object" , deployment = "2WcOC2EQMAIb0xgV54fEPq" }

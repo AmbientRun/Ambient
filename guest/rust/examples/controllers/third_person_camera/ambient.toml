@@ -2,11 +2,11 @@
 id = "ie4hdvkvui6t36yzniyex2hc5i2bradc"
 name = "Third person camera"
 description = "A simple third person camera controller."
-version = "0.0.1"
+version = "0.3.0-rc.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/third_person_camera"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-09-29"
+ambient_version = "0.3.0-rc.1"
 
 [dependencies]
 base_assets = { path = "../../../packages/std/base_assets", deployment = "6Xh92jILT02vH5DLQGB790" }

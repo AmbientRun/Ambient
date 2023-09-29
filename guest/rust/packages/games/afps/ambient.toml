@@ -1,9 +1,9 @@
 [package]
 id = "qvd3idif3tkax2on2bw6ia3uf6al2tyv"
 name = "afps"
-version = "0.0.1"
+version = "0.3.0-rc.1"
 content = { type = "Playable" }
-ambient_version = "0.3.0-nightly-2023-09-29"
+ambient_version = "0.3.0-rc.1"
 
 [dependencies]
 character_animation = { path = "../../std/character_animation", deployment = "6SQ6Rra3CrwR7kbmIbjWyh" }

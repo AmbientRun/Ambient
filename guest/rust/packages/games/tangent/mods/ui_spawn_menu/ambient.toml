@@ -2,9 +2,9 @@
 id = "c72h7qyqnp4njboj7tu4vomadoj2zu6e"
 name = "Tangent UI: Spawn Menu"
 description = "A spawn menu that lets you spawn vehicles."
-version = "0.2.0"
+version = "0.3.0-rc.1"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-nightly-2023-09-29"
+ambient_version = "0.3.0-rc.1"
 authors = ["philpax"]
 
 [dependencies]

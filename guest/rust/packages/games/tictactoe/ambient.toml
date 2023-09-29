@@ -2,11 +2,11 @@
 id = "thr5tsq3g3vvf7ilap2jfu6bpoyas53s"
 name = "Tic Tac Toe"
 description = "Aka five-in-a-row."
-version = "0.0.1"
+version = "0.3.0-rc.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/tictactoe"
 type = "Game"
 content = { type = "Playable" }
-ambient_version = "0.3.0-nightly-2023-09-29"
+ambient_version = "0.3.0-rc.1"
 
 [components]
 cells = { type = { type = "Vec", element_type = "EntityId" }, name = "Cells", description = "The cells in the game", attributes = [
