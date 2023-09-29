@@ -11,7 +11,7 @@ See our [announcement blog post](https://www.ambient.run/post/introducing-ambien
 
 ## Getting started
 
-[Go the tutorial](https://ambientrun.github.io/Ambient/tutorials/game/0_intro.html)
+[Check out the tutorial](https://ambientrun.github.io/Ambient/tutorials/game/0_intro.html).
 
 ## Design principles
 

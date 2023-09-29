@@ -148,7 +148,7 @@ fn update_version(
     }
 
     // This must be done first, before we mutate anything, to ensure that it's in a consistent state
-    let all_publishable_crates = get_all_publishable_crates()?;
+    let all_publishable_crates = get_all_publishable_crates(true)?;
 
     if !no_package_ambient_version_update {
         fn add_ambient_version(toml: &mut toml_edit::Document, new_version: &str) {
@@ -313,7 +313,7 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
 }
 
 fn publish(execute: bool) -> anyhow::Result<()> {
-    let crates = get_all_publishable_crates()?;
+    let crates = get_all_publishable_crates(false)?;
 
     #[derive(Debug)]
     enum Task {
@@ -467,7 +467,7 @@ fn check_docker_run() -> anyhow::Result<()> {
 }
 
 fn check_crates_io_validity() -> anyhow::Result<()> {
-    let crates = get_all_publishable_crates()?;
+    let crates = get_all_publishable_crates(false)?;
     for (path, manifest) in crates {
         let Some(package) = manifest.package else {
             anyhow::bail!("no package for {}", path.display())
@@ -519,7 +519,7 @@ fn check_msrv() -> anyhow::Result<()> {
                 "--output-format",
                 "json",
                 "--min",
-                "1.60.0",
+                "1.70.0",
                 "--include-all-patch-releases",
             ])
             .output()?;
@@ -643,7 +643,9 @@ fn check(path: impl AsRef<Path>) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn get_all_publishable_crates() -> anyhow::Result<Vec<(PathBuf, cargo_toml::Manifest)>> {
+fn get_all_publishable_crates(
+    include_ambient_crates: bool,
+) -> anyhow::Result<Vec<(PathBuf, cargo_toml::Manifest)>> {
     // Our publishing process is complicated by the presence of two workspaces
     // that share crates. None of the existing tooling, as far as I can tell,
     // handles this well.
@@ -656,7 +658,7 @@ fn get_all_publishable_crates() -> anyhow::Result<Vec<(PathBuf, cargo_toml::Mani
 
     let mut manifests = Manifests::default();
 
-    let ambient_crates = {
+    let ambient_crates = if include_ambient_crates {
         let ambient_graph = guppy::MetadataCommand::new()
             .manifest_path(ROOT_CARGO)
             .build_graph()?;
@@ -692,6 +694,8 @@ fn get_all_publishable_crates() -> anyhow::Result<Vec<(PathBuf, cargo_toml::Mani
             .filter(|p| manifests.exists(p))
             .map(|p| p.to_string())
             .collect::<Vec<_>>()
+    } else {
+        vec![]
     };
 
     let api_crates = {

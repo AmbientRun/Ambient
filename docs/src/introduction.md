@@ -2,7 +2,11 @@
 
 Ambient is a runtime for building high-performance multiplayer games and 3D applications, powered by WebAssembly, Rust and WebGPU.
 
-See our [announcement blog post](https://www.ambient.run/post/introducing-ambient) for more details.
+See our [announcement blog post](https://www.ambient.run/post/introducing-ambient) for more details, or jump into our [documentation](https://ambientrun.github.io/Ambient/).
+
+## Getting started
+
+[Check out the tutorial](https://ambientrun.github.io/Ambient/tutorials/game/0_intro.html).
 
 ## Design principles
 
