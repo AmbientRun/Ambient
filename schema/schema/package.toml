@@ -2,7 +2,7 @@
 name = "Package"
 description = "Package-related state and functionality."
 content = { type = "Asset", schema = true }
-version = "0.3.0-nightly-2023-09-29"
+version = "0.3.0-dev"
 ambient_version = "0.3.0-nightly-2023-09-29"
 
 [enums.PackageContent]

@@ -1,7 +1,7 @@
 [package]
 description = "Contains all core components for the Ambient runtime."
 name = "Core Components"
-version = "0.3.0-nightly-2023-09-29"
+version = "0.3.0-dev"
 content = { type = "Asset", schema = true }
 ambient_version = "0.3.0-nightly-2023-09-29"
 
