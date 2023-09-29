@@ -6,7 +6,7 @@ version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/minigolf"
 type = "Game"
 content = { type = "Playable" }
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-nightly-2023-09-29"
 
 [dependencies]
 hide_cursor = { path = "../../std/hide_cursor", deployment = "3iTshr0ssOKLeg7W7mh7aU" }

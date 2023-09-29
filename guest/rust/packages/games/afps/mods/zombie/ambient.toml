@@ -3,7 +3,7 @@ id = "du7ethjmsamrvmqoznmoedkxiongpj5g"
 name = "AFPS Zombie"
 version = "0.0.1"
 content = { type = "Asset", models = true, animations = true, code = true }
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-nightly-2023-09-29"
 
 [components]
 is_zombie = { type = "Empty", attributes = ["Networked", "Debuggable"] }

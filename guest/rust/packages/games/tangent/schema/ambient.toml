@@ -4,7 +4,7 @@ name = "Tangent Schema"
 version = "0.2.0"
 content = { type = "Asset", schema = true }
 authors = ["philpax"]
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-nightly-2023-09-29"
 
 [dependencies]
 game_object = { path = "../../../schemas/game_object", deployment = "2H5s0Iq3fZwagFmlT2KstX" }

@@ -6,16 +6,16 @@ version.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-ambient_ecs = { path = "../ecs", version = "0.3.0-dev" }
-ambient_native_std = { path = "../native_std", version = "0.3.0-dev" }
-ambient_network = { path = "../network", version = "0.3.0-dev" }
-ambient_core = { path = "../core", version = "0.3.0-dev" }
+ambient_ecs = { path = "../ecs", version = "0.3.0-nightly-2023-09-29" }
+ambient_native_std = { path = "../native_std", version = "0.3.0-nightly-2023-09-29" }
+ambient_network = { path = "../network", version = "0.3.0-nightly-2023-09-29" }
+ambient_core = { path = "../core", version = "0.3.0-nightly-2023-09-29" }
 
-ambient_cb = { path = "../../libs/cb", version = "0.3.0-dev" }
+ambient_cb = { path = "../../libs/cb", version = "0.3.0-nightly-2023-09-29" }
 
-ambient_package = { path = "../../shared_crates/package", version = "0.3.0-dev" }
-ambient_package_semantic = { path = "../../shared_crates/package_semantic", version = "0.3.0-dev" }
-ambient_shared_types = { path = "../../shared_crates/shared_types", version = "0.3.0-dev" }
+ambient_package = { path = "../../shared_crates/package", version = "0.3.0-nightly-2023-09-29" }
+ambient_package_semantic = { path = "../../shared_crates/package_semantic", version = "0.3.0-nightly-2023-09-29" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", version = "0.3.0-nightly-2023-09-29" }
 
 anyhow = { workspace = true }
 thiserror = { workspace = true }

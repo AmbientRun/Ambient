@@ -14,21 +14,21 @@ targets = ["wasm32-wasi"]
 
 [dependencies]
 # Native only
-ambient_ecs = { path = "../../crates/ecs", optional = true, version = "0.3.0-dev" }
-ambient_core = { path = "../../crates/core", optional = true, version = "0.3.0-dev" }
-ambient_layout = { path = "../../crates/layout", optional = true, version = "0.3.0-dev" }
-ambient_renderer = { path = "../../crates/renderer", optional = true, version = "0.3.0-dev" }
-ambient_text = { path = "../../crates/text", optional = true, version = "0.3.0-dev" }
-ambient_rect = { path = "../../crates/rect", optional = true, version = "0.3.0-dev" }
-ambient_input = { path = "../../crates/input", optional = true, version = "0.3.0-dev" }
-ambient_sys = { path = "../../crates/sys", optional = true, version = "0.3.0-dev" }
+ambient_ecs = { path = "../../crates/ecs", optional = true, version = "0.3.0-nightly-2023-09-29" }
+ambient_core = { path = "../../crates/core", optional = true, version = "0.3.0-nightly-2023-09-29" }
+ambient_layout = { path = "../../crates/layout", optional = true, version = "0.3.0-nightly-2023-09-29" }
+ambient_renderer = { path = "../../crates/renderer", optional = true, version = "0.3.0-nightly-2023-09-29" }
+ambient_text = { path = "../../crates/text", optional = true, version = "0.3.0-nightly-2023-09-29" }
+ambient_rect = { path = "../../crates/rect", optional = true, version = "0.3.0-nightly-2023-09-29" }
+ambient_input = { path = "../../crates/input", optional = true, version = "0.3.0-nightly-2023-09-29" }
+ambient_sys = { path = "../../crates/sys", optional = true, version = "0.3.0-nightly-2023-09-29" }
 anyhow = { workspace = true }
 
 # Guest only
-ambient_api_core = { path = "../../guest/rust/api_core", optional = true, version = "0.3.0-dev" }
+ambient_api_core = { path = "../../guest/rust/api_core", optional = true, version = "0.3.0-nightly-2023-09-29" }
 
 # Shared
-ambient_shared_types = { path = "../shared_types", version = "0.3.0-dev" }
+ambient_shared_types = { path = "../shared_types", version = "0.3.0-nightly-2023-09-29" }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 arboard = { workspace = true, optional = true }

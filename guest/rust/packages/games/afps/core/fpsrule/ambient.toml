@@ -3,7 +3,7 @@ id = "suth5lljxzfjixfyxyw3ggvrtyrqa3mf"
 name = "AFPS Rule"
 version = "0.0.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-nightly-2023-09-29"
 
 [dependencies]
 afps_schema = { path = "../../schema", deployment = "3kFlkcMc5qDzvlWFfoEEAh" }

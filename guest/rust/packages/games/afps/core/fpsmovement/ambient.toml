@@ -3,7 +3,7 @@ id = "ldju5agsejzafvrl4qz6np6gerpokcah"
 name = "AFPS Movmement"
 version = "0.0.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-nightly-2023-09-29"
 
 [dependencies]
 afps_schema = { path = "../../schema", deployment = "3kFlkcMc5qDzvlWFfoEEAh" }
