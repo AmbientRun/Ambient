@@ -64,33 +64,6 @@ jobs:
           echo "tag=${tag}"
           echo "version=${version}"
 
-  create-release:
-    if: needs.meta.outputs.kind == 'full'
-    needs: meta
-    runs-on: ubuntu-22.04
-    outputs:
-      tag: ${{ steps.create-gh-release.outputs.computed-prefix }}${{ steps.create-gh-release.outputs.version }}
-    steps:
-      - uses: actions/checkout@v3
-      - id: create-gh-release
-        uses: taiki-e/create-gh-release-action@v1
-        with:
-          draft: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  upload-examples:
-    if: needs.meta.outputs.kind == 'full'
-    needs: meta
-    runs-on: ubuntu-22.04
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Copy and upload examples
-        run: |
-          ./scripts/make_examples_bundle.sh
-          gh release upload ${{ needs.meta.outputs.tag }} tmp/examples.zip
-
   build-app:
     needs: meta
     permissions:
@@ -171,15 +144,12 @@ jobs:
         with:
           path: ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
           destination: "ambient-artifacts/ambient-builds/${{ needs.meta.outputs.version }}/${{ matrix.os }}"
-      - name: Upload GitHub release
-        if: needs.meta.outputs.kind == 'full'
-        run: gh release upload ${{ needs.meta.outputs.tag }} ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
       - name: Upload debug symbols
         run: sentry-cli upload-dif -o dims -p native-client ${{ env.EXE_DIR }}/${{ matrix.exe_name }} ${{ env.EXE_DIR }}/${{ matrix.symbol_path }}
 
   publish-api:
     if: needs.meta.outputs.kind == 'full'
-    needs: [meta, create-release, build-app]
+    needs: [meta, build-app]
     runs-on: ubuntu-22.04
     env:
       CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
@@ -189,14 +159,3 @@ jobs:
       - run: rustup target add --toolchain stable wasm32-wasi
       - name: Release all packages required for API
         run: cargo run -p campfire-slim release publish --execute
-
-  publish-release:
-    if: needs.meta.outputs.kind == 'full'
-    needs: [meta, create-release, build-app, publish-api]
-    runs-on: ubuntu-22.04
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: mark release as non-draft
-        run: gh release edit ${{ needs.create-release.outputs.tag }} --draft=false
