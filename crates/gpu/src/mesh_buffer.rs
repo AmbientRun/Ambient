@@ -141,7 +141,7 @@ impl MeshBuffer {
         Self {
             metadata_buffer: TypedBuffer::new(
                 gpu,
-                "MeshBuffer.metadata_buffer",
+                Some("MeshBuffer.metadata_buffer"),
                 4,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
@@ -497,10 +497,10 @@ pub struct AttributeBuffer<T: bytemuck::Pod> {
 }
 
 impl<T: bytemuck::Pod> AttributeBuffer<T> {
-    pub fn new(gpu: &Gpu, label: &str, capacity: usize, usage: wgpu::BufferUsages) -> Self {
+    pub fn new(gpu: &Gpu, label: &'static str, capacity: usize, usage: wgpu::BufferUsages) -> Self {
         Self {
-            front: TypedBuffer::new(gpu, label, capacity, usage),
-            tmp: TypedBuffer::new(gpu, label, capacity, usage),
+            front: TypedBuffer::new(gpu, Some(label), capacity, usage),
+            tmp: TypedBuffer::new(gpu, Some(label), capacity, usage),
         }
     }
 

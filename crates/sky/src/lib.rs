@@ -148,7 +148,7 @@ impl CloudMaterial {
     pub fn new(gpu: &Gpu, assets: &AssetCache, state: &CloudState) -> Self {
         let cloud_buffer = TypedBuffer::new(
             gpu,
-            "Cloud Buffer",
+            Some("Cloud Buffer"),
             state.tree.len().max(64) as usize,
             BufferUsages::STORAGE | BufferUsages::COPY_DST | BufferUsages::COPY_SRC,
         );

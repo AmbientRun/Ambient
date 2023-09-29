@@ -49,7 +49,7 @@ impl TransparentRenderer {
     pub fn new(gpu: &Gpu, config: TransparentRendererConfig) -> Self {
         let gpu_primitives = TypedBuffer::new(
             gpu,
-            "TransparentRenderer.primitives",
+            Some("TransparentRenderer.primitives"),
             1,
             wgpu::BufferUsages::STORAGE
                 | wgpu::BufferUsages::COPY_DST

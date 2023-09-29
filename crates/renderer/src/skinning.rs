@@ -65,7 +65,7 @@ impl SkinsBuffer {
         Self {
             buffer: TypedBuffer::new(
                 gpu,
-                "SkinsBuffer.buffer",
+                Some("SkinsBuffer.buffer"),
                 1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_SRC
