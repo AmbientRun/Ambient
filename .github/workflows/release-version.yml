@@ -43,10 +43,15 @@ jobs:
           # Version is the tag without the v
           version=${tag#v}
 
-          # if tag has a dash then it's an internal release
-          if [[ $tag == v*-* ]]; then
+          if [[ $tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+-(rc|alpha|beta)(\..*)?$ ]]; then
+            # few special cases for full versions, for example: v0.3.0-rc v0.3.0-rc.1 v0.3.0-alpha v0.3.0-beta
+            # but not: v0.3.0-rcNot
+            kind=full
+          elif [[ $tag == v*-* ]]; then
+            # otherwise anything with a dash is internal, for example: v0.3.0-nightly-2023-09-29
             kind=internal
           else
+            # no dashes then it's a plain old full version, for example: v0.3.0
             kind=full
           fi
 
