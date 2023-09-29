@@ -3,10 +3,10 @@ id = "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu"
 name = "Editor"
 version = "0.0.1"
 content = { type = "Tool" }
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-nightly-2023-09-29"
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor" , deployment = "4WEcPL05lzEVFcZlLqXAEG" }
+editor_schema = { path = "../../schemas/editor" , deployment = "3TOobUb6qnOs7Sxnmu8XBQ" }
 
 [components]
 # Player components

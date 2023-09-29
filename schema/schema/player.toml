@@ -3,7 +3,7 @@ name = "Player"
 description = "Components that are attached to player entities."
 content = { type = "Asset", schema = true }
 version = "0.3.0-dev"
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-nightly-2023-09-29"
 
 [components.local_user_id]
 type = "String"
