@@ -379,7 +379,7 @@ impl RectMaterial {
 
         let buffer = TypedBuffer::new_init(
             gpu,
-            "RectMaterial.buffer",
+            Some("RectMaterial.buffer"),
             wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             &[params],
         );

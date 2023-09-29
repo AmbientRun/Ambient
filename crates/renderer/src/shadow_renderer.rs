@@ -188,7 +188,7 @@ impl ShadowsRenderer {
         bind_groups: &BindGroups<'a>,
         post_submit: &mut Vec<PostSubmitFunc>,
     ) {
-        for (i, cascade) in self.cascades.iter_mut().enumerate() {
+        for cascade in self.cascades.iter_mut() {
             profiling::scope!("Shadow dynamic render");
             self.renderer.run_collect(
                 gpu,
@@ -201,9 +201,8 @@ impl ShadowsRenderer {
                 &mut cascade.collect_state,
                 mesh_buffer,
             );
-            let label = format!("Shadow cascade {i}");
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: Some(&label),
+                label: Some("Shadow cascade"),
                 color_attachments: &[],
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
                     view: &cascade.dynamic_target,

@@ -19,7 +19,7 @@ use super::gpu::Gpu;
 static TOTAL_ALLOCATED_BYTES: AtomicU64 = AtomicU64::new(0);
 
 pub struct TypedBuffer<T> {
-    label: String,
+    label: Option<&'static str>,
     buffer: wgpu::Buffer,
     len: usize,
     capacity: usize,
@@ -45,14 +45,12 @@ impl<T> Drop for TypedBuffer<T> {
 impl<T> TypedBuffer<T> {
     pub fn new(
         gpu: &Gpu,
-        label: impl Into<String>,
+        label: Option<&'static str>,
         capacity: usize,
         usage: wgpu::BufferUsages,
     ) -> Self {
-        let label = label.into();
-
         let buffer = gpu.device.create_buffer(&BufferDescriptor {
-            label: Some(&label),
+            label: label,
             usage,
             size: (mem::size_of::<T>() as u64 * capacity as u64),
             mapped_at_creation: false,
@@ -62,7 +60,7 @@ impl<T> TypedBuffer<T> {
             .fetch_add((capacity) as u64 * size_of::<T>() as u64, Ordering::SeqCst);
 
         Self {
-            label,
+            label: label,
             buffer,
             len: 0,
             capacity: 0,
@@ -147,7 +145,7 @@ impl<T> TypedBuffer<T> {
         }
 
         let new_buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some(&self.label),
+            label: self.label,
             usage: self.buffer.usage(),
             size: new_capacity as u64 * size_of::<T>() as u64,
             mapped_at_creation: false,
@@ -178,14 +176,12 @@ impl<T> TypedBuffer<T> {
 impl<T: Pod> TypedBuffer<T> {
     pub fn new_init(
         gpu: &Gpu,
-        label: impl Into<String>,
+        label: Option<&'static str>,
         usage: wgpu::BufferUsages,
         data: &[T],
     ) -> Self {
-        let label = label.into();
-
         let buffer = gpu.device.create_buffer_init(&BufferInitDescriptor {
-            label: Some(&label),
+            label: label,
             contents: bytemuck::cast_slice(data),
             usage,
         });
@@ -194,7 +190,7 @@ impl<T: Pod> TypedBuffer<T> {
             .fetch_add(data.len() as u64 * size_of::<T>() as u64, Ordering::SeqCst);
 
         Self {
-            label,
+            label: label,
             buffer,
             len: data.len() as _,
             capacity: data.len() as _,

@@ -72,7 +72,7 @@ impl GizmoRenderer {
     pub fn new(gpu: &Gpu, assets: &AssetCache) -> Self {
         let buffer = TypedBuffer::new(
             gpu,
-            "Gizmo Buffer",
+            Some("Gizmo Buffer"),
             128,
             BufferUsages::STORAGE | BufferUsages::COPY_DST | BufferUsages::COPY_SRC,
         );

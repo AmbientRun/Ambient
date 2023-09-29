@@ -126,7 +126,7 @@ impl Culling {
             ),
             params: TypedBuffer::new(
                 gpu,
-                "Culling.params",
+                Some("Culling.params"),
                 1,
                 wgpu::BufferUsages::COPY_DST
                     | wgpu::BufferUsages::COPY_SRC

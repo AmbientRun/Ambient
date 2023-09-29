@@ -108,14 +108,14 @@ impl GpuRun {
 
         let in_buffer = TypedBuffer::new_init(
             gpu,
-            "GpuRun.in",
+            Some("GpuRun.in"),
             BufferUsages::COPY_DST | BufferUsages::STORAGE,
             &[input],
         );
 
         let out_buffer = TypedBuffer::new_init(
             gpu,
-            "GpuRun.out",
+            Some("GpuRun.out"),
             BufferUsages::STORAGE | BufferUsages::COPY_SRC,
             &[Out::zeroed()],
         );
