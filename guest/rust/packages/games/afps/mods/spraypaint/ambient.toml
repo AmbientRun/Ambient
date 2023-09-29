@@ -14,6 +14,6 @@ dir = "Vec3"
 source = "EntityId"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "3kFlkcMc5qDzvlWFfoEEAh" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "5A0rsH8nDtTze7x3wuLVUJ" }
-game_object = { path = "../../../../schemas/game_object" , deployment = "2H5s0Iq3fZwagFmlT2KstX" }
+afps_schema = { path = "../../schema", deployment = "3l25ZYqAEJRrwFjKp7doH6" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "1PkJdEGkTknbNs8vGxbPyN" }
+game_object = { path = "../../../../schemas/game_object" , deployment = "2WcOC2EQMAIb0xgV54fEPq" }
