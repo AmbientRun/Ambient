@@ -283,7 +283,6 @@ fn EntityComponents(
         filter_components.clone(),
         {
             let world = world.clone();
-            let filter_components = filter_components;
             move |_| {
                 world.get_components(entity, set_components.clone(), filter_components.clone());
             }

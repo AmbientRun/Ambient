@@ -1,4 +1,4 @@
-use std::{sync::OnceLock, time::Duration};
+use std::{sync::OnceLock};
 
 use ambient_app::App;
 use ambient_cameras::UICamera;
@@ -6,16 +6,14 @@ use ambient_core::{
     camera::active_camera,
     window::{ExitStatus, WindowCtl},
 };
-use ambient_sys::time::{interval, sleep_label, Interval};
 use ambient_ui_native::{
     element::{ElementComponentExt, Group},
     WindowSized,
 };
 use anyhow::Context;
 use app::MainApp;
-use futures::StreamExt;
 use tracing_subscriber::{
-    filter::{LevelFilter, Targets},
+    filter::{Targets},
     prelude::*,
     registry,
 };

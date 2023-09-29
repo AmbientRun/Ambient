@@ -327,7 +327,6 @@ pub async fn object_pipelines_from_quixel_json(
                 |ending: Option<String>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
                     let config = config.clone();
                     let in_root_url = in_root_url.clone();
-                    let ending = ending;
                     async move {
                         if let Some(ending) = ending {
                             Ok(Some(AssetUrl::from(

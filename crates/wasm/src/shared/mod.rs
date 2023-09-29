@@ -268,6 +268,7 @@ pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
     Ok(())
 }
 
+#[cfg(not(target_os = "unknown"))]
 pub(crate) fn reload_all(world: &mut World) {
     let modules = query((is_module(), module_bytecode(), module_enabled()))
         .iter(world, None)

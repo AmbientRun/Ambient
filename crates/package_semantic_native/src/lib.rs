@@ -6,14 +6,11 @@ use std::{
 };
 
 use ambient_cb::Cb;
-use ambient_core::{async_ecs::async_run, runtime};
 use ambient_ecs::{
-    components,
-    generated::{app::components::name as app_name, package::messages::PackageLoadFailure},
-    generated::{package::messages::PackageLoadSuccess, wasm::components::module_enabled},
-    query, world_events, ComponentRegistry, Entity, EntityId, ExternalComponentAttributes,
-    ExternalComponentDesc, Networked, PrimitiveComponentType, Resource, SystemGroup, World,
-    WorldEventsExt,
+    components, generated::app::components::name as app_name,
+    generated::wasm::components::module_enabled, query, ComponentRegistry, Entity, EntityId,
+    ExternalComponentAttributes, ExternalComponentDesc, Networked, PrimitiveComponentType,
+    Resource, SystemGroup, World,
 };
 use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::ServerWorldExt;
@@ -109,6 +106,12 @@ pub fn add(_world: &mut World, _url: String, _main_package: bool) -> Result<(), 
 // passed all the way through.
 #[cfg(not(target_os = "unknown"))]
 pub fn add(world: &mut World, url: String, main_package: bool) -> Result<(), url::ParseError> {
+    use ambient_core::{async_ecs::async_run, runtime};
+    use ambient_ecs::{
+        generated::package::messages::{PackageLoadFailure, PackageLoadSuccess},
+        world_events, WorldEventsExt,
+    };
+
     let semantic = world_semantic(world);
     let async_run = world.resource(async_run()).clone();
 

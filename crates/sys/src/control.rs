@@ -4,7 +4,7 @@ use std::{
         atomic::{AtomicBool, Ordering},
         Arc,
     },
-    task::{Poll, Waker},
+    task::Poll,
 };
 
 use futures::{task::AtomicWaker, Future};
