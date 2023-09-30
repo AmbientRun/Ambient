@@ -2,7 +2,7 @@
 id = "s37z23uqis7ts6ya7v2f66ni23m3upt7"
 name = "visualize_colliders"
 version = "0.3.0-nightly-2023-09-30"
-content = { type = "Playable" }
+content = { type = "Playable", example = true }
 ambient_version = "0.3.0-nightly-2023-09-30"
 
 [dependencies]
