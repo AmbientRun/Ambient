@@ -173,7 +173,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
     use_keyboard_input(hooks, move |_, keycode, modifiers, pressed| {
         if modifiers == ModifiersState::empty() && keycode == Some(VirtualKeyCode::F5) && !pressed {
             ToggleEditor {
-                camera_transform: camera::get_active(None)
+                camera_transform: camera::get_active()
                     .and_then(|c| entity::get_component(c, local_to_world())),
             }
             .send_server_reliable();

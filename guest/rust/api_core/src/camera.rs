@@ -1,22 +1,18 @@
-use once_cell::sync::Lazy;
-
-use crate::{
-    core::camera::components::active_camera,
-    ecs::{query, Component, GeneralQuery},
-    entity,
-    global::EntityId,
-    internal::generated::ambient_core::player::components::user_id,
-};
-
 #[cfg(feature = "client")]
 mod client {
     use crate::{
+        core::camera::components::active_camera,
+        ecs::{query, Component, GeneralQuery},
+        entity,
         global::{EntityId, Ray, Vec2, Vec3},
         internal::{
             conversion::{FromBindgen, IntoBindgen},
+            generated::ambient_core::{app::components::main_scene, player::components::user_id},
             wit,
         },
+        player,
     };
+    use once_cell::sync::Lazy;
 
     /// Converts clip-space coordinates to a [Ray] in world space.
     ///
@@ -48,24 +44,34 @@ mod client {
         wit::client_camera::world_to_screen(camera.into_bindgen(), world_position.into_bindgen())
             .from_bindgen()
     }
+
+    /// Get the active camera.
+    // TODO: consider moving this to the host
+    pub fn get_active() -> Option<EntityId> {
+        static QUERY: Lazy<GeneralQuery<Component<f32>>> =
+            Lazy::new(|| query(active_camera()).requires(main_scene()).build());
+
+        let local_user_id = entity::get_component(player::get_local(), user_id());
+
+        QUERY
+            .evaluate()
+            .into_iter()
+            .filter(|(id, _)| {
+                if let Some(local_user_id) = &local_user_id {
+                    if let Some(cam_user_id) = entity::get_component(*id, user_id()) {
+                        cam_user_id == *local_user_id
+                    } else {
+                        // The camera is considered global, as it doesn't have a user_id attached
+                        true
+                    }
+                } else {
+                    // No user_id was supplied, so all cameras are considered
+                    true
+                }
+            })
+            .max_by(|x, y| x.1.partial_cmp(&y.1).unwrap_or(std::cmp::Ordering::Less))
+            .map(|(id, _)| id)
+    }
 }
 #[cfg(feature = "client")]
 pub use client::*;
-
-/// Get the active camera (with filtering for a specific player, if required).
-// TODO: consider moving this to the host
-pub fn get_active(player_user_id: Option<&str>) -> Option<EntityId> {
-    static QUERY: Lazy<GeneralQuery<Component<f32>>> = Lazy::new(|| query(active_camera()).build());
-
-    QUERY
-        .evaluate()
-        .into_iter()
-        .filter(|(id, _)| match player_user_id {
-            Some(player_user_id) => {
-                entity::get_component(*id, user_id()).is_some_and(|id| id == player_user_id)
-            }
-            None => true,
-        })
-        .max_by(|x, y| x.1.partial_cmp(&y.1).unwrap_or(std::cmp::Ordering::Less))
-        .map(|(id, _)| id)
-}

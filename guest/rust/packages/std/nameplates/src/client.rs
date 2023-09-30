@@ -24,7 +24,7 @@ fn Nameplates(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn Nameplate(hooks: &mut Hooks, player_id: EntityId) -> Element {
-    let Some(camera_id) = camera::get_active(None) else {
+    let Some(camera_id) = camera::get_active() else {
         return Element::new();
     };
 
