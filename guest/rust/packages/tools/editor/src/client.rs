@@ -9,6 +9,7 @@ use ambient_api::{
         rendering::components::{color, double_sided},
         text::{components::font_style, types::FontStyle},
         transform::components::{local_to_world, rotation, scale, translation},
+        ui::{components::focusable, messages::FocusChanged},
     },
     ecs::SupportedValue,
     element::{
@@ -200,12 +201,23 @@ pub fn App(hooks: &mut Hooks) -> Element {
         |_| {}
     });
 
+    // use_module_message::<FocusChanged>(hooks, |_, source, msg| {
+    //     dbg!(source, msg);
+    // });
+
     if in_editor {
-        Group::el([
+        WindowSized::el([Group::el([
             MenuBar::el(menu_bar_items),
             MouseoverDisplay::el(),
             SelectedDisplay::el(),
-        ])
+        ])])
+        .init(translation(), vec3(0., 0., 1.5))
+        .with_clickarea()
+        .el()
+        .with(focusable(), hooks.instance_id().to_string())
+        .on_spawned(|_, _id, instance_id| {
+            input::set_focus(instance_id);
+        })
     } else {
         Element::new()
     }
