@@ -8,7 +8,8 @@ use ambient_api::{
         rect::components::{line_from, line_to, line_width, rect},
         rendering::components::{color, double_sided},
         text::{components::font_style, types::FontStyle},
-        transform::components::{rotation, scale, translation},
+        transform::components::{local_to_world, rotation, scale, translation},
+        ui::components::focusable,
     },
     ecs::SupportedValue,
     element::{
@@ -25,13 +26,20 @@ use packages::{
         messages::{EditorLoad, EditorMenuBarAdd, EditorMenuBarClick},
     },
     this::{
-        components::{editor_camera, mouseover_position, selected_entity},
+        components::{editor_camera, has_sample_scene, mouseover_position, selected_entity},
         messages::{Input, ToggleEditor},
     },
 };
 
+// TODO: make this an option in the UI
+const WORLDSPACE_MOVEMENT: bool = true;
+
 #[main]
 pub fn main() {
+    if entity::has_component(entity::synchronized_resources(), has_sample_scene()) {
+        make_sample_scene();
+    }
+
     let mut fixed_tick_last = game_time();
 
     let mut accumulated_aim_delta = Vec2::ZERO;
@@ -39,9 +47,9 @@ pub fn main() {
     let mut select_pressed = false;
     let mut freeze_pressed = false;
 
-    let mut gizmo_active = None;
+    let mut gizmo_active: Option<Gizmo> = None;
+    let mut gizmo_original_translation: Option<Vec3> = None;
     let mut gizmo_accumulated_drag = 0.0;
-    let mut gizmo_original_translation = None;
 
     let player_id = player::get_local();
 
@@ -164,7 +172,11 @@ pub fn App(hooks: &mut Hooks) -> Element {
 
     use_keyboard_input(hooks, move |_, keycode, modifiers, pressed| {
         if modifiers == ModifiersState::empty() && keycode == Some(VirtualKeyCode::F5) && !pressed {
-            ToggleEditor {}.send_server_reliable();
+            ToggleEditor {
+                camera_transform: camera::get_active(None)
+                    .and_then(|c| entity::get_component(c, local_to_world())),
+            }
+            .send_server_reliable();
         }
     });
 
@@ -190,11 +202,18 @@ pub fn App(hooks: &mut Hooks) -> Element {
     });
 
     if in_editor {
-        Group::el([
+        WindowSized::el([Group::el([
             MenuBar::el(menu_bar_items),
             MouseoverDisplay::el(),
             SelectedDisplay::el(),
-        ])
+        ])])
+        .init(translation(), vec3(0., 0., 0.5))
+        .with_clickarea()
+        .el()
+        .with(focusable(), hooks.instance_id().to_string())
+        .on_spawned(|_, _id, instance_id| {
+            input::set_focus(instance_id);
+        })
     } else {
         Element::new()
     }
@@ -274,8 +293,8 @@ fn SelectedDisplay(hooks: &mut Hooks) -> Element {
     ])
 }
 
-const GIZMO_LENGTH: f32 = 5.;
-const GIZMO_WIDTH: f32 = 0.25;
+const GIZMO_LENGTH: f32 = 10.;
+const GIZMO_WIDTH: f32 = 0.5;
 
 #[element_component]
 fn EntityView(_hooks: &mut Hooks, entity: EntityId) -> Element {
@@ -340,7 +359,9 @@ impl Gizmo {
 
     fn for_entity(id: EntityId) -> [Self; 3] {
         let origin = entity::get_component(id, translation()).unwrap_or_default();
-        let rotation = entity::get_component(id, rotation()).unwrap_or_default();
+        let rotation = entity::get_component(id, rotation())
+            .filter(|_| !WORLDSPACE_MOVEMENT)
+            .unwrap_or_default();
 
         [
             Self::new(origin, rotation * Vec3::X, vec3(1., 0., 0.)),
@@ -429,4 +450,67 @@ fn is_mouse_in_cylinder(
 
 fn entity_name(id: EntityId) -> String {
     entity::get_component(id, name()).unwrap_or_else(|| id.to_string())
+}
+
+fn make_sample_scene() {
+    use ambient_api::core::{
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
+        },
+        primitives::concepts::Sphere,
+        transform::components::lookat_target,
+    };
+
+    let mut offset = Vec3::ONE * 5.;
+    let mut target = Vec3::ZERO;
+
+    // Make camera
+    let camera_id = PerspectiveInfiniteReverseCamera {
+        optional: PerspectiveInfiniteReverseCameraOptional {
+            aspect_ratio_from_window: Some(entity::resources()),
+            main_scene: Some(()),
+            translation: Some(Vec3::ONE * 5.),
+            ..default()
+        },
+        ..PerspectiveInfiniteReverseCamera::suggested()
+    }
+    .make()
+    .with(lookat_target(), vec3(0., 0., 0.))
+    .spawn();
+
+    // Make target
+    let target_id = Sphere::suggested()
+        .make()
+        .with(color(), vec4(1.0, 0.0, 0.0, 1.0))
+        .with(translation(), target)
+        .with(scale(), vec3(0.25, 0.25, 10.0))
+        .spawn();
+
+    Frame::subscribe(move |_| {
+        if !input::is_game_focused() {
+            return;
+        }
+
+        let dt = delta_time();
+        let input = input::get();
+
+        let movement = [
+            (KeyCode::W, -Vec2::Y),
+            (KeyCode::S, Vec2::Y),
+            (KeyCode::A, -Vec2::X),
+            (KeyCode::D, Vec2::X),
+        ]
+        .iter()
+        .filter(|(key, _)| input.keys.contains(key))
+        .fold(Vec2::ZERO, |acc, (_, dir)| acc + *dir)
+        .extend(0.0)
+            * dt;
+
+        offset += movement;
+        target += movement;
+
+        entity::set_component(camera_id, translation(), offset);
+        entity::set_component(camera_id, lookat_target(), target);
+        entity::set_component(target_id, translation(), target);
+    });
 }

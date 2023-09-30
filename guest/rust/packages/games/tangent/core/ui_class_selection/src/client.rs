@@ -4,10 +4,7 @@ use ambient_api::{
     core::{
         rect::components::background_color,
         text::{components::font_style, types::FontStyle},
-        ui::{
-            components::{focus, focusable},
-            messages::FocusChanged,
-        },
+        ui::components::focusable,
     },
     element::{use_entity_component, use_query, use_state},
     prelude::*,
@@ -85,12 +82,7 @@ pub fn ClassSelection(
     .el()
     .with(focusable(), hooks.instance_id().to_string())
     .on_spawned(|_, _id, instance_id| {
-        entity::set_component(entity::resources(), focus(), instance_id.to_string());
-        FocusChanged {
-            from_external: false,
-            focus: instance_id.to_string(),
-        }
-        .send_local_broadcast(true);
+        input::set_focus(instance_id);
     })
 }
 

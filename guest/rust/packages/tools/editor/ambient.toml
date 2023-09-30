@@ -6,7 +6,8 @@ content = { type = "Tool" }
 ambient_version = "0.3.0-nightly-2023-09-30"
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor" , deployment = "1VpuX0aZQQRL6wWQat4uRD" }
+editor_schema = { path = "../../schemas/editor", deployment = "1VpuX0aZQQRL6wWQat4uRD" }
+hide_cursor = { path = "../../std/hide_cursor", enabled = false }
 
 [components]
 # Player components
@@ -21,6 +22,11 @@ selected_entity = { type = "EntityId", attributes = [
     "Debuggable",
 ] }
 
+has_sample_scene = { type = "Empty", attributes = [
+    "Networked",
+    "MaybeResource",
+] }
+
 # Camera components
 camera_angle = { type = "Vec2", description = "X is yaw, Y is pitch", attributes = [
     "Networked",
@@ -28,6 +34,7 @@ camera_angle = { type = "Vec2", description = "X is yaw, Y is pitch", attributes
 ] }
 
 [messages.ToggleEditor.fields]
+camera_transform = { container_type = "Option", element_type = "Mat4" }
 
 [messages.Input.fields]
 aim_delta = "Vec2"

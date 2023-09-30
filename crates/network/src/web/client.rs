@@ -402,7 +402,6 @@ async fn handle_request(
             Ok(())
         }
         ProxyMessage::RequestUni { id, mut data } => {
-            tracing::info!("Sending uni request");
             let mut send = conn.open_uni().await?;
 
             runtime.spawn_local(async move {

@@ -14,7 +14,6 @@ game_object = { path = "../../../../schemas/game_object", deployment = "372euxKP
 unit_schema = { path = "../../../../schemas/unit", deployment = "5AtnCN95nXNshxPZB8rYd1" }
 
 explosion = { path = "../../../../std/explosion", deployment = "2F1FVDyKKSySkQKJoAIk5Q" }
-hide_cursor = { path = "../../../../std/hide_cursor", deployment = "7LwXrLtMMqlXhq0jHNYKSN" }
 nameplates = { path = "../../../../std/nameplates", deployment = "393lutrL2LgJyKMOIAien" }
 
 kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "7eGQjcFbdSkKr2H5tc8J3" }
