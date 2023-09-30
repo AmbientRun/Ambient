@@ -6,6 +6,7 @@ use ambient_api::{
         camera::concepts::{
             PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
+        package::components::main_package_id,
         physics::components::dynamic,
         player::components::user_id,
         rendering::components::outline_recursive,
@@ -27,6 +28,13 @@ use packages::{
 
 #[main]
 pub fn main() {
+    // If the editor is being launched by itself, create a sample scene to edit.
+    if entity::get_component(entity::resources(), main_package_id())
+        == Some(packages::this::entity())
+    {
+        make_sample_scene();
+    }
+
     ToggleEditor::subscribe(|ctx, _| {
         let Some(id) = ctx.client_entity_id() else {
             return;
@@ -166,4 +174,88 @@ fn deselect(player_id: EntityId) -> Option<EntityId> {
 fn select(player_id: EntityId, entity_id: EntityId) {
     entity::add_component(entity_id, outline_recursive(), Vec4::ONE);
     entity::add_component(player_id, selected_entity(), entity_id);
+}
+
+fn make_sample_scene() {
+    use ambient_api::core::{
+        app::components::main_scene,
+        physics::components::{
+            angular_velocity, cube_collider, linear_velocity, physics_controlled, plane_collider,
+        },
+        primitives::components::{cube, quad},
+        rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun},
+        transform::components::{lookat_target, scale},
+    };
+
+    // Make camera
+    PerspectiveInfiniteReverseCamera {
+        optional: PerspectiveInfiniteReverseCameraOptional {
+            aspect_ratio_from_window: Some(entity::resources()),
+            main_scene: Some(()),
+            translation: Some(Vec3::ONE * 5.),
+            ..default()
+        },
+        ..PerspectiveInfiniteReverseCamera::suggested()
+    }
+    .make()
+    .with(lookat_target(), vec3(0., 0., 0.))
+    .spawn();
+
+    // Make sky
+    Entity::new().with(sky(), ()).spawn();
+
+    // Make sun
+    Entity::new()
+        .with(sun(), 0.0)
+        .with(rotation(), Quat::from_rotation_y(-45_f32.to_radians()))
+        .with(main_scene(), ())
+        .with(light_diffuse(), Vec3::ONE)
+        .with(fog_density(), 0.)
+        .with(main_scene(), ())
+        .spawn();
+
+    // Make ground
+    Entity::new()
+        .with(quad(), ())
+        .with(physics_controlled(), ())
+        .with(plane_collider(), ())
+        .with(dynamic(), false)
+        .with(scale(), Vec3::ONE * 4000.)
+        .with(color(), Vec4::ONE)
+        .spawn();
+
+    // Make boxes
+    const Y_SIZE: i32 = 9;
+    const X_SIZE: i32 = 9;
+    for y in 0..Y_SIZE {
+        for x in 0..X_SIZE {
+            let position = vec3(
+                x as f32 - X_SIZE as f32 / 2.0,
+                y as f32 - Y_SIZE as f32 / 2.0,
+                1.,
+            );
+
+            let s = x as f32 / (X_SIZE - 1) as f32;
+            let t = y as f32 / (Y_SIZE - 1) as f32;
+
+            let color_x = vec4(1.0, 0.0, 0.0, 1.0).lerp(vec4(0.0, 1.0, 0.0, 1.0), s);
+            let color_y = vec4(0.0, 1.0, 0.0, 1.0).lerp(vec4(0.0, 0.0, 1.0, 1.0), t);
+
+            let new_color = color_x.lerp(color_y, 0.5);
+
+            Entity::new()
+                .with(cube(), ())
+                .with(physics_controlled(), ())
+                .with(cast_shadows(), ())
+                .with(linear_velocity(), Vec3::ZERO)
+                .with(angular_velocity(), Vec3::ZERO)
+                .with(cube_collider(), Vec3::ONE)
+                .with(dynamic(), true)
+                .with(translation(), position)
+                .with(rotation(), Quat::IDENTITY)
+                .with(scale(), vec3(0.5, 0.5, 0.5))
+                .with(color(), new_color)
+                .spawn();
+        }
+    }
 }
