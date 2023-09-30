@@ -2,12 +2,8 @@ use ambient_api::{
     core::{
         messages::Frame,
         transform::components::translation,
-        ui::{
-            components::{focus, focusable},
-            messages::FocusChanged,
-        },
+        ui::{components::focusable, messages::FocusChanged},
     },
-    entity::{resources, set_component},
     input::{is_game_focused, set_cursor_lock, set_cursor_visible, GAME_FOCUS_ID},
     prelude::*,
 };
@@ -32,14 +28,9 @@ pub fn main() {
         .spawn_interactive();
     Frame::subscribe(move |_| {
         if is_game_focused() {
-            let (_, input) = input::get_delta();
+            let input = input::get();
             if input.keys.contains(&KeyCode::Escape) {
-                set_component(resources(), focus(), "Nothing".to_string());
-                FocusChanged {
-                    from_external: false,
-                    focus: "Nothing".to_string(),
-                }
-                .send_local_broadcast(true);
+                input::set_focus("Nothing");
             }
         }
     });

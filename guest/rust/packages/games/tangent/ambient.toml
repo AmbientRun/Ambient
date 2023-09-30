@@ -7,6 +7,8 @@ ambient_version = "0.3.0-nightly-2023-09-30"
 authors = ["philpax"]
 
 [dependencies]
+hide_cursor = { path = "../../std/hide_cursor", deployment = "7LwXrLtMMqlXhq0jHNYKSN", enabled = true }
+
 core = { path = "core/core", deployment = "5Rmp2ZprZuGXIS3QPjv7PU" }
 behavior_vehicle = { path = "core/behavior_vehicle", deployment = "53i1Ez9rLQA38odkSMr1eu" }
 behavior_character = { path = "core/behavior_character", deployment = "610TifZ90epG6mG5IxQTWY" }
