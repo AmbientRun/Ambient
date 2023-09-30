@@ -1,12 +1,12 @@
 [package]
 id = "ldju5agsejzafvrl4qz6np6gerpokcah"
 name = "AFPS Movmement"
-version = "0.3.0-rc.2"
+version = "0.3.0-nightly-2023-09-30"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-rc.2"
+ambient_version = "0.3.0-nightly-2023-09-30"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "3l25ZYqAEJRrwFjKp7doH6" }
-editor_schema = { path = "../../../../schemas/editor", deployment = "3TOobUb6qnOs7Sxnmu8XBQ" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "1PkJdEGkTknbNs8vGxbPyN" }
-character_movement = { path = "../../../../std/character_movement", deployment = "5YGCuJv5zjfnpKtzw0Ulca" }
+afps_schema = { path = "../../schema", deployment = "4Rdo6qs82LP8Khh5gHVTUS" }
+editor_schema = { path = "../../../../schemas/editor", deployment = "1VpuX0aZQQRL6wWQat4uRD" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "5AtnCN95nXNshxPZB8rYd1" }
+character_movement = { path = "../../../../std/character_movement", deployment = "wmuF7CIWL2ro4dCdPXgJn" }
