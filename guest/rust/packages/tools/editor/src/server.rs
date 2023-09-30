@@ -10,7 +10,7 @@ use ambient_api::{
         physics::components::dynamic,
         player::components::user_id,
         rendering::components::outline_recursive,
-        transform::components::{local_to_world, rotation, translation},
+        transform::components::{rotation, translation},
     },
     glam::EulerRot,
     prelude::*,
@@ -179,27 +179,22 @@ fn select(player_id: EntityId, entity_id: EntityId) {
 fn make_sample_scene() {
     use ambient_api::core::{
         app::components::main_scene,
+        package::components::enabled,
         physics::components::{
             angular_velocity, cube_collider, linear_velocity, physics_controlled, plane_collider,
         },
         primitives::components::{cube, quad},
         rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun},
-        transform::components::{lookat_target, scale},
+        transform::components::scale,
     };
 
-    // Make camera
-    PerspectiveInfiniteReverseCamera {
-        optional: PerspectiveInfiniteReverseCameraOptional {
-            aspect_ratio_from_window: Some(entity::resources()),
-            main_scene: Some(()),
-            translation: Some(Vec3::ONE * 5.),
-            ..default()
-        },
-        ..PerspectiveInfiniteReverseCamera::suggested()
-    }
-    .make()
-    .with(lookat_target(), vec3(0., 0., 0.))
-    .spawn();
+    entity::set_component(packages::hide_cursor::entity(), enabled(), true);
+
+    entity::add_component(
+        entity::synchronized_resources(),
+        packages::this::components::has_sample_scene(),
+        (),
+    );
 
     // Make sky
     Entity::new().with(sky(), ()).spawn();

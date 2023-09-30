@@ -25,7 +25,7 @@ use packages::{
         messages::{EditorLoad, EditorMenuBarAdd, EditorMenuBarClick},
     },
     this::{
-        components::{editor_camera, mouseover_position, selected_entity},
+        components::{editor_camera, has_sample_scene, mouseover_position, selected_entity},
         messages::{Input, ToggleEditor},
     },
 };
@@ -35,6 +35,10 @@ const WORLDSPACE_MOVEMENT: bool = true;
 
 #[main]
 pub fn main() {
+    if entity::has_component(entity::synchronized_resources(), has_sample_scene()) {
+        make_sample_scene();
+    }
+
     let mut fixed_tick_last = game_time();
 
     let mut accumulated_aim_delta = Vec2::ZERO;
@@ -438,4 +442,67 @@ fn is_mouse_in_cylinder(
 
 fn entity_name(id: EntityId) -> String {
     entity::get_component(id, name()).unwrap_or_else(|| id.to_string())
+}
+
+fn make_sample_scene() {
+    use ambient_api::core::{
+        camera::concepts::{
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
+        },
+        primitives::concepts::Sphere,
+        transform::components::lookat_target,
+    };
+
+    let mut offset = Vec3::ONE * 5.;
+    let mut target = Vec3::ZERO;
+
+    // Make camera
+    let camera_id = PerspectiveInfiniteReverseCamera {
+        optional: PerspectiveInfiniteReverseCameraOptional {
+            aspect_ratio_from_window: Some(entity::resources()),
+            main_scene: Some(()),
+            translation: Some(Vec3::ONE * 5.),
+            ..default()
+        },
+        ..PerspectiveInfiniteReverseCamera::suggested()
+    }
+    .make()
+    .with(lookat_target(), vec3(0., 0., 0.))
+    .spawn();
+
+    // Make target
+    let target_id = Sphere::suggested()
+        .make()
+        .with(color(), vec4(1.0, 0.0, 0.0, 1.0))
+        .with(translation(), target)
+        .with(scale(), vec3(0.25, 0.25, 10.0))
+        .spawn();
+
+    Frame::subscribe(move |_| {
+        if !input::is_game_focused() {
+            return;
+        }
+
+        let dt = delta_time();
+        let input = input::get();
+
+        let movement = [
+            (KeyCode::W, -Vec2::Y),
+            (KeyCode::S, Vec2::Y),
+            (KeyCode::A, -Vec2::X),
+            (KeyCode::D, Vec2::X),
+        ]
+        .iter()
+        .filter(|(key, _)| input.keys.contains(key))
+        .fold(Vec2::ZERO, |acc, (_, dir)| acc + *dir)
+        .extend(0.0)
+            * dt;
+
+        offset += movement;
+        target += movement;
+
+        entity::set_component(camera_id, translation(), offset);
+        entity::set_component(camera_id, lookat_target(), target);
+        entity::set_component(target_id, translation(), target);
+    });
 }

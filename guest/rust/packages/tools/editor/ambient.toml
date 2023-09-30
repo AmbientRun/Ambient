@@ -7,6 +7,7 @@ ambient_version = "0.3.0-nightly-2023-09-30"
 
 [dependencies]
 editor_schema = { path = "../../schemas/editor", deployment = "1VpuX0aZQQRL6wWQat4uRD" }
+hide_cursor = { path = "../../std/hide_cursor", enabled = false }
 
 [components]
 # Player components
@@ -19,6 +20,11 @@ mouseover_entity = { type = "EntityId", attributes = [
 selected_entity = { type = "EntityId", attributes = [
     "Networked",
     "Debuggable",
+] }
+
+has_sample_scene = { type = "Empty", attributes = [
+    "Networked",
+    "MaybeResource",
 ] }
 
 # Camera components
