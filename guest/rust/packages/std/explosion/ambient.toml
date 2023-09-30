@@ -1,9 +1,9 @@
 [package]
 id = "cneomdouziieskjvs3szwmigzotofjzs"
 name = "Explosion"
-version = "0.3.0-rc.2"
+version = "0.3.0-nightly-2023-09-30"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-rc.2"
+ambient_version = "0.3.0-nightly-2023-09-30"
 
 [dependencies]
 game_object = { path = "../../schemas/game_object" , deployment = "2WcOC2EQMAIb0xgV54fEPq" }

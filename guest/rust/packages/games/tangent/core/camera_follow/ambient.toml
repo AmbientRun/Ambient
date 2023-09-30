@@ -2,9 +2,9 @@
 id = "mkd4mhans4bdn3mvmt45vxqbxepdhys3"
 name = "Tangent Camera: Follow"
 description = "Implements a follow camera for vehicles."
-version = "0.3.0-rc.2"
+version = "0.3.0-nightly-2023-09-30"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-rc.2"
+ambient_version = "0.3.0-nightly-2023-09-30"
 authors = ["philpax"]
 
 [dependencies]
