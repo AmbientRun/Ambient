@@ -8,7 +8,7 @@ use ambient_api::{
         rect::components::{line_from, line_to, line_width, rect},
         rendering::components::{color, double_sided},
         text::{components::font_style, types::FontStyle},
-        transform::components::{rotation, scale, translation},
+        transform::components::{local_to_world, rotation, scale, translation},
     },
     ecs::SupportedValue,
     element::{
@@ -167,7 +167,11 @@ pub fn App(hooks: &mut Hooks) -> Element {
 
     use_keyboard_input(hooks, move |_, keycode, modifiers, pressed| {
         if modifiers == ModifiersState::empty() && keycode == Some(VirtualKeyCode::F5) && !pressed {
-            ToggleEditor {}.send_server_reliable();
+            ToggleEditor {
+                camera_transform: camera::get_active(None)
+                    .and_then(|c| entity::get_component(c, local_to_world())),
+            }
+            .send_server_reliable();
         }
     });
 

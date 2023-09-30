@@ -35,7 +35,7 @@ pub fn main() {
         make_sample_scene();
     }
 
-    ToggleEditor::subscribe(|ctx, _| {
+    ToggleEditor::subscribe(|ctx, msg| {
         let Some(id) = ctx.client_entity_id() else {
             return;
         };
@@ -47,8 +47,8 @@ pub fn main() {
         if in_editor {
             let player_user_id = entity::get_component(id, user_id()).unwrap();
 
-            let old_camera_transform = camera::get_active(Some(&player_user_id))
-                .and_then(|camera_id| entity::get_component(camera_id, local_to_world()))
+            let old_camera_transform = msg
+                .camera_transform
                 .map(|transform| transform.to_scale_rotation_translation())
                 .map(|(_, r, t)| (r, t));
 
