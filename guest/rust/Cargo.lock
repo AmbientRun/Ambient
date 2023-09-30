@@ -1280,6 +1280,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "gameplay_daynight"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "generic-array"
 version = "0.14.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"

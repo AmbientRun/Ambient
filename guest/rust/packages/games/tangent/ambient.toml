@@ -22,7 +22,7 @@ ui_spawn_menu = { path = "mods/ui_spawn_menu", enabled = false, deployment = "3X
 pickup_health = { path = "mods/pickup_health", deployment = "62aDDVZt73Q1jNAiA07diD" }
 
 level_cubicide = { path = "mods/level_cubicide", deployment = "26SGCvIExSwevGLP0uwBy6" }
-level_cubicide_onespawn = { path = "mods/level_cubicide_onespawn", enabled = false , deployment = "2ymJrlyiJkyOBZ7H6lP7ex" }
+level_cubicide_onespawn = { path = "mods/level_cubicide_onespawn", enabled = false, deployment = "2ymJrlyiJkyOBZ7H6lP7ex" }
 
 class_assault = { path = "mods/class_assault", deployment = "SuzBJF6vEtb57MTgqGJEF" }
 class_scout = { path = "mods/class_scout", deployment = "1sfzC7EWeSERr03N2rMbhE", enabled = false }
@@ -31,6 +31,7 @@ class_tank = { path = "mods/class_tank", deployment = "6wVdFzUzQ5mnDd0CbEc2X4" }
 vehicle_standard = { path = "mods/vehicle_standard", deployment = "4NQMZ9df4M2J0Ajy6ahmwE" }
 
 gameplay_firerain = { path = "mods/gameplay_firerain", enabled = false, deployment = "3FZF3xbPOUj9VsEaw1EXEX" }
+gameplay_daynight = { path = "mods/gameplay_daynight", enabled = false }
 
 reskin_classes = { path = "mods/reskin_classes", enabled = false, deployment = "4eW32GLyWpAFZYMkpwmeDL" }
 
