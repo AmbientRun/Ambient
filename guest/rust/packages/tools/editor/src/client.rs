@@ -9,7 +9,7 @@ use ambient_api::{
         rendering::components::{color, double_sided},
         text::{components::font_style, types::FontStyle},
         transform::components::{local_to_world, rotation, scale, translation},
-        ui::{components::focusable, messages::FocusChanged},
+        ui::components::focusable,
     },
     ecs::SupportedValue,
     element::{
@@ -47,9 +47,9 @@ pub fn main() {
     let mut select_pressed = false;
     let mut freeze_pressed = false;
 
-    let mut gizmo_active = None;
+    let mut gizmo_active: Option<Gizmo> = None;
+    let mut gizmo_original_translation: Option<Vec3> = None;
     let mut gizmo_accumulated_drag = 0.0;
-    let mut gizmo_original_translation = None;
 
     let player_id = player::get_local();
 
