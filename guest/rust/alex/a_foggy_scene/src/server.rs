@@ -39,7 +39,10 @@ pub fn main() {
                     .with(use_fps_controller(), ())
                     .with(
                         model_from_url(),
-                        packages::this::assets::url("muscle/Muscle Chicken.fbx"),
+                        // packages::this::assets::url("muscle/Muscle Chicken Mixamo NoCopied.fbx"),
+                        packages::this::assets::url("muscle/Chicken Rebuilt Mixamo T-Pose.fbx"),
+                        // packages::this::assets::url("muscle/Muscle Chicken.fbx"),
+                        // packages::this::assets::url("muscle/chicken_fbx_to_glb.glb"),
                     )
                     .with(basic_character_animations(), plr)
                     .with(temperature(), NORMAL_TEMP)

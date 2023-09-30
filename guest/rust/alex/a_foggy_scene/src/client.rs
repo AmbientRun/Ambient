@@ -105,7 +105,7 @@ pub fn main() {
 }
 
 fn make_chicken_anims() -> Entity {
-    const CHKN_PREFIX: &str = "chicken movement/";
+    const CHKN_PREFIX: &str = "jog movement/";
     use character_animation::components::*;
     fn anim_chkn(name: &str) -> String {
         anim_url((CHKN_PREFIX.to_string() + name).as_mut_str())
@@ -114,8 +114,8 @@ fn make_chicken_anims() -> Entity {
         .with(death(), anim_chkn("Fallen Idle"))
         .with(idle(), anim_chkn("Offensive Idle"))
         .with(walk_forward(), anim_chkn("Jog Forward"))
-        .with(walk_forward_left(), anim_chkn("Jog Forward Diagonal (1)"))
-        .with(walk_forward_right(), anim_chkn("Jog Forward Diagonal"))
+        .with(walk_forward_left(), anim_chkn("Jog Forward Diagonal"))
+        .with(walk_forward_right(), anim_chkn("Jog Forward Diagonal (1)"))
         .with(walk_right(), anim_chkn("Strafe"))
         .with(walk_backward(), anim_chkn("Jog Backward"))
         .with(walk_backward_left(), anim_chkn("Jog Backward Diagonal (1)"))

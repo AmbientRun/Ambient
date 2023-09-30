@@ -6,31 +6,21 @@ version = "0.0.3"
 content = { type = "Playable" }
 
 [dependencies]
-# base_assets = { path = "../../packages/std/base_assets" }
-# character_animation = { path = "../../packages/std/character_animation" }
-# character_movement = { path = "../../packages/std/character_movement" }
-# hide_cursor = { path = "../../packages/std/hide_cursor" }
+# # local paths-
 # fps_controller = { path = "../../packages/std/fps_controller" }
+# character_animation = { path = "../../packages/std/character_animation" }
+# hide_cursor = { path = "../../packages/std/hide_cursor" }
+# package_manager = { path = "../../packages/tools/package_manager" }
 
-# base_assets = { path = "../../packages/std/base_assets", deployment = "63elc01s73Fw7Zf22WnhdG" }
-fps_controller = { path = "../../packages/std/fps_controller" }
-character_animation = { path = "../../packages/std/character_animation" }
-hide_cursor = { path = "../../packages/std/hide_cursor" }
+# deploy (sep 28)-
+fps_controller = { deployment = "6hF1mGWsce1fEKcB9r1lS8" } # sep 28
+character_animation = { deployment = "s1HU95RShblqYqSuG4Vk1" } # sep 28
+hide_cursor = { deployment = "770oOvKcPfBILw1hNixsJU" } # sep 28
+package_manager = { deployment = "scChmqT301aU5xO75pVCb" } # sep 28
 
-package_manager = { path = "../../packages/tools/package_manager" }
-
-# base_assets = { deployment = "2TUw8gb8vEm19jklIUKnyO" } # updated Sept 20
-# fps_controller = { deployment = "7D8fzGFDOopKrUsY5AKofY" } # updated Sept 20
-# character_animation = { deployment = "6HS1Mf3o535O4retxpytgH" } # updated Sept 20
-# hide_cursor = { deployment = "A8CV3CgLgnnNNSsr2m9kL" } # updated Sept 20
-# package_manager = { deployment = "4iENoKFy5uyYGLCVUTfZKz" } # updated Sept 20 - awkward due to not being asset? no copy button
-
-temperature = { path = "../temperature" }
-temperature_hud = { path = "../temperature_hud_magda" }
-fog_dj = { path = "../fog_dj" }
-
-# nameplates = { path = "../../packages/std/nameplates" }
-# nameplates = { path = "../custom_nameplates" }
+temperature = { path = "../temperature" , deployment = "5wJt3UkQJ90EhEfX0e3P8x" }
+temperature_hud = { path = "../temperature_hud_magda" , deployment = "6gqg0SU8PtodVfq9prdcSn" }
+fog_dj = { path = "../fog_dj" , deployment = "39DdRuKza4NxIGneKqDSpb" }
 
 [components]
 effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
