@@ -119,7 +119,7 @@ pub fn main() {
         entity::set_component(camera_id, rotation(), new_rotation);
 
         let movement = msg.movement.normalize_or_zero();
-        let movement_speed = if msg.boost { 2.0 } else { 1.0 };
+        let movement_speed = if msg.boost { 1.0 } else { 0.5 };
 
         entity::mutate_component(camera_id, translation(), |translation| {
             *translation += new_rotation * vec3(movement.x, 0.0, -movement.y) * movement_speed;

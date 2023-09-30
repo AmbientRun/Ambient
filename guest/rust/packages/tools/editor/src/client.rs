@@ -293,8 +293,8 @@ fn SelectedDisplay(hooks: &mut Hooks) -> Element {
     ])
 }
 
-const GIZMO_LENGTH: f32 = 5.;
-const GIZMO_WIDTH: f32 = 0.25;
+const GIZMO_LENGTH: f32 = 10.;
+const GIZMO_WIDTH: f32 = 0.5;
 
 #[element_component]
 fn EntityView(_hooks: &mut Hooks, entity: EntityId) -> Element {
