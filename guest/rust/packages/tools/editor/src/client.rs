@@ -30,6 +30,9 @@ use packages::{
     },
 };
 
+// TODO: make this an option in the UI
+const WORLDSPACE_MOVEMENT: bool = true;
+
 #[main]
 pub fn main() {
     let mut fixed_tick_last = game_time();
@@ -340,7 +343,9 @@ impl Gizmo {
 
     fn for_entity(id: EntityId) -> [Self; 3] {
         let origin = entity::get_component(id, translation()).unwrap_or_default();
-        let rotation = entity::get_component(id, rotation()).unwrap_or_default();
+        let rotation = entity::get_component(id, rotation())
+            .filter(|_| !WORLDSPACE_MOVEMENT)
+            .unwrap_or_default();
 
         [
             Self::new(origin, rotation * Vec3::X, vec3(1., 0., 0.)),
