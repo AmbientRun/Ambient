@@ -201,17 +201,13 @@ pub fn App(hooks: &mut Hooks) -> Element {
         |_| {}
     });
 
-    // use_module_message::<FocusChanged>(hooks, |_, source, msg| {
-    //     dbg!(source, msg);
-    // });
-
     if in_editor {
         WindowSized::el([Group::el([
             MenuBar::el(menu_bar_items),
             MouseoverDisplay::el(),
             SelectedDisplay::el(),
         ])])
-        .init(translation(), vec3(0., 0., 1.5))
+        .init(translation(), vec3(0., 0., 0.5))
         .with_clickarea()
         .el()
         .with(focusable(), hooks.instance_id().to_string())
