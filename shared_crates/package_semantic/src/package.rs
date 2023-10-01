@@ -11,7 +11,7 @@ use url::Url;
 
 use crate::{
     schema,
-    util::{read_file, ReadFileError},
+    util::{retrieve_file, retrieve_url, RetrieveError},
     Item, ItemData, ItemId, ItemType, ItemValue, Resolve, Scope, Semantic,
 };
 use semver::Version;
@@ -60,7 +60,7 @@ pub enum GetError {
     #[error("Failed to find {0:?} in Ambient schema")]
     FailedToFindInAmbientSchema(PathBuf),
     #[error("Failed to read file")]
-    ReadFileError(#[from] ReadFileError),
+    ReadFileError(#[from] RetrieveError),
     #[error("Path {0:?} must be absolute")]
     PathMustBeAbsolute(PathBuf),
 }
@@ -88,6 +88,22 @@ impl RetrievableDeployment {
             .unwrap_or_else(|e| panic!("invalid deployment url {url}: {e}"))
             .join(path.as_ref())
             .unwrap_or_else(|e| panic!("invalid deployment url after join {url} + {path}: {e}"))
+    }
+
+    /// Retrieves the manifest from the cache if it exists, otherwise retrieves
+    /// it from the deployment and caches it
+    pub async fn retrieve_manifest(&self) -> Result<String, RetrieveError> {
+        let cache_path = ambient_dirs::deployment_cache_path(&self.id).join(&self.path);
+        if cache_path.exists() {
+            return retrieve_file(&cache_path);
+        }
+
+        let manifest = retrieve_url(&self.url()).await?;
+
+        std::fs::create_dir_all(cache_path.parent().unwrap()).ok();
+        std::fs::write(&cache_path, &manifest).ok();
+
+        Ok(manifest)
     }
 }
 
@@ -119,11 +135,11 @@ impl RetrievableFile {
                 #[cfg(not(target_os = "unknown"))]
                 {
                     let url = Url::from_file_path(path).unwrap();
-                    read_file(&url).await?
+                    retrieve_url(&url).await?
                 }
             }
-            RetrievableFile::Url(url) => read_file(url).await?,
-            RetrievableFile::Deployment(d) => read_file(&d.url()).await?,
+            RetrievableFile::Url(url) => retrieve_url(url).await?,
+            RetrievableFile::Deployment(d) => d.retrieve_manifest().await?,
         })
     }
 
