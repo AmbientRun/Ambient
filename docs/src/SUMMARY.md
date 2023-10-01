@@ -9,6 +9,7 @@
 - [Installing](user/installing.md)
 - [Setting up your IDE](user/setting_up_ide.md)
 - [Overview](user/overview.md)
+- [About the tech](user/technology.md)
 - [Running examples](user/running_examples.md)
 - [API](user/api.md)
 - [Debugging](user/debugging.md)
