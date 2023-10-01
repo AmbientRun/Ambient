@@ -2,10 +2,10 @@
 id = "ggu2h7bk4jrvshq7zteboipyut7wuib2"
 name = "Tangent Level: Cubicide (One-Spawn)"
 description = "A version of Cubicide with only one spawn."
-version = "0.3.0-nightly-2023-09-30"
+version = "0.3.0-nightly-2023-10-01"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-nightly-2023-09-30"
+ambient_version = "0.3.0-nightly-2023-10-01"
 authors = ["philpax"]
 
 [dependencies]
-level_cubicide = { path = "../level_cubicide" , deployment = "26SGCvIExSwevGLP0uwBy6" }
+level_cubicide = { path = "../level_cubicide" , deployment = "1pAVidWXFrZgFFWYTkaMKx" }
