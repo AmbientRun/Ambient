@@ -12,6 +12,9 @@ pub struct Install {
     /// Git tag to install. If both this and `--git-revision` are specified, `--git-revision` takes precedence.
     /// If neither are specified, the repository on the local filesystem is used.
     git_tag: Option<String>,
+    #[clap(short = 's', long)]
+    /// Suffix override. This is useful if you haven't specified a revision or tag.
+    suffix: Option<String>,
 }
 
 pub fn main(install: &Install) -> anyhow::Result<()> {
@@ -28,7 +31,10 @@ pub fn main(install: &Install) -> anyhow::Result<()> {
             .as_deref()
             .map(|tag| (tag, [git_args.as_slice(), &["--tag", tag]].concat())),
     )
-    .unwrap_or_else(|| ("", vec!["--path", "app"]));
+    .unzip();
+
+    let suffix = install.suffix.as_deref().or(suffix).unwrap_or("dev");
+    let args = args.unwrap_or_else(|| vec!["--path", "app"]);
 
     install_version(suffix, &args)
 }
