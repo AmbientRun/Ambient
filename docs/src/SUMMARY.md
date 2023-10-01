@@ -18,8 +18,6 @@
 
 # Tutorial
 
-## A game from scratch
-
 - [Intro](tutorials/game/0_intro.md)
 - [Chapter 1: Creating a project](tutorials/game/1_package.md)
 - [Chapter 2: Player character](tutorials/game/2_player_character.md)
