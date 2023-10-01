@@ -6,4 +6,4 @@ content = { type = "Asset", models = true, code = true }
 ambient_version = "0.3.0-nightly-2023-10-01"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "4Rdo6qs82LP8Khh5gHVTUS" }
+afps_schema = { path = "../../schema", deployment = "6MrR1IVWlabHdxKi9WFaNC" }
