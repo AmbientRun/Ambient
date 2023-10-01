@@ -1,11 +1,11 @@
 # Chapter 8: Modding
 
-In this final chapter, we'll look at how to make your game moddable, and how to build a mod.
+In this final chapter, we'll look at modding. All games are moddable by default with Ambient.
 
-## Making your game moddable
+## Adding the mod manager UI
 
-With Ambient, all games are technically moddable by default. However, in order to list and enable
-mods, you need to add the Mod manager to your game. Start by adding the followng to your
+We'll start by adding the Mod manager UI to your game, so that we can list and enable mods
+easily in your game. Start by adding the followng to your
 `ambient.toml`'s dependencies:
 
 ```toml
@@ -25,6 +25,9 @@ entity::add_component(
 ```
 
 Launch your game, and then press F4 to open the Mod manager. From here, you can enable and disable mods.
+
+> **Note**: You can build your own mod manager UI if you want to. You can see the source code for the
+> default one [here](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/tools/package_manager).
 
 ## Creating a mod
 
