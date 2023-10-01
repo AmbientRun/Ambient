@@ -28,6 +28,7 @@
 - [Chapter 5: Models](tutorials/game/5_models.md)
 - [Chapter 6: UI](tutorials/game/6_ui.md)
 - [Chapter 7: Deploying](tutorials/game/7_deploying.md)
+- [Chapter 8: Modding](tutorials/game/8_modding.md)
 
 # Reference Guide
 

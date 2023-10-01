@@ -16,3 +16,5 @@ to a friend, and they can join you there as well!
 > **Tip**: Deploying with `ambient deploy` will deploy to the Ambient servers. For more deployment options, including your own game servers, see the [reference documentation on distribution](../../reference/distributing.md).
 
 This concludes the Ambient tutorial. Thanks for following along! If you have any questions, feel free to [join our Discord server](https://discord.gg/ambient) and ask away.
+
+## [⇾ Chapter 8: Modding](./8_modding.md)
