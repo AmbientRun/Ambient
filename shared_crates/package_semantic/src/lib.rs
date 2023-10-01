@@ -15,7 +15,7 @@ use ambient_package::{
 use ambient_shared_types::primitive_component_definitions;
 
 mod scope;
-use package::{GetError, ParentJoinError};
+use package::{GetError, ParentJoinError, RetrievableDeployment};
 pub use scope::Scope;
 
 mod package;
@@ -256,7 +256,9 @@ impl Semantic {
                 id: locator.id.clone().into(),
                 source: match retrievable_manifest {
                     RetrievableFile::Ambient(_) => ItemSource::Ambient,
-                    RetrievableFile::Path(_) | RetrievableFile::Url(_) => ItemSource::User,
+                    RetrievableFile::Path(_)
+                    | RetrievableFile::Url(_)
+                    | RetrievableFile::Deployment(_) => ItemSource::User,
                 },
             },
             locator: locator.clone(),
@@ -684,17 +686,13 @@ pub fn package_dependency_to_retrievable_file(
         .filter(|_| !ignore_local_dependencies);
 
     // path takes precedence over url
-    Ok(match (path, &dependency.url()) {
+    Ok(match (path, &dependency.deployment) {
         (None, None) => None,
         (Some(path), _) => Some(retrievable_manifest.parent_join(&path.join("ambient.toml"))?),
-        (_, Some(url)) => {
-            // ensure it is a directory
-            let mut url = url.clone();
-            if !url.path().ends_with('/') {
-                url.set_path(&format!("{}/", url.path()));
-            }
-            Some(RetrievableFile::Url(url.join("ambient.toml")?))
-        }
+        (_, Some(deployment)) => Some(RetrievableFile::Deployment(RetrievableDeployment {
+            id: deployment.clone(),
+            path: PathBuf::from("ambient.toml"),
+        })),
     })
 }
 
