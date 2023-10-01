@@ -4,7 +4,7 @@ use ambient_api::{
         rendering::components::{double_sided, local_bounding_aabb_max},
         transform::components::local_to_world,
     },
-    element::{use_entity_component, use_query},
+    element::{use_entity_component, use_frame, use_query, use_state},
     prelude::*,
 };
 
@@ -22,9 +22,24 @@ fn Nameplates(hooks: &mut Hooks) -> Element {
     Group::el(players.into_iter().map(|player| Nameplate::el(player.0)))
 }
 
+// Consider moving this to ambient_api if there's more demand for it
+// ...or add a generic function for this (`use_external_state`?)
+fn use_active_camera(hooks: &mut Hooks) -> Option<EntityId> {
+    let (camera_id, set_camera_id) = use_state(hooks, None);
+
+    use_frame(hooks, move |_| {
+        let new_camera_id = camera::get_active();
+        if camera_id != new_camera_id {
+            set_camera_id(new_camera_id);
+        }
+    });
+
+    camera_id
+}
+
 #[element_component]
 fn Nameplate(hooks: &mut Hooks, player_id: EntityId) -> Element {
-    let Some(camera_id) = camera::get_active() else {
+    let Some(camera_id) = use_active_camera(hooks) else {
         return Element::new();
     };
 

@@ -12,7 +12,7 @@ use ambient_api::{
 };
 use packages::{
     base_assets, character_animation::components::basic_character_animations,
-    fps_controller::components::use_fps_controller,
+    fps_controller::components::use_fps_controller, nameplates::components::height_offset,
 };
 
 #[main]
@@ -50,7 +50,8 @@ pub fn main() {
                 Entity::new()
                     .with(use_fps_controller(), ())
                     .with(model_from_url(), base_assets::assets::url("Y Bot.fbx"))
-                    .with(basic_character_animations(), id),
+                    .with(basic_character_animations(), id)
+                    .with(height_offset(), 2.0),
             );
         }
     });
