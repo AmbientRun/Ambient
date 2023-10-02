@@ -1,0 +1,53 @@
+[gd_scene load_steps=11 format=3 uid="uid://dit41uhjsj8wm"]
+
+[ext_resource type="Environment" uid="uid://brv2yt8b015pv" path="res://14_StormScenes/storm_env.tres" id="1_0n05t"]
+[ext_resource type="PackedScene" uid="uid://cvp3slow4hlnv" path="res://00_plane_roamer/roamer_3rd_person.tscn" id="2_r486e"]
+[ext_resource type="PackedScene" uid="uid://c01qoobsj4efo" path="res://models_magnus/mt-cliffmesh-snowy.glb" id="3_nvekl"]
+[ext_resource type="PackedScene" uid="uid://c7atcl2jvnmvl" path="res://models_magnus/mt-cannedfood01.fbx" id="4_a2nsv"]
+[ext_resource type="PackedScene" uid="uid://bq7287yn54ymv" path="res://models_magnus/mt-axe.fbx" id="5_dqh82"]
+[ext_resource type="PackedScene" uid="uid://5ol3pch7wkpm" path="res://models_magnus/mt-backpack.fbx" id="6_h6qla"]
+[ext_resource type="PackedScene" uid="uid://bln40ipwnfp87" path="res://models_magnus/mt-snowdrift01.fbx" id="7_j5yjc"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vhwd0"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_1a2vl"]
+material = SubResource("StandardMaterial3D_vhwd0")
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_2011a"]
+
+[node name="final_storm_scene" type="Node3D"]
+
+[node name="floor" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="floor"]
+transform = Transform3D(999, 0, 0, 0, 999, 0, 0, 0, 999, 0, 0, 0)
+mesh = SubResource("PlaneMesh_1a2vl")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="floor"]
+shape = SubResource("WorldBoundaryShape3D_2011a")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("1_0n05t")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.996904, 0.0780786, -0.00930277, -0.0539559, 0.765324, 0.64138, 0.0571977, -0.638892, 0.767167, 5.96046e-08, 103.579, 93.3243)
+shadow_enabled = true
+
+[node name="Roamer3rdPerson" parent="." instance=ExtResource("2_r486e")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0686873, 0.936475, -0.325917)
+
+[node name="mt-cliffmesh-snowy" parent="." instance=ExtResource("3_nvekl")]
+transform = Transform3D(3.79612, 0, 0, 0, 3.79612, 0, 0, 0, 3.79612, -17.2207, -1.57477, -24.5058)
+
+[node name="mt-cannedfood01" parent="." instance=ExtResource("4_a2nsv")]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 2.14594, 0.22123, 2.2885)
+
+[node name="mt-axe" parent="." instance=ExtResource("5_dqh82")]
+transform = Transform3D(0.017169, -0.962623, -0.270299, -0.997672, -0.0343381, 0.0589187, -0.0659981, 0.268658, -0.960972, 2.15178, 0.0629042, 1.81747)
+
+[node name="mt-backpack" parent="." instance=ExtResource("6_h6qla")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.92949, 0, 2.25771)
+
+[node name="mt-snowdrift01" parent="." instance=ExtResource("7_j5yjc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.89498, 2.38419e-07, 3.8801)

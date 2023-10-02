@@ -1,0 +1,22 @@
+[package]
+id = "a4npnns3m73qwvhcd4ixd7gsk5ftdlv7"
+name = "snowy_pcs"
+description = "player characters"
+version = "0.0.1"
+content = { type = "Asset", code = true, models = true }
+ambient_version = "0.3.0-nightly-2023-10-02"
+
+[dependencies]
+
+# local paths
+fps_controller = { path = "../../packages/std/fps_controller" }
+hide_cursor = { path = "../../packages/std/hide_cursor" }
+
+# deploy (out of date)-
+# fps_controller = { deployment = "6hF1mGWsce1fEKcB9r1lS8" } # sep 28
+# hide_cursor = { deployment = "770oOvKcPfBILw1hNixsJU" } # sep 28
+
+temperature = { path = "../temperature" , deployment = "5wJt3UkQJ90EhEfX0e3P8x" }
+
+[components]
+pc_type_id = { type = "U32" }

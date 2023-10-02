@@ -11,11 +11,11 @@ use ambient_api::{
     ui::ImageFromUrl,
 };
 
+// use ambient_brand_theme::AmbientInternalStyle::
+
+use ambient_brand_theme::AmbientInternalStyle;
 use packages::temperature::components::temperature;
 use packages::this::components::{hud_camera, hud_hide};
-
-const FONT_PATH_CHANGE_THIS: &str =
-    "https://jetsam.droqen.com/2023-0918-ambient-game-font-test/ABCDiatype-Regular.otf";
 
 #[main]
 pub async fn main() {
@@ -107,12 +107,12 @@ pub fn NameplateUI(hooks: &mut Hooks, camera: EntityId) -> Element {
             FlowRow::el([Text::el(floatemp_to_string(*player_temp))
                 .with(color(), C_ALLBLACK.extend(1.))
                 .with(font_size(), fsize * 0.45 * nameplate_scale)
-                .with(font_family(), FONT_PATH_CHANGE_THIS.into())])
+                .font_body_500()])
             .with_background(C_ALLWHITE.extend(1.)),
             FlowRow::el([Text::el(format!("{}", uid))
                 .with(color(), C_ALLBLACK.extend(1.))
                 .with(font_size(), fsize * 0.65 * nameplate_scale)
-                .with(font_family(), FONT_PATH_CHANGE_THIS.into())])
+                .font_body_500()])
             .with_background(C_ALLWHITE.extend(1.)),
         ])
         .with(fit_vertical(), Fit::None)

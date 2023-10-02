@@ -11,6 +11,9 @@ members = [
     "alex/lightbox_playground",
     "alex/matgen_playground",
     "alex/stormvfx_playground",
+    "alex/some_snowy_purgatory",
+    "alex/snowy_sceneloader",
+    "alex/snowy_pcs",
 
     "api",
     "api_core",
@@ -105,6 +108,7 @@ members = [
 
     # Crates
     "crates/brand_theme",
+
 ]
 resolver = "2"
 

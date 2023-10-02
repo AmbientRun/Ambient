@@ -2,7 +2,7 @@
 id = "vkawwlk52doc6cr4dsocvipgwq6xx2su"
 name = "temperature_hud_magda"
 version = "0.0.1"
-content = { type = "Playable" }
+content = { type = "Asset", code = true }
 ambient_version = "0.3.0-nightly-2023-09-18"
 
 [dependencies]

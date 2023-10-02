@@ -1,0 +1,32 @@
+[package]
+id = "aswyqe2q6mjajl3ryl7sm3br6i5gicxa"
+name = "some_snowy_purgatory"
+version = "0.0.1"
+content = { type = "Playable" }
+ambient_version = "0.3.0-nightly-2023-10-02"
+
+[dependencies]
+# # local paths-
+fps_controller = { path = "../../packages/std/fps_controller" }
+character_animation = { path = "../../packages/std/character_animation" }
+hide_cursor = { path = "../../packages/std/hide_cursor" }
+package_manager = { path = "../../packages/tools/package_manager" }
+
+# deploy (out of date)
+# fps_controller = { deployment = "6hF1mGWsce1fEKcB9r1lS8" } # sep 28
+# character_animation = { deployment = "s1HU95RShblqYqSuG4Vk1" } # sep 28
+# hide_cursor = { deployment = "770oOvKcPfBILw1hNixsJU" } # sep 28
+# package_manager = { deployment = "scChmqT301aU5xO75pVCb" } # sep 28
+
+temperature = { path = "../temperature" }
+temperature_hud = { path = "../temperature_hud_magda" }
+snowy_sceneloader = { path = "../snowy_sceneloader" }
+# fog_dj = { path = "../fog_dj" } # unused
+
+[components]
+effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
+ambient_loop = { type = "String", attributes = ["Networked"] }
+
+visualizing_heat_source = { type = "EntityId" }
+heat_radius = { type = "F32" }
+heat_offset = { type = "Vec3" }
