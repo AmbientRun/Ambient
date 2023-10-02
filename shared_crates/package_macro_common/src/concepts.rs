@@ -26,7 +26,6 @@ pub fn generate(
         .values()
         .filter_map(|c| context.extract_item_if_relevant(items, *c))
         .map(|concept| {
-            let concept = &*concept;
             let new = generate_one(items, type_printer, context, concept)?;
             Ok(quote! {
                 #new
@@ -509,7 +508,7 @@ fn value_to_token_stream(items: &ItemMap, value: &Value) -> anyhow::Result<Token
             None => quote! { None },
         },
         Value::Enum(id, member) => {
-            let item = &*items.get(*id);
+            let item = items.get(*id);
             let index = item
                 .inner
                 .as_enum()

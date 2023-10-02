@@ -11,6 +11,8 @@ pub enum RetrieveError {
     FailedToReadPath { file_path: String },
     #[error("failed to get URL {url:?}")]
     FailedToGetUrl { url: Url },
+    #[error("invalid file path for URL {url:?}")]
+    InvalidFilePathForUrl { url: Url },
     #[error("failed to get text from URL {url:?}")]
     FailedToGetTextFromUrl { url: Url },
 }
@@ -20,14 +22,21 @@ pub fn retrieve_file(path: &Path) -> Result<String, RetrieveError> {
     return Err(RetrieveError::FileReadingNotSupportedOnWeb);
 
     #[cfg(not(target_os = "unknown"))]
-    return std::fs::read_to_string(&path).map_err(|_| RetrieveError::FailedToReadPath {
+    return std::fs::read_to_string(path).map_err(|_| RetrieveError::FailedToReadPath {
         file_path: path.to_string_lossy().to_string(),
     });
 }
 
 pub async fn retrieve_url(url: &Url) -> Result<String, RetrieveError> {
     if url.scheme() == "file" {
-        return retrieve_file(&url.to_file_path().ok().unwrap_or_default());
+        #[cfg(target_os = "unknown")]
+        return Err(RetrieveError::FileReadingNotSupportedOnWeb);
+
+        #[cfg(not(target_os = "unknown"))]
+        return retrieve_file(
+            &url.to_file_path()
+                .map_err(|_| RetrieveError::InvalidFilePathForUrl { url: url.clone() })?,
+        );
     }
 
     reqwest::get(url.clone())

@@ -88,7 +88,7 @@ impl PackageId {
         // is always alphabetic
         loop {
             let data: [u8; Self::DATA_LENGTH] = rand::random();
-            let checksum: [u8; Self::CHECKSUM_LENGTH] = sha2::Sha256::digest(&data)
+            let checksum: [u8; Self::CHECKSUM_LENGTH] = sha2::Sha256::digest(data)
                 [0..Self::CHECKSUM_LENGTH]
                 .try_into()
                 .unwrap();
@@ -114,12 +114,7 @@ impl PackageId {
 
         let bytes = data_encoding::BASE32_NOPAD
             .decode(id.to_ascii_uppercase().as_bytes())
-            .map_err(|e| {
-                format!(
-                    "Package ID contained invalid characters: {}. {cmd}",
-                    e.to_string()
-                )
-            })?;
+            .map_err(|e| format!("Package ID contained invalid characters: {e}. {cmd}"))?;
 
         let data = &bytes[0..Self::DATA_LENGTH];
         let checksum = &bytes[Self::DATA_LENGTH..];

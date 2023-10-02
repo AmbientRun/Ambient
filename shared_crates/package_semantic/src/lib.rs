@@ -90,20 +90,46 @@ pub enum PackageAddError {
         source: ambient_package::ManifestParseError,
     },
     #[error("{0}")]
-    PackageConflictError(#[from] PackageConflictError),
+    PackageConflictError(Box<PackageConflictError>),
     #[error("{0}")]
-    GetError(#[from] GetError),
+    GetError(GetError),
     #[error("{0}")]
-    ParentJoinError(#[from] ParentJoinError),
+    ParentJoinError(ParentJoinError),
     #[error("Dependency `{dependency_name}` for {locator} has no supported sources specified (are you trying to deploy a package with a local dependency?)")]
     NoSupportedSources {
         locator: PackageLocator,
         dependency_name: SnakeCaseIdentifier,
     },
     #[error("{0}")]
-    BuildMetadataError(#[from] ambient_package::BuildMetadataError),
+    BuildMetadataError(ambient_package::BuildMetadataError),
     #[error("{0}")]
-    IdentifierCaseError(#[from] ambient_package::IdentifierCaseOwnedError),
+    IdentifierCaseError(ambient_package::IdentifierCaseOwnedError),
+}
+
+impl From<PackageConflictError> for Box<PackageAddError> {
+    fn from(val: PackageConflictError) -> Self {
+        Box::new(PackageAddError::PackageConflictError(Box::new(val)))
+    }
+}
+impl From<GetError> for Box<PackageAddError> {
+    fn from(val: GetError) -> Self {
+        Box::new(PackageAddError::GetError(val))
+    }
+}
+impl From<ParentJoinError> for Box<PackageAddError> {
+    fn from(val: ParentJoinError) -> Self {
+        Box::new(PackageAddError::ParentJoinError(val))
+    }
+}
+impl From<ambient_package::BuildMetadataError> for Box<PackageAddError> {
+    fn from(val: ambient_package::BuildMetadataError) -> Self {
+        Box::new(PackageAddError::BuildMetadataError(val))
+    }
+}
+impl From<ambient_package::IdentifierCaseOwnedError> for Box<PackageAddError> {
+    fn from(val: ambient_package::IdentifierCaseOwnedError) -> Self {
+        Box::new(PackageAddError::IdentifierCaseError(val))
+    }
 }
 
 #[derive(Debug)]
@@ -134,10 +160,9 @@ impl fmt::Display for PackageConflictError {
 
         write!(
             f,
-            "Package conflict found:\n  - {existing_package}{}\n\n  - {new_package}{}\n\n{}",
+            "Package conflict found:\n  - {existing_package}{}\n\n  - {new_package}{}\n\nThe system does not currently support multiple versions of the same package in the dependency tree.",
             imported_by(existing_package_dependent.as_ref()),
-            imported_by(new_package_dependent.as_ref()),
-            "The system does not currently support multiple versions of the same package in the dependency tree."
+            imported_by(new_package_dependent.as_ref())
         )
     }
 }
@@ -186,12 +211,12 @@ impl Semantic {
         // Used to indicate which package had this as a dependency first,
         // improving error diagnostics
         dependent_package_id: Option<ItemId<Package>>,
-    ) -> Result<ItemId<Package>, PackageAddError> {
+    ) -> Result<ItemId<Package>, Box<PackageAddError>> {
         let manifest = Manifest::parse(&retrievable_manifest.get().await?).map_err(|source| {
-            PackageAddError::ManifestParseError {
+            Box::new(PackageAddError::ManifestParseError {
                 manifest_path: retrievable_manifest.clone(),
                 source,
-            }
+            })
         })?;
 
         // If and only if this is the root Ambient core manifest, override its ID.
@@ -253,7 +278,7 @@ impl Semantic {
         let package = Package {
             data: ItemData {
                 parent_id: None,
-                id: locator.id.clone().into(),
+                id: locator.id.clone(),
                 source: match retrievable_manifest {
                     RetrievableFile::Ambient(_) => ItemSource::Ambient,
                     RetrievableFile::Path(_)
@@ -282,17 +307,17 @@ impl Semantic {
                 &dependency,
             )?
             else {
-                return Err(PackageAddError::NoSupportedSources {
+                return Err(Box::new(PackageAddError::NoSupportedSources {
                     locator,
                     dependency_name,
-                });
+                }));
             };
 
-            let dependency_id = self.add_package(source, Some(id)).await.map_err(|err| {
+            let dependency_id = self.add_package(source, Some(id)).await.map_err(|source| {
                 PackageAddError::FailedToAddDependency {
                     dependency_name: dependency_name.clone(),
                     locator: locator.clone(),
-                    source: Box::new(err),
+                    source,
                 }
             })?;
 
@@ -448,7 +473,7 @@ impl Semantic {
         manifest: &Manifest,
         source: RetrievableFile,
         id_override: Option<Identifier>,
-    ) -> Result<ItemId<Scope>, PackageAddError> {
+    ) -> Result<ItemId<Scope>, Box<PackageAddError>> {
         let includes = manifest.includes.clone();
         let scope_id = self.add_scope_from_manifest_without_includes(
             parent_id,
@@ -464,11 +489,11 @@ impl Semantic {
             let include_path = &includes[include_name];
 
             if include_path.extension().is_none() {
-                return Err(PackageAddError::IncludeMissingExtension {
+                return Err(Box::new(PackageAddError::IncludeMissingExtension {
                     include_name: include_name.clone(),
                     include_path: include_path.clone(),
                     include_source: source.clone(),
-                });
+                }));
             }
 
             let include_source = source.parent_join(include_path)?;
@@ -503,7 +528,7 @@ impl Semantic {
         manifest: &Manifest,
         source: RetrievableFile,
         id_override: Option<Identifier>,
-    ) -> Result<ItemId<Scope>, PackageAddError> {
+    ) -> Result<ItemId<Scope>, Box<PackageAddError>> {
         let item_source = match source {
             RetrievableFile::Ambient(_) => ItemSource::Ambient,
             _ => ItemSource::User,

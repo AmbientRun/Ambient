@@ -50,7 +50,7 @@ impl<T> TypedBuffer<T> {
         usage: wgpu::BufferUsages,
     ) -> Self {
         let buffer = gpu.device.create_buffer(&BufferDescriptor {
-            label: label,
+            label,
             usage,
             size: (mem::size_of::<T>() as u64 * capacity as u64),
             mapped_at_creation: false,
@@ -60,7 +60,7 @@ impl<T> TypedBuffer<T> {
             .fetch_add((capacity) as u64 * size_of::<T>() as u64, Ordering::SeqCst);
 
         Self {
-            label: label,
+            label,
             buffer,
             len: 0,
             capacity: 0,
@@ -181,7 +181,7 @@ impl<T: Pod> TypedBuffer<T> {
         data: &[T],
     ) -> Self {
         let buffer = gpu.device.create_buffer_init(&BufferInitDescriptor {
-            label: label,
+            label,
             contents: bytemuck::cast_slice(data),
             usage,
         });
@@ -190,7 +190,7 @@ impl<T: Pod> TypedBuffer<T> {
             .fetch_add(data.len() as u64 * size_of::<T>() as u64, Ordering::SeqCst);
 
         Self {
-            label: label,
+            label,
             buffer,
             len: data.len() as _,
             capacity: data.len() as _,

@@ -67,7 +67,7 @@ pub async fn pipeline(
                             Ok((
                                 docs[0]["guid"]
                                     .as_str()
-                                    .expect(format!("Failed to find GUID in {file}").as_str())
+                                    .unwrap_or_else(|| panic!("Failed to find GUID in {file}"))
                                     .to_string(),
                                 base_file,
                             ))

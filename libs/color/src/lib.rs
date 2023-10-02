@@ -117,8 +117,8 @@ impl Color {
     /// New `Color` from sRGB colorspace.
     pub fn hex<T: AsRef<str>>(hex: T) -> Result<Color, HexColorError> {
         let hex = hex.as_ref();
-        if hex.chars().next() == Some('#') {
-            return Self::hex(&hex[1..]);
+        if let Some(hex) = hex.strip_prefix('#') {
+            return Self::hex(hex);
         }
 
         // RGB
