@@ -137,7 +137,7 @@ impl wit::client_input::Host for Bindings {
 
             #[cfg(target_os = "unknown")]
             {
-                CursorGrabMode::Confined
+                CursorGrabMode::Locked
             }
         } else {
             CursorGrabMode::None

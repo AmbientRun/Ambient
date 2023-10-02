@@ -1,6 +1,6 @@
 use ambient_api::{
     core::{
-        messages::Frame,
+        messages::{Frame, WindowCursorLockChange},
         transform::components::translation,
         ui::{components::focusable, messages::FocusChanged},
     },
@@ -26,6 +26,7 @@ pub fn main() {
         .el()
         .with(focusable(), GAME_FOCUS_ID.to_string())
         .spawn_interactive();
+
     Frame::subscribe(move |_| {
         if is_game_focused() {
             let input = input::get();
@@ -34,8 +35,14 @@ pub fn main() {
             }
         }
     });
+    WindowCursorLockChange::subscribe(|msg| {
+        if is_game_focused() && !msg.locked {
+            input::set_focus("Nothing");
+        }
+    });
     FocusChanged::subscribe(|_, _| {
         update();
     });
+
     update();
 }

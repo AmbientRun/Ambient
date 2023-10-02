@@ -95,6 +95,11 @@ name = "Window Mouse Motion"
 description = "Sent when the window receives a mouse motion input."
 fields = { delta = "Vec2" }
 
+[messages.WindowCursorLockChange]
+name = "Window Cursor Lock Change"
+description = "Sent when the window's cursor lock changes."
+fields = { locked = "Bool" }
+
 [messages.HttpResponse]
 name = "HTTP Response"
 description = "Sent when an HTTP response is received."
