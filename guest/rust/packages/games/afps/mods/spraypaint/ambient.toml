@@ -1,9 +1,9 @@
 [package]
 id = "op2g7jibpmzgvsqh5f2gi3seux6l6o5h"
 name = "AFPS Spraypaint"
-version = "0.3.0-nightly-2023-10-01"
+version = "0.3.0-nightly-2023-10-02"
 content = { type = "Asset", models = true, textures = true, code = true }
-ambient_version = "0.3.0-nightly-2023-10-01"
+ambient_version = "0.3.0-nightly-2023-10-02"
 
 [components]
 claymore = { type = "EntityId" }

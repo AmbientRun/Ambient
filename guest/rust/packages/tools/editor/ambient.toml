@@ -1,9 +1,9 @@
 [package]
 id = "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu"
 name = "Editor"
-version = "0.3.0-nightly-2023-10-01"
+version = "0.3.0-nightly-2023-10-02"
 content = { type = "Tool" }
-ambient_version = "0.3.0-nightly-2023-10-01"
+ambient_version = "0.3.0-nightly-2023-10-02"
 
 [dependencies]
 editor_schema = { path = "../../schemas/editor", deployment = "5R8m9bWKIboUW5OUaQOsf3" }
