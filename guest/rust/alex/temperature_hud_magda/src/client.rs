@@ -11,8 +11,6 @@ use ambient_api::{
     ui::ImageFromUrl,
 };
 
-// use ambient_brand_theme::AmbientInternalStyle::
-
 use ambient_brand_theme::AmbientInternalStyle;
 use packages::temperature::components::temperature;
 use packages::this::components::{hud_camera, hud_hide};
@@ -187,17 +185,14 @@ pub fn TemperatureDisplayUI(hooks: &mut Hooks) -> Element {
             FlowRow::el([
                 ImageFromUrl {
                     url: packages::this::assets::url("white_dot.png"), // TODO: replace with a CIRCLE!
-                }.el()
-                    .with(width(),tb_tempdotsize.x)
-                    .with(height(),tb_tempdotsize.y)
-                    .with(color(), C_ALLBLACK.extend(1.)),
+                }
+                .el()
+                .with(width(), tb_tempdotsize.x)
+                .with(height(), tb_tempdotsize.y)
+                .with(color(), C_ALLBLACK.extend(1.)),
                 Text::el(floatemp_to_string(player_temp))
                     .with(font_size(), fsize)
-                    .with(
-                        font_family(),
-                        "https://jetsam.droqen.com/2023-0918-ambient-game-font-test/ABCDiatype-Regular.otf"
-                            .into(),
-                    )
+                    .font_body_500()
                     .with(color(), C_ALLBLACK.extend(1.)),
                 match player_temp < 25.0 {
                     false => Text::el(""),
@@ -205,33 +200,37 @@ pub fn TemperatureDisplayUI(hooks: &mut Hooks) -> Element {
                         url: packages::this::assets::url("freezing_skull.png"),
                     }
                     .el()
-                        .with(width(), 24.0)
-                        .with(height(), 24.0),
+                    .with(width(), 24.0)
+                    .with(height(), 24.0),
                 },
             ])
             .with(translation(), tb_tempdotpos)
             .with(align_vertical(), Align::Center)
-            .with(space_between_items(), 10.0)
-            ,
+            .with(space_between_items(), 10.0),
             Rectangle::el()
-                .with(translation(), tb_hot_centerpos - tb_hot_size * 0.5 + vec3(0., 0., 0.01))
+                .with(
+                    translation(),
+                    tb_hot_centerpos - tb_hot_size * 0.5 + vec3(0., 0., 0.01),
+                )
                 .with(width(), tb_hot_size.x)
                 .with(height(), tb_hot_size.y)
-                .with(color(), C_TEMPBAR_HOT.extend(1.))
-            ,
+                .with(color(), C_TEMPBAR_HOT.extend(1.)),
             Rectangle::el()
-                .with(translation(), tb_centerpos - tb_size * 0.5 + vec3(0., 0., 0.02))
+                .with(
+                    translation(),
+                    tb_centerpos - tb_size * 0.5 + vec3(0., 0., 0.02),
+                )
                 .with(width(), tb_size.x)
                 .with(height(), tb_size.y)
-                .with(color(), C_TEMPBAR_MID.extend(1.))
-            ,
+                .with(color(), C_TEMPBAR_MID.extend(1.)),
             Rectangle::el()
-                .with(translation(), tb_cold_centerpos - tb_cold_size * 0.5 + vec3(0., 0., 0.01))
+                .with(
+                    translation(),
+                    tb_cold_centerpos - tb_cold_size * 0.5 + vec3(0., 0., 0.01),
+                )
                 .with(width(), tb_cold_size.x)
                 .with(height(), tb_cold_size.y)
-                .with(color(), C_TEMPBAR_COLD.extend(1.))
-            ,
-
+                .with(color(), C_TEMPBAR_COLD.extend(1.)),
             // FlowRow::el([
             //     background(Text::el("Align")),
             //     background(Text::el("Center").with(font_size(), 30.)),
@@ -258,7 +257,6 @@ pub fn TemperatureDisplayUI(hooks: &mut Hooks) -> Element {
             //     .with(translation(), vec3(50., 70., 0.))
             //     .with(font_size(), 20.0)
             //     .with(color(), C_NASTAN_SVART_5.extend(1.0)),
-
         ])
     } else {
         Group::el([])
