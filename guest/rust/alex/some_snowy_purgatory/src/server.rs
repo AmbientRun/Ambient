@@ -40,7 +40,7 @@ pub fn main() {
     // cold storm
     Entity::new()
         .with(translation(), Vec3::ZERO)
-        .with(temperature_src_rate(), -2.2)
+        .with(temperature_src_rate(), -0.33)
         .with(temperature_src_radius(), core::f32::MAX)
         .spawn();
 
