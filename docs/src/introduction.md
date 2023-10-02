@@ -18,8 +18,6 @@ Experiences in Ambient are composed of [packages](./reference/package.md), which
 
 Packages can be deployed to the platform for other users to make use of, or to build on top of. Ambient offers a Rust-inspired package manager and tooling. Users specify dependencies in their package's manifest in a fashion similar to `Cargo.toml`. Rust programmers will feel at home, and non-Rust programmers will find the experience intuitive and easy to use.
 
-Package schemas consist of component definitions, messages, and more. Component definitions provide pieces of data that can be attached to any entity. Messages are structured and can be sent to other packages or across the network. This approach ensures that packages can interoperate seamlessly, even without prior knowledge of each other's existence, as long as they share a schema.
-
 ## Assets
 
 All assets, including code, are streamed to players when they connect to the server; users do not have to download anything to start playing games immediately<!--, and developers can swap out assets as required during development without having to restart the server -->.
@@ -32,16 +30,18 @@ Ambient's [asset pipeline](./reference/asset_pipeline.md) supports a wide range 
 
 WebAssembly (WASM) is the secret sauce that enables Ambient's capabilities. Every package's code in Ambient operates within the confines of WebAssembly, ensuring a high level of isolation. Ambient pushes WASM to its absolute limits; on the web, WASM is used both to run the Ambient runtime and to execute user code, making it one of the most ambitious WASM projects to date.
 
-Ambient embraces diversity in programming languages. While Rust is currently the only supported guest language, the roadmap includes plans to expand support to other languages that can compile to WebAssembly. This approach empowers developers to leverage their preferred programming languages, enhancing flexibility and accessibility.
-
 Safety and stability are paramount. Thanks to the power of WebAssembly, code for Ambient runs in isolation. This means that if something within a package crashes, it won't bring down the entire program. Furthermore, the isolation provided by WebAssembly ensures that you can run untrusted code safely, enhancing security in multiplayer environments. This extends to embedding existing C/C++ libraries, which can be compiled to WebAssembly and used in Ambient packages.
 
 ## Rendering
 
-At the heart of the Ambient renderer lies WebGPU, a cutting-edge technology that unleashes the potential of modern graphics hardware on the Web and beyond. Using WebGPU, the renderer handles tasks like culling, instancing, primitive dispatch and level-of-detail switching entirely on the GPU, delivering exceptional performance. By default, it supports Physically Based Rendering (PBR) and offers advanced features such as cascading shadow maps and seamless instancing.
+At the heart of the Ambient renderer lies WebGPU, a cutting-edge technology that unleashes the potential of modern graphics hardware on the Web and beyond. By default, the renderer supports Physically Based Rendering (PBR) and offers advanced features such as cascading shadow maps and seamless instancing.
 
 In future, the renderer will be made extensible, so that developers can define the visual style of their games as they see fit. This approach ensures that Ambient can be used to create a wide range of experiences, from realistic simulations to stylized games.
 
-## The Journey Ahead
+## Philosophy
 
 Ambient's philosophy is based around flexibility and experimentation, empowering developers to push the boundaries in the ultimate game development sandbox. As Ambient develops, more and more functionality will be moved from the runtime to the realm of developers, ensuring that there are no limits on creativity.
+
+Fundamentally, we are excited about the future of game creation. We would like to see completely new forms of games emerging, which we believe will only happen when game creation tools evolve into the next generation. We hope to usher in this new era with Ambient.
+
+We want to forge a game creation platform that unleashes your creative energy and empowers you to share that fiery passion with the world - so that, one day, we can experience your dreams-made-real for ourselves.
