@@ -11,7 +11,7 @@ use url::Url;
 
 use crate::{
     schema,
-    util::{read_file, ReadFileError},
+    util::{retrieve_file, retrieve_url, RetrieveError},
     Item, ItemData, ItemId, ItemType, ItemValue, Resolve, Scope, Semantic,
 };
 use semver::Version;
@@ -47,6 +47,9 @@ impl Display for PackageLocator {
             RetrievableFile::Ambient(p) => write!(f, "ambient:{}", p.display()),
             RetrievableFile::Path(p) => write!(f, "path:{}", p.display()),
             RetrievableFile::Url(u) => write!(f, "url:{}", u),
+            RetrievableFile::Deployment(d) => {
+                write!(f, "deployment:{}/{}", d.id, d.path.display())
+            }
         }?;
         write!(f, "]")
     }
@@ -57,7 +60,7 @@ pub enum GetError {
     #[error("Failed to find {0:?} in Ambient schema")]
     FailedToFindInAmbientSchema(PathBuf),
     #[error("Failed to read file")]
-    ReadFileError(#[from] ReadFileError),
+    ReadFileError(#[from] RetrieveError),
     #[error("Path {0:?} must be absolute")]
     PathMustBeAbsolute(PathBuf),
 }
@@ -71,11 +74,46 @@ pub enum ParentJoinError {
 }
 
 #[derive(Clone, PartialEq, Debug, Eq, Hash)]
+pub struct RetrievableDeployment {
+    pub id: String,
+    pub path: PathBuf,
+}
+impl RetrievableDeployment {
+    pub fn url(&self) -> Url {
+        let mut url = ambient_shared_types::urls::deployment_url(&self.id);
+        url.push('/');
+
+        let path = self.path.to_string_lossy();
+        Url::parse(&url)
+            .unwrap_or_else(|e| panic!("invalid deployment url {url}: {e}"))
+            .join(path.as_ref())
+            .unwrap_or_else(|e| panic!("invalid deployment url after join {url} + {path}: {e}"))
+    }
+
+    /// Retrieves the manifest from the cache if it exists, otherwise retrieves
+    /// it from the deployment and caches it
+    pub async fn retrieve_manifest(&self) -> Result<String, RetrieveError> {
+        let cache_path = ambient_dirs::deployment_cache_path(&self.id).join(&self.path);
+        if cache_path.exists() {
+            return retrieve_file(&cache_path);
+        }
+
+        let manifest = retrieve_url(&self.url()).await?;
+
+        std::fs::create_dir_all(cache_path.parent().unwrap()).ok();
+        std::fs::write(&cache_path, &manifest).ok();
+
+        Ok(manifest)
+    }
+}
+
+#[derive(Clone, PartialEq, Debug, Eq, Hash)]
 /// Paths should be to the manifest, not to the folder it's in
 pub enum RetrievableFile {
     Ambient(PathBuf),
     Path(PathBuf),
     Url(Url),
+    Deployment(RetrievableDeployment),
 }
 impl RetrievableFile {
     pub async fn get(&self) -> Result<String, GetError> {
@@ -97,10 +135,11 @@ impl RetrievableFile {
                 #[cfg(not(target_os = "unknown"))]
                 {
                     let url = Url::from_file_path(path).unwrap();
-                    read_file(&url).await?
+                    retrieve_url(&url).await?
                 }
             }
-            RetrievableFile::Url(url) => read_file(url).await?,
+            RetrievableFile::Url(url) => retrieve_url(url).await?,
+            RetrievableFile::Deployment(d) => d.retrieve_manifest().await?,
         })
     }
 
@@ -120,6 +159,12 @@ impl RetrievableFile {
             RetrievableFile::Path(path) => RetrievableFile::Path(parent_join(path, suffix)?),
             RetrievableFile::Url(url) => {
                 RetrievableFile::Url(url.join(suffix.to_string_lossy().as_ref())?)
+            }
+            RetrievableFile::Deployment(old_deployment) => {
+                RetrievableFile::Deployment(RetrievableDeployment {
+                    id: old_deployment.id.clone(),
+                    path: parent_join(&old_deployment.path, suffix)?,
+                })
             }
         })
     }
@@ -144,6 +189,16 @@ impl RetrievableFile {
                     }
                 }
             }
+            Self::Deployment(deployment) => {
+                #[cfg(target_os = "unknown")]
+                {
+                    let _deployment = deployment;
+                    unimplemented!("getting the path of a deployment is not supported on web")
+                }
+
+                #[cfg(not(target_os = "unknown"))]
+                Some(LocalOrRemote::Remote(deployment.url()))
+            }
         }
     }
 
@@ -167,6 +222,9 @@ impl Display for RetrievableFile {
             RetrievableFile::Ambient(path) => write!(f, "ambient://{}", path.display()),
             RetrievableFile::Path(path) => write!(f, "file://{}", path.display()),
             RetrievableFile::Url(url) => write!(f, "{}", url),
+            RetrievableFile::Deployment(d) => {
+                write!(f, "deployment://{}/{}", d.id, d.path.display())
+            }
         }
     }
 }

@@ -76,7 +76,7 @@ fn handle_input() {
             return;
         }
 
-        let Some(camera_id) = camera::get_active(None) else {
+        let Some(camera_id) = camera::get_active() else {
             return;
         };
 

@@ -17,7 +17,7 @@ Next, we'll add some code to the **`client.rs`** (for the first time in this tut
 
 ```rust
 fixed_rate_tick(Duration::from_millis(20), move |_| {
-    let Some(camera_id) = camera::get_active(None) else {
+    let Some(camera_id) = camera::get_active() else {
         return;
     };
 

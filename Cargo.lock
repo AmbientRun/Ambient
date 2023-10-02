@@ -548,6 +548,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_dirs"
+version = "0.3.0-dev"
+dependencies = [
+ "directories",
+]
+
+[[package]]
 name = "ambient_ecs"
 version = "0.3.0-dev"
 dependencies = [
@@ -1115,6 +1122,7 @@ dependencies = [
 name = "ambient_package_semantic"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_dirs",
  "ambient_package",
  "ambient_schema",
  "ambient_shared_types",
@@ -1351,10 +1359,10 @@ version = "0.3.0-dev"
 name = "ambient_settings"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_dirs",
  "ambient_native_std",
  "anyhow",
  "cfg-if",
- "directories",
  "js-sys",
  "serde",
  "toml 0.7.8",

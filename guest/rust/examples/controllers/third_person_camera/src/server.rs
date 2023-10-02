@@ -11,9 +11,13 @@ use ambient_api::{
     prelude::*,
 };
 use packages::{
-    base_assets, character_animation::components::basic_character_animations,
+    base_assets,
+    character_animation::components::{basic_character_animations, use_rifle_animations},
     fps_controller::components::use_fps_controller,
+    nameplates::components::height_offset,
 };
+
+const USE_RIFLE_ANIMATIONS: bool = false;
 
 #[main]
 pub fn main() {
@@ -50,8 +54,13 @@ pub fn main() {
                 Entity::new()
                     .with(use_fps_controller(), ())
                     .with(model_from_url(), base_assets::assets::url("Y Bot.fbx"))
-                    .with(basic_character_animations(), id),
+                    .with(basic_character_animations(), id)
+                    .with(height_offset(), 2.0),
             );
+
+            if USE_RIFLE_ANIMATIONS {
+                entity::add_component(id, use_rifle_animations(), ());
+            }
         }
     });
 }

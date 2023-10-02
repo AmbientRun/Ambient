@@ -149,7 +149,7 @@ fn regenerate_id(package: &PackageArgs) -> anyhow::Result<()> {
 }
 
 fn update_id_for_manifest(manifest_path: &Path) -> anyhow::Result<()> {
-    let mut toml = std::fs::read_to_string(&manifest_path)?.parse::<toml_edit::Document>()?;
+    let mut toml = std::fs::read_to_string(manifest_path)?.parse::<toml_edit::Document>()?;
     // Only regenerate if an ID is already present
     if toml
         .get("package")
@@ -169,6 +169,6 @@ fn update_id_for_manifest(manifest_path: &Path) -> anyhow::Result<()> {
         }
     }
 
-    std::fs::write(&manifest_path, toml.to_string())?;
+    std::fs::write(manifest_path, toml.to_string())?;
     Ok(())
 }

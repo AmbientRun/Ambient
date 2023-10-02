@@ -74,6 +74,7 @@ pub fn main() {
                     user_id: Some(player_user_id),
                     ..default()
                 },
+                active_camera: 100.0,
                 ..PerspectiveInfiniteReverseCamera::suggested()
             }
             .make()

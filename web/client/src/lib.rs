@@ -40,6 +40,8 @@ pub struct Settings {
     #[serde(default = "default_filter")]
     log_filter: String,
     #[serde(default)]
+    user_id: Option<String>,
+    #[serde(default)]
     debugger: bool,
 }
 
@@ -128,8 +130,6 @@ async fn run(
     APP_CONTROL
         .set(ctl_tx.clone())
         .map_err(|_| anyhow::Error::msg("App already initialized"))?;
-
-
 
     let mut app = App::builder()
         .ui_renderer(true)

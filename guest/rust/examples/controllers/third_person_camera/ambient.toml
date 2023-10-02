@@ -13,3 +13,4 @@ base_assets = { path = "../../../packages/std/base_assets", deployment = "63K8iT
 fps_controller = { path = "../../../packages/std/fps_controller", deployment = "47yW3qNUV5a6sjQYFGipfu" }
 character_animation = { path = "../../../packages/std/character_animation", deployment = "6epvmLFYkCI2PYlmoYz41y" }
 hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "3I9zDawUyJfKl0jqFZASfz" }
+nameplates = { path = "../../../packages/std/nameplates" }

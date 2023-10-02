@@ -30,7 +30,7 @@ pub async fn generate_code(
     semantic.resolve_all()?;
 
     let items = &semantic.items;
-    let root_scope = &*semantic.root_scope();
+    let root_scope = semantic.root_scope();
     let type_printer = {
         let mut map = HashMap::new();
         for type_id in root_scope.types.values() {
@@ -107,7 +107,7 @@ fn generate_package(
     package_id: ItemId<Package>,
 ) -> anyhow::Result<TokenStream> {
     let package = items.get(package_id);
-    let generate_from_scope = &*items.get(package.scope_id);
+    let generate_from_scope = items.get(package.scope_id);
 
     let entity = match context {
         Context::GuestUser => {

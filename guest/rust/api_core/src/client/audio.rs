@@ -72,7 +72,7 @@ impl SpatialAudioPlayer {
     /// If no camera is available as a listener, no player will be created.
     // TODO: Should we encourage use of this API? It's temporary, but it's also a lot easier to use.
     pub fn oneshot(position: Vec3, url: impl Into<String>) -> Option<SpatialAudioPlayer> {
-        let Some(active_camera) = crate::camera::get_active(None) else {
+        let Some(active_camera) = crate::camera::get_active() else {
             return None;
         };
 
