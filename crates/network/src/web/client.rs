@@ -244,12 +244,12 @@ fn run_game_logic(
     let start = Instant::now();
 
     use_frame(hooks, move |app_world| {
-        let accummulated_frame_delay = &mut *accummulated_frame_delay.lock();
-        if *accummulated_frame_delay > MAX_ACCUMMULATED_FRAME_DELAY {
-            // too much delay accummulated, dropping frame to allow for browser networking handling
-            *accummulated_frame_delay = Duration::ZERO;
-            return;
-        }
+        // let accummulated_frame_delay = &mut *accummulated_frame_delay.lock();
+        // if *accummulated_frame_delay > MAX_ACCUMMULATED_FRAME_DELAY {
+        //     // too much delay accummulated, dropping frame to allow for browser networking handling
+        //     *accummulated_frame_delay = Duration::ZERO;
+        //     return;
+        // }
 
         // let current_time = &mut *current_time.lock();
         // if (current_time.duration_since(start).as_secs() / 10) % 2 == 0 {
@@ -264,7 +264,7 @@ fn run_game_logic(
         //     }
         // }
 
-        let now = Instant::now();
+        // let now = Instant::now();
         // *current_time = now;
 
         let mut game_state = game_state.lock();
@@ -282,13 +282,13 @@ fn run_game_logic(
 
         game_state.on_frame(&gpu, &render_target.0);
 
-        let frame_time = now.elapsed();
-        let frame_delay = ALLOWED_FRAME_TIME.saturating_sub(frame_time);
-        *accummulated_frame_delay = if frame_delay == Duration::ZERO {
-            Duration::ZERO
-        } else {
-            *accummulated_frame_delay + frame_delay
-        };
+        // let frame_time = now.elapsed();
+        // let frame_delay = ALLOWED_FRAME_TIME.saturating_sub(frame_time);
+        // *accummulated_frame_delay = if frame_delay == Duration::ZERO {
+        //     Duration::ZERO
+        // } else {
+        //     *accummulated_frame_delay + frame_delay
+        // };
     });
 }
 
