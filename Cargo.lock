@@ -8059,7 +8059,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
- "rand 0.8.5",
+ "rand 0.7.3",
  "static_assertions",
 ]
 
@@ -8411,7 +8411,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#0cac600249593375f4abc3eb2bf20182b62b9d4c"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#ca0dd0d41e58b241dab05b082caa1f08f70e677d"
 dependencies = [
  "async-trait",
  "wasm-bridge-js",
@@ -8423,7 +8423,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge-js"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#0cac600249593375f4abc3eb2bf20182b62b9d4c"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#ca0dd0d41e58b241dab05b082caa1f08f70e677d"
 dependencies = [
  "anyhow",
  "convert_case 0.6.0",
@@ -8435,13 +8435,13 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bridge-macros",
- "wat 1.0.71 (git+https://github.com/bytecodealliance/wasm-tools)",
+ "wat 1.0.74",
 ]
 
 [[package]]
 name = "wasm-bridge-macros"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#0cac600249593375f4abc3eb2bf20182b62b9d4c"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#ca0dd0d41e58b241dab05b082caa1f08f70e677d"
 dependencies = [
  "anyhow",
  "heck",
@@ -8483,8 +8483,8 @@ dependencies = [
 
 [[package]]
 name = "wasm-encoder"
-version = "0.32.0"
-source = "git+https://github.com/bytecodealliance/wasm-tools#2ebe0d8755908eb0ba62eb1103fd3e80abcb1eb2"
+version = "0.33.2"
+source = "git+https://github.com/bytecodealliance/wasm-tools#4f61ab801df424f9be895c6598f8dc08b966de14"
 dependencies = [
  "leb128",
 ]
@@ -8580,7 +8580,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "target-lexicon",
- "wasm-encoder 0.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wasm-encoder 0.32.0",
  "wasmparser 0.112.0",
  "wasmtime-component-macro",
  "wasmtime-component-util 14.0.0",
@@ -8590,7 +8590,7 @@ dependencies = [
  "wasmtime-jit",
  "wasmtime-runtime",
  "wasmtime-winch",
- "wat 1.0.71 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wat 1.0.71",
  "windows-sys 0.48.0",
 ]
 
@@ -8709,7 +8709,7 @@ dependencies = [
  "serde_derive",
  "target-lexicon",
  "thiserror",
- "wasm-encoder 0.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wasm-encoder 0.32.0",
  "wasmparser 0.112.0",
  "wasmprinter",
  "wasmtime-component-util 14.0.0",
@@ -8791,7 +8791,7 @@ dependencies = [
  "rand 0.8.5",
  "rustix 0.38.13",
  "sptr",
- "wasm-encoder 0.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wasm-encoder 0.32.0",
  "wasmtime-asm-macros",
  "wasmtime-environ 14.0.0",
  "wasmtime-fiber",
@@ -8930,18 +8930,18 @@ dependencies = [
  "leb128",
  "memchr",
  "unicode-width",
- "wasm-encoder 0.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wasm-encoder 0.32.0",
 ]
 
 [[package]]
 name = "wast"
-version = "64.0.0"
-source = "git+https://github.com/bytecodealliance/wasm-tools#2ebe0d8755908eb0ba62eb1103fd3e80abcb1eb2"
+version = "65.0.2"
+source = "git+https://github.com/bytecodealliance/wasm-tools#4f61ab801df424f9be895c6598f8dc08b966de14"
 dependencies = [
  "leb128",
  "memchr",
  "unicode-width",
- "wasm-encoder 0.32.0 (git+https://github.com/bytecodealliance/wasm-tools)",
+ "wasm-encoder 0.33.2",
 ]
 
 [[package]]
@@ -8950,15 +8950,15 @@ version = "1.0.71"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "53253d920ab413fca1c7dc2161d601c79b4fdf631d0ba51dd4343bf9b556c3f6"
 dependencies = [
- "wast 64.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wast 64.0.0",
 ]
 
 [[package]]
 name = "wat"
-version = "1.0.71"
-source = "git+https://github.com/bytecodealliance/wasm-tools#2ebe0d8755908eb0ba62eb1103fd3e80abcb1eb2"
+version = "1.0.74"
+source = "git+https://github.com/bytecodealliance/wasm-tools#4f61ab801df424f9be895c6598f8dc08b966de14"
 dependencies = [
- "wast 64.0.0 (git+https://github.com/bytecodealliance/wasm-tools)",
+ "wast 65.0.2",
 ]
 
 [[package]]
@@ -9727,7 +9727,7 @@ dependencies = [
  "wasm-encoder 0.29.0",
  "wasm-metadata 0.8.0",
  "wasmparser 0.107.0",
- "wat 1.0.71 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wat 1.0.71",
  "wit-parser 0.8.0",
 ]
 
