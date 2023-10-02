@@ -83,7 +83,6 @@ impl ElementComponent for GameClientView {
 
         // When the client is connected, run the update logic each frame
         if let Some(client_state) = &client_state {
-            tracing::info!("Adding game logic hook");
             run_game_logic(
                 hooks,
                 client_state.game_state.clone(),
@@ -425,7 +424,9 @@ async fn handle_request(
             bytes.put_slice(&data);
 
             let fut = conn.send_datagram(&bytes[..]);
-            runtime.spawn_local(async move { log_network_result!(fut.await) });
+            runtime.spawn_local(async move {
+                log_network_result!(fut.await);
+            });
 
             Ok(())
         }

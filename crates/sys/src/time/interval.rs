@@ -39,7 +39,6 @@ impl Interval {
         period: Duration,
         label: &'static str,
     ) -> Self {
-        tracing::info!(?start, ?period, "Interval::new");
         Self {
             sleep: Box::pin(Sleep::new(handle, start, label)),
             period,

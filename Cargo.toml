@@ -148,7 +148,7 @@ colored = "2.0.4"
 directories = "5.0.1"
 ulid = { version = "1.1.0", features = ["serde"] }
 enum_dispatch = "0.3"
-uuid = "1.4"
+uuid = { version = "1.4", features = ["v4"] }
 scopeguard = "1.2"
 prost = "0.11"
 tokio-stream = "0.1"
