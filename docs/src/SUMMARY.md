@@ -9,6 +9,7 @@
 - [Installing](user/installing.md)
 - [Setting up your IDE](user/setting_up_ide.md)
 - [Overview](user/overview.md)
+- [About the tech](user/technology.md)
 - [Running examples](user/running_examples.md)
 - [API](user/api.md)
 - [Debugging](user/debugging.md)
@@ -17,16 +18,15 @@
 
 # Tutorial
 
-## A game from scratch
-
-- [Intro](./tutorials/game/0_intro.md)
-- [Chapter 1: Creating a project](./tutorials/game/1_package.md)
-- [Chapter 2: Player character](./tutorials/game/2_player_character.md)
-- [Chapter 3: Scene](./tutorials/game/3_scene.md)
-- [Chapter 4: Player interaction](./tutorials/game/4_player_interaction.md)
-- [Chapter 5: Models](./tutorials/game/5_models.md)
-- [Chapter 6: UI](./tutorials/game/6_ui.md)
-- [Chapter 7: Deploying](./tutorials/game/7_deploying.md)
+- [Intro](tutorials/game/0_intro.md)
+- [Chapter 1: Creating a project](tutorials/game/1_package.md)
+- [Chapter 2: Player character](tutorials/game/2_player_character.md)
+- [Chapter 3: Scene](tutorials/game/3_scene.md)
+- [Chapter 4: Player interaction](tutorials/game/4_player_interaction.md)
+- [Chapter 5: Models](tutorials/game/5_models.md)
+- [Chapter 6: UI](tutorials/game/6_ui.md)
+- [Chapter 7: Deploying](tutorials/game/7_deploying.md)
+- [Chapter 8: Modding](tutorials/game/8_modding.md)
 
 # Reference Guide
 

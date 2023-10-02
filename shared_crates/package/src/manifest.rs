@@ -5,7 +5,6 @@ use semver::{Version, VersionReq};
 use serde::{Deserialize, Serialize};
 use sha2::Digest;
 use thiserror::Error;
-use url::Url;
 
 use crate::{
     Component, Concept, Enum, ItemPathBuf, Message, PascalCaseIdentifier, SnakeCaseIdentifier,
@@ -89,7 +88,7 @@ impl PackageId {
         // is always alphabetic
         loop {
             let data: [u8; Self::DATA_LENGTH] = rand::random();
-            let checksum: [u8; Self::CHECKSUM_LENGTH] = sha2::Sha256::digest(&data)
+            let checksum: [u8; Self::CHECKSUM_LENGTH] = sha2::Sha256::digest(data)
                 [0..Self::CHECKSUM_LENGTH]
                 .try_into()
                 .unwrap();
@@ -115,12 +114,7 @@ impl PackageId {
 
         let bytes = data_encoding::BASE32_NOPAD
             .decode(id.to_ascii_uppercase().as_bytes())
-            .map_err(|e| {
-                format!(
-                    "Package ID contained invalid characters: {}. {cmd}",
-                    e.to_string()
-                )
-            })?;
+            .map_err(|e| format!("Package ID contained invalid characters: {e}. {cmd}"))?;
 
         let data = &bytes[0..Self::DATA_LENGTH];
         let checksum = &bytes[Self::DATA_LENGTH..];
@@ -250,25 +244,13 @@ pub struct Dependency {
     #[serde(default)]
     pub path: Option<PathBuf>,
     #[serde(default)]
-    url: Option<Url>,
-    #[serde(default)]
-    deployment: Option<String>,
+    pub deployment: Option<String>,
     #[serde(default)]
     pub enabled: Option<bool>,
 }
 impl Dependency {
-    pub fn url(&self) -> Option<Url> {
-        if let Some(url) = self.url.clone() {
-            Some(url)
-        } else if let Some(deployment) = self.deployment.as_ref() {
-            Url::parse(&ambient_shared_types::urls::deployment_url(deployment)).ok()
-        } else {
-            None
-        }
-    }
-
     pub fn has_remote_dependency(&self) -> bool {
-        self.url().is_some()
+        self.deployment.is_some()
     }
 }
 
@@ -277,7 +259,6 @@ mod tests {
     use std::path::PathBuf;
 
     use indexmap::IndexMap;
-    use url::Url;
 
     use crate::{
         Build, BuildRust, Component, ComponentType, Components, Concept, ConceptValue,
@@ -743,7 +724,6 @@ mod tests {
         deps_assets = { path = "deps/assets" }
         deps_code = { path = "deps/code" }
         deps_ignore_me = { path = "deps/ignore_me", enabled = false }
-        deps_remote = { url = "http://example.com", enabled = true }
         deps_remote_deployment = { deployment = "jhsdfu574S" }
 
         "#;
@@ -768,7 +748,6 @@ mod tests {
                         sci("deps_assets"),
                         Dependency {
                             path: Some(PathBuf::from("deps/assets")),
-                            url: None,
                             deployment: None,
                             enabled: None,
                         }
@@ -777,7 +756,6 @@ mod tests {
                         sci("deps_code"),
                         Dependency {
                             path: Some(PathBuf::from("deps/code")),
-                            url: None,
                             deployment: None,
                             enabled: None,
                         }
@@ -786,25 +764,14 @@ mod tests {
                         sci("deps_ignore_me"),
                         Dependency {
                             path: Some(PathBuf::from("deps/ignore_me")),
-                            url: None,
                             deployment: None,
                             enabled: Some(false),
-                        }
-                    ),
-                    (
-                        sci("deps_remote"),
-                        Dependency {
-                            path: None,
-                            url: Some(Url::parse("http://example.com").unwrap()),
-                            deployment: None,
-                            enabled: Some(true),
                         }
                     ),
                     (
                         sci("deps_remote_deployment"),
                         Dependency {
                             path: None,
-                            url: None,
                             deployment: Some("jhsdfu574S".to_owned()),
                             enabled: None,
                         }

@@ -2,7 +2,7 @@ use std::f32::consts::TAU;
 
 use ambient_app::{App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, gpu, main_scene, transform::*};
-use ambient_ecs::{query_mut, Entity};
+use ambient_ecs::Entity;
 use ambient_gpu::{
     sampler::SamplerKey,
     std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
@@ -11,12 +11,12 @@ use ambient_meshes::{CubeMeshKey, SphereMeshKey};
 use ambient_native_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, math::SphericalCoords};
 use ambient_renderer::{
     color,
-    flat_material::{get_flat_shader, FlatMaterialKey, FlatShaderKey},
+    flat_material::{get_flat_shader, FlatMaterialKey},
     gpu_primitives_lod, gpu_primitives_mesh, light_ambient, light_diffuse, material,
     materials::pbr_material::{get_pbr_shader, PbrMaterial, PbrMaterialConfig, PbrMaterialParams},
     primitives, renderer_shader, sun, RenderPrimitive, SharedMaterial,
 };
-use ambient_sys::time::Instant;
+
 use glam::*;
 use itertools::Itertools;
 

@@ -1,9 +1,9 @@
 [package]
 id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
 name = "character_movement"
-version = "0.0.1"
+version = "0.3.0-nightly-2023-10-02"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-nightly-2023-10-02"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "5A0rsH8nDtTze7x3wuLVUJ" }
+unit_schema = { path = "../../schemas/unit", deployment = "3I3qVh2BET1eQ8wWRhObEo" }

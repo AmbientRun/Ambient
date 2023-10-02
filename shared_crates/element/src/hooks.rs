@@ -600,7 +600,8 @@ pub fn use_entity_component<
     use ambient_guest_bridge::api::prelude::{change_query, despawn_query, entity};
 
     let refresh = use_rerender_signal(hooks);
-    use_spawn(hooks, move |_| {
+    use_effect(hooks, (id, component), move |_, args| {
+        let (_id, component) = *args;
         let c = change_query(component).track_change(component).bind({
             let refresh = refresh.clone();
             move |_| refresh()
@@ -654,7 +655,7 @@ pub fn use_entity_concept<C: ambient_guest_bridge::api::ecs::ConceptComponents>(
     use ambient_guest_bridge::api::prelude::{change_query, despawn_query};
 
     let refresh = use_rerender_signal(hooks);
-    use_spawn(hooks, move |_| {
+    use_effect(hooks, (id,), move |_, _args| {
         let c = change_query(())
             .track_change(C::required())
             .track_change(C::optional())

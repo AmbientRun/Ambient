@@ -207,7 +207,7 @@ impl ModelCrate {
         .flatten()
         .collect_vec()
     }
-    pub const MAIN: &str = "main";
+    pub const MAIN: &'static str = "main";
     pub fn model(&self) -> &Model {
         self.models.content.get(Self::MAIN).unwrap()
     }

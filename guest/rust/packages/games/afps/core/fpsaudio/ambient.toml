@@ -1,10 +1,10 @@
 [package]
 id = "yfyltsyubkah4ricdvo65gomxktb7zf6"
 name = "AFPS Audio"
-version = "0.0.1"
+version = "0.3.0-nightly-2023-10-02"
 content = { type = "Asset", audio = true, code = true }
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-nightly-2023-10-02"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "3kFlkcMc5qDzvlWFfoEEAh" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "5A0rsH8nDtTze7x3wuLVUJ" }
+afps_schema = { path = "../../schema", deployment = "7hivZN06KpObeeQwWixh8X" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "3I3qVh2BET1eQ8wWRhObEo" }

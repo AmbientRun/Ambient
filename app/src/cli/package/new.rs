@@ -156,7 +156,7 @@ pub(crate) async fn handle(args: &New, assets: &AssetCache) -> anyhow::Result<()
 
     // Build the new package to ensure that the user can use it immediately, and to have the proc-macro
     // ready for rust-analyzer to use
-    build::handle_inner(&args.package, &assets, false).await?;
+    build::handle_inner(&args.package, assets, false).await?;
 
     log::info!("Package \"{name}\" built successfully - ready to go at {package_path:?}");
 

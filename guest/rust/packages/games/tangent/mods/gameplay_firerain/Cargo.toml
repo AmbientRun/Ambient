@@ -10,11 +10,6 @@ version = {workspace = true}
 ambient_api = { path = "../../../../../api" }
 
 [[bin]]
-name = "tangent_gameplay_fire_rain_client"
-path = "src/client.rs"
-required-features = ["client"]
-
-[[bin]]
 name = "tangent_gameplay_fire_rain_server"
 path = "src/server.rs"
 required-features = ["server"]

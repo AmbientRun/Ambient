@@ -1,4 +1,4 @@
-use std::sync::OnceLock;
+use std::{sync::OnceLock};
 
 use ambient_app::App;
 use ambient_cameras::UICamera;
@@ -12,7 +12,11 @@ use ambient_ui_native::{
 };
 use anyhow::Context;
 use app::MainApp;
-use tracing_subscriber::{filter::Targets, prelude::*, registry};
+use tracing_subscriber::{
+    filter::{Targets},
+    prelude::*,
+    registry,
+};
 use tracing_web::MakeConsoleWriter;
 use wasm_bindgen::prelude::*;
 
@@ -35,6 +39,8 @@ pub struct Settings {
     allow_version_mismatch: bool,
     #[serde(default = "default_filter")]
     log_filter: String,
+    #[serde(default)]
+    user_id: Option<String>,
     #[serde(default)]
     debugger: bool,
 }
@@ -124,9 +130,6 @@ async fn run(
     APP_CONTROL
         .set(ctl_tx.clone())
         .map_err(|_| anyhow::Error::msg("App already initialized"))?;
-
-    use ambient_sys::timer::TimerWheel;
-    ambient_sys::task::spawn(TimerWheel::new().start());
 
     let mut app = App::builder()
         .ui_renderer(true)

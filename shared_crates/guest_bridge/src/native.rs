@@ -22,7 +22,7 @@ where
 }
 
 pub async fn sleep(seconds: f32) {
-    ambient_sys::time::sleep(Duration::from_secs_f32(seconds)).await;
+    ambient_sys::time::sleep_label(Duration::from_secs_f32(seconds), "guest").await;
 }
 
 pub fn broadcast_local_message(world: &mut World, message: impl Message) {

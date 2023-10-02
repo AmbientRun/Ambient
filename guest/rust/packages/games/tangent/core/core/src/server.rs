@@ -95,6 +95,12 @@ pub fn main() {
                 else {
                     continue;
                 };
+
+                if !entity::exists(character_id) {
+                    // This can occur when a vehicle explodes and takes its driver with it
+                    continue;
+                }
+
                 entity::add_component(driver_id, gopc::control_of_entity(), character_id);
                 entity::set_component(character_id, scale(), Vec3::ONE);
             }

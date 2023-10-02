@@ -31,7 +31,7 @@
 use std::time::Duration;
 
 #[allow(unused_imports)]
-use crate::platform::time::{Instant, Interval};
+use crate::time::{Instant, Interval};
 
 /// Defines the behavior of an [`Interval`] when it misses a tick.
 ///

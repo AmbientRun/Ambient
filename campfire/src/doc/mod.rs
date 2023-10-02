@@ -32,7 +32,8 @@ pub fn main(args: &Doc) -> anyhow::Result<()> {
 }
 
 fn runtime() -> anyhow::Result<()> {
-    pipeline()
+    // pipeline()
+    Ok(())
 }
 
 fn api(open: bool, args: &[String]) -> anyhow::Result<()> {
@@ -54,6 +55,10 @@ fn api(open: bool, args: &[String]) -> anyhow::Result<()> {
     Ok(())
 }
 
+// We've switched from JSON to TOML, so this is no longer applicable in this format
+// I'd like to bring it back with TOML generation at some point, which is why I haven't
+// deleted it entirely
+#[allow(dead_code)]
 fn pipeline() -> anyhow::Result<()> {
     log::info!("Generating pipeline.d.ts...");
 

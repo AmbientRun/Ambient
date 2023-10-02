@@ -150,7 +150,7 @@ impl<T: ambient_ecs::Message> MessageExt for T {
     }
 
     fn send(self, world: &mut World, module_id: Option<EntityId>) -> anyhow::Result<()> {
-        Ok(send(
+        send(
             world,
             module_id
                 .map(Target::PackageOrModule)
@@ -158,6 +158,7 @@ impl<T: ambient_ecs::Message> MessageExt for T {
             WorldEventSource::Runtime,
             T::id().to_string(),
             self.serialize_message()?,
-        ))
+        );
+        Ok(())
     }
 }

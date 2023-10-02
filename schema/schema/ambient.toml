@@ -1,0 +1,111 @@
+[package]
+description = "Contains all core components for the Ambient runtime."
+name = "Core Components"
+version = "0.3.0-dev"
+content = { type = "Asset", schema = true }
+ambient_version = "0.3.0-nightly-2023-10-02"
+
+[includes]
+animation = "includes/animation.toml"
+app = "includes/app_.toml"
+audio = "includes/audio.toml"
+camera = "includes/camera.toml"
+ecs = "includes/ecs.toml"
+hierarchy = "includes/hierarchy.toml"
+input = "includes/input.toml"
+layout = "includes/layout.toml"
+model = "includes/model.toml"
+network = "includes/network.toml"
+package = "includes/package.toml"
+physics = "includes/physics.toml"
+player = "includes/player.toml"
+prefab = "includes/prefab.toml"
+primitives = "includes/primitives.toml"
+procedurals = "includes/procedurals.toml"
+rect = "includes/rect.toml"
+rendering = "includes/rendering.toml"
+text = "includes/text.toml"
+transform = "includes/transform.toml"
+ui = "includes/ui.toml"
+wasm = "includes/wasm.toml"
+
+# Messages
+[messages.Frame]
+name = "Frame"
+description = "Sent to all modules every frame."
+fields = {}
+
+[messages.Collision]
+name = "Collision"
+description = "Sent when a collision occurs."
+fields = { ids = { container_type = "Vec", element_type = "EntityId" } }
+
+[messages.ColliderLoads]
+name = "Collider Loads"
+description = "Sent when colliders load."
+fields = { ids = { container_type = "Vec", element_type = "EntityId" } }
+
+[messages.ModuleLoad]
+name = "Module Load"
+description = "Sent to a module when it loads."
+fields = {}
+
+[messages.ModuleUnload]
+name = "Module Unload"
+description = "Sent to a module when it unloads."
+fields = {}
+
+[messages.WindowFocusChange]
+name = "Window Focus Change"
+description = "Sent when the window gains or loses focus."
+fields = { focused = "Bool" }
+
+[messages.WindowClose]
+name = "Window Close"
+description = "Sent when the window is closed."
+fields = {}
+
+[messages.WindowKeyboardCharacter]
+name = "Window Keyboard Character"
+description = "Sent when the window receives a character from the keyboard."
+fields = { character = "String" }
+
+[messages.WindowKeyboardModifiersChange]
+name = "Window Keyboard Modifiers Change"
+description = "Sent when the window's keyboard modifiers change."
+fields = { modifiers = "U32" }
+
+[messages.WindowKeyboardInput]
+name = "Window Keyboard Input"
+description = "Sent when the window receives a keyboard input."
+fields = { pressed = "Bool", modifiers = "U32", keycode = { type = "Option", element_type = "String" } }
+
+[messages.WindowMouseInput]
+name = "Window Mouse Input"
+description = "Sent when the window receives a mouse input."
+fields = { pressed = "Bool", button = "U32" }
+
+[messages.WindowMouseWheel]
+name = "Window Mouse Wheel"
+description = "Sent when the window receives a mouse wheel input."
+fields = { delta = "Vec2", pixels = "Bool" }
+
+[messages.WindowMouseMotion]
+name = "Window Mouse Motion"
+description = "Sent when the window receives a mouse motion input."
+fields = { delta = "Vec2" }
+
+[messages.WindowCursorLockChange]
+name = "Window Cursor Lock Change"
+description = "Sent when the window's cursor lock changes."
+fields = { locked = "Bool" }
+
+[messages.HttpResponse]
+name = "HTTP Response"
+description = "Sent when an HTTP response is received."
+fields = { url = "String", status = "U32", body = { type = "Vec", element_type = "U8" }, error = { type = "Option", element_type = "String" } }
+
+[messages.WasmRebuild]
+name = "WASM Rebuild"
+description = "Sent when a request for WASM rebuilding is completed."
+fields = { error = { type = "Option", element_type = "String" } }

@@ -84,7 +84,7 @@ impl GpuWorld {
         Self {
             layout_buffer: TypedBuffer::new_init(
                 gpu,
-                "GpuWorld.layout_buffer",
+                Some("GpuWorld.layout_buffer"),
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
                     | wgpu::BufferUsages::COPY_SRC,
@@ -164,7 +164,7 @@ impl GpuComponentsBuffer {
         Self {
             buffer: TypedBuffer::new(
                 gpu,
-                format!("EntityBuffers.{}.data", config.format),
+                Some("EntityBuffers.data"), // TODO: add config.format to label
                 size,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST

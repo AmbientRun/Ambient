@@ -46,6 +46,18 @@ pub struct ExternalComponentDesc {
     pub attributes: ExternalComponentAttributes,
 }
 
+impl From<&PrimitiveComponent> for ExternalComponentDesc {
+    fn from(pc: &PrimitiveComponent) -> Self {
+        ExternalComponentDesc {
+            path: pc.desc.path(),
+            ty: pc.ty,
+            name: pc.desc.attribute::<Name>().map(|n| n.0.clone()),
+            description: pc.desc.attribute::<Description>().map(|n| n.0.clone()),
+            attributes: ExternalComponentAttributes::from_existing_component(pc.desc),
+        }
+    }
+}
+
 macro_rules! define_external_component_attribute {
     (
         standard: {$($field_name:ident: $type_name:ty),*},
@@ -252,18 +264,7 @@ impl ComponentRegistry {
     ) -> impl Iterator<Item = (ExternalComponentDesc, ComponentDesc)> + '_ {
         self.all_primitive()
             .filter(|pc| pc.desc.has_attribute::<External>())
-            .map(|pc| {
-                (
-                    ExternalComponentDesc {
-                        path: pc.desc.path(),
-                        ty: pc.ty,
-                        name: pc.desc.attribute::<Name>().map(|n| n.0.clone()),
-                        description: pc.desc.attribute::<Description>().map(|n| n.0.clone()),
-                        attributes: ExternalComponentAttributes::from_existing_component(pc.desc),
-                    },
-                    pc.desc,
-                )
-            })
+            .map(|pc| (pc.into(), pc.desc))
     }
 
     pub fn all(&self) -> impl Iterator<Item = ComponentDesc> + '_ {

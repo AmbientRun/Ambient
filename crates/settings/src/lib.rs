@@ -7,9 +7,6 @@ use std::path::PathBuf;
 #[cfg(not(target_os = "unknown"))]
 use anyhow::Context;
 
-#[cfg(not(target_os = "unknown"))]
-use directories::ProjectDirs;
-
 mod render;
 pub use render::*;
 
@@ -89,25 +86,18 @@ impl Settings {
     }
 
     pub fn path() -> anyhow::Result<PathBuf> {
-        const QUALIFIER: &str = "com";
-        const ORGANIZATION: &str = "Ambient";
-        const APPLICATION: &str = "Ambient";
-        const FILE_NAME: &str = "settings.toml";
+        let path = ambient_dirs::settings_path();
 
-        let project_dirs = ProjectDirs::from(QUALIFIER, ORGANIZATION, APPLICATION)
-            .context("Failed to open home directory")?;
-
-        let settings_dir = project_dirs.config_dir();
-        if !settings_dir.exists() {
-            std::fs::create_dir_all(settings_dir).with_context(|| {
+        if let Some(parent) = path.parent().filter(|p| !p.exists()) {
+            std::fs::create_dir_all(parent).with_context(|| {
                 format!(
-                    "Failed to create {APPLICATION} settings directory at {}",
-                    settings_dir.display()
+                    "Failed to create Ambient settings directory at {}",
+                    parent.display()
                 )
             })?;
         }
 
-        Ok(settings_dir.join(FILE_NAME))
+        Ok(path)
     }
 }
 

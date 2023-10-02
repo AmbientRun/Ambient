@@ -54,7 +54,7 @@ impl Context {
         };
         let prefix = format!("{type_namespace}{}", prefix.unwrap_or_default());
         let fully_qualified_display_path =
-            items.fully_qualified_display_path(&*item, None, Some(prefix.as_str()));
+            items.fully_qualified_display_path(item, None, Some(prefix.as_str()));
 
         // Bad, lazy hack to remap `ambient_core` to a valid API path.
         // Without this, `ambient_core::transform::lookat_target` will get emitted as

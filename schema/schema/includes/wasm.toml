@@ -1,0 +1,54 @@
+[package]
+name = "WASM"
+description = "State related to WASM functionality."
+content = { type = "Asset", schema = true }
+version = "0.3.0-dev"
+ambient_version = "0.3.0-nightly-2023-10-02"
+
+[components.is_module]
+name = "Is module"
+description = "A module."
+type = "Empty"
+attributes = ["Networked", "Store", "Debuggable"]
+
+[components.is_module_on_server]
+name = "Is module on server"
+description = "Whether or not this module is on the server."
+type = "Empty"
+attributes = ["Networked", "Store", "Debuggable"]
+
+[components.bytecode_from_url]
+name = "Bytecode from URL"
+description = "Asset URL for the bytecode of a WASM component."
+type = "String"
+attributes = ["Networked", "Store", "Debuggable"]
+
+[components.module_enabled]
+name = "Module enabled"
+description = "Whether or not this module is enabled."
+type = "Bool"
+attributes = ["Networked", "Store", "Debuggable"]
+
+[components.module_name]
+name = "Module name"
+description = "The name of this module."
+type = "String"
+attributes = ["Networked", "Store", "Debuggable"]
+
+[components.package_ref]
+name = "Package reference"
+description = "The package that this module belongs to."
+type = "EntityId"
+attributes = ["Networked", "Store", "Debuggable"]
+
+[concepts.Module]
+name = "Module"
+description = "A WASM module that can be enabled or disabled, and may or may not be on the server."
+[concepts.Module.components.required]
+is_module = {}
+bytecode_from_url = {}
+module_enabled = {}
+module_name = {}
+package_ref = {}
+[concepts.Module.components.optional]
+is_module_on_server = {}

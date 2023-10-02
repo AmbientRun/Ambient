@@ -1,13 +1,14 @@
 use std::collections::HashSet;
 
 use crate::{
-    entity::{get_component, resources},
+    core::ui::{components::focus, messages::FocusChanged},
+    entity,
     global::{CursorIcon, Vec2},
     internal::{
         conversion::{FromBindgen, IntoBindgen},
-        generated::ambient_core::ui::components::focus,
         wit,
     },
+    prelude::ModuleMessage,
 };
 
 pub use ambient_shared_types::MouseButton;
@@ -50,12 +51,23 @@ pub fn set_cursor_lock(locked: bool) {
     wit::client_input::set_cursor_lock(locked);
 }
 
-/// Focus id of the "game"; i.e. 3d world rather than any UI element
+/// Focus id of the "game"; i.e. 3D world rather than any UI element
 pub const GAME_FOCUS_ID: &str = "Game";
 
-/// Returns true if the "game" is focused; i.e. no UI element but the playable 3d game world
+/// Returns true if the "game" is focused; i.e. no UI element but the playable 3D game world
 pub fn is_game_focused() -> bool {
-    get_component(resources(), focus()).unwrap_or_default() == GAME_FOCUS_ID
+    entity::get_component(entity::resources(), focus()).unwrap_or_default() == GAME_FOCUS_ID
+}
+
+/// Sets the global focus, and notifies all listeners.
+pub fn set_focus(focus_id: impl Into<String>) {
+    let focus_id = focus_id.into();
+    entity::set_component(entity::resources(), focus(), focus_id.clone());
+    FocusChanged {
+        from_external: false,
+        focus: focus_id,
+    }
+    .send_local_broadcast(true);
 }
 
 #[allow(missing_docs)]

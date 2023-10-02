@@ -241,13 +241,13 @@ impl NaturalsPipeline {
     ) -> Vec<NaturalEntity> {
         let out_count_staging = TypedBuffer::<u32>::new_init(
             gpu,
-            "Naturals.out_count_staging",
+            Some("Naturals.out_count_staging"),
             wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
             &[0],
         );
         let out_entities_staging = TypedBuffer::<NaturalEntity>::new(
             gpu,
-            "Naturals.out_entities_staging",
+            Some("Naturals.out_entities_staging"),
             NATURALS_MAX_ENTITIES as usize,
             wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
         );
@@ -255,7 +255,7 @@ impl NaturalsPipeline {
         {
             let natural_elements = TypedBuffer::<NaturalElementWGSL>::new_init(
                 gpu,
-                "Naturals.elements",
+                Some("Naturals.elements"),
                 wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
                 &elements
                     .iter()
@@ -265,7 +265,7 @@ impl NaturalsPipeline {
 
             let out_count_buffer = TypedBuffer::<u32>::new_init(
                 gpu,
-                "Naturals.out_count",
+                Some("Naturals.out_count"),
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_SRC
                     | wgpu::BufferUsages::COPY_DST,
@@ -273,7 +273,7 @@ impl NaturalsPipeline {
             );
             let out_entities_buffer = TypedBuffer::<NaturalEntity>::new(
                 gpu,
-                "Naturals.out_entities",
+                Some("Naturals.out_entities"),
                 NATURALS_MAX_ENTITIES as usize,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_SRC

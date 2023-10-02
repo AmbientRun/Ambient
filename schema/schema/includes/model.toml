@@ -1,0 +1,24 @@
+[package]
+name = "Model"
+description = "Information about models attached to entities."
+content = { type = "Asset", schema = true }
+version = "0.3.0-dev"
+ambient_version = "0.3.0-nightly-2023-10-02"
+
+[components.model_animatable]
+type = "Bool"
+name = "Model animatable"
+description = "Controls whether this model can be animated."
+attributes = ["MaybeResource", "Debuggable", "Networked", "Store"]
+
+[components.model_from_url]
+type = "String"
+name = "Model from URL"
+description = "Load a model from the given URL or relative path."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components.model_loaded]
+type = "Empty"
+name = "Model loaded"
+description = "If attached, this entity has a model attached to it."
+attributes = ["Debuggable", "Networked", "Store"]

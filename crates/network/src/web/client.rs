@@ -12,7 +12,7 @@ use ambient_native_std::{
 };
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_sys::{task::RuntimeHandle, time::sleep};
+use ambient_sys::{task::RuntimeHandle, time::sleep_label};
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use bytes::{BufMut, BytesMut};
@@ -107,7 +107,7 @@ impl ElementComponent for GameClientView {
                     url = resolve_hosted_server(&assets, url).await?;
                 }
 
-                sleep(Duration::from_millis(1000)).await;
+                sleep_label(Duration::from_millis(1000), "wait for server").await;
 
                 let conn = Connection::connect(&url.as_str()).await.with_context(|| {
                     format!("Failed to establish a WebTransport session for \"{url}\"")
@@ -402,7 +402,6 @@ async fn handle_request(
             Ok(())
         }
         ProxyMessage::RequestUni { id, mut data } => {
-            tracing::info!("Sending uni request");
             let mut send = conn.open_uni().await?;
 
             runtime.spawn_local(async move {

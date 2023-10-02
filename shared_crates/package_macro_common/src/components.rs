@@ -96,7 +96,7 @@ pub fn generate(
                     })
                 }
                 Context::GuestApi | Context::GuestUser => {
-                    let component_id = items.fully_qualified_display_path(&*component, None, None);
+                    let component_id = items.fully_qualified_display_path(component, None, None);
                     let ident = make_path(id.as_str());
                     let uppercase_ident = make_path(&id.as_str().to_uppercase());
 

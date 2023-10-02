@@ -102,4 +102,6 @@ query(bouncy_created()).each_frame(|entities| {
 > .spawn();
 > ```
 
+> **Source**: The complete code for this chapter can be found [here](https://github.com/AmbientRun/TutorialProject/tree/chapter-3).
+
 ## [⇾ Chapter 4: Player interaction](./4_player_interaction.md)

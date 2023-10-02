@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{env, path::Path};
 
 use clap::Parser;
 
@@ -12,6 +12,9 @@ pub struct Install {
     /// Git tag to install. If both this and `--git-revision` are specified, `--git-revision` takes precedence.
     /// If neither are specified, the repository on the local filesystem is used.
     git_tag: Option<String>,
+    #[clap(short = 's', long)]
+    /// Suffix override. This is useful if you haven't specified a revision or tag.
+    suffix: Option<String>,
 }
 
 pub fn main(install: &Install) -> anyhow::Result<()> {
@@ -28,7 +31,10 @@ pub fn main(install: &Install) -> anyhow::Result<()> {
             .as_deref()
             .map(|tag| (tag, [git_args.as_slice(), &["--tag", tag]].concat())),
     )
-    .unwrap_or_else(|| ("", vec!["--path", "app"]));
+    .unzip();
+
+    let suffix = install.suffix.as_deref().or(suffix).unwrap_or("dev");
+    let args = args.unwrap_or_else(|| vec!["--path", "app"]);
 
     install_version(suffix, &args)
 }
@@ -37,9 +43,22 @@ fn install_version(suffix: &str, args: &[&str]) -> anyhow::Result<()> {
     let target_name = ambient_executable_name(suffix);
 
     let install_root = Path::new("tmp");
-    let target_path = home::cargo_home()?.join("bin").join(target_name);
+    let install_root_bin = install_root.join("bin");
+
+    // Add tmp/bin to PATH so that `cargo install` doesn't complain about
+    // it not being in the PATH afterwards
+    let path_env = if let Some(path) = env::var_os("PATH") {
+        let mut paths = env::split_paths(&path).collect::<Vec<_>>();
+        paths.push(install_root_bin.clone());
+        Some(env::join_paths(paths)?)
+    } else {
+        None
+    };
 
     let mut cmd = std::process::Command::new("cargo");
+    if let Some(path_env) = path_env {
+        cmd.env("PATH", path_env);
+    }
     cmd.args([
         "install",
         "--locked",
@@ -54,8 +73,9 @@ fn install_version(suffix: &str, args: &[&str]) -> anyhow::Result<()> {
         anyhow::bail!("`cargo install` failed with status {}", status);
     }
 
+    let target_path = home::cargo_home()?.join("bin").join(target_name);
     std::fs::copy(
-        install_root.join("bin").join(ambient_executable_name("")),
+        install_root_bin.join(ambient_executable_name("")),
         &target_path,
     )?;
     log::info!("Installed ambient to {}", target_path.display());

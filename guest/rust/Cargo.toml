@@ -133,7 +133,6 @@ ambient_element = { path = "../../shared_crates/element", version = "0.3.0-dev",
     "guest",
 ] }
 ambient_editor_derive = { path = "../../shared_crates/editor_derive", version = "0.3.0-dev" }
-ambient_schema = { path = "../../shared_crates/schema", version = "0.3.0-dev" }
 
 ambient_pipeline_types = { path = "../../crates/pipeline_types", version = "0.3.0-dev" }
 

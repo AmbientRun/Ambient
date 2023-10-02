@@ -192,7 +192,7 @@ impl AssetCache {
             let assets = assets.clone();
             runtime.spawn(async move {
                 loop {
-                    time::sleep(Duration::from_millis(1000)).await;
+                    time::sleep_label(Duration::from_millis(1000), "asset cache cleanup").await;
                     assets.clean_up_dropped();
                 }
             });
@@ -323,8 +323,6 @@ impl AssetCache {
         let asset_key = AssetKey::new(key.key());
 
         let load = || {
-            tracing::debug!("Loading asset: {asset_key:?}");
-
             // No future loading the value was found.
             //
             // Initiate the loading
@@ -471,8 +469,7 @@ impl AssetCache {
                 }
 
                 let task = self.runtime.spawn(async move {
-                    time::sleep(dur).await;
-                    tracing::debug!("Keepalive timed out for {asset_key:?}");
+                    time::sleep_label(dur, "asset keepalive").await;
                     drop((keepalive_ref, guard));
                 });
 

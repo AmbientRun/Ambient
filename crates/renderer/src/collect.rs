@@ -95,13 +95,13 @@ impl RendererCollectState {
         Self {
             params: TypedBuffer::new_init(
                 gpu,
-                "RendererCollectState.params",
+                Some("RendererCollectState.params"),
                 wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
                 &[RendererCollectParams::default()],
             ),
             commands: TypedBuffer::new(
                 gpu,
-                "RendererCollectState.commands",
+                Some("RendererCollectState.commands"),
                 1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
@@ -110,7 +110,7 @@ impl RendererCollectState {
             ),
             counts: TypedBuffer::new(
                 gpu,
-                "RendererCollectState.counts",
+                Some("RendererCollectState.counts"),
                 1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
@@ -120,7 +120,7 @@ impl RendererCollectState {
             counts_cpu: Arc::new(Default::default()),
             material_layouts: TypedBuffer::new(
                 gpu,
-                "RendererCollectState.materials",
+                Some("RendererCollectState.materials"),
                 1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
@@ -405,7 +405,7 @@ impl CollectCountStagingBuffers {
             }
             None => TypedBuffer::<u32>::new(
                 gpu,
-                "RendererCollectState.counts_staging",
+                Some("RendererCollectState.counts_staging"),
                 size,
                 wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
             ),

@@ -196,10 +196,7 @@ impl ModuleStateBehavior for ModuleState {
 }
 
 #[cfg(target_os = "unknown")]
-use wasm_bridge_js::{
-    component::{self, Instance},
-    wasi::preview2::command::add_to_linker,
-};
+use wasm_bridge_js::component::{self, Instance};
 
 #[cfg(not(target_os = "unknown"))]
 use wasm_bridge::component::{self, Instance};

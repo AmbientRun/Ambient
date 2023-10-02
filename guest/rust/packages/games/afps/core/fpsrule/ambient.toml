@@ -1,11 +1,11 @@
 [package]
 id = "suth5lljxzfjixfyxyw3ggvrtyrqa3mf"
 name = "AFPS Rule"
-version = "0.0.1"
+version = "0.3.0-nightly-2023-10-02"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-09-28"
+ambient_version = "0.3.0-nightly-2023-10-02"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "3kFlkcMc5qDzvlWFfoEEAh" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "5A0rsH8nDtTze7x3wuLVUJ" }
-game_object = { path = "../../../../schemas/game_object" , deployment = "2H5s0Iq3fZwagFmlT2KstX" }
+afps_schema = { path = "../../schema", deployment = "7hivZN06KpObeeQwWixh8X" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "3I3qVh2BET1eQ8wWRhObEo" }
+game_object = { path = "../../../../schemas/game_object" , deployment = "1DTdj1TFiFzRHDRLNBE5Ru" }

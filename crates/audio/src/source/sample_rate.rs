@@ -55,10 +55,10 @@ impl<S: Source> SampleConversion<S> {
             src_rate,
             dst_rate,
             source,
-            /// Start the subsample at the end of the before-beginning sample.
-            ///
-            /// This forces the first call to `next_sample` to fetch the first sample, and lerp it
-            /// by 1.0
+            // Start the subsample at the end of the before-beginning sample.
+            //
+            // This forces the first call to `next_sample` to fetch the first sample, and lerp it
+            // by 1.0
             subsample: start,
 
             cur_dst_frame: first_frame,

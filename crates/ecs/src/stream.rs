@@ -187,7 +187,7 @@ impl<'a> IntoIterator for &'a WorldDiff {
     }
 }
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug, Default)]
 pub struct WorldDiffView<'a> {
     pub changes: Vec<Cow<'a, WorldChange>>,
 }

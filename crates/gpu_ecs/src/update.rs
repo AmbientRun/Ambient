@@ -84,7 +84,7 @@ impl GpuWorldUpdater {
             filter,
             chunks: TypedBuffer::new(
                 gpu,
-                "GpuWorldUpdate.chunks",
+                Some("GpuWorldUpdate.chunks"),
                 1,
                 wgpu::BufferUsages::COPY_DST
                     | wgpu::BufferUsages::COPY_SRC

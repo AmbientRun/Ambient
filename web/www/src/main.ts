@@ -82,14 +82,6 @@ import("ambient_web")
             return;
         }
 
-        let settings = { 
-            enableLogging: true, 
-            enablePanicHook: true, 
-            logFilter: "debug",
-            allowVersionMismatch: true,
-            debugger: true
-        };
-
         let target = window.document.getElementById("instance-container");
 
         if (!target) {
@@ -99,11 +91,17 @@ import("ambient_web")
 
         const urlParams = new URLSearchParams(window.location.search);
         const packageId = urlParams.get('package');
+        const deploymentId = urlParams.get('deployment');
+        const userId = urlParams.get('userId');
         const context = urlParams.get('context');
+        const debuggerOn = urlParams.get('debugger') != null;
 
         let params = new URLSearchParams();
         if (packageId) {
             params.set('package_id', packageId);
+        }
+        if (deploymentId) {
+            params.set('deployment_id', deploymentId);
         }
         if (context) {
             params.set('context', context);
@@ -113,6 +111,14 @@ import("ambient_web")
 
         console.log(`Connecting to ${url}`)
 
+        let settings = {
+            enableLogging: true,
+            enablePanicHook: true,
+            logFilter: "info",
+            allowVersionMismatch: true,
+            debugger: debuggerOn,
+            userId: userId,
+        };
         ambient.start(target, url, settings);
         // setupAudio();
     });

@@ -46,6 +46,11 @@ impl<T> UntypedComponent for Component<T> {
         self.index
     }
 }
+impl<T> PartialEq for Component<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.index == other.index
+    }
+}
 
 /// A tuple of [Component]s.
 pub trait ComponentsTuple {
