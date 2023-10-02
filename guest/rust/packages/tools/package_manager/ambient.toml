@@ -1,9 +1,9 @@
 [package]
 id = "hr4pxz7kfhzgimicoyh65ydel3aehuhk"
 name = "Package Manager"
-version = "0.3.0-nightly-2023-10-02"
+version = "0.3.0-internal-frame-dropping"
 content = { type = "Tool" }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.0-internal-frame-dropping"
 
 [components.mod_manager_for]
 name = "Mod Manager For"

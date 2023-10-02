@@ -1,9 +1,9 @@
 [package]
 id = "per6j2iqhj3jz4da3fqr75jcj2kqjooo"
 name = "Nameplates"
-version = "0.3.0-nightly-2023-10-02"
+version = "0.3.0-internal-frame-dropping"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.0-internal-frame-dropping"
 
 [dependencies]
 game_object = { path = "../../schemas/game_object", deployment = "1DTdj1TFiFzRHDRLNBE5Ru" }

@@ -1,9 +1,9 @@
 [package]
 id = "du7ethjmsamrvmqoznmoedkxiongpj5g"
 name = "AFPS Zombie"
-version = "0.3.0-nightly-2023-10-02"
+version = "0.3.0-internal-frame-dropping"
 content = { type = "Asset", models = true, animations = true, code = true }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.0-internal-frame-dropping"
 
 [components]
 is_zombie = { type = "Empty", attributes = ["Networked", "Debuggable"] }
