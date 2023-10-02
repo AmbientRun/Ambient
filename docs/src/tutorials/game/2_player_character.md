@@ -33,10 +33,10 @@ We're going to use some of these packages to build our experience today. Start b
 
 ```toml
 [dependencies]
-base_assets = { deployment = "PVOekES8qWVLm5O6VOdZl" }
-fps_controller = { deployment = "2L3PZj85t8X8Q2PQV9NvfM" }
-character_animation = { deployment = "3ZfO5zBKLV5KNYvxTpkgEE" }
-hide_cursor = { deployment = "34ivXRz9ZMYzfGEjZ689lv" }
+base_assets = { deployment = "6Xh92jILT02vH5DLQGB790" }
+fps_controller = { deployment = "7Fsh9rgyOqRbh39ZvekZ77" }
+character_animation = { deployment = "6epvmLFYkCI2PYlmoYz41y" }
+hide_cursor = { deployment = "3I9zDawUyJfKl0jqFZASfz" }
 ```
 
 > **In-depth**: To learn more about dependencies, check out the [reference documentation](../../reference/package.md#dependencies--dependencies).
