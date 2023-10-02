@@ -72,5 +72,4 @@ debug = true
 wasm-opt = ['-O4']
 
 [package.metadata.wasm-pack.profile.profiling]
-# wasm-opt = ['-O4', '-g']
-wasm-opt = false
+wasm-opt = ['-O4', '-g']
