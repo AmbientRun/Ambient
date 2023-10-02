@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://dit41uhjsj8wm"]
+[gd_scene load_steps=12 format=3 uid="uid://dit41uhjsj8wm"]
 
 [ext_resource type="Environment" uid="uid://brv2yt8b015pv" path="res://14_StormScenes/storm_env.tres" id="1_0n05t"]
 [ext_resource type="PackedScene" uid="uid://cvp3slow4hlnv" path="res://00_plane_roamer/roamer_3rd_person.tscn" id="2_r486e"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://bq7287yn54ymv" path="res://models_magnus/mt-axe.fbx" id="5_dqh82"]
 [ext_resource type="PackedScene" uid="uid://5ol3pch7wkpm" path="res://models_magnus/mt-backpack.fbx" id="6_h6qla"]
 [ext_resource type="PackedScene" uid="uid://bln40ipwnfp87" path="res://models_magnus/mt-snowdrift01.fbx" id="7_j5yjc"]
+[ext_resource type="PackedScene" uid="uid://cgd3nd7ft106w" path="res://models_magnus/mt-fireplace.fbx" id="8_d5qf8"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vhwd0"]
 
@@ -41,7 +42,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0686873, 0.936475, -0.3259
 transform = Transform3D(3.79612, 0, 0, 0, 3.79612, 0, 0, 0, 3.79612, -17.2207, -1.57477, -24.5058)
 
 [node name="mt-cannedfood01" parent="." instance=ExtResource("4_a2nsv")]
-transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 2.14594, 0.22123, 2.2885)
+transform = Transform3D(-0.0256468, -0.999526, 0.0170427, -0.00754846, 0.0172414, 0.999823, -0.999643, 0.0255136, -0.00798706, 2.14594, 0.22123, 2.2885)
 
 [node name="mt-axe" parent="." instance=ExtResource("5_dqh82")]
 transform = Transform3D(0.017169, -0.962623, -0.270299, -0.997672, -0.0343381, 0.0589187, -0.0659981, 0.268658, -0.960972, 2.15178, 0.0629042, 1.81747)
@@ -51,3 +52,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.92949, 0, 2.25771)
 
 [node name="mt-snowdrift01" parent="." instance=ExtResource("7_j5yjc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.89498, 2.38419e-07, 3.8801)
+
+[node name="mt-fireplace" parent="." instance=ExtResource("8_d5qf8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.68723, 0, -4.37165)

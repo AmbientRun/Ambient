@@ -1,8 +1,10 @@
 use ambient_api::{
     core::{
         app::components::name,
+        physics::components::plane_collider,
         prefab::components::prefab_from_url,
-        rendering::components::cast_shadows,
+        primitives::components::{cube, quad},
+        rendering::components::{cast_shadows, color},
         transform::components::{rotation, scale, translation},
     },
     prelude::*,
@@ -10,6 +12,15 @@ use ambient_api::{
 
 #[main]
 pub fn main() {
+    // ground plane
+    Entity::new()
+        .with(translation(), Vec3::ZERO)
+        .with(quad(), ())
+        .with(scale(), Vec3::splat(1000.))
+        .with(color(), Vec3::splat(1.).extend(1.)) // purewhite floor
+        .with(plane_collider(), ())
+        .spawn();
+
     load_scene();
 }
 
@@ -24,7 +35,7 @@ pub fn load_scene() {
         if let Some(path) = node.path {
             println!("Load path {path}");
             if path.ends_with("glb") || path.ends_with("fbx") {
-                let _prop = Entity::new()
+                Entity::new()
                     .with(name(), node.name)
                     // .with_default(cube())
                     .with(translation(), node.pos.unwrap())
@@ -35,6 +46,14 @@ pub fn load_scene() {
                         crate::packages::this::assets::url(("".to_owned() + &path).as_mut_str()),
                     )
                     .with(cast_shadows(), ())
+                    .spawn();
+
+                // create pointer, since fbxs don't import well
+                Entity::new()
+                    .with(translation(), node.pos.unwrap() + vec3(0., 0., 2.5))
+                    .with(scale(), vec3(0.01, 0.01, 5.0))
+                    .with(cube(), ())
+                    .with(color(), random::<Vec3>().extend(1.))
                     .spawn();
             }
         }

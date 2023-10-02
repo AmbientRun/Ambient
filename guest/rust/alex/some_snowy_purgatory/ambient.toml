@@ -8,12 +8,12 @@ ambient_version = "0.3.0-nightly-2023-10-02"
 [dependencies]
 snowy_sceneloader = { path = "../snowy_sceneloader" }
 snowy_pcs = { path = "../snowy_pcs" }
+temperature = { path = "../temperature" , deployment = "5wJt3UkQJ90EhEfX0e3P8x" }
 temperature_hud = { path = "../temperature_hud_magda" }
 
-# [components]
+[components]
 # effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
-# ambient_loop = { type = "String", attributes = ["Networked"] }
-
-# visualizing_heat_source = { type = "EntityId" }
-# heat_radius = { type = "F32" }
-# heat_offset = { type = "Vec3" }
+ambient_loop = { type = "String", attributes = ["Networked"] }
+visualizing_heat_source = { type = "EntityId" }
+heat_radius = { type = "F32" }
+heat_offset = { type = "Vec3" }

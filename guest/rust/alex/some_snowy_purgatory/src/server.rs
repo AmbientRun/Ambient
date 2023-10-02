@@ -1,39 +1,71 @@
 use ambient_api::{
     core::{
-        camera::concepts::{
-            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
-        },
-        physics::components::plane_collider,
-        primitives::components::quad,
-        rendering::components::color,
-        transform::components::{lookat_target, scale, translation},
+        app::components::name,
+        // camera::concepts::{
+        //     PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
+        // },
+        // player::components::is_player,
+        transform::components::translation,
     },
     prelude::*,
 };
 
+use packages::{
+    temperature::components::{
+        temperature_src_falloff, temperature_src_radius, temperature_src_rate,
+    },
+    this::components::ambient_loop,
+};
+
 #[main]
 pub fn main() {
-    PerspectiveInfiniteReverseCamera {
-        optional: PerspectiveInfiniteReverseCameraOptional {
-            aspect_ratio_from_window: Some(entity::resources()),
-            main_scene: Some(()),
-            translation: Some(Vec3::ONE * 5.),
-            ..default()
-        },
-        ..PerspectiveInfiniteReverseCamera::suggested()
-    }
-    .make()
-    .with(lookat_target(), vec3(0., 0., 0.))
-    .spawn();
+    // SHOULD BE GIVEN BY TEMPERATURE SCHEMA
+    // const DEATH_TEMP: f32 = 21.13;
+    // const NORMAL_TEMP: f32 = 36.65;
 
-    // ground plane
+    // // temp camera - quickly overwritten by clientside camera
+    // PerspectiveInfiniteReverseCamera {
+    //     optional: PerspectiveInfiniteReverseCameraOptional {
+    //         aspect_ratio_from_window: Some(entity::resources()),
+    //         main_scene: Some(()),
+    //         translation: Some(Vec3::ONE * 5.),
+    //         ..default()
+    //     },
+    //     ..PerspectiveInfiniteReverseCamera::suggested()
+    // }
+    // .make()
+    // .with(lookat_target(), vec3(0., 0., 0.))
+    // .spawn();
+
+    // cold storm
     Entity::new()
         .with(translation(), Vec3::ZERO)
-        .with(quad(), ())
-        .with(scale(), Vec3::splat(1000.))
-        .with(color(), Vec3::splat(1.).extend(1.)) // purewhite floor
-        .with(plane_collider(), ())
+        .with(temperature_src_rate(), -2.2)
+        .with(temperature_src_radius(), core::f32::MAX)
         .spawn();
 
-    println!("Hello, Ambient!");
+    // campfire(s) ('fireplace')
+    spawn_query((name(), translation())).bind(|ents| {
+        for (ent, (entname, pos)) in ents {
+            if entname == "mt-fireplace" {
+                entity::add_components(
+                    ent,
+                    Entity::new()
+                        .with(temperature_src_rate(), 5.0)
+                        .with(temperature_src_radius(), 20.0)
+                        .with(
+                            ambient_loop(),
+                            packages::this::assets::url("4211__dobroide__firecrackling.ogg"),
+                        ),
+                );
+                // add: too hot in center
+                Entity::new()
+                    .with(translation(), pos) // same location
+                    .with(temperature_src_rate(), 20.0) // enough to overwhelm your natural max cooling rate
+                    .with(temperature_src_radius(), 6.0) // significantly smaller radius
+                    .with(temperature_src_falloff(), 0.75) // slightly longer falloff.
+                    .spawn();
+            }
+        }
+    });
 }
