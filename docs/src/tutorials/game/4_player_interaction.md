@@ -65,4 +65,6 @@ When you run it, you should now be able to "paint" by holding/pressing `Q`:
 
 ![Paint](paint.png)
 
+> **Source**: The complete code for this chapter can be found [here](https://github.com/AmbientRun/TutorialProject/tree/chapter-4).
+
 ## [⇾ Chapter 5: Models](./5_models.md)

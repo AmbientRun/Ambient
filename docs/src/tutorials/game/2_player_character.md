@@ -17,9 +17,9 @@ Entity::new()
 
 This will create a basic ground plane for us. Note that you will have also removed the camera, so you will not be able to see the plane yet. That's normal!
 
-> **Tip**: When you save the file, the components are likely to have red squiggly lines under the components; that's because they aren't imported yet. Click one of them, then hit `Ctrl-.` (or `Cmd-.` on macOS) and choose "Import ...".
+> **Tip**: When you save the file, the components are likely to have red squiggly lines under the components; that's because they haven't been imported yet. Click one of them, then hit `Ctrl-.` (or `Cmd-.` on macOS) and choose "Import ...".
 
-> **In-depth**: Visit the [full api reference docs](https://docs.rs/ambient_api/latest/ambient_api/) for details on how `Entity`, `.with` and `.spawn` works.
+> **In-depth**: Visit the [full API reference docs](https://docs.rs/ambient_api/latest/ambient_api/) for details on the use of `Entity`, `.with` and `.spawn`.
 
 > **In-depth**: Entities are the basic unit in an ECS. You can think of the ECS as a database, where _entities_ are rows, and _components_ (`quad`, `scale`, `color` and `plane_collider` in this case) are columns.
 >
@@ -33,8 +33,8 @@ We're going to use some of these packages to build our experience today. Start b
 
 ```toml
 [dependencies]
-base_assets = { deployment = "6Xh92jILT02vH5DLQGB790" }
-fps_controller = { deployment = "7Fsh9rgyOqRbh39ZvekZ77" }
+base_assets = { deployment = "63K8iToQMEOSqJ2Q90xMNQ" }
+fps_controller = { deployment = "47yW3qNUV5a6sjQYFGipfu" }
 character_animation = { deployment = "6epvmLFYkCI2PYlmoYz41y" }
 hide_cursor = { deployment = "3I9zDawUyJfKl0jqFZASfz" }
 ```
@@ -75,6 +75,10 @@ This character will respond to input, including moving around using WASD, jumpin
 
 Congratulations! You can now use this character as a base for the rest of the tutorial.
 
+> **Source**: The complete code for this chapter can be found [here](https://github.com/AmbientRun/TutorialProject/tree/chapter-2).
+
 > **Challenge**: Add a `camera_distance` component to `-1.0` for a first-person-like experience.
+>
+> **Source**: The complete code for this challenge can be found [here](https://github.com/AmbientRun/TutorialProject/tree/chapter-2-challenge).
 
 ## [⇾ Chapter 3: Scene](./3_scene.md)

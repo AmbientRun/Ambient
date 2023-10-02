@@ -49,4 +49,6 @@ Great! We've learned how to load models into Ambient.
 >
 > See [the physics example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics).
 
+> **Source**: The complete code for this chapter can be found [here](https://github.com/AmbientRun/TutorialProject/tree/chapter-5).
+
 ## [ ⇾ Chapter 6: UI](./6_ui.md)
