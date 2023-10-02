@@ -231,6 +231,48 @@ impl ElementComponent for GameClientView {
     }
 }
 
+#[derive(Debug)]
+struct FrameDropStats {
+    frames: usize,
+    dropped: usize,
+    last_warning: Instant,
+    warn_freq: usize,
+}
+impl FrameDropStats {
+    fn new(warn_freq: usize) -> Self {
+        Self {
+            frames: 0,
+            dropped: 0,
+            last_warning: Instant::now(),
+            warn_freq,
+        }
+    }
+
+    fn on_frame(&mut self) {
+        self.frames += 1;
+    }
+
+    fn on_dropped_frame(&mut self, now: Instant) {
+        self.dropped += 1;
+
+        if self.dropped == self.warn_freq {
+            let dropped_time = now - self.last_warning;
+            tracing::warn!(
+                "Too much accummulated frame delay! Dropped {:.2}% of frames in last {:?}",
+                self.drop_ratio() * 100.0,
+                dropped_time
+            );
+            self.frames = 0;
+            self.dropped = 0;
+            self.last_warning = now;
+        }
+    }
+
+    fn drop_ratio(&self) -> f32 {
+        self.dropped as f32 / self.frames as f32
+    }
+}
+
 fn run_game_logic(
     hooks: &mut Hooks,
     game_state: SharedClientGameState,
@@ -241,19 +283,22 @@ fn run_game_logic(
     let gpu = hooks.world.resource(gpu()).clone();
 
     let accummulated_frame_delay = Mutex::new(Duration::ZERO);
+    let frame_drop_stats = Mutex::new(FrameDropStats::new(120));
 
     use_frame(hooks, move |app_world| {
+        let now = Instant::now();
+        let frame_drop_stats = &mut *frame_drop_stats.lock();
+        frame_drop_stats.on_frame();
+
         // Frames taking too much time can starve browser networking (https://github.com/w3c/webtransport/issues/543)
         // We calculate how much delay has been accummulated and when a threshold is reached we drop a frame to allow
         // for networking to catch up
         let accummulated_frame_delay = &mut *accummulated_frame_delay.lock();
         if *accummulated_frame_delay > MAX_ACCUMMULATED_FRAME_DELAY {
-            tracing::warn!("Too much accummulated frame delay! Dropping a frame.");
             *accummulated_frame_delay = Duration::ZERO;
+            frame_drop_stats.on_dropped_frame(now);
             return;
         }
-
-        let now = Instant::now();
 
         let mut game_state = game_state.lock();
 
