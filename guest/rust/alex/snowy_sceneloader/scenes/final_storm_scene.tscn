@@ -41,6 +41,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0686873, 0.936475, -0.3259
 [node name="mt-cliffmesh-snowy" parent="." instance=ExtResource("3_nvekl")]
 transform = Transform3D(3.79612, 0, 0, 0, 3.79612, 0, 0, 0, 3.79612, -17.2207, -1.57477, -24.5058)
 
+[node name="mt-cliffmesh-snowy2" parent="." instance=ExtResource("3_nvekl")]
+transform = Transform3D(4.49721, 0, 0, 0, 4.49721, 0, 0, 0, 4.49721, -29.5715, -1.57477, -8.56428)
+
+[node name="mt-cliffmesh-snowy3" parent="." instance=ExtResource("3_nvekl")]
+transform = Transform3D(-2.78789, 0, 2.57647, 0, 3.79612, 0, -2.57647, 0, -2.78789, -15.574, -1.57477, 32.065)
+
 [node name="mt-cannedfood01" parent="." instance=ExtResource("4_a2nsv")]
 transform = Transform3D(-0.0256468, -0.999526, 0.0170427, -0.00754846, 0.0172414, 0.999823, -0.999643, 0.0255136, -0.00798706, 2.14594, 0.22123, 2.2885)
 
@@ -54,4 +60,4 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.92949, 0, 2.25771)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.89498, 2.38419e-07, 3.8801)
 
 [node name="mt-fireplace" parent="." instance=ExtResource("8_d5qf8")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.68723, 0, -4.37165)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -0.0213323, 0)
