@@ -12,7 +12,7 @@ use ambient_ui_native::{
 };
 use anyhow::Context;
 use app::MainApp;
-use tracing_subscriber::{filter::Targets, fmt::time::UtcTime, prelude::*, registry};
+use tracing_subscriber::{filter::Targets, prelude::*, registry};
 use tracing_web::MakeConsoleWriter;
 use wasm_bindgen::prelude::*;
 
