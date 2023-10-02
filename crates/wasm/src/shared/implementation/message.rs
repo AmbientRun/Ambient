@@ -1,9 +1,13 @@
 use ambient_core::runtime;
-use ambient_ecs::{generated::wasm::components::package_ref, EntityId, World};
+use ambient_ecs::{
+    generated::wasm::components::package_ref, internal_components::datagram_latencies, EntityId,
+    World,
+};
 use ambient_network::{
     client::NetworkTransport, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
 };
 
+use ambient_sys::time::SystemTime;
 use anyhow::Context;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 
@@ -12,6 +16,7 @@ use std::{
     io::{Cursor, Read},
     pin::Pin,
     sync::Arc,
+    time::Duration,
 };
 
 use crate::shared::message::Target;
@@ -23,13 +28,39 @@ pub fn subscribe(subscribed_events: &mut HashSet<String>, name: String) -> anyho
     Ok(())
 }
 
+fn ts_now() -> Duration {
+    SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap()
+}
+
 /// Reads an incoming datagram and dispatches to WASM
 pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> anyhow::Result<()> {
     use byteorder::ReadBytesExt;
 
+    let now = ts_now();
+
     let mut cursor = Cursor::new(&bytes);
     let package_id = cursor.read_u128::<byteorder::BigEndian>()?;
     let package_id = EntityId(package_id);
+
+    let ts = cursor.read_f64::<byteorder::BigEndian>()?;
+    let latency = now.saturating_sub(Duration::from_secs_f64(ts));
+    if let Some(user_id) = &user_id {
+        // tracing::warn!("Datagram latency {:?} {:?} {:?}", latency, ts, now);
+        if world.resource_mut_opt(datagram_latencies()).is_none() {
+            world.add_resource(datagram_latencies(), Default::default());
+        }
+        let (count, lat) = world
+            .resource_mut(datagram_latencies())
+            .entry(user_id.clone())
+            .or_default();
+        *count += 1;
+        *lat = (15 * *lat + latency) / 16;
+        if *count % 60 == 0 {
+            tracing::warn!("Datagram latency {} {:?}", user_id, lat);
+        }
+    }
 
     let name_len: usize = cursor.get_u32().try_into()?;
     let mut name = vec![0u8; name_len];
@@ -144,6 +175,8 @@ fn send_datagram(
     let mut payload = BytesMut::new();
 
     payload.put_u128(package_id.0);
+
+    payload.put_f64(ts_now().as_secs_f64());
 
     payload.put_u32(name.len().try_into()?);
     payload.extend_from_slice(name.as_bytes());
