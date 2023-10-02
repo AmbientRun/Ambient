@@ -251,21 +251,21 @@ fn run_game_logic(
             return;
         }
 
-        let current_time = &mut *current_time.lock();
-        if (current_time.duration_since(start).as_secs() / 10) % 2 == 0 {
-            loop {
-                let new_time = Instant::now();
+        // let current_time = &mut *current_time.lock();
+        // if (current_time.duration_since(start).as_secs() / 10) % 2 == 0 {
+        //     loop {
+        //         let new_time = Instant::now();
 
-                let a = Mat4::IDENTITY;
-                if new_time.duration_since(*current_time) > Duration::from_millis(50) {
-                    break;
-                }
-                let _ = std::hint::black_box(a * a);
-            }
-        }
+        //         let a = Mat4::IDENTITY;
+        //         if new_time.duration_since(*current_time) > Duration::from_millis(50) {
+        //             break;
+        //         }
+        //         let _ = std::hint::black_box(a * a);
+        //     }
+        // }
 
         let now = Instant::now();
-        *current_time = now;
+        // *current_time = now;
 
         let mut game_state = game_state.lock();
 
