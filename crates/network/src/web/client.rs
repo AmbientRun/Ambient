@@ -456,14 +456,12 @@ async fn handle_request(
         } => {
             let mut send = conn.open_uni().await?;
 
-            tracing::info!(message_id, "begin send");
             runtime.spawn_local(async move {
                 log_network_result!(
                     async {
                         send.write_u32(id).await?;
                         send.write_all_buf(&mut data).await?;
 
-                        tracing::info!(message_id, "end send");
                         Ok(()) as Result<(), NetworkError>
                     }
                     .await
@@ -482,11 +480,9 @@ async fn handle_request(
             bytes.put_u32(id);
             bytes.put_slice(&data);
 
-            tracing::info!(?message_id, "begin send");
             let fut = conn.send_datagram(&bytes[..]);
             runtime.spawn_local(async move {
                 log_network_result!(fut.await);
-                tracing::info!("end send");
             });
 
             Ok(())
