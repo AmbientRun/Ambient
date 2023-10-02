@@ -48,7 +48,7 @@ pub fn load_scene() {
                     .with(cast_shadows(), ())
                     .spawn();
 
-                // create pointer, since fbxs don't import well
+                // debug pointer for small models
                 Entity::new()
                     .with(translation(), node.pos.unwrap() + vec3(0., 0., 2.5))
                     .with(scale(), vec3(0.01, 0.01, 5.0))
