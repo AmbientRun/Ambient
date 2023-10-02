@@ -95,7 +95,6 @@ impl NetworkTransport for WebTransportProxy {
             .next_id
             .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
         Box::pin(async move {
-            tracing::info!(?data, ?message_id, "sending uni");
             send_with_backpressure(
                 &self.tx,
                 ProxyMessage::RequestUni {
@@ -114,7 +113,6 @@ impl NetworkTransport for WebTransportProxy {
             .next_id
             .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
         Box::pin(async move {
-            tracing::info!(?message_id, ?data, "datagram");
             send_with_backpressure(
                 &self.tx,
                 ProxyMessage::Datagram {
