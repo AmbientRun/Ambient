@@ -313,6 +313,17 @@ impl FrameDropping {
     }
 }
 
+struct FrameDroppingCtx<'a> {
+    now: Instant,
+    frame_dropping: parking_lot::MutexGuard<'a, FrameDropping>,
+}
+impl<'a> FrameDroppingCtx<'a> {
+    pub fn observe_frame_time(mut self) {
+        let frame_time = self.now.elapsed();
+        self.frame_dropping.observe_frame_time(frame_time);
+    }
+}
+
 fn run_game_logic(
     hooks: &mut Hooks,
     game_state: SharedClientGameState,
@@ -322,14 +333,23 @@ fn run_game_logic(
 
     let gpu = hooks.world.resource(gpu()).clone();
 
+    #[cfg(feature = "frame-dropping")]
     let frame_dropping = Mutex::new(FrameDropping::new());
 
     use_frame(hooks, move |app_world| {
-        let now = Instant::now();
+        let mut frame_dropping_ctx: Option<FrameDroppingCtx<'_>> = None;
 
-        let frame_dropping = &mut *frame_dropping.lock();
-        if frame_dropping.should_drop(now) {
-            return;
+        #[cfg(feature = "frame-dropping")]
+        {
+            let now = Instant::now();
+            let mut frame_dropping = frame_dropping.lock();
+            if frame_dropping.should_drop(now) {
+                return;
+            }
+            frame_dropping_ctx = Some(FrameDroppingCtx {
+                now,
+                frame_dropping,
+            });
         }
 
         let mut game_state = game_state.lock();
@@ -347,8 +367,9 @@ fn run_game_logic(
 
         game_state.on_frame(&gpu, &render_target.0);
 
-        let frame_time = now.elapsed();
-        frame_dropping.observe_frame_time(frame_time);
+        if let Some(frame_dropping_ctx) = frame_dropping_ctx {
+            frame_dropping_ctx.observe_frame_time();
+        }
     });
 }
 
