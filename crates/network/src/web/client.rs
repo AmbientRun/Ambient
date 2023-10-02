@@ -86,7 +86,6 @@ impl ElementComponent for GameClientView {
 
         // When the client is connected, run the update logic each frame
         if let Some(client_state) = &client_state {
-            tracing::info!("Adding game logic hook");
             run_game_logic(
                 hooks,
                 client_state.game_state.clone(),
@@ -242,17 +241,20 @@ fn run_game_logic(
 
     let mut current_time = Mutex::new(Instant::now());
     let accummulated_frame_delay = Mutex::new(Duration::ZERO);
+    let start = Instant::now();
 
     use_frame(hooks, move |app_world| {
         let current_time = &mut *current_time.lock();
-        loop {
-            let new_time = Instant::now();
+        if (current_time.duration_since(start).as_secs() / 10) % 2 == 0 {
+            loop {
+                let new_time = Instant::now();
 
-            let a = Mat4::IDENTITY;
-            if new_time.duration_since(*current_time) > Duration::from_millis(50) {
-                break;
+                let a = Mat4::IDENTITY;
+                if new_time.duration_since(*current_time) > Duration::from_millis(50) {
+                    break;
+                }
+                let _ = std::hint::black_box(a * a);
             }
-            let _ = std::hint::black_box(a * a);
         }
 
         let accummulated_frame_delay = &mut *accummulated_frame_delay.lock();
@@ -411,7 +413,12 @@ async fn handle_request(
     message: ProxyMessage,
 ) -> Result<(), NetworkError> {
     match message {
-        ProxyMessage::RequestBi { id, mut data, resp } => {
+        ProxyMessage::RequestBi {
+            id,
+            mut data,
+            resp,
+            message_id,
+        } => {
             tracing::info!("Sending bi request");
             let (mut send, mut recv) = conn.open_bi().await?;
 
@@ -441,15 +448,21 @@ async fn handle_request(
 
             Ok(())
         }
-        ProxyMessage::RequestUni { id, mut data } => {
+        ProxyMessage::RequestUni {
+            message_id,
+            id,
+            mut data,
+        } => {
             let mut send = conn.open_uni().await?;
 
+            tracing::info!(message_id, "begin send");
             runtime.spawn_local(async move {
                 log_network_result!(
                     async {
                         send.write_u32(id).await?;
                         send.write_all_buf(&mut data).await?;
 
+                        tracing::info!(message_id, "end send");
                         Ok(()) as Result<(), NetworkError>
                     }
                     .await
@@ -458,14 +471,22 @@ async fn handle_request(
 
             Ok(())
         }
-        ProxyMessage::Datagram { id, data } => {
+        ProxyMessage::Datagram {
+            id,
+            data,
+            message_id,
+        } => {
             let mut bytes = BytesMut::with_capacity(4 + data.len());
 
             bytes.put_u32(id);
             bytes.put_slice(&data);
 
+            tracing::info!(?message_id, "begin send");
             let fut = conn.send_datagram(&bytes[..]);
-            runtime.spawn_local(async move { log_network_result!(fut.await) });
+            runtime.spawn_local(async move {
+                log_network_result!(fut.await);
+                tracing::info!("end send");
+            });
 
             Ok(())
         }

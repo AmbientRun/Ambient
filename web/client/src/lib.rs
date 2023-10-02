@@ -1,4 +1,4 @@
-use std::{sync::OnceLock};
+use std::sync::OnceLock;
 
 use ambient_app::App;
 use ambient_cameras::UICamera;
@@ -12,11 +12,7 @@ use ambient_ui_native::{
 };
 use anyhow::Context;
 use app::MainApp;
-use tracing_subscriber::{
-    filter::{Targets},
-    prelude::*,
-    registry,
-};
+use tracing_subscriber::{filter::Targets, fmt::time::UtcTime, prelude::*, registry};
 use tracing_web::MakeConsoleWriter;
 use wasm_bindgen::prelude::*;
 
@@ -82,7 +78,8 @@ fn init(settings: &Settings) -> anyhow::Result<()> {
     if settings.enable_logging {
         let fmt_layer = tracing_subscriber::fmt::layer()
             .with_ansi(true) // Only partially supported, but works on Chrome
-            .without_time()
+            // .without_time()
+            .with_timer(UtcTime::rfc_3339()) // std::time is not available in browsers
             .with_writer(MakeConsoleWriter); // write events to the console
 
         let filter = settings
