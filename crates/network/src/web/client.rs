@@ -228,7 +228,7 @@ impl ElementComponent for GameClientView {
 }
 
 const ALLOWED_FRAME_TIME: Duration = Duration::from_nanos(16_666_666); // 1/60 s
-const MAX_ACCUMMULATED_FRAME_DELAY: Duration = Duration::from_millis(100);
+const MAX_ACCUMMULATED_FRAME_DELAY: Duration = Duration::from_millis(20);
 
 fn run_game_logic(
     hooks: &mut Hooks,
@@ -244,6 +244,13 @@ fn run_game_logic(
     let start = Instant::now();
 
     use_frame(hooks, move |app_world| {
+        let accummulated_frame_delay = &mut *accummulated_frame_delay.lock();
+        if *accummulated_frame_delay > MAX_ACCUMMULATED_FRAME_DELAY {
+            // too much delay accummulated, dropping frame to allow for browser networking handling
+            *accummulated_frame_delay = Duration::ZERO;
+            return;
+        }
+
         let current_time = &mut *current_time.lock();
         if (current_time.duration_since(start).as_secs() / 10) % 2 == 0 {
             loop {
@@ -255,12 +262,6 @@ fn run_game_logic(
                 }
                 let _ = std::hint::black_box(a * a);
             }
-        }
-
-        let accummulated_frame_delay = &mut *accummulated_frame_delay.lock();
-        if *accummulated_frame_delay > MAX_ACCUMMULATED_FRAME_DELAY {
-            *accummulated_frame_delay = Duration::ZERO;
-            return;
         }
 
         let now = Instant::now();
