@@ -341,6 +341,9 @@ async fn handle_connection(
     tracing::info!("Client connected");
 
     while let ClientProtoState::Connected(connected) = &mut client {
+        if proxy_rx.len() > 0 {
+            tracing::info!("Proxy queue: {:?}", proxy_rx.len());
+        }
         tokio::select! {
             Some(frame) = push_recv.next() => {
                 client.process_push(&assets, fail_on_version_mismatch, frame?)?;

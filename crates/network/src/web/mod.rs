@@ -37,15 +37,34 @@ pub(crate) enum ProxyMessage {
     },
 }
 
+fn send_with_backpressure(
+    tx: &Sender<ProxyMessage>,
+    msg: ProxyMessage,
+) -> Result<(), NetworkError> {
+    match tx.try_send(msg) {
+        Ok(()) => Ok(()),
+        Err(flume::TrySendError::Full(_)) => {
+            tracing::error!("WebTransportProxy::send_with_backpressure: full");
+            Err(NetworkError::Backpressure)
+        }
+        Err(flume::TrySendError::Disconnected(_)) => {
+            tracing::error!("WebTransportProxy::send_with_backpressure: disconnected");
+
+            Err(NetworkError::ConnectionClosed)
+        }
+    }
+}
+
 impl NetworkTransport for WebTransportProxy {
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
         Box::pin(async move {
             let (tx, rx) = oneshot::channel();
 
-            self.tx
-                .send_async(ProxyMessage::RequestBi { id, data, resp: tx })
-                .await
-                .map_err(|_| NetworkError::ConnectionClosed)?;
+            send_with_backpressure(&self.tx, ProxyMessage::RequestBi { id, data, resp: tx })?;
+            // self.tx
+            //     .send_async(ProxyMessage::RequestBi { id, data, resp: tx })
+            //     .await
+            //     .map_err(|_| NetworkError::ConnectionClosed)?;
 
             rx.await.map_err(|_| NetworkError::ConnectionClosed)
         })
@@ -53,10 +72,8 @@ impl NetworkTransport for WebTransportProxy {
 
     fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>> {
         Box::pin(async move {
-            self.tx
-                .send_async(ProxyMessage::RequestUni { id, data })
-                .await
-                .map_err(|_| NetworkError::ConnectionClosed)?;
+            tracing::info!("Sending {data:?}");
+            send_with_backpressure(&self.tx, ProxyMessage::RequestUni { id, data })?;
 
             Ok(())
         })
@@ -64,10 +81,12 @@ impl NetworkTransport for WebTransportProxy {
 
     fn send_datagram(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>> {
         Box::pin(async move {
-            self.tx
-                .send_async(ProxyMessage::Datagram { id, data })
-                .await
-                .map_err(|_| NetworkError::ConnectionClosed)?;
+            tracing::info!("Datagram {data:?}");
+            send_with_backpressure(&self.tx, ProxyMessage::Datagram { id, data })?;
+            // self.tx
+            //     .send_async(ProxyMessage::Datagram { id, data })
+            //     .await
+            //     .map_err(|_| NetworkError::ConnectionClosed)?;
 
             Ok(())
         })
