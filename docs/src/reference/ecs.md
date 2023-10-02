@@ -72,14 +72,14 @@ query((player(), player_camera_ref(), translation(), rotation())).each_frame(mov
 });
 ```
 
-Spawn queries are used to query for when specific components are added to entities (including the entire entity being spawned). They are useful for spawning entities when a player joins the game, for example:
+Spawn queries are used to query for when specific components are added to entities (including the entire entity being spawned). They are useful for spawning entities when a player joins the game; for example:
 
 ```rust
 spawn_query(player()).bind(move |players| {
     // For each player joining, spawn a random colored box somewhere
     for _ in players {
         Entity::new()
-            .with_merge(make_transformable())
+            .with_merge(Transformable::suggested())
             .with(cube(), ())
             .with(translation(), rand::random())
             .with(color(), rand::random::<Vec3>().extend(1.0))
@@ -88,7 +88,7 @@ spawn_query(player()).bind(move |players| {
 });
 ```
 
-Despawn queries are similar to spawn queries, but track the removal of components from entities (including the entire entity being despawned). They are useful for cleaning up entities when a player leaves the game, for example:
+Despawn queries are similar to spawn queries, but track the removal of components from entities (including the entire entity being despawned). They are useful for cleaning up entities when a player leaves the game; for example:
 
 ```rust
 despawn_query(user_id()).requires(player()).bind(move |players| {

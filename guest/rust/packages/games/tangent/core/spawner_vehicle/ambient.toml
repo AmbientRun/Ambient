@@ -2,9 +2,9 @@
 id = "roosvvawp6sjvlolokk5qyafl5vp2su7"
 name = "Tangent Spawner: Vehicle"
 description = "Handles vehicle spawning for Tangent."
-version = "0.3.0-nightly-2023-10-02"
+version = "0.3.0-rc.3"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.0-rc.3"
 authors = ["philpax"]
 
 [dependencies]

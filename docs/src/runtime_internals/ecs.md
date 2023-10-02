@@ -1,20 +1,18 @@
 # ECS
 
-The ECS is archetypal, where each component configuration. I.e. `translation, name, scale` and `translation, name, hitpoints` would be two archetypes, and for each of them
-each component is just a `Vec<T>` for the component type.
+The ECS is archetypal; each combination of components (e.g. `(translation, name, scale)` and `(translation, name, hitpoints)`) is a separate archetype, and each component is stored as a `Vec<T>` within the archetype.
 
 ## Change detection
 
 At a conceptual level, we keep an circular buffer of all changes for each component/archetype. That means that doing a change query is extremely fast;
-it will only need to iterate over the changes. However, a component can change twice or more in a frame, in which case it should still just output
-one change event. To handle that, we also keep track of content generation of each component for each entity.
+it will only need to iterate over the changes. However, a component can change twice or more in a frame, which should produce only one change event. To ensure this, we also keep track of the content version of each component for each entity.
 
-## GpuECS
+## GPU ECS
 
-The Ambient ECS also supports storing data on the GPU, through the gpu_ecs crate. This gives you a way to define components that live on the gpu,
+The Ambient ECS also supports storing data on the GPU, through the `gpu_ecs` crate. This gives you a way to define components that live on the GPU,
 and ways to synchronize data to those components.
 
-Cpu-to-gpu syncs are chunked, so in a lot of cases it takes the same time to update one element as it does CHUNK_SIZE elements (currently 256).
+CPU-to-GPU syncs are chunked, so in many cases it takes the same time to update one element as it does `CHUNK_SIZE` elements (currently 256).
 
 ## `components!` macro
 

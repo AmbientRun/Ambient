@@ -16,29 +16,31 @@ To disable syncing an entity to the client, attach the `no_sync` component to it
 
 The client is fundamentally designed around runtime flexibility of logic, which is non-ideal for avoiding cheaters. Further research and development are required, but it is likely that there is no silver bullet, and the solution will be game-dependent.
 
-If on 0.2 or above, consult the [clientside](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/intermediate/clientside/ambient.toml) example to see how to define networked components.
-
 ### Entity synchronization
 
-The Ambient runtime synchronizes entities using a diff-based approach. The server sends a `WorldDiff` to the client, which contains a list of entities to spawn and despawn, and components to add, update, and remove. Note that some operations might be batched for performance or not included in the update sent to the clients if they effectively don't change any values. For example adding 0 to a number or changing a boolean to false and back to true within the same frame might not emit an update and might not trigger a `change_query`. We recommend using messaging if such events are important to your game.
+The Ambient runtime synchronizes entities using a diff-based approach. The server sends a `WorldDiff` to the client, which contains a list of entities to spawn and despawn, and components to add, update, and remove.
 
-Currently the client applies the changes to its local world as soon as they are received.
+Note that some operations might be batched for performance or not included in the update sent to the clients if there is no effective change in value. For example, adding 0 to a number or changing a boolean to `false` and back to `true` within the same frame might not emit an update and might not trigger a `change_query`. We recommend using messaging if such events are important to your game.
+
+Currently, the client applies the changes to its local world as soon as they are received.
 
 ## Logic and Prediction
 
-All gameplay logic is currently server-authoritative. We currently do not have any form of latency-hiding, including prediction, rollback, or clientside logic. We previously had rollback but it was removed due to its relative inflexibility (the solution would have to be different for each class of game.)
+All gameplay logic is currently server-authoritative. We currently do not have any form of latency-hiding, including prediction, rollback, or clientside logic. We have previously experimented with rollback, but it was removed due to difficulties in genericising its implementation, as the solution would have to be different for each class of game.
 
-Our plan is to introduce clientside and shared logic that can be used for user-defined prediction with runtime assistance, but this will take some time.
+Our plan is to continue improving our data model to enable user-defined prediction, provided as an Ambient package, but this work is ongoing. In the meantime, prediction can be done manually by sharing code with some caveats (i.e. physics does not run on the client).
 
 ## Messaging
 
-The Ambient runtime supports messaging from the client to the server and vice versa through structured messages. These messages are defined ahead of time in `ambient.toml` and made accessible to code that consumes that `ambient.toml`. This messaging can be reliable (QUIC unistream) or unreliable (QUIC datagram). Developers can use this to define their networked behavior, including customized prediction.
+The Ambient runtime supports messaging from the client to the server and vice versa through structured messages. These messages are defined ahead of time in `ambient.toml` and made accessible to code that consumes that `ambient.toml`.
 
-If on 0.2 or above, consult the [messaging](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/intermediate/messaging) example to see how to use the messaging functionality.
+This messaging can be reliable (QUIC unistream) or unreliable (QUIC datagram). Developers can use this to define their networked behavior, including customized prediction.
+
+See [the messages reference](./messages.md) for more details.
 
 ## Proxy
 
-Since 0.2, Ambient will establish a connection to a NAT traversal proxy by default (this can be turned off with `--no-proxy`). This proxy allows users to connect to an Ambient server, even when the server is behind NAT or similar. Check the [AmbientProxy repository](https://github.com/AmbientRun/AmbientProxy) for more details about the proxy itself.
+From 0.2 onwards, Ambient will establish a connection to a NAT traversal proxy by default (this can be turned off with `--no-proxy`). This proxy allows users to connect to an Ambient server, even when the server is behind NAT or similar. Check the [AmbientProxy repository](https://github.com/AmbientRun/AmbientProxy) for more details about the proxy itself.
 
 The Ambient server (i.e. Ambient when started with `run` or `serve`) connects to the proxy using QUIC (using the `quinn` library) and allocates a proxy endpoint. In response, the proxy provides the endpoint's details as well as an URL for asset downloading. The allocated proxy endpoint can be used by players to connect (`ambient join ...`) to the game server, even if it is running behind a NAT.
 
@@ -46,7 +48,9 @@ Communication between the proxy and players uses the same protocol as with a dir
 
 ## Certificates
 
-By default, Ambient bundles a self-signed certificate that is used by the server and trusted by the client.
+By default, Ambient bundles a self-signed certificate that is used by the server and trusted by the client. This enables connecting to the server without any additional configuration, but may limit direct connections from other clients.
+
+We recommend use of the proxy, or using your own certificate. In future, we may offer an option to relax certificate verification for native servers and clients.
 
 To use your own certificate:
 

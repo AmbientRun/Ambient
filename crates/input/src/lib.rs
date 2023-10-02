@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use ambient_ecs::{
-    components, generated::messages, world_events, Debuggable, Entity, Resource, System,
+    components, generated::messages, world_events, Debuggable, Entity, FnSystem, Resource, System,
     SystemGroup, WorldEventsExt,
 };
 use glam::{vec2, Vec2};
@@ -47,6 +47,16 @@ pub fn init_all_components() {
 
 pub fn event_systems() -> SystemGroup<Event<'static, ()>> {
     SystemGroup::new("inputs", vec![Box::new(InputSystem::new())])
+}
+
+pub fn cursor_lock_system(cursor_lock_rx: flume::Receiver<bool>) -> Box<dyn System + Send + Sync> {
+    Box::new(FnSystem::new(move |world, _event| {
+        for state in cursor_lock_rx.drain() {
+            world
+                .resource_mut(world_events())
+                .add_message(messages::WindowCursorLockChange::new(state));
+        }
+    }))
 }
 
 pub fn resources() -> Entity {

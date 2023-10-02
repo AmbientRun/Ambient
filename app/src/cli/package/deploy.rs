@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_package::Manifest;
-use ambient_settings::{Settings, SettingsKey};
+use ambient_settings::SettingsKey;
 use anyhow::Context;
 use clap::Parser;
 use parking_lot::Mutex;
@@ -68,8 +68,7 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                 .api_token
                 .as_ref()
                 .with_context(|| format!(
-                    "No API token provided.\n\nYou can provide one with `--token` or by specifying `general.api_token` in {:?}.\n\nSign up for an account on the Ambient website, then go to your profile page to generate an API token: '{}'.",
-                    Settings::path().unwrap_or_default(),
+                    "No API token provided.\n\nYou can provide one with `--token` or by using `ambient login`.\n\nSign up for an account on the Ambient website, then go to your profile page to generate an API token: '{}'.",
                     ambient_shared_types::urls::AMBIENT_WEB_APP_URL
                 ))?
         }

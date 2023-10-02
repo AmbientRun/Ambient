@@ -74,10 +74,14 @@ This will also give you auto-completion and a few other handy tools.
 
 > **Tip**: Use `Ctrl-.` (Windows, or `Cmd-.` on macOS) to bring up VS Code suggestions, such as automatic imports. Note that you may have to save after the fix is applied to for any errors or warnings to be updated.
 
+> **Source**: The complete code for this chapter can be found [here](https://github.com/AmbientRun/TutorialProject/tree/chapter-1).
+
 ## Challenge
 
 Try creating some cubes and changing their `translation()`, `scale()`, and `rotation()` components.
 
-> Tip: You can refer to the [primitives example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/primitives/src/server.rs) in the Ambient GitHub repository.
+> **Tip**: You can refer to the [primitives example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/primitives/src/server.rs) in the Ambient GitHub repository.
+>
+> **Source**: The complete code for this challenge can be found [here](https://github.com/AmbientRun/TutorialProject/tree/chapter-1-challenge).
 
 ## [⇾ Chapter 2: Player character](./2_player_character.md)

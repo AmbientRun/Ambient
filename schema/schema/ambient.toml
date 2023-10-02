@@ -1,33 +1,33 @@
 [package]
 description = "Contains all core components for the Ambient runtime."
 name = "Core Components"
-version = "0.3.0-dev"
+version = "0.3.0-rc.3"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.0-rc.3"
 
 [includes]
-animation = "schema/animation.toml"
-app = "schema/app_.toml"
-audio = "schema/audio.toml"
-camera = "schema/camera.toml"
-ecs = "schema/ecs.toml"
-hierarchy = "schema/hierarchy.toml"
-input = "schema/input.toml"
-layout = "schema/layout.toml"
-model = "schema/model.toml"
-network = "schema/network.toml"
-package = "schema/package.toml"
-physics = "schema/physics.toml"
-player = "schema/player.toml"
-prefab = "schema/prefab.toml"
-primitives = "schema/primitives.toml"
-procedurals = "schema/procedurals.toml"
-rect = "schema/rect.toml"
-rendering = "schema/rendering.toml"
-text = "schema/text.toml"
-transform = "schema/transform.toml"
-ui = "schema/ui.toml"
-wasm = "schema/wasm.toml"
+animation = "includes/animation.toml"
+app = "includes/app_.toml"
+audio = "includes/audio.toml"
+camera = "includes/camera.toml"
+ecs = "includes/ecs.toml"
+hierarchy = "includes/hierarchy.toml"
+input = "includes/input.toml"
+layout = "includes/layout.toml"
+model = "includes/model.toml"
+network = "includes/network.toml"
+package = "includes/package.toml"
+physics = "includes/physics.toml"
+player = "includes/player.toml"
+prefab = "includes/prefab.toml"
+primitives = "includes/primitives.toml"
+procedurals = "includes/procedurals.toml"
+rect = "includes/rect.toml"
+rendering = "includes/rendering.toml"
+text = "includes/text.toml"
+transform = "includes/transform.toml"
+ui = "includes/ui.toml"
+wasm = "includes/wasm.toml"
 
 # Messages
 [messages.Frame]
@@ -94,6 +94,11 @@ fields = { delta = "Vec2", pixels = "Bool" }
 name = "Window Mouse Motion"
 description = "Sent when the window receives a mouse motion input."
 fields = { delta = "Vec2" }
+
+[messages.WindowCursorLockChange]
+name = "Window Cursor Lock Change"
+description = "Sent when the window's cursor lock changes."
+fields = { locked = "Bool" }
 
 [messages.HttpResponse]
 name = "HTTP Response"
