@@ -1,18 +1,18 @@
 # Asset cache
 
-The `AssetCache` is very central concept to the internals of the engine. It should be thought of as a way to _cache the result of slow operations_.
+The `AssetCache` is a very central concept to the internals of the engine. It should be thought of as a way to _cache the result of slow operations_ - that is, a memoization cache.
 
 For example, let's say we have:
 
 ```rust
-fn generate_fractral(param1: bool, param2: u32) -> Image {
+fn generate_fractal(param1: bool, param2: u32) -> Image {
     // ...
 }
 
-let fractal = generate_fractral(true, 5);
+let fractal = generate_fractal(true, 5);
 ```
 
-The output of that function is always the same, so instead of re-running it every time, we can use the asset cache to cache the result:
+This function is entirely pure - that is, its output is only dependent on its inputs, and it will always return the same output for the same inputs. However, it's also very slow to run. Instead of running it every time, the asset cache can be used to cache the result:
 
 ```rust
 #[derive(Debug, Clone)]
@@ -26,11 +26,11 @@ impl SyncAssetKey<Arc<Image>> for GenerateFractal {
 let fractal = GenerateFractal { param2: true, param2: 5 }.get(&assets);
 ```
 
-The cache key is the debug format of `GenerateFractal`.
+The cache key is the debug format of `GenerateFractal`. This may change in the future, but it offers a simple way to construct a cache key for now.
 
 ## Async
 
-This also works with `async`, so you can for instance have:
+The asset cache also works with `async`. For example:
 
 ```rust
 #[derive(Debug, Clone)]
@@ -44,9 +44,8 @@ impl AsyncAssetKey<Arc<Image>> for LoadImageFlipY {
 }
 ```
 
-Note that this will internally make sure that each unique key is only loaded once, i.e. `load` above will always
-only be called once (as long as the result is still in the cache).
+Note that this will internally make sure that each unique key is only loaded once; that is, `load` above will be called once and persisted in the cache, and then the result will be returned for all subsequent calls, until it is evicted from the cache.
 
-## Keepalive policies
+## Keep-alive policies
 
-You can also set different keepalive policies: `AssetKeepalive` which can be `None`, `Timeout` or `Forever`.
+Different keep-alive policies for your cache key can be set by specifying the `keepalive` method in your trait implementation. This returns an `AssetKeepalive` which can be `None`, `Timeout`, or `Forever`.

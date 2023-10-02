@@ -28,7 +28,7 @@ Ambient's [asset pipeline](./reference/asset_pipeline.md) supports a wide range 
 
 ## Code
 
-WebAssembly (WASM) is the secret sauce that enables Ambient's capabilities. Every package's code in Ambient operates within the confines of WebAssembly, ensuring a high level of isolation. Ambient pushes WASM to its absolute limits; on the web, WASM is used both to run the Ambient runtime and to execute user code, making it one of the most ambitious WASM projects to date.
+[WebAssembly (WASM)](./reference/package.md#webassembly) is the secret sauce that enables Ambient's capabilities. Every package's code in Ambient operates within the confines of WebAssembly, ensuring a high level of isolation. Ambient pushes WASM to its absolute limits; on the web, WASM is used both to run the Ambient runtime and to execute user code, making it one of the most ambitious WASM projects to date.
 
 Safety and stability are paramount. Thanks to the power of WebAssembly, code for Ambient runs in isolation. This means that if something within a package crashes, it won't bring down the entire program. Furthermore, the isolation provided by WebAssembly ensures that you can run untrusted code safely, enhancing security in multiplayer environments. This extends to embedding existing C/C++ libraries, which can be compiled to WebAssembly and used in Ambient packages.
 
