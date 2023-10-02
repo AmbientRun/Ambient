@@ -47,10 +47,11 @@ fn each_frame(callback: impl FnMut(Frame) + 'static) {
     ambient_api::core::messages::Frame::subscribe(callback);
 }
 
+fn remap32(value: f32, low1: f32, high1: f32, low2: f32, high2: f32) -> f32 {
+    low2 + (value - low1) * (high2 - low2) / (high1 - low1)
+}
+
 fn get_my_coldness() -> f32 {
-    fn remap32(value: f32, low1: f32, high1: f32, low2: f32, high2: f32) -> f32 {
-        low2 + (value - low1) * (high2 - low2) / (high1 - low1)
-    }
     let t: f32 = entity::get_component(player::get_local(), temperature()).unwrap_or(NORMAL_TEMP);
     remap32(t, DEATH_TEMP, NORMAL_TEMP, 1.0, 0.0).clamp(0.0, 1.0)
 }
@@ -89,15 +90,19 @@ pub fn make_my_local_sun_with_sky() -> EntityId {
 }
 
 fn modulate_suns_fog_via_coldness(sun: EntityId, coldness: f32) {
-    if coldness < 0.60 {
-        let t = coldness / 0.60;
-        entity::mutate_component(sun, fog_density(), |foggy| {
-            *foggy = *foggy * 0.9 + 0.1 * (0.01 + 0.18 * t);
-        });
+    let mut target_fog_density = 0.01;
+    if coldness < 0.10 {
+        target_fog_density = remap32(coldness, 0.00, 0.10, 0.01, 0.015);
+    } else if coldness < 0.60 {
+        target_fog_density = remap32(coldness, 0.10, 0.60, 0.015, 0.15);
+    } else if coldness < 0.95 {
+        target_fog_density = remap32(coldness, 0.60, 0.95, 0.15, 0.99);
     } else {
-        let t = (coldness - 0.60) / (1. - 0.60);
-        entity::set_component(sun, fog_density(), 0.20 + 0.80 * t * t);
+        target_fog_density = 1.00;
     }
+    entity::mutate_component(sun, fog_density(), move |foggy| {
+        *foggy = *foggy * 0.9 + 0.1 * target_fog_density;
+    });
     // let desired_fog_colour =
     //     vec3(0.75, 0.45, 0.75).lerp(vec3(0.60, 1.00, 1.00), coldness.sqrt());
     // entity::mutate_component(sun, fog_color(), |color| {

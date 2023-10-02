@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://dit41uhjsj8wm"]
+[gd_scene load_steps=25 format=3 uid="uid://dit41uhjsj8wm"]
 
 [ext_resource type="Environment" uid="uid://brv2yt8b015pv" path="res://14_StormScenes/storm_env.tres" id="1_0n05t"]
 [ext_resource type="PackedScene" uid="uid://cvp3slow4hlnv" path="res://00_plane_roamer/roamer_3rd_person.tscn" id="2_r486e"]
@@ -14,11 +14,12 @@
 [ext_resource type="PackedScene" uid="uid://dmnfuo61vxq3j" path="res://models_other/athena.glb" id="10_xnkhm"]
 [ext_resource type="PackedScene" uid="uid://bd322wo6mh77j" path="res://models_magnus/mt-carrymat.fbx" id="11_y5i7l"]
 [ext_resource type="PackedScene" uid="uid://qsrtx23flpv7" path="res://models_magnus/mt-woodenlog.fbx" id="12_tnn0w"]
-[ext_resource type="PackedScene" uid="uid://cva8n580b0m72" path="res://models_magnus/rocks01_b_dry.glb" id="15_n3v7a"]
 [ext_resource type="PackedScene" uid="uid://bcj4ygqr0jau7" path="res://models_magnus/mt-fireplace-dead.fbx" id="15_wt5ha"]
-[ext_resource type="PackedScene" uid="uid://cva8n580b0m72" path="res://models_magnus/rocks01_b.glb" id="16_504k2"]
+[ext_resource type="PackedScene" uid="uid://cva8n580b0m72" path="res://models_magnus/rocks01_b_dry.glb" id="16_504k2"]
 [ext_resource type="PackedScene" uid="uid://cbqcikqtadg6y" path="res://models_magnus/rocks01_a_dry.glb" id="17_cff8d"]
 [ext_resource type="PackedScene" uid="uid://dc2lebcpv6nxq" path="res://models_magnus/rocks01_a.glb" id="18_nohxe"]
+[ext_resource type="PackedScene" uid="uid://cva8n580b0m72" path="res://models_magnus/rocks01_b.glb" id="18_pvu2b"]
+[ext_resource type="PackedScene" uid="uid://df1cka7vh3mcd" path="res://models_other/shepherd-boy.glb" id="19_2dxyi"]
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_junlr"]
 
@@ -43,9 +44,11 @@ metadata/_edit_lock_ = true
 transform = Transform3D(20, 0, 0, 0, 20, 0, 0, 0, 20, 0, 0, 0)
 mesh = SubResource("PlaneMesh_1a2vl")
 skeleton = NodePath("../../..")
+metadata/_edit_lock_ = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="- world/floor"]
 shape = SubResource("WorldBoundaryShape3D_2011a")
+metadata/_edit_lock_ = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="- world"]
 environment = ExtResource("1_0n05t")
@@ -105,6 +108,7 @@ transform = Transform3D(-0.550829, 0, 0.379353, 0, 0.668821, 0, -0.379353, 0, -0
 transform = Transform3D(-0.553086, 0, 0.833124, 0, 1, 0, -0.833124, 0, -0.553086, -8.59689, 0.257744, 16.0958)
 
 [node name="-- distant ridge right" type="Node3D" parent="- first area"]
+metadata/_edit_lock_ = true
 
 [node name="mt-cliffmesh-dry" parent="- first area/-- distant ridge right" instance=ExtResource("9_aldih")]
 transform = Transform3D(4.94258, 0, 0, 0, 4.94258, 0, 0, 0, 4.94258, 18.7411, 0, 52.0597)
@@ -125,6 +129,7 @@ transform = Transform3D(-3.66586, 0, 1.75513, 0, 4.06436, 0, -1.75513, 0, -3.665
 transform = Transform3D(2.65093, 0, 1.08252, 0, 2.86344, 0, -1.08252, 0, 2.65093, 80.5548, 0.233004, 69.1724)
 
 [node name="-- distant ridge back" type="Node3D" parent="- first area"]
+metadata/_edit_lock_ = true
 
 [node name="mt-cliffmesh-dry" parent="- first area/-- distant ridge back" instance=ExtResource("9_aldih")]
 transform = Transform3D(0.423289, 0, 3.42027, 0, 3.44636, 0, -3.42027, 0, 0.423289, 176.755, 0, 12.199)
@@ -156,8 +161,14 @@ transform = Transform3D(-1.29095, 0, 0.982228, 0, 1.62213, 0, -0.982228, 0, -1.2
 [node name="mt-cliffmesh-dry16" parent="- first area/-- distant ridge back" instance=ExtResource("9_aldih")]
 transform = Transform3D(-1.29095, 0, 0.982228, 0, 1.62213, 0, -0.982228, 0, -1.29095, 225.788, 0.0296721, -163.904)
 
-[node name="mt-cliffmesh-dry8" parent="- first area/-- distant ridge back" instance=ExtResource("9_aldih")]
-transform = Transform3D(-7.08815, 0, 1.25506, 0, 7.1984, 0, -1.25506, 0, -7.08815, 169.604, -10.8494, -141.698)
+[node name="mt-cliffmesh-dry18" parent="- first area/-- distant ridge back" instance=ExtResource("9_aldih")]
+transform = Transform3D(-0.868533, 0, 0.660829, 0, 1.09135, 0, -0.660829, 0, -0.868533, 267.823, -2.47835, -158.836)
+
+[node name="mt-cliffmesh-dry19" parent="- first area/-- distant ridge back" instance=ExtResource("9_aldih")]
+transform = Transform3D(-0.875401, 0.00133972, 0.651702, -0.00982034, 1.09119, -0.0154344, -0.651629, -0.0182445, -0.875266, 99.593, -2.01542, -256.519)
+
+[node name="mt-cliffmesh-dry17" parent="- first area/-- distant ridge back" instance=ExtResource("9_aldih")]
+transform = Transform3D(-2.61803, -1.35728, 4.32789, 0.025069, 4.99267, 1.58094, -4.53566, 0.811031, -2.48937, 140.238, -24.7102, -189.562)
 
 [node name="mt-cliffmesh-dry10" parent="- first area/-- distant ridge back" instance=ExtResource("9_aldih")]
 transform = Transform3D(-2.75088, 0, -6.65204, 0, 7.1984, 0, 6.65204, 0, -2.75088, 210.426, -21.3495, -112.936)
@@ -174,39 +185,227 @@ transform = Transform3D(1.01159, 0, 6.67857, 0, 6.75474, 0, -6.67857, 0, 1.01159
 [node name="mt-cliffmesh-dry9" parent="- first area/-- distant ridge back" instance=ExtResource("9_aldih")]
 transform = Transform3D(2.17791, 0, 2.10076, 0, 3.02597, 0, -2.10076, 0, 2.17791, 134.768, 0, -130.547)
 
-[node name="- to hermaneubis" type="Node3D" parent="."]
+[node name="- hermaneubis cavern" type="Node3D" parent="."]
 
-[node name="hermaneubis" parent="- to hermaneubis" instance=ExtResource("9_ekrrc")]
+[node name="hermaneubis" parent="- hermaneubis cavern" instance=ExtResource("9_ekrrc")]
 transform = Transform3D(-0.455467, 0, -0.890253, 0, 1, 0, 0.890253, 0, -0.455467, -45.7334, 0, -54.4522)
 
-[node name="mt-fireplace-dead" parent="- to hermaneubis" instance=ExtResource("15_wt5ha")]
+[node name="mt-fireplace-dead" parent="- hermaneubis cavern" instance=ExtResource("15_wt5ha")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56.3473, 0, -33.8778)
 
-[node name="-- blocking ridge" type="Node3D" parent="- to hermaneubis"]
+[node name="-- blocking ridge" type="Node3D" parent="- hermaneubis cavern"]
 
-[node name="mt-cliffmesh-snowy" parent="- to hermaneubis/-- blocking ridge" instance=ExtResource("3_nvekl")]
+[node name="mt-cliffmesh-snowy" parent="- hermaneubis cavern/-- blocking ridge" instance=ExtResource("3_nvekl")]
 transform = Transform3D(3.79612, 0, 0, 0, 3.79612, 0, 0, 0, 3.79612, -17.2207, -1.57477, -24.5058)
 
-[node name="mt-cliffmesh-snowy2" parent="- to hermaneubis/-- blocking ridge" instance=ExtResource("3_nvekl")]
+[node name="mt-cliffmesh-snowy2" parent="- hermaneubis cavern/-- blocking ridge" instance=ExtResource("3_nvekl")]
 transform = Transform3D(4.49721, 0, 0, 0, 4.49721, 0, 0, 0, 4.49721, -29.5715, -1.57477, -8.56428)
 
-[node name="mt-cliffmesh-snowy3" parent="- to hermaneubis/-- blocking ridge" instance=ExtResource("3_nvekl")]
+[node name="mt-cliffmesh-snowy3" parent="- hermaneubis cavern/-- blocking ridge" instance=ExtResource("3_nvekl")]
 transform = Transform3D(-2.78789, 0, 2.57647, 0, 3.79612, 0, -2.57647, 0, -2.78789, -15.574, -1.57477, 32.065)
 
-[node name="mt-cliffmesh-dry17" parent="- to hermaneubis/-- blocking ridge" instance=ExtResource("9_aldih")]
+[node name="mt-cliffmesh-snowy4" parent="- hermaneubis cavern/-- blocking ridge" instance=ExtResource("3_nvekl")]
+transform = Transform3D(1.44124, 0, 0, 0, 1.44124, 0, 0, 0, 1.44124, -51.4391, 0.218418, 23.9603)
+
+[node name="rocks01_a2" parent="- hermaneubis cavern/-- blocking ridge" instance=ExtResource("18_nohxe")]
+transform = Transform3D(2.84451, 0, 0, 0, 2.84451, 0, 0, 0, 2.84451, -46.7188, 2.00903, 32.2348)
+
+[node name="rocks01_a3" parent="- hermaneubis cavern/-- blocking ridge" instance=ExtResource("18_nohxe")]
+transform = Transform3D(-2.06836, 0, 0.882698, 0, 2.24883, 0, -0.882698, 0, -2.06836, -45.4849, 2.00903, 40.7121)
+
+[node name="-- back ridge" type="Node3D" parent="- hermaneubis cavern"]
+
+[node name="mt-cliffmesh-snowy4" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("3_nvekl")]
+transform = Transform3D(2.6892, 0, 4.71028, 0, 5.42389, 0, -4.71028, 0, 2.6892, -21.2779, -3.83699, -78.8208)
+
+[node name="mt-cliffmesh-snowy5" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("3_nvekl")]
+transform = Transform3D(3.60149, 0, 0.49962, 0, 3.63598, 0, -0.49962, 0, 3.60149, 20.2904, -3.837, -111.655)
+
+[node name="mt-cliffmesh-dry17" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("9_aldih")]
 transform = Transform3D(1.73345, 0, 0, 0, 1.73345, 0, 0, 0, 1.73345, -21.7448, 0, -48.6953)
 
-[node name="mt-cliffmesh-dry18" parent="- to hermaneubis/-- blocking ridge" instance=ExtResource("9_aldih")]
+[node name="mt-cliffmesh-dry19" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("9_aldih")]
+transform = Transform3D(1.73345, 0, 0, 0, 1.73345, 0, 0, 0, 1.73345, 17.9945, 0, -81.2558)
+
+[node name="mt-cliffmesh-dry20" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("9_aldih")]
+transform = Transform3D(0.21172, 0.0168921, 1.22473, -0.0351109, 1.24247, -0.011067, -1.22435, -0.0327095, 0.212104, 24.1912, 0.0918007, -92.235)
+
+[node name="mt-cliffmesh-dry18" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("9_aldih")]
 transform = Transform3D(1.20501, 0, 0, 0, 1.20501, 0, 0, 0, 1.20501, 17.1755, 0.107912, -54.33)
 
-[node name="rocks01_b_dry" parent="." instance=ExtResource("15_n3v7a")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.48224, 3.8147e-06, -63.2057)
+[node name="rocks01_a" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("18_nohxe")]
+transform = Transform3D(-0.765718, 0, 1.26057, 0, 1.47491, 0, -1.26057, 0, -0.765718, 8.52003, 1.74629, -68.4344)
 
-[node name="rocks01_b" parent="." instance=ExtResource("16_504k2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.19588, 0, -58.7987)
+[node name="rocks01_b_dry" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("16_504k2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.71846, 0, -40.716)
 
-[node name="rocks01_a_dry" parent="." instance=ExtResource("17_cff8d")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.93984, 0, -53.5741)
+[node name="rocks01_b" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("18_pvu2b")]
+transform = Transform3D(1.17998, 0, 0.215375, 0, 1.19948, 0, -0.215375, 0, 1.17998, -13.389, 0.288066, -49.4906)
 
-[node name="rocks01_a" parent="." instance=ExtResource("18_nohxe")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.32797, 0, -51.7875)
+[node name="rocks01_a_dry" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("17_cff8d")]
+transform = Transform3D(-0.616967, 0, 0.786989, 0, 1, 0, -0.786989, 0, -0.616967, -25.4291, 1.28403, -39.8403)
+
+[node name="rocks01_b_dry2" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("16_504k2")]
+transform = Transform3D(2.09495, 0, 3.14101, 0, 3.77555, 0, -3.14101, 0, 2.09495, -7.58889, 0, -109.931)
+
+[node name="mt-cliffmesh-dry" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("9_aldih")]
+transform = Transform3D(2.63186, 0, -2.29883, 0, 3.49447, 0, 2.29883, 0, 2.63186, 49.5516, 0, -114.797)
+
+[node name="mt-cliffmesh-dry2" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("9_aldih")]
+transform = Transform3D(8.89054, 0, 0.525859, 0, 8.90608, 0, -0.525859, 0, 8.89054, 21.8062, -26.008, -154.557)
+
+[node name="interior" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("9_aldih")]
+transform = Transform3D(7.95164, 0, 0.470325, 0, 7.96554, 0, -0.470325, 0, 7.95164, 21.8062, -12.0066, -154.557)
+
+[node name="mt-cliffmesh-dry3" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("9_aldih")]
+transform = Transform3D(5.93294, 0, 6.64217, 0, 8.90608, 0, -6.64217, 0, 5.93294, 1.24228, -32.9177, -205.957)
+
+[node name="interior2" parent="- hermaneubis cavern/-- back ridge" instance=ExtResource("9_aldih")]
+transform = Transform3D(5.30639, 0, 5.94071, 0, 7.96554, 0, -5.94071, 0, 5.30639, 1.24228, -18.9164, -205.957)
+
+[node name="-- cozy passage" type="Node3D" parent="- hermaneubis cavern"]
+
+[node name="rocks01_a" parent="- hermaneubis cavern/-- cozy passage" instance=ExtResource("18_nohxe")]
+transform = Transform3D(-1.37015, 0, -2.79337, 0, 3.11131, 0, 2.79337, 0, -1.37015, -58.0264, -3.8147e-06, -68.2847)
+
+[node name="rocks01_a_dry" parent="- hermaneubis cavern/-- cozy passage" instance=ExtResource("17_cff8d")]
+transform = Transform3D(2.87751, 0, 0, 0, 2.87751, 0, 0, 0, 2.87751, -74.2219, 0, -64.9002)
+
+[node name="rocks01_a_dry2" parent="- hermaneubis cavern/-- cozy passage" instance=ExtResource("17_cff8d")]
+transform = Transform3D(1.63162, 0, 2.37021, 0, 2.87751, 0, -2.37021, 0, 1.63162, -63.5014, 3.84107, -52.7592)
+
+[node name="rocks01_b_dry" parent="- hermaneubis cavern/-- cozy passage" instance=ExtResource("16_504k2")]
+transform = Transform3D(-1.48247, 0, 0.843187, 0, 1.70549, 0, -0.843187, 0, -1.48247, -82.0241, 1.61093, -47.5198)
+
+[node name="rocks01_b_dry2" parent="- hermaneubis cavern/-- cozy passage" instance=ExtResource("16_504k2")]
+transform = Transform3D(-1.42603, 0.0533655, 0.753736, 0.047357, 1.61297, -0.0246035, -0.754137, 0.000377577, -1.42682, -77.1612, 1.53877, -32.1305)
+
+[node name="rocks01_b" parent="- hermaneubis cavern/-- cozy passage" instance=ExtResource("18_pvu2b")]
+transform = Transform3D(-1.3951, 0, 0.877283, 0, 1.64801, 0, -0.877283, 0, -1.3951, -71.5187, 1.46775, -16.9992)
+
+[node name="rocks01_b4" parent="- hermaneubis cavern/-- cozy passage" instance=ExtResource("18_pvu2b")]
+transform = Transform3D(-1.3951, 0, 0.877283, 0, 1.64801, 0, -0.877283, 0, -1.3951, -82.3769, 1.46775, 2.44854)
+
+[node name="rocks01_b2" parent="- hermaneubis cavern/-- cozy passage" instance=ExtResource("18_pvu2b")]
+transform = Transform3D(-1.49503, 0.00561884, 0.958756, 0.00701523, 1.77604, 0.000530566, -0.958747, 0.00423362, -1.49504, -65.0158, 1.94104, -2.85215)
+
+[node name="mt-cannedfood01" parent="- hermaneubis cavern/-- cozy passage" instance=ExtResource("4_a2nsv")]
+transform = Transform3D(1.04079, 0, 0, 0, 1.04079, 0, 0, 0, 1.04079, -62.977, 0.248388, -45.0095)
+
+[node name="mt-cannedfood03" parent="- hermaneubis cavern/-- cozy passage" instance=ExtResource("4_a2nsv")]
+transform = Transform3D(0.284725, 0, -0.604962, 0, 0.668616, 0, 0.604962, 0, 0.284725, -62.6352, 0.158506, -43.8956)
+
+[node name="mt-cannedfood04" parent="- hermaneubis cavern/-- cozy passage" instance=ExtResource("4_a2nsv")]
+transform = Transform3D(0.042277, 0, 1.03993, 0, 1.04079, 0, -1.03993, 0, 0.042277, -61.8772, 0, -44.4659)
+
+[node name="-- dead end" type="Node3D" parent="- hermaneubis cavern"]
+
+[node name="mt-cliffmesh-snowy2" parent="- hermaneubis cavern/-- dead end" instance=ExtResource("3_nvekl")]
+transform = Transform3D(2.96873, 0, 0, 0, 2.96873, 0, 0, 0, 2.96873, 10.4567, 0, 112.506)
+
+[node name="mt-cliffmesh-snowy3" parent="- hermaneubis cavern/-- dead end" instance=ExtResource("3_nvekl")]
+transform = Transform3D(1.40748, 0, 1.77681, 0, 2.26673, 0, -1.77681, 0, 1.40748, -13.5042, 0, 108.632)
+
+[node name="mt-cliffmesh-dry" parent="- hermaneubis cavern/-- dead end" instance=ExtResource("9_aldih")]
+transform = Transform3D(3.496, 0, 0, 0, 3.496, 0, 0, 0, 3.496, -35.8511, -0.330313, 100.899)
+
+[node name="mt-cliffmesh-dry2" parent="- hermaneubis cavern/-- dead end" instance=ExtResource("9_aldih")]
+transform = Transform3D(3.97974, 0, 2.36873, 0, 4.63133, 0, -2.36873, 0, 3.97974, -13.8216, -0.330317, 125.04)
+
+[node name="mt-cliffmesh-dry3" parent="- hermaneubis cavern/-- dead end" instance=ExtResource("9_aldih")]
+transform = Transform3D(4.13403, 0, 1.39061, 0, 4.36165, 0, -1.39061, 0, 4.13403, -58.5508, -0.330317, 86.4916)
+
+[node name="rocks01_b3" parent="- hermaneubis cavern/-- dead end" instance=ExtResource("18_pvu2b")]
+transform = Transform3D(1.16475, 0, 1.30715, 0, 1.75079, 0, -1.30715, 0, 1.16475, -22.0447, 0, 79.4742)
+
+[node name="rocks01_a4" parent="- hermaneubis cavern/-- dead end" instance=ExtResource("18_nohxe")]
+transform = Transform3D(-3.01215, 0, 2.0583, 0, 3.64824, 0, -2.0583, 0, -3.01215, -30.7238, 3.8147e-06, 76.3575)
+
+[node name="rocks01_a5" parent="- hermaneubis cavern/-- dead end" instance=ExtResource("18_nohxe")]
+transform = Transform3D(3.28746, 0, -1.58186, 0, 3.64824, 0, 1.58186, 0, 3.28746, -14.5483, 1.90735e-06, 65.623)
+
+[node name="rocks01_a_dry3" parent="- hermaneubis cavern/-- dead end" instance=ExtResource("17_cff8d")]
+transform = Transform3D(2.66322, 0, 0, 0, 2.66322, 0, 0, 0, 2.66322, -53.1385, 0, 57.7765)
+
+[node name="rocks01_a6" parent="- hermaneubis cavern/-- dead end" instance=ExtResource("18_nohxe")]
+transform = Transform3D(-1.57635, 0, 0.794062, 0, 1.76505, 0, -0.794062, 0, -1.57635, -73.8705, 1.87051, 72.4533)
+
+[node name="- the end" type="Node3D" parent="."]
+
+[node name="mt-fireplace-dead2" parent="- the end" instance=ExtResource("15_wt5ha")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -123.462, 0, 110.121)
+
+[node name="shepherd-boy" parent="- the end" instance=ExtResource("19_2dxyi")]
+transform = Transform3D(-0.452303, 0, 0.204888, 0, 0.496545, 0, -0.204888, 0, -0.452303, -129.868, 0, 128.624)
+
+[node name="-- pilgrimage gate" type="Node3D" parent="- the end"]
+
+[node name="mt-cliffmesh-dry4" parent="- the end/-- pilgrimage gate" instance=ExtResource("9_aldih")]
+transform = Transform3D(2.74972, 0, 2.42181, 0, 3.66417, 0, -2.42181, 0, 2.74972, -74.1642, -0.330317, 53.0929)
+
+[node name="mt-cliffmesh-dry5" parent="- the end/-- pilgrimage gate" instance=ExtResource("9_aldih")]
+transform = Transform3D(-3.20255, 0, 1.78039, 0, 3.66417, 0, -1.78039, 0, -3.20255, -112.209, -0.33032, 40.9287)
+
+[node name="-- temple" type="Node3D" parent="- the end"]
+
+[node name="mt-cliffmesh-dry6" parent="- the end/-- temple" instance=ExtResource("9_aldih")]
+transform = Transform3D(3.18065, 0, -0.476657, 0, 3.21617, 0, 0.476657, 0, 3.18065, -119.213, -4.48575, 84.9144)
+
+[node name="mt-cliffmesh-dry10" parent="- the end/-- temple" instance=ExtResource("9_aldih")]
+transform = Transform3D(2.89055, 0, 1.41013, 0, 3.21617, 0, -1.41013, 0, 2.89055, -145.424, -4.48575, 84.6057)
+
+[node name="mt-cliffmesh-dry7" parent="- the end/-- temple" instance=ExtResource("9_aldih")]
+transform = Transform3D(2.47409, 0, -2.0549, 0, 3.21617, 0, 2.0549, 0, 2.47409, -96.5444, -5.12969, 99.5068)
+
+[node name="mt-cliffmesh-dry8" parent="- the end/-- temple" instance=ExtResource("9_aldih")]
+transform = Transform3D(0.781274, 0, -3.11983, 0, 3.21617, 0, 3.11983, 0, 0.781274, -86.9731, -5.12969, 123.506)
+
+[node name="mt-cliffmesh-dry9" parent="- the end/-- temple" instance=ExtResource("9_aldih")]
+transform = Transform3D(2.79272, 1.39451e-07, 1.59514, 6.8105e-22, -3.21617, 2.81166e-07, 1.59514, -2.44147e-07, -2.79272, -93.7154, 23.9733, 149.611)
+
+[node name="mt-cliffmesh-dry12" parent="- the end/-- temple" instance=ExtResource("9_aldih")]
+transform = Transform3D(-3.13336, 0, -0.725121, 0, 3.21617, 0, 0.725121, 0, -3.13336, -128.387, -4.48575, 177.18)
+
+[node name="mt-cliffmesh-dry16" parent="- the end/-- temple" instance=ExtResource("9_aldih")]
+transform = Transform3D(-3.21487, 0, -0.0913715, 0, 3.21617, 0, 0.0913715, 0, -3.21487, -104.33, -4.31692, 167.255)
+
+[node name="mt-cliffmesh-dry13" parent="- the end/-- temple" instance=ExtResource("9_aldih")]
+transform = Transform3D(-1.94954, 0, 2.55793, 0, 3.21617, 0, -2.55793, 0, -1.94954, -172.673, -5.12969, 151.684)
+
+[node name="mt-cliffmesh-dry14" parent="- the end/-- temple" instance=ExtResource("9_aldih")]
+transform = Transform3D(-0.0608443, 0, 3.21559, 0, 3.21617, 0, -3.21559, 0, -0.0608443, -176.611, -5.12969, 126.149)
+
+[node name="mt-cliffmesh-dry15" parent="- the end/-- temple" instance=ExtResource("9_aldih")]
+transform = Transform3D(-2.36327, -1.90708e-07, -2.18145, 2.90947e-14, -3.21617, 2.81166e-07, -2.18145, 2.06603e-07, 2.36327, -164.18, 23.9733, 102.225)
+
+[node name="mt-cliffmesh-dry17" parent="- the end/-- temple" instance=ExtResource("9_aldih")]
+transform = Transform3D(-2.57468, 1.68496e-07, 1.92737, 2.90947e-14, -3.21617, 2.81166e-07, 1.92737, 2.25086e-07, 2.57468, -150.173, 23.9733, 164.528)
+
+[node name="mt-cliffmesh-dry18" parent="- the end/-- temple" instance=ExtResource("9_aldih")]
+transform = Transform3D(-2.57468, 1.68496e-07, 1.92737, 2.90947e-14, -3.21617, 2.81166e-07, 1.92737, 2.25086e-07, 2.57468, -106.656, 23.9733, 89.4627)
+
+[node name="-- last camp" type="Node3D" parent="- the end"]
+
+[node name="mt-carrymat" parent="- the end/-- last camp" instance=ExtResource("11_y5i7l")]
+transform = Transform3D(-0.992304, 0, 0.123827, 0, 1, 0, -0.123827, 0, -0.992304, -115.513, 0, 110.152)
+
+[node name="mt-backpack" parent="- the end/-- last camp" instance=ExtResource("6_h6qla")]
+transform = Transform3D(0.258899, 0, -0.566373, 0, 0.622742, 0, 0.566373, 0, 0.258899, -117.873, 0, 100.174)
+
+[node name="mt-backpack2" parent="- the end/-- last camp" instance=ExtResource("6_h6qla")]
+transform = Transform3D(0.0387174, 0, -0.601163, 0.0705341, 0.598248, 0.00454269, 0.597011, -0.0706802, 0.03845, -120.767, -9.53674e-07, 99.7004)
+
+[node name="mt-backpack3" parent="- the end/-- last camp" instance=ExtResource("6_h6qla")]
+transform = Transform3D(-0.53802, -0.0880802, 0.114658, -0.0822679, 0.549803, 0.0363247, -0.118897, 0.0181487, -0.543971, -111.924, -0.0235567, 103.038)
+
+[node name="mt-logpile" parent="- the end/-- last camp" instance=ExtResource("7_p42b3")]
+transform = Transform3D(0.873534, 0, 0.486762, 0, 1, 0, -0.486762, 0, 0.873534, -113.614, 0, 102.137)
+
+[node name="mt-cannedfood02" parent="- the end/-- last camp" instance=ExtResource("9_76mue")]
+transform = Transform3D(0.0736386, 0, -0.997285, 0, 1, 0, 0.997285, 0, 0.0736386, -119.257, 0.254788, 100.702)
+
+[node name="mt-carrymat2" parent="- the end/-- last camp" instance=ExtResource("11_y5i7l")]
+transform = Transform3D(-0.0892245, 0, 0.996012, 0, 1, 0, -0.996012, 0, -0.0892245, -122.874, 0, 117.573)
+
+[node name="mt-carrymat3" parent="- the end/-- last camp" instance=ExtResource("11_y5i7l")]
+transform = Transform3D(0.992317, 0, 0.123723, 0, 1, 0, -0.123723, 0, 0.992317, -130.895, 0, 110.893)
