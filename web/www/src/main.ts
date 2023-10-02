@@ -90,8 +90,8 @@ import("ambient_web")
         }
 
         const urlParams = new URLSearchParams(window.location.search);
-        const packageId = urlParams.get('package');
-        const deploymentId = urlParams.get('deployment');
+        const packageId = urlParams.get('package_id');
+        const deploymentId = urlParams.get('deployment_id');
         const userId = urlParams.get('userId');
         const context = urlParams.get('context');
         const debuggerOn = urlParams.get('debugger') != null;
