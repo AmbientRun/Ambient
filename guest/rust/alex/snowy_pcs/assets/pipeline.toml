@@ -1,0 +1,10 @@
+[[pipelines]]
+sources = ["anim-*/*.fbx"]
+type = "Models"
+
+[[pipelines]]
+sources = ["model-chkn/*.fbx"]
+type = "Models"
+[[pipelines.transforms]]
+type = "RotateZ"
+deg = -90.0

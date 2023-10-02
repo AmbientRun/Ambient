@@ -7,14 +7,14 @@ content = { type = "Asset", code = true, models = true }
 ambient_version = "0.3.0-nightly-2023-10-02"
 
 [dependencies]
-
 # local paths
 fps_controller = { path = "../../packages/std/fps_controller" }
 hide_cursor = { path = "../../packages/std/hide_cursor" }
-
+character_animation = { path = "../../packages/std/character_animation" }
 # deploy (out of date)-
 # fps_controller = { deployment = "6hF1mGWsce1fEKcB9r1lS8" } # sep 28
 # hide_cursor = { deployment = "770oOvKcPfBILw1hNixsJU" } # sep 28
+# character_animation = { deployment = "s1HU95RShblqYqSuG4Vk1" } # sep 28
 
 temperature = { path = "../temperature" , deployment = "5wJt3UkQJ90EhEfX0e3P8x" }
 

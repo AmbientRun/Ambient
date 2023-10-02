@@ -1,10 +1,8 @@
 use ambient_api::{
     core::{
         app::components::name,
-        physics::components::plane_collider,
         prefab::components::prefab_from_url,
-        primitives::components::quad,
-        rendering::components::{cast_shadows, color},
+        rendering::components::cast_shadows,
         transform::components::{rotation, scale, translation},
     },
     prelude::*,
@@ -24,8 +22,9 @@ pub fn load_scene() {
 
     for (_key, node) in nodes {
         if let Some(path) = node.path {
+            println!("Load path {path}");
             if path.ends_with("glb") || path.ends_with("fbx") {
-                Entity::new()
+                let _prop = Entity::new()
                     .with(name(), node.name)
                     // .with_default(cube())
                     .with(translation(), node.pos.unwrap())
@@ -33,22 +32,11 @@ pub fn load_scene() {
                     .with(scale(), node.siz.unwrap())
                     .with(
                         prefab_from_url(),
-                        crate::packages::this::assets::url(
-                            ("scene/".to_owned() + &path).as_mut_str(),
-                        ),
+                        crate::packages::this::assets::url(("".to_owned() + &path).as_mut_str()),
                     )
                     .with(cast_shadows(), ())
                     .spawn();
             }
         }
     }
-
-    // ground plane
-    Entity::new()
-        .with(translation(), Vec3::ZERO)
-        .with(quad(), ())
-        .with(scale(), Vec3::splat(1000.))
-        .with(color(), Vec3::splat(1.).extend(1.)) // purewhite floor
-        .with(plane_collider(), ())
-        .spawn();
 }

@@ -1,0 +1,17 @@
+[[pipelines]]
+sources = ["*.glb"]
+type = "Models"
+[pipelines.collider]
+type = "FromModel"
+
+[[pipelines]]
+sources = ["*.fbx"]
+type = "Models"
+[[pipelines.transforms]]
+type = "RotateX"
+deg = 90.0
+[[pipelines.transforms]]
+type = "Scale"
+scale = 100.0
+[pipelines.collider]
+type = "FromModel"

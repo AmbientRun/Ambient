@@ -9,6 +9,7 @@ use packages::{
 const DEATH_TEMP: f32 = 21.13;
 const NORMAL_TEMP: f32 = 36.65;
 
+#[main]
 pub fn main() {
     spawn_query(is_player()).bind(|plrs| {
         for (plr, _) in plrs {

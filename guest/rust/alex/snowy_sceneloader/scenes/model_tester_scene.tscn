@@ -1,0 +1,37 @@
+[gd_scene load_steps=7 format=3 uid="uid://csdij2t2q0ye5"]
+
+[ext_resource type="Environment" uid="uid://brv2yt8b015pv" path="res://14_StormScenes/storm_env.tres" id="1_55ta0"]
+[ext_resource type="PackedScene" uid="uid://cvp3slow4hlnv" path="res://00_plane_roamer/roamer_3rd_person.tscn" id="2_ev4as"]
+[ext_resource type="PackedScene" uid="uid://5ol3pch7wkpm" path="res://models_magnus/mt-backpack.fbx" id="6_xfjaw"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vhwd0"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_1a2vl"]
+material = SubResource("StandardMaterial3D_vhwd0")
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_2011a"]
+
+[node name="final_storm_scene" type="Node3D"]
+
+[node name="floor" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="floor"]
+transform = Transform3D(999, 0, 0, 0, 999, 0, 0, 0, 999, 0, 0, 0)
+mesh = SubResource("PlaneMesh_1a2vl")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="floor"]
+shape = SubResource("WorldBoundaryShape3D_2011a")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("1_55ta0")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.996904, 0.0780786, -0.00930277, -0.0539559, 0.765324, 0.64138, 0.0571977, -0.638892, 0.767167, 5.96046e-08, 103.579, 93.3243)
+shadow_enabled = true
+
+[node name="Roamer3rdPerson" parent="." instance=ExtResource("2_ev4as")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0686873, 0.936475, -0.325917)
+
+[node name="mt-backpack" parent="." instance=ExtResource("6_xfjaw")]
+transform = Transform3D(0.706823, 0, 0.707391, 0, 1, 0, -0.707391, 0, 0.706823, -4.58697, 0.131086, 5.44334)
