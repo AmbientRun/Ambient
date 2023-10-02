@@ -12,7 +12,10 @@ use ambient_native_std::{
 };
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_sys::{task::RuntimeHandle, time::sleep_label};
+use ambient_sys::{
+    task::RuntimeHandle,
+    time::{sleep_label, Instant},
+};
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use bytes::{BufMut, BytesMut};
@@ -39,6 +42,9 @@ use crate::{
 };
 
 use super::ProxyMessage;
+
+const ALLOWED_FRAME_TIME: Duration = Duration::from_nanos(16_666_666); // 1/60 s
+const MAX_ACCUMMULATED_FRAME_DELAY: Duration = Duration::from_millis(20);
 
 #[derive(Debug, Clone)]
 pub struct GameClientView {
@@ -234,7 +240,21 @@ fn run_game_logic(
 
     let gpu = hooks.world.resource(gpu()).clone();
 
+    let accummulated_frame_delay = Mutex::new(Duration::ZERO);
+
     use_frame(hooks, move |app_world| {
+        // Frames taking too much time can starve browser networking (https://github.com/w3c/webtransport/issues/543)
+        // We calculate how much delay has been accummulated and when a threshold is reached we drop a frame to allow
+        // for networking to catch up
+        let accummulated_frame_delay = &mut *accummulated_frame_delay.lock();
+        if *accummulated_frame_delay > MAX_ACCUMMULATED_FRAME_DELAY {
+            tracing::warn!("Too much accummulated frame delay! Dropping a frame.");
+            *accummulated_frame_delay = Duration::ZERO;
+            return;
+        }
+
+        let now = Instant::now();
+
         let mut game_state = game_state.lock();
 
         // Pipe events from app world to game world
@@ -249,6 +269,15 @@ fn run_game_logic(
         }
 
         game_state.on_frame(&gpu, &render_target.0);
+
+        let frame_time = now.elapsed();
+        let frame_delay = ALLOWED_FRAME_TIME.saturating_sub(frame_time);
+        *accummulated_frame_delay = if frame_delay == Duration::ZERO {
+            // frame was processed in time -> reset the accummulated delay
+            Duration::ZERO
+        } else {
+            *accummulated_frame_delay + frame_delay
+        };
     });
 }
 
