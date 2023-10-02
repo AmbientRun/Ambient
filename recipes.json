@@ -242,7 +242,7 @@
     "cmd": "cargo cf web build"
   },
   "build web release": {
-    "cmd": "cargo cf web build --profile=release"
+    "cmd": "cargo cf web build --profile profiling"
   },
   "check web": {
     "cmd": "cargo cf web check"
@@ -254,7 +254,7 @@
     }
   },
   "serve web release": {
-    "cmd": "cargo cf web serve --profile=profiling",
+    "cmd": "cargo cf web serve --profile profiling",
     "env": {
       "RUST_LOG": "info"
     }

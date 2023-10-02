@@ -1,5 +1,7 @@
 pub mod client;
 
+use std::sync::atomic::AtomicU32;
+
 use bytes::Bytes;
 use flume::Sender;
 use futures::future::BoxFuture;
@@ -12,26 +14,33 @@ use crate::{client::NetworkTransport, NetworkError};
 /// The webtransport connection is due to holding pointers to Js objects and is thus not thread
 /// safe.
 pub struct WebTransportProxy {
+    next_id: AtomicU32,
     tx: Sender<ProxyMessage>,
 }
 
 impl WebTransportProxy {
     pub(crate) fn new(tx: Sender<ProxyMessage>) -> Self {
-        Self { tx }
+        Self {
+            tx,
+            next_id: AtomicU32::new(0),
+        }
     }
 }
 
 pub(crate) enum ProxyMessage {
     RequestBi {
+        message_id: u32,
         id: u32,
         data: Bytes,
         resp: oneshot::Sender<Bytes>,
     },
     RequestUni {
+        message_id: u32,
         id: u32,
         data: Bytes,
     },
     Datagram {
+        message_id: u32,
         id: u32,
         data: Bytes,
     },
@@ -57,10 +66,21 @@ fn send_with_backpressure(
 
 impl NetworkTransport for WebTransportProxy {
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
+        let message_id = self
+            .next_id
+            .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
         Box::pin(async move {
             let (tx, rx) = oneshot::channel();
 
-            send_with_backpressure(&self.tx, ProxyMessage::RequestBi { id, data, resp: tx })?;
+            send_with_backpressure(
+                &self.tx,
+                ProxyMessage::RequestBi {
+                    id,
+                    data,
+                    resp: tx,
+                    message_id,
+                },
+            )?;
             // self.tx
             //     .send_async(ProxyMessage::RequestBi { id, data, resp: tx })
             //     .await
@@ -71,18 +91,38 @@ impl NetworkTransport for WebTransportProxy {
     }
 
     fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>> {
+        let message_id = self
+            .next_id
+            .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
         Box::pin(async move {
-            tracing::info!("Sending {data:?}");
-            send_with_backpressure(&self.tx, ProxyMessage::RequestUni { id, data })?;
+            tracing::info!(?data, ?message_id, "sending uni");
+            send_with_backpressure(
+                &self.tx,
+                ProxyMessage::RequestUni {
+                    id,
+                    data,
+                    message_id,
+                },
+            )?;
 
             Ok(())
         })
     }
 
     fn send_datagram(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>> {
+        let message_id = self
+            .next_id
+            .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
         Box::pin(async move {
-            tracing::info!("Datagram {data:?}");
-            send_with_backpressure(&self.tx, ProxyMessage::Datagram { id, data })?;
+            tracing::info!(?message_id, ?data, "datagram");
+            send_with_backpressure(
+                &self.tx,
+                ProxyMessage::Datagram {
+                    id,
+                    data,
+                    message_id,
+                },
+            )?;
             // self.tx
             //     .send_async(ProxyMessage::Datagram { id, data })
             //     .await
