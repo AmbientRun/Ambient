@@ -24,9 +24,11 @@ pub fn scene_contents_to_nodes(scene_contents: &str) -> HashMap<String, GodotNod
     let mut ext_paths: HashMap<String, String> = HashMap::new();
     let mut nodes: HashMap<String, GodotNode> = HashMap::new();
     let re_positioned_nodes =
-        Regex::new(r#"\[node name=\"([^\"]*)\"[^\[]*Transform3D\((.*)\)"#).unwrap();
+        Regex::new(r#"\[node name=\"([^\"]*)\"[^\[]*parent=\"([^\"]*)\"[^\[]*Transform3D\((.*)\)"#)
+            .unwrap();
     for cap in re_positioned_nodes.captures_iter(scene_contents) {
-        let t: Vec<f32> = cap[2]
+        let nodepath: String = format!("{}/{}", &cap[2], &cap[1]);
+        let t: Vec<f32> = cap[3]
             .split(", ")
             .filter_map(|s| s.parse::<f32>().ok())
             .collect::<Vec<f32>>();
@@ -51,7 +53,7 @@ pub fn scene_contents_to_nodes(scene_contents: &str) -> HashMap<String, GodotNod
         .to_scale_rotation_translation();
 
         nodes.insert(
-            cap[1].to_string(),
+            nodepath,
             GodotNode {
                 name: cap[1].to_string(),
                 pos: Some(Vec3 {
@@ -64,12 +66,14 @@ pub fn scene_contents_to_nodes(scene_contents: &str) -> HashMap<String, GodotNod
                 path: None,
             },
         );
-        // println!("Node header: {} @ t{}", &cap[1], &cap[2]);
+        // println!("Node header: {} @ t{}", &cap[1], &cap[3]);
     }
 
-    let re_unpositioned_nodes = Regex::new(r#"\[node name=\"([^\"]*)\""#).unwrap();
+    let re_unpositioned_nodes =
+        Regex::new(r#"\[node name=\"([^\"]*)\"[^\[]*parent=\"([^\"]*)\""#).unwrap();
     for cap in re_unpositioned_nodes.captures_iter(scene_contents) {
-        if !nodes.contains_key(&cap[1]) {
+        let nodepath: String = format!("{}/{}", &cap[2], &cap[1]);
+        if !nodes.contains_key(&nodepath) {
             nodes.insert(
                 cap[1].to_string(),
                 GodotNode {
@@ -89,16 +93,18 @@ pub fn scene_contents_to_nodes(scene_contents: &str) -> HashMap<String, GodotNod
     }
 
     let re_ext_resource_nodes =
-        Regex::new(r#"\[node name=\"([^\"]*)\".*ExtResource\(\"([^\"]*)\"\)"#).unwrap();
+        Regex::new(r#"\[node name=\"([^\"]*)\".*parent=\"([^\"]*)\".*ExtResource\(\"([^\"]*)\"\)"#)
+            .unwrap();
     for cap in re_ext_resource_nodes.captures_iter(scene_contents) {
-        if nodes.contains_key(&cap[1]) && ext_paths.contains_key(&cap[2]) {
-            if let Some(node) = nodes.get_mut(&cap[1]) {
-                node.path = Some(ext_paths[&cap[2]].to_string());
+        let nodepath: String = format!("{}/{}", &cap[2], &cap[1]);
+        if nodes.contains_key(&nodepath) && ext_paths.contains_key(&cap[3]) {
+            if let Some(node) = nodes.get_mut(&nodepath) {
+                node.path = Some(ext_paths[&cap[3]].to_string());
             };
         } else {
             println!(
                 "ERR: could not find node {:?} or path {:?}",
-                &cap[1], &cap[2]
+                &nodepath, &cap[3]
             );
         }
     }
