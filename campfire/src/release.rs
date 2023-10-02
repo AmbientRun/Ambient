@@ -88,8 +88,6 @@ const WEB_CARGO: &str = "web/Cargo.toml";
 const GUEST_RUST_CARGO: &str = "guest/rust/Cargo.toml";
 const ADVANCED_INSTALLING_DOCS: &str = "docs/src/reference/advanced_installing.md";
 const CHANGELOG: &str = "CHANGELOG.md";
-const README: &str = "README.md";
-const INTRODUCTION: &str = "docs/src/introduction.md";
 
 fn check_release(
     no_docker: bool,
