@@ -12,12 +12,15 @@ use ambient_native_std::{
 };
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_sys::{task::RuntimeHandle, time::sleep_label};
+use ambient_sys::{
+    task::RuntimeHandle,
+    time::{sleep_label, Instant},
+};
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use bytes::{BufMut, BytesMut};
 use futures::{SinkExt, StreamExt};
-use glam::uvec2;
+use glam::{uvec2, Mat4};
 use parking_lot::Mutex;
 use std::{sync::Arc, time::Duration};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -234,7 +237,22 @@ fn run_game_logic(
 
     let gpu = hooks.world.resource(gpu()).clone();
 
+    let mut current_time = Mutex::new(Instant::now());
+
     use_frame(hooks, move |app_world| {
+        let current_time = &mut *current_time.lock();
+        loop {
+            let new_time = Instant::now();
+
+            let a = Mat4::IDENTITY;
+            if new_time.duration_since(*current_time) > Duration::from_millis(50) {
+                break;
+            }
+            let _ = std::hint::black_box(a * a);
+        }
+
+        *current_time = Instant::now();
+
         let mut game_state = game_state.lock();
 
         // Pipe events from app world to game world
