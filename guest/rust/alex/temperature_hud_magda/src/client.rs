@@ -1,6 +1,6 @@
 use ambient_api::{
     core::{
-        app::components::window_physical_size,
+        app::components::window_logical_size,
         player::components::user_id,
         rendering::components::color,
         text::components::{font_family, font_size},
@@ -66,7 +66,7 @@ pub fn NameplateUI(hooks: &mut Hooks, camera: EntityId) -> Element {
     //     return Element::new();
     // };
 
-    let screen_size = entity::get_component(entity::resources(), window_physical_size()).unwrap();
+    let screen_size = entity::get_component(entity::resources(), window_logical_size()).unwrap();
     let players = ambient_api::element::use_query(hooks, (user_id(), translation(), temperature()));
     let fsize = screen_size.y as f32 * 0.04;
     Group::el(players.iter().map(move |(_plr, (uid, pos, player_temp))| {
@@ -159,7 +159,7 @@ pub fn TemperatureDisplayUI(hooks: &mut Hooks) -> Element {
         }
     }
 
-    let screen_size = entity::get_component(entity::resources(), window_physical_size()).unwrap();
+    let screen_size = entity::get_component(entity::resources(), window_logical_size()).unwrap();
 
     if let Some(player_temp) = player_temp {
         let fsize = screen_size.y as f32 * 0.05;
