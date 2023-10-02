@@ -228,6 +228,9 @@ impl ElementComponent for GameClientView {
     }
 }
 
+const ALLOWED_FRAME_TIME: Duration = Duration::from_nanos(16_666_666); // 1/60 s
+const MAX_ACCUMMULATED_FRAME_DELAY: Duration = Duration::from_millis(100);
+
 fn run_game_logic(
     hooks: &mut Hooks,
     game_state: SharedClientGameState,
@@ -238,6 +241,7 @@ fn run_game_logic(
     let gpu = hooks.world.resource(gpu()).clone();
 
     let mut current_time = Mutex::new(Instant::now());
+    let accummulated_frame_delay = Mutex::new(Duration::ZERO);
 
     use_frame(hooks, move |app_world| {
         let current_time = &mut *current_time.lock();
@@ -251,7 +255,14 @@ fn run_game_logic(
             let _ = std::hint::black_box(a * a);
         }
 
-        *current_time = Instant::now();
+        let accummulated_frame_delay = &mut *accummulated_frame_delay.lock();
+        if *accummulated_frame_delay > MAX_ACCUMMULATED_FRAME_DELAY {
+            *accummulated_frame_delay = Duration::ZERO;
+            return;
+        }
+
+        let now = Instant::now();
+        *current_time = now;
 
         let mut game_state = game_state.lock();
 
@@ -267,6 +278,14 @@ fn run_game_logic(
         }
 
         game_state.on_frame(&gpu, &render_target.0);
+
+        let frame_time = now.elapsed();
+        let frame_delay = ALLOWED_FRAME_TIME.saturating_sub(frame_time);
+        *accummulated_frame_delay = if frame_delay == Duration::ZERO {
+            Duration::ZERO
+        } else {
+            *accummulated_frame_delay + frame_delay
+        };
     });
 }
 
