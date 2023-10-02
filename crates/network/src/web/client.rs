@@ -239,7 +239,7 @@ struct FrameDropStats {
     warn_freq: usize,
 }
 impl FrameDropStats {
-    fn new(warn_freq: usize) -> Self {
+    pub fn new(warn_freq: usize) -> Self {
         Self {
             frames: 0,
             dropped: 0,
@@ -248,11 +248,11 @@ impl FrameDropStats {
         }
     }
 
-    fn on_frame(&mut self) {
+    pub fn on_frame(&mut self) {
         self.frames += 1;
     }
 
-    fn on_dropped_frame(&mut self, now: Instant) {
+    pub fn on_dropped_frame(&mut self, now: Instant) {
         self.dropped += 1;
 
         if self.dropped == self.warn_freq {
@@ -273,6 +273,46 @@ impl FrameDropStats {
     }
 }
 
+/// Decides if a frame should be dropped based on observed frame times.
+///
+/// Frames taking too much time can starve browser networking (https://github.com/w3c/webtransport/issues/543)
+/// We calculate how much delay has been accummulated and when a threshold is reached we drop a frame to allow
+/// for networking to catch up
+struct FrameDropping {
+    stats: FrameDropStats,
+    accummulated_delay: Duration,
+}
+impl FrameDropping {
+    pub fn new() -> Self {
+        Self {
+            stats: FrameDropStats::new(120),
+            accummulated_delay: Duration::ZERO,
+        }
+    }
+
+    pub fn should_drop(&mut self, now: Instant) -> bool {
+        self.stats.on_frame();
+
+        if self.accummulated_delay > MAX_ACCUMMULATED_FRAME_DELAY {
+            self.accummulated_delay = Duration::ZERO;
+            self.stats.on_dropped_frame(now);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn observe_frame_time(&mut self, frame_time: Duration) {
+        let frame_delay = frame_time.saturating_sub(ALLOWED_FRAME_TIME);
+        self.accummulated_delay = if frame_delay == Duration::ZERO {
+            // frame was processed in time -> reset the accummulated delay
+            Duration::ZERO
+        } else {
+            self.accummulated_delay + frame_delay
+        };
+    }
+}
+
 fn run_game_logic(
     hooks: &mut Hooks,
     game_state: SharedClientGameState,
@@ -282,21 +322,13 @@ fn run_game_logic(
 
     let gpu = hooks.world.resource(gpu()).clone();
 
-    let accummulated_frame_delay = Mutex::new(Duration::ZERO);
-    let frame_drop_stats = Mutex::new(FrameDropStats::new(120));
+    let frame_dropping = Mutex::new(FrameDropping::new());
 
     use_frame(hooks, move |app_world| {
         let now = Instant::now();
-        let frame_drop_stats = &mut *frame_drop_stats.lock();
-        frame_drop_stats.on_frame();
 
-        // Frames taking too much time can starve browser networking (https://github.com/w3c/webtransport/issues/543)
-        // We calculate how much delay has been accummulated and when a threshold is reached we drop a frame to allow
-        // for networking to catch up
-        let accummulated_frame_delay = &mut *accummulated_frame_delay.lock();
-        if *accummulated_frame_delay > MAX_ACCUMMULATED_FRAME_DELAY {
-            *accummulated_frame_delay = Duration::ZERO;
-            frame_drop_stats.on_dropped_frame(now);
+        let frame_dropping = &mut *frame_dropping.lock();
+        if frame_dropping.should_drop(now) {
             return;
         }
 
@@ -316,13 +348,7 @@ fn run_game_logic(
         game_state.on_frame(&gpu, &render_target.0);
 
         let frame_time = now.elapsed();
-        let frame_delay = frame_time.saturating_sub(ALLOWED_FRAME_TIME);
-        *accummulated_frame_delay = if frame_delay == Duration::ZERO {
-            // frame was processed in time -> reset the accummulated delay
-            Duration::ZERO
-        } else {
-            *accummulated_frame_delay + frame_delay
-        };
+        frame_dropping.observe_frame_time(frame_time);
     });
 }
 
