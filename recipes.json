@@ -101,6 +101,9 @@
   "serve third-person-camera release": {
     "cmd": "cargo run --release serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build"
   },
+  "serve tangent release": {
+    "cmd": "cargo run --release serve --release ./guest/rust/packages/games/tangent/ --clean-build"
+  },
   "serve-third-person-camera": {
     "cmd": "cargo run serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build"
   },
