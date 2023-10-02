@@ -18,3 +18,4 @@ winit = { workspace = true }
 glam = { workspace = true }
 serde = { workspace = true }
 tracing = { workspace = true }
+flume = { workspace = true }

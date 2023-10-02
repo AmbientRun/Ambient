@@ -350,6 +350,12 @@ impl AppBuilder {
             (Some(window), Some(event_loop))
         };
 
+        let (cursor_lock_tx, cursor_lock_rx) = flume::unbounded::<bool>();
+
+        // This isn't necessary on native
+        #[cfg(not(target_os = "unknown"))]
+        let _ = cursor_lock_tx;
+
         #[cfg(target_os = "unknown")]
         let mut drop_handles: Vec<Box<dyn std::fmt::Debug>> = Vec::new();
 
@@ -359,12 +365,11 @@ impl AppBuilder {
             use winit::platform::web::WindowExtWebSys;
 
             let canvas = window.canvas();
+            let document = web_sys::window().unwrap().document().unwrap();
 
-            let target = self.parent_element.unwrap_or_else(|| {
-                let window = web_sys::window().unwrap();
-                let document = window.document().unwrap();
-                document.body().unwrap()
-            });
+            let target = self
+                .parent_element
+                .unwrap_or_else(|| document.body().unwrap());
 
             use wasm_bindgen::prelude::*;
 
@@ -373,8 +378,33 @@ impl AppBuilder {
             });
 
             canvas.set_oncontextmenu(Some(on_context_menu.as_ref().unchecked_ref()));
-
             drop_handles.push(Box::new(on_context_menu));
+
+            // HACK: Listen for pointer lock change here to ensure that the guest
+            // is notified that the pointer is no longer locked, so that they can
+            // update their state accordingly.
+            //
+            // It would be nice to move this into the input systems, but I don't
+            // want to leak too much information about the running environment
+            // into other code.
+            let on_pointer_lock_change = Closure::<dyn Fn()>::new({
+                let canvas = canvas.clone();
+                let document = document.clone();
+                move || {
+                    let is_locked =
+                        document.pointer_lock_element().as_ref() == Some(canvas.as_ref());
+
+                    let _ = cursor_lock_tx.send(is_locked);
+                }
+            });
+            document
+                .add_event_listener_with_callback_and_bool(
+                    "pointerlockchange",
+                    on_pointer_lock_change.as_ref().unchecked_ref(),
+                    false,
+                )
+                .unwrap();
+            drop_handles.push(Box::new(on_pointer_lock_change));
 
             // Get the screen's available width and height
             let window = web_sys::window().unwrap();
@@ -502,6 +532,7 @@ impl AppBuilder {
                 vec![
                     Box::new(MeshBufferUpdate),
                     Box::new(world_instance_systems(true)),
+                    ambient_input::cursor_lock_system(cursor_lock_rx),
                 ],
             ),
             world,

@@ -5325,6 +5325,35 @@ mod raw {
             }
             impl RuntimeMessage for WindowMouseMotion {}
             #[derive(Clone, Debug)]
+            #[doc = "**WindowCursorLockChange**: Sent when the window's cursor lock changes."]
+            pub struct WindowCursorLockChange {
+                pub locked: bool,
+            }
+            impl WindowCursorLockChange {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(locked: impl Into<bool>) -> Self {
+                    Self {
+                        locked: locked.into(),
+                    }
+                }
+            }
+            impl Message for WindowCursorLockChange {
+                fn id() -> &'static str {
+                    "ambient_core::WindowCursorLockChange"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.locked.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        locked: bool::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl RuntimeMessage for WindowCursorLockChange {}
+            #[derive(Clone, Debug)]
             #[doc = "**HttpResponse**: Sent when an HTTP response is received."]
             pub struct HttpResponse {
                 pub url: String,
