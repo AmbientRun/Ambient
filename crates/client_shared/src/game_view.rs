@@ -24,12 +24,12 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
     let (render_target, _) = consume_context::<GameClientRenderTarget>(hooks).unwrap();
 
-    let (show_ecs, set_show_ecs) = use_state(hooks, true);
-    let (ecs_size, set_ecs_size) = use_state(hooks, Vec2::ZERO);
+    // let (show_ecs, set_show_ecs) = use_state(hooks, true);
+    // let (ecs_size, set_ecs_size) = use_state(hooks, Vec2::ZERO);
     let (debugger_size, set_debugger_size) = use_state(hooks, Vec2::ZERO);
 
     let (w, set_w) = use_state(hooks, 300.0);
-    let (w_memory, set_w_memory) = use_state(hooks, 0.0);
+    // let (w_memory, set_w_memory) = use_state(hooks, 0.0);
     let (mouse_on_edge, set_mouse_on_edge) = use_state(hooks, false);
     let (should_track_resize, set_should_track_resize) = use_state(hooks, false);
 
@@ -48,7 +48,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
         let state = client_state.clone();
         let render_target = render_target.clone();
         let set_w = set_w.clone();
-        let set_w_memory = set_w_memory.clone();
+        // let set_w_memory = set_w_memory.clone();
         move |world| {
             let mut state = state.game_state.lock();
 
@@ -63,9 +63,9 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
             }
             if should_track_resize {
                 set_w(mouse_pos.x);
-                set_w_memory(mouse_pos.x);
+                // set_w_memory(mouse_pos.x);
             }
-            mouse_pos.x -= ecs_size.x;
+            // mouse_pos.x -= ecs_size.x;
             mouse_pos.y -= debugger_size.y;
 
             state
@@ -97,49 +97,49 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     });
 
     Dock::el([
-        if show_debug {
-            MeasureSize::el(
-                Dock::el([
-                    Button::new(if show_ecs { "\u{f137}" } else { "\u{f138}" }, move |_| {
-                        set_show_ecs(!show_ecs)
-                    })
-                    .style(ambient_ui_native::ButtonStyle::Flat)
-                    .toggled(show_ecs)
-                    .el(),
-                    if show_ecs {
-                        if w_memory != 0.0 {
-                            set_w(w_memory)
-                        } else {
-                            set_w(300.0)
-                        };
-                        ScrollArea::el(
-                            ScrollAreaSizing::FitParentWidth,
-                            ECSEditor {
-                                world: Arc::new(InspectableAsyncWorld(cb({
-                                    let client_state = client_state.clone();
-                                    move |res| {
-                                        let client_state = client_state.game_state.lock();
-                                        res(&client_state.world)
-                                    }
-                                }))),
-                            }
-                            .el()
-                            .memoize_subtree(client_state.uid),
-                        )
-                    } else {
-                        set_w(0.0);
-                        Element::new()
-                    },
-                ])
-                .with(width(), w)
-                .with(docking(), Docking::Left)
-                .with_background(vec4(0., 0., 0., 1.))
-                .with(padding(), Borders::even(STREET).into()),
-                set_ecs_size,
-            )
-        } else {
-            Element::new()
-        },
+        // if show_debug {
+        //     MeasureSize::el(
+        //         Dock::el([
+        //             Button::new(if show_ecs { "\u{f137}" } else { "\u{f138}" }, move |_| {
+        //                 set_show_ecs(!show_ecs)
+        //             })
+        //             .style(ambient_ui_native::ButtonStyle::Flat)
+        //             .toggled(show_ecs)
+        //             .el(),
+        //             if show_ecs {
+        //                 if w_memory != 0.0 {
+        //                     set_w(w_memory)
+        //                 } else {
+        //                     set_w(300.0)
+        //                 };
+        //                 ScrollArea::el(
+        //                     ScrollAreaSizing::FitParentWidth,
+        //                     ECSEditor {
+        //                         world: Arc::new(InspectableAsyncWorld(cb({
+        //                             let client_state = client_state.clone();
+        //                             move |res| {
+        //                                 let client_state = client_state.game_state.lock();
+        //                                 res(&client_state.world)
+        //                             }
+        //                         }))),
+        //                     }
+        //                     .el()
+        //                     .memoize_subtree(client_state.uid),
+        //                 )
+        //             } else {
+        //                 set_w(0.0);
+        //                 Element::new()
+        //             },
+        //         ])
+        //         .with(width(), w)
+        //         .with(docking(), Docking::Left)
+        //         .with_background(vec4(0., 0., 0., 1.))
+        //         .with(padding(), Borders::even(STREET).into()),
+        //         set_ecs_size,
+        //     )
+        // } else {
+        //     Element::new()
+        // },
         if show_debug {
             MeasureSize::el(
                 Debugger {
