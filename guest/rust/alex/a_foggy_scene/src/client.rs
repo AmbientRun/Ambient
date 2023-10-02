@@ -113,6 +113,7 @@ fn make_chicken_anims() -> Entity {
     Entity::new()
         .with(death(), anim_chkn("Fallen Idle"))
         .with(idle(), anim_chkn("Offensive Idle"))
+        .with(jump(), anim_chkn("Offensive Idle")) // TODO: add a jump
         .with(walk_forward(), anim_chkn("Jog Forward"))
         .with(walk_forward_left(), anim_chkn("Jog Forward Diagonal"))
         .with(walk_forward_right(), anim_chkn("Jog Forward Diagonal (1)"))
