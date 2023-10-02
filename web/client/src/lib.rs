@@ -78,8 +78,7 @@ fn init(settings: &Settings) -> anyhow::Result<()> {
     if settings.enable_logging {
         let fmt_layer = tracing_subscriber::fmt::layer()
             .with_ansi(true) // Only partially supported, but works on Chrome
-            // .without_time()
-            .with_timer(UtcTime::rfc_3339()) // std::time is not available in browsers
+            .without_time()
             .with_writer(MakeConsoleWriter); // write events to the console
 
         let filter = settings

@@ -12,15 +12,12 @@ use ambient_native_std::{
 };
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_sys::{
-    task::RuntimeHandle,
-    time::{sleep_label, Instant},
-};
+use ambient_sys::{task::RuntimeHandle, time::sleep_label};
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use bytes::{BufMut, BytesMut};
 use futures::{SinkExt, StreamExt};
-use glam::{uvec2, Mat4};
+use glam::uvec2;
 use parking_lot::Mutex;
 use std::{sync::Arc, time::Duration};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -227,9 +224,6 @@ impl ElementComponent for GameClientView {
     }
 }
 
-const ALLOWED_FRAME_TIME: Duration = Duration::from_nanos(16_666_666); // 1/60 s
-const MAX_ACCUMMULATED_FRAME_DELAY: Duration = Duration::from_millis(20);
-
 fn run_game_logic(
     hooks: &mut Hooks,
     game_state: SharedClientGameState,
@@ -239,34 +233,7 @@ fn run_game_logic(
 
     let gpu = hooks.world.resource(gpu()).clone();
 
-    let mut current_time = Mutex::new(Instant::now());
-    let accummulated_frame_delay = Mutex::new(Duration::ZERO);
-    let start = Instant::now();
-
     use_frame(hooks, move |app_world| {
-        // let accummulated_frame_delay = &mut *accummulated_frame_delay.lock();
-        // if *accummulated_frame_delay > MAX_ACCUMMULATED_FRAME_DELAY {
-        //     // too much delay accummulated, dropping frame to allow for browser networking handling
-        //     *accummulated_frame_delay = Duration::ZERO;
-        //     return;
-        // }
-
-        // let current_time = &mut *current_time.lock();
-        // if (current_time.duration_since(start).as_secs() / 10) % 2 == 0 {
-        //     loop {
-        //         let new_time = Instant::now();
-
-        //         let a = Mat4::IDENTITY;
-        //         if new_time.duration_since(*current_time) > Duration::from_millis(50) {
-        //             break;
-        //         }
-        //         let _ = std::hint::black_box(a * a);
-        //     }
-        // }
-
-        // let now = Instant::now();
-        // *current_time = now;
-
         let mut game_state = game_state.lock();
 
         // Pipe events from app world to game world
@@ -281,14 +248,6 @@ fn run_game_logic(
         }
 
         game_state.on_frame(&gpu, &render_target.0);
-
-        // let frame_time = now.elapsed();
-        // let frame_delay = ALLOWED_FRAME_TIME.saturating_sub(frame_time);
-        // *accummulated_frame_delay = if frame_delay == Duration::ZERO {
-        //     Duration::ZERO
-        // } else {
-        //     *accummulated_frame_delay + frame_delay
-        // };
     });
 }
 
@@ -363,9 +322,6 @@ async fn handle_connection(
     tracing::info!("Client connected");
 
     while let ClientProtoState::Connected(connected) = &mut client {
-        if proxy_rx.len() > 0 {
-            tracing::info!("Proxy queue: {:?}", proxy_rx.len());
-        }
         tokio::select! {
             Some(frame) = push_recv.next() => {
                 client.process_push(&assets, fail_on_version_mismatch, frame?)?;
@@ -414,12 +370,7 @@ async fn handle_request(
     message: ProxyMessage,
 ) -> Result<(), NetworkError> {
     match message {
-        ProxyMessage::RequestBi {
-            id,
-            mut data,
-            resp,
-            message_id,
-        } => {
+        ProxyMessage::RequestBi { id, mut data, resp } => {
             tracing::info!("Sending bi request");
             let (mut send, mut recv) = conn.open_bi().await?;
 
@@ -449,11 +400,7 @@ async fn handle_request(
 
             Ok(())
         }
-        ProxyMessage::RequestUni {
-            message_id,
-            id,
-            mut data,
-        } => {
+        ProxyMessage::RequestUni { id, mut data } => {
             let mut send = conn.open_uni().await?;
 
             runtime.spawn_local(async move {
@@ -470,11 +417,7 @@ async fn handle_request(
 
             Ok(())
         }
-        ProxyMessage::Datagram {
-            id,
-            data,
-            message_id,
-        } => {
+        ProxyMessage::Datagram { id, data } => {
             let mut bytes = BytesMut::with_capacity(4 + data.len());
 
             bytes.put_u32(id);
