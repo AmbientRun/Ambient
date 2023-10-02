@@ -271,7 +271,7 @@ fn run_game_logic(
         game_state.on_frame(&gpu, &render_target.0);
 
         let frame_time = now.elapsed();
-        let frame_delay = ALLOWED_FRAME_TIME.saturating_sub(frame_time);
+        let frame_delay = frame_time.saturating_sub(ALLOWED_FRAME_TIME);
         *accummulated_frame_delay = if frame_delay == Duration::ZERO {
             // frame was processed in time -> reset the accummulated delay
             Duration::ZERO
