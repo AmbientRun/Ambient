@@ -14,83 +14,87 @@ basic_character_animations = { type = "EntityId", description = "Apply animation
     "Debuggable",
     "Networked",
 ] }
+use_rifle_animations = { type = "Empty", description = "Use rifle animations instead of no-weapon animations", attributes = [
+    "Debuggable",
+    "Networked",
+] }
 
 # Overrides for the default animations
-walk_forward = { type = "String", description = "Url to animation", attributes = [
+walk_forward = { type = "String", description = "URL to animation", attributes = [
     "Debuggable",
     "Networked",
 ] }
-walk_backward = { type = "String", description = "Url to animation", attributes = [
+walk_backward = { type = "String", description = "URL to animation", attributes = [
     "Debuggable",
     "Networked",
 ] }
-walk_left = { type = "String", description = "Url to animation", attributes = [
+walk_left = { type = "String", description = "URL to animation", attributes = [
     "Debuggable",
     "Networked",
 ] }
-walk_right = { type = "String", description = "Url to animation", attributes = [
+walk_right = { type = "String", description = "URL to animation", attributes = [
     "Debuggable",
     "Networked",
 ] }
-walk_forward_left = { type = "String", description = "Url to animation", attributes = [
+walk_forward_left = { type = "String", description = "URL to animation", attributes = [
     "Debuggable",
     "Networked",
 ] }
-walk_forward_right = { type = "String", description = "Url to animation", attributes = [
+walk_forward_right = { type = "String", description = "URL to animation", attributes = [
     "Debuggable",
     "Networked",
 ] }
-walk_backward_left = { type = "String", description = "Url to animation", attributes = [
+walk_backward_left = { type = "String", description = "URL to animation", attributes = [
     "Debuggable",
     "Networked",
 ] }
-walk_backward_right = { type = "String", description = "Url to animation", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-
-run_forward = { type = "String", description = "Url to animation", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-run_backward = { type = "String", description = "Url to animation", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-run_left = { type = "String", description = "Url to animation", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-run_right = { type = "String", description = "Url to animation", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-run_forward_left = { type = "String", description = "Url to animation", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-run_forward_right = { type = "String", description = "Url to animation", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-run_backward_left = { type = "String", description = "Url to animation", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-run_backward_right = { type = "String", description = "Url to animation", attributes = [
+walk_backward_right = { type = "String", description = "URL to animation", attributes = [
     "Debuggable",
     "Networked",
 ] }
 
-idle = { type = "String", description = "Url to animation", attributes = [
+run_forward = { type = "String", description = "URL to animation", attributes = [
     "Debuggable",
     "Networked",
 ] }
-death = { type = "String", description = "Url to animation", attributes = [
+run_backward = { type = "String", description = "URL to animation", attributes = [
     "Debuggable",
     "Networked",
 ] }
-jump = { type = "String", description = "Url to animation", attributes = [
+run_left = { type = "String", description = "URL to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_right = { type = "String", description = "URL to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_forward_left = { type = "String", description = "URL to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_forward_right = { type = "String", description = "URL to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_backward_left = { type = "String", description = "URL to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+run_backward_right = { type = "String", description = "URL to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+idle = { type = "String", description = "URL to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+death = { type = "String", description = "URL to animation", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+jump = { type = "String", description = "URL to animation", attributes = [
     "Debuggable",
     "Networked",
 ] }

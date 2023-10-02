@@ -1,7 +1,0 @@
-[[pipelines]]
-type = "Models"
-sources = ["*.fbx"]
-
-[[pipelines.transforms]]
-type = "RotateZ"
-deg = -90.0
