@@ -86,8 +86,8 @@ pub fn main(args: &Release) -> anyhow::Result<()> {
 }
 
 const DOCKERFILE: &str = "Dockerfile";
-const AMBIENT_MANIFEST: &str = "schema/ambient.toml";
-const AMBIENT_MANIFEST_INCLUDES: &str = "schema/schema";
+const AMBIENT_MANIFEST: &str = "schema/schema/ambient.toml";
+const AMBIENT_MANIFEST_INCLUDES: &str = "schema/schema/includes";
 const ROOT_CARGO: &str = "Cargo.toml";
 const WEB_CARGO: &str = "web/Cargo.toml";
 const GUEST_RUST_CARGO: &str = "guest/rust/Cargo.toml";
