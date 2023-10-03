@@ -2,8 +2,8 @@
 name = "Audio"
 description = "Audio functionality and state."
 content = { type = "Asset", schema = true }
-version = "0.3.0-rc.4"
-ambient_version = "0.3.0-rc.4"
+version = "0.3.0-rc.5"
+ambient_version = "0.3.0-rc.5"
 
 [components.is_audio_player]
 type = "Empty"

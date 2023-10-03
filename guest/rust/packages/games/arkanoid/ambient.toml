@@ -2,11 +2,11 @@
 id = "t6opuz533binrqqjsbgcezprtfa6vpyy"
 name = "Arkanoid"
 description = "A remake of the classic Arkanoid game."
-version = "0.3.0-rc.4"
+version = "0.3.0-rc.5"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/arkanoid"
 type = "Game"
 content = { type = "Playable" }
-ambient_version = "0.3.0-rc.4"
+ambient_version = "0.3.0-rc.5"
 
 [components]
 player_movement_direction = { type = "F32", name = "Player Movement Direction", description = "Direction of player movement" }
