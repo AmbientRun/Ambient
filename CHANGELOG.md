@@ -32,7 +32,9 @@ These PRs are not directly user-facing, but improve the development experience. 
 ### Removed
 -->
 
-## Version 0.3.0-dev (YYYY-MM-DD)
+## Version 0.3.0 (2023-10-04)
+
+This release involved a great many changes, including porting Ambient to the web, adding support for deployments, many API changes, and more. Not all changes may be reflected in this changelog; please let us know if you find any omissions.
 
 ### Added
 
@@ -54,22 +56,16 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **ECS**: All integer types from 8-bit to 64-bit are now supported as component types, including signed and unsigned variants. Additionally, all signed and unsigned integer vector types are now supported. This includes `U16`, `IVec2`, `UVec3`, etc.
 - **Docs**: The IDE documentation has been improved, including information on how to set up Emacs for Ambient development (thanks to [@kevzettler](https://github.com/kevzettler) in [#505](https://github.com/AmbientRun/Ambient/pull/505)).
 - **Assets**: `ambient assets import` can be used to import assets one by one. This will create or modify the `pipeline.toml` file for you.
-- **Packages**: A new fps_controller package to easily get started with a fps or tps camera
 - **Camera**: Added `camera::get_active` to get the active camera.
 - **Client**: When using the native client, you can now use `--window-x` and `--window-y` to specify the window position, as well as `--window-width` and `--window-height` to specify the window size.
-
-#### Examples
-
-- The examples have been rearranged to be more discoverable. They are now grouped by category.
-- **Clock**: An analog `clock` example has been added to test line rendering.
-- **Audio control**: An `audio_ctrl` example has been added to show the new audio API usage with UI.
-- **Dependencies**: A `dependencies` example has been added to show how to use the new semantic system.
-- **Arkanoid**: An `arkanoid` example has been added as another game example. It is a reimplementation of the 1986 Arkanoid game.
-
-### Changed
+- **Packages**: A set of standard packages have been added. Explore `guest/rust/packages` to find them. These include a character controller, a focus-grabber, a package manager, and more.
+- **Packages**: Several sample games have been added, including `tangent`, `arkanoid`, `pong`, and more.
+- **Examples**: Examples have been added for new functionality, including `clock`, `audio_ctrl`, `dependencies`, and more.
+- **Debugging**: Sentry has been added to the client and server to automatically report crashes. This can be disabled in Ambient's `settings.toml`.
 
 #### Breaking
 
+- **Examples**: Examples have been rearranged to be more discoverable. They are now grouped by category.
 - **Project**: Projects have been renamed to Packages; see the [package documentation](https://ambientrun.github.io/Ambient/reference/package.html) for details.
 - **Package**: As mentioned above, a new package semantic system has been added. This comes with several breaking changes:
 
@@ -89,7 +85,8 @@ These PRs are not directly user-facing, but improve the development experience. 
 
   - In your `ambient.toml`:
 
-    - Specifying a version is now mandatory.
+    - Specifying a `version` is now mandatory.
+    - Specifying a `content` is now mandatory.
     - Messages now have PascalCase IDs:
       - `messages.set_controller` -> `messages.SetController`
     - Enums are now supported; they are defined as follows, and can be used anywhere a primitive type can be used, including components and messages.
@@ -129,7 +126,6 @@ These PRs are not directly user-facing, but improve the development experience. 
   - `core::wasm::module_on_server` -> `core::wasm::is_module_on_server`
 
 - **API**: Locally-broadcasted messages can now choose to include the originating module in the broadcast; this is an additional boolean parameter to `ModuleMessage::send_local_broadcast` and `message::Target::LocalBroadcast`.
-- **Audio**: Audio API has completely changed to adapt to the ECS style. See the [audio documentation](https://ambientrun.github.io/Ambient/reference/audio.html) for the new usage. A CLI option `--mute-audio` is also added.
 - **Camera**: Renamed `screen_to_world_direction` to `screen_position_to_world_ray` and `clip_space_ray` to `clip_position_to_world_ray`. See [#410](https://github.com/AmbientRun/Ambient/issues/410).
 - **Package**: `type = { type = "Vec3" }` is no longer valid syntax in `ambient.toml`. Only `type = "Vec3"` and `type = { type = "Vec", element-type = "Vec3" }` are valid.
 - **Physics**: Renamed the `visualizing` component to `visualize_collider`.
@@ -137,17 +133,11 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Physics**: Renamed `box_collider` to `cube_collider`.
 - **API**: The `time` function has been split into `game_time` and `epoch_time`. The `dtime` component has been renamed to `delta_time`. The `frametime` function has been renamed to `delta_time`.
 - **Assets**: Asset pipelines now use TOML instead of JSON. Use the `ambient assets migrate-pipelines-toml` command to migrate. (Note that this command will be removed in the next release.)
-- **Rendering**: Removing the `outline_recursive` component from a entity will now remove the outline from its children as well.
-- **API**: The `ambient_ui` prelude (and the `ambient_api` prelude, by extension) no longer glob-imports components into the global namespace. This means that you will need to import components explicitly.
-- **Input**: `CursorLockGuard` no longer takes an initial argument for its lock state. Instead, it will automatically lock and unlock on focus change.
 - **API**: Removed `Entity::with_default` due to its confusing behaviour (Rust defaults are not necessarily the same as component or concept defaults). You will now have to explicitly specify a value for each component.
-- **Messaging**: Messages without empty fields now generate a unit struct, instead of a struct with no fields. That is, they generate `struct MyMessage;` instead of `struct MyMessage {}`.
-- **Examples**: The games have been moved to `guest/rust/packages/games`. This is to make it clearer that they are packages, not examples.
 - **API**: `entity::wait_for_component` is now marked as `must_use` to ensure users consider the possibility of the entity being despawned.
 - **Elements**: All hooks are now free functions (i.e. `use_state(hooks, ..)` instead of `hooks.use_state(..)`)
-- **UI**: Focus is now global across different packages, and we've removed the FocusRoot component
-- **API**: CursorLockGuard removed and `hide_cursor` package introduced.
-- **Hierarchies**: The `children` component is now automatically derived from `parent` components (unless the user opts out of this). The `children` component is also not networked any longer, since it's calculated on the client side.
+- **UI**: Focus is now global across different packages, including the removal of the `FocusRoot` element component.
+- **Hierarchies**: The `children` component is now automatically derived from `parent` components (unless the user opts out of this). The `children` component is also no longer networked, as it is automatically derived on the client.
 - **Concepts**: Concept code generation has been changed to generate `structs` instead, as well as adding support for optional components. See the documentation for more information.
 
 #### Non-breaking
@@ -156,6 +146,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Debugger**: The debugger has been improved with a resizable sidebar, a scrollable view, and a component filter.
 - **Animation**: The animation graph is now executed on the server as well.
 - **CLI**: The `ambient new` command now takes several parameters to customize the resulting generation.
+- **Rendering**: The renderer now runs using the direct pipeline on all architectures. This is temporary until platform-specific issues with the multi-draw indirect pipeline are addressed.
 
 ### Fixed
 
@@ -169,9 +160,14 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **UI**: The `ScrollArea` now has a scroll bar.
 - **Input**: Input is now cleared when the window loses focus, preventing "stuck input" bugs.
 - **UI**: Layout-related properties, like alignment and fit, did not work correctly for certain values. This has been fixed with the introduction of enums.
+- **Player**: Player entities are now recursively despawned when disconnecting.
 - **Build**: Rust compilation errors are now more readable with more colors and fewer unused warnings.
 - **ECS**: The `transformable` concept now includes `local_to_world` to ensure that the world transform is always available.
 - **Physics**: The `physics::raycast[_first]` functions will now validate the direction to ensure that they are non-zero, non-NaN and normalized.
+- **Rendering**: Removing the `outline_recursive` component from a entity will now remove the outline from its children as well.
+- **API**: The `ambient_ui` prelude (and the `ambient_api` prelude, by extension) no longer glob-imports components into the global namespace. This means that you will need to import components explicitly.
+- **Messaging**: Messages without empty fields now generate a unit struct, instead of a struct with no fields. That is, they generate `struct MyMessage;` instead of `struct MyMessage {}`.
+- **Physics**: Child collision volumes are now automatically updated when their parent's transform changes. Thanks to [@kevzettler](https://github.com/kevzettler) for fixing this in [#885](https://github.com/AmbientRun/Ambient/pull/885)!
 
 ### Community PRs to internals
 
