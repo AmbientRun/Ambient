@@ -2,9 +2,11 @@
 
 ## Coordinate system
 
-By default, Ambient uses a right-handed coordinate system for NDC with `z` from 1 to 0 (i.e. reverse-z with the near plane at `z=1`, and the far plane at `z=0`).
+By default, Ambient uses a right-handed coordinate system for normalized device coordinates (NDC) with `z` from 1 to 0 (i.e. reverse-z with the near plane at `z=1`, and the far plane at `z=0`).
 
-For world coordinates, it uses a left-handed system. We consider `x` to be right, `y` to be back, and `z` to be up (same as Unreal). This means that the default camera without any transformation is lying on its stomach and facing downwards.
+For world coordinates, it uses a left-handed system. We consider `x` to be right, `y` to be back, and `z` to be up (same as Unreal). Note that this means forward is `-y`, not `+y` or `+z`!
+
+This means that the default camera without any transformation is lying on its stomach and facing downwards.
 
 ```
 NDC:
@@ -29,5 +31,5 @@ Freya Holmér has produced an overview of which programs use which coordinate sy
 
 For more information on our use of reverse-z, consult the following links:
 
-- https://developer.nvidia.com/content/depth-precision-visualized
-- https://www.danielecarbone.com/reverse-depth-buffer-in-opengl/
+- <https://developer.nvidia.com/content/depth-precision-visualized>
+- <https://www.danielecarbone.com/reverse-depth-buffer-in-opengl/>

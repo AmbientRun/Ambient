@@ -16,7 +16,7 @@ Running an example can be done like this:
 cargo cf run decals
 ```
 
-By default, Campfire will build Ambient with the `debug` profile. To build with the `release` profile and to build the assets with `--relase`, use the `--release` flag before the example and after:
+By default, Campfire will build Ambient with the `debug` profile. To build with the `release` profile and to build the assets with `--release`, use the `--release` flag before the example and after:
 
 ```sh
 cargo cf run --release decals -- --release
@@ -35,16 +35,24 @@ cargo campfire doc api --open
 As a developer, you may find yourself needing to install (a specific version of) Ambient on your system. This can be done with the following command:
 
 ```
-cargo campfire install [--git-revision <revision>] [--git-tag <tag>]
+cargo campfire install [--git-revision <revision>] [--git-tag <tag>] [--suffix <suffix>]
 ```
 
-If no revision or tag is specified, the version of Ambient in the current directory will be installed. Otherwise, if specified, the relevant version will be suffixed to the executable's name:
+If no revision or tag is specified, the version of Ambient in the current directory will be installed as `ambient-dev`. Otherwise, if specified, the relevant version will be suffixed to the executable's name by default:
 
 ```sh
 cargo campfire install --git-tag v0.1.0
 ```
 
-This will install Ambient as `ambient-v0.1.0`.
+This will install Ambient 0.1 as `ambient-v0.1.0`.
+
+A custom suffix can be specified with the `--suffix` flag, and will override any suffix that would otherwise be used:
+
+```sh
+cargo campfire install --git-tag v0.1.0 --suffix back-in-time
+```
+
+This will install Ambient 0.1 as `ambient-back-in-time`.
 
 ## Adding to the API
 
@@ -54,8 +62,6 @@ At present, there is only one WIT world, `bindings`, in the `main.wit` folder, a
 
 These bindings are wired up in the host using [`wasmtime`'s Component Model support](https://docs.wasmtime.dev/api/wasmtime/component/index.html).
 The WIT interfaces generate traits, which are then implemented within [crates/wasm/src/client/mod.rs](https://github.com/AmbientRun/Ambient/tree/main/crates/wasm/src/client/mod.rs) and [crates/wasm/src/server/mod.rs](https://github.com/AmbientRun/Ambient/tree/main/crates/wasm/src/server/mod.rs). As all interfaces need to be implemented - even when not relevant to the side of the network boundary you're on - unused implementations go in the `unused.rs` module in the same folder.
-
-Note that the bindings use `async fn`s in the traits - this is a side-effect of `wasmtime-wasi` preview2 being async-only. Do _not_ attempt to use async functionality in your implementations; it will not work.
 
 Types that are shared between interfaces should go in `types.wit`; otherwise, they should go in the relevant interface file. Where possible, try to describe as much within the WIT files; the more that is specified in the WIT files, the less code needs to be written for each guest language.
 
@@ -172,14 +178,15 @@ Running `cargo campfire golden-images --prefix ui check` will only check tests w
 
 ### Common failures
 
-- If your test includes anything that animates over time, this is likely to fail the golden image test because the current golden image test implementation waits for a brief moment before capturing the image. During this moment, the animation might advance to a state which causes golden image test to fail. Therefore all tests should be static by default.
+- If your test includes anything that animates over time, this is likely to fail the golden image test because the current golden image test implementation does not attempt to exactly synchronize
+  global time between runs. As a result, the test may never pass as the animation will never be in exactly the same pose. All tests should be static by default.
 
 ### Flakiness
 
 There are known situations where a test might fail seemingly randomly, even if the images look perceptually identical. These situations include:
 
-- The golden image was generated on a real graphics hardware, for example on the contributors computer, while the CI version runs `llvmpipe` which is a software rasterizer. This might cause small imperceptible differences. There are currently no clean solutions to this other than increasing the error threshold.
-- Timing out. Each test runs with a timeout setting which could happen if the test takes too long to produce an image. On a powerful enough local machine this might not be an issue, but runtimes might be more unpredictable in Github Actions. In these cases we can either increase the timeout or see if we can optimize the test.
+- The golden image was generated on real graphics hardware - for example, on the contributor's computer - while the CI version runs `llvmpipe`, which is a software rasterizer. This might cause small imperceptible differences. There are currently no clean solutions to this other than increasing the error threshold and/or re-generating the image using `golden-images update`.
+- Timing out. Each test runs with a timeout, which may fail the test if it takes too long to produce an image. On a powerful enough local machine, this might not be an issue, but execution times are less predictable in Github Actions. In these cases, the timeout can be increased or the test can be optimized.
 
 ## Releasing
 

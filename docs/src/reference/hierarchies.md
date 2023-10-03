@@ -1,6 +1,6 @@
 # Hierarchies and transforms
 
-Ambient supports hierarchies of entities using the `parent` and `children` components. The user only specifies the `parent` component, the `children` are automatically derived from the existing parents.
+Ambient supports hierarchies of entities using the `parent` and `children` components. The user only specifies the `parent` component; the `children` are automatically derived from the existing parents.
 As an example, the following entities in the ECS
 
 ```yml
@@ -25,7 +25,7 @@ When using the `model_from_url` or `prefab_from_url` components, the entire mode
 
 ## Transforms in hierarchies
 
-Hierarchies are common to use for transforms where a root entity is moved around and all its children should move with it.
+Hierarchies are commonly used for transforms where a root entity is moved around and all its children should move with it.
 To apply transforms to a hierarchy, `local_to_parent` must be used:
 
 ```yml
@@ -68,13 +68,13 @@ b.local_to_world = a.local_to_world * b.local_to_parent;
 
 The above will let you express any transform hierarchy, but to reduce the number of entities, you can also use
 `mesh_to_local` and `mesh_to_world`. When `mesh_to_world` exists, it replaces `local_to_world` as the "final"
-transform for the renderered mesh. It's calculated as follows:
+transform for the rendered mesh. It's calculated as follows:
 
 ```yml
 entity a:
-    - local_to_world: Mat4(..)
-    - mesh_to_local: Mat4(..)
-    - mesh_to_world: Mat4(..)
+  - local_to_world: Mat4(..)
+  - mesh_to_local: Mat4(..)
+  - mesh_to_world: Mat4(..)
 ```
 
 ```rust
@@ -88,5 +88,5 @@ would be rendered at the center of the arm (inside the arm), so by using `mesh_t
 ## Opting out of automatically derived children
 
 If you wish to manage the `children` component yourself, you can attach an `unmanaged_children` component to your
-entity. This stops `children` from being automatically created, and it's now up to you to populate the `children`
+entity. This stops `children` from being automatically populated, and it's now up to you to populate the `children`
 component to create a valid hierarchy.

@@ -1,8 +1,11 @@
 # Audio
 
-Ambient has basic audio functionality including sound playback, panning and volume control.
+Ambient has basic audio functionality on native including sound playback, panning and volume control.
+Audio is not yet supported on the web, but will be implemented in the near-future.
 
-3D audio with HRTF is also included but considered as highly experimental.
+3D audio with HRTF is also included but is considered highly experimental.
+
+The API described here is _highly_ subject to change, and will likely be completely redesigned in the future.
 
 ## Usage
 
@@ -18,7 +21,9 @@ Audio should be loaded and played in clientside WASM/`client.rs` (the API is not
 - `./guest/rust/examples/ui/audio_ctrl`
 - `./guest/rust/packages/games/music_sequencer`
 
-The general idea is that in the ECS system, you can create an `audio::AudioPlayer` or `audio::SpatialAudioPlayer`. You can set the property of these players with methods such as `set_amplitude`. Then you can use the `player` to play a sound assets. This will actually return an `EntityId`. By `add_component` to the entity, you can control the playing sound as well. The `audio_ctrl` example shows the details. When the sound playing finishes, the entity will automatically despawn. To stop a playing sound in advance, see the [audio_ctrl example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/audio_ctrl).
+The general idea is that in the ECS system, you can create an `audio::AudioPlayer` or `audio::SpatialAudioPlayer`. You can set the property of these players with methods such as `set_amplitude`. Then you can use the `player` to play a sound assets. This will actually return an `EntityId`.
+
+By `add_component` to the entity, you can control the playing sound as well. The `audio_ctrl` example shows the details. When the sound playing finishes, the entity will automatically despawn. To stop a playing sound in advance, see the [audio_ctrl example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/audio_ctrl).
 
 ```rust
 pub fn main() {
