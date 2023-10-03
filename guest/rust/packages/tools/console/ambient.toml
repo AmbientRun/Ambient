@@ -1,9 +1,9 @@
 [package]
 id = "wqkvthxjifxdwgi4hc4efmtjct6tljbw"
 name = "Console"
-version = "0.3.0-nightly-2023-10-03"
+version = "0.3.0-internal-frame-dropping2"
 content = { type = "Tool" }
-ambient_version = "0.3.0-nightly-2023-10-03"
+ambient_version = "0.3.0-internal-frame-dropping2"
 
 [messages.ConsoleServerInput.fields]
 input = "String"
