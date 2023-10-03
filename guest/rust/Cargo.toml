@@ -14,6 +14,8 @@ members = [
     "alex/some_snowy_purgatory",
     "alex/snowy_sceneloader",
     "alex/snowy_pcs",
+    "alex/droplet",
+    "alex/snowy_droplets",
 
     "api",
     "api_core",
