@@ -19,6 +19,8 @@ use ambient_ui_native::{
 };
 use glam::{uvec2, vec4, Vec2};
 
+const ECS_DEBUGGER: bool = false;
+
 #[element_component]
 pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
@@ -97,49 +99,49 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     });
 
     Dock::el([
-        // if show_debug {
-        //     MeasureSize::el(
-        //         Dock::el([
-        //             Button::new(if show_ecs { "\u{f137}" } else { "\u{f138}" }, move |_| {
-        //                 set_show_ecs(!show_ecs)
-        //             })
-        //             .style(ambient_ui_native::ButtonStyle::Flat)
-        //             .toggled(show_ecs)
-        //             .el(),
-        //             if show_ecs {
-        //                 if w_memory != 0.0 {
-        //                     set_w(w_memory)
-        //                 } else {
-        //                     set_w(300.0)
-        //                 };
-        //                 ScrollArea::el(
-        //                     ScrollAreaSizing::FitParentWidth,
-        //                     ECSEditor {
-        //                         world: Arc::new(InspectableAsyncWorld(cb({
-        //                             let client_state = client_state.clone();
-        //                             move |res| {
-        //                                 let client_state = client_state.game_state.lock();
-        //                                 res(&client_state.world)
-        //                             }
-        //                         }))),
-        //                     }
-        //                     .el()
-        //                     .memoize_subtree(client_state.uid),
-        //                 )
-        //             } else {
-        //                 set_w(0.0);
-        //                 Element::new()
-        //             },
-        //         ])
-        //         .with(width(), w)
-        //         .with(docking(), Docking::Left)
-        //         .with_background(vec4(0., 0., 0., 1.))
-        //         .with(padding(), Borders::even(STREET).into()),
-        //         set_ecs_size,
-        //     )
-        // } else {
-        //     Element::new()
-        // },
+        if ECS_DEBUGGER && show_debug {
+            MeasureSize::el(
+                Dock::el([
+                    Button::new(if show_ecs { "\u{f137}" } else { "\u{f138}" }, move |_| {
+                        set_show_ecs(!show_ecs)
+                    })
+                    .style(ambient_ui_native::ButtonStyle::Flat)
+                    .toggled(show_ecs)
+                    .el(),
+                    if show_ecs {
+                        if w_memory != 0.0 {
+                            set_w(w_memory)
+                        } else {
+                            set_w(300.0)
+                        };
+                        ScrollArea::el(
+                            ScrollAreaSizing::FitParentWidth,
+                            ECSEditor {
+                                world: Arc::new(InspectableAsyncWorld(cb({
+                                    let client_state = client_state.clone();
+                                    move |res| {
+                                        let client_state = client_state.game_state.lock();
+                                        res(&client_state.world)
+                                    }
+                                }))),
+                            }
+                            .el()
+                            .memoize_subtree(client_state.uid),
+                        )
+                    } else {
+                        set_w(0.0);
+                        Element::new()
+                    },
+                ])
+                .with(width(), w)
+                .with(docking(), Docking::Left)
+                .with_background(vec4(0., 0., 0., 1.))
+                .with(padding(), Borders::even(STREET).into()),
+                set_ecs_size,
+            )
+        } else {
+            Element::new()
+        },
         if show_debug {
             MeasureSize::el(
                 Debugger {
