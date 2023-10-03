@@ -56,7 +56,13 @@ pub fn main() {
                         .with(
                             ambient_loop(),
                             packages::this::assets::url("4211__dobroide__firecrackling.ogg"),
-                        ),
+                        )
+                        // add: droplets: fire
+                        .with(
+                            packages::snowy_droplets::components::is_droplet_spawner(),
+                            (),
+                        )
+                        .with(packages::snowy_droplets::components::spawns_fire(), ()),
                 );
                 // add: too hot in center
                 Entity::new()

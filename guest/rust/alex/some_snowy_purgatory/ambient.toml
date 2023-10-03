@@ -10,6 +10,7 @@ snowy_sceneloader = { path = "../snowy_sceneloader" }
 snowy_pcs = { path = "../snowy_pcs" }
 temperature = { path = "../temperature" , deployment = "5wJt3UkQJ90EhEfX0e3P8x" }
 temperature_hud = { path = "../temperature_hud_magda" }
+snowy_droplets = { path = "../snowy_droplets" }
 
 [components]
 # effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
