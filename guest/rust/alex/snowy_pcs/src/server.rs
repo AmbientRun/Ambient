@@ -112,7 +112,14 @@ pub fn main() {
                 entity::mutate_component(corpse, dead_age(), |age| *age += delta_time());
                 if age > 3. {
                     entity::add_component(corpse, translation(), vec3(0., 0., 0.));
-                    entity::set_component(corpse, temperature(), HALF_FREEZING_TEMP);
+                    entity::set_component(
+                        corpse,
+                        temperature(),
+                        match entity::has_component(corpse, dead_roasted()) {
+                            true => TOO_HIGH_TEMP - 1.0,
+                            false => HALF_FREEZING_TEMP,
+                        },
+                    );
                     entity::remove_component(corpse, dead_age());
                     entity::remove_component(corpse, dead_frozen());
                     entity::remove_component(corpse, dead_roasted());
