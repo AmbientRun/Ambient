@@ -1,0 +1,16 @@
+[package]
+id = "i5x6q5ihyr27fcqn4f3lbhar63yky4k7"
+name = "droplet"
+version = "0.0.1"
+content = { type = "Asset", code = true }
+ambient_version = "0.3.0-nightly-2023-10-02"
+
+[component]
+just_looped = { type = "U8" }
+loop_length = { type = "F32" }
+calculated_loop_speed = { type = "F32" } # calculated based on loop_length
+age = { type = "F32" }
+
+tween_atob_a = { type = "Vec3" }
+tween_atob_b = { type = "Vec3" }
+tween_sinescale = { type = "F32" }
