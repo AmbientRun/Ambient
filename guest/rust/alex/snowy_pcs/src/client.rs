@@ -1,8 +1,13 @@
 use ambient_api::{
-    core::{model::components::model_from_url, player::components::is_player},
+    core::{
+        app::components::name, model::components::model_from_url, player::components::is_player,
+        transform::components::rotation,
+    },
     prelude::*,
 };
 use packages::character_animation::components::basic_character_animations;
+use packages::fps_controller::components::player_intermediate_rotation;
+use packages::this::components::dead_age;
 
 #[main]
 pub fn main() {
@@ -20,6 +25,14 @@ pub fn main() {
                     )
                     .with(basic_character_animations(), plr),
             );
+        }
+    });
+
+    ambient_api::core::messages::Frame::subscribe(|_| {
+        let player_id = player::get_local();
+        if entity::has_component(player_id, dead_age()) {
+            // if player is dead, reset camera
+            entity::add_component(player_id, player_intermediate_rotation(), Vec2::ZERO);
         }
     });
 }
