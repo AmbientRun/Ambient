@@ -90,3 +90,4 @@ js-sys = { workspace = true }
 
 tls-webpki-roots = ["dep:webpki-roots"]
 tls-native-roots = ["dep:rustls-native-certs"]
+frame-dropping = []
