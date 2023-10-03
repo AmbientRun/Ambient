@@ -150,7 +150,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            for (const workflow_id of ['deploy-server.yml', 'deploy-web.yml', 'deploy-packages.yml', 'publish-api.yml']) {
+            for (const workflow_id of ['deploy-server.yml', 'deploy-web.yml', 'deploy-packages.yml']) {
               github.rest.actions.createWorkflowDispatch({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -158,3 +158,20 @@ jobs:
                 ref: '${{ steps.meta.outputs.tag }}',
               })
             }
+
+  publish-api:
+    if: needs.meta.outputs.kind == 'full'
+    needs: [meta, build-app]
+    runs-on: ubuntu-22.04
+    env:
+      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'publish-api.yml',
+              ref: '${{ steps.meta.outputs.tag }}',
+            })
