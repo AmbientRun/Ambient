@@ -79,3 +79,6 @@ wasm-bindgen-futures = { workspace = true }
 
 ambient_physics = { path = "../physics" }
 physxx = { path = "../../libs/physxx" }
+
+[features]
+debug-local-datagram-latency = []

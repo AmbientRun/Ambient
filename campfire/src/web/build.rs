@@ -22,6 +22,8 @@ pub(crate) enum Profile {
 pub struct BuildOptions {
     #[arg(long, default_value = "dev")]
     pub(crate) profile: Profile,
+    #[arg(long, default_value = "")]
+    pub(crate) features: String,
     #[arg(long, default_value = "pkg")]
     pub pkg_name: String,
     #[arg(long, value_enum, default_value = "bundler")]
@@ -48,6 +50,10 @@ impl BuildOptions {
                 command.args(["--profile=profiling"]);
             }
         };
+
+        if !self.features.is_empty() {
+            command.args(["--features", &self.features]);
+        }
 
         let res = command.spawn()?.wait().await?;
 
@@ -88,6 +94,10 @@ impl BuildOptions {
         output_path.push(&self.pkg_name);
 
         command.arg("--out-dir").arg(output_path.clone());
+
+        if !self.features.is_empty() {
+            command.args(["--features", &self.features]);
+        }
 
         eprintln!("Building web client {command:?}");
 

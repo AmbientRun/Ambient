@@ -1,8 +1,5 @@
 use ambient_core::runtime;
-use ambient_ecs::{
-    generated::wasm::components::package_ref, internal_components::datagram_latencies, EntityId,
-    World,
-};
+use ambient_ecs::{generated::wasm::components::package_ref, EntityId, World};
 use ambient_network::{
     client::NetworkTransport, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
 };
@@ -28,37 +25,55 @@ pub fn subscribe(subscribed_events: &mut HashSet<String>, name: String) -> anyho
     Ok(())
 }
 
-fn ts_now() -> Duration {
-    SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap()
+#[cfg(feature = "debug-local-datagram-latency")]
+#[derive(Debug, Default)]
+struct DatagramLatencyStat {
+    count: usize,
+    latency: Duration,
+}
+#[cfg(feature = "debug-local-datagram-latency")]
+impl DatagramLatencyStat {
+    const SMOOTHING_FACTOR: u32 = 16;
+
+    pub fn on_datagram(&mut self, latency: Duration) {
+        self.count += 1;
+        self.latency =
+            ((Self::SMOOTHING_FACTOR - 1) * self.latency + latency) / Self::SMOOTHING_FACTOR;
+    }
+
+    pub fn now() -> Duration {
+        SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+    }
 }
 
 /// Reads an incoming datagram and dispatches to WASM
 pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> anyhow::Result<()> {
     use byteorder::ReadBytesExt;
 
-    let now = ts_now();
-
     let mut cursor = Cursor::new(&bytes);
     let package_id = cursor.read_u128::<byteorder::BigEndian>()?;
     let package_id = EntityId(package_id);
 
-    let ts = cursor.read_f64::<byteorder::BigEndian>()?;
-    let latency = now.saturating_sub(Duration::from_secs_f64(ts));
-    if let Some(user_id) = &user_id {
-        // tracing::warn!("Datagram latency {:?} {:?} {:?}", latency, ts, now);
-        if world.resource_mut_opt(datagram_latencies()).is_none() {
-            world.add_resource(datagram_latencies(), Default::default());
-        }
-        let (count, lat) = world
-            .resource_mut(datagram_latencies())
-            .entry(user_id.clone())
-            .or_default();
-        *count += 1;
-        *lat = (15 * *lat + latency) / 16;
-        if *count % 60 == 0 {
-            tracing::warn!("Datagram latency {} {:?}", user_id, lat);
+    #[cfg(feature = "debug-local-datagram-latency")]
+    {
+        use parking_lot::Mutex;
+        use std::collections::HashMap;
+        static DATAGRAM_LATENCIES: Mutex<Option<HashMap<String, DatagramLatencyStat>>> =
+            Mutex::new(None);
+        let ts = cursor.read_f64::<byteorder::BigEndian>()?;
+        if let Some(user_id) = &user_id {
+            let latency = DatagramLatencyStat::now().saturating_sub(Duration::from_secs_f64(ts));
+            let map = &mut *DATAGRAM_LATENCIES.lock();
+            if map.is_none() {
+                *map = Some(HashMap::new());
+            }
+            let stats = map.as_mut().unwrap().entry(user_id.clone()).or_default();
+            stats.on_datagram(latency);
+            if stats.count % 60 == 0 {
+                tracing::warn!("Datagram latency {} {:?}", user_id, stats.latency);
+            }
         }
     }
 
@@ -176,7 +191,8 @@ fn send_datagram(
 
     payload.put_u128(package_id.0);
 
-    payload.put_f64(ts_now().as_secs_f64());
+    #[cfg(feature = "debug-local-datagram-latency")]
+    payload.put_f64(DatagramLatencyStat::now().as_secs_f64());
 
     payload.put_u32(name.len().try_into()?);
     payload.extend_from_slice(name.as_bytes());
