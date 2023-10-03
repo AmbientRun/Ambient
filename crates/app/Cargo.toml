@@ -10,24 +10,24 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_sys = { path = "../sys" , version = "0.3.0-rc.4" }
-ambient_native_std = { path = "../native_std" , version = "0.3.0-rc.4" }
-ambient_core = { path = "../core" , version = "0.3.0-rc.4" }
-ambient_gizmos = { path = "../gizmos" , version = "0.3.0-rc.4" }
-ambient_gpu = { path = "../gpu" , version = "0.3.0-rc.4" }
-ambient_gpu_ecs = { path = "../gpu_ecs" , version = "0.3.0-rc.4" }
-ambient_renderer = { path = "../renderer" , version = "0.3.0-rc.4" }
-ambient_cameras = { path = "../cameras" , version = "0.3.0-rc.4" }
-ambient_ecs = { path = "../ecs" , version = "0.3.0-rc.4" }
-ambient_ui_native = { path = "../ui_native" , version = "0.3.0-rc.4" }
-ambient_focus = { path = "../focus" , version = "0.3.0-rc.4" }
-ambient_input = { path = "../input" , version = "0.3.0-rc.4" }
-ambient_model = { path = "../model" , version = "0.3.0-rc.4" }
-ambient_animation = { path = "../animation" , version = "0.3.0-rc.4" }
-ambient_procedurals = { path = "../procedurals" , version = "0.3.0-rc.4" }
-ambient_settings = { path = "../settings" , version = "0.3.0-rc.4" }
+ambient_sys = { path = "../sys" , version = "0.3.0-rc.4a" }
+ambient_native_std = { path = "../native_std" , version = "0.3.0-rc.4a" }
+ambient_core = { path = "../core" , version = "0.3.0-rc.4a" }
+ambient_gizmos = { path = "../gizmos" , version = "0.3.0-rc.4a" }
+ambient_gpu = { path = "../gpu" , version = "0.3.0-rc.4a" }
+ambient_gpu_ecs = { path = "../gpu_ecs" , version = "0.3.0-rc.4a" }
+ambient_renderer = { path = "../renderer" , version = "0.3.0-rc.4a" }
+ambient_cameras = { path = "../cameras" , version = "0.3.0-rc.4a" }
+ambient_ecs = { path = "../ecs" , version = "0.3.0-rc.4a" }
+ambient_ui_native = { path = "../ui_native" , version = "0.3.0-rc.4a" }
+ambient_focus = { path = "../focus" , version = "0.3.0-rc.4a" }
+ambient_input = { path = "../input" , version = "0.3.0-rc.4a" }
+ambient_model = { path = "../model" , version = "0.3.0-rc.4a" }
+ambient_animation = { path = "../animation" , version = "0.3.0-rc.4a" }
+ambient_procedurals = { path = "../procedurals" , version = "0.3.0-rc.4a" }
+ambient_settings = { path = "../settings" , version = "0.3.0-rc.4a" }
 
-ambient_element = { path = "../../shared_crates/element" , version = "0.3.0-rc.4" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.3.0-rc.4a" }
 
 winit = { workspace = true }
 flume = { workspace = true }

@@ -2,9 +2,9 @@
 id = "t5qdqwpkoxtelvafs7qpvzhaoperwfpt"
 name = "Tangent"
 description = "Ambient's tech demo game. Third-person, hovercars, and more."
-version = "0.3.0-rc.4"
+version = "0.3.0-rc.4a"
 content = { type = "Playable" }
-ambient_version = "0.3.0-rc.4"
+ambient_version = "0.3.0-rc.4a"
 authors = ["philpax"]
 
 [dependencies]

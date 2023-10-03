@@ -2,8 +2,8 @@
 name = "Procedurals"
 description = "Procedural asset functionality and related."
 content = { type = "Asset", schema = true }
-version = "0.3.0-rc.4"
-ambient_version = "0.3.0-rc.4"
+version = "0.3.0-rc.4a"
+ambient_version = "0.3.0-rc.4a"
 
 [components.procedural_mesh]
 type = "ProceduralMeshHandle"

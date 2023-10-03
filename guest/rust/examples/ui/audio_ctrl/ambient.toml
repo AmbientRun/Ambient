@@ -2,8 +2,8 @@
 id = "jmqsaivuk3nzk3inbdfj5mx4kqjmofdv"
 name = "Audio control [WIP]"
 description = "Playing audio with volume and panning. Audio does not currently work on the web."
-version = "0.3.0-rc.4"
+version = "0.3.0-rc.4a"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/audio_ctrl"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-rc.4"
+ambient_version = "0.3.0-rc.4a"

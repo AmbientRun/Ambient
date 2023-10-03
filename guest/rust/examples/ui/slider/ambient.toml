@@ -2,8 +2,8 @@
 id = "d4ctdtfmrwpccnqlb5pyu47tdah3rck5"
 name = "Slider"
 description = "Demonstration of various types of sliders for numbers."
-version = "0.3.0-rc.4"
+version = "0.3.0-rc.4a"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/slider"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-rc.4"
+ambient_version = "0.3.0-rc.4a"
