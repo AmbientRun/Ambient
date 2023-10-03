@@ -10,7 +10,7 @@ We'll start by adding the Mod Manager UI package to your game, so that you can l
 package_manager = { deployment = "4hEHArTmKMprisqnQPNxLK" }
 ```
 
-(To find the latest deployment, visit the page for [the package mananger](https://ambient-733e7.web.app/packages/hr4pxz7kfhzgimicoyh65ydel3aehuhk).)
+(To find the latest deployment, visit the page for [the package mananger](https://ambient.run/packages/hr4pxz7kfhzgimicoyh65ydel3aehuhk).)
 
 Then add this to the top of your `server.rs`'s main function:
 
