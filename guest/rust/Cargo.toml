@@ -16,6 +16,8 @@ members = [
     "alex/snowy_pcs",
     "alex/droplet",
     "alex/snowy_droplets",
+    "alex/live_player_count",
+    "alex/snowy_hints",
 
     "api",
     "api_core",
