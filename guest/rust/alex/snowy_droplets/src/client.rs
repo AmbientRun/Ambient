@@ -57,8 +57,8 @@ fn fires(test: bool) {
         .bind(|fires| {
             for (fire, place) in fires {
                 // create some fires
-                for _ in 0..35 {
-                    let (hoff, height) = (vec3(rsplat(1.), rsplat(1.), 0.), rr(4., 8.));
+                for _ in 0..70 {
+                    let (hoff, height) = (vec3(rsplat(1.), rsplat(1.), 0.), rr(2., 4.));
                     entity::add_child(
                         fire,
                         Entity::new()
@@ -76,6 +76,7 @@ fn fires(test: bool) {
                             .spawn(),
                     );
                 }
+
                 // create like ten smokes
                 for _ in 0..10 {
                     let (hoff, height) = (vec3(rsplat(1.), rsplat(1.), 0.), rr(15., 30.));
@@ -89,6 +90,7 @@ fn fires(test: bool) {
                             .with(is_firesmoke(), ())
                             .with(loop_length(), rr(5., 10.))
                             .with(age(), random::<f32>())
+                            .with(just_looped(), 1)
                             .with(cube(), ())
                             .spawn(),
                     );
@@ -114,9 +116,14 @@ fn fires(test: bool) {
             entity::add_component(
                 lick,
                 scale(),
-                Vec2::splat(5. * triwarp(t, 0.15)).extend(10. * sinowarp(t, 0.1)),
+                Vec2::splat(2.5 * triwarp(t, 0.15)).extend(5. * sinowarp(t, 0.1)),
             );
             entity::mutate_component(lick, age(), |t| *t += 0.5 * *t * delta_time());
+        }
+    });
+    spawn_query((just_looped(), is_firesmoke())).bind(|smokes| {
+        for (smoke, _) in smokes {
+            entity::add_component(smoke, rotation(), Quat::from_rotation_z(rr(0., PI * 2.)));
         }
     });
 
