@@ -155,7 +155,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 workflow_id: workflow_id,
-                ref: '${{ steps.meta.outputs.tag }}',
+                ref: '${{ needs.meta.outputs.tag }}',
               })
             }
 
@@ -173,5 +173,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'publish-api.yml',
-              ref: '${{ steps.meta.outputs.tag }}',
+              ref: '${{ needs.meta.outputs.tag }}',
             })
