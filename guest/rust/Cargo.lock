@@ -688,6 +688,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "animations"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "anyhow"
 version = "1.0.75"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1920,6 +1927,13 @@ name = "percent-encoding"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b2a4787296e9989611394c33f193f676704af1686e70b8f8033ab5ba9a35a94"
+
+[[package]]
+name = "performance_bar"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api",
+]
 
 [[package]]
 name = "phf"
