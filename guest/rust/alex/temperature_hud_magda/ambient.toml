@@ -6,8 +6,8 @@ content = { type = "Asset", code = true }
 ambient_version = "0.3.0-nightly-2023-09-18"
 
 [dependencies]
-temperature = { path = "../temperature" , deployment = "5wJt3UkQJ90EhEfX0e3P8x" }
-snowy_pcs = { path = "../snowy_pcs" }
+temperature = { path = "../temperature" , deployment = "7DnRS36W0nn40XmHE8R6or" }
+snowy_pcs = { path = "../snowy_pcs" , deployment = "qQS5FIQXUrVRz6OYMuiZh" }
 
 [components]
 hud_camera = { type = "EntityId" }

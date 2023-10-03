@@ -6,11 +6,11 @@ content = { type = "Playable" }
 ambient_version = "0.3.0-nightly-2023-10-02"
 
 [dependencies]
-snowy_sceneloader = { path = "../snowy_sceneloader" }
-snowy_pcs = { path = "../snowy_pcs" }
-temperature = { path = "../temperature" , deployment = "5wJt3UkQJ90EhEfX0e3P8x" }
-temperature_hud = { path = "../temperature_hud_magda" }
-snowy_droplets = { path = "../snowy_droplets" }
+snowy_sceneloader = { path = "../snowy_sceneloader" , deployment = "1I2NCY2REtPAWkXoaOtnmJ" }
+snowy_pcs = { path = "../snowy_pcs" , deployment = "qQS5FIQXUrVRz6OYMuiZh" }
+temperature = { path = "../temperature" , deployment = "7DnRS36W0nn40XmHE8R6or" }
+temperature_hud = { path = "../temperature_hud_magda" , deployment = "4M7ySV2fHBvYgWnxlpN2kQ" }
+snowy_droplets = { path = "../snowy_droplets" , deployment = "59BszB4Ymk6yunstYK4pmW" }
 
 [components]
 # effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
