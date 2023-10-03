@@ -4,7 +4,6 @@ use ambient_network::{
     client::NetworkTransport, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
 };
 
-use ambient_sys::time::SystemTime;
 use anyhow::Context;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 
@@ -13,7 +12,6 @@ use std::{
     io::{Cursor, Read},
     pin::Pin,
     sync::Arc,
-    time::Duration,
 };
 
 use crate::shared::message::Target;
@@ -29,19 +27,20 @@ pub fn subscribe(subscribed_events: &mut HashSet<String>, name: String) -> anyho
 #[derive(Debug, Default)]
 struct DatagramLatencyStat {
     count: usize,
-    latency: Duration,
+    latency: std::time::Duration,
 }
 #[cfg(feature = "debug-local-datagram-latency")]
 impl DatagramLatencyStat {
     const SMOOTHING_FACTOR: u32 = 16;
 
-    pub fn on_datagram(&mut self, latency: Duration) {
+    pub fn on_datagram(&mut self, latency: std::time::Duration) {
         self.count += 1;
         self.latency =
             ((Self::SMOOTHING_FACTOR - 1) * self.latency + latency) / Self::SMOOTHING_FACTOR;
     }
 
-    pub fn now() -> Duration {
+    pub fn now() -> std::time::Duration {
+        use ambient_sys::time::SystemTime;
         SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap()
@@ -62,7 +61,8 @@ pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> 
             Mutex::new(None);
         let ts = cursor.read_f64::<byteorder::BigEndian>()?;
         if let Some(user_id) = &user_id {
-            let latency = DatagramLatencyStat::now().saturating_sub(Duration::from_secs_f64(ts));
+            let latency =
+                DatagramLatencyStat::now().saturating_sub(std::time::Duration::from_secs_f64(ts));
             let map = &mut *DATAGRAM_LATENCIES.lock();
             if map.is_none() {
                 *map = Some(HashMap::new());
