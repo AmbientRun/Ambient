@@ -1,0 +1,10 @@
+[[pipelines]]
+sources = ["*.glb"]
+type = "Models"
+
+[[pipelines]]
+sources = ["*.fbx"]
+type = "Models"
+[[pipelines.transforms]]
+type = "Scale"
+scale = 100.0

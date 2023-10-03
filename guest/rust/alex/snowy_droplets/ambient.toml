@@ -5,7 +5,16 @@ version = "0.0.1"
 content = { type = "Playable" }
 ambient_version = "0.3.0-nightly-2023-10-02"
 
+[dependencies]
+droplet = { path = "../droplet" }
+
 [components]
 is_firelick = { type = "Empty" }
+is_firesmoke = { type = "Empty" }
 is_coldbreath = { type = "Empty" }
 is_stormflake = { type = "Empty" }
+
+is_droplet_spawner = { type = "Empty", attributes = ["Networked"] }
+spawns_fire = { type = "Empty", attributes = ["Networked"] } # reads position of parent
+spawns_breather = { type = "Empty", attributes = ["Networked"] } # reads position/rotation of parent
+spawns_storm_intensity = { type = "F32", attributes = ["Networked"] } # reads position of parent

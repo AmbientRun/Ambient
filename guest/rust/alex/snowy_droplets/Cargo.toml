@@ -14,10 +14,10 @@ name = "snowy_droplets_client"
 path = "src/client.rs"
 required-features = ["client"]
 
-[[bin]]
-name = "snowy_droplets_server"
-path = "src/server.rs"
-required-features = ["server"]
+# [[bin]]
+# name = "snowy_droplets_server"
+# path = "src/server.rs"
+# required-features = ["server"]
 
 [features]
 client = ["ambient_api/client"]
