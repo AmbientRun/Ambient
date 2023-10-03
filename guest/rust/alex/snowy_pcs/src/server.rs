@@ -20,7 +20,7 @@ pub fn main() {
     const OVERNORMAL_TEMP: f32 = 38.19;
     const OVERNORMAL_COOLING_RATE: f32 = 20.00;
 
-    const HUMAN_FURNACE_WARMTH: f32 = 0.15;
+    const HUMAN_FURNACE_WARMTH: f32 = 0.25;
     const MIN_FREEZING_RATE: f32 = 0.10;
     const MAX_FREEZING_RATE: f32 = 0.50;
 
@@ -42,7 +42,7 @@ pub fn main() {
                     .with(basic_character_animations(), plr)
                     // .with(temperature(), NORMAL_TEMP)
                     // .with(temperature_src_rate(), HUMAN_FURNACE_WARMTH)
-                    .with(temperature(), HALF_FREEZING_TEMP)
+                    .with(temperature(), UNDERNORMAL_TEMP)
                     .with(temperature_src_radius(), 8.0),
             );
         }
