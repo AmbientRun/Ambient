@@ -32,11 +32,15 @@ fn basics() {
                 if new_age > 1. {
                     entity::add_component(drop, just_looped(), new_age.floor() as u8);
                     *age = new_age % 1.;
-                    entity::remove_component(drop, just_looped());
                 } else {
                     *age = new_age;
                 }
             });
+        }
+    });
+    query(()).requires(just_looped()).each_frame(|loopers| {
+        for (looper, _) in loopers {
+            entity::remove_component(looper, just_looped());
         }
     });
 }
