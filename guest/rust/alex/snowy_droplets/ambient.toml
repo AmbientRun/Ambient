@@ -1,0 +1,11 @@
+[package]
+id = "bqre2zfzeoltko7tooxnmmwb4kql32xa"
+name = "snowy_droplets"
+version = "0.0.1"
+content = { type = "Playable" }
+ambient_version = "0.3.0-nightly-2023-10-02"
+
+[components]
+is_firelick = { type = "Empty" }
+is_coldbreath = { type = "Empty" }
+is_stormflake = { type = "Empty" }
