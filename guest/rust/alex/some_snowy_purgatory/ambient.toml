@@ -6,11 +6,13 @@ content = { type = "Playable" }
 ambient_version = "0.3.0-nightly-2023-10-02"
 
 [dependencies]
-snowy_sceneloader = { path = "../snowy_sceneloader" , deployment = "1I2NCY2REtPAWkXoaOtnmJ" }
-snowy_pcs = { path = "../snowy_pcs" , deployment = "qQS5FIQXUrVRz6OYMuiZh" }
-temperature = { path = "../temperature" , deployment = "7DnRS36W0nn40XmHE8R6or" }
-temperature_hud = { path = "../temperature_hud_magda" , deployment = "4M7ySV2fHBvYgWnxlpN2kQ" }
-snowy_droplets = { path = "../snowy_droplets" , deployment = "59BszB4Ymk6yunstYK4pmW" }
+snowy_sceneloader = { path = "../snowy_sceneloader" , deployment = "3ox15f5tBf2koRLIarfgU7" }
+snowy_pcs = { path = "../snowy_pcs" , deployment = "4WkdIRlVt4SOaRgNGwbGKC" }
+temperature = { path = "../temperature" , deployment = "1lRfvOOI3xuctj7rA3Rn4c" }
+temperature_hud = { path = "../temperature_hud_magda" , deployment = "3mmC7ua6DtydnwB26w2Clf" }
+snowy_droplets = { path = "../snowy_droplets" , deployment = "5gheF1yiZcTY9FSDRjkrBB" }
+live_player_count = { path = "../live_player_count" , deployment = "2fwHO4TQGYewOAsD0y44kn" }
+snowy_hints = { path = "../snowy_hints" , deployment = "6sBvMBcEfqYQ4G88WgbtRu" }
 
 [components]
 # effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
