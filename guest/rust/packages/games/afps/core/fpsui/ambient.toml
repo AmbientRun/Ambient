@@ -1,11 +1,11 @@
 [package]
 id = "d5t7njlgmc3wohivbeuag5ouetzontrm"
 name = "AFPS UI"
-version = "0.3.0-rc.3"
+version = "0.3.0-nightly-2023-10-03"
 content = { type = "Asset", textures = true, code = true }
-ambient_version = "0.3.0-rc.3"
+ambient_version = "0.3.0-nightly-2023-10-03"
 
 [dependencies]
-afps_schema = { path = "../../schema", deployment = "7hivZN06KpObeeQwWixh8X" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "3I3qVh2BET1eQ8wWRhObEo" }
-game_object = { path = "../../../../schemas/game_object" , deployment = "1DTdj1TFiFzRHDRLNBE5Ru" }
+afps_schema = { path = "../../schema", deployment = "3E4DbAEBnHsqAhVakXNmAx" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "6KW1f3MjAJ1DTrKUcY2fS5" }
+game_object = { path = "../../../../schemas/game_object" , deployment = "1dyIvQx50CG6vvLfa8xCqa" }
