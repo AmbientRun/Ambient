@@ -151,6 +151,8 @@ pub fn AppStatsView(hooks: &mut Hooks) -> Element {
     ])
 }
 
+const DEBUGGER_BUTTONS: bool = true;
+
 #[element_component]
 pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show_shadows, set_show_shadows) = use_state(hooks, false);
@@ -171,108 +173,123 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
             .hotkey(VirtualKeyCode::F1)
             .style(ButtonStyle::Flat)
             .el(),
-            // Button::new("Dump Server World", {
-            //     let client_state = client_state;
-            //     move |world| {
-            //         let assets = world.resource(asset_cache()).clone();
-            //         let client_state = client_state.clone();
-            //         world.resource(runtime()).clone().spawn(async move {
-            //             if let Ok(Some(res)) = client_state.rpc(rpc_dump_world_hierarchy, ()).await
-            //             {
-            //                 dump_to_user(&assets, "server_hierarchy.yml", res);
-            //             }
-            //         });
-            //     }
-            // })
-            // .hotkey_modifier(ModifiersState::SHIFT)
-            // .hotkey(VirtualKeyCode::F2)
-            // .style(ButtonStyle::Flat)
-            // .el(),
-            // Button::new("Dump Client Renderer", {
-            //     let get_state = get_state.clone();
-            //     move |world| {
-            //         let assets = world.resource(asset_cache());
-            //         let mut s = Vec::new();
-            //         tracing::info!("Dumping renderer");
-            //         get_state(&mut |renderer, _, _| renderer.dump(&mut s));
-            //         dump_to_user(assets, "renderer.txt", String::from_utf8(s).unwrap());
-            //     }
-            // })
-            // .hotkey_modifier(ModifiersState::SHIFT)
-            // .hotkey(VirtualKeyCode::F3)
-            // .style(ButtonStyle::Flat)
-            // .el(),
-            // Button::new("Show Shadow Frustums", {
-            //     let get_state = get_state.clone();
-            //     move |_| {
-            //         get_state(&mut |_, _, world| {
-            //             let gizmos = world.resource(gizmos());
-            //             let mut g = gizmos.scope(line_uid!());
-            //             let cascades = 5;
-            //             for (i, cam) in shadow_cameras_from_world(
-            //                 world,
-            //                 cascades,
-            //                 1024,
-            //                 Vec3::ONE.normalize(),
-            //                 main_scene(),
-            //                 world.resource_opt(local_user_id()),
-            //             )
-            //             .into_iter()
-            //             .enumerate()
-            //             {
-            //                 for line in cam.world_space_frustum_lines() {
-            //                     g.draw(GizmoPrimitive::line(line.0, line.1, 1.).with_color(
-            //                         Color::hsl(360. * i as f32 / cascades as f32, 1.0, 0.5).into(),
-            //                     ));
-            //                 }
-            //             }
-            //         })
-            //     }
-            // })
-            // .hotkey_modifier(ModifiersState::SHIFT)
-            // .hotkey(VirtualKeyCode::F4)
-            // .style(ButtonStyle::Flat)
-            // .el(),
-            // Button::new("Show World Boundings", {
-            //     let get_state = get_state.clone();
-            //     move |_| {
-            //         get_state(&mut |_, _, world| {
-            //             let gizmos = world.resource(gizmos());
-            //             let mut g = gizmos.scope(line_uid!());
-            //             for (_, (bounding,)) in query((world_bounding_sphere(),)).iter(world, None)
-            //             {
-            //                 g.draw(
-            //                     GizmoPrimitive::sphere(bounding.center, bounding.radius)
-            //                         .with_color(Vec3::ONE),
-            //                 );
-            //             }
-            //         });
-            //     }
-            // })
-            // .hotkey_modifier(ModifiersState::SHIFT)
-            // .hotkey(VirtualKeyCode::F5)
-            // .style(ButtonStyle::Flat)
-            // .el(),
-            // Button::new("Show Shadow Maps", {
-            //     move |_| {
-            //         set_show_shadows(!show_shadows);
-            //     }
-            // })
-            // .hotkey_modifier(ModifiersState::SHIFT)
-            // .hotkey(VirtualKeyCode::F6)
-            // .style(ButtonStyle::Flat)
-            // .el(),
-            ShaderDebug {
-                get_state: get_state.clone(),
-            }
-            .el(),
-            // Button::new("Dump Internal UI World", {
-            //     move |world| {
-            //         dump_world_hierarchy_to_tmp_file(world);
-            //     }
-            // })
-            // .style(ButtonStyle::Flat)
-            // .el(),
+            if DEBUGGER_BUTTONS {
+                FlowRow::el(vec![
+                    Button::new("Dump Server World", {
+                        let client_state = client_state;
+                        move |world| {
+                            let assets = world.resource(asset_cache()).clone();
+                            let client_state = client_state.clone();
+                            world.resource(runtime()).clone().spawn(async move {
+                                if let Ok(Some(res)) =
+                                    client_state.rpc(rpc_dump_world_hierarchy, ()).await
+                                {
+                                    dump_to_user(&assets, "server_hierarchy.yml", res);
+                                }
+                            });
+                        }
+                    })
+                    .hotkey_modifier(ModifiersState::SHIFT)
+                    .hotkey(VirtualKeyCode::F2)
+                    .style(ButtonStyle::Flat)
+                    .el(),
+                    Button::new("Dump Client Renderer", {
+                        let get_state = get_state.clone();
+                        move |world| {
+                            let assets = world.resource(asset_cache());
+                            let mut s = Vec::new();
+                            tracing::info!("Dumping renderer");
+                            get_state(&mut |renderer, _, _| renderer.dump(&mut s));
+                            dump_to_user(assets, "renderer.txt", String::from_utf8(s).unwrap());
+                        }
+                    })
+                    .hotkey_modifier(ModifiersState::SHIFT)
+                    .hotkey(VirtualKeyCode::F3)
+                    .style(ButtonStyle::Flat)
+                    .el(),
+                    Button::new("Show Shadow Frustums", {
+                        let get_state = get_state.clone();
+                        move |_| {
+                            get_state(&mut |_, _, world| {
+                                let gizmos = world.resource(gizmos());
+                                let mut g = gizmos.scope(line_uid!());
+                                let cascades = 5;
+                                for (i, cam) in shadow_cameras_from_world(
+                                    world,
+                                    cascades,
+                                    1024,
+                                    Vec3::ONE.normalize(),
+                                    main_scene(),
+                                    world.resource_opt(local_user_id()),
+                                )
+                                .into_iter()
+                                .enumerate()
+                                {
+                                    for line in cam.world_space_frustum_lines() {
+                                        g.draw(
+                                            GizmoPrimitive::line(line.0, line.1, 1.).with_color(
+                                                Color::hsl(
+                                                    360. * i as f32 / cascades as f32,
+                                                    1.0,
+                                                    0.5,
+                                                )
+                                                .into(),
+                                            ),
+                                        );
+                                    }
+                                }
+                            })
+                        }
+                    })
+                    .hotkey_modifier(ModifiersState::SHIFT)
+                    .hotkey(VirtualKeyCode::F4)
+                    .style(ButtonStyle::Flat)
+                    .el(),
+                    Button::new("Show World Boundings", {
+                        let get_state = get_state.clone();
+                        move |_| {
+                            get_state(&mut |_, _, world| {
+                                let gizmos = world.resource(gizmos());
+                                let mut g = gizmos.scope(line_uid!());
+                                for (_, (bounding,)) in
+                                    query((world_bounding_sphere(),)).iter(world, None)
+                                {
+                                    g.draw(
+                                        GizmoPrimitive::sphere(bounding.center, bounding.radius)
+                                            .with_color(Vec3::ONE),
+                                    );
+                                }
+                            });
+                        }
+                    })
+                    .hotkey_modifier(ModifiersState::SHIFT)
+                    .hotkey(VirtualKeyCode::F5)
+                    .style(ButtonStyle::Flat)
+                    .el(),
+                    Button::new("Show Shadow Maps", {
+                        move |_| {
+                            set_show_shadows(!show_shadows);
+                        }
+                    })
+                    .hotkey_modifier(ModifiersState::SHIFT)
+                    .hotkey(VirtualKeyCode::F6)
+                    .style(ButtonStyle::Flat)
+                    .el(),
+                    ShaderDebug {
+                        get_state: get_state.clone(),
+                    }
+                    .el(),
+                    // Button::new("Dump Internal UI World", {
+                    //     move |world| {
+                    //         dump_world_hierarchy_to_tmp_file(world);
+                    //     }
+                    // })
+                    // .style(ButtonStyle::Flat)
+                    // .el(),
+                ])
+            } else {
+                Element::new()
+            },
         ])
         .el()
         .with(space_between_items(), 5.),
