@@ -6,7 +6,7 @@ use std::{
 
 use anyhow::{ensure, Context};
 use cargo_toml::Inheritable;
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use itertools::Itertools;
 use serde::Deserialize;
 use std::str;
@@ -36,6 +36,10 @@ pub enum Release {
     Publish {
         #[clap(long)]
         execute: bool,
+
+        // Lets you switch out the command used to verify that the steps work locally.
+        #[arg(long, value_enum, default_value_t)]
+        command: PublishCommand,
     },
     /// Checks that Ambient is ready for a release to be cut
     Check {
@@ -56,6 +60,14 @@ pub enum Release {
     },
 }
 
+#[derive(ValueEnum, Copy, Clone, Debug, Default, PartialEq)]
+pub enum PublishCommand {
+    #[default]
+    Publish,
+    Package,
+    Doc,
+}
+
 pub fn main(args: &Release) -> anyhow::Result<()> {
     match args {
         Release::UpdateVersion {
@@ -63,7 +75,7 @@ pub fn main(args: &Release) -> anyhow::Result<()> {
             no_package_ambient_version_update,
         } => update_version(new_version, *no_package_ambient_version_update),
         Release::UpdateMsrv { new_version } => update_msrv(new_version),
-        Release::Publish { execute } => publish(*execute),
+        Release::Publish { execute, command } => publish(*execute, *command),
         Release::Check {
             no_docker,
             no_crates_io_validity,
@@ -299,42 +311,60 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn publish(execute: bool) -> anyhow::Result<()> {
+/// Only publishes API crates, and is built around that assumption.
+///
+/// If you want to publish the runtime, here be dragons
+fn publish(execute: bool, command: PublishCommand) -> anyhow::Result<()> {
     let crates = get_all_publishable_crates(false)?;
 
     #[derive(Debug)]
     enum Task {
-        Publish(PathBuf, Vec<String>),
+        Command(PathBuf, bool, Vec<String>),
         Wait(usize),
     }
 
-    let tasks = crates
-        .into_iter()
-        .map(|p| {
-            let crate_path = p.0.parent().unwrap().canonicalize().unwrap();
-            let crates_path = crate_path
-                .parent()
-                .unwrap()
-                .file_name()
-                .unwrap()
-                .to_string_lossy();
+    let tasks = crates.into_iter().map(|p| {
+        let crate_path = p.0.parent().unwrap().canonicalize().unwrap();
+        let crates_path = crate_path
+            .parent()
+            .unwrap()
+            .file_name()
+            .unwrap()
+            .to_string_lossy();
 
-            let features = if crates_path == "shared_crates" {
-                if !p.1.features.contains_key("default") && p.1.features.contains_key("native") {
-                    vec!["native".to_string()]
-                } else {
-                    vec![]
-                }
+        let features = if crates_path == "shared_crates" {
+            if !p.1.features.contains_key("default") && p.1.features.contains_key("guest") {
+                vec!["guest".to_string()]
             } else {
                 vec![]
-            };
+            }
+        } else {
+            vec![]
+        };
 
-            Task::Publish(crate_path, features)
-        })
-        .chunks(5)
-        .into_iter()
-        .flat_map(|c| c.chain(std::iter::once(Task::Wait(30))))
-        .collect_vec();
+        // If it's not excluded, assume it's wasm32-wasi
+        let build_with_host: HashSet<&str> = HashSet::from_iter([
+            "ambient_package_semantic",
+            "ambient_package_macro_common",
+            "ambient_element",
+        ]);
+        let specify_target =
+            p.1.package
+                .as_ref()
+                .is_some_and(|p| !build_with_host.contains(p.name.as_str()));
+
+        Task::Command(crate_path, specify_target, features)
+    });
+
+    let tasks = if command != PublishCommand::Publish {
+        tasks.collect_vec()
+    } else {
+        tasks
+            .chunks(5)
+            .into_iter()
+            .flat_map(|c| c.chain(std::iter::once(Task::Wait(30))))
+            .collect_vec()
+    };
     // Remove the last wait
     let tasks = &tasks[0..tasks.len() - 1];
 
@@ -342,17 +372,32 @@ fn publish(execute: bool) -> anyhow::Result<()> {
         true => {
             for task in tasks {
                 match task {
-                    Task::Publish(path, features) => {
-                        let mut command = Command::new("cargo");
-                        command.arg("publish");
-                        command.arg("--no-verify");
-                        if !features.is_empty() {
-                            command.arg("-F").arg(features.join(","));
+                    Task::Command(path, specify_target, features) => {
+                        let mut cmd = Command::new("cargo");
+                        match command {
+                            PublishCommand::Publish => {
+                                cmd.arg("publish");
+                                cmd.arg("--no-verify");
+                            }
+                            PublishCommand::Package => {
+                                cmd.arg("package");
+                                cmd.arg("--no-verify");
+                            }
+                            PublishCommand::Doc => {
+                                cmd.arg("doc");
+                            }
                         }
 
-                        let status = command.current_dir(path).spawn()?.wait()?;
+                        if *specify_target {
+                            cmd.arg("--target").arg("wasm32-wasi");
+                        }
+                        if !features.is_empty() {
+                            cmd.arg("-F").arg(features.join(","));
+                        }
+
+                        let status = cmd.current_dir(path).spawn()?.wait()?;
                         if !status.success() {
-                            anyhow::bail!("failed to upload {}", path.display());
+                            anyhow::bail!("failed to operate {}", path.display());
                         }
                     }
                     Task::Wait(seconds) => {
@@ -364,15 +409,24 @@ fn publish(execute: bool) -> anyhow::Result<()> {
         false => {
             for task in tasks {
                 match task {
-                    Task::Publish(path, features) => {
-                        let features = features.join(",");
+                    Task::Command(path, specify_target, features) => {
                         println!(
-                            "cd {} && cargo publish --no-verify{}; cd -",
+                            "cd {} && cargo {}{}{}; cd -",
                             path.display(),
+                            match command {
+                                PublishCommand::Publish => "publish --no-verify",
+                                PublishCommand::Package => "package --no-verify",
+                                PublishCommand::Doc => "doc",
+                            },
+                            if *specify_target {
+                                " --target wasm32-wasi"
+                            } else {
+                                ""
+                            },
                             if features.is_empty() {
                                 "".to_string()
                             } else {
-                                format!(" -F {}", features)
+                                format!(" -F {}", features.join(","))
                             }
                         )
                     }
