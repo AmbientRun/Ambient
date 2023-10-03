@@ -18,8 +18,10 @@ character_animation = { path = "../../packages/std/character_animation" }
 
 temperature = { path = "../temperature" , deployment = "5wJt3UkQJ90EhEfX0e3P8x" }
 
+[messages.SwitchType.fields]
+
 [components]
-pc_type_id = { type = "U32" }
+pc_type_id = { type = "U32", attributes = ["Networked"] }
 dead_age = { type = "F32", attributes = ["Networked"] }
 dead_frozen = { type = "Empty", attributes = ["Networked"] }
 dead_roasted = { type = "Empty", attributes = ["Networked"] }

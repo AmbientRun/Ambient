@@ -24,6 +24,14 @@ pub fn main() {
     const MIN_FREEZING_RATE: f32 = 0.10;
     const MAX_FREEZING_RATE: f32 = 0.50;
 
+    packages::this::messages::SwitchType::subscribe(|ctx, _| {
+        if let Some(plr) = ctx.client_entity_id() {
+            entity::mutate_component_with_default(plr, pc_type_id(), random::<u32>(), |tid| {
+                *tid += 1
+            });
+        }
+    });
+
     spawn_query(is_player()).bind(|plrs| {
         for (plr, _) in plrs {
             entity::add_components(
