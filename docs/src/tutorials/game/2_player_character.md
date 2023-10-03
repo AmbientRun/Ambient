@@ -69,7 +69,7 @@ Run your game by pressing `F5` in VS Code (or by typing `ambient run` in your te
 
 You should now see something like this on the screen:
 
-![Player controller window](character_controller.png)
+![Player controller window](fps_controller.png)
 
 This character will respond to input, including moving around using WASD, jumping with Space, and looking around with the mouse.
 

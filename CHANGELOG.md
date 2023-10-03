@@ -42,9 +42,9 @@ This release involved a great many changes, including porting Ambient to the web
 
 - **Client**: The client can now **run on the web**.
 - **Deploy**: The `ambient deploy` command can now be used to deploy a package to Ambient runtime services.
-- **Audio**: Spatial audio is now supported for 3D sounds. See the [physics example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/physics/src/client.rs) and [first_person_camera example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/first_person_camera/src/client.rs)
+- **Audio**: Spatial audio is now supported for 3D sounds. See the [physics example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/physics/basics/src/client.rs) and [first_person_camera example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/controllers/first_person_camera/src/client.rs)
 - **Networking**: The networking protocol now supports WebTransport for the web client.
-- **Rendering**: Procedural meshes, textures, samplers and materials are now supported on the client. See the [procedural generation example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/procedural_generation).
+- **Rendering**: Procedural meshes, textures, samplers and materials are now supported on the client. See the [procedural generation example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/rendering/procedural_generation).
 - **Semantics**: A semantic system to connect packages (previously projects) has been added. This enables dependencies, enums and more. See the breaking changes for more details.
 
 #### Other

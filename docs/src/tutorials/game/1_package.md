@@ -54,7 +54,7 @@ The basic structure of an Ambient package is as follows:
     - `client.rs`: This file contains the code that run on your player's computers.
     - `server.rs`: This file contains code that runs on the game server.
 
-> **In-depth**: You can read more about Ambient's ECS [in the ECS reference](../../reference/ecs.html), and about Ambient's asset pipeline [in the asset pipeline reference](../../reference/asset_pipeline.md).
+> **In-depth**: You can read more about Ambient's ECS [in the ECS reference](../../reference/ecs.md), and about Ambient's asset pipeline [in the asset pipeline reference](../../reference/asset_pipeline.md).
 
 ## Client and server?
 
