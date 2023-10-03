@@ -161,20 +161,20 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     FlowColumn::el([
         FlowRow(vec![
             AppStatsView.el(),
-            Button::new("Dump Client World", {
-                let get_state = get_state.clone();
-                move |_world| {
-                    get_state(&mut |_, _, world| {
-                        dump_world_hierarchy_to_user(world);
-                    });
-                }
-            })
-            .hotkey_modifier(ModifiersState::SHIFT)
-            .hotkey(VirtualKeyCode::F1)
-            .style(ButtonStyle::Flat)
-            .el(),
             if DEBUGGER_BUTTONS {
                 FlowRow::el(vec![
+                    Button::new("Dump Client World", {
+                        let get_state = get_state.clone();
+                        move |_world| {
+                            get_state(&mut |_, _, world| {
+                                dump_world_hierarchy_to_user(world);
+                            });
+                        }
+                    })
+                    .hotkey_modifier(ModifiersState::SHIFT)
+                    .hotkey(VirtualKeyCode::F1)
+                    .style(ButtonStyle::Flat)
+                    .el(),
                     Button::new("Dump Server World", {
                         let client_state = client_state;
                         move |world| {
