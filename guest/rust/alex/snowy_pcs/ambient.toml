@@ -20,3 +20,6 @@ temperature = { path = "../temperature" , deployment = "5wJt3UkQJ90EhEfX0e3P8x" 
 
 [components]
 pc_type_id = { type = "U32" }
+dead_age = { type = "F32", attributes = ["Networked"] }
+dead_frozen = { type = "Empty", attributes = ["Networked"] }
+dead_roasted = { type = "Empty", attributes = ["Networked"] }

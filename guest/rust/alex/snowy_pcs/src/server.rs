@@ -6,13 +6,13 @@ use packages::{
     character_animation::components::basic_character_animations,
     fps_controller::components::use_fps_controller,
     temperature::components::{temperature, temperature_src_radius, temperature_src_rate},
-    this::components::pc_type_id,
+    this::components::*,
 };
 
 #[main]
 pub fn main() {
     // SHOULD BE GIVEN BY TEMPERATURE SCHEMA
-    const TOO_HIGH_TEMP: f32 = 69.00;
+    const TOO_HIGH_TEMP: f32 = 46.66;
     const DEATH_TEMP: f32 = 21.13;
     const HALF_FREEZING_TEMP: f32 = 29.00;
     const UNDERNORMAL_TEMP: f32 = 34.31;
@@ -80,10 +80,15 @@ pub fn main() {
         .requires(is_player())
         .each_frame(|plrs| {
             for (plr, temp) in plrs {
-                if temp < DEATH_TEMP || temp > TOO_HIGH_TEMP {
+                if temp < DEATH_TEMP {
                     // todo: animate death
-                    entity::add_component(plr, translation(), vec3(0., 0., 0.));
-                    entity::set_component(plr, temperature(), HALF_FREEZING_TEMP);
+                    entity::add_component_if_required(plr, dead_age(), 0.0);
+                    entity::add_component_if_required(plr, dead_frozen(), ());
+                }
+                if temp > TOO_HIGH_TEMP {
+                    // todo: animate death
+                    entity::add_component_if_required(plr, dead_age(), 0.0);
+                    entity::add_component_if_required(plr, dead_roasted(), ());
                 }
                 if temp > UNDERNORMAL_TEMP {
                     let cooling_rate = remap32_clamped(
@@ -96,6 +101,21 @@ pub fn main() {
                     entity::mutate_component(plr, temperature(), |temp| {
                         *temp -= cooling_rate * delta_time()
                     });
+                }
+            }
+        });
+
+    query(dead_age())
+        .requires(is_player())
+        .each_frame(|corpses| {
+            for (corpse, age) in corpses {
+                entity::mutate_component(corpse, dead_age(), |age| *age += delta_time());
+                if age > 3. {
+                    entity::add_component(corpse, translation(), vec3(0., 0., 0.));
+                    entity::set_component(corpse, temperature(), HALF_FREEZING_TEMP);
+                    entity::remove_component(corpse, dead_age());
+                    entity::remove_component(corpse, dead_frozen());
+                    entity::remove_component(corpse, dead_roasted());
                 }
             }
         });
