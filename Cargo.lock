@@ -2822,7 +2822,7 @@ dependencies = [
 [[package]]
 name = "cranelift-entity"
 version = "0.101.0"
-source = "git+https://github.com/bytecodealliance/wasmtime#233786c257fd9f15ec6c8f69f5bccbfcf01c3fa2"
+source = "git+https://github.com/bytecodealliance/wasmtime#c927662079ffd2212065e44d28e7a8de4f03b7d0"
 dependencies = [
  "serde",
  "serde_derive",
@@ -4515,7 +4515,7 @@ dependencies = [
 [[package]]
 name = "js-component-bindgen"
 version = "0.11.0"
-source = "git+https://github.com/AmbientRun/jco#418b622fc8fb429e3a92b658d7c02bf948e7b69b"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#7ba4d1bd6b602dfa8dcbb386a157e4df4c46711e"
 dependencies = [
  "anyhow",
  "base64 0.21.4",
@@ -8392,7 +8392,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#151d90d1263e730163a9740d5f63da4ac498a20c"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#7ba4d1bd6b602dfa8dcbb386a157e4df4c46711e"
 dependencies = [
  "async-trait",
  "wasm-bridge-js",
@@ -8404,7 +8404,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge-js"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#151d90d1263e730163a9740d5f63da4ac498a20c"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#7ba4d1bd6b602dfa8dcbb386a157e4df4c46711e"
 dependencies = [
  "anyhow",
  "convert_case 0.6.0",
@@ -8422,7 +8422,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge-macros"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#151d90d1263e730163a9740d5f63da4ac498a20c"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#7ba4d1bd6b602dfa8dcbb386a157e4df4c46711e"
 dependencies = [
  "anyhow",
  "heck",
@@ -8645,7 +8645,7 @@ source = "git+https://github.com/bytecodealliance/wasmtime?rev=9f00198611537c7a9
 [[package]]
 name = "wasmtime-component-util"
 version = "14.0.0"
-source = "git+https://github.com/bytecodealliance/wasmtime#233786c257fd9f15ec6c8f69f5bccbfcf01c3fa2"
+source = "git+https://github.com/bytecodealliance/wasmtime#c927662079ffd2212065e44d28e7a8de4f03b7d0"
 
 [[package]]
 name = "wasmtime-cranelift"
@@ -8711,7 +8711,7 @@ dependencies = [
 [[package]]
 name = "wasmtime-environ"
 version = "14.0.0"
-source = "git+https://github.com/bytecodealliance/wasmtime#233786c257fd9f15ec6c8f69f5bccbfcf01c3fa2"
+source = "git+https://github.com/bytecodealliance/wasmtime#c927662079ffd2212065e44d28e7a8de4f03b7d0"
 dependencies = [
  "anyhow",
  "cranelift-entity 0.101.0 (git+https://github.com/bytecodealliance/wasmtime)",
@@ -8830,7 +8830,7 @@ dependencies = [
 [[package]]
 name = "wasmtime-types"
 version = "14.0.0"
-source = "git+https://github.com/bytecodealliance/wasmtime#233786c257fd9f15ec6c8f69f5bccbfcf01c3fa2"
+source = "git+https://github.com/bytecodealliance/wasmtime#c927662079ffd2212065e44d28e7a8de4f03b7d0"
 dependencies = [
  "cranelift-entity 0.101.0 (git+https://github.com/bytecodealliance/wasmtime)",
  "serde",
