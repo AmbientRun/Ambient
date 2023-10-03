@@ -191,9 +191,9 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 #### Headline features
 
-- **API**: Guest code can now **create and interact with UI**. See [the UI examples](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui).
-- **API**: Guest code can now **run on the client**. See [the `clientside` example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/clientside).
-- **API**: Clientside guest code can now play **basic audio**. See [the `pong` example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/pong).
+- **API**: Guest code can now **create and interact with UI**. See [the UI examples](https://github.com/AmbientRun/Ambient/tree/v0.2.0/guest/rust/examples/ui).
+- **API**: Guest code can now **run on the client**. See [the `clientside` example](https://github.com/AmbientRun/Ambient/tree/v0.2.0/guest/rust/examples/basics/clientside).
+- **API**: Clientside guest code can now play **basic audio**. See [the `pong` example](https://github.com/AmbientRun/Ambient/tree/v0.2.0/guest/rust/examples/games/pong).
 - **Server**: By default, a proxy URL is generated for the server on startup. This can be used to access a running server from anywhere on the internet, making it easy to share your work with others. To turn this off, specify `--no-proxy` on the server command line.
 
 #### Other
@@ -285,7 +285,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 ### Added
 
-- A [minigolf example](guest/rust/examples/minigolf) by [SK83RJOSH](https://github.com/SK83RJOSH).
+- A [minigolf example](https://github.com/AmbientRun/Ambient/tree/v0.1.1/guest/rust/examples/minigolf) by [SK83RJOSH](https://github.com/SK83RJOSH).
 - Examples are now bundled into a downloadable `examples.zip` for each release.
 
 ### Fixed
