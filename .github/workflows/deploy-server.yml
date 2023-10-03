@@ -1,11 +1,7 @@
 name: Deploy server
 
 on:
-  workflow_dispatch:
-  push:
-    tags: [v*]
-    branches:
-      - main
+  workflow_dispatch: {}
 
 env:
   CARGO_TERM_COLOR: always
@@ -76,14 +72,12 @@ jobs:
       - name: Prepare canary
         if: github.ref == 'refs/heads/main'
         shell: bash
-        run:
-          cp "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}" "${{ env.BUILD_DIR }}/${{ env.CANARY_SERVER_BINARY_NAME }}"
+        run: cp "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}" "${{ env.BUILD_DIR }}/${{ env.CANARY_SERVER_BINARY_NAME }}"
 
       - name: Prepare versioned
         if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
-        run:
-          cp "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}" "${{ env.BUILD_DIR }}/ambient-${GITHUB_REF#refs/tags/v}"
+        run: cp "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}" "${{ env.BUILD_DIR }}/ambient-${GITHUB_REF#refs/tags/v}"
 
       - name: Upload ambient server binary
         uses: google-github-actions/upload-cloud-storage@v1

@@ -1,5 +1,4 @@
 # This workflow is triggered on demand and publishes the API.
-# TODO: Have release-version call this instead of duplicating the logic
 
 name: Publish API
 
