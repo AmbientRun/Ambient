@@ -16,8 +16,6 @@ use palette::FromColor;
 
 mod constants;
 
-const OUTLINE_ENABLED: bool = false;
-
 #[main]
 async fn main() {
     let cells = entity::wait_for_component(entity::synchronized_resources(), cells())
@@ -50,12 +48,10 @@ fn process_input() {
 }
 
 fn process_colors(cells: &[EntityId]) {
-    if OUTLINE_ENABLED {
-        for cell in cells {
-            entity::remove_component(*cell, outline());
-        }
+    for cell in cells {
+        entity::remove_component(*cell, outline());
     }
-
+    
     let players = entity::get_all(is_player());
     let n_players = players.len();
     let player_colors: HashMap<_, _> = players

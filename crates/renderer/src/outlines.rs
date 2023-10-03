@@ -125,7 +125,7 @@ impl Outlines {
         }
     }
 
-    pub const FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba32Float;
+    pub const FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8UnormSrgb;
 
     fn create_outline_texture(gpu: &Gpu, size: wgpu::Extent3d) -> Arc<Texture> {
         Arc::new(Texture::new(
