@@ -1,6 +1,7 @@
 [package]
 id = "s37z23uqis7ts6ya7v2f66ni23m3upt7"
-name = "visualize_colliders"
+name = "Visualize Colliders"
+description = "Visualize the colliders of a scene."
 version = "0.3.0-nightly-2023-10-03"
 content = { type = "Playable", example = true }
 ambient_version = "0.3.0-nightly-2023-10-03"

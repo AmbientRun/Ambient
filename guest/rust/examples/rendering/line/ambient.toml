@@ -1,7 +1,7 @@
 [package]
 id = "pdvnxkqc5xuwanvxe2yxasswtk23pqij"
 name = "Line"
-description = "Draw a line in 3d space."
+description = "Draw a line in 3D space."
 version = "0.3.0-nightly-2023-10-03"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/rendering/line"
 type = "Game"

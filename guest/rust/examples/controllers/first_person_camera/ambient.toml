@@ -1,6 +1,6 @@
 [package]
 id = "pfzpi7ypoegwizizej5ojfcsncqa4bet"
-name = "First person camera"
+name = "First-person camera"
 description = "A simple FPS camera and input example."
 version = "0.3.0-nightly-2023-10-03"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/first_person_camera"
@@ -11,6 +11,6 @@ ambient_version = "0.3.0-nightly-2023-10-03"
 
 [dependencies]
 base_assets = { path = "../../../packages/std/base_assets", deployment = "7Iqnt0cVFySAM83zfkPEmP" }
-fps_controller = { path = "../../../packages/std/fps_controller", deployment = "ck04CPi65EQaQwHHCwUzW" }
+character_controller = { path = "../../../packages/std/character_controller", deployment = "ck04CPi65EQaQwHHCwUzW" }
 character_animation = { path = "../../../packages/std/character_animation", deployment = "5ZuscaEQA7q7Yh6vwnJikg" }
 hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "5kkli2YCjv5b7Yjofsokqc" }

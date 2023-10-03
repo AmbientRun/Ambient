@@ -1,7 +1,7 @@
 [package]
 id = "t6opuz533binrqqjsbgcezprtfa6vpyy"
 name = "Arkanoid"
-description = "The classic."
+description = "A remake of the classic Arkanoid game."
 version = "0.3.0-nightly-2023-10-03"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/arkanoid"
 type = "Game"

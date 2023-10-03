@@ -1,6 +1,7 @@
 [package]
 id = "wqkvthxjifxdwgi4hc4efmtjct6tljbw"
-name = "Console"
+name = "Console [WIP]"
+description = "A Rhai-based console for interacting with the world and other packages."
 version = "0.3.0-nightly-2023-10-03"
 content = { type = "Tool" }
 ambient_version = "0.3.0-nightly-2023-10-03"

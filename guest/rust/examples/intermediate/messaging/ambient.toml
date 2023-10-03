@@ -1,7 +1,7 @@
 [package]
 id = "of4w7yibjeuokeyypqxmtgqklc6vthln"
 name = "Messaging"
-description = "Send and receive data across network and across packages."
+description = "Send and receive data across the network and to other modules."
 version = "0.3.0-nightly-2023-10-03"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/messaging"
 type = "Game"

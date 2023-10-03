@@ -1,6 +1,7 @@
 [package]
 id = "hr4pxz7kfhzgimicoyh65ydel3aehuhk"
 name = "Package Manager"
+description = "A package manager/mod manager for your game. Use `mod_manager_for` to turn it into a mod manager."
 version = "0.3.0-nightly-2023-10-03"
 content = { type = "Tool" }
 ambient_version = "0.3.0-nightly-2023-10-03"

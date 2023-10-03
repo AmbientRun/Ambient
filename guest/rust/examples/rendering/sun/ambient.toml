@@ -1,7 +1,7 @@
 [package]
 id = "solyomvjgvfpd7x2k6a6xiajzynxfmex"
 name = "Sun"
-description = "Create a sun light."
+description = "Create a sun and sky."
 version = "0.3.0-nightly-2023-10-03"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/sun"
 type = "Game"
@@ -9,4 +9,4 @@ content = { type = "Playable", example = true }
 ambient_version = "0.3.0-nightly-2023-10-03"
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "gsh4cYnOlYsrisXPu5l7t" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "gsh4cYnOlYsrisXPu5l7t" }

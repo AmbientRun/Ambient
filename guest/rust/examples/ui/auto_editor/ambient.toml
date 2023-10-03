@@ -1,7 +1,7 @@
 [package]
 id = "clwaexkinp2lnxm2h6r4gznp6gqfrmne"
-name = "Auto editor"
-description = "Automatically create edit UI for any structs, enums etc."
+name = "Auto-editor"
+description = "Automatically derive editor UI for structs and enums."
 version = "0.3.0-nightly-2023-10-03"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/auto_editor"
 type = "Game"

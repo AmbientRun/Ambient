@@ -1,7 +1,7 @@
 [package]
 id = "fsv4zmeyotsu4lhji4rv6kivla5vmifi"
 name = "Clock"
-description = "A slightly more advanced example."
+description = "A 2D clock example."
 version = "0.3.0-nightly-2023-10-03"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/clock"
 type = "Game"

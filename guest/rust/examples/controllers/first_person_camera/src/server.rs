@@ -8,7 +8,7 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::fps_controller::components::{camera_distance, use_fps_controller};
+use packages::character_controller::components::{camera_distance, use_character_controller};
 
 #[main]
 pub fn main() {
@@ -30,7 +30,7 @@ pub fn main() {
             entity::add_components(
                 id,
                 Entity::new()
-                    .with(use_fps_controller(), ())
+                    .with(use_character_controller(), ())
                     .with(camera_distance(), 0.0),
             );
         }

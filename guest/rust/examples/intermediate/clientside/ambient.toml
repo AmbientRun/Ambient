@@ -1,7 +1,7 @@
 [package]
 id = "xz2ip2ptvxprurqwaiv2nncabcrmml2w"
 name = "Clientside"
-description = "How to use client side code."
+description = "How to use clientside code."
 version = "0.3.0-nightly-2023-10-03"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/clientside"
 type = "Game"
@@ -19,4 +19,4 @@ grid_position = { name = "Grid Position", description = "The position of the cel
 ] }
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "gsh4cYnOlYsrisXPu5l7t" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "gsh4cYnOlYsrisXPu5l7t" }

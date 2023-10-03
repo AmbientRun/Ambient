@@ -1,6 +1,7 @@
 [package]
 id = "per6j2iqhj3jz4da3fqr75jcj2kqjooo"
 name = "Nameplates"
+description = "Basic 3D nameplates for players."
 version = "0.3.0-nightly-2023-10-03"
 content = { type = "Asset", code = true }
 ambient_version = "0.3.0-nightly-2023-10-03"

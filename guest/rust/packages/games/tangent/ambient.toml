@@ -1,6 +1,7 @@
 [package]
 id = "t5qdqwpkoxtelvafs7qpvzhaoperwfpt"
 name = "Tangent"
+description = "Ambient's tech demo game. Third-person, hovercars, and more."
 version = "0.3.0-nightly-2023-10-03"
 content = { type = "Playable" }
 ambient_version = "0.3.0-nightly-2023-10-03"
@@ -33,7 +34,7 @@ class_tank = { path = "mods/class_tank", deployment = "7hUKbWIiAO4ulmuHKtZwpi" }
 vehicle_standard = { path = "mods/vehicle_standard", deployment = "x60plsKQQn7ZlXGnKURGl" }
 
 gameplay_firerain = { path = "mods/gameplay_firerain", enabled = false, deployment = "2NETctV1s1jECvtZWQPC6s" }
-gameplay_daynight = { path = "mods/gameplay_daynight", enabled = false , deployment = "5JXEPmjtEkchZaQSmynXnz" }
+gameplay_daynight = { path = "mods/gameplay_daynight", enabled = false, deployment = "5JXEPmjtEkchZaQSmynXnz" }
 
 reskin_classes = { path = "mods/reskin_classes", enabled = false, deployment = "41CdRhr1A0DSvSPRj3l1P1" }
 

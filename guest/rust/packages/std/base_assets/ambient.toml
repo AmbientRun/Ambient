@@ -1,6 +1,7 @@
 [package]
 id = "n7a4j7htvenss35tsnfvegbhxuwij5il"
-name = "base_assets"
+name = "Base Assets [WIP]"
+description = "Assets used by examples."
 version = "0.3.0-nightly-2023-10-03"
 content = { type = "Asset", models = true }
 ambient_version = "0.3.0-nightly-2023-10-03"

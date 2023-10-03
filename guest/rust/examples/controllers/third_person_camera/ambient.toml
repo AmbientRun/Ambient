@@ -1,7 +1,7 @@
 [package]
 id = "ie4hdvkvui6t36yzniyex2hc5i2bradc"
-name = "Third person camera"
-description = "A simple third person camera controller."
+name = "Third-person camera"
+description = "A simple third-person camera controller."
 version = "0.3.0-nightly-2023-10-03"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/third_person_camera"
 type = "Game"
@@ -10,7 +10,7 @@ ambient_version = "0.3.0-nightly-2023-10-03"
 
 [dependencies]
 base_assets = { path = "../../../packages/std/base_assets", deployment = "7Iqnt0cVFySAM83zfkPEmP" }
-fps_controller = { path = "../../../packages/std/fps_controller", deployment = "ck04CPi65EQaQwHHCwUzW" }
+character_controller = { path = "../../../packages/std/character_controller", deployment = "ck04CPi65EQaQwHHCwUzW" }
 character_animation = { path = "../../../packages/std/character_animation", deployment = "5ZuscaEQA7q7Yh6vwnJikg" }
 hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "5kkli2YCjv5b7Yjofsokqc" }
-nameplates = { path = "../../../packages/std/nameplates" , deployment = "NvfH2DKaMk2Sfarr76NCR" }
+nameplates = { path = "../../../packages/std/nameplates", deployment = "NvfH2DKaMk2Sfarr76NCR" }

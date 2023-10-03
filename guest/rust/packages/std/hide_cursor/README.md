@@ -1,7 +1,5 @@
 # Hide cursor
 
-This package will lock and hide the cursor when nothing is focused (i.e. no UI element is focused).
-It will also react to the "Escape" key being pressed, in which case it will set focus to "Nothing",
-which in turn will turn off cursor locking and hiding.
+This package will lock and hide the cursor when there is no focus on any UI element. It will also respond to the "Escape" key press by setting focus to `Nothing`, consequently disabling cursor locking and hiding.
 
-You usually use this package in conjunction with something like the `fps_controller` package.
+Typically, this package is used in combination with something like the `character_controller` package.

@@ -1,7 +1,7 @@
 [package]
 id = "t6vnxnggki32io3sobzeawxn5peyw3e3"
 name = "Image"
-description = "Using a 2d image in the UI."
+description = "Using a 2D image in the UI."
 version = "0.3.0-nightly-2023-10-03"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/image"
 type = "Game"

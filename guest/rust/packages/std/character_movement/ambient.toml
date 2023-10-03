@@ -1,6 +1,7 @@
 [package]
 id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
-name = "character_movement"
+name = "Character Movement"
+description = "Simulates character movement, including gravity, for a unit."
 version = "0.3.0-nightly-2023-10-03"
 content = { type = "Asset", code = true }
 ambient_version = "0.3.0-nightly-2023-10-03"

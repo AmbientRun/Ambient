@@ -66,7 +66,7 @@ members = [
     # Packages (std)
     "packages/std/character_animation",
     "packages/std/character_movement",
-    "packages/std/fps_controller",
+    "packages/std/character_controller",
     "packages/std/orbit_camera",
     "packages/std/hide_cursor",
     "packages/std/explosion",
@@ -76,6 +76,7 @@ members = [
     "packages/tools/console",
     "packages/tools/editor",
     "packages/tools/package_manager",
+    "packages/tools/world_latency",
 
     # Packages (games)
     "packages/games/tangent",
@@ -87,9 +88,6 @@ members = [
     "packages/games/pong",
     "packages/games/tictactoe",
     "packages/games/arkanoid",
-
-    "packages/games/afps/core/*",
-    "packages/games/afps/mods/*",
 
     # Crates
     "crates/brand_theme",
