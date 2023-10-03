@@ -719,6 +719,7 @@ impl Manifests {
             Path::new("shared_crates")
                 .join(folder_name)
                 .join("Cargo.toml"),
+            "schema/Cargo.toml".into(),
             "guest/rust/api/Cargo.toml".into(),
             "guest/rust/api_core/api_macros/Cargo.toml".into(),
             "guest/rust/api_core/Cargo.toml".into(),
