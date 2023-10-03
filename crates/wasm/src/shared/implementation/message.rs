@@ -53,8 +53,6 @@ pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> 
     use byteorder::ReadBytesExt;
 
     let mut cursor = Cursor::new(&bytes);
-    let package_id = cursor.read_u128::<byteorder::BigEndian>()?;
-    let package_id = EntityId(package_id);
 
     #[cfg(feature = "debug-local-datagram-latency")]
     {
@@ -76,6 +74,9 @@ pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> 
             }
         }
     }
+
+    let package_id = cursor.read_u128::<byteorder::BigEndian>()?;
+    let package_id = EntityId(package_id);
 
     let name_len: usize = cursor.get_u32().try_into()?;
     let mut name = vec![0u8; name_len];
@@ -189,10 +190,10 @@ fn send_datagram(
 ) -> anyhow::Result<()> {
     let mut payload = BytesMut::new();
 
-    payload.put_u128(package_id.0);
-
     #[cfg(feature = "debug-local-datagram-latency")]
     payload.put_f64(DatagramLatencyStat::now().as_secs_f64());
+
+    payload.put_u128(package_id.0);
 
     payload.put_u32(name.len().try_into()?);
     payload.extend_from_slice(name.as_bytes());
