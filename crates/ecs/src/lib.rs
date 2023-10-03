@@ -77,9 +77,7 @@ impl<'a> Debug for DebugWorldArchetypes<'a> {
     }
 }
 
-pub mod internal_components {
-    use std::{collections::HashMap, time::Duration};
-
+mod internal_components {
     use super::Message;
 
     use crate::{
@@ -117,11 +115,6 @@ pub mod internal_components {
             Description["A global general event queue for this ecs World. Can be used to dispatch or listen to any kinds of events."]
         ]
         world_events: WorldEvents,
-        @[
-            Resource,
-            Description["A global map of latencies of datagrams received from users"]
-        ]
-        datagram_latencies: HashMap<String, (usize, Duration)>,
     });
 }
 pub use generated::ecs::components::*;
