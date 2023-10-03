@@ -2,7 +2,8 @@ use ambient_api::{
     core::{
         app::components::window_logical_size,
         player::components::user_id,
-        rendering::components::color,
+        rect::components::background_color,
+        rendering::components::{color, overlay},
         text::components::{font_family, font_size},
         transform::components::{local_to_world, scale, translation},
     },
@@ -12,6 +13,8 @@ use ambient_api::{
 };
 
 use ambient_brand_theme::AmbientInternalStyle;
+use ambient_color::Color;
+use packages::snowy_pcs::components::dead_age;
 use packages::temperature::components::temperature;
 use packages::this::components::{hud_camera, hud_hide};
 
@@ -45,6 +48,12 @@ pub async fn main() {
 // DISPLAYS NAMEPLATE & TEMP above players' heads
 #[element_component]
 pub fn NameplateUI(hooks: &mut Hooks, camera: EntityId) -> Element {
+    if let Some(_time_dead) =
+        ambient_api::element::use_entity_component(hooks, player::get_local(), dead_age())
+    {
+        return Element::new();
+    }
+
     let Some(camera_inv_view) = use_entity_component(hooks, camera, local_to_world()) else {
         return Element::new();
     };
@@ -145,21 +154,81 @@ fn remap(value: f32, low1: f32, high1: f32, low2: f32, high2: f32) -> f32 {
     low2 + (value - low1) * (high2 - low2) / (high1 - low1)
 }
 
+const TOO_HIGH_TEMP: f32 = 46.66;
+const DEATH_TEMP: f32 = 21.13;
+const NORMAL_TEMP: f32 = 36.65;
+
+fn extreme_temp_closeness(temp: f32) -> f32 {
+    if temp > NORMAL_TEMP {
+        remap(temp, NORMAL_TEMP, TOO_HIGH_TEMP, 0., 1.).clamp(0., 1.)
+    } else {
+        remap(temp, NORMAL_TEMP, DEATH_TEMP, 0., 1.).clamp(0., 1.)
+    }
+}
+
+fn extreme_temp_colour(temp: f32) -> Vec3 {
+    let too_hot_colour: Vec3 = Color::hex("#D45455").unwrap().into();
+    let mid_colour: Vec3 = Color::hex("#DDDDDD").unwrap().into();
+    let too_cold_colour: Vec3 = Color::hex("#FFFFFF").unwrap().into();
+    if temp > NORMAL_TEMP {
+        too_hot_colour
+    } else if temp < NORMAL_TEMP {
+        too_cold_colour
+    } else {
+        mid_colour
+    }
+}
+
+fn new_extreme_temp_overlay(temp: f32, screen_size: UVec2, force_opaque: bool) -> Element {
+    let temp_colour = extreme_temp_colour(temp);
+    let death_closeness = extreme_temp_closeness(temp);
+    let overlay_coloura = temp_colour.extend({
+        if force_opaque {
+            1.
+        } else if temp < NORMAL_TEMP {
+            if death_closeness > 0.9 {
+                ((death_closeness - 0.9) * 10.).clamp(0., 1.)
+            } else {
+                0.
+            }
+        } else {
+            death_closeness.clamp(0., 1.) // being too hot is the end of the world! show it immediately
+        }
+    });
+
+    if overlay_coloura.z > 0.001 {
+        Rectangle::el()
+            .with(translation(), Vec3::ZERO)
+            .with(width(), screen_size.x as f32)
+            .with(height(), screen_size.y as f32)
+            .with(background_color(), overlay_coloura)
+    } else {
+        Element::new()
+    }
+    // remap(value, low1, high1, low2, high2)
+}
+
 // DISPLAYS TEMPERATURE of player
 #[element_component]
 pub fn TemperatureDisplayUI(hooks: &mut Hooks) -> Element {
     let player_temp =
         ambient_api::element::use_entity_component(hooks, player::get_local(), temperature());
 
-    if let Some(hide) = use_entity_component(hooks, packages::this::entity(), hud_hide()) {
-        if hide {
-            return Element::new();
-        }
-    }
+    let player_dead =
+        ambient_api::element::use_entity_component(hooks, player::get_local(), dead_age());
 
     let screen_size = entity::get_component(entity::resources(), window_logical_size()).unwrap();
 
-    if let Some(player_temp) = player_temp {
+    if let Some(hide) = use_entity_component(hooks, packages::this::entity(), hud_hide()) {
+        if hide {
+            return new_extreme_temp_overlay(player_temp.unwrap_or(NORMAL_TEMP), screen_size, true);
+            //Element::new();
+        }
+    }
+
+    if let Some(_time_dead) = player_dead {
+        new_extreme_temp_overlay(player_temp.unwrap_or(NORMAL_TEMP), screen_size, true)
+    } else if let Some(player_temp) = player_temp {
         let fsize = screen_size.y as f32 * 0.05;
         let tb_centerpos = (vec2(0.1, 0.5) * screen_size.as_vec2()).extend(0.0);
         let tb_size = (vec2(0.015, 0.22) * screen_size.as_vec2()).extend(0.0);
@@ -182,6 +251,7 @@ pub fn TemperatureDisplayUI(hooks: &mut Hooks) -> Element {
                 0.,
             );
         Group::el(vec![
+            new_extreme_temp_overlay(player_temp, screen_size, false),
             FlowRow::el([
                 ImageFromUrl {
                     url: packages::this::assets::url("white_dot.png"), // TODO: replace with a CIRCLE!
@@ -194,7 +264,7 @@ pub fn TemperatureDisplayUI(hooks: &mut Hooks) -> Element {
                     .with(font_size(), fsize)
                     .font_body_500()
                     .with(color(), C_ALLBLACK.extend(1.)),
-                match player_temp < 25.0 {
+                match player_temp < 25.0 || player_temp > 41.0 {
                     false => Text::el(""),
                     true => ImageFromUrl {
                         url: packages::this::assets::url("freezing_skull.png"),

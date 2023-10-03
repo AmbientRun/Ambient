@@ -7,6 +7,7 @@ ambient_version = "0.3.0-nightly-2023-09-18"
 
 [dependencies]
 temperature = { path = "../temperature" , deployment = "5wJt3UkQJ90EhEfX0e3P8x" }
+snowy_pcs = { path = "../snowy_pcs" }
 
 [components]
 hud_camera = { type = "EntityId" }
