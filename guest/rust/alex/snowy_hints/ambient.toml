@@ -1,0 +1,14 @@
+[package]
+id = "tcva6vmvp6xlxl2rio73revikfsx6xr5"
+name = "snowy_hints"
+version = "0.0.1"
+content = { type = "Playable" }
+ambient_version = "0.3.0-nightly-2023-10-02"
+
+[dependencies]
+temperature = { path = "../temperature" , deployment = "1lRfvOOI3xuctj7rA3Rn4c" }
+
+[components]
+hint_message = { type = "String" }
+hint_show_progress = { type = "F32" }
+last_seen_cold_hint = { type = "F32" }
