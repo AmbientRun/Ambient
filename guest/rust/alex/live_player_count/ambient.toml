@@ -1,0 +1,9 @@
+[package]
+id = "fk3tvuacmj6tm2xukioiaochhs5vfnwv"
+name = "live_player_count"
+version = "0.0.1"
+content = { type = "Playable" }
+ambient_version = "0.3.0-nightly-2023-10-02"
+
+[components]
+player_count = { type = "U8", attributes = ["Networked"] }

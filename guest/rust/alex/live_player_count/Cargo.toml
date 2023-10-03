@@ -1,0 +1,26 @@
+[package]
+name = "live_player_count"
+
+edition = "2021"
+publish = false
+rust-version = {workspace = true}
+version = {workspace = true}
+
+[dependencies]
+ambient_api = { path = "../../api" }
+ambient_brand_theme = { path = "../../crates/brand_theme" }
+ambient_color = { workspace = true }
+
+[[bin]]
+name = "live_player_count_client"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "live_player_count_server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]
