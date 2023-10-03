@@ -2,11 +2,11 @@
 id = "xadcwjtmzuagnoydry5h4psaph3hccbw"
 name = "Tangent UI: HoloHUD"
 description = "A holographic HUD for Tangent where all information is presented on objects."
-version = "0.3.0-nightly-2023-10-02"
+version = "0.3.0-nightly-2023-10-03"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.0-nightly-2023-10-03"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "45ZyP83LAE9CKZVaEFLgqF" }
-game_object = { path = "../../../../schemas/game_object", deployment = "1DTdj1TFiFzRHDRLNBE5Ru" }
+tangent_schema = { path = "../../schema", deployment = "qeP6L6aPgej5CQto42mRB" }
+game_object = { path = "../../../../schemas/game_object", deployment = "1dyIvQx50CG6vvLfa8xCqa" }

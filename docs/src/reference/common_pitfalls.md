@@ -30,7 +30,7 @@ let color = rand::random::<Vec3>().extend(1.0);
 
 PhysX, which we use for physics, does not apply gravity to character controllers.
 
-You can account for this by moving the character controller down yourself;
+You can account for this by applying gravity to the character controller yourself;
 an example of this can be found in [the `character_movement` standard package](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/packages/std/character_movement/src/server.rs)
 which maintains a `vertical_velocity` component and uses it to simulate gravity.
 
@@ -46,7 +46,7 @@ There are several potential causes, including:
 
 ## Fails to start on Linux (Error in `Surface::configure: parent device is lost`)
 
-If you're running Wayland, you may have to start ambient with: `WAYLAND_DISPLAY=wayland-1 ambient run`.
+If you're running Wayland, you may have to start Ambient with `WAYLAND_DISPLAY=wayland-1 ambient run`.
 See [this issue](https://github.com/gfx-rs/wgpu/issues/2519) for details.
 
 ## Runtime error: import `...` has the wrong type

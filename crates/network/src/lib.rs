@@ -166,6 +166,9 @@ pub enum NetworkError {
     FrameError(#[from] FrameError),
     #[error("Frame or stream exceeds maximum allowed size")]
     FrameTooLarge,
+
+    #[error("Backpressure")]
+    Backpressure,
 }
 
 #[cfg(not(target_os = "unknown"))]

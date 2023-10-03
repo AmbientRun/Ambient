@@ -48,7 +48,7 @@ let player = AnimationPlayerRef::new(&clip);
 
 // Let's load a character model to apply the animation to.
 Entity::new()
-    .with_merge(make_transformable())
+    .with_merge(Transformable::suggested())
     .with(prefab_from_url(), assets::url("Peasant Man.fbx"))
     .with(apply_animation_player(), player.0)
     .spawn();
@@ -111,8 +111,8 @@ the transformation of the entity relative to the bone. For more information, see
 ```rust
 let left_foot = animation::get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
 let ball = Entity::new()
-    .with_merge(make_transformable())
-    .with_merge(make_sphere())
+    .with_merge(Transformable::suggested())
+    .with_merge(Sphere::suggested())
     .with(parent(), left_foot)
     .with(local_to_parent(), Default::default())
     // Without reset_scale, the ball would take the scale of the

@@ -1,9 +1,9 @@
 [package]
 id = "hr4pxz7kfhzgimicoyh65ydel3aehuhk"
 name = "Package Manager"
-version = "0.3.0-nightly-2023-10-02"
+version = "0.3.0-nightly-2023-10-03"
 content = { type = "Tool" }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.0-nightly-2023-10-03"
 
 [components.mod_manager_for]
 name = "Mod Manager For"
@@ -55,4 +55,4 @@ packages = { container_type = "Vec", element_type = "String" }
 error = { container_type = "Option", element_type = "String" }
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor", deployment = "y1unVx3Sh1nREsdi4b4t0" }
+editor_schema = { path = "../../schemas/editor", deployment = "1N0bL5LOoHWqU4ltUNDRGd" }

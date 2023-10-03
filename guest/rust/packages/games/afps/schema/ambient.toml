@@ -1,12 +1,12 @@
 [package]
 id = "thx4rfn4t3nbt4lbgub5bs7bejlawjk3"
 name = "AFPS Schema"
-version = "0.3.0-nightly-2023-10-02"
+version = "0.3.0-nightly-2023-10-03"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.0-nightly-2023-10-03"
 
 [dependencies]
-unit_schema = { path = "../../../schemas/unit", deployment = "3I3qVh2BET1eQ8wWRhObEo" }
+unit_schema = { path = "../../../schemas/unit", deployment = "6KW1f3MjAJ1DTrKUcY2fS5" }
 
 [components]
 player_model_ref = { type = "EntityId", description = "The player's whole body model id.", attributes = [

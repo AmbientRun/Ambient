@@ -53,9 +53,6 @@ pub enum Release {
 
         #[arg(long)]
         no_changelog: bool,
-
-        #[arg(long)]
-        no_readme: bool,
     },
 }
 
@@ -73,28 +70,24 @@ pub fn main(args: &Release) -> anyhow::Result<()> {
             no_msrv,
             no_build,
             no_changelog,
-            no_readme,
         } => check_release(
             *no_docker,
             *no_crates_io_validity,
             *no_msrv,
             *no_build,
             *no_changelog,
-            *no_readme,
         ),
     }
 }
 
 const DOCKERFILE: &str = "Dockerfile";
-const AMBIENT_MANIFEST: &str = "schema/ambient.toml";
-const AMBIENT_MANIFEST_INCLUDES: &str = "schema/schema";
+const AMBIENT_MANIFEST: &str = "schema/schema/ambient.toml";
+const AMBIENT_MANIFEST_INCLUDES: &str = "schema/schema/includes";
 const ROOT_CARGO: &str = "Cargo.toml";
 const WEB_CARGO: &str = "web/Cargo.toml";
 const GUEST_RUST_CARGO: &str = "guest/rust/Cargo.toml";
 const ADVANCED_INSTALLING_DOCS: &str = "docs/src/reference/advanced_installing.md";
 const CHANGELOG: &str = "CHANGELOG.md";
-const README: &str = "README.md";
-const INTRODUCTION: &str = "docs/src/introduction.md";
 
 fn check_release(
     no_docker: bool,
@@ -102,7 +95,6 @@ fn check_release(
     no_msrv: bool,
     no_build: bool,
     no_changelog: bool,
-    no_readme: bool,
 ) -> anyhow::Result<()> {
     // https://github.com/AmbientRun/Ambient/issues/314
     // the Dockerfile can run an Ambient server
@@ -129,11 +121,6 @@ fn check_release(
     // the CHANGELOG's unreleased section is empty
     if !no_changelog {
         check_changelog()?;
-    }
-
-    // README.md and docs/src/introduction.md match their introductory text
-    if !no_readme {
-        check_readme()?;
     }
 
     Ok(())
@@ -611,25 +598,6 @@ fn check_changelog() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn check_readme() -> anyhow::Result<()> {
-    log::info!("Checking README intro...");
-    let intro = std::fs::read_to_string(INTRODUCTION)?
-        .lines()
-        .skip(1) // Skip the first line: # Introduction // not in the README
-        .collect::<Vec<&str>>()
-        .join("\n");
-
-    let readme = std::fs::read_to_string(README)?;
-
-    ensure!(
-        readme.contains(&intro),
-        "README intro content does not match!"
-    );
-
-    log::info!("README intro OK.");
-    Ok(())
-}
-
 fn check(path: impl AsRef<Path>) -> anyhow::Result<()> {
     let path = path.as_ref();
     let mut command = Command::new("cargo");
@@ -751,6 +719,7 @@ impl Manifests {
             Path::new("shared_crates")
                 .join(folder_name)
                 .join("Cargo.toml"),
+            "schema/Cargo.toml".into(),
             "guest/rust/api/Cargo.toml".into(),
             "guest/rust/api_core/api_macros/Cargo.toml".into(),
             "guest/rust/api_core/Cargo.toml".into(),
