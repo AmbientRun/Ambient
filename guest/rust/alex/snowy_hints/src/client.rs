@@ -13,6 +13,14 @@ use packages::this::components::*;
 pub fn main() {
     BigHintTextUI::el().spawn_interactive();
 
+    entity::add_components(
+        packages::this::entity(),
+        Entity::new()
+            .with(hint_message(), "Ambient's \nfirst snow- \nstorm".into())
+            .with(hint_show_progress(), 0.25)
+            .with(hint_speed(), 0.4),
+    );
+
     // cold hint.
     ambient_api::core::messages::Frame::subscribe(|_| {
         if let Some(my_temp) = entity::get_component(player::get_local(), temperature()) {
@@ -33,9 +41,10 @@ pub fn main() {
                     entity::add_components(
                         packages::this::entity(),
                         Entity::new()
-                            .with(hint_message(), "It's too cold to travel alone.".into())
+                            .with(hint_message(), "It's too cold to \ntravel alone.".into())
                             .with(last_seen_cold_hint(), game_time().as_secs_f32())
-                            .with(hint_show_progress(), 0.),
+                            .with(hint_show_progress(), 0.)
+                            .with(hint_speed(), 1.),
                     );
                 }
             }
@@ -46,10 +55,12 @@ pub fn main() {
 
     query(hint_show_progress()).each_frame(|hints| {
         for (hint, progress) in hints {
-            let progress2 = progress + delta_time() * 0.15;
+            let speed = entity::get_component(hint, hint_speed()).unwrap_or(1.);
+            let progress2 = progress + delta_time() * 0.15 * speed;
             if progress2 >= 1. {
                 entity::remove_component(hint, hint_message());
                 entity::remove_component(hint, hint_show_progress());
+                entity::remove_component(hint, hint_speed());
             } else {
                 entity::set_component(hint, hint_show_progress(), progress2);
             }
@@ -90,18 +101,26 @@ pub fn BigHintTextUI(hooks: &mut Hooks) -> Element {
                 // hint_words.
                 // for hint_word in hint_words {}
 
-                return Flow::el([Text::el(visible_hint)
-                    .font_body_500()
-                    .hex_text_color("#000000")
-                    .with(font_size(), fsize)
-                    .with(max_width(), screen_size.x as f32)])
+                return FlowColumn::el(visible_hint.split('\n').into_iter().map(
+                    |visible_hint_line| {
+                        Text::el(visible_hint_line)
+                            .font_body_500()
+                            .hex_text_color("#000000")
+                            .with(font_size(), fsize)
+                        // .with(max_width(), screen_size.x as f32)
+                    },
+                ))
                 .with(width(), screen_size.x as f32)
                 .with(height(), screen_size.y as f32)
                 .with(fit_vertical(), Fit::None)
                 .with(fit_horizontal(), Fit::None)
                 .with(align_horizontal(), Align::Begin)
                 .with(align_vertical(), Align::End)
-                .with(translation(), vec3(10., 10., 0.));
+                // clipping off the edge
+                // .with(translation(), vec3(fsize * -0.10, fsize * 0.36, 0.))
+                // no clipping
+                .with(translation(), vec3(0., fsize * 0.31, 0.))
+                .with(space_between_items(), fsize * -0.66);
             }
         }
     }

@@ -11,4 +11,5 @@ temperature = { path = "../temperature" , deployment = "1lRfvOOI3xuctj7rA3Rn4c" 
 [components]
 hint_message = { type = "String" }
 hint_show_progress = { type = "F32" }
+hint_speed = { type = "F32" }
 last_seen_cold_hint = { type = "F32" }
