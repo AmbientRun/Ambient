@@ -44,7 +44,7 @@ use crate::{
 use super::ProxyMessage;
 
 const ALLOWED_FRAME_TIME: Duration = Duration::from_nanos(16_666_666); // 1/60 s
-const MAX_ACCUMMULATED_FRAME_DELAY: Duration = Duration::from_millis(20);
+const MAX_ACCUMMULATED_FRAME_DELAY: Duration = Duration::from_millis(50);
 
 #[derive(Debug, Clone)]
 pub struct GameClientView {
@@ -276,7 +276,7 @@ impl FrameDropStats {
 ///
 /// Frames taking too much time can starve browser networking (https://github.com/w3c/webtransport/issues/543)
 /// We calculate how much delay has been accummulated and when a threshold is reached we drop a frame to allow
-/// for networking to catch up
+/// for networking to catch up.
 struct FrameDropping {
     stats: FrameDropStats,
     accummulated_delay: Duration,
@@ -302,12 +302,11 @@ impl FrameDropping {
     }
 
     pub fn observe_frame_time(&mut self, frame_time: Duration) {
-        let frame_delay = frame_time.saturating_sub(ALLOWED_FRAME_TIME);
-        self.accummulated_delay = if frame_delay == Duration::ZERO {
+        self.accummulated_delay = if frame_time < ALLOWED_FRAME_TIME {
             // frame was processed in time -> reset the accummulated delay
             Duration::ZERO
         } else {
-            self.accummulated_delay + frame_delay
+            self.accummulated_delay + frame_time
         };
     }
 }
