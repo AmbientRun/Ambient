@@ -198,7 +198,7 @@ fn new_extreme_temp_overlay(temp: f32, screen_size: UVec2, force_opaque: bool) -
 
     if overlay_coloura.z > 0.001 {
         Rectangle::el()
-            .with(translation(), Vec3::ZERO)
+            .with(translation(), vec3(0., 0., 0.001))
             .with(width(), screen_size.x as f32)
             .with(height(), screen_size.y as f32)
             .with(background_color(), overlay_coloura)
