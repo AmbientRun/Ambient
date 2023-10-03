@@ -146,6 +146,11 @@ jobs:
           destination: "ambient-artifacts/ambient-builds/${{ needs.meta.outputs.version }}/${{ matrix.os }}"
       - name: Upload debug symbols
         run: sentry-cli upload-dif -o dims -p native-client ${{ env.EXE_DIR }}/${{ matrix.exe_name }} ${{ env.EXE_DIR }}/${{ matrix.symbol_path }}
+
+  trigger-build-jobs:
+    needs: [meta, build-app]
+    runs-on: ubuntu-22.04
+    steps:
       - name: Trigger build jobs
         uses: actions/github-script@v6
         with:
