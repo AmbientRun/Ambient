@@ -101,9 +101,9 @@ pub fn main() {
         });
 }
 
-fn remap32(value: f32, low1: f32, high1: f32, low2: f32, high2: f32) -> f32 {
-    low2 + (value - low1) * (high2 - low2) / (high1 - low1)
-}
+// fn remap32(value: f32, low1: f32, high1: f32, low2: f32, high2: f32) -> f32 {
+//     low2 + (value - low1) * (high2 - low2) / (high1 - low1)
+// }
 fn remap32_clamped(value: f32, low1: f32, high1: f32, low2: f32, high2: f32) -> f32 {
     (low2 + (value - low1) * (high2 - low2) / (high1 - low1)).clamp(low2, high2)
 }
