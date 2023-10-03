@@ -19,6 +19,8 @@ radius = { type = "F32", name = "Radius", description = "Radius of the explosion
 damage = { type = "F32", name = "Damage", description = "Damage of the explosion", attributes = [
     "Networked",
 ] }
+
+# Internal
 created_at = { type = "Duration", name = "Created At", description = "Time the explosion was created. Must be manually attached using a spawn_query as time is not synchronized between client and server at time of writing." }
 
 [concepts.Explosion]

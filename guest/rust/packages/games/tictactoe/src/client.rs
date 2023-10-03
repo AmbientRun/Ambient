@@ -16,6 +16,8 @@ use palette::FromColor;
 
 mod constants;
 
+const OUTLINE_ENABLED: bool = false;
+
 #[main]
 async fn main() {
     let cells = entity::wait_for_component(entity::synchronized_resources(), cells())
@@ -48,8 +50,10 @@ fn process_input() {
 }
 
 fn process_colors(cells: &[EntityId]) {
-    for cell in cells {
-        entity::remove_component(*cell, outline());
+    if OUTLINE_ENABLED {
+        for cell in cells {
+            entity::remove_component(*cell, outline());
+        }
     }
 
     let players = entity::get_all(is_player());
@@ -68,16 +72,24 @@ fn process_colors(cells: &[EntityId]) {
         })
         .collect();
 
+    let mut color_overrides = HashMap::new();
+
     for (player, player_color) in player_colors.iter() {
-        let Some(cell) = entity::get_component(*player, cell()) else {
+        let Some(cell_idx) = entity::get_component(*player, cell()) else {
             continue;
         };
-        entity::add_component_if_required(cells[cell as usize], outline(), *player_color);
+        let cell = cells[cell_idx as usize];
+        if OUTLINE_ENABLED {
+            entity::add_component_if_required(cell, outline(), *player_color);
+        } else {
+            color_overrides.insert(cell, (player_color.xyz() * 1.2).extend(1.0));
+        }
     }
 
     for cell in cells {
         let cell_color = entity::get_component(*cell, owned_by())
             .and_then(|id| player_colors.get(&id))
+            .or_else(|| color_overrides.get(cell))
             .copied()
             .unwrap_or(constants::DEFAULT_COLOR);
 
