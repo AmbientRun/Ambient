@@ -18,7 +18,7 @@ Components are pieces of data that can be attached to entities. They store infor
 
 They are defined in the manifest (and not your codebase) so that other packages that depend on your package can use them when interacting with the ECS. Additionally, this means that component definitions are not tied to a specific language, and can be used in any language that supports the runtime.
 
-For more detail on what components can be, see the [package manifest reference](package.md#components--components). Note that component types cannot be nested - you cannot have a component that is a `Vec` of `Vec`s.
+For more detail on what components can be, see the [package manifest reference](./package.md#components--components). Note that component types cannot be nested - you cannot have a component that is a `Vec` of `Vec`s.
 
 ### Attributes
 
@@ -32,7 +32,7 @@ This component can have its debug value printed. This is most often used for ECS
 
 This component is networked to the client. This means that the component's value will be sent to the client when the component is created, and whenever the component's value changes.
 
-Note that a component that is `Networked` on the client will _not_ be networked to the server. Ambient's ECS networking is strictly server to client; to send data from the client to the server, you must use [messages](package.md#messages--messages).
+Note that a component that is `Networked` on the client will _not_ be networked to the server. Ambient's ECS networking is strictly server to client; to send data from the client to the server, you must use [messages](./package.md#messages--messages).
 
 #### `Resource`
 
