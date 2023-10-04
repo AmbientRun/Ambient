@@ -50,7 +50,7 @@ pub async fn main() {
         .spawn();
 
     Collision::subscribe(move |msg| {
-        // println!("Bonk! {:?} collided", msg.ids);
+        println!("Bonk! {:?} collided", msg.ids);
         Bonk {
             emitter: cube,
             listener: camera,
@@ -61,7 +61,7 @@ pub async fn main() {
     Frame::subscribe(move |_| {
         for hit in physics::raycast(Vec3::Z * 20., -Vec3::Z) {
             if hit.entity == cube {
-                // println!("The raycast hit the cube: {hit:?}");
+                println!("The raycast hit the cube: {hit:?}");
             }
         }
     });
@@ -74,7 +74,7 @@ pub async fn main() {
 
         let new_linear_velocity = (random::<Vec3>() - 0.5) * 2. * max_linear_velocity;
         let new_angular_velocity = (random::<Vec3>() - 0.5) * 2. * max_angular_velocity;
-        // println!("And again! Linear velocity: {new_linear_velocity:?} | Angular velocity: {new_angular_velocity:?}");
+        println!("And again! Linear velocity: {new_linear_velocity:?} | Angular velocity: {new_angular_velocity:?}");
         entity::set_components(
             cube,
             Entity::new()
