@@ -3,6 +3,7 @@ use ambient_api::{
         audio::components::amplitude,
         camera::components::{fog, perspective_infinite_reverse},
         messages::Frame,
+        player::components::is_player,
         primitives::concepts::Sphere,
         rendering::components::{color, fog_color, fog_density, light_ambient, transparency_group},
         transform::components::{local_to_world, scale, translation},
@@ -12,7 +13,9 @@ use ambient_api::{
 
 use packages::{
     temperature::components::{temperature, temperature_src_radius, temperature_src_rate},
-    this::components::{ambient_loop, heat_offset, heat_radius, visualizing_heat_source},
+    this::components::{
+        ambient_loop, heat_offset, heat_radius, is_visualizing_warm_body, visualizing_heat_source,
+    },
 };
 
 use std::f32::consts::PI;
@@ -120,14 +123,24 @@ fn visualize_sources_of_warmth() {
     ))
     .bind(|heat_sources| {
         for (heat_source, (_pos, heat, radius)) in heat_sources {
-            if heat > 2.2 {
-                // campfire
-                spawn_heat_visualizing_sphere(heat_source, radius * 0.30, 0.);
-                spawn_heat_visualizing_sphere(heat_source, radius * 0.34, 0.);
-                spawn_heat_visualizing_sphere(heat_source, radius * 0.38, 0.);
-            } else if heat > 0.0 {
-                // players beating heart - removed for now
-                // spawn_heat_visualizing_sphere(heat_source, radius * 0.30, 1.25);
+            if entity::has_component(heat_source, is_player()) {
+                // don't spawn for player
+
+                // spawn_heat_visualizing_sphere(
+                //     heat_source,
+                //     radius
+                //         * match heat_source == player::get_local() {
+                //             true => 0.10,
+                //             false => 0.20,
+                //         },
+                //     1.25,
+                //     true,
+                // );
+            } else {
+                // static heat
+                spawn_heat_visualizing_sphere(heat_source, radius * 0.30, 0., false);
+                spawn_heat_visualizing_sphere(heat_source, radius * 0.34, 0., false);
+                spawn_heat_visualizing_sphere(heat_source, radius * 0.38, 0., false);
             }
 
             // do not create for negative heat sources
@@ -159,12 +172,42 @@ fn visualize_sources_of_warmth() {
             }
         }
     });
+
+    query(visualizing_heat_source())
+        .requires(is_visualizing_warm_body())
+        .each_frame(move |spheres| {
+            for (sphere, hs) in spheres {
+                if let Some(hs_rate) = entity::get_component(hs, temperature_src_rate()) {
+                    let (max_opacity, max_radius) = match hs == player::get_local() {
+                        true => (0.2, 0.8),
+                        false => (0.1, 1.2),
+                    };
+                    entity::add_component(
+                        sphere,
+                        color(),
+                        HEAT_SOURCE_COLOUR.extend(
+                            remap32(hs_rate, 0., 0.15, 0.0, max_opacity).clamp(0.0, max_opacity),
+                        ),
+                    );
+                    entity::add_component(
+                        sphere,
+                        heat_radius(),
+                        remap32(hs_rate, 0., 0.15, 0.0, max_radius).clamp(0.0, max_radius),
+                    );
+                    return;
+                }
+
+                entity::add_component(sphere, color(), HEAT_SOURCE_COLOUR.extend(0.));
+                // invisible, gone
+            }
+        });
 }
 
 fn spawn_heat_visualizing_sphere(
     heat_source: EntityId,
     sphere_radius: f32,
     height_offset: f32,
+    is_dynamic_body: bool,
 ) -> EntityId {
     let sphere = Sphere {
         ..Sphere::suggested()
@@ -179,6 +222,9 @@ fn spawn_heat_visualizing_sphere(
     .with(heat_radius(), sphere_radius)
     .with(heat_offset(), vec3(0., 0., height_offset))
     .spawn();
+    if is_dynamic_body {
+        entity::add_component(sphere, is_visualizing_warm_body(), ());
+    }
     entity::add_child(heat_source, sphere);
     sphere
 }
