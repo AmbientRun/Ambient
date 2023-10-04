@@ -8,7 +8,7 @@ When you create a package, both `client` and `server` modules are created. You c
 
 The ECS can be used to synchronize state between the server and the client. Both the client and the server have the same ECS, but components with the `Networked` attribute will be synchronized from the server to the client. The client can make its own changes to the ECS, including adding and modifying components, but any modified components will be overridden by the server's version when the server sends an update for those components.
 
-Additionally, both the client and the server can send structured messages to each other to communicate information that can't be represented in the ECS. For more information on this, see the [package documentation](package.md#messages--messages).
+Additionally, both the client and the server can send structured messages to each other to communicate information that can't be represented in the ECS. For more information on this, see the [package documentation](./package.md#messages--messages).
 
 Deciding where your code should go is important to making the most of Ambient, and it's not always obvious. Here are some guidelines:
 

@@ -90,11 +90,13 @@ import("ambient_web")
         }
 
         const urlParams = new URLSearchParams(window.location.search);
-        const packageId = urlParams.get('package');
-        const deploymentId = urlParams.get('deployment');
+        const packageId = urlParams.get('package_id');
+        const deploymentId = urlParams.get('deployment_id');
         const userId = urlParams.get('userId');
         const context = urlParams.get('context');
         const debuggerOn = urlParams.get('debugger') != null;
+        const serverUrl = urlParams.get('server_url');
+        const maxPlayers = urlParams.get('max_players');
 
         let params = new URLSearchParams();
         if (packageId) {
@@ -103,11 +105,16 @@ import("ambient_web")
         if (deploymentId) {
             params.set('deployment_id', deploymentId);
         }
+
+        if (maxPlayers) {
+            params.set('max_players', maxPlayers);
+        }
+       
         if (context) {
             params.set('context', context);
         }
 
-        const url = params.size != 0 && `https://api.ambient.run/servers/ensure-running?${params.toString()}` || "https://127.0.0.1:9000";
+        const url = serverUrl && serverUrl || params.size != 0 && `https://api.ambient.run/servers/ensure-running?${params.toString()}` || "https://127.0.0.1:9000";
 
         console.log(`Connecting to ${url}`)
 

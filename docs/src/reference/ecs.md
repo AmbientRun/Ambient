@@ -18,7 +18,7 @@ Components are pieces of data that can be attached to entities. They store infor
 
 They are defined in the manifest (and not your codebase) so that other packages that depend on your package can use them when interacting with the ECS. Additionally, this means that component definitions are not tied to a specific language, and can be used in any language that supports the runtime.
 
-For more detail on what components can be, see the [package manifest reference](package.md#components--components). Note that component types cannot be nested - you cannot have a component that is a `Vec` of `Vec`s.
+For more detail on what components can be, see the [package manifest reference](./package.md#components--components). Note that component types cannot be nested - you cannot have a component that is a `Vec` of `Vec`s.
 
 ### Attributes
 
@@ -32,7 +32,7 @@ This component can have its debug value printed. This is most often used for ECS
 
 This component is networked to the client. This means that the component's value will be sent to the client when the component is created, and whenever the component's value changes.
 
-Note that a component that is `Networked` on the client will _not_ be networked to the server. Ambient's ECS networking is strictly server to client; to send data from the client to the server, you must use [messages](package.md#messages--messages).
+Note that a component that is `Networked` on the client will _not_ be networked to the server. Ambient's ECS networking is strictly server to client; to send data from the client to the server, you must use [messages](./package.md#messages--messages).
 
 #### `Resource`
 
@@ -72,14 +72,14 @@ query((player(), player_camera_ref(), translation(), rotation())).each_frame(mov
 });
 ```
 
-Spawn queries are used to query for when specific components are added to entities (including the entire entity being spawned). They are useful for spawning entities when a player joins the game, for example:
+Spawn queries are used to query for when specific components are added to entities (including the entire entity being spawned). They are useful for spawning entities when a player joins the game; for example:
 
 ```rust
 spawn_query(player()).bind(move |players| {
     // For each player joining, spawn a random colored box somewhere
     for _ in players {
         Entity::new()
-            .with_merge(make_transformable())
+            .with_merge(Transformable::suggested())
             .with(cube(), ())
             .with(translation(), rand::random())
             .with(color(), rand::random::<Vec3>().extend(1.0))
@@ -88,7 +88,7 @@ spawn_query(player()).bind(move |players| {
 });
 ```
 
-Despawn queries are similar to spawn queries, but track the removal of components from entities (including the entire entity being despawned). They are useful for cleaning up entities when a player leaves the game, for example:
+Despawn queries are similar to spawn queries, but track the removal of components from entities (including the entire entity being despawned). They are useful for cleaning up entities when a player leaves the game; for example:
 
 ```rust
 despawn_query(user_id()).requires(player()).bind(move |players| {

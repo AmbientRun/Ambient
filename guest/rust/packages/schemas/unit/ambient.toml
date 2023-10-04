@@ -1,13 +1,13 @@
 [package]
 id = "afl5yv5ya35vbuaj3aido22cwjzat25z"
 name = "Unit"
-description = "Schema for units in games"
-version = "0.3.0-nightly-2023-10-02"
+description = "Schema for units in games. Often used with the Game Object schema."
+version = "0.3.1-dev"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.1-dev"
 
 [dependencies]
-game_object = { path = "../game_object" , deployment = "1DTdj1TFiFzRHDRLNBE5Ru" }
+game_object = { path = "../game_object", deployment = "1dyIvQx50CG6vvLfa8xCqa" }
 
 [components]
 run_direction = { type = "Vec2", attributes = ["Debuggable", "Networked"] }

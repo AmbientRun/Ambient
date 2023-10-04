@@ -4,10 +4,9 @@
 
 Ambient features an automated asset pipeline that is capable of loading and processing a number of assets and formats.
 
-In a folder with assets, create a file with a name ending in `pipeline.toml`; examples include `pipeline.toml` and `hello_pipeline.toml`. The prefix can be used to disambiguate between different pipelines.
+Within the `assets` folder, or any subdirectory of it, create a file with a name ending in `pipeline.toml`; examples include `pipeline.toml` and `hello_pipeline.toml`. The prefix can be used to disambiguate between different pipelines.
 
-This pipelines will look at, but not necessarily process, all of the files adjacent to it in the folder. By convention,
-our examples place their assets in the `assets` folder, but this is not necessary.
+This pipelines will look at, but not necessarily process, all of the files adjacent to it in the folder.
 
 ## Models
 

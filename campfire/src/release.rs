@@ -6,7 +6,7 @@ use std::{
 
 use anyhow::{ensure, Context};
 use cargo_toml::Inheritable;
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use itertools::Itertools;
 use serde::Deserialize;
 use std::str;
@@ -36,6 +36,10 @@ pub enum Release {
     Publish {
         #[clap(long)]
         execute: bool,
+
+        // Lets you switch out the command used to verify that the steps work locally.
+        #[arg(long, value_enum, default_value_t)]
+        command: PublishCommand,
     },
     /// Checks that Ambient is ready for a release to be cut
     Check {
@@ -53,10 +57,15 @@ pub enum Release {
 
         #[arg(long)]
         no_changelog: bool,
-
-        #[arg(long)]
-        no_readme: bool,
     },
+}
+
+#[derive(ValueEnum, Copy, Clone, Debug, Default, PartialEq)]
+pub enum PublishCommand {
+    #[default]
+    Publish,
+    Package,
+    Doc,
 }
 
 pub fn main(args: &Release) -> anyhow::Result<()> {
@@ -66,35 +75,31 @@ pub fn main(args: &Release) -> anyhow::Result<()> {
             no_package_ambient_version_update,
         } => update_version(new_version, *no_package_ambient_version_update),
         Release::UpdateMsrv { new_version } => update_msrv(new_version),
-        Release::Publish { execute } => publish(*execute),
+        Release::Publish { execute, command } => publish(*execute, *command),
         Release::Check {
             no_docker,
             no_crates_io_validity,
             no_msrv,
             no_build,
             no_changelog,
-            no_readme,
         } => check_release(
             *no_docker,
             *no_crates_io_validity,
             *no_msrv,
             *no_build,
             *no_changelog,
-            *no_readme,
         ),
     }
 }
 
 const DOCKERFILE: &str = "Dockerfile";
-const AMBIENT_MANIFEST: &str = "schema/ambient.toml";
-const AMBIENT_MANIFEST_INCLUDES: &str = "schema/schema";
+const AMBIENT_MANIFEST: &str = "schema/schema/ambient.toml";
+const AMBIENT_MANIFEST_INCLUDES: &str = "schema/schema/includes";
 const ROOT_CARGO: &str = "Cargo.toml";
 const WEB_CARGO: &str = "web/Cargo.toml";
 const GUEST_RUST_CARGO: &str = "guest/rust/Cargo.toml";
 const ADVANCED_INSTALLING_DOCS: &str = "docs/src/reference/advanced_installing.md";
 const CHANGELOG: &str = "CHANGELOG.md";
-const README: &str = "README.md";
-const INTRODUCTION: &str = "docs/src/introduction.md";
 
 fn check_release(
     no_docker: bool,
@@ -102,7 +107,6 @@ fn check_release(
     no_msrv: bool,
     no_build: bool,
     no_changelog: bool,
-    no_readme: bool,
 ) -> anyhow::Result<()> {
     // https://github.com/AmbientRun/Ambient/issues/314
     // the Dockerfile can run an Ambient server
@@ -129,11 +133,6 @@ fn check_release(
     // the CHANGELOG's unreleased section is empty
     if !no_changelog {
         check_changelog()?;
-    }
-
-    // README.md and docs/src/introduction.md match their introductory text
-    if !no_readme {
-        check_readme()?;
     }
 
     Ok(())
@@ -197,11 +196,20 @@ fn update_version(
         toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
     })?;
 
+    let candidate_crates = all_publishable_crates
+        .iter()
+        .map(|p| p.1.package.as_ref().unwrap().name.clone())
+        // HACK: insert crates that are dependencies of packages, but are not depended upon
+        // by the Ambient app or by the API. It would be nice to solve this properly at some
+        // point.
+        .chain(["ambient_brand_theme".to_string()])
+        .collect::<HashSet<_>>();
+
     // Fix all of the dependency versions of publishable Ambient crates
     edit_toml(GUEST_RUST_CARGO, |toml| {
         toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
         update_ambient_dependency_versions(
-            &all_publishable_crates,
+            &candidate_crates,
             &mut toml["workspace"]["dependencies"],
             new_version,
         );
@@ -209,11 +217,27 @@ fn update_version(
 
     for (path, _) in &all_publishable_crates {
         edit_toml(path, |toml| {
-            update_ambient_dependency_versions(
-                &all_publishable_crates,
-                &mut toml["dependencies"],
-                new_version,
-            );
+            for dependencies in ["dependencies", "build-dependencies", "dev-dependencies"] {
+                if let Some(mut deps) = toml.get_mut(dependencies) {
+                    update_ambient_dependency_versions(&candidate_crates, &mut deps, new_version);
+                }
+            }
+
+            // Handle `[target.'cfg(not(target_os = "unknown"))'.dependencies]`
+            if let Some(target) = toml.get_mut("target").and_then(|t| t.as_table_like_mut()) {
+                for (_, target_table) in target.iter_mut() {
+                    if let Some(mut deps) = target_table
+                        .get_mut("dependencies")
+                        .filter(|t| t.is_table_like())
+                    {
+                        update_ambient_dependency_versions(
+                            &candidate_crates,
+                            &mut deps,
+                            new_version,
+                        );
+                    }
+                }
+            }
         })?;
     }
 
@@ -242,15 +266,10 @@ fn update_version(
 }
 
 fn update_ambient_dependency_versions(
-    all_publishable_crates: &[(PathBuf, cargo_toml::Manifest)],
+    candidate_crates: &HashSet<String>,
     dependencies: &mut toml_edit::Item,
     new_version: &str,
 ) {
-    let candidate_crates = all_publishable_crates
-        .iter()
-        .map(|p| p.1.package.as_ref().unwrap().name.clone())
-        .collect::<HashSet<_>>();
-
     for (key, value) in dependencies
         .as_table_like_mut()
         .expect("dependencies is not a table")
@@ -312,42 +331,60 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn publish(execute: bool) -> anyhow::Result<()> {
+/// Only publishes API crates, and is built around that assumption.
+///
+/// If you want to publish the runtime, here be dragons
+fn publish(execute: bool, command: PublishCommand) -> anyhow::Result<()> {
     let crates = get_all_publishable_crates(false)?;
 
     #[derive(Debug)]
     enum Task {
-        Publish(PathBuf, Vec<String>),
+        Command(PathBuf, bool, Vec<String>),
         Wait(usize),
     }
 
-    let tasks = crates
-        .into_iter()
-        .map(|p| {
-            let crate_path = p.0.parent().unwrap().canonicalize().unwrap();
-            let crates_path = crate_path
-                .parent()
-                .unwrap()
-                .file_name()
-                .unwrap()
-                .to_string_lossy();
+    let tasks = crates.into_iter().map(|p| {
+        let crate_path = p.0.parent().unwrap().canonicalize().unwrap();
+        let crates_path = crate_path
+            .parent()
+            .unwrap()
+            .file_name()
+            .unwrap()
+            .to_string_lossy();
 
-            let features = if crates_path == "shared_crates" {
-                if !p.1.features.contains_key("default") && p.1.features.contains_key("native") {
-                    vec!["native".to_string()]
-                } else {
-                    vec![]
-                }
+        let features = if crates_path == "shared_crates" {
+            if !p.1.features.contains_key("default") && p.1.features.contains_key("guest") {
+                vec!["guest".to_string()]
             } else {
                 vec![]
-            };
+            }
+        } else {
+            vec![]
+        };
 
-            Task::Publish(crate_path, features)
-        })
-        .chunks(5)
-        .into_iter()
-        .flat_map(|c| c.chain(std::iter::once(Task::Wait(30))))
-        .collect_vec();
+        // If it's not excluded, assume it's wasm32-wasi
+        let build_with_host: HashSet<&str> = HashSet::from_iter([
+            "ambient_package_semantic",
+            "ambient_package_macro_common",
+            "ambient_element",
+        ]);
+        let specify_target =
+            p.1.package
+                .as_ref()
+                .is_some_and(|p| !build_with_host.contains(p.name.as_str()));
+
+        Task::Command(crate_path, specify_target, features)
+    });
+
+    let tasks = if command != PublishCommand::Publish {
+        tasks.collect_vec()
+    } else {
+        tasks
+            .chunks(5)
+            .into_iter()
+            .flat_map(|c| c.chain(std::iter::once(Task::Wait(30))))
+            .collect_vec()
+    };
     // Remove the last wait
     let tasks = &tasks[0..tasks.len() - 1];
 
@@ -355,17 +392,32 @@ fn publish(execute: bool) -> anyhow::Result<()> {
         true => {
             for task in tasks {
                 match task {
-                    Task::Publish(path, features) => {
-                        let mut command = Command::new("cargo");
-                        command.arg("publish");
-                        command.arg("--no-verify");
-                        if !features.is_empty() {
-                            command.arg("-F").arg(features.join(","));
+                    Task::Command(path, specify_target, features) => {
+                        let mut cmd = Command::new("cargo");
+                        match command {
+                            PublishCommand::Publish => {
+                                cmd.arg("publish");
+                                cmd.arg("--no-verify");
+                            }
+                            PublishCommand::Package => {
+                                cmd.arg("package");
+                                cmd.arg("--no-verify");
+                            }
+                            PublishCommand::Doc => {
+                                cmd.arg("doc");
+                            }
                         }
 
-                        let status = command.current_dir(path).spawn()?.wait()?;
+                        if *specify_target {
+                            cmd.arg("--target").arg("wasm32-wasi");
+                        }
+                        if !features.is_empty() {
+                            cmd.arg("-F").arg(features.join(","));
+                        }
+
+                        let status = cmd.current_dir(path).spawn()?.wait()?;
                         if !status.success() {
-                            anyhow::bail!("failed to upload {}", path.display());
+                            anyhow::bail!("failed to operate {}", path.display());
                         }
                     }
                     Task::Wait(seconds) => {
@@ -377,15 +429,24 @@ fn publish(execute: bool) -> anyhow::Result<()> {
         false => {
             for task in tasks {
                 match task {
-                    Task::Publish(path, features) => {
-                        let features = features.join(",");
+                    Task::Command(path, specify_target, features) => {
                         println!(
-                            "cd {} && cargo publish --no-verify{}; cd -",
+                            "cd {} && cargo {}{}{}; cd -",
                             path.display(),
+                            match command {
+                                PublishCommand::Publish => "publish --no-verify",
+                                PublishCommand::Package => "package --no-verify",
+                                PublishCommand::Doc => "doc",
+                            },
+                            if *specify_target {
+                                " --target wasm32-wasi"
+                            } else {
+                                ""
+                            },
                             if features.is_empty() {
                                 "".to_string()
                             } else {
-                                format!(" -F {}", features)
+                                format!(" -F {}", features.join(","))
                             }
                         )
                     }
@@ -611,25 +672,6 @@ fn check_changelog() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn check_readme() -> anyhow::Result<()> {
-    log::info!("Checking README intro...");
-    let intro = std::fs::read_to_string(INTRODUCTION)?
-        .lines()
-        .skip(1) // Skip the first line: # Introduction // not in the README
-        .collect::<Vec<&str>>()
-        .join("\n");
-
-    let readme = std::fs::read_to_string(README)?;
-
-    ensure!(
-        readme.contains(&intro),
-        "README intro content does not match!"
-    );
-
-    log::info!("README intro OK.");
-    Ok(())
-}
-
 fn check(path: impl AsRef<Path>) -> anyhow::Result<()> {
     let path = path.as_ref();
     let mut command = Command::new("cargo");
@@ -751,6 +793,7 @@ impl Manifests {
             Path::new("shared_crates")
                 .join(folder_name)
                 .join("Cargo.toml"),
+            "schema/Cargo.toml".into(),
             "guest/rust/api/Cargo.toml".into(),
             "guest/rust/api_core/api_macros/Cargo.toml".into(),
             "guest/rust/api_core/Cargo.toml".into(),

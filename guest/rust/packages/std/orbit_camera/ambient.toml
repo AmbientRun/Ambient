@@ -2,9 +2,9 @@
 id = "tijz7x6fimbgu24sbbtp4nllhfxbgblp"
 name = "Orbit Camera"
 description = "Implements a clientside-only orbit camera."
-version = "0.3.0-nightly-2023-10-02"
+version = "0.3.1-dev"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.1-dev"
 
 [components]
 is_orbit_camera = { type = "Empty", attributes = ["Debuggable", "Networked"] }

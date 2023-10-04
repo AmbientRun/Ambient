@@ -1,10 +1,10 @@
 [package]
 id = "hvxms7i2px7krvkm23sxfjxsjqlcmtb5"
 name = "Game Object"
-description = "Schema for game objects"
-version = "0.3.0-nightly-2023-10-02"
+description = "Schema for game objects."
+version = "0.3.1-dev"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.1-dev"
 
 [components]
 health = { type = "F32", name = "Health", description = "This game object's health. \"Standard\" health is 100 HP.", attributes = [

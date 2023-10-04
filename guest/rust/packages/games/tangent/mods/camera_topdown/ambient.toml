@@ -2,10 +2,10 @@
 id = "vvuixyn4jy3xv4ij4hi75atzfwk2j37k"
 name = "Tangent Camera: Top-down"
 description = "Implements a top-down vehicle camera. Takes precedence over the follow camera."
-version = "0.3.0-nightly-2023-10-02"
+version = "0.3.1-dev"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.1-dev"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "45ZyP83LAE9CKZVaEFLgqF" }
+tangent_schema = { path = "../../schema", deployment = "qeP6L6aPgej5CQto42mRB" }

@@ -26,9 +26,6 @@ use packages::{
     },
 };
 
-// Temporarily disabled: https://github.com/AmbientRun/Ambient/issues/1004
-const ENABLE_OUTLINES: bool = false;
-
 #[main]
 pub fn main() {
     // If the editor is being launched by itself, create a sample scene to edit.
@@ -169,18 +166,15 @@ fn deselect(player_id: EntityId) -> Option<EntityId> {
     let Some(selected_id) = entity::get_component(player_id, selected_entity()) else {
         return None;
     };
-    if ENABLE_OUTLINES {
-        entity::remove_component(selected_id, outline_recursive());
-    }
+
+    entity::remove_component(selected_id, outline_recursive());
     entity::remove_component(player_id, selected_entity());
 
     Some(selected_id)
 }
 
 fn select(player_id: EntityId, entity_id: EntityId) {
-    if ENABLE_OUTLINES {
-        entity::add_component(entity_id, outline_recursive(), Vec4::ONE);
-    }
+    entity::add_component(entity_id, outline_recursive(), Vec4::ONE);
     entity::add_component(player_id, selected_entity(), entity_id);
 }
 

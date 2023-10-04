@@ -5,6 +5,10 @@ Ambient supports a number of settings that can be configured using the `settings
 ## Settings
 
 ```toml
+[general]
+user_id = String
+api_token = String
+
 [general.sentry]
 enabled = bool
 dsn = String

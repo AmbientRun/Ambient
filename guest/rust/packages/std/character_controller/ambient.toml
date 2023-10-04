@@ -1,0 +1,42 @@
+[package]
+id = "vuph6dqdj6li4apmcgomn3faudcbfz56"
+name = "Character Controller"
+description = "A character controller for the player that takes input and updates their unit's movement and camera."
+version = "0.3.1-dev"
+content = { type = "Asset", code = true }
+ambient_version = "0.3.1-dev"
+
+[dependencies]
+unit_schema = { path = "../../schemas/unit", deployment = "6KW1f3MjAJ1DTrKUcY2fS5" }
+character_movement = { path = "../character_movement", deployment = "5goT7k9f9vniIU2ZZBjzZa" }
+
+[components]
+use_character_controller = { type = "Empty", name = "Use Character Controller", description = "Use the character controller to drive this entity", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+player_camera_ref = { type = "EntityId", name = "Player camera ref", description = "The player's camera.", attributes = [
+    "Debuggable",
+] }
+camera_distance = { type = "F32", name = "Camera distance", description = "The distance of the camera from the player's head.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+# Internal
+
+player_intermediate_rotation = { type = "Vec2", attributes = ["Debuggable"] }
+
+
+[messages.Input]
+description = "Describes the input state of the player."
+[messages.Input.fields]
+run_direction = "Vec2"
+body_yaw = "F32"
+head_pitch = "F32"
+shooting = "Bool"
+ducking = "Bool"
+running = "Bool"
+
+[messages.Jump]
+fields = {}

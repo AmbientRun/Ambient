@@ -12,7 +12,10 @@ use ambient_native_std::{
 };
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_sys::{task::RuntimeHandle, time::sleep_label};
+use ambient_sys::{
+    task::RuntimeHandle,
+    time::{sleep_label, Instant},
+};
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use bytes::{BufMut, BytesMut};
@@ -39,6 +42,9 @@ use crate::{
 };
 
 use super::ProxyMessage;
+
+const ALLOWED_FRAME_TIME: Duration = Duration::from_nanos(16_666_666); // 1/60 s
+const MAX_ACCUMMULATED_FRAME_DELAY: Duration = Duration::from_millis(50);
 
 #[derive(Debug, Clone)]
 pub struct GameClientView {
@@ -83,7 +89,6 @@ impl ElementComponent for GameClientView {
 
         // When the client is connected, run the update logic each frame
         if let Some(client_state) = &client_state {
-            tracing::info!("Adding game logic hook");
             run_game_logic(
                 hooks,
                 client_state.game_state.clone(),
@@ -225,6 +230,98 @@ impl ElementComponent for GameClientView {
     }
 }
 
+#[derive(Debug)]
+struct FrameDropStats {
+    frames: usize,
+    dropped: usize,
+    last_warning: Instant,
+    warn_freq: usize,
+}
+impl FrameDropStats {
+    pub fn new(warn_freq: usize) -> Self {
+        Self {
+            frames: 0,
+            dropped: 0,
+            last_warning: Instant::now(),
+            warn_freq,
+        }
+    }
+
+    pub fn on_frame(&mut self) {
+        self.frames += 1;
+    }
+
+    pub fn on_dropped_frame(&mut self, now: Instant) {
+        self.dropped += 1;
+
+        if self.dropped == self.warn_freq {
+            let dropped_time = now - self.last_warning;
+            tracing::warn!(
+                "Too much accummulated frame delay! Dropped {:.2}% of frames in last {:?}",
+                self.drop_ratio() * 100.0,
+                dropped_time
+            );
+            self.frames = 0;
+            self.dropped = 0;
+            self.last_warning = now;
+        }
+    }
+
+    fn drop_ratio(&self) -> f32 {
+        self.dropped as f32 / self.frames as f32
+    }
+}
+
+/// Decides if a frame should be dropped based on observed frame times.
+///
+/// Frames taking too much time can starve browser networking (https://github.com/w3c/webtransport/issues/543)
+/// We calculate how much delay has been accummulated and when a threshold is reached we drop a frame to allow
+/// for networking to catch up.
+struct FrameDropping {
+    stats: FrameDropStats,
+    accummulated_delay: Duration,
+}
+impl FrameDropping {
+    pub fn new() -> Self {
+        Self {
+            stats: FrameDropStats::new(120),
+            accummulated_delay: Duration::ZERO,
+        }
+    }
+
+    pub fn should_drop(&mut self, now: Instant) -> bool {
+        self.stats.on_frame();
+
+        if self.accummulated_delay > MAX_ACCUMMULATED_FRAME_DELAY {
+            self.accummulated_delay = Duration::ZERO;
+            self.stats.on_dropped_frame(now);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn observe_frame_time(&mut self, frame_time: Duration) {
+        self.accummulated_delay = if frame_time < ALLOWED_FRAME_TIME {
+            // frame was processed in time -> reset the accummulated delay
+            Duration::ZERO
+        } else {
+            self.accummulated_delay + frame_time
+        };
+    }
+}
+
+struct FrameDroppingCtx<'a> {
+    now: Instant,
+    frame_dropping: parking_lot::MutexGuard<'a, FrameDropping>,
+}
+impl<'a> FrameDroppingCtx<'a> {
+    pub fn observe_frame_time(mut self) {
+        let frame_time = self.now.elapsed();
+        self.frame_dropping.observe_frame_time(frame_time);
+    }
+}
+
 fn run_game_logic(
     hooks: &mut Hooks,
     game_state: SharedClientGameState,
@@ -234,7 +331,25 @@ fn run_game_logic(
 
     let gpu = hooks.world.resource(gpu()).clone();
 
+    #[cfg(feature = "frame-dropping")]
+    let frame_dropping = Mutex::new(FrameDropping::new());
+
     use_frame(hooks, move |app_world| {
+        let mut frame_dropping_ctx: Option<FrameDroppingCtx<'_>> = None;
+
+        #[cfg(feature = "frame-dropping")]
+        {
+            let now = Instant::now();
+            let mut frame_dropping = frame_dropping.lock();
+            if frame_dropping.should_drop(now) {
+                return;
+            }
+            frame_dropping_ctx = Some(FrameDroppingCtx {
+                now,
+                frame_dropping,
+            });
+        }
+
         let mut game_state = game_state.lock();
 
         // Pipe events from app world to game world
@@ -249,6 +364,10 @@ fn run_game_logic(
         }
 
         game_state.on_frame(&gpu, &render_target.0);
+
+        if let Some(frame_dropping_ctx) = frame_dropping_ctx {
+            frame_dropping_ctx.observe_frame_time();
+        }
     });
 }
 
@@ -425,7 +544,9 @@ async fn handle_request(
             bytes.put_slice(&data);
 
             let fut = conn.send_datagram(&bytes[..]);
-            runtime.spawn_local(async move { log_network_result!(fut.await) });
+            runtime.spawn_local(async move {
+                log_network_result!(fut.await);
+            });
 
             Ok(())
         }

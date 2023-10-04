@@ -17,7 +17,7 @@
     "cmd": "cargo run --features profile --release -- run ./guest/rust/examples/controllers/third_person_camera"
   },
   "third-person-camera": {
-    "cmd": "cargo run --features tracing -- run ./guest/rust/examples/controllers/third_person_camera --debugger --clean-build"
+    "cmd": "cargo run --features tracing -- run ./guest/rust/examples/controllers/third_person_camera --debugger"
   },
   "primitives": {
     "cmd": "cargo run --features hotload-includes -- run ./guest/rust/examples/basics/primitives/"
@@ -100,6 +100,9 @@
   },
   "serve third-person-camera release": {
     "cmd": "cargo run --release serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build"
+  },
+  "serve tangent release": {
+    "cmd": "cargo run --release serve --release ./guest/rust/packages/games/tangent/ --clean-build"
   },
   "serve-third-person-camera": {
     "cmd": "cargo run serve --release ./guest/rust/examples/controllers/third_person_camera/ --clean-build"
@@ -242,7 +245,7 @@
     "cmd": "cargo cf web build"
   },
   "build web release": {
-    "cmd": "cargo cf web build --profile=release"
+    "cmd": "cargo cf web build --profile profiling"
   },
   "check web": {
     "cmd": "cargo cf web check"
@@ -254,7 +257,7 @@
     }
   },
   "serve web release": {
-    "cmd": "cargo cf web serve --profile=profiling",
+    "cmd": "cargo cf web serve --profile profiling",
     "env": {
       "RUST_LOG": "info"
     }

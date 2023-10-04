@@ -5,7 +5,7 @@
 name: Release
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   push:
     tags: [v*]
     branches:
@@ -14,6 +14,7 @@ on:
       - WORKFLOW-TESTING/release-version/v*
 
 permissions:
+  actions: write
   contents: write
 
 env:
@@ -147,6 +148,23 @@ jobs:
       - name: Upload debug symbols
         run: sentry-cli upload-dif -o dims -p native-client ${{ env.EXE_DIR }}/${{ matrix.exe_name }} ${{ env.EXE_DIR }}/${{ matrix.symbol_path }}
 
+  trigger-build-jobs:
+    needs: meta
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Trigger build jobs
+        uses: actions/github-script@v6
+        with:
+          script: |
+            for (const workflow_id of ['deploy-server.yml', 'deploy-web.yml', 'deploy-packages.yml']) {
+              github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: workflow_id,
+                ref: '${{ needs.meta.outputs.tag }}',
+              })
+            }
+
   publish-api:
     if: needs.meta.outputs.kind == 'full'
     needs: [meta, build-app]
@@ -154,8 +172,12 @@ jobs:
     env:
       CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-      - run: rustup target add --toolchain stable wasm32-wasi
-      - name: Release all packages required for API
-        run: cargo campfire-slim release publish --execute
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'publish-api.yml',
+              ref: '${{ needs.meta.outputs.tag }}',
+            })

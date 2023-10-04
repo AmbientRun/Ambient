@@ -47,7 +47,7 @@ Great! We've learned how to load models into Ambient.
 >
 > This instantiates a prefab for the model that includes a collider. However, note that the antique camera here does not have a collider and you will need to consider adding a collider through the primitive colliders or through another source.
 >
-> See [the physics example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics).
+> See [the physics example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/physics/basics).
 
 > **Source**: The complete code for this chapter can be found [here](https://github.com/AmbientRun/TutorialProject/tree/chapter-5).
 

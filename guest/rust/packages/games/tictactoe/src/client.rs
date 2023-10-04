@@ -51,7 +51,7 @@ fn process_colors(cells: &[EntityId]) {
     for cell in cells {
         entity::remove_component(*cell, outline());
     }
-
+    
     let players = entity::get_all(is_player());
     let n_players = players.len();
     let player_colors: HashMap<_, _> = players
@@ -69,10 +69,11 @@ fn process_colors(cells: &[EntityId]) {
         .collect();
 
     for (player, player_color) in player_colors.iter() {
-        let Some(cell) = entity::get_component(*player, cell()) else {
+        let Some(cell_idx) = entity::get_component(*player, cell()) else {
             continue;
         };
-        entity::add_component_if_required(cells[cell as usize], outline(), *player_color);
+        let cell = cells[cell_idx as usize];
+            entity::add_component_if_required(cell, outline(), *player_color);
     }
 
     for cell in cells {
