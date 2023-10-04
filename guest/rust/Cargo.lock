@@ -3,6 +3,24 @@
 version = 3
 
 [[package]]
+name = "a_foggy_scene"
+version = "0.0.1"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+ "glam",
+ "regex",
+]
+
+[[package]]
+name = "a_nice_scene"
+version = "0.0.1"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+ "glam",
+ "regex",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -27,7 +45,7 @@ checksum = "aae1277d39aeec15cb388266ecc24b11c80469deae6067e17a1a7aa9e5c1f234"
 name = "afps_world_latency"
 version = "0.0.1"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
@@ -44,14 +62,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "aho-corasick"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea5d730647d4fadd988536d06fecce94b7b4f2a7efdae548f1cf4b63205518ab"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
+name = "ambient_api"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2b55def98b5a54b337054b783f9e1a9b6b4ec0cf03f939ad25dfc7c698e088e"
+dependencies = [
+ "ambient_api_core 0.3.0",
+ "ambient_cb 0.3.0",
+ "ambient_editor_derive 0.3.0",
+ "ambient_element 0.3.0",
+ "ambient_ui 0.3.0",
+ "anyhow",
+ "futures",
+ "glam",
+ "once_cell",
+ "ordered-float",
+ "rand 0.8.5",
+]
+
+[[package]]
 name = "ambient_api"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api_core",
- "ambient_cb",
- "ambient_editor_derive",
- "ambient_element",
- "ambient_ui",
+ "ambient_api_core 0.3.1-dev",
+ "ambient_cb 0.3.1-dev",
+ "ambient_editor_derive 0.3.1-dev",
+ "ambient_element 0.3.1-dev",
+ "ambient_ui 0.3.1-dev",
  "anyhow",
  "futures",
  "glam",
@@ -62,11 +108,35 @@ dependencies = [
 
 [[package]]
 name = "ambient_api_core"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bff30bf3cd68fee3c61582a6579f3fa1c5faf7a23cc894e5cf3a40547a679f61"
+dependencies = [
+ "ambient_api_macros 0.3.0",
+ "ambient_package_rt 0.3.0",
+ "ambient_shared_types 0.3.0",
+ "anyhow",
+ "byteorder",
+ "data-encoding",
+ "futures",
+ "glam",
+ "indexmap 2.0.0",
+ "once_cell",
+ "paste",
+ "rand 0.8.5",
+ "serde",
+ "thiserror",
+ "ulid",
+ "wit-bindgen",
+]
+
+[[package]]
+name = "ambient_api_core"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api_macros",
- "ambient_package_rt",
- "ambient_shared_types",
+ "ambient_api_macros 0.3.1-dev",
+ "ambient_package_rt 0.3.1-dev",
+ "ambient_shared_types 0.3.1-dev",
  "anyhow",
  "byteorder",
  "data-encoding",
@@ -84,9 +154,23 @@ dependencies = [
 
 [[package]]
 name = "ambient_api_macros"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5d2b5b49e4a47b9dd73d43c9d7e2d0eaac73fb22fe52da210b8698865650eef"
+dependencies = [
+ "ambient_package_macro_common 0.3.0",
+ "anyhow",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+ "tokio",
+]
+
+[[package]]
+name = "ambient_api_macros"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_package_macro_common",
+ "ambient_package_macro_common 0.3.1-dev",
  "anyhow",
  "indoc",
  "proc-macro2",
@@ -99,16 +183,34 @@ dependencies = [
 name = "ambient_brand_theme"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
- "ambient_color",
+ "ambient_api 0.3.1-dev",
+ "ambient_color 0.3.1-dev",
  "ambient_design_tokens",
- "ambient_package",
- "ambient_shared_types",
+ "ambient_package 0.3.1-dev",
+ "ambient_shared_types 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_cb"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1beb270b81df947a95dd18329d98a7da1c214b0932846c73ec3f2450636b8a3"
+
+[[package]]
+name = "ambient_cb"
 version = "0.3.1-dev"
+
+[[package]]
+name = "ambient_color"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8198f5210b3c3623c624dc1044a2f3f1c168f8964882507c0a31d9c27e6d413d"
+dependencies = [
+ "glam",
+ "hex",
+ "serde",
+ "thiserror",
+]
 
 [[package]]
 name = "ambient_color"
@@ -145,9 +247,31 @@ dependencies = [
 
 [[package]]
 name = "ambient_dirs"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d584fb15bdfea8c1696916b2677449d0b6fb1ab489b61d86d981448f3c88231"
+dependencies = [
+ "directories",
+]
+
+[[package]]
+name = "ambient_dirs"
 version = "0.3.1-dev"
 dependencies = [
  "directories",
+]
+
+[[package]]
+name = "ambient_editor_derive"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a23b39886f54135f8b30f5ba58ef81154aa602c72b3d87d395fea3e7a056e0c"
+dependencies = [
+ "pretty_assertions",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -163,12 +287,14 @@ dependencies = [
 
 [[package]]
 name = "ambient_element"
-version = "0.3.1-dev"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4c671c8bad2a7cd774634e86d8758db0d66dc7ca07012a68de17ec24225fe21"
 dependencies = [
- "ambient_cb",
- "ambient_element_component",
- "ambient_friendly_id",
- "ambient_guest_bridge",
+ "ambient_cb 0.3.0",
+ "ambient_element_component 0.3.0",
+ "ambient_friendly_id 0.3.0",
+ "ambient_guest_bridge 0.3.0",
  "as-any",
  "atomic_refcell",
  "derivative",
@@ -177,6 +303,36 @@ dependencies = [
  "parking_lot",
  "profiling",
  "tracing",
+]
+
+[[package]]
+name = "ambient_element"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_cb 0.3.1-dev",
+ "ambient_element_component 0.3.1-dev",
+ "ambient_friendly_id 0.3.1-dev",
+ "ambient_guest_bridge 0.3.1-dev",
+ "as-any",
+ "atomic_refcell",
+ "derivative",
+ "dyn-clonable",
+ "itertools 0.10.5",
+ "parking_lot",
+ "profiling",
+ "tracing",
+]
+
+[[package]]
+name = "ambient_element_component"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea8e65c9f83f74f0a39b559ca5da3e8817e948b1c9839f2c8de638d25de85fd7"
+dependencies = [
+ "itertools 0.10.5",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -193,84 +349,84 @@ dependencies = [
 name = "ambient_example_arkanoid"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_async"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_audio_ctrl"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_auto_editor"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_basic_model"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_button"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_clientside"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_clock"
 version = "0.0.1"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_counter"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_decals"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_dock_layout"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_editors"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
  "indexmap 2.0.0",
 ]
 
@@ -278,28 +434,28 @@ dependencies = [
 name = "ambient_example_first_person_camera"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_flow_layout"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_fog"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_generate_pipeline"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
  "ambient_pipeline_types",
 ]
 
@@ -307,63 +463,63 @@ dependencies = [
 name = "ambient_example_image"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_image_quad"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_input"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_instancing"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_line"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_material_overriding"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_messaging"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_minigolf"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_multiplayer"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
  "rand 0.8.5",
 ]
 
@@ -371,35 +527,35 @@ dependencies = [
 name = "ambient_example_music_sequencer"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_physics"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_pong"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_primitives"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_procedural_generation"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
  "noise",
  "palette 0.7.3",
  "rand 0.8.5",
@@ -410,85 +566,85 @@ dependencies = [
 name = "ambient_example_raw_text"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_rect"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_samplers"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_screen_ray"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_screens"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
- "ambient_friendly_id",
+ "ambient_api 0.3.1-dev",
+ "ambient_friendly_id 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_scroll"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_skinmesh"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_slider"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_sun"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_text"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_third_person_camera"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_tictactoe"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
  "palette 0.6.1",
 ]
 
@@ -496,14 +652,23 @@ dependencies = [
 name = "ambient_example_todo"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "ambient_example_transparency"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
+]
+
+[[package]]
+name = "ambient_friendly_id"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eed4ebddfbd51fe64c05c721b9de83cf8f8e7fdc721f801b4a445306a1988473"
+dependencies = [
+ "rand 0.8.5",
 ]
 
 [[package]]
@@ -515,11 +680,33 @@ dependencies = [
 
 [[package]]
 name = "ambient_guest_bridge"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf5bdb0f2e56d555f4c046b3f77ba8b07a719ba86c15b627fdfd7da8db5ef93a"
+dependencies = [
+ "ambient_api_core 0.3.0",
+ "ambient_shared_types 0.3.0",
+ "anyhow",
+]
+
+[[package]]
+name = "ambient_guest_bridge"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api_core",
- "ambient_shared_types",
+ "ambient_api_core 0.3.1-dev",
+ "ambient_shared_types 0.3.1-dev",
  "anyhow",
+]
+
+[[package]]
+name = "ambient_math"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37105b7ed5db512b8a63b0999f17421f1b1842bb706e0e2daa7216a85db882d0"
+dependencies = [
+ "glam",
+ "rand 0.8.5",
+ "serde",
 ]
 
 [[package]]
@@ -533,9 +720,33 @@ dependencies = [
 
 [[package]]
 name = "ambient_package"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35a8b79cfb6bedb4a84d279451bdc078205ee7103a9352d7c16bc14c91dfa0a0"
+dependencies = [
+ "ambient_shared_types 0.3.0",
+ "chrono",
+ "convert_case",
+ "data-encoding",
+ "indexmap 2.0.0",
+ "once_cell",
+ "proc-macro2",
+ "quote",
+ "rand 0.8.5",
+ "semver",
+ "serde",
+ "sha2",
+ "syn 1.0.109",
+ "thiserror",
+ "toml 0.7.8",
+ "url",
+]
+
+[[package]]
+name = "ambient_package"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_shared_types",
+ "ambient_shared_types 0.3.1-dev",
  "chrono",
  "convert_case",
  "data-encoding",
@@ -555,11 +766,28 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_macro_common"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09fa89b4de95289b5f3e9ba2bd09d66ddc2a606b83caff5325dbd1f89bb0ea1f"
+dependencies = [
+ "ambient_package 0.3.0",
+ "ambient_package_semantic 0.3.0",
+ "ambient_shared_types 0.3.0",
+ "anyhow",
+ "glam",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "ambient_package_macro_common"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_package",
- "ambient_package_semantic",
- "ambient_shared_types",
+ "ambient_package 0.3.1-dev",
+ "ambient_package_semantic 0.3.1-dev",
+ "ambient_shared_types 0.3.1-dev",
  "anyhow",
  "glam",
  "proc-macro2",
@@ -570,9 +798,23 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_rt"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2d23d627bb73687fa858792a07f7f46d8a5f69f778c5e3706f2b735dd095c3e"
+dependencies = [
+ "ambient_shared_types 0.3.0",
+ "byteorder",
+ "glam",
+ "paste",
+ "thiserror",
+ "ulid",
+]
+
+[[package]]
+name = "ambient_package_rt"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_shared_types",
+ "ambient_shared_types 0.3.1-dev",
  "byteorder",
  "glam",
  "paste",
@@ -582,13 +824,38 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_semantic"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37f3cb6f01c98a31ff03d3700f44ad51cf78c6e5387f4f3a9547a9bcd450870f"
+dependencies = [
+ "ambient_dirs 0.3.0",
+ "ambient_package 0.3.0",
+ "ambient_schema 0.3.0",
+ "ambient_shared_types 0.3.0",
+ "ambient_std 0.3.0",
+ "anyhow",
+ "async-recursion",
+ "data-encoding",
+ "glam",
+ "indexmap 2.0.0",
+ "paste",
+ "reqwest",
+ "semver",
+ "thiserror",
+ "toml 0.7.8",
+ "ulid",
+ "url",
+]
+
+[[package]]
+name = "ambient_package_semantic"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_dirs",
- "ambient_package",
- "ambient_schema",
- "ambient_shared_types",
- "ambient_std",
+ "ambient_dirs 0.3.1-dev",
+ "ambient_package 0.3.1-dev",
+ "ambient_schema 0.3.1-dev",
+ "ambient_shared_types 0.3.1-dev",
+ "ambient_std 0.3.1-dev",
  "anyhow",
  "async-recursion",
  "data-encoding",
@@ -615,7 +882,26 @@ dependencies = [
 
 [[package]]
 name = "ambient_schema"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "460993d260fe096f02bc428d06a793b2eca5f94fb206f854dcd556cbf4bcff01"
+
+[[package]]
+name = "ambient_schema"
 version = "0.3.1-dev"
+
+[[package]]
+name = "ambient_shared_types"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "510f66381c038ac6b581991d6264f25fb7c6ab53a88935482697c0e07fb7d085"
+dependencies = [
+ "bitflags 1.3.2",
+ "paste",
+ "serde",
+ "strum",
+ "ulid",
+]
 
 [[package]]
 name = "ambient_shared_types"
@@ -630,6 +916,16 @@ dependencies = [
 
 [[package]]
 name = "ambient_std"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcc98987fe9680cff3847c557c59bdb430e7e985279e256c1c105ee3d0cd282b"
+dependencies = [
+ "itertools 0.10.5",
+ "thiserror",
+]
+
+[[package]]
+name = "ambient_std"
 version = "0.3.1-dev"
 dependencies = [
  "itertools 0.10.5",
@@ -640,7 +936,17 @@ dependencies = [
 name = "ambient_testcase_588"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
+]
+
+[[package]]
+name = "ambient_time"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f661fc5f97086535d5c3359ea8770d39f53ff1f5dfc2ec286b4259fece67f511"
+dependencies = [
+ "itertools 0.10.5",
+ "thiserror",
 ]
 
 [[package]]
@@ -653,15 +959,38 @@ dependencies = [
 
 [[package]]
 name = "ambient_ui"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73f6be5c2712905175dd2f15ee7c9076f9ba8d0ac46cee19e27df8876ebc9d77"
+dependencies = [
+ "ambient_cb 0.3.0",
+ "ambient_color 0.3.0",
+ "ambient_element 0.3.0",
+ "ambient_guest_bridge 0.3.0",
+ "ambient_math 0.3.0",
+ "ambient_shared_types 0.3.0",
+ "ambient_time 0.3.0",
+ "convert_case",
+ "futures",
+ "glam",
+ "indexmap 2.0.0",
+ "itertools 0.10.5",
+ "parking_lot",
+ "rand 0.8.5",
+ "serde",
+]
+
+[[package]]
+name = "ambient_ui"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_cb",
- "ambient_color",
- "ambient_element",
- "ambient_guest_bridge",
- "ambient_math",
- "ambient_shared_types",
- "ambient_time",
+ "ambient_cb 0.3.1-dev",
+ "ambient_color 0.3.1-dev",
+ "ambient_element 0.3.1-dev",
+ "ambient_guest_bridge 0.3.1-dev",
+ "ambient_math 0.3.1-dev",
+ "ambient_shared_types 0.3.1-dev",
+ "ambient_time 0.3.1-dev",
  "convert_case",
  "futures",
  "glam",
@@ -819,21 +1148,21 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 name = "character_animation"
 version = "0.0.1"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "character_controller"
 version = "0.0.1"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "character_movement"
 version = "0.0.1"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
@@ -853,7 +1182,7 @@ dependencies = [
 name = "code"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
@@ -866,7 +1195,7 @@ checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
 name = "console"
 version = "0.0.1"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
  "rhai",
 ]
 
@@ -1014,7 +1343,7 @@ dependencies = [
 name = "dependencies"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
@@ -1072,6 +1401,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "droplet"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+]
+
+[[package]]
 name = "dyn-clonable"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1102,7 +1438,7 @@ checksum = "bbfc4744c1b8f2a09adc0e55242f60b1af195d88596bd8700be74418c056c555"
 name = "editor"
 version = "0.0.1"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
@@ -1130,7 +1466,7 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 name = "explosion"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
@@ -1153,6 +1489,13 @@ name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
+
+[[package]]
+name = "fog_dj"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+]
 
 [[package]]
 name = "form_urlencoded"
@@ -1256,7 +1599,7 @@ dependencies = [
 name = "gameplay_daynight"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
@@ -1374,7 +1717,7 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 name = "hide_cursor"
 version = "0.0.1"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
@@ -1593,6 +1936,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "just_fog"
+version = "0.0.1"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+]
+
+[[package]]
 name = "lab"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1611,6 +1961,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3"
 
 [[package]]
+name = "lightbox_playground"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+]
+
+[[package]]
+name = "live_player_count"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+ "ambient_brand_theme",
+ "ambient_color 0.3.1-dev",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1626,6 +1992,13 @@ name = "log"
 version = "0.4.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
+
+[[package]]
+name = "matgen_playground"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+]
 
 [[package]]
 name = "memchr"
@@ -1691,7 +2064,7 @@ dependencies = [
 name = "nameplates"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
@@ -1785,7 +2158,7 @@ checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
 name = "orbit_camera"
 version = "0.0.1"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
@@ -1801,11 +2174,11 @@ dependencies = [
 name = "package_manager"
 version = "0.0.1"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
  "ambient_brand_theme",
- "ambient_color",
- "ambient_package",
- "ambient_shared_types",
+ "ambient_color 0.3.1-dev",
+ "ambient_package 0.3.1-dev",
+ "ambient_shared_types 0.3.1-dev",
  "itertools 0.11.0",
  "serde",
  "serde_json",
@@ -2222,6 +2595,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "regex"
+version = "1.9.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ebee201405406dbf528b8b672104ae6d6d63e6d118cb10e4d51abbc7b58044ff"
+dependencies = [
+ "aho-corasick",
+ "memchr",
+ "regex-automata",
+ "regex-syntax",
+]
+
+[[package]]
+name = "regex-automata"
+version = "0.3.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59b23e92ee4318893fa3fe3e6fb365258efbfe6ac6ab30f090cdcbb7aa37efa9"
+dependencies = [
+ "aho-corasick",
+ "memchr",
+ "regex-syntax",
+]
+
+[[package]]
+name = "regex-syntax"
+version = "0.7.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dbb5fb1acd8a1a18b3dd5be62d25485eb770e05afb408a9627d14d451bae12da"
+
+[[package]]
 name = "reqwest"
 version = "0.11.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2486,6 +2888,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "snowy_droplets"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+]
+
+[[package]]
+name = "snowy_hints"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+ "ambient_brand_theme",
+ "ambient_color 0.3.1-dev",
+]
+
+[[package]]
+name = "snowy_pcs"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+]
+
+[[package]]
+name = "snowy_sceneloader"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+ "glam",
+ "regex",
+]
+
+[[package]]
 name = "socket2"
 version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2503,6 +2937,13 @@ checksum = "2538b18701741680e0322a2302176d3253a35388e2e62f172f64f4f16605f877"
 dependencies = [
  "libc",
  "windows-sys",
+]
+
+[[package]]
+name = "some_snowy_purgatory"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api 0.3.0",
 ]
 
 [[package]]
@@ -2525,6 +2966,13 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "stormvfx_playground"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+]
 
 [[package]]
 name = "strum"
@@ -2574,148 +3022,164 @@ dependencies = [
 name = "tangent"
 version = "0.1.0"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_behavior_character"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_behavior_vehicle"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_camera_follow"
 version = "0.1.0"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_camera_topdown"
 version = "0.1.0"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_class_assault"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_class_scout"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_class_tank"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_core"
 version = "0.1.0"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_gameplay_fire_rain"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_gun_laser"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_level_cubicide"
 version = "0.1.0"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_level_cubicide_one_spawn"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_pickup_health"
 version = "0.1.0"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_reskin_classes"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_spawner_vehicle"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_ui_class_selection"
 version = "0.1.0"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_ui_flat_hud"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_ui_holohud"
 version = "0.1.0"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_ui_spawn_menu"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
 name = "tangent_vehicle_standard"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
  "serde_json",
+]
+
+[[package]]
+name = "temperature"
+version = "0.0.1"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+]
+
+[[package]]
+name = "temperature_hud_magda"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_api 0.3.1-dev",
+ "ambient_brand_theme",
+ "ambient_color 0.3.1-dev",
 ]
 
 [[package]]
@@ -2977,7 +3441,7 @@ checksum = "f962df74c8c05a667b5ee8bcf162993134c104e96440b663c8daa176dc772d8c"
 name = "unity"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]
@@ -3008,7 +3472,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 name = "visualize_colliders"
 version = "0.3.1-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api 0.3.1-dev",
 ]
 
 [[package]]

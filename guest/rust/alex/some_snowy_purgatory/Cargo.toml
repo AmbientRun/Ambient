@@ -7,7 +7,7 @@ rust-version = {workspace = true}
 version = {workspace = true}
 
 [dependencies]
-ambient_api = { path = "../../api" }
+ambient_api = "0.3.0"
 
 [[bin]]
 name = "some_snowy_purgatory_client"

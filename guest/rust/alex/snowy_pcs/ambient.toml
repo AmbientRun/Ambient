@@ -16,7 +16,7 @@ fps_controller = { deployment = "7Fsh9rgyOqRbh39ZvekZ77" }
 hide_cursor = { deployment = "vQiyr351t7pHsYQntZT7j" }
 character_animation = { deployment = "6SQ6Rra3CrwR7kbmIbjWyh" }
 
-temperature = { path = "../temperature" , deployment = "25qB4EWf96VwgQ9lPcOgsJ" }
+temperature = { path = "../temperature" , deployment = "7MaNmOBt2ucXzoXkV0EwPh" }
 
 [messages.SwitchType.fields]
 

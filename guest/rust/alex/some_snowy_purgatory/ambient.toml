@@ -4,16 +4,16 @@ name = "Cold Chicken"
 description = "The descendant of a_foggy_scene: Cold Chicken. Play with WSAD and mouse. Stay warm together."
 version = "0.0.5"
 content = { type = "Playable" }
-ambient_version = "0.3.0-nightly-2023-10-02"
+ambient_version = "0.3.0"
 
 [dependencies]
-snowy_sceneloader = { path = "../snowy_sceneloader" , deployment = "5UdZ4OMrCGo8uqvrOjHcry" }
-snowy_pcs = { path = "../snowy_pcs" , deployment = "1TjBTzstxLffJuv92JB8Ax" }
-temperature = { path = "../temperature" , deployment = "25qB4EWf96VwgQ9lPcOgsJ" }
-temperature_hud = { path = "../temperature_hud_magda" , deployment = "499HrvpdXjwmm5EPhixO3k" }
-snowy_droplets = { path = "../snowy_droplets" , deployment = "qphFT0n2MpVuV2zurCjQA" }
-live_player_count = { path = "../live_player_count" , deployment = "sche7GB8anB1Y1ErAxPoa" }
-snowy_hints = { path = "../snowy_hints" , deployment = "4eUsw0b3JKpWqr5yRrLyB5" }
+snowy_sceneloader = { path = "../snowy_sceneloader" , deployment = "1iLJ2T1fCqxpm7eZ8MMF4z" }
+snowy_pcs = { path = "../snowy_pcs" , deployment = "7ByFbsYJarhVmibSp906je" }
+temperature = { path = "../temperature" , deployment = "7MaNmOBt2ucXzoXkV0EwPh" }
+temperature_hud = { path = "../temperature_hud_magda" , deployment = "6tEst4PGlS26aBYAKFXGUU" }
+snowy_droplets = { path = "../snowy_droplets" , deployment = "6eKFu7MPcfEjssD7iUC8DB" }
+live_player_count = { path = "../live_player_count" , deployment = "5sKVgnVfZYOD69UntofWm1" }
+snowy_hints = { path = "../snowy_hints" , deployment = "3WRkpNtZ1OSRJ7ofh7eG7m" }
 
 [components]
 # effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
