@@ -6,9 +6,9 @@ content = { type = "Playable" }
 ambient_version = "0.3.0-nightly-2023-10-02"
 
 [dependencies]
-temperature = { path = "../temperature" , deployment = "7MaNmOBt2ucXzoXkV0EwPh" }
-snowy_sceneloader = { path = "../snowy_sceneloader" }
-snowy_pcs = { path = "../snowy_pcs" }
+temperature = { path = "../temperature" , deployment = "roLdobcWqQpSNVy6pv2Qa" }
+snowy_sceneloader = { path = "../snowy_sceneloader" , deployment = "5d1JwzD5viX71Lc0P0ZAIY" }
+snowy_pcs = { path = "../snowy_pcs" , deployment = "3QGlMhFPhirSlMCBg47Q3j" }
 
 [components]
 hint_message = { type = "String" }
