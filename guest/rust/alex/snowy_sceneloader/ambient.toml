@@ -5,3 +5,7 @@ description = "Sceneloader for some_snowy_purgatory"
 version = "0.0.1"
 content = { type = "Asset", code = true, schema = true }
 ambient_version = "0.3.0-nightly-2023-10-02"
+
+[components]
+fireplace_name = { type = "String", attributes = ["Networked"] }
+statue_name = { type = "String", attributes = ["Networked"] }

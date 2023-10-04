@@ -33,10 +33,10 @@ pub fn load_scene() {
 
     for (_key, node) in nodes {
         if let Some(path) = node.path {
-            println!("Load path {path}");
+            // println!("Load path {path}");
             if path.ends_with("glb") || path.ends_with("fbx") {
-                Entity::new()
-                    .with(name(), node.name)
+                let ent = Entity::new()
+                    .with(name(), node.name.clone())
                     // .with_default(cube())
                     .with(translation(), node.pos.unwrap())
                     .with(rotation(), node.rot.unwrap())
@@ -47,6 +47,27 @@ pub fn load_scene() {
                     )
                     .with(cast_shadows(), ())
                     .spawn();
+
+                if node.name.contains("fireplace") {
+                    println!("Loaded fireplace: '{}'", node.name);
+                    entity::add_component(
+                        ent,
+                        packages::this::components::fireplace_name(),
+                        node.name.clone(),
+                    );
+                }
+
+                match node.name.as_str() {
+                    "athena" | "hermaneubis" | "shepherd-boy" => {
+                        println!("Loaded statue: '{}'", node.name);
+                        entity::add_component(
+                            ent,
+                            packages::this::components::statue_name(),
+                            node.name.clone(),
+                        );
+                    }
+                    _ => {} // do nothing
+                }
 
                 // debug pointer for small models
                 // Entity::new()
