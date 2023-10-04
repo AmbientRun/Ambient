@@ -1,10 +1,10 @@
 [package]
 id = "mwrcsok65na7owrbdococ5sthr3ccskc"
 name = "Tangent Schema"
-version = "0.3.0"
+version = "0.3.1-dev"
 content = { type = "Asset", schema = true }
 authors = ["philpax"]
-ambient_version = "0.3.0"
+ambient_version = "0.3.1-dev"
 
 [dependencies]
 game_object = { path = "../../../schemas/game_object", deployment = "1dyIvQx50CG6vvLfa8xCqa" }

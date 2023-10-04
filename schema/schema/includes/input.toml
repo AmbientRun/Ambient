@@ -2,8 +2,8 @@
 name = "Input"
 description = "Mouse, keyboard and controller input."
 content = { type = "Asset", schema = true }
-version = "0.3.0"
-ambient_version = "0.3.0"
+version = "0.3.1-dev"
+ambient_version = "0.3.1-dev"
 
 [components.mouse_over_entity]
 type = "EntityId"
