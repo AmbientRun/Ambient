@@ -11,7 +11,7 @@ snowy_sceneloader = { path = "../snowy_sceneloader" , deployment = "1iLJ2T1fCqxp
 snowy_pcs = { path = "../snowy_pcs" , deployment = "7ByFbsYJarhVmibSp906je" }
 temperature = { path = "../temperature" , deployment = "7MaNmOBt2ucXzoXkV0EwPh" }
 temperature_hud = { path = "../temperature_hud_magda" , deployment = "6tEst4PGlS26aBYAKFXGUU" }
-snowy_droplets = { path = "../snowy_droplets" , deployment = "6eKFu7MPcfEjssD7iUC8DB" }
+# snowy_droplets = { path = "../snowy_droplets" , deployment = "6eKFu7MPcfEjssD7iUC8DB" }
 live_player_count = { path = "../live_player_count" , deployment = "5sKVgnVfZYOD69UntofWm1" }
 snowy_hints = { path = "../snowy_hints" , deployment = "3WRkpNtZ1OSRJ7ofh7eG7m" }
 
@@ -19,5 +19,6 @@ snowy_hints = { path = "../snowy_hints" , deployment = "3WRkpNtZ1OSRJ7ofh7eG7m" 
 # effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness
 ambient_loop = { type = "String", attributes = ["Networked"] }
 visualizing_heat_source = { type = "EntityId" }
+is_visualizing_warm_body = { type = "Empty" }
 heat_radius = { type = "F32" }
 heat_offset = { type = "Vec3" }
