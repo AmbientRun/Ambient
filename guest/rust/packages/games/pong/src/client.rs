@@ -23,7 +23,8 @@ async fn main() {
         entity::wait_for_component(entity::synchronized_resources(), track_audio_url())
             .await
             .unwrap();
-    println!("url_from_server: {:?}", &url_from_server);
+
+    // println!("url_from_server: {:?}", &url_from_server);
 
     // this is just to demo that you can load a sound from a url from the server
     let bgm_player = audio::AudioPlayer::new();

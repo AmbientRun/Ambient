@@ -106,7 +106,7 @@ impl Executor {
                 |f| match f.as_mut().poll(&mut Context::from_waker(&self.waker)) {
                     Poll::Ready(Ok(_)) => false,
                     Poll::Ready(Err(e)) => {
-                        eprintln!("Error while handling future: {e:?}");
+                        // eprintln!("Error while handling future: {e:?}");
                         false
                     }
                     Poll::Pending => true,
