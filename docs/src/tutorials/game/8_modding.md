@@ -7,7 +7,7 @@ In this final chapter, we'll look at modding. All games are moddable by default 
 We'll start by adding the Mod Manager UI package to your game, so that you can list and enable mods for your game. Start by adding the following to your `ambient.toml`'s dependencies:
 
 ```toml
-package_manager = { deployment = "4hEHArTmKMprisqnQPNxLK" }
+package_manager = { deployment = "2nkcSe373rR3IdVwxkKHkj" }
 ```
 
 (To find the latest deployment, visit the page for [the package mananger](https://ambient.run/packages/hr4pxz7kfhzgimicoyh65ydel3aehuhk).)
