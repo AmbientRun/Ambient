@@ -2,5 +2,5 @@
 id = "kekdhmfpksiukzcvawellrsn5eeevjfd"
 name = "performance_bar"
 version = "0.0.1"
-content = { type = "Playable" }
+content = { type = "Tool" }
 ambient_version = "0.3.0-nightly-2023-10-02"
