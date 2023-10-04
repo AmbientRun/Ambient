@@ -67,7 +67,7 @@ pub fn main() {
                     entity::add_component(
                         plr,
                         temperature_src_rate(),
-                        remap32_clamped(temp, HALF_FREEZING_TEMP, NORMAL_TEMP, 0.0, 1.0)
+                        remap32_clamped(temp, DEATH_TEMP, NORMAL_TEMP, 0.0, 1.0)
                             .clamp(0.0, HUMAN_FURNACE_WARMTH),
                     );
                 }
