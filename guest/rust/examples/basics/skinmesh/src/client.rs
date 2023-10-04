@@ -52,7 +52,7 @@ pub async fn main() {
     let anim_player = AnimationPlayerRef::new(blend);
     entity::add_component(unit_id, apply_animation_player(), anim_player.0);
 
-    // println!("Robot duration: {} sec", robot.clip_duration().await);
+    println!("Robot duration: {} sec", robot.clip_duration().await);
 
     let _ = entity::wait_for_component(unit_id, model_loaded()).await;
 

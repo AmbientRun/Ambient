@@ -17,7 +17,7 @@ pub fn stop(entity: EntityId) {
     if entity::exists(entity) {
         entity::add_component(entity, stop_now(), ());
     } else {
-        // eprintln!("Tried to stop audio on non-existent entity {}", entity);
+        eprintln!("Tried to stop audio on non-existent entity {}", entity);
     }
 }
 

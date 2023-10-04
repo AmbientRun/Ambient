@@ -34,7 +34,7 @@ pub fn main() {
                 new_def.model_url = def.model_url.clone();
                 if new_def != def {
                     entity::add_components(id, new_def);
-                    // println!("Reloaded {}", def.name);
+                    println!("Reloaded {}", def.name);
                 }
             }
         });

@@ -25,7 +25,7 @@ pub fn main() {
 
     FrameSeen::subscribe(move |ctx, msg| {
         let Some(player_entity_id) = ctx.client_entity_id() else {
-            // eprintln!("Received message from unknown client");
+            eprintln!("Received message from unknown client");
             return;
         };
         set_component(player_entity_id, player_last_frame(), msg.frame);
