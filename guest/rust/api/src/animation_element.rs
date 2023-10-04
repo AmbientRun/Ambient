@@ -1,10 +1,7 @@
 use ambient_api_core::{
-    core::{
-        animation::{
-            self,
-            components::{play_clip_from_url, start_time},
-        },
-        app::components::name,
+    core::animation::{
+        self,
+        components::{play_clip_from_url, start_time},
     },
     prelude::epoch_time,
 };
@@ -16,7 +13,6 @@ pub fn AnimationPlayer(_hooks: &mut Hooks, root: Element) -> Element {
     Element::new()
         .with(animation::components::is_animation_player(), ())
         .children(vec![root])
-        .with(name(), "Animation player".to_string())
 }
 
 /// Play an animation clip from an URL
@@ -30,7 +26,6 @@ pub fn PlayClipFromUrl(
 ) -> Element {
     Element::new()
         .with(play_clip_from_url(), url)
-        .with(name(), "Play clip from URL".to_string())
         .with(animation::components::looping(), looping)
         .init(start_time(), epoch_time())
 }
@@ -53,7 +48,6 @@ pub fn BlendNode(
     } else {
         Element::new()
             .with(animation::components::blend(), weight)
-            .with(name(), "Blend".to_string())
             .children(vec![left, right])
     }
 }
@@ -120,7 +114,8 @@ pub fn Transition(
     /// The speed that the transitions happen at
     speed: f32,
 ) -> Element {
-    let weights = use_ref_with(hooks, |_| { // hello
+    let weights = use_ref_with(hooks, |_| {
+        // hello
         animations
             .iter()
             .enumerate()
