@@ -1,8 +1,8 @@
 [package]
 id = "aswyqe2q6mjajl3ryl7sm3br6i5gicxa"
 name = "Cold Chicken"
-description = "The descendant of a_foggy_scene: Cold Chicken. Play with WSAD and mouse. Stay warm together."
-version = "0.0.5"
+description = "Flock together with your fellow cold chickens. Play with WSAD and mouse."
+version = "0.0.6"
 content = { type = "Playable" }
 ambient_version = "0.3.0"
 
