@@ -1,5 +1,5 @@
 [package]
-id = "idfgiknes2vbypcafbadwueafku7fns5"
+id = "jkfalriqol5mtd7hxq7yssldubgpcf5o"
 name = "animations"
 version = "0.0.1"
 content = { type = "Playable", example = true }
