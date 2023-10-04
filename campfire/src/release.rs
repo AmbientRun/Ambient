@@ -196,11 +196,20 @@ fn update_version(
         toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
     })?;
 
+    let candidate_crates = all_publishable_crates
+        .iter()
+        .map(|p| p.1.package.as_ref().unwrap().name.clone())
+        // HACK: insert crates that are dependencies of packages, but are not depended upon
+        // by the Ambient app or by the API. It would be nice to solve this properly at some
+        // point.
+        .chain(["ambient_brand_theme".to_string()])
+        .collect::<HashSet<_>>();
+
     // Fix all of the dependency versions of publishable Ambient crates
     edit_toml(GUEST_RUST_CARGO, |toml| {
         toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
         update_ambient_dependency_versions(
-            &all_publishable_crates,
+            &candidate_crates,
             &mut toml["workspace"]["dependencies"],
             new_version,
         );
@@ -208,11 +217,27 @@ fn update_version(
 
     for (path, _) in &all_publishable_crates {
         edit_toml(path, |toml| {
-            update_ambient_dependency_versions(
-                &all_publishable_crates,
-                &mut toml["dependencies"],
-                new_version,
-            );
+            for dependencies in ["dependencies", "build-dependencies", "dev-dependencies"] {
+                if let Some(mut deps) = toml.get_mut(dependencies) {
+                    update_ambient_dependency_versions(&candidate_crates, &mut deps, new_version);
+                }
+            }
+
+            // Handle `[target.'cfg(not(target_os = "unknown"))'.dependencies]`
+            if let Some(target) = toml.get_mut("target").and_then(|t| t.as_table_like_mut()) {
+                for (_, target_table) in target.iter_mut() {
+                    if let Some(mut deps) = target_table
+                        .get_mut("dependencies")
+                        .filter(|t| t.is_table_like())
+                    {
+                        update_ambient_dependency_versions(
+                            &candidate_crates,
+                            &mut deps,
+                            new_version,
+                        );
+                    }
+                }
+            }
         })?;
     }
 
@@ -241,15 +266,10 @@ fn update_version(
 }
 
 fn update_ambient_dependency_versions(
-    all_publishable_crates: &[(PathBuf, cargo_toml::Manifest)],
+    candidate_crates: &HashSet<String>,
     dependencies: &mut toml_edit::Item,
     new_version: &str,
 ) {
-    let candidate_crates = all_publishable_crates
-        .iter()
-        .map(|p| p.1.package.as_ref().unwrap().name.clone())
-        .collect::<HashSet<_>>();
-
     for (key, value) in dependencies
         .as_table_like_mut()
         .expect("dependencies is not a table")
