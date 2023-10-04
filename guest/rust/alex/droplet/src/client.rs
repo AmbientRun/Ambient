@@ -26,9 +26,10 @@ fn basics() {
             }
         });
     query(calculated_loop_speed()).each_frame(|drops| {
+        let dt = delta_time();
         for (drop, loopspd) in drops {
             entity::mutate_component_with_default(drop, age(), 0., move |age| {
-                let new_age = *age + loopspd * delta_time();
+                let new_age = *age + loopspd * dt;
                 if new_age > 1. {
                     entity::add_component(drop, just_looped(), new_age.floor() as u8);
                     *age = new_age % 1.;
