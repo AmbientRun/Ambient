@@ -105,7 +105,7 @@ impl Executor {
             futures.retain_mut(
                 |f| match f.as_mut().poll(&mut Context::from_waker(&self.waker)) {
                     Poll::Ready(Ok(_)) => false,
-                    Poll::Ready(Err(e)) => {
+                    Poll::Ready(Err(_)) => {
                         // eprintln!("Error while handling future: {e:?}");
                         false
                     }
