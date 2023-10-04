@@ -76,7 +76,7 @@ pub fn NameplateUI(hooks: &mut Hooks, camera: EntityId) -> Element {
     let screen_size = entity::get_component(entity::resources(), window_logical_size()).unwrap();
     let players = ambient_api::element::use_query(hooks, (user_id(), translation(), temperature()));
     let fsize = screen_size.y as f32 * 0.04;
-    Group::el(players.iter().map(move |(_plr, (uid, pos, player_temp))| {
+    Group::el(players.iter().map(move |(plr, (uid, pos, player_temp))| {
         // let Some(camera_inv_view) = use_entity_component(hooks, camera_id, local_to_world()) else {
         //     return Element::new();
         // };
@@ -105,22 +105,23 @@ pub fn NameplateUI(hooks: &mut Hooks, camera: EntityId) -> Element {
         //     Quat::from_rotation_z(camera_rotation_z) * Quat::from_rotation_x(90f32.to_degrees());
 
         FlowColumn::el([
-            ImageFromUrl {
-                url: packages::this::assets::url("ok_star.png"),
-            }
-            .el()
-            .with(width(), 24.0)
-            .with(height(), 24.0),
-            FlowRow::el([Text::el(floatemp_to_string(*player_temp))
-                .with(color(), C_ALLBLACK.extend(1.))
-                .with(font_size(), fsize * 0.45 * nameplate_scale)
-                .font_body_500()])
-            .with_background(C_ALLWHITE.extend(1.)),
+            match plr == &player::get_local() {
+                true => ImageFromUrl {
+                    url: packages::this::assets::url("ok_star.png"),
+                }
+                .el()
+                .with(width(), 24.0)
+                .with(height(), 24.0),
+                false => Element::new(),
+            },
+            // FlowRow::el([Text::el(floatemp_to_string(*player_temp))
+            //     .with(color(), C_ALLBLACK.extend(1.))
+            //     .with(font_size(), fsize * 0.45 * nameplate_scale)
+            //     .font_body_500()]), // .with_background(C_ALLWHITE.extend(1.))
             FlowRow::el([Text::el(format!("{}", uid))
                 .with(color(), C_ALLBLACK.extend(1.))
                 .with(font_size(), fsize * 0.65 * nameplate_scale)
-                .font_body_500()])
-            .with_background(C_ALLWHITE.extend(1.)),
+                .font_body_500()]), // .with_background(C_ALLWHITE.extend(1.))
         ])
         .with(fit_vertical(), Fit::None)
         .with(fit_horizontal(), Fit::None)
@@ -221,7 +222,11 @@ pub fn TemperatureDisplayUI(hooks: &mut Hooks) -> Element {
 
     if let Some(hide) = use_entity_component(hooks, packages::this::entity(), hud_hide()) {
         if hide {
-            return new_extreme_temp_overlay(player_temp.unwrap_or(NORMAL_TEMP), screen_size, true);
+            return new_extreme_temp_overlay(
+                player_temp.unwrap_or(NORMAL_TEMP),
+                screen_size,
+                false,
+            );
             //Element::new();
         }
     }
