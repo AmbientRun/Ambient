@@ -7,13 +7,13 @@ content = { type = "Playable" }
 ambient_version = "0.3.0-nightly-2023-10-02"
 
 [dependencies]
-snowy_sceneloader = { path = "../snowy_sceneloader" , deployment = "7il366Z7KA48aalg2fRjBU" }
-snowy_pcs = { path = "../snowy_pcs" , deployment = "5ocCqOVafsg5XzCKFgO7af" }
-temperature = { path = "../temperature" , deployment = "7YWVOasD8Yad66RiWWsi67" }
-temperature_hud = { path = "../temperature_hud_magda" , deployment = "5RYR3paHvq7afSvA5XR4Is" }
-snowy_droplets = { path = "../snowy_droplets" , deployment = "H7o71CVSAQTIo9JMNmjrh" }
-live_player_count = { path = "../live_player_count" , deployment = "21PW009Y2Ip2ozHAub02Er" }
-# snowy_hints = { path = "../snowy_hints" , deployment = "6sBvMBcEfqYQ4G88WgbtRu" }
+snowy_sceneloader = { path = "../snowy_sceneloader" , deployment = "5UdZ4OMrCGo8uqvrOjHcry" }
+snowy_pcs = { path = "../snowy_pcs" , deployment = "1TjBTzstxLffJuv92JB8Ax" }
+temperature = { path = "../temperature" , deployment = "25qB4EWf96VwgQ9lPcOgsJ" }
+temperature_hud = { path = "../temperature_hud_magda" , deployment = "499HrvpdXjwmm5EPhixO3k" }
+snowy_droplets = { path = "../snowy_droplets" , deployment = "qphFT0n2MpVuV2zurCjQA" }
+live_player_count = { path = "../live_player_count" , deployment = "sche7GB8anB1Y1ErAxPoa" }
+snowy_hints = { path = "../snowy_hints" , deployment = "4eUsw0b3JKpWqr5yRrLyB5" }
 
 [components]
 # effect_respawn = { type = "Bool", attributes = ["Debuggable"] } # teleport home, resetting coldness

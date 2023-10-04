@@ -6,7 +6,7 @@ content = { type = "Playable" }
 ambient_version = "0.3.0-nightly-2023-10-02"
 
 [dependencies]
-droplet = { path = "../droplet" , deployment = "1Ji5Cz5rMU3b85qMG9XeQP" }
+droplet = { path = "../droplet" , deployment = "7AChzancQoJxBc6hh6FJwe" }
 
 [components]
 is_firelick = { type = "Empty" }
