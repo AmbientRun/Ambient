@@ -24,7 +24,7 @@ pub fn main() {
     // cold hint.
     ambient_api::core::messages::Frame::subscribe(|_| {
         if let Some(my_temp) = entity::get_component(player::get_local(), temperature()) {
-            if my_temp < 32.22 {
+            if my_temp < 32.22 && !entity::has_component(packages::this::entity(), hint_message()) {
                 let mut yes_show_hint = false;
                 if let Some(last_seen) =
                     entity::get_component(packages::this::entity(), last_seen_cold_hint())
@@ -66,6 +66,101 @@ pub fn main() {
             }
         }
     });
+
+    // statue blessings
+    query((
+        packages::snowy_sceneloader::components::statue_name(),
+        translation(),
+    ))
+    .each_frame(|statues| {
+        if !entity::has_component(packages::this::entity(), hint_message()) {
+            if let Some(myposition) = entity::get_component(player::get_local(), translation()) {
+                for (statue, (statuename, statueposition)) in statues {
+                    if myposition.distance(statueposition) < 10. {
+                        let last_blessed =
+                            entity::get_component(statue, last_blessed_local()).unwrap_or(-100.);
+                        let now = game_time().as_secs_f32();
+                        if now > last_blessed + 60.0 {
+                            // you can only be blessed 1x per minute
+                            entity::add_components(
+                                packages::this::entity(),
+                                Entity::new()
+                                    .with(
+                                        hint_message(),
+                                        format!("Blessed by {statuename}.").replace("-", " "),
+                                    )
+                                    .with(last_seen_cold_hint(), game_time().as_secs_f32())
+                                    .with(hint_show_progress(), 0.)
+                                    .with(hint_speed(), 1.2),
+                            );
+                            entity::add_component(
+                                packages::this::entity(),
+                                blessings_announced(),
+                                0,
+                            );
+
+                            if last_blessed < 0. {
+                                entity::mutate_component_with_default(
+                                    packages::this::entity(),
+                                    blessings_to_announce(),
+                                    1,
+                                    |blessings| *blessings += 1,
+                                );
+                            }
+                        }
+                        entity::add_component(statue, last_blessed_local(), now);
+                    }
+                }
+            }
+        }
+    });
+
+    ambient_api::core::messages::Frame::subscribe(|_| {
+        let hints = packages::this::entity();
+        let (blessings, blessings2) = (
+            entity::get_component(hints, blessings_announced()).unwrap_or(0),
+            entity::get_component(hints, blessings_to_announce()).unwrap_or(0),
+        );
+        if blessings2 != blessings {
+            if !entity::has_component(hints, hint_message()) {
+                entity::add_component(hints, blessings_announced(), blessings2);
+                entity::add_components(
+                    packages::this::entity(),
+                    Entity::new()
+                        .with(
+                            hint_message(),
+                            match blessings2 {
+                                0 => "(Blessings lost.)",
+                                1 => "(One blessing.)",
+                                2 => "(Two blessings.)",
+                                3 => "(All three blessings.)",
+                                _ => "(Lost count of blessings...)",
+                            }
+                            .to_string(),
+                        )
+                        .with(last_seen_cold_hint(), game_time().as_secs_f32())
+                        .with(hint_show_progress(), 0.)
+                        .with(hint_speed(), 1.5),
+                );
+            }
+        }
+    });
+
+    let find_blessed_statues = query(()).requires(last_blessed_local()).build();
+
+    spawn_query(())
+        .requires(packages::snowy_pcs::components::dead_age())
+        .bind(move |dead_plrs| {
+            for (plr, _) in dead_plrs {
+                if plr == player::get_local() {
+                    // remove all blessings when local player dies
+                    for (blessed_statue, _) in find_blessed_statues.evaluate() {
+                        entity::remove_component(blessed_statue, last_blessed_local());
+                    }
+                    entity::add_component(packages::this::entity(), blessings_to_announce(), 0);
+                }
+            }
+        });
 }
 
 // DISPLAYS HINTS
@@ -95,7 +190,7 @@ pub fn BigHintTextUI(hooks: &mut Hooks) -> Element {
                         1.
                     }
                 })
-                .floor() as usize;
+                .round() as usize;
                 let visible_hint = hint_words[0..visible_hint_word_count].join(" ");
 
                 // hint_words.
