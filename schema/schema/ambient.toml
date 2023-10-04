@@ -1,9 +1,9 @@
 [package]
 description = "Contains all core components for the Ambient runtime."
 name = "Core Components"
-version = "0.3.0-rc.5"
+version = "0.3.0-nightly-2023-10-04"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.0-rc.5"
+ambient_version = "0.3.0-nightly-2023-10-04"
 
 [includes]
 animation = "includes/animation.toml"

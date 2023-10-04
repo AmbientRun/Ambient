@@ -2,8 +2,8 @@
 name = "Rect"
 description = "Rounded corners rectangle rendering components, with an optional border."
 content = { type = "Asset", schema = true }
-version = "0.3.0-rc.5"
-ambient_version = "0.3.0-rc.5"
+version = "0.3.0-nightly-2023-10-04"
+ambient_version = "0.3.0-nightly-2023-10-04"
 
 [components.background_color]
 type = "Vec4"
