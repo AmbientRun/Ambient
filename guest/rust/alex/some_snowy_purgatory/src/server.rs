@@ -47,7 +47,7 @@ pub fn main() {
     // campfire(s) ('fireplace')
     spawn_query((name(), translation())).bind(|ents| {
         for (ent, (entname, pos)) in ents {
-            if entname == "mt-fireplace" {
+            if entname == "fireplace 1" {
                 entity::add_components(
                     ent,
                     Entity::new()
@@ -56,13 +56,12 @@ pub fn main() {
                         .with(
                             ambient_loop(),
                             packages::this::assets::url("4211__dobroide__firecrackling.ogg"),
-                        )
-                        // add: droplets: fire
-                        .with(
-                            packages::snowy_droplets::components::is_droplet_spawner(),
-                            (),
-                        )
-                        .with(packages::snowy_droplets::components::spawns_fire(), ()),
+                        ), // add: droplets: fire
+                           // .with(
+                           //     packages::snowy_droplets::components::is_droplet_spawner(),
+                           //     (),
+                           // )
+                           // .with(packages::snowy_droplets::components::spawns_fire(), ()),
                 );
                 // add: too hot in center
                 Entity::new()
