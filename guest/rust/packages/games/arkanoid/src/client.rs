@@ -26,7 +26,7 @@ async fn main() {
         entity::wait_for_component(entity::synchronized_resources(), track_audio_url())
             .await
             .unwrap();
-    println!("url_from_server: {:?}", &url_from_server);
+    // println!("url_from_server: {:?}", &url_from_server);
 
     let bgm_player = audio::AudioPlayer::new();
     bgm_player.set_amplitude(0.2);

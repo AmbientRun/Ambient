@@ -37,7 +37,7 @@ fn App(hooks: &mut Hooks) -> Element {
             });
             set_x(center_x + second_r * (phase.sin()));
             set_y(center_y - second_r * (phase.cos()));
-            println!("x: {}, y: {}", x, y);
+            // println!("x: {}, y: {}", x, y);
         }
     });
     Group::el([

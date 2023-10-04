@@ -15,7 +15,7 @@ pub fn main() {
             count += 1;
 
             if count % 100 == 0 {
-                println!("count: {}", count);
+                // println!("count: {}", count);
             }
         }
     });

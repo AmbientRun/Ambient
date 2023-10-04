@@ -45,5 +45,5 @@ fn print_player_frame_delays(current_player_id: EntityId) {
         }
     }
 
-    println!("Player world latency (frames behind): [{}]", message);
+    // println!("Player world latency (frames behind): [{}]", message);
 }

@@ -48,7 +48,7 @@ pub fn main() {
 
     // 2
     Hello::subscribe(|ctx, data| {
-        println!("{ctx:?}: {:?}", data);
+        // println!("{ctx:?}: {:?}", data);
 
         let source_reliable = data.source_reliable;
         Entity::new()
@@ -75,7 +75,7 @@ pub fn main() {
         let handled = handled.clone();
         move |ctx, data| {
             handled.store(true, Ordering::SeqCst);
-            println!("{ctx:?}: {data:?}");
+            // println!("{ctx:?}: {data:?}");
         }
     });
 

@@ -31,7 +31,7 @@ pub fn main() {
         let Some(user_id) = ctx.client_user_id() else {
             return;
         };
-        println!("{user_id}: {:?}", data);
+        // println!("{user_id}: {:?}", data);
 
         let source_reliable = data.source_reliable;
 
@@ -78,7 +78,7 @@ pub fn main() {
         let handled = handled.clone();
         move |ctx, data| {
             handled.store(true, Ordering::SeqCst);
-            println!("{ctx:?}: {data:?}");
+            // println!("{ctx:?}: {data:?}");
         }
     });
 
