@@ -16,9 +16,9 @@ pub fn main() {
     entity::add_components(
         packages::this::entity(),
         Entity::new()
-            .with(hint_message(), "Ambient's \nfirst snow- \nstorm".into())
+            .with(hint_message(), "Cold Chicken".into())
             .with(hint_show_progress(), 0.25)
-            .with(hint_speed(), 0.4),
+            .with(hint_speed(), 1.),
     );
 
     // cold hint.
@@ -41,10 +41,10 @@ pub fn main() {
                     entity::add_components(
                         packages::this::entity(),
                         Entity::new()
-                            .with(hint_message(), "It's too cold to \ntravel alone.".into())
+                            .with(hint_message(), "It's too cold to travel alone.".into())
                             .with(last_seen_cold_hint(), game_time().as_secs_f32())
                             .with(hint_show_progress(), 0.)
-                            .with(hint_speed(), 1.),
+                            .with(hint_speed(), 0.8),
                     );
                 }
             }
@@ -84,7 +84,7 @@ pub fn BigHintTextUI(hooks: &mut Hooks) -> Element {
             ) {
                 let screen_size =
                     entity::get_component(entity::resources(), window_logical_size()).unwrap();
-                let fsize = screen_size.y as f32 * 0.15;
+                let fsize = screen_size.y as f32 * 0.08;
                 let hint_words: Vec<&str> = hint_message.split(' ').collect();
                 let visible_hint_word_count = (hint_words.len() as f32 * {
                     if hint_show_progress < 0.25 {
