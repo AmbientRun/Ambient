@@ -87,6 +87,7 @@ impl Settings {
 
     pub fn path() -> anyhow::Result<PathBuf> {
         let path = ambient_dirs::settings_path();
+        tracing::error!("Reading settings from: {:?}", path);
 
         if let Some(parent) = path.parent().filter(|p| !p.exists()) {
             std::fs::create_dir_all(parent).with_context(|| {

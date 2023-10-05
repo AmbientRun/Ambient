@@ -34,7 +34,7 @@ fn main() -> anyhow::Result<()> {
     let _handle: Result<sentry_rust_minidump::ClientHandle, sentry_rust_minidump::Error>;
     #[cfg(feature = "production")]
     if _settings.general.sentry.enabled {
-        let sentry_dsn = _settings.general.sentry.dsn;
+        let sentry_dsn = _settings.general.sentry.dsn.clone();
         _guard = init_sentry(&sentry_dsn);
         _handle = sentry_rust_minidump::init(&_guard);
         match _handle {
@@ -42,6 +42,9 @@ fn main() -> anyhow::Result<()> {
             Err(err) => log::warn!("Failed to initialize Sentry: {:?}", err),
         }
     }
+
+    #[cfg(feature = "production")]
+    panic!("Kuba: just testing {}", _settings.general.sentry.dsn);
 
     PhysicsKey.get(&assets); // Load physics
     AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/AmbientRun/Ambient/issues/81
