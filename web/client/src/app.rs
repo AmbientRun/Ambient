@@ -67,7 +67,7 @@ fn systems() -> SystemGroup {
             // Box::new(ambient_decals::client_systems()),
             Box::new(ambient_primitives::systems()),
             Box::new(ambient_sky::systems()),
-            // Box::new(ambient_water::systems()),
+            Box::new(ambient_water::systems()),
             // Box::new(ambient_physics::client_systems()),
             // Box::new(ambient_gizmos::client_systems()),
             Box::new(wasm::systems()),
