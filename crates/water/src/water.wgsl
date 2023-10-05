@@ -32,9 +32,9 @@ fn screen_space_reflections(world_position: vec3<f32>, screen_ray_dir: vec3<f32>
         if screen_tc.x < 0. || screen_tc.x >= 1. || screen_tc.y < 0. || screen_tc.y >= 1. {
             continue;
         }
-        let screen_depth = textureSampleLevel(solids_screen_depth, default_sampler, screen_tc, 0.);
-        if pos_ndc.z >= screen_depth && pos_ndc.z < screen_depth * 1.001 && screen_depth < 0.9999 {
-            return textureSampleLevel(solids_screen_color, default_sampler, screen_tc, 0.).rgb;
+        let screen_depth = textureSample(solids_screen_depth, default_sampler, screen_tc);
+        if pos_ndc.z >= screen_depth && pos_ndc.z < screen_depth * 1.001 && screen_depth < 0.999 {
+            return textureSample(solids_screen_color, default_sampler, screen_tc).rgb;
         }
         step = step * 2.;
         pos = pos + step;
