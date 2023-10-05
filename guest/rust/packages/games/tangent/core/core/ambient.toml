@@ -8,15 +8,15 @@ authors = ["philpax"]
 ambient_version = "0.3.1-nightly-2023-10-05"
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "qeP6L6aPgej5CQto42mRB" }
+tangent_schema = { path = "../../schema", deployment = "3v3Ib2ZYdOpREy73TVn03r" }
 
-game_object = { path = "../../../../schemas/game_object", deployment = "1dyIvQx50CG6vvLfa8xCqa" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "6KW1f3MjAJ1DTrKUcY2fS5" }
+game_object = { path = "../../../../schemas/game_object", deployment = "6dX0csbuH3PKRiTerskyqD" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "63GXSFDt1a1kMyLO3KsWoS" }
 
-explosion = { path = "../../../../std/explosion", deployment = "TmRloOmVp7nC7FNMFyJhm" }
-nameplates = { path = "../../../../std/nameplates", deployment = "NvfH2DKaMk2Sfarr76NCR" }
+explosion = { path = "../../../../std/explosion", deployment = "5rd24EtkO1WS4tfkdiiItF" }
+nameplates = { path = "../../../../std/nameplates", deployment = "5pIUkWNRXOsI682lXTBa77" }
 
-kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "6zTuSlfqetililoSuidPFW" }
+kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "2rBGDbb4oIq3Giovwd9Ujy" }
 
 [messages.Input]
 name = "Input"
