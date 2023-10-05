@@ -2,9 +2,9 @@
 id = "per6j2iqhj3jz4da3fqr75jcj2kqjooo"
 name = "Nameplates"
 description = "Basic 3D nameplates for players."
-version = "0.3.1-dev"
+version = "0.3.1-nightly-2023-10-05"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.1-dev"
+ambient_version = "0.3.1-nightly-2023-10-05"
 
 [dependencies]
 game_object = { path = "../../schemas/game_object", deployment = "1dyIvQx50CG6vvLfa8xCqa" }
