@@ -459,7 +459,7 @@ impl AppBuilder {
         let _ = thread_priority::set_current_thread_priority(thread_priority::ThreadPriority::Max);
 
         let mut world = World::new("main_app", ambient_ecs::WorldContext::App);
-        let gpu = Arc::new(Gpu::with_config(window.as_deref(), true, &settings.render).await);
+        let gpu = Arc::new(Gpu::with_config(window.as_deref(), true, &settings.render).await?);
 
         tracing::debug!("Inserting runtime");
         RuntimeKey.insert(&assets, runtime.clone());
