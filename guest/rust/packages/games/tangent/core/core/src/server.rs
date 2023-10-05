@@ -313,7 +313,10 @@ pub fn main() {
                         });
 
                     match hit {
-                        Some(hit) if entity::has_component(hit.entity, vc::is_vehicle()) => {
+                        Some(hit)
+                            if entity::has_component(hit.entity, vc::is_vehicle())
+                                && !entity::has_component(hit.entity, vc::driver_ref()) =>
+                        {
                             entity::add_component(hit.entity, vc::driver_ref(), player_id);
                         }
                         _ => {
