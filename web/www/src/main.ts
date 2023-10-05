@@ -126,6 +126,14 @@ import("ambient_web")
             debugger: debuggerOn,
             userId: userId,
         };
-        ambient.start(target, url, settings);
+
+        (async () => {
+            try {
+                await ambient.start(target, url, settings)
+            }
+             catch (e) {
+                console.error("Error starting ambient: ", e);
+             }
+        })()
         // setupAudio();
     });
