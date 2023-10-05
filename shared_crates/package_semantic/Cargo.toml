@@ -8,11 +8,11 @@ rust-version = { workspace = true }
 version = { workspace = true }
 
 [dependencies]
-ambient_package = { path = "../package" , version = "0.3.1-nightly-2023-10-05" }
-ambient_shared_types = { path = "../shared_types" , version = "0.3.1-nightly-2023-10-05" }
-ambient_schema = { path = "../../schema" , version = "0.3.1-nightly-2023-10-05" }
-ambient_std = { path = "../std" , version = "0.3.1-nightly-2023-10-05" }
-ambient_dirs = { path = "../dirs" , version = "0.3.1-nightly-2023-10-05" }
+ambient_package = { path = "../package" , version = "0.3.1-dev" }
+ambient_shared_types = { path = "../shared_types" , version = "0.3.1-dev" }
+ambient_schema = { path = "../../schema" , version = "0.3.1-dev" }
+ambient_std = { path = "../std" , version = "0.3.1-dev" }
+ambient_dirs = { path = "../dirs" , version = "0.3.1-dev" }
 
 anyhow = { workspace = true }
 ulid = { workspace = true }
