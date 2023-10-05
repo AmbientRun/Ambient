@@ -260,6 +260,7 @@ fn update_version(
 
     // Run `cargo check` in the root and API to force the lockfile to update
     check(".")?;
+    check("web")?;
     check("guest/rust")?;
 
     Ok(())
