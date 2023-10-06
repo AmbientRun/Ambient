@@ -77,6 +77,27 @@ pub fn derive_main(item: TokenStream, ambient_toml: RetrievableFile) -> syn::Res
         quote! {}
     };
 
+    let exec_name = format_ident!("{label}_exec");
+
+    // let export_bindings = quote! {
+    //     struct Guest;
+
+    //     #path::__internal::export_bindings!(Guest);
+
+    //     impl #path::__internal::Guest for Guest {
+    //         fn init() {
+    //             use #path::__internal::EXECUTOR;
+    //             // once_cell::sync::Lazy::force(&EXECUTOR);
+    //             main();
+    //         }
+
+    //         fn exec(source: #path::__internal::Source, message_name: String, message_data: Vec<u8>) {
+    //             // exec_name(source, message_name, message_data)
+    //         }
+    //     }
+
+    // };
+
     let boilerplate = generated.tokens;
 
     Ok(quote! {
@@ -87,7 +108,19 @@ pub fn derive_main(item: TokenStream, ambient_toml: RetrievableFile) -> syn::Res
         #[no_mangle]
         #[doc(hidden)]
         pub fn main() {
+            // #export_bindings
+
             #call_stmt
+        }
+
+
+        fn exec(source: #path::__internal::Source, message_name: String, message_data: Vec<u8>) {
+
+        }
+
+        fn #exec_name(source: #path::__internal::Source, message_name: String, message_data: Vec<u8>) {
+            use #path::__internal::EXECUTOR;
+            EXECUTOR.execute(source, message_name, message_data);
         }
     })
 }

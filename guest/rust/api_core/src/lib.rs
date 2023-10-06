@@ -49,3 +49,11 @@ pub use internal::generated::ambient_core as core;
 
 #[allow(clippy::single_component_path_imports)]
 use once_cell;
+
+#[doc(hidden)]
+pub mod __internal {
+    pub use super::internal::executor::EXECUTOR;
+    // pub use super::internal::wit::export_bindings;
+    pub use super::internal::wit::guest::Guest;
+    pub use super::internal::wit::guest::Source;
+}

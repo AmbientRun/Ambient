@@ -17,9 +17,8 @@ use super::wit;
 pub type EventFuture = Pin<Box<dyn Future<Output = ResultEmpty>>>;
 type EventCallbackFn = Box<dyn FnMut(&wit::guest::Source, u128, &[u8]) -> ResultEmpty>;
 
-// the function is too general to be passed in directly
-#[allow(clippy::redundant_closure)]
-pub(crate) static EXECUTOR: Lazy<Executor> = Lazy::new(|| Executor::new());
+#[doc(hidden)]
+pub static EXECUTOR: Lazy<Executor> = Lazy::new(Executor::new);
 static RAW_WAKER: RawWakerVTable = RawWakerVTable::new(
     |_| RawWaker::new(std::ptr::null(), &RAW_WAKER),
     |_| {},
@@ -27,7 +26,7 @@ static RAW_WAKER: RawWakerVTable = RawWakerVTable::new(
     |_| {},
 );
 
-pub(crate) struct Executor {
+pub struct Executor {
     waker: Waker,
     current: RefCell<Vec<EventFuture>>,
     incoming: RefCell<Vec<Pin<Box<dyn Future<Output = ResultEmpty>>>>>,
@@ -35,6 +34,7 @@ pub(crate) struct Executor {
     incoming_callbacks: RefCell<Callbacks>,
     callbacks_to_remove: RefCell<Vec<(String, u128)>>,
 }
+
 // WebAssembly, at time of writing, is single-threaded. This is a convenient little lie
 // to make it easy to use this in a global context.
 unsafe impl Send for Executor {}
