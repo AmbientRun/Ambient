@@ -15,10 +15,16 @@ mod messages;
 
 pub use context::Context;
 
+/// Contains information resolved from the semantic layers
+pub struct Generated {
+    pub package: Option<Package>,
+    pub tokens: TokenStream,
+}
+
 pub async fn generate_code(
     manifest: Option<RetrievableFile>,
     context: context::Context,
-) -> anyhow::Result<TokenStream> {
+) -> anyhow::Result<Generated> {
     let mut semantic = Semantic::new(false).await?;
 
     let package_id = if let Some(manifest) = manifest {
@@ -51,7 +57,7 @@ pub async fn generate_code(
         .map(|id| generate_package(context, items, &type_printer, *id))
         .collect::<Result<Vec<_>, _>>()?;
 
-    let imports = if let Some(package_id) = package_id {
+    let (package, imports) = if let Some(package_id) = package_id {
         let package = items.get(package_id);
 
         let dependencies = std::iter::once(anyhow::Ok(("this", package.data.id.to_string())))
@@ -69,11 +75,14 @@ pub async fn generate_code(
             }
         });
 
-        Some(quote! {
-            #(#dependencies)*
-        })
+        (
+            Some(package),
+            quote! {
+                #(#dependencies)*
+            },
+        )
     } else {
-        None
+        (None, quote! {})
     };
 
     let output = quote! {
@@ -97,7 +106,10 @@ pub async fn generate_code(
         output
     };
 
-    Ok(output)
+    Ok(Generated {
+        package: package.cloned(),
+        tokens: output,
+    })
 }
 
 fn generate_package(

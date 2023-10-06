@@ -13,12 +13,12 @@ mod main_macro;
 /// If you do not add this attribute to your `main()` function, your module will not run.
 #[proc_macro_attribute]
 pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    main_macro::main(
-        item.clone().into(),
-        RetrievableFile::Path(
-            Path::new(&std::env::var("CARGO_MANIFEST_DIR").expect("no manifest dir"))
-                .join("ambient.toml"),
-        ),
-    )
-    .into()
+    let ambient_toml = RetrievableFile::Path(
+        Path::new(&std::env::var("CARGO_MANIFEST_DIR").expect("no manifest dir"))
+            .join("ambient.toml"),
+    );
+    match main_macro::derive_main(item.clone().into(), ambient_toml) {
+        Ok(v) => v.into(),
+        Err(err) => err.to_compile_error().into(),
+    }
 }

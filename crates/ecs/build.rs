@@ -22,7 +22,8 @@ fn main() {
             None,
             ambient_package_macro_common::Context::Host,
         ))
-        .unwrap();
+        .unwrap()
+        .tokens;
 
     let api_generated_code = format!("{header}{api_generated_code}");
 

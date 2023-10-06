@@ -1,15 +1,14 @@
 use ambient_package_macro_common::{Context, RetrievableFile};
 use proc_macro2::{Ident, Span, TokenStream, TokenTree};
-use quote::{quote, ToTokens};
+use quote::{format_ident, quote, ToTokens};
+use syn::{Error, MethodTurbofish};
 
-pub fn main(item: TokenStream, ambient_toml: RetrievableFile) -> TokenStream {
-    let (item, parsed) = parse_function(item);
-
+pub fn derive_main(item: TokenStream, ambient_toml: RetrievableFile) -> syn::Result<TokenStream> {
     let spans = Span::call_site();
     let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
 
-    let boilerplate = tokio::runtime::Builder::new_current_thread()
+    let generated = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
         .map_err(anyhow::Error::new)
@@ -19,18 +18,53 @@ pub fn main(item: TokenStream, ambient_toml: RetrievableFile) -> TokenStream {
                 Context::GuestUser,
             ))
         })
-        .unwrap_or_else(|e| {
+        .map_err(|e| {
             let msg = format!(
                 "Error while running Ambient package macro: {e}{}",
                 e.source()
                     .map(|e| format!("\nCaused by: {e}"))
                     .unwrap_or_default()
             );
-            quote::quote! {
-                compile_error!(#msg);
-            }
-        });
 
+            Error::new(Span::call_site(), msg)
+        })?;
+
+    let package = generated
+        .package
+        .expect("guest code must be from a package");
+
+    // Force package name to be a valid rust indent
+    // Not sure if this is enforced in any step prior
+    let mut package_name: String = package
+        .manifest
+        .package
+        .name
+        .chars()
+        // Skip leading numbers
+        // `0abc` is not a valid rust ident
+        .take_while(|v| v.is_numeric())
+        .filter_map(|v| match v {
+            '-' => Some('_'),
+            'a'..='z' => Some(v),
+            '0'..='9' => Some(v),
+            _ => None,
+        })
+        .collect();
+
+    let package_id = package
+        .manifest
+        .package
+        .id
+        .map(|v| v.to_string())
+        .unwrap_or_else(|| "unknown".into());
+
+    let label = format_ident!("{package_name}_{package_id}",);
+
+    let (item, parsed) = parse_function(item, format_ident!("{label}_main"));
+
+    eprintln!("Generating entry point for {package_name:?}");
+
+    /// Wrap the main function in an async shim
     let call_stmt = if let Some(ParsedFunction { fn_name, is_async }) = parsed {
         let call_expr = if is_async {
             quote! { #fn_name() }
@@ -43,7 +77,9 @@ pub fn main(item: TokenStream, ambient_toml: RetrievableFile) -> TokenStream {
         quote! {}
     };
 
-    quote! {
+    let boilerplate = generated.tokens;
+
+    Ok(quote! {
         #item
 
         #boilerplate
@@ -53,7 +89,7 @@ pub fn main(item: TokenStream, ambient_toml: RetrievableFile) -> TokenStream {
         pub fn main() {
             #call_stmt
         }
-    }
+    })
 }
 
 struct ParsedFunction {
@@ -61,9 +97,13 @@ struct ParsedFunction {
     is_async: bool,
 }
 
-fn parse_function(item: TokenStream) -> (TokenStream, Option<ParsedFunction>) {
+/// Parses the annotated `async? fn main`,
+fn parse_function(item: TokenStream, fn_name: Ident) -> (TokenStream, Option<ParsedFunction>) {
     let mut item: syn::ItemFn = match syn::parse2(item.clone()) {
         Ok(item) => item,
+        // Triggered if there is a syntax error in the function body by the user
+        //
+        // TODO: consider reporting a spanned error instead
         Err(_) => {
             // Very questionable recovery strategy: find the first instance of `main`
             // and replace it with `_main_impl` so that we can still compile with
@@ -75,6 +115,7 @@ fn parse_function(item: TokenStream) -> (TokenStream, Option<ParsedFunction>) {
                     .map(|tt| match tt {
                         TokenTree::Ident(ident) if ident == "main" && !seen_main => {
                             seen_main = true;
+                            // Could this cause RA issues, as main is missing, rugpulling it
                             TokenTree::Ident(Ident::new("_main_impl", Span::call_site()))
                         }
                         tt => tt,
@@ -85,7 +126,6 @@ fn parse_function(item: TokenStream) -> (TokenStream, Option<ParsedFunction>) {
         }
     };
 
-    let fn_name = quote::format_ident!("{}_impl", item.sig.ident);
     item.sig.ident = fn_name.clone();
 
     let is_async = item.sig.asyncness.is_some();

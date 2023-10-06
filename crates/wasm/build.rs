@@ -98,7 +98,8 @@ fn main() {
                     None,
                     ambient_package_macro_common::Context::GuestApi,
                 ))
-                .unwrap();
+                .unwrap()
+                .tokens;
 
             let api_generated_code = format!("#![allow(missing_docs)]\n#![allow(dead_code)]\n#![allow(unused)]\npub use raw::ambient_core;\n{api_generated_code}");
 
