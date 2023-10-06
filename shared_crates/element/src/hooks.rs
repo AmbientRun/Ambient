@@ -426,7 +426,7 @@ pub fn use_frame<F: Fn(&mut World) + Sync + Send + 'static>(hooks: &mut Hooks, o
     let listeners = env
         .frame_listeners
         .entry(hooks.instance_id.clone())
-        .or_insert_with(Vec::new);
+        .or_default();
     listeners.push(FrameListener(Arc::new(on_frame)));
 }
 

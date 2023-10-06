@@ -131,7 +131,7 @@ impl<T> PartialEq<Component<T>> for ComponentDesc {
 
 impl<T> PartialOrd for Component<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.desc.index.partial_cmp(&other.desc.index)
+        Some(self.cmp(other))
     }
 }
 
@@ -195,7 +195,7 @@ impl PartialEq for ComponentDesc {
 
 impl PartialOrd for ComponentDesc {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.index.partial_cmp(&other.index)
+        Some(self.cmp(other))
     }
 }
 impl Ord for ComponentDesc {

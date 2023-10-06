@@ -233,7 +233,7 @@ async fn update_natural_layer(
                     async_run.run(move |world| {
                         let mut existing = {
                             let ents = world.get_mut(terrain_cell_id, natural_entities()).unwrap();
-                            ents.entry(model_key.clone()).or_insert(Vec::new()).clone()
+                            ents.entry(model_key.clone()).or_default().clone()
                         };
                         if let Some(model) = model {
                             let missing = entities.len() as i32 - existing.len() as i32;
