@@ -1,6 +1,7 @@
 [package]
 id = "ucrv73n74dw42ldnz4kxeadvm5uwzgm5"
-name = "assimp"
+name = "Assimp"
+description = "Import over 30+ different 3D file formats into your project, using the built in assimp integration."
 version = "0.0.1"
 content = { type = "Playable", example = true }
 ambient_version = "0.3.0-nightly-2023-10-04"
