@@ -18,13 +18,4 @@ use packages::{orbit_camera::concepts::OrbitCamera, this::assets};
 pub fn main() {
     // Camera
     OrbitCamera::suggested().spawn();
-
-    // Model
-    Entity::new()
-        .with_merge(Transformable {
-            local_to_world: Default::default(),
-            optional: Default::default(),
-        })
-        .with(prefab_from_url(), assets::url("Zombie1.x"))
-        .spawn();
 }

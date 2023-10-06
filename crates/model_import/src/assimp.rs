@@ -138,15 +138,22 @@ fn import_sync(
     model_crate: &mut ModelCrate,
     extension: &str,
 ) -> anyhow::Result<(RelativePathBuf, Vec<Material>)> {
+    use crate::animation_bind_id::{BindIdNodeFuncs, BindIdReg};
     use crate::dotdot_path;
     use ambient_core::hierarchy::{children, dump_world_hierarchy_to_tmp_file, parent};
     use ambient_core::transform::{local_to_parent, local_to_world, rotation, scale, translation};
+    use ambient_ecs::generated::animation::components::bind_id;
     use ambient_ecs::{Entity, EntityId, World};
     use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
     use ambient_native_std::mesh::MeshBuilder;
     use glam::*;
     use itertools::Itertools;
     use std::{cell::RefCell, rc::Rc};
+
+    let mut bind_ids = BindIdReg::<String, Node>::new(BindIdNodeFuncs {
+        node_to_id: |node| node.name.clone(),
+        node_name: |node| Some(&node.name as &str),
+    });
 
     let scene = Scene::from_buffer(
         buffer,
@@ -195,7 +202,7 @@ fn import_sync(
             })
             .collect_vec();
         let indices = mesh.faces.iter().flat_map(|f| f.0.clone()).collect_vec();
-        let out_mesh = MeshBuilder {
+        let mut out_mesh = MeshBuilder {
             positions,
             colors,
             normals,
@@ -203,8 +210,40 @@ fn import_sync(
             texcoords,
             indices,
             ..MeshBuilder::default()
+        };
+        if !mesh.bones.is_empty() {
+            let mut joint_indices = mesh.vertices.iter().map(|_| Vec::new()).collect_vec();
+            let mut joint_weights = mesh.vertices.iter().map(|_| Vec::new()).collect_vec();
+            for (i, bone) in mesh.bones.iter().enumerate() {
+                for weight in &bone.weights {
+                    joint_indices[weight.vertex_id as usize].push(i as u32);
+                    joint_weights[weight.vertex_id as usize].push(weight.weight);
+                }
+            }
+            out_mesh.joint_indices = joint_indices
+                .into_iter()
+                .map(|v| {
+                    uvec4(
+                        v.get(0).map(|x| *x).unwrap_or_default(),
+                        v.get(1).map(|x| *x).unwrap_or_default(),
+                        v.get(2).map(|x| *x).unwrap_or_default(),
+                        v.get(3).map(|x| *x).unwrap_or_default(),
+                    )
+                })
+                .collect();
+            out_mesh.joint_weights = joint_weights
+                .into_iter()
+                .map(|v| {
+                    vec4(
+                        v.get(0).map(|x| *x).unwrap_or_default(),
+                        v.get(1).map(|x| *x).unwrap_or_default(),
+                        v.get(2).map(|x| *x).unwrap_or_default(),
+                        v.get(3).map(|x| *x).unwrap_or_default(),
+                    )
+                })
+                .collect();
         }
-        .build()?;
+        let out_mesh = out_mesh.build()?;
         model_crate.meshes.insert(i.to_string(), out_mesh);
     }
 
@@ -213,6 +252,7 @@ fn import_sync(
         model_crate: &ModelCrate,
         scene: &Scene,
         world: &mut World,
+        bind_ids: &mut BindIdReg<String, Node>,
         node: &Rc<RefCell<Node>>,
     ) -> EntityId {
         let node = node.borrow();
@@ -229,7 +269,8 @@ fn import_sync(
             .with(translation(), pos)
             .with(rotation(), rot)
             .with(scale(), scl)
-            .with(local_to_world(), Default::default());
+            .with(local_to_world(), Default::default())
+            .with(bind_id(), bind_ids.get(&*node));
         if !node.meshes.is_empty() {
             ed.set(
                 pbr_renderer_primitives_from_url(),
@@ -261,7 +302,7 @@ fn import_sync(
         let childs = node
             .children
             .iter()
-            .map(|c| recursive_build_nodes(model_crate, scene, world, c))
+            .map(|c| recursive_build_nodes(model_crate, scene, world, bind_ids, c))
             .collect_vec();
         for c in &childs {
             world.add_component(*c, parent(), id).unwrap();
@@ -273,7 +314,7 @@ fn import_sync(
         id
     }
     if let Some(root) = &scene.root {
-        let root = recursive_build_nodes(model_crate, &scene, &mut world, root);
+        let root = recursive_build_nodes(model_crate, &scene, &mut world, &mut bind_ids, root);
         world.add_resource(children(), vec![root]);
         // world.add_resource(name(), scene.name.to_string());
     }
