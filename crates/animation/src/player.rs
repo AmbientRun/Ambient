@@ -10,8 +10,8 @@ use ambient_ecs::{
     components,
     generated::animation::components::{
         animation_errors, apply_animation_player, apply_base_pose, bind_ids, blend, clip_duration,
-        clip_loaded, freeze_at_percentage, freeze_at_time, is_animation_player, looping,
-        mask_bind_ids, mask_weights, play_clip_from_url, retarget_animation_scaled,
+        clip_load_error, clip_loaded, freeze_at_percentage, freeze_at_time, is_animation_player,
+        looping, mask_bind_ids, mask_weights, play_clip_from_url, retarget_animation_scaled,
         retarget_model_from_url, speed, start_time,
     },
     generated::hierarchy::components::children,
@@ -205,6 +205,7 @@ pub fn animation_player_systems() -> SystemGroup {
                 let runtime = world.resource(runtime()).clone();
                 for (id, url) in q.collect_cloned(world, qs) {
                     world.remove_component(id, clip_loaded()).ok();
+                    world.remove_component(id, clip_load_error()).ok();
                     let async_run = world.resource(async_run()).clone();
                     let assets = world.resource(asset_cache()).clone();
                     let url = match TypedAssetUrl::<AnimationAssetType>::from_str(&url) {
@@ -236,20 +237,32 @@ pub fn animation_player_systems() -> SystemGroup {
                     };
                     let apply_clip =
                         move |world: &mut World, clip: AssetResult<Arc<AnimationClip>>| {
-                            if let Ok(clip) = clip {
-                                world
-                                    .add_component(id, clip_duration(), clip.duration())
-                                    .ok();
-                                let binders = clip
-                                    .tracks
-                                    .iter()
-                                    .filter_map(|x| match &x.target {
-                                        AnimationTarget::BinderId(binder) => Some(binder.clone()),
-                                        AnimationTarget::Entity(_entity) => None,
-                                    })
-                                    .collect::<Vec<_>>();
-                                world.add_component(id, bind_ids(), binders).ok();
-                                world.add_component(id, play_clip(), clip).ok();
+                            match clip {
+                                Ok(clip) => {
+                                    world
+                                        .add_component(id, clip_duration(), clip.duration())
+                                        .ok();
+                                    let binders = clip
+                                        .tracks
+                                        .iter()
+                                        .filter_map(|x| match &x.target {
+                                            AnimationTarget::BinderId(binder) => {
+                                                Some(binder.clone())
+                                            }
+                                            AnimationTarget::Entity(_entity) => None,
+                                        })
+                                        .collect::<Vec<_>>();
+                                    world.add_component(id, bind_ids(), binders).ok();
+                                    world.add_component(id, play_clip(), clip).ok();
+                                }
+                                Err(err) => {
+                                    log::warn!("Failed to load clip: {:?}", err);
+                                    world.add_component(
+                                        id,
+                                        clip_load_error(),
+                                        format!("{:?}", err),
+                                    );
+                                }
                             }
                             world.add_component(id, clip_loaded(), ()).ok();
                         };
