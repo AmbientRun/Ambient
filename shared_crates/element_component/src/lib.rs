@@ -238,7 +238,7 @@ mod test {
 
     #[test]
     #[should_panic(
-        expected = "assertion failed: `(left == right)`\n  left: `Ident(NotAValidHooks)`,\n right: `\"Hooks\"`: expected the last segment of the path to equal Hooks"
+        expected = "assertion `left == right` failed: expected the last segment of the path to equal Hooks\n  left: Ident(NotAValidHooks)\n right: \"Hooks\""
     )]
     fn test_invalid_base_args_1() {
         let input = quote! {
