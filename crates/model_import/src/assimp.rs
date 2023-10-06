@@ -141,7 +141,7 @@ fn import_sync(
     use crate::animation_bind_id::{BindIdNodeFuncs, BindIdReg};
     use crate::dotdot_path;
     use ambient_animation::{AnimationClip, AnimationOutputs, AnimationTarget, AnimationTrack};
-    use ambient_core::hierarchy::{children, dump_world_hierarchy_to_tmp_file, parent};
+    use ambient_core::hierarchy::{children, parent};
     use ambient_core::transform::{local_to_parent, local_to_world, rotation, scale, translation};
     use ambient_ecs::generated::animation::components::bind_id;
     use ambient_ecs::{query, Entity, EntityId, World};
@@ -375,7 +375,6 @@ fn import_sync(
         }
     }
     world.add_resource(model_skins(), skins);
-    println!("XX_______XXXX Animations {:?}", scene.animations.len());
     for animation in &scene.animations {
         let mut tracks = Vec::new();
         for channel in &animation.channels {
@@ -389,7 +388,7 @@ fn import_sync(
                     inputs: channel
                         .position_keys
                         .iter()
-                        .map(|k| k.time as f32)
+                        .map(|k| k.time as f32 / animation.ticks_per_second as f32)
                         .collect(),
                     outputs: AnimationOutputs::Vec3 {
                         component: translation(),
@@ -407,7 +406,7 @@ fn import_sync(
                     inputs: channel
                         .rotation_keys
                         .iter()
-                        .map(|k| k.time as f32)
+                        .map(|k| k.time as f32 / animation.ticks_per_second as f32)
                         .collect(),
                     outputs: AnimationOutputs::Quat {
                         component: rotation(),
@@ -422,7 +421,11 @@ fn import_sync(
             if !channel.scaling_keys.is_empty() {
                 tracks.push(AnimationTrack {
                     target: target.clone(),
-                    inputs: channel.scaling_keys.iter().map(|k| k.time as f32).collect(),
+                    inputs: channel
+                        .scaling_keys
+                        .iter()
+                        .map(|k| k.time as f32 / animation.ticks_per_second as f32)
+                        .collect(),
                     outputs: AnimationOutputs::Vec3 {
                         component: scale(),
                         data: channel
@@ -434,10 +437,15 @@ fn import_sync(
                 });
             }
         }
-        let clip = AnimationClip::from_tracks(tracks);
+        let clip = AnimationClip {
+            id: animation.name.clone(),
+            tracks,
+            start: 0.,
+            end: animation.duration as f32 / animation.ticks_per_second as f32,
+        };
         model_crate.animations.insert(&animation.name, clip);
     }
-    dump_world_hierarchy_to_tmp_file(&world);
+    // dump_world_hierarchy_to_tmp_file(&world);
     Ok((
         model_crate
             .models

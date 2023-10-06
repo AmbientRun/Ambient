@@ -22,7 +22,7 @@ pub async fn main() {
         .with(prefab_from_url(), assets::url("Zombie1.x"))
         .spawn();
 
-    let idle = PlayClipFromUrlNodeRef::new(assets::url("Zombie.x/animations/Idle1.anim"));
+    let idle = PlayClipFromUrlNodeRef::new(assets::url("Zombie1.x/animations/Run1.anim"));
     let anim_player = AnimationPlayerRef::new(idle);
     entity::add_component(zombie, apply_animation_player(), anim_player.0);
 
