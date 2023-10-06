@@ -19,7 +19,7 @@ use ambient_ui_native::{
 };
 use glam::{uvec2, vec4, Vec2};
 
-const ECS_DEBUGGER: bool = false;
+const ECS_DEBUGGER: bool = true;
 
 #[element_component]
 pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {

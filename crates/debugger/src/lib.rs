@@ -152,7 +152,7 @@ pub fn AppStatsView(hooks: &mut Hooks) -> Element {
     ])
 }
 
-const DEBUGGER_BUTTONS: bool = false;
+const DEBUGGER_BUTTONS: bool = true;
 
 #[element_component]
 pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
