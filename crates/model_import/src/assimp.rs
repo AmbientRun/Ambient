@@ -140,6 +140,7 @@ fn import_sync(
 ) -> anyhow::Result<(RelativePathBuf, Vec<Material>)> {
     use crate::animation_bind_id::{BindIdNodeFuncs, BindIdReg};
     use crate::dotdot_path;
+    use ambient_animation::{AnimationClip, AnimationOutputs, AnimationTarget, AnimationTrack};
     use ambient_core::hierarchy::{children, dump_world_hierarchy_to_tmp_file, parent};
     use ambient_core::transform::{local_to_parent, local_to_world, rotation, scale, translation};
     use ambient_ecs::generated::animation::components::bind_id;
@@ -151,6 +152,7 @@ fn import_sync(
     use ambient_native_std::mesh::MeshBuilder;
     use glam::*;
     use itertools::Itertools;
+    use russimp::animation::Quaternion;
     use std::collections::HashMap;
     use std::sync::Arc;
     use std::{cell::RefCell, rc::Rc};
@@ -254,12 +256,18 @@ fn import_sync(
 
     let mut world = World::new("assimp", ambient_ecs::WorldContext::Prefab);
 
-    fn russimp_matrix(t: &russimp::Matrix4x4) -> Mat4 {
+    fn assimp_matrix(t: &russimp::Matrix4x4) -> Mat4 {
         Mat4::from_cols_array(&[
             t.a1, t.a2, t.a3, t.a4, t.b1, t.b2, t.b3, t.b4, t.c1, t.c2, t.c3, t.c4, t.d1, t.d2,
             t.d3, t.d4,
         ])
         .transpose()
+    }
+    fn assimp_vec3(t: &russimp::Vector3D) -> Vec3 {
+        vec3(t.x, t.y, t.z)
+    }
+    fn assimp_quat(t: &Quaternion) -> Quat {
+        quat(t.x, t.y, t.z, t.w)
     }
 
     fn recursive_build_nodes(
@@ -271,7 +279,7 @@ fn import_sync(
     ) -> EntityId {
         let node = node.borrow();
 
-        let transform = russimp_matrix(&node.transformation);
+        let transform = assimp_matrix(&node.transformation);
         let (scl, rot, pos) = transform.to_scale_rotation_translation();
         let mut ed = Entity::new()
             .with(ambient_core::name(), node.name.clone())
@@ -347,7 +355,7 @@ fn import_sync(
                 inverse_bind_matrices: Arc::new(
                     mesh.bones
                         .iter()
-                        .map(|b| russimp_matrix(&b.offset_matrix))
+                        .map(|b| assimp_matrix(&b.offset_matrix))
                         .collect(),
                 ),
                 joints: mesh
@@ -367,6 +375,68 @@ fn import_sync(
         }
     }
     world.add_resource(model_skins(), skins);
+    println!("XX_______XXXX Animations {:?}", scene.animations.len());
+    for animation in &scene.animations {
+        let mut tracks = Vec::new();
+        for channel in &animation.channels {
+            let Some(target) = bind_ids.try_get_by_id(&channel.name) else {
+                continue;
+            };
+            let target = AnimationTarget::BinderId(target.clone());
+            if !channel.position_keys.is_empty() {
+                tracks.push(AnimationTrack {
+                    target: target.clone(),
+                    inputs: channel
+                        .position_keys
+                        .iter()
+                        .map(|k| k.time as f32)
+                        .collect(),
+                    outputs: AnimationOutputs::Vec3 {
+                        component: translation(),
+                        data: channel
+                            .position_keys
+                            .iter()
+                            .map(|k| assimp_vec3(&k.value))
+                            .collect(),
+                    },
+                });
+            }
+            if !channel.rotation_keys.is_empty() {
+                tracks.push(AnimationTrack {
+                    target: target.clone(),
+                    inputs: channel
+                        .rotation_keys
+                        .iter()
+                        .map(|k| k.time as f32)
+                        .collect(),
+                    outputs: AnimationOutputs::Quat {
+                        component: rotation(),
+                        data: channel
+                            .rotation_keys
+                            .iter()
+                            .map(|k| assimp_quat(&k.value))
+                            .collect(),
+                    },
+                });
+            }
+            if !channel.scaling_keys.is_empty() {
+                tracks.push(AnimationTrack {
+                    target: target.clone(),
+                    inputs: channel.scaling_keys.iter().map(|k| k.time as f32).collect(),
+                    outputs: AnimationOutputs::Vec3 {
+                        component: scale(),
+                        data: channel
+                            .scaling_keys
+                            .iter()
+                            .map(|k| assimp_vec3(&k.value))
+                            .collect(),
+                    },
+                });
+            }
+        }
+        let clip = AnimationClip::from_tracks(tracks);
+        model_crate.animations.insert(&animation.name, clip);
+    }
     dump_world_hierarchy_to_tmp_file(&world);
     Ok((
         model_crate
