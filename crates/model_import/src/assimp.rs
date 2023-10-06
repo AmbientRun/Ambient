@@ -143,11 +143,16 @@ fn import_sync(
     use ambient_core::hierarchy::{children, dump_world_hierarchy_to_tmp_file, parent};
     use ambient_core::transform::{local_to_parent, local_to_world, rotation, scale, translation};
     use ambient_ecs::generated::animation::components::bind_id;
-    use ambient_ecs::{Entity, EntityId, World};
-    use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
+    use ambient_ecs::{query, Entity, EntityId, World};
+    use ambient_model::{
+        model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin,
+        PbrRenderPrimitiveFromUrl,
+    };
     use ambient_native_std::mesh::MeshBuilder;
     use glam::*;
     use itertools::Itertools;
+    use std::collections::HashMap;
+    use std::sync::Arc;
     use std::{cell::RefCell, rc::Rc};
 
     let mut bind_ids = BindIdReg::<String, Node>::new(BindIdNodeFuncs {
@@ -248,6 +253,15 @@ fn import_sync(
     }
 
     let mut world = World::new("assimp", ambient_ecs::WorldContext::Prefab);
+
+    fn russimp_matrix(t: &russimp::Matrix4x4) -> Mat4 {
+        Mat4::from_cols_array(&[
+            t.a1, t.a2, t.a3, t.a4, t.b1, t.b2, t.b3, t.b4, t.c1, t.c2, t.c3, t.c4, t.d1, t.d2,
+            t.d3, t.d4,
+        ])
+        .transpose()
+    }
+
     fn recursive_build_nodes(
         model_crate: &ModelCrate,
         scene: &Scene,
@@ -257,12 +271,7 @@ fn import_sync(
     ) -> EntityId {
         let node = node.borrow();
 
-        let t = &node.transformation;
-        let transform = Mat4::from_cols_array(&[
-            t.a1, t.a2, t.a3, t.a4, t.b1, t.b2, t.b3, t.b4, t.c1, t.c2, t.c3, t.c4, t.d1, t.d2,
-            t.d3, t.d4,
-        ])
-        .transpose();
+        let transform = russimp_matrix(&node.transformation);
         let (scl, rot, pos) = transform.to_scale_rotation_translation();
         let mut ed = Entity::new()
             .with(ambient_core::name(), node.name.clone())
@@ -298,6 +307,15 @@ fn import_sync(
                     .collect(),
             );
         }
+        // TODO: This code won't work for multiple skins on a single node
+        for mesh_i in &node.meshes {
+            if let Some(mesh) = scene.meshes.get(*mesh_i as usize) {
+                if !mesh.bones.is_empty() {
+                    ed.set(model_skin_ix(), *mesh_i as usize);
+                    break;
+                }
+            }
+        }
         let id = ed.spawn(world);
         let childs = node
             .children
@@ -318,6 +336,37 @@ fn import_sync(
         world.add_resource(children(), vec![root]);
         // world.add_resource(name(), scene.name.to_string());
     }
+    let mut skins = Vec::new();
+    let bind_id_lookup = query(bind_id())
+        .iter(&world, None)
+        .map(|(id, b)| (b.clone(), id))
+        .collect::<HashMap<_, _>>();
+    for mesh in &scene.meshes {
+        if !mesh.bones.is_empty() {
+            skins.push(ModelSkin {
+                inverse_bind_matrices: Arc::new(
+                    mesh.bones
+                        .iter()
+                        .map(|b| russimp_matrix(&b.offset_matrix))
+                        .collect(),
+                ),
+                joints: mesh
+                    .bones
+                    .iter()
+                    .map(|b| {
+                        let Some(id) = bind_ids.try_get_by_id(&b.name) else {
+                            return EntityId::null();
+                        };
+                        bind_id_lookup
+                            .get(id)
+                            .map(|x| *x)
+                            .unwrap_or(EntityId::null())
+                    })
+                    .collect(),
+            });
+        }
+    }
+    world.add_resource(model_skins(), skins);
     dump_world_hierarchy_to_tmp_file(&world);
     Ok((
         model_crate
