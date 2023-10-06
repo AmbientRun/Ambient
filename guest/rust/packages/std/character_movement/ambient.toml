@@ -7,4 +7,4 @@ content = { type = "Asset", code = true }
 ambient_version = "0.3.1-nightly-2023-10-06"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "63GXSFDt1a1kMyLO3KsWoS" }
+unit_schema = { path = "../../schemas/unit", deployment = "6mZHG5alnV1oSP5cfycYZU" }
