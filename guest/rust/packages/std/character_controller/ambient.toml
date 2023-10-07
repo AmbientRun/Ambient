@@ -2,13 +2,13 @@
 id = "vuph6dqdj6li4apmcgomn3faudcbfz56"
 name = "Character Controller"
 description = "A character controller for the player that takes input and updates their unit's movement and camera."
-version = "0.3.1-nightly-2023-10-06"
+version = "0.3.1-nightly-2023-10-07"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.1-nightly-2023-10-06"
+ambient_version = "0.3.1-nightly-2023-10-07"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "6mZHG5alnV1oSP5cfycYZU" }
-character_movement = { path = "../character_movement", deployment = "7At70FvmfLorccYyUrAA8P" }
+unit_schema = { path = "../../schemas/unit", deployment = "2tlKncOM1iVf0Q9c3730cA" }
+character_movement = { path = "../character_movement", deployment = "4wxZ5vOGnEZymKqo2Gi85L" }
 
 [components]
 use_character_controller = { type = "Empty", name = "Use Character Controller", description = "Use the character controller to drive this entity", attributes = [
