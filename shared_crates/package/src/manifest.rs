@@ -1,6 +1,7 @@
 use std::{collections::HashMap, fmt::Display, path::PathBuf};
 
 use indexmap::IndexMap;
+use rand::Rng;
 use semver::{Version, VersionReq};
 use serde::{Deserialize, Serialize};
 use sha2::Digest;
@@ -71,6 +72,12 @@ impl PackageId {
     const DATA_LENGTH: usize = 12;
     const CHECKSUM_LENGTH: usize = 8;
     const TOTAL_LENGTH: usize = Self::DATA_LENGTH + Self::CHECKSUM_LENGTH;
+    // to ensure that the first character is always a character we have to make sure that the highest 5 bits of the
+    // first byte are at most 25 (as BASE32 encodes every 5 bits as 1 character => 0-25 as A-Z and 26-31 as digits)
+    // so the max value looks like this:
+    // 11001    = 25 (BASE32 'Z') on highest 5 bits
+    //      111 = max for the lowest 3 since it can be anything
+    const MAX_VALUE_FOR_FIRST_BYTE: u8 = 0b11001_111;
 
     pub fn as_str(&self) -> &str {
         &self.0
@@ -84,27 +91,23 @@ impl PackageId {
 
     /// Generates a new package ID.
     pub fn generate() -> Self {
-        // TODO: see if there's a more intelligent way to ensure the first character
-        // is always alphabetic
-        loop {
-            let data: [u8; Self::DATA_LENGTH] = rand::random();
-            let checksum: [u8; Self::CHECKSUM_LENGTH] = sha2::Sha256::digest(data)
-                [0..Self::CHECKSUM_LENGTH]
-                .try_into()
-                .unwrap();
+        let mut data: [u8; Self::DATA_LENGTH] = rand::random();
+        data[0] = rand::thread_rng().gen_range(0..=Self::MAX_VALUE_FOR_FIRST_BYTE);
+        let checksum: [u8; Self::CHECKSUM_LENGTH] = sha2::Sha256::digest(data)
+            [0..Self::CHECKSUM_LENGTH]
+            .try_into()
+            .unwrap();
 
-            let mut bytes = [0u8; Self::TOTAL_LENGTH];
-            bytes[0..Self::DATA_LENGTH].copy_from_slice(&data);
-            bytes[Self::DATA_LENGTH..].copy_from_slice(&checksum);
+        let mut bytes = [0u8; Self::TOTAL_LENGTH];
+        bytes[0..Self::DATA_LENGTH].copy_from_slice(&data);
+        bytes[Self::DATA_LENGTH..].copy_from_slice(&checksum);
 
-            let output = data_encoding::BASE32_NOPAD
-                .encode(&bytes)
-                .to_ascii_lowercase();
+        let output = data_encoding::BASE32_NOPAD
+            .encode(&bytes)
+            .to_ascii_lowercase();
 
-            if output.chars().next().unwrap().is_alphabetic() {
-                return Self(output);
-            }
-        }
+        assert!(output.chars().next().unwrap().is_ascii_alphabetic());
+        Self(output)
     }
 
     /// Validate that a package ID is correct.
