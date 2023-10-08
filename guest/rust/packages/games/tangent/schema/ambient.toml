@@ -1,14 +1,14 @@
 [package]
 id = "mwrcsok65na7owrbdococ5sthr3ccskc"
 name = "Tangent Schema"
-version = "0.3.1-nightly-2023-10-07"
+version = "0.3.1-nightly-2023-10-08"
 content = { type = "Asset", schema = true }
 authors = ["philpax"]
-ambient_version = "0.3.1-nightly-2023-10-07"
+ambient_version = "0.3.1-nightly-2023-10-08"
 
 [dependencies]
-game_object = { path = "../../../schemas/game_object", deployment = "4ezB12ilelyCgERcfZiC6F" }
-unit = { path = "../../../schemas/unit" , deployment = "2tlKncOM1iVf0Q9c3730cA" }
+game_object = { path = "../../../schemas/game_object", deployment = "6TA3Bteb40Z0SFpLt3ccZA" }
+unit = { path = "../../../schemas/unit" , deployment = "35qnsbe1RODRHBVdgQJaKa" }
 
 [components]
 # Player
