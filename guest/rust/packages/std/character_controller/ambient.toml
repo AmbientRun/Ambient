@@ -7,8 +7,8 @@ content = { type = "Asset", code = true }
 ambient_version = "0.3.1-nightly-2023-10-08"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "2tlKncOM1iVf0Q9c3730cA" }
-character_movement = { path = "../character_movement", deployment = "4wxZ5vOGnEZymKqo2Gi85L" }
+unit_schema = { path = "../../schemas/unit", deployment = "35qnsbe1RODRHBVdgQJaKa" }
+character_movement = { path = "../character_movement", deployment = "7flTTZDnDRsVwuzpAZTHqz" }
 
 [components]
 use_character_controller = { type = "Empty", name = "Use Character Controller", description = "Use the character controller to drive this entity", attributes = [
