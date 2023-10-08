@@ -14,6 +14,8 @@ on:
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: 0
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: "sccache"
 
 jobs:
   clippy:
@@ -28,8 +30,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y tree libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
             libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev
-      - name: Rust cache
-        uses: Leafwing-Studios/cargo-cache@v1.1.0
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Run clippy
         uses: actions-rs/cargo@v1
         with:
@@ -54,6 +56,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           target: wasm32-unknown-unknown
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Run clippy
         working-directory: web
         run: cargo clippy --workspace
@@ -79,8 +83,8 @@ jobs:
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev vulkan-validationlayers-dev mesa-vulkan-drivers libasound2-dev
 
-      - name: Rust cache
-        uses: Leafwing-Studios/cargo-cache@v1.1.0
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - uses: taiki-e/install-action@cargo-nextest
       - name: Run tests
         uses: actions-rs/cargo@v1
@@ -99,6 +103,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Check that guest/rust's documentation is well-formed
         run: cd guest/rust && RUSTDOCFLAGS="-Dwarnings" cargo doc --workspace --all-features --no-deps
       - name: Check that guest/rust builds under all configurations
@@ -123,10 +129,8 @@ jobs:
         with:
           toolchain: stable
           target: wasm32-unknown-unknown
-      - name: Rust cache
-        uses: Leafwing-Studios/cargo-cache@v1.1.0
-        with:
-          cargo-target-dir: "web/target"
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
 
       - name: "Build campfire"
         uses: actions-rs/cargo@v1
@@ -171,8 +175,8 @@ jobs:
             libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev clang nodejs
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - name: Rust cache
-        uses: Leafwing-Studios/cargo-cache@v1.1.0
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Build
         run: cargo build --workspace --release
       - name: Upload ambient executable artifact
@@ -195,10 +199,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - name: Rust cache
-        uses: Leafwing-Studios/cargo-cache@v1.1.0
-        with:
-          cargo-target-dir: "guest/rust/target"
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace
 
@@ -208,12 +210,13 @@ jobs:
     env:
       RUST_LOG: ambient_gpu=info
       EXAMPLES_ASSETS_HOST: ${{ secrets.EXAMPLES_ASSETS_HOST }}
+      CARGO_INCREMENTAL: 1
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - run: rustup target add --toolchain stable wasm32-wasi
-      - name: Rust cache
-        uses: Leafwing-Studios/cargo-cache@v1.1.0
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Download ambient executable
         uses: actions/download-artifact@v3
         with:
@@ -245,12 +248,14 @@ jobs:
           - os: ubuntu-22.04
 
     runs-on: ${{ matrix.os }}
+    env:
+        CARGO_INCREMENTAL: 1
     steps:
       - uses: dtolnay/rust-toolchain@stable
       - run: rustup target add --toolchain stable wasm32-wasi
       - uses: actions/checkout@v3
-      - name: Rust cache
-        uses: Leafwing-Studios/cargo-cache@v1.1.0
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Download ambient executable
         uses: actions/download-artifact@v3
         with:
