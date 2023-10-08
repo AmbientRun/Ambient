@@ -13,6 +13,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
 
 jobs:
   clippy:
@@ -129,18 +130,12 @@ jobs:
 
       - name: "Build campfire"
         uses: actions-rs/cargo@v1
-        env:
-          CARGO_INCREMENTAL: 0
-          RUSTFLAGS: "-C debuginfo=0"
         with:
           command: build
           args: --package campfire --no-default-features
 
       - name: "Build web client"
         uses: actions-rs/cargo@v1
-        env:
-          CARGO_INCREMENTAL: 0
-          RUSTFLAGS: "-C debuginfo=0"
         with:
           command: run
           args: --package campfire --no-default-features -- web build --profile release --target standalone
@@ -180,9 +175,6 @@ jobs:
         uses: Leafwing-Studios/cargo-cache@v1.1.0
       - name: Build
         run: cargo build --workspace --release
-        env:
-          CARGO_INCREMENTAL: 0
-          RUSTFLAGS: "-C debuginfo=0"
       - name: Upload ambient executable artifact
         uses: actions/upload-artifact@v3
         with:
@@ -209,9 +201,6 @@ jobs:
           cargo-target-dir: "guest/rust/target"
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace
-        env:
-          CARGO_INCREMENTAL: 0
-          RUSTFLAGS: "-C debuginfo=0"
 
   golden-image-tests:
     needs: build

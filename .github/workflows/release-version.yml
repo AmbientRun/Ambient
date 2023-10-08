@@ -19,6 +19,7 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
 
 jobs:
   meta:
@@ -110,8 +111,6 @@ jobs:
       # We don't do caching here because we only have 10gb and they'll be occupied by normal builds all the time anyway
       - name: Build
         run: cargo build --release -p ambient --target ${{ matrix.target }} --features production
-        env:
-          CARGO_INCREMENTAL: 0
       - name: Install certificate (OSX)
         if: matrix.os == 'macos-latest'
         uses: apple-actions/import-codesign-certs@v1
