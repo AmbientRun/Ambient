@@ -129,12 +129,18 @@ jobs:
 
       - name: "Build campfire"
         uses: actions-rs/cargo@v1
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0"
         with:
           command: build
           args: --package campfire --no-default-features
 
       - name: "Build web client"
         uses: actions-rs/cargo@v1
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0"
         with:
           command: run
           args: --package campfire --no-default-features -- web build --profile release --target standalone
@@ -203,6 +209,9 @@ jobs:
           cargo-target-dir: "guest/rust/target"
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0"
 
   golden-image-tests:
     needs: build
