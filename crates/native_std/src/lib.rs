@@ -163,7 +163,7 @@ impl Default for AmbientVersion {
     fn default() -> Self {
         Self {
             version: Version::parse(RUNTIME_VERSION).expect("Failed to parse version"),
-            revision: ambient_git_rev::REV_FULL.to_string(),
+            revision: ambient_git_rev::get(),
         }
     }
 }

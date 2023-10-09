@@ -23,6 +23,8 @@ fn main() -> anyhow::Result<()> {
 
     setup_logging()?;
 
+    ambient_git_rev_init::init().expect("Should be called exactly once");
+
     shared::components::init()?;
 
     let runtime = rt.handle();
