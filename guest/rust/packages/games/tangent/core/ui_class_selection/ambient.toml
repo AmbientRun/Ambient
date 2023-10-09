@@ -8,7 +8,7 @@ ambient_version = "0.3.1-nightly-2023-10-09"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "5PVtd0RoeEvor92kV4FGft" }
+tangent_schema = { path = "../../schema", deployment = "2R8F7YLuHggu0tTek4NyZ1" }
 
 [messages.ClassSetRequest]
 description = "Sent by the client to request a class set change."
