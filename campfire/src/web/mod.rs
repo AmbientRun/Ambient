@@ -14,7 +14,7 @@ pub enum Web {
     Check(BuildOptions),
     /// Launches chrome with the correct flags to explicitly trust
     /// the self-signed certificate
-    OpenBrowser,
+    OpenBrowser(browser::BrowserOptions),
     #[cfg(feature = "serve")]
     Serve(serve::Serve),
 }
@@ -26,7 +26,7 @@ pub async fn run(command: Web) -> anyhow::Result<()> {
             Ok(())
         }
         Web::Check(args) => args.check().await,
-        Web::OpenBrowser => browser::open().await,
+        Web::OpenBrowser(args) => browser::open(args).await,
         #[cfg(feature = "serve")]
         Web::Serve(args) => args.run().await,
     }
