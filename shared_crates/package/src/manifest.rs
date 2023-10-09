@@ -72,7 +72,7 @@ impl PackageId {
     const DATA_LENGTH: usize = 12;
     const CHECKSUM_LENGTH: usize = 8;
     const TOTAL_LENGTH: usize = Self::DATA_LENGTH + Self::CHECKSUM_LENGTH;
-    // to ensure that the first character is always a character we have to make sure that the highest 5 bits of the
+    // to ensure that the first character is always alphabetic we have to make sure that the highest 5 bits of the
     // first byte are at most 25 (as Base32 encodes every 5 bits as 1 character => 0-25 as A-Z and 26-31 as digits)
     // so the max value looks like this:
     // 11001    = 25 (Base32 'Z') on highest 5 bits
