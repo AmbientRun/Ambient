@@ -445,17 +445,24 @@ impl wasm_bridge_js::wasi::preview2::OutputStream for WasiOutputStream {
 
 #[cfg(not(target_os = "unknown"))]
 #[async_trait::async_trait]
-impl wasm_bridge::wasi::preview2::HostOutputStream for WasiOutputStream {
+impl wasm_bridge::wasi::preview2::Subscribe for WasiOutputStream {
     async fn ready(&mut self) -> anyhow::Result<()> {
         Ok(())
     }
+}
 
-    fn write(&mut self, buf: bytes::Bytes) -> anyhow::Result<(usize, preview2::StreamState)> {
+#[cfg(not(target_os = "unknown"))]
+#[async_trait::async_trait]
+impl wasm_bridge::wasi::preview2::HostOutputStream for WasiOutputStream {
+    fn write(
+        &mut self,
+        buf: bytes::Bytes,
+    ) -> Result<usize, wasm_bridge::wasi::preview2::StreamError> {
         let msg = std::str::from_utf8(&buf)?;
 
         match self.0.try_send(msg.into()) {
-            Ok(()) => Ok((msg.len(), preview2::StreamState::Open)),
-            Err(TrySendError::Disconnected(_)) => Ok((0, preview2::StreamState::Closed)),
+            Ok(()) => Ok(msg.len()),
+            Err(TrySendError::Disconnected(_)) => Err(preview2::StreamError::Closed),
             Err(TrySendError::Full(_)) => {
                 Err(io::Error::new(io::ErrorKind::WouldBlock, "stdio is full").into())
             }
