@@ -162,14 +162,17 @@ async fn main() {
         bandwidth: 6.0,
     }));
 
-    let ambience = Track::from_wav(
-        std::fs::read("example_assets/ambience.wav")
-            .unwrap()
-            .to_vec(),
-    )
-    .unwrap()
-    .decode()
-    .repeat();
+    // TODO: figure out how to include these files if we ought to have these examples, maybe move
+    // to the guest alltogether
+    // let ambience = Track::from_wav(
+    //     std::fs::read("example_assets/ambience.wav")
+    //         .unwrap()
+    //         .to_vec(),
+    // )
+    // .unwrap()
+    // .decode()
+    // .repeat();
+    let ambience = SineWave::new(200.0).repeat();
 
     let chord_source = SineWave::new(523.25);
     // .gain(0.25)

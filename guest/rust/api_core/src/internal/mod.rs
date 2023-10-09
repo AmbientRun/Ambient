@@ -13,7 +13,7 @@ wit::export_bindings!(Guest);
 
 extern "Rust" {
     fn main();
-    fn exec(source: guest::Source, message_name: String, message_data: Vec<u8>);
+    // fn exec();
 }
 
 struct Guest;
@@ -24,6 +24,7 @@ impl guest::Guest for Guest {
     }
 
     fn exec(source: guest::Source, message_name: String, message_data: Vec<u8>) {
-        unsafe { self::exec(source, message_name, message_data) };
+        EXECUTOR.execute(source, message_name, message_data);
+        // unsafe { self::exec() };
     }
 }

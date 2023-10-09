@@ -114,14 +114,14 @@ pub fn derive_main(item: TokenStream, ambient_toml: RetrievableFile) -> syn::Res
         }
 
 
-        fn exec(source: #path::__internal::Source, message_name: String, message_data: Vec<u8>) {
+        // fn exec() {
 
-        }
+        // }
 
-        fn #exec_name(source: #path::__internal::Source, message_name: String, message_data: Vec<u8>) {
-            use #path::__internal::EXECUTOR;
-            EXECUTOR.execute(source, message_name, message_data);
-        }
+        // fn #exec_name(source: #path::__internal::Source, message_name: String, message_data: Vec<u8>) {
+        //     use #path::__internal::EXECUTOR;
+        //     EXECUTOR.execute(source, message_name, message_data);
+        // }
     })
 }
 
