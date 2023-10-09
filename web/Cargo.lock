@@ -417,6 +417,16 @@ dependencies = [
 [[package]]
 name = "ambient_git_rev"
 version = "0.3.1-dev"
+dependencies = [
+ "once_cell",
+]
+
+[[package]]
+name = "ambient_git_rev_init"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_git_rev",
+]
 
 [[package]]
 name = "ambient_gizmos"
@@ -1164,6 +1174,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_ecs_editor",
  "ambient_element",
+ "ambient_git_rev_init",
  "ambient_layout",
  "ambient_native_std",
  "ambient_network",

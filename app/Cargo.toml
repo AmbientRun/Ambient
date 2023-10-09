@@ -18,6 +18,7 @@ ambient_debugger = { path = "../crates/debugger" }
 ambient_decals = { path = "../crates/decals" }
 ambient_deploy = { path = "../crates/deploy" }
 ambient_ecs = { path = "../crates/ecs" }
+ambient_git_rev_init = { path = "../crates/git_rev_init" }
 ambient_gizmos = { path = "../crates/gizmos" }
 ambient_model_import = { path = "../crates/model_import" }
 ambient_network = { path = "../crates/network" }
