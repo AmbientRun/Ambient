@@ -24,6 +24,7 @@ ambient_debugger.workspace = true
 ambient_ecs.workspace = true
 ambient_ecs_editor.workspace = true
 ambient_element.workspace = true
+ambient_git_rev_init.workspace = true
 ambient_layout.workspace = true
 ambient_native_std.workspace = true
 ambient_network.workspace = true

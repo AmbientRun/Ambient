@@ -35,6 +35,7 @@ ambient_decals = { path = "../crates/decals/" }
 ambient_prefab = { path = "../crates/prefab/" }
 ambient_package_semantic_native = { path = "../crates/package_semantic_native/" }
 ambient_sky = { path = "../crates/sky/" }
+ambient_git_rev_init = { path = "../crates/git_rev_init/" }
 
 url = "2.3"
 anyhow = "1.0"
