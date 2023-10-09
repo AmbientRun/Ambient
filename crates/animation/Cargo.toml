@@ -20,3 +20,4 @@ serde = { workspace = true }
 async-trait = { workspace = true }
 itertools = { workspace = true }
 anyhow = { workspace = true }
+log = { workspace = true }

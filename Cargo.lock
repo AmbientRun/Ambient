@@ -192,6 +192,7 @@ dependencies = [
  "async-trait",
  "glam 0.24.2",
  "itertools",
+ "log",
  "ordered-float 3.9.1",
  "serde",
 ]

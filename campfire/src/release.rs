@@ -218,23 +218,19 @@ fn update_version(
     for (path, _) in &all_publishable_crates {
         edit_toml(path, |toml| {
             for dependencies in ["dependencies", "build-dependencies", "dev-dependencies"] {
-                if let Some(mut deps) = toml.get_mut(dependencies) {
-                    update_ambient_dependency_versions(&candidate_crates, &mut deps, new_version);
+                if let Some(deps) = toml.get_mut(dependencies) {
+                    update_ambient_dependency_versions(&candidate_crates, deps, new_version);
                 }
             }
 
             // Handle `[target.'cfg(not(target_os = "unknown"))'.dependencies]`
             if let Some(target) = toml.get_mut("target").and_then(|t| t.as_table_like_mut()) {
                 for (_, target_table) in target.iter_mut() {
-                    if let Some(mut deps) = target_table
+                    if let Some(deps) = target_table
                         .get_mut("dependencies")
                         .filter(|t| t.is_table_like())
                     {
-                        update_ambient_dependency_versions(
-                            &candidate_crates,
-                            &mut deps,
-                            new_version,
-                        );
+                        update_ambient_dependency_versions(&candidate_crates, deps, new_version);
                     }
                 }
             }
@@ -260,6 +256,7 @@ fn update_version(
 
     // Run `cargo check` in the root and API to force the lockfile to update
     check(".")?;
+    check("web")?;
     check("guest/rust")?;
 
     Ok(())
