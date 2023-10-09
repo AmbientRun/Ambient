@@ -164,7 +164,11 @@ pub fn build_all() -> anyhow::Result<()> {
     let package_paths = get_all_packages(true, true, true)?;
 
     for path in &package_paths {
-        run_ambient(&["build", &path.to_string_lossy(), "--clean-build"], true)?;
+        run_ambient(
+            &["build", &path.to_string_lossy(), "--clean-build"],
+            true,
+            false,
+        )?;
     }
 
     Ok(())
@@ -185,7 +189,7 @@ pub fn deploy_all(token: &str, include_examples: bool) -> anyhow::Result<()> {
     args.push(token);
     args.push("--clean-build");
 
-    run_ambient(&args, true)
+    run_ambient(&args, true, true)
 }
 
 fn run_package(run_cmd: &str, path: &Path, params: &RunParams) -> anyhow::Result<()> {
@@ -195,7 +199,7 @@ fn run_package(run_cmd: &str, path: &Path, params: &RunParams) -> anyhow::Result
     if !params.args.is_empty() {
         args.extend(params.args.iter().map(|s| s.as_str()));
     }
-    run_ambient(&args, params.release)
+    run_ambient(&args, params.release, false)
 }
 
 pub fn get_all_packages(
@@ -284,7 +288,11 @@ fn get_all_examples(include_testcases: bool) -> anyhow::Result<Vec<PathBuf>> {
 fn regenerate_ids() -> anyhow::Result<()> {
     for path in get_all_packages(true, true, true)? {
         println!("Regenerating ID for {path:?}");
-        run_ambient(&["package", "regenerate-id", &path.to_string_lossy()], true)?;
+        run_ambient(
+            &["package", "regenerate-id", &path.to_string_lossy()],
+            true,
+            false,
+        )?;
     }
 
     Ok(())

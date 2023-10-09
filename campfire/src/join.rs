@@ -58,5 +58,5 @@ pub fn main(join: &Join) -> anyhow::Result<()> {
         args.extend(join.params.args.iter().map(|s| s.as_str()));
     }
 
-    run_ambient(&args, join.params.release)
+    run_ambient(&args, join.params.release, false)
 }
