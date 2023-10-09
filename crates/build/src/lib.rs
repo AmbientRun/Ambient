@@ -20,6 +20,7 @@ use anyhow::Context;
 use futures::FutureExt;
 use itertools::Itertools;
 use pipelines::{out_asset::OutAsset, FileCollection, ProcessCtx, ProcessCtxKey};
+use tokio::sync::Semaphore;
 use walkdir::WalkDir;
 
 pub mod migrate;
@@ -192,10 +193,13 @@ pub async fn build_package(
     } else {
         vec![]
     };
+    log::info!("Assets built, building source code...");
 
     build_rust_if_available(&package_path, &manifest, &build_path, settings.release)
         .await
         .with_context(|| format!("Failed to build Rust in {build_path:?}"))?;
+
+    log::info!("Source built");
 
     tokio::fs::write(&output_manifest_path, toml::to_string(&manifest)?).await?;
 
@@ -240,6 +244,8 @@ pub async fn build_assets(
     let anim_files = Arc::new(parking_lot::Mutex::new(vec![]));
     let anim_files_clone = anim_files.clone();
 
+    let file_write_semaphore = Arc::new(Semaphore::new(10));
+
     let ctx = ProcessCtx {
         assets: assets.clone(),
         files: FileCollection(Arc::new(files)),
@@ -249,8 +255,11 @@ pub async fn build_assets(
         package_name: "".to_string(),
         write_file: Arc::new({
             let build_path = build_path.to_owned();
+            let file_write_semaphore = file_write_semaphore.clone();
             move |path, contents| {
+                let file_write_semaphore = file_write_semaphore.clone();
                 let path = build_path.join("assets").join(path);
+                log::info!("Writing file: {:?}", path);
 
                 if for_import_only {
                     if let Some(ext) = path.extension() {
@@ -266,6 +275,7 @@ pub async fn build_assets(
 
                 async move {
                     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+                    let _permit = file_write_semaphore.acquire().await.unwrap();
                     tokio::fs::write(&path, contents).await.unwrap();
                     AbsAssetUrl::from_file_path(path)
                 }
