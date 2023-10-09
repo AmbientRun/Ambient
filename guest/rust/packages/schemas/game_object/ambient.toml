@@ -2,9 +2,9 @@
 id = "hvxms7i2px7krvkm23sxfjxsjqlcmtb5"
 name = "Game Object"
 description = "Schema for game objects."
-version = "0.3.1-nightly-2023-10-08"
+version = "0.3.1-nightly-2023-10-09"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.1-nightly-2023-10-08"
+ambient_version = "0.3.1-nightly-2023-10-09"
 
 [components]
 health = { type = "F32", name = "Health", description = "This game object's health. \"Standard\" health is 100 HP.", attributes = [

@@ -2,8 +2,8 @@
 id = "fsv4zmeyotsu4lhji4rv6kivla5vmifi"
 name = "Clock"
 description = "A 2D clock example."
-version = "0.3.1-nightly-2023-10-08"
+version = "0.3.1-nightly-2023-10-09"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/clock"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.1-nightly-2023-10-08"
+ambient_version = "0.3.1-nightly-2023-10-09"
