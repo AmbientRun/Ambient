@@ -40,3 +40,14 @@ running = "Bool"
 
 [messages.Jump]
 fields = {}
+
+[concepts.CharacterFpsController]
+extends = [
+    "character_movement::CharacterMovement",
+    "ambient_core::transform::Transformable",
+]
+[concepts.CharacterFpsController.components.required]
+use_character_controller = { suggested = [] }
+"unit_schema::shooting" = { suggested = false }
+[concepts.CharacterFpsController.components.optional]
+"unit_schema::head_ref" = {}
