@@ -2,11 +2,11 @@
 id = "ib2djsnjew5tb2k5igq6le7rzjdwlvhq"
 name = "Material overriding"
 description = "Combining a model with a custom material override in the pipeline."
-version = "0.3.1-nightly-2023-10-09"
+version = "0.3.1-nightly-2023-10-10"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/material_overriding"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.1-nightly-2023-10-09"
+ambient_version = "0.3.1-nightly-2023-10-10"
 
 [components.is_the_best]
 type = "Bool"
@@ -15,4 +15,4 @@ description = "Declares whether or not the entity this is attached is the best."
 attributes = ["Networked", "Debuggable"]
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "3vcpQEzhSisEBwrSS2N51k" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "6znmGQQuMHf5Lq5OuKzgUZ" }
