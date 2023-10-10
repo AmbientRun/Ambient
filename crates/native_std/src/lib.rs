@@ -157,6 +157,11 @@ impl AmbientVersion {
         (self.version.pre.is_empty() || self.version.pre.starts_with("nightly-"))
             .then(|| format!("v{}", self.version))
     }
+
+    /// True if this is a full released version (that is there's a tag, uploaded build and api is released to crates.io).
+    pub fn is_released_version(&self) -> bool {
+        self.version.pre.is_empty() && self.version.build.is_empty()
+    }
 }
 
 impl Default for AmbientVersion {
