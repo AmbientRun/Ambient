@@ -189,6 +189,9 @@ fn build_cargo_toml(
                 if let Some(api_path) = api_path {
                     log::info!("Ambient path: {}", api_path);
                     format!("ambient_api = {{ path = {:?} }}", api_path)
+                } else if version.is_released_version() {
+                    log::info!("Ambient version: {}", version.version);
+                    format!("ambient_api = \"{}\"", version.version)
                 } else if let Some(tag) = version.tag() {
                     log::info!("Ambient tag: {}", tag);
                     format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", tag = \"{}\" }}", tag)
