@@ -166,9 +166,9 @@ impl TreeRenderer {
 
         for (_, id) in self.loc_changed_reader.iter(world.loc_changed()) {
             if let Ok(primitives) = world.get_ref(*id, primitives()) {
-                for primivite_index in 0..primitives.len() {
+                for primitive_index in 0..primitives.len() {
                     if let Some((shader_id, material_id, _)) =
-                        self.primitives_lookup.get(&(*id, primivite_index))
+                        self.primitives_lookup.get(&(*id, primitive_index))
                     {
                         to_update.insert((shader_id.clone(), material_id.clone()));
                     }
