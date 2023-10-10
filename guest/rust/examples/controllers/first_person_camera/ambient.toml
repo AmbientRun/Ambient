@@ -2,11 +2,11 @@
 id = "pfzpi7ypoegwizizej5ojfcsncqa4bet"
 name = "First-person camera"
 description = "A simple FPS camera and input example."
-version = "0.3.1-nightly-2023-10-09"
+version = "0.3.1-nightly-2023-10-10"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/first_person_camera"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.1-nightly-2023-10-09"
+ambient_version = "0.3.1-nightly-2023-10-10"
 
 
 [dependencies]

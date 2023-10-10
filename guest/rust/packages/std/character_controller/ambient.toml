@@ -2,9 +2,9 @@
 id = "vuph6dqdj6li4apmcgomn3faudcbfz56"
 name = "Character Controller"
 description = "A character controller for the player that takes input and updates their unit's movement and camera."
-version = "0.3.1-nightly-2023-10-09"
+version = "0.3.1-nightly-2023-10-10"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.1-nightly-2023-10-09"
+ambient_version = "0.3.1-nightly-2023-10-10"
 
 [dependencies]
 unit_schema = { path = "../../schemas/unit", deployment = "5HexbdJAJVFzPjJz2bDiEp" }
