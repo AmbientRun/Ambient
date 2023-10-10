@@ -8,35 +8,35 @@ ambient_version = "0.3.1-nightly-2023-10-10"
 authors = ["philpax"]
 
 [dependencies]
-hide_cursor = { path = "../../std/hide_cursor", deployment = "2wMAWfO9X1JWdXCKNMbIge", enabled = true }
+hide_cursor = { path = "../../std/hide_cursor", deployment = "3vnTirlRVTkefji8hfL0lG", enabled = true }
 
-core = { path = "core/core", deployment = "1bGbHXggI9KB6kh4y4UkaI" }
-behavior_vehicle = { path = "core/behavior_vehicle", deployment = "2lkibFJjlqWrzqkCRKZUBw" }
-behavior_character = { path = "core/behavior_character", deployment = "4e1RbgBGX8gTtsEbLGCXWD" }
-camera_follow = { path = "core/camera_follow", deployment = "1BDP0jCW9RUezp04VClRY2" }
-ui_class_selection = { path = "core/ui_class_selection", deployment = "74bUfO2qQNAqRSILNx1aLc" }
+core = { path = "core/core", deployment = "1EIlkTkfhUl95Jk3FKb9av" }
+behavior_vehicle = { path = "core/behavior_vehicle", deployment = "7FfXkW4MYVrRtUdM7KW9mb" }
+behavior_character = { path = "core/behavior_character", deployment = "2YvwA5HDRFLEn5aoXXB0Ky" }
+camera_follow = { path = "core/camera_follow", deployment = "7CiG5rLbJovbZCHLFnm4JC" }
+ui_class_selection = { path = "core/ui_class_selection", deployment = "7ONM1OmhEnaAoVwoHweqrU" }
 
-camera_topdown = { path = "mods/camera_topdown", enabled = false, deployment = "4XENHRV1Hy6n1AoLskcq2Y" }
+camera_topdown = { path = "mods/camera_topdown", enabled = false, deployment = "3Tvwb8cgVQRSQSEbxgCuay" }
 
-ui_holohud = { path = "mods/ui_holohud", enabled = false, deployment = "6uCSYI2kS9HeqRJyCU9PVo" }
-ui_flathud = { path = "mods/ui_flathud", enabled = true, deployment = "1lzZgiTN9FMuGUZF6PLBIT" }
-ui_spawn_menu = { path = "mods/ui_spawn_menu", enabled = false, deployment = "2DuQvEFXQwGUmTx5ItEsd3" }
+ui_holohud = { path = "mods/ui_holohud", enabled = false, deployment = "5bvSmY5RRQqS2yjacGwu6Z" }
+ui_flathud = { path = "mods/ui_flathud", enabled = true, deployment = "4HJkyd4k97G2JF3pAvP0Ag" }
+ui_spawn_menu = { path = "mods/ui_spawn_menu", enabled = false, deployment = "4wq9AMpT7lPhjuc656TuvL" }
 
-pickup_health = { path = "mods/pickup_health", deployment = "6T3BYnMGkmWTUPdAwAmOj6" }
+pickup_health = { path = "mods/pickup_health", deployment = "56ZAJvSnpZ1LzvcE4s8Xhn" }
 
-level_cubicide = { path = "mods/level_cubicide", deployment = "5jHNEnnugaC4abBeSJkt7r" }
-level_cubicide_onespawn = { path = "mods/level_cubicide_onespawn", enabled = false, deployment = "1wIl8mzmYYfnBuxbjflThH" }
+level_cubicide = { path = "mods/level_cubicide", deployment = "tSa3AAgaG5xhDQQPJtrcS" }
+level_cubicide_onespawn = { path = "mods/level_cubicide_onespawn", enabled = false, deployment = "1FrXjjhKmcQRbOimbFHrU6" }
 
-class_assault = { path = "mods/class_assault", deployment = "4D0zZwVEt1R2TpZrd10PXR" }
-class_scout = { path = "mods/class_scout", deployment = "2hSH5d3e3DLBBWi8FLHLo7", enabled = false }
-class_tank = { path = "mods/class_tank", deployment = "77btRrQWFaeFVVYrH4964o" }
+class_assault = { path = "mods/class_assault", deployment = "5TAYKCfl2yQIiFIrN3Ritn" }
+class_scout = { path = "mods/class_scout", deployment = "8Ayi0S6lge4nZdKoAhpDd", enabled = false }
+class_tank = { path = "mods/class_tank", deployment = "4h5viaZimX5DnQy8kWMiEr" }
 
-vehicle_standard = { path = "mods/vehicle_standard", deployment = "5yVnuBvgv1kajZyrSPKx6i" }
+vehicle_standard = { path = "mods/vehicle_standard", deployment = "65ydYOC0Tg1dv4SlSRImbN" }
 
-gameplay_firerain = { path = "mods/gameplay_firerain", enabled = false, deployment = "4Swi711NUSK9KVEpk8sT8A" }
-gameplay_daynight = { path = "mods/gameplay_daynight", enabled = false, deployment = "7NQBDTndM1RI9FlIrCAL9L" }
+gameplay_firerain = { path = "mods/gameplay_firerain", enabled = false, deployment = "3E6A7UFTsZsjMV6t71lQRS" }
+gameplay_daynight = { path = "mods/gameplay_daynight", enabled = false, deployment = "68tX4JJiJWFW964PbbO6WS" }
 
-reskin_classes = { path = "mods/reskin_classes", enabled = false, deployment = "69aqLrlqEnXc4CSYYzJ4JV" }
+reskin_classes = { path = "mods/reskin_classes", enabled = false, deployment = "63EFIGfIFQHD8CTZFbJbb7" }
 
-package_manager = { path = "../../tools/package_manager", deployment = "4jL0lSJOIFyWiPhraXfx0" }
-editor = { path = "../../tools/editor", deployment = "37wsFWDXIZJo8a6Czfp59S" }
+package_manager = { path = "../../tools/package_manager", deployment = "7ilJQgi0aebjc9l85aK93u" }
+editor = { path = "../../tools/editor", deployment = "4MuHlGG0I6rJgBMnunaJtM" }

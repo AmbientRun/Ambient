@@ -8,7 +8,7 @@ ambient_version = "0.3.1-nightly-2023-10-10"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "2R8F7YLuHggu0tTek4NyZ1" }
-gun_laser = { path = "../../core/gun_laser", deployment = "59fBQPBP8CEczAs2vTe8Aw" }
+tangent_schema = { path = "../../schema", deployment = "7VkfMA6nep9Y3A92JLXhgC" }
+gun_laser = { path = "../../core/gun_laser", deployment = "5zG9NLe8Mi5EwcWe5E2PO" }
 
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "5G7GcxCxkT6N72iMQbSHaa" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "7evDcAVgNNoz4a5luhFvp9" }
