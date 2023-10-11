@@ -31,17 +31,14 @@ fn basics() {
             entity::mutate_component_with_default(drop, age(), 0., move |age| {
                 let new_age = *age + loopspd * dt;
                 if new_age > 1. {
-                    entity::add_component(drop, just_looped(), new_age.floor() as u8);
+                    entity::mutate_component_with_default(drop, loop_index(), 0, |li| {
+                        *li = (*li + new_age.floor() as u8) % u8::MAX as u8
+                    });
                     *age = new_age % 1.;
                 } else {
                     *age = new_age;
                 }
             });
-        }
-    });
-    query(()).requires(just_looped()).each_frame(|loopers| {
-        for (looper, _) in loopers {
-            entity::remove_component(looper, just_looped());
         }
     });
 }
