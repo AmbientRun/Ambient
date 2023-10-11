@@ -2,9 +2,9 @@
 id = "zlu324bqcibov3o4co42eriyfhcnzsus"
 name = "Tangent UI: Flat HUD"
 description = "A flat 2D HUD for Tangent."
-version = "0.3.1-nightly-2023-10-10"
+version = "0.3.1-nightly-2023-10-11"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.1-nightly-2023-10-10"
+ambient_version = "0.3.1-nightly-2023-10-11"
 authors = ["philpax"]
 
 [dependencies]
