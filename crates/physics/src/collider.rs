@@ -639,7 +639,7 @@ impl Collider {
         if convex { &self.convex } else { &self.concave }
             .iter()
             .map(|(transform, mesh)| {
-                tracing::info!(transform = ?transform.to_scale_rotation_translation(), "Spawning convex mesh with transform");
+                tracing::debug!(transform = ?transform.to_scale_rotation_translation(), "Spawning convex mesh with transform");
                 // Read the scale that was applied with the model local transform
                 let (scale, rotation, translation) = (Mat4::from_scale(scale) * *transform).to_scale_rotation_translation();
 

@@ -243,7 +243,7 @@ impl Shader {
         let label = label.into();
         let gpu = GpuKey.get(assets);
 
-        let _span = tracing::info_span!("Shader::from_modules", ?label).entered();
+        let _span = tracing::debug_span!("Shader::from_modules", ?label).entered();
 
         // The complete dependency graph, in the correct order
         let modules = resolve_module_graph(&[module]);

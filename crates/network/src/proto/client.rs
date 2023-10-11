@@ -44,7 +44,7 @@ pub type SharedClientGameState = Arc<Mutex<ClientGameState>>;
 
 impl ClientProtoState {
     pub fn process_disconnect(&mut self) {
-        tracing::info!("Disconnecting client: {self:#?}");
+        tracing::debug!("Disconnecting client: {self:#?}");
 
         *self = Self::Disconnected;
     }

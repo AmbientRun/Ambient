@@ -35,10 +35,10 @@ static LOCAL_WORKER: Lazy<flume::Sender<NonSendCons>> = Lazy::new(|| {
             loop {
                 tokio::select! {
                     Some(()) = set.next() => {
-                        tracing::info!("Local future completed");
+                        tracing::trace!("Local future completed");
                     },
                     Some(task) = rx.next() => {
-                        tracing::info!("Received new future");
+                        tracing::trace!("Received new future");
                         set.push(task());
                     },
                 }

@@ -145,11 +145,12 @@ impl LaunchJson {
 }
 
 fn setup_logging() -> anyhow::Result<()> {
-    /// This fixes the `<unknown time>` in log formatting
-    unsafe {
-        time::util::local_offset::set_soundness(time::util::local_offset::Soundness::Unsound)
-    }
+    // This fixes the `<unknown time>` in log formatting
+    unsafe { time::util::local_offset::set_soundness(time::util::local_offset::Soundness::Unsound) }
 
+    /// Create a layer of filtering before to remove info statements from external crates
+    ///
+    /// In general, `info` level logs should not be used in libraries as they are user facing and are recommended to be `debug` or `trace` events instead.
     const MODULES: &[(LevelFilter, &[&str])] = &[
         (
             LevelFilter::ERROR,
@@ -161,15 +162,12 @@ fn setup_logging() -> anyhow::Result<()> {
         (
             LevelFilter::WARN,
             &[
-                "ambient_gpu",
-                "ambient_model",
-                "ambient_physics",
-                "ambient_native_std",
                 "cranelift_codegen",
                 "naga",
                 "tracing",
                 "symphonia_core",
                 "symphonia_bundle_mp3",
+                // TODO: remove, fixed in later wgpu version in https://github.com/gfx-rs/wgpu/commit/4478c52debcab1b88b80756b197dc10ece90dec9
                 "wgpu_core",
                 "wgpu_hal",
                 "symphonia_format_wav",
@@ -177,31 +175,14 @@ fn setup_logging() -> anyhow::Result<()> {
         ),
     ];
 
-    // // Initialize the logger and lower the log level for modules we don't need to hear from by default.
-    // #[cfg(not(feature = "tracing"))]
-    // {
-    //     let mut builder = env_logger::builder();
-    //     builder.filter_level(LevelFilter::Info);
-
-    //     for (level, modules) in MODULES {
-    //         for module in *modules {
-    //             builder.filter_module(module, *level);
-    //         }
-    //     }
-
-    //     builder.parse_default_env().try_init()?;
-
-    //     Ok(())
-    // }
-
     use tracing::metadata::Level;
     use tracing_subscriber::prelude::*;
 
-    let mut filter = tracing_subscriber::filter::Targets::new()
+    let mut targets = tracing_subscriber::filter::Targets::new()
         .with_default(tracing::metadata::LevelFilter::DEBUG);
     for (level, modules) in MODULES {
         for &module in *modules {
-            filter = filter.with_target(module, *level);
+            targets = targets.with_target(module, *level);
         }
     }
 
@@ -209,11 +190,6 @@ fn setup_logging() -> anyhow::Result<()> {
     // let modules: Vec<_> = MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| format!("{v}={level}"))).collect();
 
     // eprintln!("{modules:#?}");
-    // let mut filter = tracing_subscriber::filter::EnvFilter::builder().with_default_directive(Level::INFO.into()).from_env_lossy();
-
-    // for module in modules {
-    //     filter = filter.add_directive(module.parse().unwrap());
-    // }
 
     // let mut filter = std::env::var("RUST_LOG").unwrap_or_default().parse::<tracing_subscriber::filter::Targets>().unwrap_or_default();
     // filter.extend(MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| (v, level.as_trace()))));
@@ -222,7 +198,7 @@ fn setup_logging() -> anyhow::Result<()> {
         .with_default_directive(Level::INFO.into())
         .from_env_lossy();
 
-    let registry = registry().with(env_filter);
+    let registry = registry().with(targets).with(env_filter);
 
     // use stackdriver format if available and requested
     #[cfg(feature = "stackdriver")]

@@ -197,7 +197,6 @@ impl ElementComponent for ClientView {
                         );
 
                         let game_state = &client_state.game_state;
-                        tracing::info!("Setting game state");
                         let cleanup = {
                             // Lock before setting
                             let game_state = &mut game_state.lock();
@@ -342,8 +341,6 @@ async fn handle_connection(
 
     let mut control_rx = control_rx.into_stream();
 
-    tracing::info!("Client connected");
-
     while let ClientProtoState::Connected(connected) = &mut client {
         tokio::select! {
             Some(frame) = push_recv.next() => {
@@ -366,7 +363,7 @@ async fn handle_connection(
            Some(control) = control_rx.next() => {
                 match control {
                     Control::Disconnect => {
-                        tracing::info!("Disconnecting manually");
+                        tracing::debug!("Disconnecting manually");
                         // Tell the server that we want to gracefully disconnect
                         request_send.send(ClientRequest::Disconnect).await?;
                     }
@@ -388,7 +385,6 @@ async fn handle_connection(
         }
     }
 
-    tracing::info!("Client entered disconnected state");
     Ok(())
 }
 

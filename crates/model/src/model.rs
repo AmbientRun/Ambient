@@ -179,7 +179,7 @@ impl Model {
                             root_components.remove_self(name());
                         }
 
-                        tracing::info!(
+                        tracing::debug!(
                             "Attaching to {:?} to {entity}",
                             root_components.get(local_bounding_aabb())
                         );

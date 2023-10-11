@@ -165,7 +165,7 @@ impl ModelCrate {
                     async move {
                         let path: PathBuf = path.into();
                         let filename = path.file_name().unwrap().to_str().unwrap().to_string();
-                        tracing::info!("XXX {filename:?}");
+                        tracing::debug!("XXX {filename:?}");
                         None
                     }
                     .boxed()

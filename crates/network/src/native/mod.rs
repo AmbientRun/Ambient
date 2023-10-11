@@ -50,7 +50,6 @@ fn load_root_certs() -> rustls::RootCertStore {
     }
     #[cfg(not(any(feature = "tls-native-roots", feature = "tls-webpki-roots")))]
     {
-        tracing::info!("Creating empty root certificates store");
         rustls::RootCertStore::empty()
     }
 }

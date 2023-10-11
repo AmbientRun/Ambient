@@ -62,7 +62,7 @@ impl AudioStream {
         let format = config.sample_format();
         let config: cpal::StreamConfig = config.into();
 
-        tracing::info!("Audio stream config: {config:?}");
+        tracing::debug!("Audio stream config: {config:?}");
         if config.channels < 1 || config.channels > 2 {
             return Err(Error::InvalidChannelCount(config.channels));
         }

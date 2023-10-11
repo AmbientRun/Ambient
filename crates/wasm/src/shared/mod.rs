@@ -312,7 +312,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
     // TODO: offload to thread
     let task = async move {
         // let result = run_and_catch_panics(|| {
-        tracing::info!("Loading module {}", name);
+        tracing::info!("Loading module {name}");
         let res = module_state_maker(module::ModuleStateArgs {
             component_bytecode: &component_bytecode,
             stdout_output: Box::new({
@@ -329,7 +329,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
             preopened_dir,
         })
         .await;
-        tracing::info!("Done loading module {}", name);
+        tracing::info!("Finished loading module {name}");
 
         async_run.run(move |world| {
             match res {

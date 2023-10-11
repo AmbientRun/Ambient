@@ -152,7 +152,7 @@ impl ElementComponent for SelectArea {
                     let area_offset = get_world_position(world, id).unwrap().xy();
                     set_dragging(Some(*world.resource(cursor_position())));
                     set_area_offset(area_offset);
-                    tracing::info!("Set is_clicking to true");
+                    tracing::debug!("Set is_clicking to true");
                     *is_clicking.lock() = true;
                 }),
             )

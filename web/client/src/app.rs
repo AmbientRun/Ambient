@@ -46,7 +46,7 @@ pub fn MainApp(_hooks: &mut Hooks, server_url: String, settings: Settings) -> El
             UICamera.el().spawn_static(world);
 
             Ok(Box::new(|| {
-                tracing::info!("Disconnecting client");
+                tracing::debug!("Disconnecting client");
             }))
         }),
         create_rpc_registry: cb(create_server_rpc_registry),
