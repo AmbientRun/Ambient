@@ -73,7 +73,7 @@ impl AudioStream {
 
         let weak_mixer = mixer.downgrade();
 
-        let err_func = |err| log::error!("Audio error: {err}");
+        let err_func = |err| tracing::error!("Audio error: {err}");
 
         let channels = mixer_config.channels;
 

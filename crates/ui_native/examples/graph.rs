@@ -47,7 +47,7 @@ impl ElementComponent for Example {
             let mut history = history.clone();
             use_memo_with(hooks, (), move |_, _| {
                 runtime.spawn(async move {
-                    log::info!("Spawning task");
+                    tracing::info!("Spawning task");
                     let mut interval = tokio::time::interval(50.ms());
 
                     let mut upd = tokio::time::interval(250.ms());

@@ -17,5 +17,5 @@ ambient_core = { path = "../core" , version = "0.3.1-dev" }
 ambient_input = { path = "../input" , version = "0.3.1-dev" }
 glam = { workspace = true }
 itertools = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 profiling = { workspace = true }

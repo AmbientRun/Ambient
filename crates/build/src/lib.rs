@@ -193,13 +193,14 @@ pub async fn build_package(
     } else {
         vec![]
     };
-    log::info!("Assets built, building source code...");
+
+    tracing::info!("Assets built, building source code...");
 
     build_rust_if_available(&package_path, &manifest, &build_path, settings.release)
         .await
         .with_context(|| format!("Failed to build Rust in {build_path:?}"))?;
 
-    log::info!("Source built");
+    tracing::info!("Source built");
 
     tokio::fs::write(&output_manifest_path, toml::to_string(&manifest)?).await?;
 
@@ -259,7 +260,7 @@ pub async fn build_assets(
             move |path, contents| {
                 let file_write_semaphore = file_write_semaphore.clone();
                 let path = build_path.join("assets").join(path);
-                log::info!("Writing file: {:?}", path);
+                tracing::info!("Writing file: {:?}", path);
 
                 if for_import_only {
                     if let Some(ext) = path.extension() {
@@ -283,13 +284,13 @@ pub async fn build_assets(
             }
         }),
         on_status: Arc::new(|msg| {
-            log::debug!("{}", msg);
+            tracing::debug!("{}", msg);
             async {}.boxed()
         }),
         on_error: Arc::new({
             let has_errored = has_errored.clone();
             move |err| {
-                log::error!("{:?}", err);
+                tracing::error!("{:?}", err);
                 has_errored.store(true, Ordering::SeqCst);
                 async {}.boxed()
             }

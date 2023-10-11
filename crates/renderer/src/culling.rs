@@ -100,7 +100,7 @@ fn get_culling_layout() -> BindGroupDesc<'static> {
 
 impl Culling {
     pub fn new(gpu: &Gpu, assets: &AssetCache, config: RendererConfig) -> Self {
-        log::debug!("Setting up culling");
+        tracing::debug!("Setting up culling");
         let module = ShaderModule::new("CullingParams", include_file!("culling.wgsl"))
             .with_ident(ShaderIdent::constant(
                 "SHADOW_CASCADES",

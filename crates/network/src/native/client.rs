@@ -398,17 +398,17 @@ async fn open_connection(
     server_addr: ResolvedAddr,
     cert: Option<Certificate>,
 ) -> anyhow::Result<Connection> {
-    log::debug!("Connecting to world instance: {server_addr:?}");
+    tracing::debug!("Connecting to world instance: {server_addr:?}");
 
     let endpoint =
         create_client_endpoint_random_port(cert).context("Failed to create client endpoint")?;
 
-    log::debug!("Got endpoint");
+    tracing::debug!("Got endpoint");
     let conn = endpoint
         .connect(server_addr.addr, &server_addr.host_name)?
         .await?;
 
-    log::debug!("Got connection");
+    tracing::debug!("Got connection");
     Ok(conn)
 }
 

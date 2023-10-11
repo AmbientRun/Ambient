@@ -36,7 +36,7 @@ pub fn initialize(world: &mut World) {
 fn on_datagram(state: SharedServerState, _asset_cache: AssetCache, user_id: &str, bytes: Bytes) {
     let mut state = state.lock();
     let Some(world) = state.get_player_world_mut(user_id) else {
-        log::warn!("Failed to find player world for {user_id} when processing datagram");
+        tracing::warn!("Failed to find player world for {user_id} when processing datagram");
         return;
     };
 
@@ -63,7 +63,7 @@ fn on_unistream(
 ) {
     let mut state = state.lock();
     let Some(world) = state.get_player_world_mut(user_id) else {
-        log::warn!("Failed to find player world for {user_id} when processing unistream");
+        tracing::warn!("Failed to find player world for {user_id} when processing unistream");
         return;
     };
 

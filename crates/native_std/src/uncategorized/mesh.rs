@@ -118,7 +118,7 @@ pub fn generate_tangents(
     };
     let result = mikktspace::generate_tangents(&mut geometry);
     if !result {
-        log::warn!("mikktspace::generate_tangents failed");
+        tracing::warn!("mikktspace::generate_tangents failed");
     }
     tangents
 }

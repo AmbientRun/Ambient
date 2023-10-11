@@ -86,8 +86,6 @@ pub async fn pipeline(
     .collect::<anyhow::Result<HashMap<_, _>>>()
     .unwrap();
 
-    log::debug!("guid_lookup done");
-
     let materials = Arc::new(Mutex::new(UnityMaterials {
         materials: Default::default(),
         ctx: ctx.clone(),

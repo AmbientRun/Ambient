@@ -1,7 +1,10 @@
 use std::{
-    fmt::Debug, sync::{
-        atomic::{AtomicU64, Ordering}, Arc
-    }, time::Duration
+    fmt::Debug,
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Arc,
+    },
+    time::Duration,
 };
 
 use cpal::{ChannelCount, Sample};
@@ -9,7 +12,8 @@ use flume::{Receiver, Sender, TryRecvError};
 use glam::Vec3;
 
 use crate::{
-    spatial::{AudioListener, SpatialParams}, BoxSourceInit, NanoTime, SinkId, SourceInit, StreamConfig
+    spatial::{AudioListener, SpatialParams},
+    BoxSourceInit, NanoTime, SinkId, SourceInit, StreamConfig,
 };
 
 pub const SPEED_OF_SOUND: f32 = 343.0; // m/s
@@ -427,7 +431,7 @@ impl SinkConsumer {
 
             let pos = cursor.saturating_sub(delay);
             if channel == 0 {
-                log::info!("Playing sample: d: {delay} {pos}");
+                tracing::info!("Playing sample: d: {delay} {pos}");
             }
             match current.source.at(pos, channel, config) {
                 Some(v) => {

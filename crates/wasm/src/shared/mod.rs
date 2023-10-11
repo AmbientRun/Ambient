@@ -153,7 +153,7 @@ pub fn systems() -> SystemGroup {
                     let url = match AbsAssetUrl::from_str(&url) {
                         Ok(value) => value,
                         Err(err) => {
-                            log::warn!("Failed to parse bytecode_from_url URL: {:?}", err);
+                            tracing::warn!("Failed to parse bytecode_from_url URL: {:?}", err);
                             continue;
                         }
                     };
@@ -165,7 +165,7 @@ pub fn systems() -> SystemGroup {
                         // hot-reloading working.
                         match download_uncached_bytes(&assets, url.clone()).await {
                             Err(err) => {
-                                log::warn!("Failed to load bytecode from URL: {:?}", err);
+                                tracing::warn!("Failed to load bytecode from URL: {:?}", err);
                             }
                             Ok(bytecode) => {
                                 async_run.run(move |world| {
@@ -312,7 +312,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
     // TODO: offload to thread
     let task = async move {
         // let result = run_and_catch_panics(|| {
-        log::info!("Loading module {}", name);
+        tracing::info!("Loading module {}", name);
         let res = module_state_maker(module::ModuleStateArgs {
             component_bytecode: &component_bytecode,
             stdout_output: Box::new({
@@ -329,7 +329,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
             preopened_dir,
         })
         .await;
-        log::info!("Done loading module {}", name);
+        tracing::info!("Done loading module {}", name);
 
         async_run.run(move |world| {
             match res {
@@ -343,10 +343,10 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
 
                     world.add_component(id, module_state(), sms).unwrap();
 
-                    log::info!("Running startup event for module {name}");
+                    tracing::info!("Running startup event for module {name}");
                     messages::ModuleLoad::new().run(world, Some(id)).unwrap();
 
-                    log::info!("Finished loading module {name}");
+                    tracing::info!("Finished loading module {name}");
                 }
                 Err(err) => update_errors(world, &[(id, format!("{err:?}"))]),
             }

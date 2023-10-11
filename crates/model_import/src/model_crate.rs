@@ -165,7 +165,7 @@ impl ModelCrate {
                     async move {
                         let path: PathBuf = path.into();
                         let filename = path.file_name().unwrap().to_str().unwrap().to_string();
-                        log::info!("XXX {filename:?}");
+                        tracing::info!("XXX {filename:?}");
                         None
                     }
                     .boxed()
@@ -623,7 +623,7 @@ impl ModelCrate {
                 let stream = PxDefaultMemoryOutputStream::new();
                 let mut res = physxx::PxTriangleMeshCookingResult::Success;
                 if !physics.cooking.cook_triangle_mesh(&desc, &stream, &mut res) {
-                    log::error!("Failed to cook triangle mesh: {:?}", res);
+                    tracing::error!("Failed to cook triangle mesh: {:?}", res);
                     return false;
                 }
                 asset_crate
@@ -667,7 +667,7 @@ impl ModelCrate {
             let stream = PxDefaultMemoryOutputStream::new();
             let mut res = physxx::PxConvexMeshCookingResult::Success;
             if !physics.cooking.cook_convex_mesh(&desc, &stream, &mut res) {
-                log::error!("Failed to cook convex mesh: {:?}", res);
+                tracing::error!("Failed to cook convex mesh: {:?}", res);
                 return None;
             }
             Some(

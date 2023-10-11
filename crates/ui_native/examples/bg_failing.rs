@@ -20,7 +20,7 @@ impl ElementComponent for Example {
         let runtime = hooks.world.resource(runtime()).clone();
         use_memo_with(hooks, (), move |_, _| {
             runtime.spawn(async move {
-                log::info!("Spawning task");
+                tracing::info!("Spawning task");
                 use ambient_native_std::IntoDuration;
                 tokio::time::sleep(5.secs()).await;
                 set_k(5.0)

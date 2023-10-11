@@ -93,7 +93,7 @@ pub fn client_systems() -> SystemGroup {
                     let decal = if let Some(url) = decal.abs() {
                         url
                     } else {
-                        log::error!("Decal was not an absolute url: {}", decal);
+                        tracing::error!("Decal was not an absolute url: {}", decal);
                         continue;
                     };
                     let assets = world.resource(asset_cache()).clone();
@@ -146,7 +146,7 @@ pub fn client_systems() -> SystemGroup {
                     let url = match AbsAssetUrl::from_str(&url) {
                         Ok(value) => value,
                         Err(err) => {
-                            log::warn!("Failed to parse pbr_material_from_url url: {:?}", err);
+                            tracing::warn!("Failed to parse pbr_material_from_url url: {:?}", err);
                             continue;
                         }
                     };

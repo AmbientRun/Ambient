@@ -12,13 +12,20 @@ pub mod web;
 
 use clap::Parser;
 use cli::Cli;
+use tracing_subscriber::filter::LevelFilter;
 
 async fn run() -> anyhow::Result<()> {
+    // A very minimal and short log output
+    tracing_subscriber::fmt()
+        .with_ansi(true)
+        .with_max_level(LevelFilter::INFO)
+        .without_time()
+        .with_target(false)
+        .init();
+
     if !std::path::Path::new("schema/schema/ambient.toml").exists() {
         anyhow::bail!("ambient.toml not found. Please run this from the root of the Ambient repository (preferably using `cargo campfire`).");
     }
-
-    simplelog::SimpleLogger::init(simplelog::LevelFilter::Info, Default::default())?;
 
     let cli = Cli::parse();
 
@@ -46,7 +53,7 @@ fn main() -> ExitCode {
     match rt.block_on(run()) {
         Ok(()) => ExitCode::SUCCESS,
         Err(err) => {
-            log::error!("{:?}", err);
+            tracing::error!("{:?}", err);
             ExitCode::FAILURE
         }
     }

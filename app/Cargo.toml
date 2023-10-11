@@ -45,15 +45,13 @@ ambient_shared_types = { path = "../shared_crates/shared_types", features = [
 
 tracing-tree = { workspace = true, optional = true }
 tracing-stackdriver = { workspace = true, optional = true }
-tracing-subscriber = { workspace = true, optional = true }
-tracing-log = { workspace = true, optional = true }
+tracing-subscriber = { workspace = true }
 time = { workspace = true }
 anyhow = { workspace = true }
 clap = { workspace = true }
 convert_case = { workspace = true }
 env_logger = { workspace = true }
 glam = { workspace = true }
-log = { workspace = true }
 parking_lot = { workspace = true }
 rustls-pemfile = { workspace = true }
 serde = { workspace = true }
@@ -75,13 +73,12 @@ rusty-hook = "^0.11.2"
 
 [features]
 no_bundled_certs = []
-default = ["tls-webpki-roots"]
+default = ["tls-webpki-roots", "tracing-tree"]
 slim = ["stackdriver"]
 production = ["assimp"]
 profile = ["ambient_app/profile"]
 assimp = ["ambient_model_import/russimp"]
-stackdriver = ["tracing", "tracing-stackdriver"]
-tracing = ["tracing-tree", "tracing-subscriber", "tracing-log"]
+stackdriver = ["tracing-stackdriver"]
 tls-native-roots = ["ambient_network/tls-native-roots"]
 tls-webpki-roots = ["ambient_network/tls-webpki-roots"]
 hotload-includes = [

@@ -21,7 +21,6 @@ serde = { workspace = true }
 thiserror = { workspace = true }
 profiling = { workspace = true }
 yaml-rust = { workspace = true }
-log = { workspace = true }
 paste = { workspace = true }
 atomic_refcell = { workspace = true }
 serde_json = { workspace = true }

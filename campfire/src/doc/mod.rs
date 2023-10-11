@@ -60,7 +60,7 @@ fn api(open: bool, args: &[String]) -> anyhow::Result<()> {
 // deleted it entirely
 #[allow(dead_code)]
 fn pipeline() -> anyhow::Result<()> {
-    log::info!("Generating pipeline.d.ts...");
+    tracing::info!("Generating pipeline.d.ts...");
 
     let ctx = context::Context::new(&[
         Path::new("crates/physics/Cargo.toml"),
@@ -68,7 +68,7 @@ fn pipeline() -> anyhow::Result<()> {
         Path::new("crates/build/Cargo.toml"),
     ])?;
 
-    log::info!("Built context from rustdoc.");
+    tracing::info!("Built context from rustdoc.");
 
     let (build_crate, pipeline) = ctx
         .get("ambient_build::pipelines::Pipeline")
@@ -81,7 +81,7 @@ fn pipeline() -> anyhow::Result<()> {
         std::path::Path::new("docs/src/reference/pipeline.d.ts"),
     )?;
 
-    log::info!("Done generating pipeline.d.ts.");
+    tracing::info!("Done generating pipeline.d.ts.");
 
     Ok(())
 }
