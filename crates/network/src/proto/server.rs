@@ -188,7 +188,7 @@ impl ServerProtoState {
     #[tracing::instrument(level = "debug")]
     pub fn process_disconnect(&mut self, data: &ConnectionData) {
         if let Self::Connected(ConnectedClient { user_id, .. }) = self {
-            tracing::info!(?user_id, "User disconnected");
+            tracing::info!(user_id, "User disconnected");
             let mut state = data.state.lock();
 
             let Some(player) = state.players.get(&**user_id) else {
