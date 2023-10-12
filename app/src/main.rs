@@ -145,7 +145,7 @@ impl LaunchJson {
 }
 
 fn setup_logging() -> anyhow::Result<()> {
-    // This fixes the `<unknown time>` in log formatting
+    // This fixes the `<unknown time>` in log formatting, an alternative is to use UTC time
     unsafe { time::util::local_offset::set_soundness(time::util::local_offset::Soundness::Unsound) }
 
     /// Create a layer of filtering before to remove info statements from external crates
@@ -185,14 +185,6 @@ fn setup_logging() -> anyhow::Result<()> {
             targets = targets.with_target(module, *level);
         }
     }
-
-    // BLOCKING: pending https://github.com/tokio-rs/tracing/issues/2507
-    // let modules: Vec<_> = MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| format!("{v}={level}"))).collect();
-
-    // eprintln!("{modules:#?}");
-
-    // let mut filter = std::env::var("RUST_LOG").unwrap_or_default().parse::<tracing_subscriber::filter::Targets>().unwrap_or_default();
-    // filter.extend(MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| (v, level.as_trace()))));
 
     let env_filter = EnvFilter::builder()
         .with_default_directive(Level::INFO.into())
