@@ -26,8 +26,7 @@ fn get_speed(id: EntityId, data: &CharacterMovement) -> Vec2 {
         1.
     };
     let strafe_mul = get_component(id, strafe_speed_multiplier()).unwrap_or(0.8);
-    let speed = speed * run_mul * air_mul * vec2(strafe_mul, 1.);
-    speed
+    speed * run_mul * air_mul * vec2(strafe_mul, 1.)
 }
 
 #[main]
