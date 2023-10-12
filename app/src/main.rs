@@ -210,7 +210,7 @@ fn setup_logging() -> anyhow::Result<()> {
     }
 
     #[cfg(all(not(feature = "stackdriver"), not(feature = "tracing-tree")))]
-    let format_layer = tracing_subscriber::fmt::Layer::new().with_timer(
+    let format_layer = tracing_subscriber::fmt::Layer::new().compact().with_timer(
         tracing_subscriber::fmt::time::LocalTime::new(
             time::format_description::parse("[hour]:[minute]:[second]")
                 .expect("format string should be valid!"),
