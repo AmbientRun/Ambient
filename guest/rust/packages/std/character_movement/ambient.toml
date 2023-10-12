@@ -24,3 +24,4 @@ extends = ["ambient_core::physics::CharacterController"]
 "unit_schema::run_speed_multiplier" = {}
 "unit_schema::speed" = {}
 "unit_schema::strafe_speed_multiplier" = {}
+"unit_schema::air_speed_multiplier" = {}
