@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_core::player::get_by_user_id;
-use ambient_ecs::{ComponentRegistry, FrozenWorldDiff, WorldDiff, WorldStreamFilter};
+use ambient_ecs::{ComponentRegistry, FrozenWorldDiff, RealSize, WorldDiff, WorldStreamFilter};
 use ambient_native_std::{fps_counter::FpsSample, log_result};
 use anyhow::Context;
 use bytes::Bytes;
@@ -378,50 +378,60 @@ pub async fn handle_diffs<S>(
     #[cfg(debug_assertions)]
     let mut deserializer = DiffSerializer::default();
 
+    let mut needs_external_components = false;
+    let mut sending_future = None;
+
     loop {
-        let msg = tokio::select! {
-            _ = external_components_rx.recv_async() => {
-                serializer.serialize_external_components().unwrap()
+        if let Some(sending) = sending_future.as_mut() {
+            if let Err(err) = sending.await {
+                tracing::error!(?err, "Failed to send world diff.");
+                break;
             }
-            Ok(diff) = diffs_rx.recv_async() => {
-                let _span = tracing::debug_span!("handle_diffs prep").entered();
+            sending_future = None;
+        } else {
+            let msg = tokio::select! {
+                _ = external_components_rx.recv_async() => {
+                    serializer.serialize_external_components().unwrap()
+                }
+                Ok(diff) = diffs_rx.recv_async() => {
+                    let _span = tracing::debug_span!("handle_diffs prep").entered();
 
-                // get all diffs waiting in the channel to clear the queue
-                let mut diffs = Vec::with_capacity(diffs_rx.len() + 1);
-                diffs.push(diff);
-                diffs.extend(diffs_rx.drain());
+                    // get all diffs waiting in the channel to clear the queue
+                    let mut diffs = Vec::with_capacity(diffs_rx.len() + 1);
+                    diffs.push(diff);
+                    diffs.extend(diffs_rx.drain());
 
-                // merge them together, deduplicate and serialize
-                let merged_diff = FrozenWorldDiff::merge(&diffs);
-                let merged_diffs_count = merged_diff.changes.len();
-                let final_diff = deduplicator.deduplicate(merged_diff);
-                let msg = serializer.serialize(&final_diff).unwrap();
-                tracing::trace!(
-                    diffs_count = diffs.len(),
-                    merged_diffs_count,
-                    final_diffs_count = final_diff.changes.len(),
-                    bytes = msg.len(),
+                    // merge them together, deduplicate and serialize
+                    let merged_diff = FrozenWorldDiff::merge(&diffs);
+                    let merged_diffs_count = merged_diff.changes.len();
+                    let final_diff = deduplicator.deduplicate(merged_diff);
+                    let msg = serializer.serialize(&final_diff).unwrap();
+                    tracing::trace!(
+                        diffs_count = diffs.len(),
+                        merged_diffs_count,
+                        final_diffs_count = final_diff.changes.len(),
+                        bytes = msg.len(),
+                    );
+
+                    tracing::error!("KUBA: diffs_len={} msg bytes={} raw bytes={} {}", diffs.len(), msg.len(), bincode::serialized_size(&diffs).unwrap(), diffs.real_size());
+
+                    msg
+                }
+            };
+
+            #[cfg(debug_assertions)]
+            {
+                let deserialized = deserializer.deserialize(msg.clone());
+                debug_assert!(
+                    deserialized.is_ok(),
+                    "Diff should deserialize as WorldDiff correctly: {:?}",
+                    deserialized,
                 );
-
-                msg
             }
-        };
 
-        #[cfg(debug_assertions)]
-        {
-            let deserialized = deserializer.deserialize(msg.clone());
-            debug_assert!(
-                deserialized.is_ok(),
-                "Diff should deserialize as WorldDiff correctly: {:?}",
-                deserialized,
-            );
-        }
-
-        let span = tracing::debug_span!("send_world_diff");
-        tracing::trace!(diff=?msg);
-        if let Err(err) = stream.send_bytes(msg).instrument(span).await {
-            tracing::error!(?err, "Failed to send world diff.");
-            break;
+            let span = tracing::debug_span!("send_world_diff");
+            tracing::trace!(diff=?msg);
+            sending_future = Some(stream.send_bytes(msg).instrument(span));
         }
     }
 }
