@@ -14,6 +14,7 @@ pub use ambient_ecs::generated::wasm::components::*;
 use ambient_sys::task::PlatformBoxFuture;
 pub use internal::{messenger, module_bytecode, module_errors, module_state, module_state_maker};
 pub use module::*;
+use tracing::{Instrument, Span};
 
 use std::{path::Path, str::FromStr, sync::Arc};
 
@@ -303,6 +304,8 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
         .map(|x| x.clone())
         .unwrap_or_else(|_| "Unknown".to_string());
 
+    let span = tracing::info_span!("load_module").entered();
+
     #[cfg(not(target_os = "unknown"))]
     let preopened_dir = world
         .resource_opt(preopened_dir())
@@ -331,27 +334,31 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
         .await;
         tracing::info!("Finished loading module {name}");
 
+        let span = Span::current();
         async_run.run(move |world| {
-            match res {
-                Ok(mut sms) => {
-                    // Subscribe the module to messages that it should be aware of.
-                    let autosubscribe_messages =
-                        [messages::Frame::id(), messages::ModuleLoad::id()];
-                    for id in autosubscribe_messages {
-                        sms.listen_to_message(id.to_string());
+            span.in_scope(|| {
+                match res {
+                    Ok(mut sms) => {
+                        // Subscribe the module to messages that it should be aware of.
+                        let autosubscribe_messages =
+                            [messages::Frame::id(), messages::ModuleLoad::id()];
+                        for id in autosubscribe_messages {
+                            sms.listen_to_message(id.to_string());
+                        }
+
+                        world.add_component(id, module_state(), sms).unwrap();
+
+                        tracing::info!("Running startup event for module {name}");
+                        messages::ModuleLoad::new().run(world, Some(id)).unwrap();
+
+                        tracing::info!("Finished loading module {name}");
                     }
-
-                    world.add_component(id, module_state(), sms).unwrap();
-
-                    tracing::info!("Running startup event for module {name}");
-                    messages::ModuleLoad::new().run(world, Some(id)).unwrap();
-
-                    tracing::info!("Finished loading module {name}");
+                    Err(err) => update_errors(world, &[(id, format!("{err:?}"))]),
                 }
-                Err(err) => update_errors(world, &[(id, format!("{err:?}"))]),
-            }
+            })
         });
-    };
+    }
+    .in_current_span();
 
     #[cfg(target_os = "unknown")]
     rt.spawn_local(task);

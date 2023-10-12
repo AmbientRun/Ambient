@@ -48,6 +48,7 @@ pub async fn build_package(
     package_path: &Path,
     root_build_path: &Path,
 ) -> anyhow::Result<BuildResult> {
+    let _span = tracing::info_span!("register_semantic", ?package_path).entered();
     let mut semantic = Semantic::new(settings.deploy).await?;
 
     let package_item_id = add_to_semantic_and_register_components(
@@ -73,7 +74,11 @@ pub async fn build_package(
                 .to_owned(),
         )
     };
+
+    drop(_span);
+
     let package_name = &manifest.package.name;
+    let _span = tracing::info_span!("build_package", name = package_name).entered();
 
     // Bodge: for local builds, rewrite the dependencies to be relative to this package,
     // assuming that they are all in the same folder

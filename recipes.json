@@ -17,7 +17,7 @@
     "cmd": "cargo run --release -- run ./guest/rust/examples/controllers/third_person_camera"
   },
   "third-person-camera": {
-    "cmd": "cargo run -- run ./guest/rust/examples/controllers/third_person_camera --debugger"
+    "cmd": "cargo run --features tracing-tree -- run ./guest/rust/examples/controllers/third_person_camera --debugger"
   },
   "primitives": {
     "cmd": "cargo run -- run ./guest/rust/examples/basics/primitives/"
