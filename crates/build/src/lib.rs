@@ -265,7 +265,7 @@ pub async fn build_assets(
             move |path, contents| {
                 let file_write_semaphore = file_write_semaphore.clone();
                 let path = build_path.join("assets").join(path);
-                tracing::info!("Writing file: {:?}", path);
+                tracing::trace!("Writing file: {:?}", path);
 
                 if for_import_only {
                     if let Some(ext) = path.extension() {
