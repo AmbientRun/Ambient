@@ -1,12 +1,14 @@
-use std::sync::Arc;
+use std::{pin::Pin, sync::Arc};
 
 use ambient_core::player::get_by_user_id;
 use ambient_ecs::{ComponentRegistry, FrozenWorldDiff, RealSize, WorldDiff, WorldStreamFilter};
 use ambient_native_std::{fps_counter::FpsSample, log_result};
 use anyhow::Context;
 use bytes::Bytes;
-use flume::Receiver;
-use futures::{Stream, StreamExt};
+use futures::{
+    future::{BoxFuture, OptionFuture},
+    Future, Stream, StreamExt,
+};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
 use tracing::{debug_span, Instrument};
 use uuid::Uuid;
@@ -21,7 +23,7 @@ use crate::{
         bi_stream_handlers, create_player_entity_data, datagram_handlers, uni_stream_handlers,
     },
     server::{SharedServerState, MAIN_INSTANCE_ID},
-    stream,
+    stream, NetworkError,
 };
 
 use super::ClientRequest;
@@ -358,7 +360,7 @@ pub async fn handle_stats<S>(
 
 /// Sends the world diffs over the network
 pub async fn handle_diffs<S>(
-    mut stream: stream::FramedSendStream<WorldDiff, S>,
+    stream: stream::FramedSendStream<WorldDiff, S>,
     diffs_rx: flume::Receiver<FrozenWorldDiff>,
 ) where
     S: Unpin + AsyncWrite,
@@ -379,44 +381,65 @@ pub async fn handle_diffs<S>(
     let mut deserializer = DiffSerializer::default();
 
     let mut needs_external_components = false;
-    let mut sending_future = None;
+    let mut intermediate_diff = Vec::new();
+
+    let mut stream = Some(stream);
+    let mut sending_future = OptionFuture::default();
 
     loop {
-        if let Some(sending) = sending_future.as_mut() {
-            if let Err(err) = sending.await {
-                tracing::error!(?err, "Failed to send world diff.");
-                break;
+        tokio::select! {
+            // check if sending has finished (if any)
+            Some(sending_result) = &mut sending_future => {
+                assert!(stream.is_none());
+                match sending_result {
+                    Ok(returned_stream) => {
+                        stream = Some(returned_stream);
+                        sending_future = None.into();
+                    }
+                    Err(err) => {
+                        tracing::error!(?err, "Failed to send world diff.");
+                        break;
+                    }
+                }
             }
-            sending_future = None;
-        } else {
-            let msg = tokio::select! {
-                _ = external_components_rx.recv_async() => {
-                    serializer.serialize_external_components().unwrap()
-                }
-                Ok(diff) = diffs_rx.recv_async() => {
-                    let _span = tracing::debug_span!("handle_diffs prep").entered();
+            _ = external_components_rx.recv_async() => {
+                needs_external_components = true;
+            }
+            Ok(diff) = diffs_rx.recv_async() => {
+                // FIXME: proper processing
+                intermediate_diff.push(diff);
+            }
+        }
 
-                    // get all diffs waiting in the channel to clear the queue
-                    let mut diffs = Vec::with_capacity(diffs_rx.len() + 1);
-                    diffs.push(diff);
-                    diffs.extend(diffs_rx.drain());
+        // only if we are ready to send something and there's something to send (either external components or some diffs)
+        if stream.is_some() && (needs_external_components || !intermediate_diff.is_empty()) {
+            let msg = if needs_external_components {
+                needs_external_components = false;
+                serializer.serialize_external_components().unwrap()
+            } else {
+                // FIXME
+                let diffs: Vec<_> = intermediate_diff.drain(..).collect();
+                // merge them together, deduplicate and serialize
+                let merged_diff = FrozenWorldDiff::merge(&diffs);
+                let merged_diffs_count = merged_diff.changes.len();
+                let final_diff = deduplicator.deduplicate(merged_diff);
+                let msg = serializer.serialize(&final_diff).unwrap();
+                tracing::trace!(
+                    diffs_count = diffs.len(),
+                    merged_diffs_count,
+                    final_diffs_count = final_diff.changes.len(),
+                    bytes = msg.len(),
+                );
 
-                    // merge them together, deduplicate and serialize
-                    let merged_diff = FrozenWorldDiff::merge(&diffs);
-                    let merged_diffs_count = merged_diff.changes.len();
-                    let final_diff = deduplicator.deduplicate(merged_diff);
-                    let msg = serializer.serialize(&final_diff).unwrap();
-                    tracing::trace!(
-                        diffs_count = diffs.len(),
-                        merged_diffs_count,
-                        final_diffs_count = final_diff.changes.len(),
-                        bytes = msg.len(),
-                    );
+                tracing::error!(
+                    "KUBA: diffs_len={} msg bytes={} raw bytes={} {}",
+                    diffs.len(),
+                    msg.len(),
+                    bincode::serialized_size(&diffs).unwrap(),
+                    diffs.real_size()
+                );
 
-                    tracing::error!("KUBA: diffs_len={} msg bytes={} raw bytes={} {}", diffs.len(), msg.len(), bincode::serialized_size(&diffs).unwrap(), diffs.real_size());
-
-                    msg
-                }
+                msg
             };
 
             #[cfg(debug_assertions)]
@@ -430,13 +453,22 @@ pub async fn handle_diffs<S>(
             }
 
             let span = tracing::debug_span!("send_world_diff");
-            tracing::trace!(diff=?msg);
-            sending_future = Some(stream.send_bytes(msg).instrument(span));
+            sending_future = Some({
+                let mut stream = stream.take().unwrap();
+                Box::pin(async move {
+                    stream
+                        .send_bytes(msg)
+                        .instrument(span)
+                        .await
+                        .map(|_| stream)
+                })
+            })
+            .into();
         }
     }
 }
 
-fn create_external_components_trigger() -> (Receiver<()>, Arc<dyn Fn() + Send + Sync>) {
+fn create_external_components_trigger() -> (flume::Receiver<()>, Arc<dyn Fn() + Send + Sync>) {
     let (tx, rx) = flume::unbounded();
     (
         rx,
@@ -445,3 +477,35 @@ fn create_external_components_trigger() -> (Receiver<()>, Arc<dyn Fn() + Send + 
         }),
     )
 }
+
+// enum WrappedStream<S> {
+//     Waiting(stream::FramedSendStream<WorldDiff, S>),
+//     Sending(BoxFuture<'static, Result<stream::FramedSendStream<WorldDiff, S>, NetworkError>>),
+// }
+
+// impl<S> WrappedStream<S> where S: Unpin + AsyncWrite {
+//     fn new(stream: stream::FramedSendStream<WorldDiff, S>) -> Self {
+//         Self::Waiting(stream)
+//     }
+
+//     fn send(&mut self, data: Bytes) {
+//         if let Self::Waiting(stream) = *self {
+//             *self = Self::Sending(Box::pin(async move {
+//                 stream.send_bytes(data).await.map(|_| stream)
+//             }));
+//         } else {
+//             panic!("Can't send while already sending");
+//         }
+//     }
+
+//     async fn wait(&mut self) -> Result<(), NetworkError> {
+//         match self {
+//             Self::Waiting(_) => Ok(()),
+//             Self::Sending(fut) => {
+//                 let stream = fut.await?;
+//                 *self = Self::Waiting(stream);
+//                 Ok(())
+//             }
+//         }
+//     }
+// }
