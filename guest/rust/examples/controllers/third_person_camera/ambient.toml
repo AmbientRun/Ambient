@@ -9,8 +9,8 @@ content = { type = "Playable", example = true }
 ambient_version = "0.3.1-nightly-2023-10-12"
 
 [dependencies]
-base_assets = { path = "../../../packages/std/base_assets", deployment = "372PfA9mM0vN2eB6x8mNq" }
-character_controller = { path = "../../../packages/std/character_controller", deployment = "1jGgFMoKgmGtuIaaMYI5ej" }
-character_animation = { path = "../../../packages/std/character_animation", deployment = "KMNOw3Ruy5HbAbBBNBRPG" }
-hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "6oSnvSP52VDlD7DkJ0Mbq6" }
-nameplates = { path = "../../../packages/std/nameplates", deployment = "5FsizUFmqKFVQ8D3WFTyVw" }
+base_assets = { path = "../../../packages/std/base_assets", deployment = "77NoFn0xT16GGZJBtoTuXX" }
+character_controller = { path = "../../../packages/std/character_controller", deployment = "4ROVXWTutQa1GLXkc9sGcW" }
+character_animation = { path = "../../../packages/std/character_animation", deployment = "4Q1sgT3DbV5wUaYjU9jWrg" }
+hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "6dFjeONEIDIc8v55gQDk4g" }
+nameplates = { path = "../../../packages/std/nameplates", deployment = "2KrkNqelfPuf9JXN6wJSK5" }
