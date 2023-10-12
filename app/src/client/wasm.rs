@@ -22,7 +22,7 @@ pub fn initialize(
                 MessageType::Info => tracing::info!(%module_name, "{}", message),
                 MessageType::Warn => tracing::warn!(%module_name, "{}", message),
                 MessageType::Error => tracing::error!(%module_name, "{}", message),
-                MessageType::Stdout => tracing::info!(%module_name, "stdout {}", message),
+                MessageType::Stdout => tracing::info!(%module_name, "stdout: {}", message),
                 MessageType::Stderr => tracing::info!(%module_name, "stderr: {}", message),
             };
         },
