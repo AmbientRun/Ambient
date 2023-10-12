@@ -113,7 +113,7 @@ pub fn systems() -> SystemGroup {
                     let url = match AbsAssetUrl::from_str(&url) {
                         Ok(value) => value,
                         Err(err) => {
-                            log::warn!("Failed to parse pbr_material_from_url url: {:?}", err);
+                            tracing::warn!("Failed to parse pbr_material_from_url url: {:?}", err);
                             continue;
                         }
                     };
@@ -122,7 +122,7 @@ pub fn systems() -> SystemGroup {
                     world.resource(runtime()).spawn(async move {
                         match PbrMaterialFromUrl(url).get(&assets).await {
                             Err(err) => {
-                                log::warn!("Failed to load pbr material from url: {:?}", err);
+                                tracing::warn!("Failed to load pbr material from url: {:?}", err);
                             }
                             Ok(mat) => {
                                 async_run.run(move |world| {
@@ -168,7 +168,7 @@ pub fn systems() -> SystemGroup {
             .to_system(|q, world, qs, _| {
                 for (id, (p_mesh, p_lod), (primitives,)) in q.iter(world, qs) {
                     if primitives.len() > MAX_PRIMITIVE_COUNT {
-                        log::warn!(
+                        tracing::warn!(
                             "Entity {} has more than {MAX_PRIMITIVE_COUNT} primitives",
                             id
                         );

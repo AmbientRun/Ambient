@@ -352,10 +352,6 @@ impl TreeRenderer {
                 .commands
                 .set_len(gpu, draw_commands.len() as _);
 
-            tracing::info!(
-                ?total_primitives,
-                "Writing draw commands {draw_commands:#?}"
-            );
             collect_state.commands.write(gpu, 0, &draw_commands);
 
             {

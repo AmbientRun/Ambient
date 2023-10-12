@@ -50,8 +50,6 @@ impl Connection {
             .map_err(|e| anyhow!("{e:?}"))
             .context("While waiting for ready handshake")?;
 
-        tracing::info!("Connection ready");
-
         let datagrams = transport.datagrams();
         let datagrams = datagrams.writable().get_writer().unwrap();
         let incoming_datagrams = transport.datagrams().readable();

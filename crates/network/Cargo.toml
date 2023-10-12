@@ -37,13 +37,12 @@ thiserror = { workspace = true }
 bincode = { workspace = true }
 glam = { workspace = true }
 profiling = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 bytes = { workspace = true }
 parking_lot = { workspace = true }
 wgpu = { workspace = true }
 flume = { workspace = true }
 anyhow = { workspace = true }
-tracing = { workspace = true }
 colored = { workspace = true }
 pin-project = { workspace = true }
 uuid = { workspace = true }

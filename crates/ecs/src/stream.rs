@@ -363,7 +363,7 @@ impl WorldChange {
                     if panic_on_error {
                         panic!("WorldChange::apply spawn_mirror entity already exists: {id:?}");
                     } else {
-                        log::error!(
+                        tracing::error!(
                             "WorldChange::apply spawn_mirror entity already exists: {id:?}"
                         );
                     }

@@ -36,7 +36,7 @@ impl<
             match serde_json::from_slice(&data) {
                 Ok(value) => return Ok(value),
                 Err(err) => {
-                    log::warn!("Failed to parse cached json asset: {:?}", err);
+                    tracing::warn!("Failed to parse cached json asset: {:?}", err);
                 }
             }
         }

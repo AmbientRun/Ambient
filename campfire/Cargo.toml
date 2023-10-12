@@ -7,7 +7,8 @@ publish = false
 [dependencies]
 anyhow = { version = "1.0", features = [] }
 clap = { workspace = true, features = ["derive"] }
-log = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 toml_edit = { workspace = true }
@@ -16,10 +17,12 @@ toml = { workspace = true }
 sha2 = { workspace = true }
 data-encoding = { workspace = true }
 
+notify = { version = "6.1", optional = true }
+flume = { version = "0.11", optional = true }
+
 which = "4.4"
 rustdoc-json = "0.8.7"
 rustdoc-types = "0.20.0"
-simplelog = "0.12.1"
 cargo_toml = "0.15"
 guppy = "0.15"
 indicatif = "0.17.6"
@@ -29,9 +32,6 @@ num_cpus = "1.16.0"
 home = "0.5"
 x509-certificate = "0.21.0"
 spki = "0.7"
-
-notify = { version = "6.1", optional = true }
-flume = { version = "0.11", optional = true }
 
 # Hope this won't cause any issues!
 ambient_shared_types = { path = "../shared_crates/shared_types" }

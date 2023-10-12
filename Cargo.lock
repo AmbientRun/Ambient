@@ -155,7 +155,6 @@ dependencies = [
  "glam 0.24.2",
  "image",
  "image_hasher",
- "log",
  "parking_lot",
  "rpassword",
  "rustls-pemfile",
@@ -169,7 +168,6 @@ dependencies = [
  "toml_edit",
  "tower-http",
  "tracing",
- "tracing-log",
  "tracing-stackdriver",
  "tracing-subscriber",
  "tracing-tree",
@@ -193,9 +191,9 @@ dependencies = [
  "async-trait",
  "glam 0.24.2",
  "itertools",
- "log",
  "ordered-float 3.9.1",
  "serde",
+ "tracing",
 ]
 
 [[package]]
@@ -330,7 +328,6 @@ dependencies = [
  "hound",
  "itertools",
  "lewton",
- "log",
  "lyon",
  "macroquad",
  "num",
@@ -382,7 +379,6 @@ dependencies = [
  "glob",
  "image",
  "itertools",
- "log",
  "parking_lot",
  "rand 0.8.5",
  "relative-path",
@@ -442,9 +438,9 @@ dependencies = [
  "ambient_native_std",
  "ambient_sys",
  "anyhow",
- "log",
  "reqwest",
  "serde",
+ "tracing",
 ]
 
 [[package]]
@@ -527,7 +523,7 @@ dependencies = [
  "ambient_renderer",
  "env_logger 0.10.0",
  "glam 0.24.2",
- "log",
+ "tracing",
 ]
 
 [[package]]
@@ -540,12 +536,12 @@ dependencies = [
  "ambient_sys",
  "anyhow",
  "flume 0.11.0",
- "log",
  "md-5",
  "prost",
  "tokio",
  "tokio-stream",
  "tonic",
+ "tracing",
  "walkdir",
 ]
 
@@ -576,7 +572,6 @@ dependencies = [
  "erased-serde",
  "glam 0.24.2",
  "itertools",
- "log",
  "once_cell",
  "parking_lot",
  "paste",
@@ -642,7 +637,6 @@ dependencies = [
  "glam 0.24.2",
  "image",
  "itertools",
- "log",
  "ordered-float 3.9.1",
  "parking_lot",
  "physxx",
@@ -742,10 +736,10 @@ dependencies = [
  "bytemuck",
  "dashmap",
  "glam 0.24.2",
- "log",
  "once_cell",
  "profiling",
  "serde",
+ "tracing",
  "wgpu 0.16.3",
 ]
 
@@ -767,7 +761,6 @@ dependencies = [
  "glam 0.24.2",
  "image",
  "itertools",
- "log",
  "ndarray",
  "ordered-float 3.9.1",
  "parking_lot",
@@ -866,8 +859,8 @@ dependencies = [
  "ambient_input",
  "glam 0.24.2",
  "itertools",
- "log",
  "profiling",
+ "tracing",
 ]
 
 [[package]]
@@ -945,7 +938,6 @@ dependencies = [
  "image",
  "indexmap 2.0.2",
  "itertools",
- "log",
  "ordered-float 3.9.1",
  "physxx",
  "relative-path",
@@ -953,6 +945,7 @@ dependencies = [
  "russimp",
  "serde_json",
  "tokio",
+ "tracing",
  "winit",
 ]
 
@@ -976,7 +969,6 @@ dependencies = [
  "data-encoding",
  "futures",
  "glam 0.24.2",
- "log",
  "mikktspace",
  "ordered-float 3.9.1",
  "percent-encoding",
@@ -1056,7 +1048,6 @@ dependencies = [
  "http",
  "itertools",
  "js-sys",
- "log",
  "parking_lot",
  "pin-project",
  "profiling",
@@ -1194,7 +1185,6 @@ dependencies = [
  "futures",
  "glam 0.24.2",
  "itertools",
- "log",
  "ordered-float 3.9.1",
  "parking_lot",
  "physxx",
@@ -1299,7 +1289,7 @@ dependencies = [
  "async-trait",
  "bytemuck",
  "glam 0.24.2",
- "log",
+ "tracing",
  "wgpu 0.16.3",
 ]
 
@@ -1331,7 +1321,6 @@ dependencies = [
  "env_logger 0.10.0",
  "glam 0.24.2",
  "itertools",
- "log",
  "ordered-float 3.9.1",
  "parking_lot",
  "profiling",
@@ -1504,8 +1493,8 @@ dependencies = [
  "async-trait",
  "glam 0.24.2",
  "glyph_brush",
- "log",
  "parking_lot",
+ "tracing",
  "wgpu 0.16.3",
 ]
 
@@ -1565,7 +1554,6 @@ dependencies = [
  "fixed-vec-deque",
  "glam 0.24.2",
  "itertools",
- "log",
  "parking_lot",
  "rand 0.8.5",
  "tokio",
@@ -1615,7 +1603,6 @@ dependencies = [
  "futures",
  "glam 0.24.2",
  "itertools",
- "log",
  "once_cell",
  "parking_lot",
  "paste",
@@ -1675,7 +1662,6 @@ dependencies = [
  "flume 0.11.0",
  "glam 0.24.2",
  "itertools",
- "log",
  "parking_lot",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
@@ -2232,7 +2218,6 @@ dependencies = [
  "home",
  "indicatif",
  "itertools",
- "log",
  "nix 0.26.4",
  "notify",
  "num_cpus",
@@ -2241,11 +2226,12 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
- "simplelog",
  "spki",
  "tokio",
  "toml 0.7.8",
  "toml_edit",
+ "tracing",
+ "tracing-subscriber",
  "which",
  "x509-certificate",
 ]
@@ -7089,17 +7075,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
 
 [[package]]
-name = "simplelog"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "acee08041c5de3d5048c8b3f6f13fafb3026b24ba43c6a695a0c76179b844369"
-dependencies = [
- "log",
- "termcolor",
- "time",
-]
-
-[[package]]
 name = "slab"
 version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8006,12 +7981,12 @@ dependencies = [
 
 [[package]]
 name = "tracing-tree"
-version = "0.2.4"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92d6b63348fad3ae0439b8bebf8d38fb5bda0b115d7a8a7e6f165f12790c58c3"
+checksum = "2ec6adcab41b1391b08a308cc6302b79f8095d1673f6947c2dc65ffb028b0b2d"
 dependencies = [
- "is-terminal",
  "nu-ansi-term",
+ "time",
  "tracing-core",
  "tracing-log",
  "tracing-subscriber",

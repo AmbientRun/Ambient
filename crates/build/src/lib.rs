@@ -48,6 +48,7 @@ pub async fn build_package(
     package_path: &Path,
     root_build_path: &Path,
 ) -> anyhow::Result<BuildResult> {
+    let _span = tracing::info_span!("register_semantic", ?package_path).entered();
     let mut semantic = Semantic::new(settings.deploy).await?;
 
     let package_item_id = add_to_semantic_and_register_components(
@@ -73,7 +74,11 @@ pub async fn build_package(
                 .to_owned(),
         )
     };
+
+    drop(_span);
+
     let package_name = &manifest.package.name;
+    let _span = tracing::info_span!("build_package", name = package_name).entered();
 
     // Bodge: for local builds, rewrite the dependencies to be relative to this package,
     // assuming that they are all in the same folder
@@ -193,13 +198,14 @@ pub async fn build_package(
     } else {
         vec![]
     };
-    log::info!("Assets built, building source code...");
+
+    tracing::info!("Assets built, building source code...");
 
     build_rust_if_available(&package_path, &manifest, &build_path, settings.release)
         .await
         .with_context(|| format!("Failed to build Rust in {build_path:?}"))?;
 
-    log::info!("Source built");
+    tracing::info!("Source built");
 
     tokio::fs::write(&output_manifest_path, toml::to_string(&manifest)?).await?;
 
@@ -259,7 +265,7 @@ pub async fn build_assets(
             move |path, contents| {
                 let file_write_semaphore = file_write_semaphore.clone();
                 let path = build_path.join("assets").join(path);
-                log::info!("Writing file: {:?}", path);
+                tracing::trace!("Writing file: {:?}", path);
 
                 if for_import_only {
                     if let Some(ext) = path.extension() {
@@ -283,13 +289,13 @@ pub async fn build_assets(
             }
         }),
         on_status: Arc::new(|msg| {
-            log::debug!("{}", msg);
+            tracing::debug!("{}", msg);
             async {}.boxed()
         }),
         on_error: Arc::new({
             let has_errored = has_errored.clone();
             move |err| {
-                log::error!("{:?}", err);
+                tracing::error!("{:?}", err);
                 has_errored.store(true, Ordering::SeqCst);
                 async {}.boxed()
             }

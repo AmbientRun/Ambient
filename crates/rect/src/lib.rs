@@ -234,7 +234,7 @@ pub fn systems() -> SystemGroup {
                                     });
                                 }
                                 Err(err) => {
-                                    log::error!(
+                                    tracing::error!(
                                         "Failed to load material for entity {}: {:?}",
                                         id,
                                         err
@@ -328,13 +328,13 @@ impl AsyncAssetKey<AssetResult<Arc<RectMaterial>>> for RectMaterialKey {
                     match tex.get(&assets).await {
                         Ok(texture) => texture,
                         Err(err) => {
-                            log::warn!("Failed to load image at url {}: {:?}", url, err);
+                            tracing::warn!("Failed to load image at url {}: {:?}", url, err);
                             error_color.get(&assets)
                         }
                     }
                 }
                 Err(err) => {
-                    log::warn!("Failed to load image at url {}: {:?}", url, err);
+                    tracing::warn!("Failed to load image at url {}: {:?}", url, err);
                     error_color.get(&assets)
                 }
             },

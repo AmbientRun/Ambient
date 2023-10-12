@@ -101,7 +101,7 @@ pub(crate) fn server_systems() -> SystemGroup {
                     }
 
                     for id in ids {
-                        tracing::info!("Removing visualize_collider from {id:?}");
+                        tracing::debug!("Removing visualize_collider from {id:?}");
                         w.remove_component(id, local_gizmos()).ok();
                     }
                 },

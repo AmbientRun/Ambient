@@ -97,7 +97,7 @@ macro_rules! log_result {
 macro_rules! log_warning {
     ( $x:expr ) => {
         if let Err(err) = $x {
-            log::warn!("{:?}", err);
+            tracing::warn!("{:?}", err);
         }
     };
 }
@@ -121,7 +121,7 @@ macro_rules! unwrap_log_warn {
         match $x {
             Ok(val) => val,
             Err(err) => {
-                log::warn!("{:?}", err);
+                tracing::warn!("{:?}", err);
                 return Default::default();
             }
         }

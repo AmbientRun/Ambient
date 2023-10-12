@@ -33,7 +33,6 @@ anyhow = { workspace = true }
 profiling = { workspace = true }
 ordered-float = { workspace = true }
 tokio = { workspace = true }
-log = { workspace = true }
 
 [dev-dependencies]
 ambient_app = { path = "../app" , version = "0.3.1-dev" }

@@ -80,7 +80,7 @@ fn get_crypto(host: &HostCli) -> anyhow::Result<ambient_network::native::server:
         }
         #[cfg(not(feature = "no_bundled_certs"))]
         {
-            tracing::info!("Using bundled certificate and key");
+            tracing::debug!("Using bundled certificate and key");
             return Ok(ambient_network::native::server::Crypto {
                 cert_chain: vec![CERT.to_vec()],
                 key: CERT_KEY.to_vec(),

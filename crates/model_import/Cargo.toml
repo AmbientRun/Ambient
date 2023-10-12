@@ -38,7 +38,7 @@ async-recursion = { workspace = true }
 fbxcel = { workspace = true }
 ordered-float = { workspace = true }
 indexmap = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 relative-path = { workspace = true }
 russimp = { workspace = true, optional = true }
 convert_case = { workspace = true }

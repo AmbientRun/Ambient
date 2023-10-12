@@ -197,7 +197,7 @@ pub async fn start(
         .await
         .unwrap();
 
-        log::info!("Starting server");
+        tracing::debug!("Starting server");
         server
             .run(
                 server_world,

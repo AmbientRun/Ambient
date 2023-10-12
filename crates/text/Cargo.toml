@@ -20,6 +20,6 @@ glyph_brush = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 glam = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 parking_lot = { workspace = true }
 wgpu = { workspace = true }

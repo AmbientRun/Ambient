@@ -29,7 +29,6 @@ use glyph_brush::{
     ab_glyph::{Font, FontArc, PxScale, Rect},
     BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, GlyphCruncher, Section,
 };
-use log::info;
 use parking_lot::Mutex;
 
 use crate::text_material::{get_text_shader, TextMaterial};
@@ -185,7 +184,7 @@ impl AsyncAssetKey<Arc<FontArc>> for FontDef {
             FontFamily::Custom(url) => match FontFromUrl(url.clone()).get(&assets).await {
                 Ok(font) => font,
                 Err(err) => {
-                    log::error!("Failed to fetch font at {url}: {err}; using fallback font");
+                    tracing::error!("Failed to fetch font at {url}: {err}; using fallback font");
                     FontDef(FontFamily::Default, self.1).get(&assets).await
                 }
             },
@@ -537,7 +536,7 @@ impl AsyncAssetKey<AssetResult<Arc<FontArc>>> for FontFromUrl {
         self,
         assets: ambient_native_std::asset_cache::AssetCache,
     ) -> AssetResult<Arc<FontArc>> {
-        info!("Downloading font: {}", self.0);
+        tracing::info!("Downloading font: {}", self.0);
         let data = BytesFromUrl::new(self.0, true).get(&assets).await?;
         let brush = FontArc::try_from_vec(data.deref().clone()).context("Failed to parse font")?;
         Ok(Arc::new(brush))

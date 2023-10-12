@@ -96,7 +96,7 @@ impl MainRenderer {
 
         let is_srgb = gpu.swapchain_format().is_srgb();
         let gamma_correction = if !is_srgb {
-            tracing::info!(
+            tracing::debug!(
                 "Output format is not in sRGB colorspace. Applying manual gamma correction."
             );
             Some(2.2)
@@ -396,8 +396,6 @@ impl UiRenderer {
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());
         let mut post_submit = Vec::new();
-
-        tracing::info!("Drawing UI");
 
         self.ui_renderer.render(
             gpu,
