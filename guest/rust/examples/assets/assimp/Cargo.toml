@@ -22,6 +22,3 @@ required-features = ["server"]
 [features]
 client = ["ambient_api/client"]
 server = ["ambient_api/server"]
-
-[build-dependencies]
-zip = { workspace = true }
