@@ -386,7 +386,7 @@ async fn start_proxy_connection(
                       ..
                   }: AllocatedEndpoint| {
                 tracing::debug!("Allocated proxy endpoint. Allocation id: {}", id);
-                tracing::info!("Proxy sees this server as {}", external_endpoint);
+                tracing::debug!("Proxy sees this server as {}", external_endpoint);
                 tracing::info!(
                     "Proxy allocated an endpoint, use `{}` to join",
                     format!("ambient join {}", allocated_endpoint).bright_green()
