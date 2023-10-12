@@ -23,6 +23,14 @@ strafe_speed_multiplier = { type = "F32", description = "The speed the unit can 
     "Debuggable",
     "Networked",
 ] }
+air_speed_multiplier = { type = "F32", description = "When the unit is in the air; how much can it control its movement? If this is 0, it can't control it at all. If it's 1 it's the same as on the ground.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+unit_displacement = { type = "Vec3", attributes = [
+    "Debuggable",
+    "Networked",
+], description = "The distance the unit tried to move last frame (though it may have collided so the actual distance may be shorter)." }
 
 jumping = { type = "Bool", attributes = ["Debuggable", "Networked"] }
 running = { type = "Bool", attributes = ["Debuggable", "Networked"] }
