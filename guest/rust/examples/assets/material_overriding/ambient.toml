@@ -15,4 +15,4 @@ description = "Declares whether or not the entity this is attached is the best."
 attributes = ["Networked", "Debuggable"]
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "32wnURqYunKUYHNecBOJxq" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "1ITPnnCpHxyPV0095RoEex" }
