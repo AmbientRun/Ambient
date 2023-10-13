@@ -112,12 +112,8 @@ impl SyncAssetKey<Settings> for SettingsKey {
             let nav = web_sys::window().unwrap().navigator();
             let ua = Reflect::get(&nav, &"userAgentData".into()).ok();
             let platform = ua
-                .map(|ua| {
-                    Reflect::get(&ua, &"platform".into())
-                        .ok()
-                        .and_then(|v| v.as_string())
-                })
-                .flatten();
+                .and_then(|ua| Reflect::get(&ua, &"platform".into()).ok())
+                .and_then(|v| v.as_string());
 
             tracing::debug!(?platform, "Detected user agent platform");
             if platform.as_deref() == Some("Windows") {
