@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use ambient_ecs::{
     with_component_registry, ComponentDesc, ComponentEntry, ComponentRegistry, Entity, EntityId,
-    External, ExternalComponentDesc, Serializable, WorldChange, WorldDiff, WorldDiffView,
+    External, ExternalComponentDesc, Serializable, WorldChange, WorldDiff,
 };
 use bincode::Options;
 use bytes::Bytes;
@@ -31,43 +31,43 @@ pub struct WorldDiffDeduplicator {
     last_diff: HashMap<(EntityId, u32), Bytes>,
 }
 impl WorldDiffDeduplicator {
-    pub fn deduplicate<'a>(&mut self, mut diff: WorldDiffView<'a>) -> WorldDiffView<'a> {
+    pub fn deduplicate(&mut self, diff: &mut WorldDiff) {
         let mut new_diff = HashMap::new();
         diff.changes.retain_mut(|change| {
             // check if we should keep the change and what to drop
-            let (keep, components_to_drop) =
-                if let WorldChange::SetComponents(id, entity) = change.as_ref() {
-                    let mut duplicates = Vec::new();
-                    for entry in entity.iter() {
-                        let key = (*id, entry.desc().index());
-                        // currently comparing serialized bytes since we don't have cmp for components, could be improved
-                        let ser = entry
-                            .attribute::<Serializable>()
-                            .expect("diff should only have serializable components");
-                        let bytes: Bytes = bincode_options()
-                            .serialize(ser.serialize(entry))
-                            .unwrap()
-                            .into();
-                        new_diff.insert(key, bytes.clone());
-                        if self.last_diff.get(&key) == Some(&bytes) {
-                            duplicates.push(entry.desc());
-                        }
+            let (keep, components_to_drop) = if let WorldChange::SetComponents(id, entity) = change
+            {
+                let mut duplicates = Vec::new();
+                for entry in entity.iter() {
+                    let key = (*id, entry.desc().index());
+                    // currently comparing serialized bytes since we don't have cmp for components, could be improved
+                    let ser = entry
+                        .attribute::<Serializable>()
+                        .expect("diff should only have serializable components");
+                    let bytes: Bytes = bincode_options()
+                        .serialize(ser.serialize(entry))
+                        .unwrap()
+                        .into();
+                    new_diff.insert(key, bytes.clone());
+                    if self.last_diff.get(&key) == Some(&bytes) {
+                        duplicates.push(entry.desc());
                     }
-                    if duplicates.len() == entity.len() {
-                        // everything is duplicated -> drop
-                        (false, Vec::new())
-                    } else {
-                        // not all components are duplicated -> drop them but keep the change
-                        // NOTE: duplicates can be empty
-                        (true, duplicates)
-                    }
+                }
+                if duplicates.len() == entity.len() {
+                    // everything is duplicated -> drop
+                    (false, Vec::new())
                 } else {
-                    // not a SetComponents change -> keep
-                    (true, Vec::new())
-                };
+                    // not all components are duplicated -> drop them but keep the change
+                    // NOTE: duplicates can be empty
+                    (true, duplicates)
+                }
+            } else {
+                // not a SetComponents change -> keep
+                (true, Vec::new())
+            };
             if keep && !components_to_drop.is_empty() {
                 // we are keeping the entity but there are some components to remove
-                if let &mut WorldChange::SetComponents(_, ref mut entity) = change.to_mut() {
+                if let WorldChange::SetComponents(_, entity) = change {
                     for component in components_to_drop {
                         entity.remove_raw(component).unwrap();
                     }
@@ -79,7 +79,6 @@ impl WorldDiffDeduplicator {
             keep
         });
         self.last_diff = new_diff;
-        diff
     }
 }
 
@@ -250,7 +249,7 @@ impl From<&ComponentDesc> for UnknownComponent {
 /// ## Example
 ///
 /// ```
-/// use ambient_ecs::{components, Entity, EntityId, Serializable, WorldChange, WorldDiff, WorldDiffView};
+/// use ambient_ecs::{components, Entity, EntityId, Serializable, WorldChange, WorldDiff};
 /// use ambient_network::diff_serialization::DiffSerializer;
 ///
 /// components!("test", {
@@ -264,14 +263,14 @@ impl From<&ComponentDesc> for UnknownComponent {
 /// let mut serializer = DiffSerializer::default();
 ///
 /// let diff = WorldDiff { changes: vec![WorldChange::SetComponents(id, entity)] };
-/// let serialized = serializer.serialize(&WorldDiffView::from(&diff)).unwrap();
+/// let serialized = serializer.serialize(&diff).unwrap();
 ///
 /// assert_eq!(serialized.as_ref(), b"\x01\0\x18ambient_core::test::text\x01\x04\xfd\xef\xbe\xad\xde\xef\xbe\xad\xde\x01\0\x03foo");
 ///
 /// // note that when the same component is seen again, it won't be included in the index
 /// let new_entity = Entity::new().with(text(), "bar".to_string());
 /// let new_diff = WorldDiff { changes: vec![WorldChange::SetComponents(id, new_entity)] };
-/// let new_serialized = serializer.serialize(&WorldDiffView::from(&new_diff)).unwrap();
+/// let new_serialized = serializer.serialize(&new_diff).unwrap();
 ///
 /// assert_eq!(new_serialized.as_ref(), b"\0\x01\x04\xfd\xef\xbe\xad\xde\xef\xbe\xad\xde\x01\0\x03bar");
 ///
@@ -312,7 +311,7 @@ impl DiffSerializer {
         // get all external components that we haven't seen before
         let unknown_components = self.collect_all_unknown_external_components();
         // create dummy diff
-        let diff = WorldDiffView::default();
+        let diff = Default::default();
         // serialize everything
         self.serialize_parts(unknown_components, &NetworkedWorldDiff(&diff))
     }
@@ -327,10 +326,9 @@ impl DiffSerializer {
             .collect()
     }
 
-    pub fn serialize(&mut self, diff: &WorldDiffView) -> Result<Bytes, bincode::Error> {
+    pub fn serialize(&mut self, diff: &WorldDiff) -> Result<Bytes, bincode::Error> {
         // get all component that we haven't seen before
-        let unknown_components =
-            self.collect_unknown_components(diff.changes.iter().map(AsRef::as_ref));
+        let unknown_components = self.collect_unknown_components(diff.changes.iter());
         // serialize everything
         self.serialize_parts(unknown_components, &NetworkedWorldDiff(diff))
     }
@@ -694,14 +692,14 @@ impl<'a, 'de> serde::de::DeserializeSeed<'de> for NetworkedComponentEntryVisitor
 }
 
 #[derive(Clone, Copy, Debug)]
-struct NetworkedWorldDiff<'a>(&'a WorldDiffView<'a>);
+struct NetworkedWorldDiff<'a>(&'a WorldDiff);
 impl<'a> serde::Serialize for NetworkedWorldDiff<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
         let mut seq = serializer.serialize_seq(Some(self.0.changes.len()))?;
-        for change in self.0.changes.iter().map(|change| change.as_ref()) {
+        for change in self.0.changes.iter() {
             seq.serialize_element(&NetworkedWorldChange::from(change))?;
         }
         seq.end()
@@ -885,9 +883,7 @@ mod tests {
     }
 
     fn assert_passes_through_serialization(diff: WorldDiff) {
-        let view = WorldDiffView::from(&diff);
-
-        let bytes = DiffSerializer::default().serialize(&view).unwrap();
+        let bytes = DiffSerializer::default().serialize(&diff).unwrap();
         let received_diff = DiffSerializer::default().deserialize(bytes).unwrap();
 
         assert_same_diffs(&diff, &received_diff);
@@ -910,11 +906,13 @@ mod tests {
                 WorldChange::RemoveComponents(id, entity.components()),
             ],
         };
+        let mut first = diff.clone();
         let mut deduplicator = WorldDiffDeduplicator::default();
 
         // Act
-        let first = deduplicator.deduplicate(WorldDiffView::from(&diff));
-        let second = deduplicator.deduplicate(WorldDiffView::from(&diff));
+        deduplicator.deduplicate(&mut first);
+        let mut second = first.clone();
+        deduplicator.deduplicate(&mut second);
 
         // Assert
         assert_same_diffs(&diff, &first);
@@ -936,8 +934,9 @@ mod tests {
         let mut deduplicator = WorldDiffDeduplicator::default();
 
         // Act
-        let first = deduplicator.deduplicate(WorldDiffView::from(&diff));
-        let second = deduplicator.deduplicate(WorldDiffView::from(&diff));
+        deduplicator.deduplicate(&mut first);
+        let mut second = first.clone();
+        deduplicator.deduplicate(&mut second);
 
         // Assert
         assert_same_diffs(&diff, &first);
@@ -987,12 +986,11 @@ mod tests {
         let diff = WorldDiff {
             changes: vec![WorldChange::SetComponents(id, entity.clone())],
         };
-        let view = WorldDiffView::from(&diff);
         let mut serializer = DiffSerializer::default();
 
         // Act
-        let first_message = serializer.serialize(&view).unwrap();
-        let second_message = serializer.serialize(&view).unwrap();
+        let first_message = serializer.serialize(&diff).unwrap();
+        let second_message = serializer.serialize(&diff).unwrap();
 
         // Assert
         // first message should be bigger than the second one by at least the size of the component path
@@ -1008,13 +1006,12 @@ mod tests {
         let diff = WorldDiff {
             changes: vec![WorldChange::SetComponents(id, entity.clone())],
         };
-        let view = WorldDiffView::from(&diff);
         let mut serializer = DiffSerializer::default();
         let mut deserializer = DiffSerializer::default();
 
         // Act
-        let first_message = serializer.serialize(&view).unwrap();
-        let second_message = serializer.serialize(&view).unwrap();
+        let first_message = serializer.serialize(&diff).unwrap();
+        let second_message = serializer.serialize(&diff).unwrap();
 
         // Assert
         let first_diff = deserializer.deserialize(first_message).unwrap();

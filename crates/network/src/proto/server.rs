@@ -1,7 +1,10 @@
-use std::{pin::Pin, sync::Arc};
+use std::{collections::HashMap, pin::Pin, sync::Arc};
 
 use ambient_core::player::get_by_user_id;
-use ambient_ecs::{ComponentRegistry, FrozenWorldDiff, RealSize, WorldDiff, WorldStreamFilter};
+use ambient_ecs::{
+    ComponentRegistry, Entity, EntityId, FrozenWorldDiff, RealSize, WorldChange, WorldDiff,
+    WorldStreamFilter,
+};
 use ambient_native_std::{fps_counter::FpsSample, log_result};
 use anyhow::Context;
 use bytes::Bytes;
@@ -381,7 +384,7 @@ pub async fn handle_diffs<S>(
     let mut deserializer = DiffSerializer::default();
 
     let mut needs_external_components = false;
-    let mut intermediate_diff = Vec::new();
+    let mut intermediate_diff = IntermediateWorldDiff::default();
 
     let mut stream = Some(stream);
     let mut sending_future = OptionFuture::default();
@@ -406,42 +409,48 @@ pub async fn handle_diffs<S>(
                 needs_external_components = true;
             }
             Ok(diff) = diffs_rx.recv_async() => {
-                // FIXME: proper processing
-                intermediate_diff.push(diff);
+                intermediate_diff.merge_in(&diff);
             }
         }
 
-        // only if we are ready to send something and there's something to send (either external components or some diffs)
-        if stream.is_some() && (needs_external_components || !intermediate_diff.is_empty()) {
+        // check if we have anything to send
+        if needs_external_components || !intermediate_diff.is_empty() {
+            let Some(mut stream) = stream.take() else {
+                // stream is not available - we must be still in progress of sending the previous message
+                continue;
+            };
+
+            // prepare the message to send
             let msg = if needs_external_components {
                 needs_external_components = false;
                 serializer.serialize_external_components().unwrap()
             } else {
-                // FIXME
-                let diffs: Vec<_> = intermediate_diff.drain(..).collect();
-                // merge them together, deduplicate and serialize
-                let merged_diff = FrozenWorldDiff::merge(&diffs);
-                let merged_diffs_count = merged_diff.changes.len();
-                let final_diff = deduplicator.deduplicate(merged_diff);
-                let msg = serializer.serialize(&final_diff).unwrap();
+                // take the merged diff, deduplicate and serialize
+                let input_diffs_count = intermediate_diff.diffs_merged;
+                let input_changes_count = intermediate_diff.changes_merged;
+                let mut diff = intermediate_diff.take();
+                let merged_changes_count = diff.changes.len();
+                deduplicator.deduplicate(&mut diff);
+                let msg = serializer.serialize(&diff).unwrap();
                 tracing::trace!(
-                    diffs_count = diffs.len(),
-                    merged_diffs_count,
-                    final_diffs_count = final_diff.changes.len(),
+                    input_diffs_count,
+                    input_changes_count,
+                    merged_changes_count,
+                    final_changes_count = diff.changes.len(),
                     bytes = msg.len(),
                 );
 
                 tracing::error!(
-                    "KUBA: diffs_len={} msg bytes={} raw bytes={} {}",
-                    diffs.len(),
+                    "KUBA: diffs_len={} msg bytes={} raw bytes={}",
+                    input_diffs_count,
                     msg.len(),
-                    bincode::serialized_size(&diffs).unwrap(),
-                    diffs.real_size()
+                    diff.changes.real_size()
                 );
 
                 msg
             };
 
+            // make sure that what we've serialized is going to be deserialized correctly on the other side
             #[cfg(debug_assertions)]
             {
                 let deserialized = deserializer.deserialize(msg.clone());
@@ -453,16 +462,13 @@ pub async fn handle_diffs<S>(
             }
 
             let span = tracing::debug_span!("send_world_diff");
-            sending_future = Some({
-                let mut stream = stream.take().unwrap();
-                Box::pin(async move {
-                    stream
-                        .send_bytes(msg)
-                        .instrument(span)
-                        .await
-                        .map(|_| stream)
-                })
-            })
+            sending_future = Some(Box::pin(async move {
+                stream
+                    .send_bytes(msg)
+                    .instrument(span)
+                    .await
+                    .map(|_| stream)
+            }))
             .into();
         }
     }
@@ -478,34 +484,42 @@ fn create_external_components_trigger() -> (flume::Receiver<()>, Arc<dyn Fn() + 
     )
 }
 
-// enum WrappedStream<S> {
-//     Waiting(stream::FramedSendStream<WorldDiff, S>),
-//     Sending(BoxFuture<'static, Result<stream::FramedSendStream<WorldDiff, S>, NetworkError>>),
-// }
+#[derive(Debug, Default)]
+struct IntermediateWorldDiff {
+    shape_changes: Vec<WorldChange>,
+    set_changes: HashMap<EntityId, Entity>,
+    diffs_merged: usize,
+    changes_merged: usize,
+}
 
-// impl<S> WrappedStream<S> where S: Unpin + AsyncWrite {
-//     fn new(stream: stream::FramedSendStream<WorldDiff, S>) -> Self {
-//         Self::Waiting(stream)
-//     }
+impl IntermediateWorldDiff {
+    pub fn is_empty(&self) -> bool {
+        self.shape_changes.is_empty() && self.set_changes.is_empty()
+    }
 
-//     fn send(&mut self, data: Bytes) {
-//         if let Self::Waiting(stream) = *self {
-//             *self = Self::Sending(Box::pin(async move {
-//                 stream.send_bytes(data).await.map(|_| stream)
-//             }));
-//         } else {
-//             panic!("Can't send while already sending");
-//         }
-//     }
+    pub fn merge_in<'a>(&mut self, changes: impl IntoIterator<Item = &'a WorldChange> + 'a) {
+        self.diffs_merged += 1;
+        for change in changes.into_iter().cloned() {
+            if let WorldChange::SetComponents(id, entity) = change {
+                self.set_changes.entry(id).or_default().merge(entity);
+            } else {
+                self.shape_changes.push(change);
+            }
+            self.changes_merged += 1;
+        }
+    }
 
-//     async fn wait(&mut self) -> Result<(), NetworkError> {
-//         match self {
-//             Self::Waiting(_) => Ok(()),
-//             Self::Sending(fut) => {
-//                 let stream = fut.await?;
-//                 *self = Self::Waiting(stream);
-//                 Ok(())
-//             }
-//         }
-//     }
-// }
+    pub fn take(&mut self) -> WorldDiff {
+        self.diffs_merged = 0;
+        self.changes_merged = 0;
+        let mut changes = Vec::new();
+        std::mem::swap(&mut changes, &mut self.shape_changes);
+        changes.reserve(self.set_changes.len());
+        changes.extend(
+            self.set_changes
+                .drain()
+                .map(|(id, entity)| WorldChange::SetComponents(id, entity)),
+        );
+        WorldDiff { changes }
+    }
+}
