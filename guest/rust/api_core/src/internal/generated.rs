@@ -92,6 +92,13 @@ mod raw {
                 pub fn clip_loaded() -> Component<()> {
                     *CLIP_LOADED
                 }
+                static CLIP_LOAD_ERROR: Lazy<Component<String>> = Lazy::new(|| {
+                    __internal_get_component("ambient_core::animation::clip_load_error")
+                });
+                #[doc = "**Clip load error**: There was an error loading the clip.\n\n*Attributes*: Debuggable"]
+                pub fn clip_load_error() -> Component<String> {
+                    *CLIP_LOAD_ERROR
+                }
                 static BLEND: Lazy<Component<f32>> =
                     Lazy::new(|| __internal_get_component("ambient_core::animation::blend"));
                 #[doc = "**Blend**: Blend two animations together. The values is the blend weight. Use `children` to set the animations. Blend 0 means we only sample from the first animation, 1 means only the second one, and values in between blend between them.\n\n*Attributes*: Debuggable, Networked"]

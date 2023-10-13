@@ -26,6 +26,7 @@ members = [
     "examples/assets/material_overriding",
     "examples/assets/generate_pipeline",
     "examples/assets/unity",
+    "examples/assets/assimp",
 
     # Physics
     "examples/physics/basics",
@@ -60,6 +61,9 @@ members = [
     "examples/ui/text",
     "examples/ui/todo",
 
+    # Benchmarks
+    "examples/benchmarks/animations",
+
     # Test cases
     "testcases/588-prefab-despawn-panic",
 
@@ -77,6 +81,7 @@ members = [
     "packages/tools/editor",
     "packages/tools/package_manager",
     "packages/tools/world_latency",
+    "packages/tools/performance_bar",
 
     # Packages (games)
     "packages/games/tangent",

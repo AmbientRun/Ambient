@@ -37,7 +37,6 @@ tokio = { workspace = true, optional = true, features = ["sync"] }
 async-trait = { workspace = true, optional = true }
 futures = { workspace = true, optional = true }
 bytemuck = { workspace = true, optional = true }
-log = { workspace = true, optional = true }
 reqwest = { workspace = true, optional = true }
 thiserror = { workspace = true, optional = true }
 sentry-anyhow = { workspace = true, optional = true }
@@ -69,7 +68,6 @@ uncategorized = [
     "dep:async-trait",
     "dep:futures",
     "dep:bytemuck",
-    "dep:log",
     "dep:reqwest",
     "dep:thiserror",
     "dep:sentry-anyhow",

@@ -33,12 +33,12 @@ impl Gpu {
     pub async fn new(window: Option<&Window>) -> anyhow::Result<Self> {
         Self::with_config(window, false, &RenderSettings::default()).await
     }
-    #[tracing::instrument(level = "info")]
     pub async fn with_config(
         window: Option<&Window>,
         will_be_polled: bool,
         settings: &RenderSettings,
     ) -> anyhow::Result<Self> {
+        let _span = tracing::info_span!("create_gpu").entered();
         // From: https://github.com/KhronosGroup/Vulkan-Loader/issues/552
         #[cfg(not(target_os = "unknown"))]
         {
@@ -121,7 +121,7 @@ impl Gpu {
             }
         };
 
-        tracing::info!("Using features: {features:#?}");
+        tracing::info!("Using device features: {features:?}");
 
         let (device, queue) = adapter
             .request_device(
@@ -191,7 +191,6 @@ impl Gpu {
     pub fn resize(&self, size: winit::dpi::PhysicalSize<u32>) {
         if let Some(surface) = &self.surface {
             if size.width > 0 && size.height > 0 {
-                tracing::info!("Resizing to {size:?}");
                 surface.configure(&self.device, &self.sc_desc(uvec2(size.width, size.height)));
             }
         }

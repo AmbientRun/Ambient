@@ -46,7 +46,7 @@ pub fn run(
         match AudioStream::new() {
             Ok(v) => Some(v),
             Err(err) => {
-                log::error!("Failed to initialize audio stream: {err}");
+                tracing::error!("Failed to initialize audio stream: {err}");
                 None
             }
         }
@@ -60,7 +60,7 @@ pub fn run(
         Some(user_id) => user_id,
         None => {
             let user_id = ambient_client_shared::util::random_username();
-            log::warn!(
+            tracing::warn!(
                 "No `user_id` found in settings, using random username: {:?}",
                 user_id
             );
@@ -212,7 +212,7 @@ fn MainApp(
                 set_loaded(true);
 
                 Ok(Box::new(|| {
-                    log::info!("Disconnecting client");
+                    tracing::info!("Disconnecting client");
                 }))
             }),
             systems_and_resources: cb(|| {

@@ -517,7 +517,7 @@ mod test {
 
     #[tokio::test]
     async fn test_multi_buffer() {
-        let gpu = Arc::new(Gpu::new(None).await);
+        let gpu = Arc::new(Gpu::new(None).await.unwrap());
         let mut buf = MultiBuffer::new(
             &gpu,
             "test",
@@ -560,7 +560,7 @@ mod test {
 
     #[tokio::test]
     async fn test_multi_buffer2() {
-        let gpu = Arc::new(Gpu::new(None).await);
+        let gpu = Arc::new(Gpu::new(None).await.unwrap());
         let mut buf = MultiBuffer::new(
             &gpu,
             "test",
@@ -577,7 +577,7 @@ mod test {
 
     #[tokio::test]
     async fn test_multi_buffer_reuse_id() {
-        let gpu = Arc::new(Gpu::new(None).await);
+        let gpu = Arc::new(Gpu::new(None).await.unwrap());
         let mut buf = MultiBuffer::new(
             &gpu,
             "test",
@@ -592,7 +592,7 @@ mod test {
 
     #[tokio::test]
     async fn test_multi_buffer_shrink() {
-        let gpu = Arc::new(Gpu::new(None).await);
+        let gpu = Arc::new(Gpu::new(None).await.unwrap());
         let mut buf = MultiBuffer::new(
             &gpu,
             "test",

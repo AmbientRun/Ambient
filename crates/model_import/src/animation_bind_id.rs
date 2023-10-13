@@ -19,6 +19,10 @@ impl<Id: Display + std::hash::Hash + PartialEq + Eq + Clone, Node> BindIdReg<Id,
             funcs,
         }
     }
+    #[cfg(feature = "russimp")]
+    pub fn try_get_by_id(&self, id: &Id) -> Option<&String> {
+        self.node_to_bind_id.get(id)
+    }
     pub fn get(&mut self, node: &Node) -> String {
         let node_id = (self.funcs.node_to_id)(node);
         if let Some(bind_id) = self.node_to_bind_id.get(&node_id) {

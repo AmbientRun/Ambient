@@ -49,7 +49,7 @@ spawn_query(is_player()).bind(move |players| {
         entity::add_components(
             id,
             Entity::new()
-                .with(use_character_controller(), ())
+                .with_merge(CharacterFpsController::suggested())
                 .with(model_from_url(), packages::base_assets::assets::url("Y Bot.fbx"))
                 .with(basic_character_animations(), id),
         );
@@ -61,7 +61,7 @@ spawn_query(is_player()).bind(move |players| {
 
 > **In-depth**: A `spawn_query` runs when an entity with a specific set of components is seen for the first time (including when it is spawned).
 >
-> Here, when a player spawns, we add a few components to that player to give it an animated model (`model_from_url`), use basic character animations (`basic_character_animations`) and to make it react to input with a camera that follows the character (`use_character_controller`).
+> Here, when a player spawns, we add a few components to that player to give it an animated model (`model_from_url`), use basic character animations (`basic_character_animations`) and to make it react to input with a camera that follows the character (`.with_merge(CharacterFpsController::suggested())`).
 >
 > [Read more about queries here](../../reference/ecs.md#systems).
 

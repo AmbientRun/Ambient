@@ -2,13 +2,13 @@
 id = "vuph6dqdj6li4apmcgomn3faudcbfz56"
 name = "Character Controller"
 description = "A character controller for the player that takes input and updates their unit's movement and camera."
-version = "0.3.1-dev"
+version = "0.3.1-nightly-2023-10-13"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.1-dev"
+ambient_version = "0.3.1-nightly-2023-10-13"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "6KW1f3MjAJ1DTrKUcY2fS5" }
-character_movement = { path = "../character_movement", deployment = "5goT7k9f9vniIU2ZZBjzZa" }
+unit_schema = { path = "../../schemas/unit", deployment = "1oniOoWNFVGVlVb2DEIbQg" }
+character_movement = { path = "../character_movement", deployment = "5wPUEkLAZERbDMVYlLLIQP" }
 
 [components]
 use_character_controller = { type = "Empty", name = "Use Character Controller", description = "Use the character controller to drive this entity", attributes = [
@@ -40,3 +40,14 @@ running = "Bool"
 
 [messages.Jump]
 fields = {}
+
+[concepts.CharacterFpsController]
+extends = [
+    "character_movement::CharacterMovement",
+    "ambient_core::transform::Transformable",
+]
+[concepts.CharacterFpsController.components.required]
+use_character_controller = { suggested = [] }
+"unit_schema::shooting" = { suggested = false }
+[concepts.CharacterFpsController.components.optional]
+"unit_schema::head_ref" = {}

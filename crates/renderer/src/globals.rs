@@ -179,7 +179,7 @@ impl ForwardGlobals {
         shadow_cascades: u32,
         scene: Component<()>,
     ) -> Self {
-        log::debug!("Setting up forward globals");
+        tracing::debug!("Setting up forward globals");
         let buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("ForwardGlobals.buffer"),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,

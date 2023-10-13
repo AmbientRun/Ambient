@@ -1,11 +1,14 @@
 use std::{fs::DirEntry, path::Path};
 
-pub fn run_ambient(args: &[&str], release: bool) -> anyhow::Result<()> {
+pub fn run_ambient(args: &[&str], release: bool, production: bool) -> anyhow::Result<()> {
     // TODO: consider running other versions of Ambient
     let mut command = std::process::Command::new("cargo");
     command.arg("run");
     if release {
         command.arg("--release");
+    }
+    if production {
+        command.args(["--features", "production"]);
     }
     command.args(["-p", "ambient"]).args(args).spawn()?.wait()?;
 

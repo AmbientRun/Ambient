@@ -1,0 +1,19 @@
+[[pipelines]]
+type = "Models"
+sources = ["Zombie1.x"]
+
+[[pipelines.material_overrides]]
+
+[pipelines.material_overrides.filter]
+type = "All"
+
+[pipelines.material_overrides.material]
+base_color = "Zombie1.png"
+alpha_cutoff = 0.949999988079071
+metallic_factor = 1.0
+roughness_factor = 1.0
+specular_exponent = 0.6000000238418579
+
+[[pipelines.transforms]]
+type = "Scale"
+scale = 0.10000000149011612

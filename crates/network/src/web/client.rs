@@ -12,10 +12,7 @@ use ambient_native_std::{
 };
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_sys::{
-    task::RuntimeHandle,
-    time::{sleep_label, Instant},
-};
+use ambient_sys::{task::RuntimeHandle, time::Instant};
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use bytes::{BufMut, BytesMut};
@@ -112,13 +109,11 @@ impl ElementComponent for GameClientView {
                     url = resolve_hosted_server(&assets, url).await?;
                 }
 
-                sleep_label(Duration::from_millis(1000), "wait for server").await;
-
                 let conn = Connection::connect(&url.as_str()).await.with_context(|| {
                     format!("Failed to establish a WebTransport session for \"{url}\"")
                 })?;
 
-                tracing::info!("Established WebTransport session");
+                tracing::debug!("Established WebTransport session");
 
                 let (proxy_tx, proxy_rx) = flume::bounded(32);
 
@@ -155,7 +150,6 @@ impl ElementComponent for GameClientView {
                         );
 
                         let game_state = &client_state.game_state;
-                        tracing::info!("Setting game state");
                         let cleanup = {
                             // Lock before setting
                             let game_state = &mut game_state.lock();
@@ -181,8 +175,6 @@ impl ElementComponent for GameClientView {
                     proxy_rx,
                 )
                 .await?;
-
-                tracing::info!("Finished handling connection");
 
                 Ok(()) as anyhow::Result<()>
             };
@@ -380,20 +372,15 @@ async fn handle_connection(
     control_rx: flume::Receiver<Control>,
     proxy_rx: flume::Receiver<ProxyMessage>,
 ) -> anyhow::Result<()> {
-    tracing::info!("Handling client connection");
-    tracing::info!("Opening control stream");
-
     let runtime = RuntimeKey.get(&assets);
 
     let mut request_send = FramedSendStream::new(conn.open_uni().await?);
-
-    tracing::info!("Opened control stream");
 
     // Accept the diff and stat stream
     // Nothing is read from them until the connection has been accepted
 
     // Send a connection request
-    tracing::info!("Attempting to connect using {user_id:?}");
+    tracing::debug!("Attempting to connect using {user_id:?}");
 
     request_send
         .send(ClientRequest::Connect(user_id.clone()))
@@ -401,14 +388,12 @@ async fn handle_connection(
 
     let mut client = ClientProtoState::Pending(user_id.clone());
 
-    tracing::info!("Accepting control stream from server");
     let mut push_recv = FramedRecvStream::new(
         conn.accept_uni()
             .await
             .ok_or(NetworkError::ConnectionClosed)??,
     );
 
-    tracing::info!("Entering client loop");
     while client.is_pending() {
         tracing::info!("Waiting for server to accept connection and send server info");
         if let Some(frame) = push_recv.next().await {
@@ -421,7 +406,6 @@ async fn handle_connection(
         return Ok(());
     }
 
-    tracing::info!("Accepting diff stream");
     let mut diff_stream = RawFramedRecvStream::new(
         conn.accept_uni()
             .await
@@ -429,10 +413,7 @@ async fn handle_connection(
     );
 
     let (shared_client_state, cleanup) = on_loaded(&assets, &user_id)?;
-    let on_disconnect = move || {
-        tracing::info!("Running connection cleanup");
-        cleanup()
-    };
+    let on_disconnect = move || cleanup();
 
     scopeguard::defer!(on_disconnect());
 
@@ -479,7 +460,7 @@ async fn handle_connection(
         }
     }
 
-    tracing::info!("Client entered disconnected state");
+    tracing::debug!("Client entered disconnected state");
     Ok(())
 }
 
@@ -491,7 +472,6 @@ async fn handle_request(
 ) -> Result<(), NetworkError> {
     match message {
         ProxyMessage::RequestBi { id, mut data, resp } => {
-            tracing::info!("Sending bi request");
             let (mut send, mut recv) = conn.open_bi().await?;
 
             runtime.spawn_local(async move {

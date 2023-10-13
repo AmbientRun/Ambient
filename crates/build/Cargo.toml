@@ -44,7 +44,6 @@ anyhow = { workspace = true }
 relative-path = { workspace = true }
 convert_case = { workspace = true }
 slugify = { workspace = true }
-log = { workspace = true }
 glob = { workspace = true }
 yaml-rust = { workspace = true }
 tracing = { workspace = true }

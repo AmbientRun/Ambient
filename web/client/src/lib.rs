@@ -93,6 +93,7 @@ fn init(settings: &Settings) -> anyhow::Result<()> {
         ambient_sys::set_panic_hook();
     }
 
+    ambient_git_rev_init::init().expect("Should be called exactly once");
     ambient_ecs::init_components();
     ambient_core::init_all_components();
     ambient_water::init_components();

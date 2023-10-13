@@ -112,6 +112,7 @@ dependencies = [
  "itertools",
  "ordered-float 3.9.1",
  "serde",
+ "tracing",
 ]
 
 [[package]]
@@ -182,7 +183,6 @@ dependencies = [
  "hound",
  "itertools",
  "lewton",
- "log",
  "num",
  "ordered-float 3.9.1",
  "parking_lot",
@@ -298,7 +298,7 @@ dependencies = [
  "ambient_native_std",
  "ambient_renderer",
  "glam",
- "log",
+ "tracing",
 ]
 
 [[package]]
@@ -327,7 +327,6 @@ dependencies = [
  "erased-serde",
  "glam",
  "itertools",
- "log",
  "once_cell",
  "parking_lot",
  "paste",
@@ -416,6 +415,16 @@ dependencies = [
 [[package]]
 name = "ambient_git_rev"
 version = "0.3.1-dev"
+dependencies = [
+ "once_cell",
+]
+
+[[package]]
+name = "ambient_git_rev_init"
+version = "0.3.1-dev"
+dependencies = [
+ "ambient_git_rev",
+]
 
 [[package]]
 name = "ambient_gizmos"
@@ -430,10 +439,10 @@ dependencies = [
  "bytemuck",
  "dashmap",
  "glam",
- "log",
  "once_cell",
  "profiling",
  "serde",
+ "tracing",
  "wgpu",
 ]
 
@@ -455,7 +464,6 @@ dependencies = [
  "glam",
  "image",
  "itertools",
- "log",
  "ndarray",
  "ordered-float 3.9.1",
  "parking_lot",
@@ -529,8 +537,8 @@ dependencies = [
  "ambient_input",
  "glam",
  "itertools",
- "log",
  "profiling",
+ "tracing",
 ]
 
 [[package]]
@@ -595,7 +603,6 @@ dependencies = [
  "data-encoding",
  "futures",
  "glam",
- "log",
  "mikktspace",
  "ordered-float 3.9.1",
  "percent-encoding",
@@ -649,7 +656,6 @@ dependencies = [
  "http",
  "itertools",
  "js-sys",
- "log",
  "parking_lot",
  "pin-project",
  "profiling",
@@ -777,7 +783,6 @@ dependencies = [
  "futures",
  "glam",
  "itertools",
- "log",
  "ordered-float 3.9.1",
  "parking_lot",
  "physxx",
@@ -872,7 +877,7 @@ dependencies = [
  "async-trait",
  "bytemuck",
  "glam",
- "log",
+ "tracing",
  "wgpu",
 ]
 
@@ -896,7 +901,6 @@ dependencies = [
  "derive_more",
  "glam",
  "itertools",
- "log",
  "ordered-float 3.9.1",
  "parking_lot",
  "profiling",
@@ -1016,8 +1020,8 @@ dependencies = [
  "async-trait",
  "glam",
  "glyph_brush",
- "log",
  "parking_lot",
+ "tracing",
  "wgpu",
 ]
 
@@ -1073,7 +1077,6 @@ dependencies = [
  "bytemuck",
  "glam",
  "itertools",
- "log",
  "parking_lot",
  "tokio",
  "tracing",
@@ -1109,7 +1112,6 @@ dependencies = [
  "futures",
  "glam",
  "itertools",
- "log",
  "once_cell",
  "parking_lot",
  "paste",
@@ -1163,6 +1165,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_ecs_editor",
  "ambient_element",
+ "ambient_git_rev_init",
  "ambient_layout",
  "ambient_native_std",
  "ambient_network",
@@ -1214,7 +1217,6 @@ dependencies = [
  "flume 0.11.0",
  "glam",
  "itertools",
- "log",
  "parking_lot",
  "rand 0.8.5",
  "rand_chacha 0.3.1",

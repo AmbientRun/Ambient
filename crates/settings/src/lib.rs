@@ -119,7 +119,7 @@ impl SyncAssetKey<Settings> for SettingsKey {
                 })
                 .flatten();
 
-            tracing::info!(?platform, "Detected platform");
+            tracing::debug!(?platform, "Detected user agent platform");
             if platform.as_deref() == Some("Windows") {
                 Settings {
                     render: RenderSettings {

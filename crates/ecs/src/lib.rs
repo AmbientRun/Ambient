@@ -662,7 +662,7 @@ impl World {
     }
     fn warn_on_non_resource_component<T: ComponentValue>(component: Component<T>) {
         if !component.has_attribute::<Resource>() && !component.has_attribute::<MaybeResource>() {
-            log::warn!("Attempt to access non-resource component as a resource: {component:?}");
+            tracing::warn!("Attempt to access non-resource component as a resource: {component:?}");
         }
     }
 
@@ -768,7 +768,7 @@ impl World {
         std::fs::create_dir_all("tmp").ok();
         let mut f = std::fs::File::create("tmp/ecs.txt").expect("Unable to create file");
         self.dump(&mut f);
-        log::info!("Wrote ecs to tmp/ecs.txt");
+        tracing::info!("Wrote ecs to tmp/ecs.txt");
     }
 
     pub fn dump_entity_to_string(&self, id: EntityId) -> String {
@@ -985,7 +985,7 @@ impl Commands {
     pub fn soft_apply(&mut self, world: &mut World) {
         for command in self.0.drain(..) {
             if let Err(err) = command.apply(world) {
-                log::warn!("soft_apply error: {:?}", err);
+                tracing::warn!("soft_apply error: {:?}", err);
             }
         }
     }

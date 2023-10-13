@@ -19,21 +19,15 @@ pub async fn initialize(
     data_path: PathBuf,
 ) -> anyhow::Result<()> {
     let messenger = Arc::new(
-        |world: &World, id: EntityId, type_: MessageType, message: &str| {
-            let name = world.get_cloned(id, module_name()).unwrap_or_default();
-            let (prefix, level) = match type_ {
-                MessageType::Info => ("info", log::Level::Info),
-                MessageType::Warn => ("warn", log::Level::Warn),
-                MessageType::Error => ("error", log::Level::Error),
-                MessageType::Stdout => ("stdout", log::Level::Info),
-                MessageType::Stderr => ("stderr", log::Level::Info),
+        |world: &World, id: EntityId, ty: MessageType, message: &str| {
+            let module_name = world.get_cloned(id, module_name()).unwrap_or_default();
+            match ty {
+                MessageType::Info => tracing::info!(%module_name, "{}", message),
+                MessageType::Warn => tracing::warn!(%module_name, "{}", message),
+                MessageType::Error => tracing::error!(%module_name, "{}", message),
+                MessageType::Stdout => tracing::info!(%module_name, "stdout: {}", message),
+                MessageType::Stderr => tracing::info!(%module_name, "stderr: {}", message),
             };
-
-            log::log!(
-                level,
-                "[{name}] {prefix}: {}",
-                message.strip_suffix('\n').unwrap_or(message)
-            );
         },
     );
 

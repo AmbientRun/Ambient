@@ -197,7 +197,6 @@ impl ElementComponent for ClientView {
                         );
 
                         let game_state = &client_state.game_state;
-                        tracing::info!("Setting game state");
                         let cleanup = {
                             // Lock before setting
                             let game_state = &mut game_state.lock();
@@ -342,8 +341,6 @@ async fn handle_connection(
 
     let mut control_rx = control_rx.into_stream();
 
-    tracing::info!("Client connected");
-
     while let ClientProtoState::Connected(connected) = &mut client {
         tokio::select! {
             Some(frame) = push_recv.next() => {
@@ -366,7 +363,7 @@ async fn handle_connection(
            Some(control) = control_rx.next() => {
                 match control {
                     Control::Disconnect => {
-                        tracing::info!("Disconnecting manually");
+                        tracing::debug!("Disconnecting manually");
                         // Tell the server that we want to gracefully disconnect
                         request_send.send(ClientRequest::Disconnect).await?;
                     }
@@ -388,7 +385,6 @@ async fn handle_connection(
         }
     }
 
-    tracing::info!("Client entered disconnected state");
     Ok(())
 }
 
@@ -398,17 +394,17 @@ async fn open_connection(
     server_addr: ResolvedAddr,
     cert: Option<Certificate>,
 ) -> anyhow::Result<Connection> {
-    log::debug!("Connecting to world instance: {server_addr:?}");
+    tracing::debug!("Connecting to world instance: {server_addr:?}");
 
     let endpoint =
         create_client_endpoint_random_port(cert).context("Failed to create client endpoint")?;
 
-    log::debug!("Got endpoint");
+    tracing::debug!("Got endpoint");
     let conn = endpoint
         .connect(server_addr.addr, &server_addr.host_name)?
         .await?;
 
-    log::debug!("Got connection");
+    tracing::debug!("Got connection");
     Ok(conn)
 }
 

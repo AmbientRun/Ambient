@@ -14,14 +14,16 @@ mod shared;
 use ambient_physics::physx::PhysicsKey;
 use anyhow::Context;
 use cli::{Cli, Commands};
-use log::LevelFilter;
 use serde::Deserialize;
 use std::path::Path;
+use tracing_subscriber::{filter::LevelFilter, registry, EnvFilter};
 
 fn main() -> anyhow::Result<()> {
     let rt = ambient_sys::task::make_native_multithreaded_runtime()?;
 
     setup_logging()?;
+
+    ambient_git_rev_init::init().expect("Should be called exactly once");
 
     shared::components::init()?;
 
@@ -38,8 +40,8 @@ fn main() -> anyhow::Result<()> {
         _guard = init_sentry(&sentry_dsn);
         _handle = sentry_rust_minidump::init(&_guard);
         match _handle {
-            Ok(_) => log::debug!("Initialized Sentry with DSN: {:?}", sentry_dsn),
-            Err(err) => log::warn!("Failed to initialize Sentry: {:?}", err),
+            Ok(_) => tracing::debug!("Initialized Sentry with DSN: {:?}", sentry_dsn),
+            Err(err) => tracing::warn!("Failed to initialize Sentry: {:?}", err),
         }
     }
 
@@ -54,8 +56,8 @@ fn main() -> anyhow::Result<()> {
 
     if let Some(package) = cli.package() {
         if package.project {
-            log::warn!("`-p`/`--project` has no semantic meaning.");
-            log::warn!("You do not need to use `-p`/`--project` - `ambient run project` is the same as `ambient run -p project`.");
+            tracing::warn!("`-p`/`--project` has no semantic meaning.");
+            tracing::warn!("You do not need to use `-p`/`--project` - `ambient run project` is the same as `ambient run -p project`.");
         }
     }
 
@@ -126,7 +128,7 @@ impl LaunchJson {
         if !launch_file.exists() {
             return Ok(None);
         }
-        log::info!("Using launch.json for CLI args: {}", launch_file.display());
+        tracing::info!("Using launch.json for CLI args: {}", launch_file.display());
         let launch_json =
             std::fs::read_to_string(launch_file).context("Failed to read launch.json")?;
         let launch_json: Self =
@@ -143,26 +145,29 @@ impl LaunchJson {
 }
 
 fn setup_logging() -> anyhow::Result<()> {
+    // This fixes the `<unknown time>` in log formatting, an alternative is to use UTC time
+    unsafe { time::util::local_offset::set_soundness(time::util::local_offset::Soundness::Unsound) }
+
+    /// Create a layer of filtering before to remove info statements from external crates
+    ///
+    /// In general, `info` level logs should not be used in libraries as they are user facing and are recommended to be `debug` or `trace` events instead.
     const MODULES: &[(LevelFilter, &[&str])] = &[
         (
-            LevelFilter::Error,
+            LevelFilter::ERROR,
             &[
                 // Warns about extra syntactic elements; we are not concerned with these.
                 "fbxcel",
             ],
         ),
         (
-            LevelFilter::Warn,
+            LevelFilter::WARN,
             &[
-                "ambient_gpu",
-                "ambient_model",
-                "ambient_physics",
-                "ambient_native_std",
                 "cranelift_codegen",
                 "naga",
                 "tracing",
                 "symphonia_core",
                 "symphonia_bundle_mp3",
+                // TODO: remove, fixed in later wgpu version in https://github.com/gfx-rs/wgpu/commit/4478c52debcab1b88b80756b197dc10ece90dec9
                 "wgpu_core",
                 "wgpu_hal",
                 "symphonia_format_wav",
@@ -170,80 +175,51 @@ fn setup_logging() -> anyhow::Result<()> {
         ),
     ];
 
-    // Initialize the logger and lower the log level for modules we don't need to hear from by default.
-    #[cfg(not(feature = "tracing"))]
-    {
-        let mut builder = env_logger::builder();
-        builder.filter_level(LevelFilter::Info);
+    use tracing::metadata::Level;
+    use tracing_subscriber::prelude::*;
 
-        for (level, modules) in MODULES {
-            for module in *modules {
-                builder.filter_module(module, *level);
-            }
+    let mut targets = tracing_subscriber::filter::Targets::new()
+        .with_default(tracing::metadata::LevelFilter::DEBUG);
+    for (level, modules) in MODULES {
+        for &module in *modules {
+            targets = targets.with_target(module, *level);
         }
-
-        builder.parse_default_env().try_init()?;
-
-        Ok(())
     }
 
-    #[cfg(feature = "tracing")]
-    {
-        use tracing::metadata::Level;
-        use tracing_log::AsTrace;
-        use tracing_subscriber::prelude::*;
-        use tracing_subscriber::{registry, EnvFilter};
+    let env_filter = EnvFilter::builder()
+        .with_default_directive(Level::INFO.into())
+        .from_env_lossy();
 
-        let mut filter = tracing_subscriber::filter::Targets::new()
-            .with_default(tracing::metadata::LevelFilter::DEBUG);
-        for (level, modules) in MODULES {
-            for &module in *modules {
-                filter = filter.with_target(module, level.as_trace());
-            }
-        }
+    let registry = registry().with(targets).with(env_filter);
 
-        // BLOCKING: pending https://github.com/tokio-rs/tracing/issues/2507
-        // let modules: Vec<_> = MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| format!("{v}={level}"))).collect();
-
-        // eprintln!("{modules:#?}");
-        // let mut filter = tracing_subscriber::filter::EnvFilter::builder().with_default_directive(Level::INFO.into()).from_env_lossy();
-
-        // for module in modules {
-        //     filter = filter.add_directive(module.parse().unwrap());
-        // }
-
-        // let mut filter = std::env::var("RUST_LOG").unwrap_or_default().parse::<tracing_subscriber::filter::Targets>().unwrap_or_default();
-        // filter.extend(MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| (v, level.as_trace()))));
-
-        let env_filter = EnvFilter::builder()
-            .with_default_directive(Level::INFO.into())
-            .from_env_lossy();
-
-        let layered_registry = registry().with(filter).with(env_filter);
-
-        // use stackdriver format if available and requested
-        #[cfg(feature = "stackdriver")]
-        if std::env::var("LOG_FORMAT").unwrap_or_default() == "stackdriver" {
-            layered_registry
-                .with(tracing_stackdriver::layer().with_writer(std::io::stdout))
-                .try_init()?;
-            return Ok(());
-        }
-
-        // otherwise use the default format
+    // use stackdriver format if available and requested
+    #[cfg(feature = "stackdriver")]
+    if std::env::var("LOG_FORMAT").unwrap_or_default() == "stackdriver" {
         layered_registry
-            .with(
-                tracing_subscriber::fmt::Layer::new().with_timer(
-                    tracing_subscriber::fmt::time::LocalTime::new(
-                        time::format_description::parse("[hour]:[minute]:[second]")
-                            .expect("format string should be valid!"),
-                    ),
-                ),
-            )
+            .with(tracing_stackdriver::layer().with_writer(std::io::stdout))
             .try_init()?;
-
-        Ok(())
+        return Ok(());
     }
+
+    #[cfg(all(not(feature = "stackdriver"), not(feature = "tracing-tree")))]
+    let format_layer = tracing_subscriber::fmt::Layer::new().compact().with_timer(
+        tracing_subscriber::fmt::time::LocalTime::new(
+            time::format_description::parse("[hour]:[minute]:[second]")
+                .expect("format string should be valid!"),
+        ),
+    );
+
+    #[cfg(feature = "tracing-tree")]
+    let format_layer = tracing_tree::HierarchicalLayer::default()
+        .with_targets(false)
+        .with_indent_lines(true)
+        .with_span_retrace(true)
+        .with_deferred_spans(true);
+
+    // otherwise use the default format
+    registry.with(format_layer).try_init()?;
+
+    Ok(())
 }
 
 #[cfg(feature = "production")]

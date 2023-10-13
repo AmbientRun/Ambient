@@ -161,7 +161,9 @@ pub fn server_systems() -> SystemGroup {
                                 },
                             )
                             .unwrap(),
-                        Err(err) => log::warn!("Failed to load collider from {}: {:?}", url, err),
+                        Err(err) => {
+                            tracing::warn!("Failed to load collider from {}: {:?}", url, err)
+                        }
                     }
                 }
             }),
@@ -367,7 +369,7 @@ pub fn server_systems() -> SystemGroup {
                         let roff = world.get(id, rest_offset()).ok();
                         for shape in shapes.iter_mut() {
                             if !actor.attach_shape(shape) {
-                                log::error!("Failed to attach shape to entity {}", id);
+                                tracing::error!("Failed to attach shape to entity {}", id);
                                 actor.as_actor().remove_user_data::<PxActorUserData>();
                                 actor.release();
                                 return;
@@ -637,7 +639,7 @@ impl Collider {
         if convex { &self.convex } else { &self.concave }
             .iter()
             .map(|(transform, mesh)| {
-                tracing::info!(transform = ?transform.to_scale_rotation_translation(), "Spawning convex mesh with transform");
+                tracing::debug!(transform = ?transform.to_scale_rotation_translation(), "Spawning convex mesh with transform");
                 // Read the scale that was applied with the model local transform
                 let (scale, rotation, translation) = (Mat4::from_scale(scale) * *transform).to_scale_rotation_translation();
 

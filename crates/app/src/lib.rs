@@ -325,7 +325,7 @@ impl AppBuilder {
         let (window, event_loop) = if self.headless.is_some() {
             (None, None)
         } else {
-            let event_loop = self.event_loop.unwrap_or_else(EventLoop::new);
+            let event_loop = self.event_loop.unwrap_or_default();
             let window = WindowBuilder::new().with_inner_size(winit::dpi::LogicalSize {
                 width: settings.render.resolution().0,
                 height: settings.render.resolution().1,

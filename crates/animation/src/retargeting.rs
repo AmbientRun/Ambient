@@ -53,11 +53,7 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
             .abs()
             .context(format!("Expected absolute url, got: {}", self.clip))?
             .into();
-        let anim_model = ModelFromUrl(clip_url.model_crate().context("Invalid clip url")?.model())
-            .get(&assets)
-            .await
-            .context("Failed to load model")?;
-        let clip = AnimationClipFromUrl::new(clip_url.unwrap_abs(), true)
+        let clip = AnimationClipFromUrl::new(clip_url.clone().unwrap_abs(), true)
             .get(&assets)
             .await
             .context("No such clip")?;
@@ -70,6 +66,11 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
                 Ok(Arc::new(clip))
             }
             AnimationRetargeting::AnimationScaled { normalize_hip } => {
+                let anim_model =
+                    ModelFromUrl(clip_url.model_crate().context("Invalid clip url")?.model())
+                        .get(&assets)
+                        .await
+                        .context("Failed to load model")?;
                 let retarget_model_url = self
                     .retarget_model
                     .context("No retarget_model specified")?

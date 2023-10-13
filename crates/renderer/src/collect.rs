@@ -91,7 +91,7 @@ pub(crate) struct RendererCollectState {
 
 impl RendererCollectState {
     pub fn new(gpu: &Gpu) -> Self {
-        log::debug!("Setting up renderer collect state");
+        tracing::debug!("Setting up renderer collect state");
         Self {
             params: TypedBuffer::new_init(
                 gpu,

@@ -36,7 +36,7 @@ struct Shared(Arc<String>);
 
 impl Clone for Shared {
     fn clone(&self) -> Self {
-        tracing::info!(
+        tracing::trace!(
             "Cloning {}. Strong: {}",
             &self.0,
             Arc::strong_count(&self.0)
@@ -58,7 +58,7 @@ impl Drop for Shared {
 pub struct DroppedClosure;
 impl Drop for DroppedClosure {
     fn drop(&mut self) {
-        tracing::info!("Dropping closure");
+        tracing::debug!("Dropping closure");
     }
 }
 
@@ -82,7 +82,7 @@ impl ElementComponent for B {
 
 impl Drop for B {
     fn drop(&mut self) {
-        tracing::info!("Dropping B");
+        tracing::debug!("Dropping B");
     }
 }
 

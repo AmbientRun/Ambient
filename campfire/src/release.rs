@@ -218,23 +218,19 @@ fn update_version(
     for (path, _) in &all_publishable_crates {
         edit_toml(path, |toml| {
             for dependencies in ["dependencies", "build-dependencies", "dev-dependencies"] {
-                if let Some(mut deps) = toml.get_mut(dependencies) {
-                    update_ambient_dependency_versions(&candidate_crates, &mut deps, new_version);
+                if let Some(deps) = toml.get_mut(dependencies) {
+                    update_ambient_dependency_versions(&candidate_crates, deps, new_version);
                 }
             }
 
             // Handle `[target.'cfg(not(target_os = "unknown"))'.dependencies]`
             if let Some(target) = toml.get_mut("target").and_then(|t| t.as_table_like_mut()) {
                 for (_, target_table) in target.iter_mut() {
-                    if let Some(mut deps) = target_table
+                    if let Some(deps) = target_table
                         .get_mut("dependencies")
                         .filter(|t| t.is_table_like())
                     {
-                        update_ambient_dependency_versions(
-                            &candidate_crates,
-                            &mut deps,
-                            new_version,
-                        );
+                        update_ambient_dependency_versions(&candidate_crates, deps, new_version);
                     }
                 }
             }
@@ -260,6 +256,7 @@ fn update_version(
 
     // Run `cargo check` in the root and API to force the lockfile to update
     check(".")?;
+    check("web")?;
     check("guest/rust")?;
 
     Ok(())
@@ -484,7 +481,7 @@ fn edit_toml(
 }
 
 fn check_docker_build() -> anyhow::Result<()> {
-    log::info!("Building Docker image...");
+    tracing::info!("Building Docker image...");
     let success = Command::new("docker")
         .args(["build", ".", "-t", "ambient_campfire"])
         .spawn()?
@@ -493,13 +490,13 @@ fn check_docker_build() -> anyhow::Result<()> {
     if !success {
         anyhow::bail!("failed to build Docker image");
     }
-    log::info!("Built Docker image.");
+    tracing::info!("Built Docker image.");
 
     Ok(())
 }
 
 fn check_docker_run() -> anyhow::Result<()> {
-    log::info!("Running Docker instance...");
+    tracing::info!("Running Docker instance...");
     let success = Command::new("docker")
         .args([
             "run",
@@ -522,7 +519,7 @@ fn check_docker_run() -> anyhow::Result<()> {
     if !success {
         anyhow::bail!("failed to execute cargo run in Docker instance");
     }
-    log::info!("Ran Docker instance.");
+    tracing::info!("Ran Docker instance.");
 
     Ok(())
 }
@@ -571,7 +568,7 @@ fn check_crates_io_validity() -> anyhow::Result<()> {
 }
 
 fn check_msrv() -> anyhow::Result<()> {
-    log::info!("Checking MSRV...");
+    tracing::info!("Checking MSRV...");
 
     let msrv = {
         let output = Command::new("cargo")
@@ -632,12 +629,12 @@ fn check_msrv() -> anyhow::Result<()> {
 
     // TODO: check dockerfile
 
-    log::info!("MSRV OK.");
+    tracing::info!("MSRV OK.");
     Ok(())
 }
 
 fn check_builds() -> anyhow::Result<()> {
-    log::info!("Checking builds...");
+    tracing::info!("Checking builds...");
     let success = Command::new("cargo")
         .args(["build", "--release"])
         .spawn()?
@@ -657,18 +654,18 @@ fn check_builds() -> anyhow::Result<()> {
         anyhow::bail!("failed to build guest crate");
     }
 
-    log::info!("Builds OK.");
+    tracing::info!("Builds OK.");
     Ok(())
 }
 
 fn check_changelog() -> anyhow::Result<()> {
-    log::info!("Checking CHANGELOG...");
+    tracing::info!("Checking CHANGELOG...");
 
     // TODO: Currently unimplemented; the implementation needs to handle
     // commented out Markdown, so it has to have some degree of smarts about it
     let _changelog = std::fs::read_to_string(CHANGELOG)?;
 
-    log::info!("CHANGELOG skipped (unimplemented, see code).");
+    tracing::info!("CHANGELOG skipped (unimplemented, see code).");
     Ok(())
 }
 

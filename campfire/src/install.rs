@@ -78,7 +78,7 @@ fn install_version(suffix: &str, args: &[&str]) -> anyhow::Result<()> {
         install_root_bin.join(ambient_executable_name("")),
         &target_path,
     )?;
-    log::info!("Installed ambient to {}", target_path.display());
+    tracing::info!("Installed ambient to {}", target_path.display());
 
     Ok(())
 }
