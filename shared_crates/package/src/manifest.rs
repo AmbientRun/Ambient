@@ -77,6 +77,7 @@ impl PackageId {
     // so the max value looks like this:
     // 11001    = 25 (Base32 'Z') on highest 5 bits
     //      111 = max for the lowest 3 since it can be anything
+    #[allow(clippy::unusual_byte_groupings)]
     const MAX_VALUE_FOR_FIRST_BYTE: u8 = 0b11001_111;
 
     pub fn as_str(&self) -> &str {

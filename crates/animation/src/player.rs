@@ -257,11 +257,9 @@ pub fn animation_player_systems() -> SystemGroup {
                                 }
                                 Err(err) => {
                                     tracing::warn!("Failed to load clip: {:?}", err);
-                                    world.add_component(
-                                        id,
-                                        clip_load_error(),
-                                        format!("{:?}", err),
-                                    );
+                                    world
+                                        .add_component(id, clip_load_error(), format!("{:?}", err))
+                                        .ok();
                                 }
                             }
                             world.add_component(id, clip_loaded(), ()).ok();
