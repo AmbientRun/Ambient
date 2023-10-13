@@ -304,7 +304,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
         .map(|x| x.clone())
         .unwrap_or_else(|_| "Unknown".to_string());
 
-    let span = tracing::info_span!("load_module").entered();
+    let _span = tracing::info_span!("load_module").entered();
 
     #[cfg(not(target_os = "unknown"))]
     let preopened_dir = world
