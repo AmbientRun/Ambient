@@ -2,16 +2,16 @@
 id = "xgafi5ckk5vhxscb6tqubfvy2fwfyqxo"
 name = "Tangent Behavior: Character"
 description = "Implements the character behavior for Tangent."
-version = "0.3.1-nightly-2023-10-13"
+version = "0.3.1-nightly-2023-10-14"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.1-nightly-2023-10-13"
+ambient_version = "0.3.1-nightly-2023-10-14"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "4w10WYjE15QKjFt3ft4pNR" }
-game_object = { path = "../../../../schemas/game_object", deployment = "14rSbtbGU3wz0ikZqaalU0" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "1oniOoWNFVGVlVb2DEIbQg" }
+tangent_schema = { path = "../../schema", deployment = "1ZSCiPWZKV4yr0jZU9jDo3" }
+game_object = { path = "../../../../schemas/game_object", deployment = "7gHM8U0sb9LKwYdNtY0nGj" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "1wYZbcPUStQL2xqyoGtEgW" }
 
-base_assets = { path = "../../../../std/base_assets", deployment = "6bwL3VkF7EcvsdVGxxLV4g" }
-character_animation = { path = "../../../../std/character_animation", deployment = "4tzwf7ZMOAfk81o1TmD5eN" }
-character_movement = { path = "../../../../std/character_movement", deployment = "5wPUEkLAZERbDMVYlLLIQP" }
+base_assets = { path = "../../../../std/base_assets", deployment = "4CqmpyY6595h9FgSYFUeoz" }
+character_animation = { path = "../../../../std/character_animation", deployment = "2lAGqDB9btl314lkx8nERZ" }
+character_movement = { path = "../../../../std/character_movement", deployment = "4vZ4ZwFq1X4VdrvZaRVEpH" }

@@ -2,10 +2,10 @@
 id = "mkd4mhans4bdn3mvmt45vxqbxepdhys3"
 name = "Tangent Camera: Follow"
 description = "Implements a follow camera for vehicles."
-version = "0.3.1-nightly-2023-10-13"
+version = "0.3.1-nightly-2023-10-14"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.1-nightly-2023-10-13"
+ambient_version = "0.3.1-nightly-2023-10-14"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "4w10WYjE15QKjFt3ft4pNR" }
+tangent_schema = { path = "../../schema", deployment = "1ZSCiPWZKV4yr0jZU9jDo3" }
