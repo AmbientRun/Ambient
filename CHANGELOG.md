@@ -51,6 +51,8 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 ### Fixed
 
+- **Rendering**: Fixed 3d line drawing when they're behind the camera
+
 ### Community PRs to internals
 
 These PRs are not directly user-facing, but improve the development experience. They're just as appreciated!
