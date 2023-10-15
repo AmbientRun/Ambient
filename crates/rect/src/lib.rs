@@ -36,7 +36,7 @@ use ambient_renderer::{
     MATERIAL_BIND_GROUP,
 };
 use async_trait::async_trait;
-use glam::{uvec4, vec4, Quat, UVec3, UVec4, Vec3, Vec4};
+use glam::{uvec4, vec4, Quat, UVec3, UVec4, Vec3, Vec3Swizzles, Vec4};
 use wgpu::{BindGroup, BindGroupLayoutEntry, Extent3d};
 
 pub use ambient_ecs::generated::rect::components::{
@@ -96,16 +96,26 @@ pub fn systems() -> SystemGroup {
                     // This needs to run each frame because the camera may change
                     if let Some(world_cam) = Camera::get_active(world, main_scene(), None) {
                         if let Some(ui_cam) = Camera::get_active(world, ui_scene(), None) {
-                            let mat =
-                                ui_cam.projection_view().inverse() * world_cam.projection_view();
+                            let world_m = world_cam.projection_view();
+                            let ui = ui_cam.projection_view().inverse();
 
                             for (id, (p_from, p_to)) in q.collect_cloned(world, qs) {
-                                world
-                                    .set_if_changed(id, line_from(), mat.project_point3(p_from))
-                                    .ok();
-                                world
-                                    .set_if_changed(id, line_to(), mat.project_point3(p_to))
-                                    .ok();
+                                let mut from = world_m.project_point3(p_from);
+                                // NOTE (fred): This fixes a problem where the lines would be flipped
+                                // when they're behind the camera. I'm not sure why though.
+                                if from.z < 0. {
+                                    from.x = -from.x;
+                                    from.y = -from.y;
+                                }
+                                from = ui.project_point3(from);
+                                let mut to = world_m.project_point3(p_to);
+                                if to.z < 0. {
+                                    to.x = -to.x;
+                                    to.y = -to.y;
+                                }
+                                to = ui.project_point3(to);
+                                world.set_if_changed(id, line_from(), from).ok();
+                                world.set_if_changed(id, line_to(), to).ok();
                             }
                         }
                     }
@@ -117,25 +127,17 @@ pub fn systems() -> SystemGroup {
             ))
             .to_system(|q, world, qs, _| {
                 for (id, (from, to, line_width)) in q.collect_cloned(world, qs) {
-                    // we need to handle the 180 degree rotation case
-                    let dir = (to - from).normalize();
-                    // no need to compare y
-                    // it can be problematic even when it's not equal but closer than 0.001
-                    // see:
-                    // https://docs.rs/glam/latest/glam/f32/struct.Quat.html#method.from_rotation_arc
-                    let rot = if from.x >= to.x {
-                        Quat::from_rotation_arc(-Vec3::X, dir)
-                    } else {
-                        Quat::from_rotation_arc(Vec3::X, dir)
-                    };
+                    let dir = to - from;
+                    let angle = dir.y.atan2(dir.x);
+                    let rot = Quat::from_rotation_z(angle);
                     world
                         .add_components(
                             id,
                             Entity::new()
-                                .with(translation(), (from + to) / 2.)
+                                .with(translation(), ((from + to).xy() / 2.).extend(0.))
                                 .with(rotation(), rot)
                                 .with(rect(), ())
-                                .with(width(), (from - to).length())
+                                .with(width(), (from - to).xy().length())
                                 .with(height(), line_width),
                         )
                         .unwrap();
