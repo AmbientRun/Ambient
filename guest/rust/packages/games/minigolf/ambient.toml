@@ -9,7 +9,7 @@ content = { type = "Playable" }
 ambient_version = "0.3.1-nightly-2023-10-15"
 
 [dependencies]
-hide_cursor = { path = "../../std/hide_cursor", deployment = "2waibdbN46JzlsnQ9hcEX1" }
+hide_cursor = { path = "../../std/hide_cursor", deployment = "3lOeFUPQocqyTZlJcem2hQ" }
 
 [components]
 next_player_hue = { type = "F32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = [
