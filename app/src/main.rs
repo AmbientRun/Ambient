@@ -195,13 +195,13 @@ fn setup_logging() -> anyhow::Result<()> {
     // use stackdriver format if available and requested
     #[cfg(feature = "stackdriver")]
     if std::env::var("LOG_FORMAT").unwrap_or_default() == "stackdriver" {
-        layered_registry
+        registry
             .with(tracing_stackdriver::layer().with_writer(std::io::stdout))
             .try_init()?;
         return Ok(());
     }
 
-    #[cfg(all(not(feature = "stackdriver"), not(feature = "tracing-tree")))]
+    #[cfg(not(feature = "tracing-tree"))]
     let format_layer = tracing_subscriber::fmt::Layer::new().compact().with_timer(
         tracing_subscriber::fmt::time::LocalTime::new(
             time::format_description::parse("[hour]:[minute]:[second]")
