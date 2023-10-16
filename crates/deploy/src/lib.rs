@@ -49,7 +49,7 @@ pub async fn deploy(
         .as_ref()
         .with_context(|| format!("The package at {path:?} does not have a valid ID"))?
         .to_string();
-    log::info!(
+    tracing::info!(
         "Deploying package \"{}\" ({})",
         manifest.package.name,
         package_id
@@ -67,7 +67,7 @@ pub async fn deploy(
 
     // collect all files to deploy
     let mut asset_path_to_file_path = collect_files_to_deploy(base_path, package_root)?;
-    log::debug!("Found {} files to deploy", asset_path_to_file_path.len());
+    tracing::debug!("Found {} files to deploy", asset_path_to_file_path.len());
 
     // check that all required files are present
     for required_file in REQUIRED_FILES {
@@ -116,23 +116,23 @@ pub async fn deploy(
     while let Some(resp) = response_stream.next().await {
         match resp {
             Ok(resp) => {
-                log::trace!("Deployed asset response: {:?}", resp);
+                tracing::trace!("Deployed asset response: {:?}", resp);
                 match resp.message {
                     Some(Message::Finished(Deployment { id })) => {
                         if deployment.is_some() {
-                            log::warn!("Received multiple deployment finished messages");
+                            tracing::warn!("Received multiple deployment finished messages");
                         }
                         deployment = Some(id);
                     }
                     Some(Message::Error(err)) => {
                         // error from the server -> just log it and abort as we can't continue
-                        log::error!("Received error message: {:?}", err);
+                        tracing::error!("Received error message: {:?}", err);
                         let _ = interrupt_tx.send(());
                         anyhow::bail!("Deployment failed");
                     }
                     Some(Message::Warning(msg)) => {
                         // warning from the server -> just log it
-                        log::warn!("Received warning message from server: {}", msg);
+                        tracing::warn!("Received warning message from server: {}", msg);
                     }
                     Some(Message::AcceptedPath(path)) => {
                         // uploaded file has been accepted (either after MD5 or contents)
@@ -147,12 +147,12 @@ pub async fn deploy(
                             .await?;
                     }
                     None => {
-                        log::warn!("Received empty message");
+                        tracing::warn!("Received empty message");
                     }
                 }
             }
             Err(err) => {
-                log::error!("Failed to deploy asset: {:?}", err);
+                tracing::error!("Failed to deploy asset: {:?}", err);
             }
         }
     }
@@ -186,7 +186,7 @@ fn collect_files_to_deploy(
             );
             if let Some(path) = path {
                 if path.chars().any(|c| c == '\n' || c == '\r') {
-                    log::error!(
+                    tracing::error!(
                         "Path contains Line Feed or Carriage Return character: {:?}",
                         file_path
                     );
@@ -195,7 +195,7 @@ fn collect_files_to_deploy(
                     Some((path, file_path))
                 }
             } else {
-                log::error!("Non-UTF-8 path: {:?}", file_path);
+                tracing::error!("Non-UTF-8 path: {:?}", file_path);
                 None
             }
         })
@@ -294,7 +294,7 @@ async fn process_file_requests(
     loop {
         tokio::select! {
             _ = &mut interrupt_rx => {
-                log::debug!("Interrupted");
+                tracing::debug!("Interrupted");
                 break;
             }
             request = rx.recv_async() => {
@@ -303,7 +303,7 @@ async fn process_file_requests(
                 let path = request.path();
                 let Some(file_path) = asset_path_to_file_path.get(path) else {
                     // we do a check here to prevent server from asking for files that it shouldn't ask for
-                    log::warn!("Unknown asset path: {:?}", path);
+                    tracing::warn!("Unknown asset path: {:?}", path);
                     continue;
                 };
 
@@ -315,7 +315,7 @@ async fn process_file_requests(
                             .chain_update(&content)
                             .finalize()
                             .to_vec();
-                        log::debug!("Sending MD5 for {:?} = {}", path, hex(&md5_digest));
+                        tracing::debug!("Sending MD5 for {:?} = {}", path, hex(&md5_digest));
                         tx.send_async(DeployAssetRequest {
                             package_id: package_id.clone(),
                             contents: vec![AssetContent {
@@ -328,7 +328,7 @@ async fn process_file_requests(
                     }
                     FileRequest::SendContents(path) => {
                         // send file contents
-                        log::debug!("Sending contents for {:?}", path);
+                        tracing::debug!("Sending contents for {:?}", path);
                         let requests = asset_requests_from_file_path(&package_id, &path, file_path).await?;
                         let count = requests.len();
                         for (idx, request) in requests.into_iter().enumerate() {
@@ -340,7 +340,7 @@ async fn process_file_requests(
                             else {
                                 unreachable!()
                             };
-                            log::debug!(
+                            tracing::debug!(
                                 "Deploying asset chunk {}/{} {} {}B/{}B",
                                 idx + 1,
                                 count,
@@ -355,13 +355,13 @@ async fn process_file_requests(
                         // clear deployed file
                         let removed = asset_path_to_file_path.remove(&path);
                         if removed.is_none() {
-                            log::warn!(
+                            tracing::warn!(
                                 "Received accepted path for unknown (or previously accepted) asset: {:?}",
                                 path
                             );
                         }
                         if asset_path_to_file_path.is_empty() {
-                            log::debug!("All assets deployed");
+                            tracing::debug!("All assets deployed");
                             break;
                         }
                     }

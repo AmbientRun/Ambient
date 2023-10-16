@@ -22,7 +22,6 @@ ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
     "native",
 ] }
 
-tracing = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 byteorder = { workspace = true }
@@ -31,7 +30,7 @@ data-encoding = { workspace = true }
 flume = { workspace = true }
 glam = { workspace = true }
 itertools = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 once_cell = { workspace = true }
 parking_lot = { workspace = true }
 paste = { workspace = true }

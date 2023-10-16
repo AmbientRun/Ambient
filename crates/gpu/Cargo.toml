@@ -22,7 +22,6 @@ bytemuck = { workspace = true }
 winit = { workspace = true }
 wgpu = { workspace = true }
 glam = { workspace = true }
-log = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 byteorder = { workspace = true }

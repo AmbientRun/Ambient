@@ -1,10 +1,17 @@
 pub const REV_FULL: &str = env!("REV_FULL");
 pub const REV_10: &str = env!("REV_10");
 
+#[derive(Debug)]
+pub struct InitError;
+
 /// Initialise git revisions. Fails if called multiple times.
-pub fn init() -> Result<(), ()> {
-    ambient_git_rev::REV_FULL.set(REV_FULL.into()).or(Err(()))?;
-    ambient_git_rev::REV_10.set(REV_10.into()).or(Err(()))
+pub fn init() -> Result<(), InitError> {
+    ambient_git_rev::REV_FULL
+        .set(REV_FULL.into())
+        .or(Err(InitError))?;
+    ambient_git_rev::REV_10
+        .set(REV_10.into())
+        .or(Err(InitError))
 }
 
 // This is a hack to get cargo to rebuild when the git log changes

@@ -30,9 +30,10 @@ When composing text that is shown to the user (including error messages and log 
   - **Example**: `Error while processing single pipeline in "lol.toml": No such file or directory (os error 2)` is preferable to `In pipeline "lol.toml": No such file or directory (os error 2)`.
 - In general, try to optimize for easy copy-ability / clicking. If it's a link, you should be able to click it in your terminal without having to manually select it.
   - **Example**: `` Visit `https://example.com/` for more information. `` is preferable to `Visit https://example.com/ for more information.`, as the former is more likely to be clickable in a terminal.
-- Use logging instead of `println`. This is because many events within Ambient have a time component to them, and the output should convey that to ensure the user is aware of the time that the event occurred.
-  - **Example**: `log::info!("Server running")` is preferable to `println!("Server running")` as the latter does not convey the time that the event occurred.
-
+- Use tracing instead of `println`. This is because many events within Ambient have a time component to them, and the output should convey that to ensure the user is aware of the time that the event occurred.
+  - **Example**: `tracing::info!("Server running")` is preferable to `println!("Server running")` as the latter does not convey the time that the event occurred. 
+  - Prefer `tracing::info!` for user facing events, and `tracing::debug!` or `tracing::trace!` for verbose information as the default log filter is `info`.
+  
 ## Performance
 
 ### Error handling

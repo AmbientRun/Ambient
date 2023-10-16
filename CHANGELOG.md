@@ -15,8 +15,6 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 
 #### Other
 
-#### Examples
-
 ### Changed
 
 #### Breaking
@@ -31,6 +29,35 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 ### Removed
 -->
+
+## Unreleased (YYYY-MM-DD)
+
+### Added
+
+#### Headline features
+
+#### Other
+
+- **Package/character_movement**: CharacterMovement concept added
+- **Assets**: Added support for animations and skinning for assimp
+- **Examples**: Added assimp example
+- **Examples**: Added benchmark/animations example
+
+### Changed
+
+#### Breaking
+
+#### Non-breaking
+
+### Fixed
+
+- **Rendering**: Fixed 3d line drawing when they're behind the camera
+
+### Community PRs to internals
+
+These PRs are not directly user-facing, but improve the development experience. They're just as appreciated!
+
+### Removed
 
 ## Version 0.3.0 (2023-10-04)
 

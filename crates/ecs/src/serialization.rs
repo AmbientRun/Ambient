@@ -155,9 +155,9 @@ impl std::ops::Deref for ECSDeserializationWarnings {
 impl ECSDeserializationWarnings {
     pub fn log_warnings(&self) {
         if !self.warnings.is_empty() {
-            log::warn!("{} component bad format errors", self.warnings.len());
+            tracing::warn!("{} component bad format errors", self.warnings.len());
             for (id, comp, err) in self.warnings.iter().take(10) {
-                log::warn!("Bad component format {} {}: {}", id, comp, err);
+                tracing::warn!("Bad component format {} {}: {}", id, comp, err);
             }
         }
     }

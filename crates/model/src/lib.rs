@@ -171,7 +171,7 @@ async fn internal_spawn_models_from_defs(
 
             match model {
                 Ok(model) => {
-                    tracing::info!("Spawning model: {:?} for {ids:?}", model.name());
+                    tracing::debug!("Spawning model: {:?} for {ids:?}", model.name());
                     let gpu = world.resource(gpu()).clone();
                     model.batch_spawn(
                         &gpu,

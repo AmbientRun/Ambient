@@ -52,7 +52,7 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
     if !release_build {
         // Using string interpolation due to a rustfmt bug where it will break
         // if any one line is too long
-        log::warn!(
+        tracing::warn!(
             "{} {}",
             "Deploying a debug build which might involve uploading large files.",
             "Remove `--debug` to deploy a release build."
@@ -218,7 +218,7 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
 
         match deployment_id {
             Deployment::Skipped => {
-                log::info!(
+                tracing::info!(
                     "Package \"{main_package_name}\" was already deployed, skipping deployment"
                 );
             }
@@ -238,10 +238,10 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                     Some(&deployment_id),
                 );
 
-                log::info!("Package \"{main_package_name}\" deployed successfully!");
-                log::info!("  Deployment ID: {deployment_id}");
-                log::info!("  Join: ambient join '{ensure_running_url}'");
-                log::info!("  Web URL: '{}'", web_url.bright_green());
+                tracing::info!("Package \"{main_package_name}\" deployed successfully!");
+                tracing::info!("  Deployment ID: {deployment_id}");
+                tracing::info!("  Join: ambient join '{ensure_running_url}'");
+                tracing::info!("  Web URL: '{}'", web_url.bright_green());
 
                 if first_deployment_id.is_none() {
                     first_deployment_id = Some(deployment_id);
@@ -256,7 +256,7 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
         let server =
             ambient_cloud_client::ensure_server_running(assets, api_server, token.into(), spec)
                 .await?;
-        log::info!("Deployed package is running at {}", server.host);
+        tracing::info!("Deployed package is running at {}", server.host);
     }
 
     Ok(())

@@ -22,7 +22,7 @@ impl Serve {
             .await
             .context("Failed to query node_modules directory")?
         {
-            log::info!("Installing node modules");
+            tracing::info!("Installing node modules");
             tokio::process::Command::new("npm")
                 .args(["install", "-d"])
                 .current_dir("web/www")
@@ -92,7 +92,7 @@ impl Serve {
             return Ok(());
         }
 
-        log::info!("Enabled watching");
+        tracing::info!("Enabled watching");
 
         let (tx, rx) = flume::unbounded();
 
@@ -106,7 +106,7 @@ impl Serve {
                         .collect_vec();
 
                     if !paths.is_empty() {
-                        log::info!("Event: {:#?}", event.kind);
+                        tracing::info!("Event: {:#?}", event.kind);
                         let _ = tx.send(paths);
                     }
                 }
@@ -114,7 +114,7 @@ impl Serve {
 
         for entry in find_top_level_dirs(".") {
             let entry = entry?;
-            log::info!("Watching entry {entry:?}");
+            tracing::info!("Watching entry {entry:?}");
             watcher.watch(&entry.path(), RecursiveMode::Recursive)?;
         }
 
@@ -122,12 +122,12 @@ impl Serve {
             tokio::time::sleep(Duration::from_millis(1000)).await;
 
             paths.extend(rx.drain().flatten());
-            log::info!("Changed paths: {paths:?}");
-            log::info!("Rebuilding...");
+            tracing::info!("Changed paths: {paths:?}");
+            tracing::info!("Rebuilding...");
 
             if let Err(err) = self.build.build().await {
-                log::error!("Failed to build: {err}");
-                log::info!("Finished building the web client");
+                tracing::error!("Failed to build: {err}");
+                tracing::info!("Finished building the web client");
             }
         }
 
@@ -145,7 +145,7 @@ impl Serve {
 
 //         let path = entry.path();
 //         if watching.insert(path.to_path_buf()) {
-//             log::info!("Watching new entry: {path:?}");
+//             tracing::info!("Watching new entry: {path:?}");
 //             watcher.watch(entry.path(), RecursiveMode::NonRecursive)?;
 //         }
 //     }
@@ -160,7 +160,7 @@ fn filter_path(path: impl AsRef<Path>) -> bool {
         let seg: &Path = seg.as_ref();
         match seg.to_str() {
             None => {
-                log::error!("Path is not UTF-8: {path:?}");
+                tracing::error!("Path is not UTF-8: {path:?}");
                 false
             }
             Some(
@@ -177,7 +177,7 @@ pub fn find_top_level_dirs(
     dir: impl AsRef<Path>,
 ) -> impl Iterator<Item = Result<std::fs::DirEntry, std::io::Error>> {
     let dir = dir.as_ref();
-    log::info!("Walking directory {dir:?}");
+    tracing::info!("Walking directory {dir:?}");
 
     std::fs::read_dir(dir).unwrap().filter_map_ok(|entry| {
         let path = entry.path();

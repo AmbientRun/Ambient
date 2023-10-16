@@ -9,7 +9,6 @@ use ambient_network::{
 };
 use futures::Future;
 use parking_lot::MutexGuard;
-use tracing::info_span;
 
 use crate::{
     common_intent_systems, intent, intent_applied, intent_failed, intent_id, intent_id_index,
@@ -291,7 +290,7 @@ where
     }
 
     fn merge(&self, ctx: &mut IntentContext<'_>, a: EntityId, b: EntityId) {
-        let _span = info_span!("merge_intent", self.name).entered();
+        let _span = tracing::debug_span!("merge_intent", self.name).entered();
         let world = &mut ctx.world;
         let old_arg = world.get_ref(a, self.intent).expect("Missing old intent");
         let old_state = world

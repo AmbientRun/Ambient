@@ -215,7 +215,7 @@ impl ComponentRegistry {
             "Static name does not match provided name"
         );
 
-        log::debug!("Registering external component: {path}");
+        tracing::debug!("Registering external component: {path}");
 
         attributes.set(External);
         self.register(path, vtable, Some(attributes))
@@ -226,7 +226,7 @@ impl ComponentRegistry {
         path: &str,
         vtable: &'static ComponentVTable<()>,
     ) -> ComponentDesc {
-        log::debug!("Registering static component: {path}");
+        tracing::debug!("Registering static component: {path}");
         self.register(path.into(), vtable, Default::default())
     }
 

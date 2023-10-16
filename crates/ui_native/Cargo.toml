@@ -27,7 +27,6 @@ ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
 glam = { workspace = true }
 winit = { workspace = true }
 itertools = { workspace = true }
-log = { workspace = true }
 parking_lot = { workspace = true }
 tokio = { workspace = true }
 bytemuck = { workspace = true }

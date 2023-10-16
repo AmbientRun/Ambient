@@ -117,12 +117,12 @@ impl ServerProtoState {
     ) -> anyhow::Result<()> {
         match (frame, &self) {
             (_, Self::Disconnected) => {
-                tracing::info!("Client is disconnected, ignoring control frame");
+                tracing::debug!("Client is disconnected, ignoring control frame");
                 Ok(())
             }
             (ClientRequest::Connect(user_id), Self::PendingConnection) => {
                 // Connect the user
-                tracing::info!("User connected");
+                tracing::debug!("User connected");
                 self.process_connect(data, user_id);
                 Ok(())
             }
@@ -178,10 +178,10 @@ impl ServerProtoState {
 
             instance.world.add_components(id, entity_data).unwrap();
 
-            tracing::info!(user_id, ?id, "Player reconnected");
+            tracing::debug!(user_id, ?id, "Player reconnected");
         } else {
             let id = instance.spawn_player(entity_data);
-            tracing::info!(user_id, ?id, "Player connected");
+            tracing::debug!(user_id, ?id, "Player connected");
         }
 
         *self = Self::Connected(ConnectedClient {
@@ -193,7 +193,7 @@ impl ServerProtoState {
     #[tracing::instrument(level = "debug")]
     pub fn process_disconnect(&mut self, data: &ConnectionData) {
         if let Self::Connected(ConnectedClient { user_id, .. }) = self {
-            tracing::info!(%user_id, "User disconnected");
+            tracing::debug!(%user_id, "User disconnected");
             let mut state = data.state.lock();
 
             let Some(player) = state.players.get(&**user_id) else {

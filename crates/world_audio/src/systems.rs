@@ -88,7 +88,9 @@ pub fn audio_systems() -> SystemGroup {
 
                     let mixer = world.resource(crate::audio_mixer());
                     let Ok(id) = world.get(playing_entity, crate::sound_id()) else {
-                        log::error!("No sound id component on playing entity; cannot stop audio.");
+                        tracing::error!(
+                            "No sound id component on playing entity; cannot stop audio."
+                        );
                         continue;
                     };
                     mixer.stop(id);
@@ -182,7 +184,7 @@ pub fn audio_systems() -> SystemGroup {
                                 .and_then(|c| c.last())
                                 .copied()
                             else {
-                                log::error!(
+                                tracing::error!(
                                     "No children component on parent entity; cannot play audio."
                                 );
                                 return;

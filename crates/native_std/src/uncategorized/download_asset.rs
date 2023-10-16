@@ -99,16 +99,16 @@ pub(crate) async fn download<T: 'static + Send, F: Future<Output = anyhow::Resul
         let max_retries = 12;
         for i in 0..max_retries {
             let semaphore = DownloadSemaphore.get(&assets);
-            log::info!("Download [pending ] {}", url_short);
+            tracing::debug!("Download [pending ] {}", url_short);
             let _permit = semaphore.acquire().await.unwrap();
-            log::info!("Download [download] {}", url_short);
+            tracing::debug!("Download [download] {}", url_short);
             let resp = client
                 .get(url.clone())
                 .send()
                 .await
                 .with_context(|| format!("Failed to download {url_str}"))?;
             if !resp.status().is_success() {
-                log::warn!("Request for {} failed: {:?}", url_str, resp.status());
+                tracing::warn!("Request for {} failed: {:?}", url_str, resp.status());
                 return Err(anyhow!(
                     "Downloading {url_str} failed, bad status code: {:?}",
                     resp.status()
@@ -116,11 +116,11 @@ pub(crate) async fn download<T: 'static + Send, F: Future<Output = anyhow::Resul
             }
             match map(resp).await {
                 Ok(res) => {
-                    log::info!("Download [complete] {}", url_short);
+                    tracing::debug!("Download [complete] {}", url_short);
                     return Ok(res);
                 }
                 Err(err) => {
-                    log::warn!(
+                    tracing::warn!(
                         "Failed to read body of {url_str}, retrying ({i}/{max_retries}): {:?}",
                         err
                     );
@@ -275,7 +275,7 @@ impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
             std::fs::rename(&tmp_path, &path).context(format!(
                 "Failed to rename tmp file, from: {tmp_path:?}, to: {path:?}"
             ))?;
-            log::info!("Cached asset at {:?}", path);
+            tracing::debug!("Cached asset at {:?}", path);
         }
 
         return Ok(Arc::new(path));

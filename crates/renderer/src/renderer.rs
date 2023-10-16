@@ -578,7 +578,7 @@ impl Renderer {
         std::fs::create_dir_all("tmp").expect("Failed to create tmp dir");
         let mut f = std::fs::File::create("tmp/renderer.txt").expect("Unable to create file");
         self.dump(&mut f);
-        log::info!("Wrote renderer to tmp/renderer.txt");
+        tracing::info!("Wrote renderer to tmp/renderer.txt");
     }
 
     pub fn is_rendered(&self) -> bool {
