@@ -2,7 +2,7 @@
 id = "d7rxxncafgtwf7c3brhsw7oh7h2ccfip"
 name = "Tangent Gameplay: Day-Night"
 description = "Moves the sun across the sky and adds a day-night cycle."
-version = "0.3.1-nightly-2023-10-15"
+version = "0.3.1-nightly-2023-10-16"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.1-nightly-2023-10-15"
+ambient_version = "0.3.1-nightly-2023-10-16"
 authors = ["philpax"]

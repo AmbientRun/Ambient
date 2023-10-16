@@ -2,12 +2,12 @@
 id = "per6j2iqhj3jz4da3fqr75jcj2kqjooo"
 name = "Nameplates"
 description = "Basic 3D nameplates for players."
-version = "0.3.1-nightly-2023-10-15"
+version = "0.3.1-nightly-2023-10-16"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.1-nightly-2023-10-15"
+ambient_version = "0.3.1-nightly-2023-10-16"
 
 [dependencies]
-game_object = { path = "../../schemas/game_object", deployment = "2nSsa1VFDZm8uPJXkN2qzx" }
+game_object = { path = "../../schemas/game_object", deployment = "4o2LFoS5slhNmx31ETg5zZ" }
 
 [components]
 height_offset = { type = "F32", name = "Nameplate Height Offset", description = "The height offset from the base of this entity at which to render a nameplate. If not specified, it will default to this entity's local bounding AABB Z, and if that's not available, it will default to a constant.", attributes = [
