@@ -1,17 +1,13 @@
-use std::{collections::HashMap, pin::Pin, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 use ambient_core::player::get_by_user_id;
 use ambient_ecs::{
-    ComponentRegistry, Entity, EntityId, FrozenWorldDiff, RealSize, WorldChange, WorldDiff,
-    WorldStreamFilter,
+    ComponentRegistry, Entity, EntityId, FrozenWorldDiff, WorldChange, WorldDiff, WorldStreamFilter,
 };
 use ambient_native_std::{fps_counter::FpsSample, log_result};
 use anyhow::Context;
 use bytes::Bytes;
-use futures::{
-    future::{BoxFuture, OptionFuture},
-    Future, Stream, StreamExt,
-};
+use futures::{future::OptionFuture, Stream, StreamExt};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
 use tracing::{debug_span, Instrument};
 use uuid::Uuid;
@@ -26,7 +22,7 @@ use crate::{
         bi_stream_handlers, create_player_entity_data, datagram_handlers, uni_stream_handlers,
     },
     server::{SharedServerState, MAIN_INSTANCE_ID},
-    stream, NetworkError,
+    stream,
 };
 
 use super::ClientRequest;
@@ -438,13 +434,6 @@ pub async fn handle_diffs<S>(
                     merged_changes_count,
                     final_changes_count = diff.changes.len(),
                     bytes = msg.len(),
-                );
-
-                tracing::error!(
-                    "KUBA: diffs_len={} msg bytes={} raw bytes={}",
-                    input_diffs_count,
-                    msg.len(),
-                    diff.changes.real_size()
                 );
 
                 msg

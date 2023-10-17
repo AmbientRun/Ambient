@@ -1,11 +1,9 @@
 use std::{
-    borrow::Cow,
     collections::{HashMap, HashSet},
     fmt::Display,
     sync::Arc,
 };
 
-use bit_set::BitSet;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
@@ -206,7 +204,7 @@ impl<'a> IntoIterator for &'a FrozenWorldDiff {
     type IntoIter = std::slice::Iter<'a, WorldChange>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.changes.into_iter()
+        self.changes.iter()
     }
 }
 
@@ -480,77 +478,5 @@ impl WorldStream {
                 .map(|(id, entity)| WorldChange::SetComponents(id, entity)),
         );
         WorldDiff { changes }
-    }
-}
-
-pub trait RealSize {
-    fn real_size(&self) -> usize;
-}
-
-impl<T: RealSize> RealSize for Vec<T> {
-    fn real_size(&self) -> usize {
-        self.iter().map(RealSize::real_size).sum()
-    }
-}
-
-impl<T: RealSize> RealSize for [T] {
-    fn real_size(&self) -> usize {
-        self.iter().map(RealSize::real_size).sum()
-    }
-}
-
-impl<T: RealSize + ?Sized> RealSize for Arc<T> {
-    fn real_size(&self) -> usize {
-        self.as_ref().real_size()
-    }
-}
-
-impl RealSize for FrozenWorldDiff {
-    fn real_size(&self) -> usize {
-        self.changes.real_size()
-    }
-}
-
-impl RealSize for WorldChange {
-    fn real_size(&self) -> usize {
-        1 + match self {
-            WorldChange::Despawn(id) => id.real_size(),
-            WorldChange::RemoveComponents(id, components) => {
-                id.real_size() + components.real_size()
-            }
-            WorldChange::Spawn(id, entity)
-            | WorldChange::AddComponents(id, entity)
-            | WorldChange::SetComponents(id, entity) => id.real_size() + entity.real_size(),
-        }
-    }
-}
-
-impl RealSize for EntityId {
-    fn real_size(&self) -> usize {
-        std::mem::size_of::<Self>()
-    }
-}
-
-impl RealSize for ComponentDesc {
-    fn real_size(&self) -> usize {
-        std::mem::size_of::<Self>()
-    }
-}
-
-impl RealSize for Entity {
-    fn real_size(&self) -> usize {
-        self.active_components.0.real_size() + self.iter().map(|e| e.real_size()).sum::<usize>()
-    }
-}
-
-impl RealSize for BitSet {
-    fn real_size(&self) -> usize {
-        self.capacity() * std::mem::size_of::<u32>() + std::mem::size_of::<usize>()
-    }
-}
-
-impl RealSize for ComponentEntry {
-    fn real_size(&self) -> usize {
-        self.desc().real_size() + std::mem::size_of_val(self.as_any())
     }
 }

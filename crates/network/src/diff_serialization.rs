@@ -931,6 +931,7 @@ mod tests {
         let diff = WorldDiff {
             changes: vec![WorldChange::SetComponents(id, entity.clone())],
         };
+        let mut first = diff.clone();
         let mut deduplicator = WorldDiffDeduplicator::default();
 
         // Act
