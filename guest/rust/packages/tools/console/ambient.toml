@@ -2,9 +2,9 @@
 id = "wqkvthxjifxdwgi4hc4efmtjct6tljbw"
 name = "Console [WIP]"
 description = "A Rhai-based console for interacting with the world and other packages."
-version = "0.3.1-nightly-2023-10-16"
+version = "0.3.1-nightly-2023-10-17"
 content = { type = "Tool" }
-ambient_version = "0.3.1-nightly-2023-10-16"
+ambient_version = "0.3.1-nightly-2023-10-17"
 
 [messages.ConsoleServerInput.fields]
 input = "String"
