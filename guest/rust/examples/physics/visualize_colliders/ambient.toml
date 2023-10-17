@@ -7,4 +7,4 @@ content = { type = "Playable", example = true }
 ambient_version = "0.3.1-nightly-2023-10-17"
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "16errWVktnKFdrbFofKCAE" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "3Rd8IiWGGxZUL9uCuUf5mq" }
