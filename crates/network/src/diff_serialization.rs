@@ -229,8 +229,8 @@ impl From<&ComponentDesc> for UnknownComponent {
 /// See `bincode_options()` function for exact bincode options used in serialization.
 ///
 /// On the top level each diff consist of 2 parts:
-/// 1. Component path index - mapping of internal component index (`u32`) to component path (`String`) serialized
-///     directly with bincode.
+/// 1. Component path index - mapping of internal component index (`u32`) to `UnknownComponent` (either a `String` path
+///     or an `ExternalComponent`) serialized directly with bincode.
 /// 2. Collection of `WorldChange` elements with custom serialization.
 ///
 /// Each `WorldChange` is serialized as a 3-tuple:
@@ -265,7 +265,7 @@ impl From<&ComponentDesc> for UnknownComponent {
 /// let diff = WorldDiff { changes: vec![WorldChange::SetComponents(id, entity)] };
 /// let serialized = serializer.serialize(&diff).unwrap();
 ///
-/// assert_eq!(serialized.as_ref(), b"\x01\0\x18ambient_core::test::text\x01\x04\xfd\xef\xbe\xad\xde\xef\xbe\xad\xde\x01\0\x03foo");
+/// assert_eq!(serialized.as_ref(), b"\x01\0\0\x18ambient_core::test::text\x01\x04\xfd\xef\xbe\xad\xde\xef\xbe\xad\xde\x01\0\x03foo");
 ///
 /// // note that when the same component is seen again, it won't be included in the index
 /// let new_entity = Entity::new().with(text(), "bar".to_string());
