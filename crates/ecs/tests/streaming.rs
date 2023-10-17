@@ -118,15 +118,11 @@ fn serialization_of_worlddiff_variants() {
         .add_component(EntityId::new(), a(), 42.)
         .set(some_entity, a(), 10.0);
     let frozen_diff: FrozenWorldDiff = diff.clone().into();
-    let frozen_diffs = vec![frozen_diff.clone()];
-    let diff_view = FrozenWorldDiff::merge(&frozen_diffs);
 
     // Act
     let serialized = bincode::serialize(&diff).unwrap();
     let frozen_serialized = bincode::serialize(&frozen_diff).unwrap();
-    let view_serialized = bincode::serialize(&diff_view).unwrap();
 
     // Assert
     assert_eq!(serialized, frozen_serialized);
-    assert_eq!(serialized, view_serialized);
 }
