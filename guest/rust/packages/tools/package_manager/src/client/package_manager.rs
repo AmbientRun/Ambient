@@ -68,6 +68,7 @@ pub fn PackageManager(hooks: &mut Hooks) -> Element {
     }
     .el()
     .with(focusable(), hooks.instance_id().to_string())
+    .with(min_width(), 400.)
     .on_spawned(|_, _id, instance_id| {
         input::set_focus(instance_id);
     })
