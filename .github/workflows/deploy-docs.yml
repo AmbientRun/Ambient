@@ -8,7 +8,6 @@ on:
       # For workflow testing only
       # This is to simulate pushing to a tag
       - WORKFLOW-TESTING/deploy-docs/v*
-      - kuba/deploy-docs-action
 
 env:
   CARGO_TERM_COLOR: always
@@ -30,11 +29,6 @@ jobs:
           elif [[ $GITHUB_REF == refs/heads/WORKFLOW-TESTING/deploy-docs/* ]]; then
             # This is a special case for testing only
             tag=${GITHUB_REF#refs/heads/WORKFLOW-TESTING/deploy-docs/}
-
-          elif [[ $GITHUB_REF == refs/heads/kuba/deploy-docs-action ]]; then
-            # This is a special case for testing only
-            tag=v0.3.1-nightly-2023-10-18
-
           else
             echo "Triggered for unexpected git ref"
             exit 1
