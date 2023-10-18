@@ -1,7 +1,7 @@
 [package]
 id = "vuph6dqdj6li4apmcgomn3faudcbfz56"
-name = "Character Controller"
-description = "A character controller for the player that takes input and updates their unit's movement and camera."
+name = "Third-person Controller"
+description = "A third-person controller for the player that takes input and updates their unit's movement and camera. Can be used in first-person mode by reducing the `camera_distance`."
 version = "0.3.1-nightly-2023-10-17"
 content = { type = "Asset", code = true }
 ambient_version = "0.3.1-nightly-2023-10-17"
@@ -11,7 +11,7 @@ unit_schema = { path = "../../schemas/unit", deployment = "7F0LrgiXHYU9dTTmJJbFA
 character_movement = { path = "../character_movement", deployment = "64OAB5EB1OmXfTU1Re8MEA" }
 
 [components]
-use_character_controller = { type = "Empty", name = "Use Character Controller", description = "Use the character controller to drive this entity", attributes = [
+use_third_person_controller = { type = "Empty", name = "Use Third-Person Controller", description = "Use a third-person controller to drive this entity.", attributes = [
     "Debuggable",
     "Networked",
 ] }
@@ -41,13 +41,13 @@ running = "Bool"
 [messages.Jump]
 fields = {}
 
-[concepts.CharacterFpsController]
+[concepts.ThirdPersonController]
 extends = [
     "character_movement::CharacterMovement",
     "ambient_core::transform::Transformable",
 ]
-[concepts.CharacterFpsController.components.required]
-use_character_controller = { suggested = [] }
+[concepts.ThirdPersonController.components.required]
+use_third_person_controller = { suggested = [] }
 "unit_schema::shooting" = { suggested = false }
-[concepts.CharacterFpsController.components.optional]
+[concepts.ThirdPersonController.components.optional]
 "unit_schema::head_ref" = {}

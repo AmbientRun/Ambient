@@ -34,7 +34,7 @@ We're going to use some of these packages to build our experience today. Start b
 ```toml
 [dependencies]
 base_assets = { deployment = "79plwEq1A0N3t0ExBOMTPM" }
-character_controller = { deployment = "yV6nlkxj25cmkBhd4koe8" }
+third_person_controller = { deployment = "yV6nlkxj25cmkBhd4koe8" }
 character_animation = { deployment = "4nLmHfcAlZkvWbK0NANMoC" }
 hide_cursor = { deployment = "2ejmKJKgh6b4pTnwWPdv4s" }
 ```
@@ -49,7 +49,7 @@ spawn_query(is_player()).bind(move |players| {
         entity::add_components(
             id,
             Entity::new()
-                .with_merge(CharacterFpsController::suggested())
+                .with_merge(ThirdPersonController::suggested())
                 .with(model_from_url(), packages::base_assets::assets::url("Y Bot.fbx"))
                 .with(basic_character_animations(), id),
         );
@@ -61,7 +61,7 @@ spawn_query(is_player()).bind(move |players| {
 
 > **In-depth**: A `spawn_query` runs when an entity with a specific set of components is seen for the first time (including when it is spawned).
 >
-> Here, when a player spawns, we add a few components to that player to give it an animated model (`model_from_url`), use basic character animations (`basic_character_animations`) and to make it react to input with a camera that follows the character (`.with_merge(CharacterFpsController::suggested())`).
+> Here, when a player spawns, we add a few components to that player to give it an animated model (`model_from_url`), use basic character animations (`basic_character_animations`) and to make it react to input with a camera that follows the character (`.with_merge(ThirdPersonController::suggested())`).
 >
 > [Read more about queries here](../../reference/ecs.md#systems).
 

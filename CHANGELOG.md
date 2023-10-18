@@ -48,6 +48,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 #### Breaking
 
 - **API**: `camera::world_to_screen` now returns a 3D vector instead of a 2D vector, which can be used to determine if the point is behind the camera.
+- **Packages**: Renamed the `character_controller` package to `third_person_controller` and added a `ThirdPersonController` concept.
 
 #### Non-breaking
 

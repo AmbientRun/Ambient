@@ -11,7 +11,7 @@ use ambient_api::{
 };
 use packages::{
     this::{
-        components::use_character_controller,
+        components::use_third_person_controller,
         messages::{Input, Jump},
     },
     unit_schema::components::{
@@ -22,7 +22,7 @@ use std::f32::consts::PI;
 
 #[main]
 pub fn main() {
-    spawn_query(use_character_controller())
+    spawn_query(use_third_person_controller())
         .excludes(head_ref())
         .bind(|players| {
             for (id, _) in players {

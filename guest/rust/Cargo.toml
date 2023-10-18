@@ -70,7 +70,7 @@ members = [
     # Packages (std)
     "packages/std/character_animation",
     "packages/std/character_movement",
-    "packages/std/character_controller",
+    "packages/std/third_person_controller",
     "packages/std/orbit_camera",
     "packages/std/hide_cursor",
     "packages/std/explosion",

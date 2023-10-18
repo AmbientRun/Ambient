@@ -1,5 +1,5 @@
 [package]
-name = "character_controller"
+name = "third_person_controller"
 
 edition = "2021"
 publish = false
@@ -9,12 +9,12 @@ version = "0.0.1"
 ambient_api = { workspace = true }
 
 [[bin]]
-name = "client_character_controller"
+name = "client_third_person_controller"
 path = "src/client.rs"
 required-features = ["client"]
 
 [[bin]]
-name = "server_character_controller"
+name = "server_third_person_controller"
 path = "src/server.rs"
 required-features = ["server"]
 
