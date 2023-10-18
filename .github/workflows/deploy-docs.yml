@@ -33,7 +33,7 @@ jobs:
 
           elif [[ $GITHUB_REF == refs/heads/kuba/deploy-docs-action ]]; then
             # This is a special case for testing only
-            tag=v0.3.0
+            tag=v0.3.1-nightly-2023-10-18
 
           else
             echo "Triggered for unexpected git ref"
@@ -43,14 +43,17 @@ jobs:
           # Version is the tag without the v
           version=${tag#v}
 
-          if [[ $tag == v*-* ]]; then
+          if [[ $tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+-(rc|alpha|beta)(\..*)?$ ]]; then
+            # few special cases for full versions, for example: v0.3.0-rc v0.3.0-rc.1 v0.3.0-alpha v0.3.0-beta
+            # but not: v0.3.0-rcNot
+            docs_name=${version}
+          elif [[ $tag == v*-* ]]; then
             # anything with a dash is internal, for example: v0.3.0-nightly-2023-09-29
             if [[ $tag == v*-nightly-* ]]; then
                 docs_name=nightly
             fi
           else
             # no dashes then it's a plain old full version, for example: v0.3.0
-            kind=full
             docs_name=${version}
           fi
 
