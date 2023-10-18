@@ -7,8 +7,8 @@ content = { type = "Tool" }
 ambient_version = "0.3.1-nightly-2023-10-18"
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor", deployment = "1721rFKIzhRVFhWu4Id0j9" }
-hide_cursor = { path = "../../std/hide_cursor", enabled = false, deployment = "tteyEjcObTT5qsr7JbYZb" }
+editor_schema = { path = "../../schemas/editor", deployment = "2weDPWcBE6ke2Lp3USa12M" }
+hide_cursor = { path = "../../std/hide_cursor", enabled = false, deployment = "2WjgQx3cAvpW6UkQdjjf9r" }
 
 [components]
 # Player components
