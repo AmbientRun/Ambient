@@ -38,20 +38,22 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 #### Other
 
-- **Package/character_movement**: CharacterMovement concept added
-- **Assets**: Added support for animations and skinning for assimp
-- **Examples**: Added assimp example
-- **Examples**: Added benchmark/animations example
+- **Package/`character_movement`**: `CharacterMovement` concept added.
+- **Assets**: Added support for animations and skinning for assimp.
+- **Examples**: Added assimp example.
+- **Examples**: Added benchmark/animations example.
 
 ### Changed
 
 #### Breaking
 
+- **API**: `camera::world_to_screen` now returns a 3D vector instead of a 2D vector, which can be used to determine if the point is behind the camera.
+
 #### Non-breaking
 
 ### Fixed
 
-- **Rendering**: Fixed 3d line drawing when they're behind the camera
+- **Rendering**: Fixed 3D line drawing when they're behind the camera.
 
 ### Community PRs to internals
 

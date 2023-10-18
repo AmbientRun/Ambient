@@ -11,9 +11,13 @@ ambient_version = "0.3.1-nightly-2023-10-17"
 [messages.Input.fields]
 ray_origin = "Vec3"
 ray_dir = "Vec3"
+spawn = "Bool"
 
-[messages.WorldPosition.fields]
-position = "Vec3"
+[components.player_cube_ref]
+name = "Player Cube Ref"
+description = "Attached to the player; references the preview cube the player is controlling."
+type = "EntityId"
+attributes = ["Networked", "Debuggable"]
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "3Rd8IiWGGxZUL9uCuUf5mq" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "3Rd8IiWGGxZUL9uCuUf5mq" }

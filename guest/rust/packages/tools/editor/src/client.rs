@@ -120,9 +120,9 @@ pub fn main() {
                 }
 
                 if let Some(gizmo) = &gizmo_active {
-                    let gizmo_start_2d = camera::world_to_screen(camera_id, gizmo.origin);
+                    let gizmo_start_2d = camera::world_to_screen(camera_id, gizmo.origin).xy();
                     let gizmo_end_2d =
-                        camera::world_to_screen(camera_id, gizmo.origin + gizmo.direction);
+                        camera::world_to_screen(camera_id, gizmo.origin + gizmo.direction).xy();
                     let gizmo_dir_2d = (gizmo_end_2d - gizmo_start_2d).normalize();
 
                     let gizmo_mouse_alignment =
@@ -263,7 +263,9 @@ fn MouseoverDisplay(hooks: &mut Hooks) -> Element {
     Text::el(format!("{:.02?}", mouseover_position.to_array()))
         .with(
             translation(),
-            camera::world_to_screen(camera_id, mouseover_position).extend(0.0),
+            camera::world_to_screen(camera_id, mouseover_position)
+                .xy()
+                .extend(0.0),
         )
         .with(color(), Vec4::ONE)
 }
@@ -436,8 +438,9 @@ fn is_mouse_in_cylinder(
     camera_id: EntityId,
     mouse_position: Vec2,
 ) -> bool {
-    let screen_pos = camera::world_to_screen(camera_id, position);
-    let screen_dir = camera::world_to_screen(camera_id, position + direction * length) - screen_pos;
+    let screen_pos = camera::world_to_screen(camera_id, position).xy();
+    let screen_dir =
+        camera::world_to_screen(camera_id, position + direction * length).xy() - screen_pos;
     let screen_mouse_pos = mouse_position - screen_pos;
 
     let screen_mouse_pos_on_cylinder_axis =
