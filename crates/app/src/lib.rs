@@ -361,9 +361,10 @@ impl AppBuilder {
 
         #[cfg(target_os = "unknown")]
         // Insert a canvas element for the window to attach to
-        if let Some(window) = &window {
+        let force_resize_event_rx = {
             use winit::platform::web::WindowExtWebSys;
 
+            let window = window.as_ref().expect("this should not be possible");
             let canvas = window.canvas();
             let document = web_sys::window().unwrap().document().unwrap();
 
@@ -406,32 +407,60 @@ impl AppBuilder {
                 .unwrap();
             drop_handles.push(Box::new(on_pointer_lock_change));
 
-            // Get the screen's available width and height
-            let window = web_sys::window().unwrap();
+            // Updates the canvas to match the target size. Returns the target size/max size, and the real size.
+            fn update_canvas_size(
+                target: &web_sys::Element,
+                canvas: &web_sys::HtmlCanvasElement,
+            ) -> ((i32, i32), (u32, u32)) {
+                // Get the screen's available width and height
+                let window = web_sys::window().unwrap();
 
-            let max_width = target.client_width();
-            let max_height = target.client_height();
+                let max_width = target.client_width();
+                let max_height = target.client_height();
 
-            // Get device pixel ratio
-            let device_pixel_ratio = window.device_pixel_ratio();
+                // Get device pixel ratio
+                let device_pixel_ratio = window.device_pixel_ratio();
 
-            // Calculate the real dimensions of the canvas considering the device pixel ratio
-            let real_width = (max_width as f64 * device_pixel_ratio) as u32;
-            let real_height = (max_height as f64 * device_pixel_ratio) as u32;
+                // Calculate the real dimensions of the canvas considering the device pixel ratio
+                let real_width = (max_width as f64 * device_pixel_ratio) as u32;
+                let real_height = (max_height as f64 * device_pixel_ratio) as u32;
 
-            // Set the canvas dimensions using the real dimensions
-            canvas.set_width(real_width);
-            canvas.set_height(real_height);
+                // Set the canvas dimensions using the real dimensions
+                canvas.set_width(real_width);
+                canvas.set_height(real_height);
 
-            // Set a background color for the canvas to make it easier to tell where the canvas is for debugging purposes.
-            // Use the maximum available width and height as the canvas dimensions.
-            canvas.style().set_css_text(&format!(
-                "background-color: black; width: {}px; height: {}px; z-index: 50",
-                max_width, max_height
-            ));
+                // Set a background color for the canvas to make it easier to tell where the canvas is for debugging purposes.
+                // Use the maximum available width and height as the canvas dimensions.
+                canvas.style().set_css_text(&format!(
+                    "background-color: black; width: {}px; height: {}px; z-index: 50",
+                    max_width, max_height
+                ));
+
+                ((max_width, max_height), (real_width, real_height))
+            }
+
+            let ((max_width, max_height), _) = update_canvas_size(&target, &canvas);
+
+            // HACK(philpax): hackfix for https://github.com/AmbientRun/Ambient/issues/923
+            // remove after https://github.com/AmbientRun/Ambient/issues/1096
+            let (force_resize_event_tx, force_resize_event_rx) = flume::unbounded();
+            let resize_callback = Closure::<dyn Fn()>::new({
+                let canvas = canvas.clone();
+                let target = target.clone();
+                move || {
+                    let (_, real_size) = update_canvas_size(&target, &canvas);
+                    let _ = force_resize_event_tx.send(real_size);
+                }
+            });
+            let resize_observer =
+                web_sys::ResizeObserver::new(resize_callback.as_ref().unchecked_ref()).unwrap();
+            resize_observer.observe(&target);
+            drop_handles.push(Box::new(resize_callback));
+            drop_handles.push(Box::new(resize_observer));
 
             target.append_child(&canvas).unwrap();
-        }
+            force_resize_event_rx
+        };
 
         #[cfg(feature = "profile")]
         let puffin_server = {
@@ -549,6 +578,9 @@ impl AppBuilder {
             update_title_with_fps_stats: self.update_title_with_fps_stats,
             #[cfg(target_os = "unknown")]
             _drop_handles: drop_handles,
+
+            #[cfg(target_os = "unknown")]
+            force_resize_event_rx,
         })
     }
 
@@ -599,6 +631,9 @@ pub struct App {
     #[cfg(target_os = "unknown")]
     _drop_handles: Vec<Box<dyn std::fmt::Debug>>,
     current_time: Instant,
+
+    #[cfg(target_os = "unknown")]
+    force_resize_event_rx: flume::Receiver<(u32, u32)>,
 }
 
 impl std::fmt::Debug for App {
@@ -634,6 +669,23 @@ impl App {
 
         tracing::debug!("Spawning event loop");
         event_loop.spawn(move |event, _, control_flow| {
+            // HACK(philpax): hackfix for https://github.com/AmbientRun/Ambient/issues/923
+            // remove after https://github.com/AmbientRun/Ambient/issues/1096
+            // inject resize events if required
+            if let Event::WindowEvent { window_id, .. } = &event {
+                if let Ok((width, height)) = self.force_resize_event_rx.try_recv() {
+                    self.handle_static_event(
+                        &Event::WindowEvent {
+                            window_id: *window_id,
+                            event: WindowEvent::Resized(winit::dpi::PhysicalSize::new(
+                                width, height,
+                            )),
+                        },
+                        control_flow,
+                    );
+                }
+            }
+
             // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
             // but https://github.com/rust-windowing/winit/issues/1968 restricts us
             if let Event::WindowEvent {

@@ -55,6 +55,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 ### Fixed
 
 - **Rendering**: Fixed 3D line drawing when they're behind the camera.
+- **Web**: The web client will now update its size when the window is resized.
 
 ### Community PRs to internals
 
