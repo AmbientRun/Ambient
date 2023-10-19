@@ -2,13 +2,13 @@
 id = "mx4o7x2s4zqc6pxmsfcb7hznbv4chxe5"
 name = "Tangent Vehicle: Standard"
 description = "Standard vehicle definitions for Tangent."
-version = "0.3.1-nightly-2023-10-17"
+version = "0.3.1-nightly-2023-10-19"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.1-nightly-2023-10-17"
+ambient_version = "0.3.1-nightly-2023-10-19"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "25pvMP3JKGLqlzQa72mQJg" }
-gun_laser = { path = "../../core/gun_laser", deployment = "GgsImdpRWmI0h3PUc8niu" }
+tangent_schema = { path = "../../schema", deployment = "4aNKFg5oyHo72FPL2rwHRN" }
+gun_laser = { path = "../../core/gun_laser", deployment = "6cahyKvAx2LSdeDFlG6bPH" }
 
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "3lAaasREmdFCZP7VlXEjtc" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "2Vdf0cCtV1fO7ByWPZpDK0" }

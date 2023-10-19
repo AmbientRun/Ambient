@@ -2,13 +2,13 @@
 id = "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu"
 name = "Editor [WIP]"
 description = "An extremely early basic sketch of a level editor."
-version = "0.3.1-nightly-2023-10-17"
+version = "0.3.1-nightly-2023-10-19"
 content = { type = "Tool" }
-ambient_version = "0.3.1-nightly-2023-10-17"
+ambient_version = "0.3.1-nightly-2023-10-19"
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor", deployment = "1721rFKIzhRVFhWu4Id0j9" }
-hide_cursor = { path = "../../std/hide_cursor", enabled = false, deployment = "tteyEjcObTT5qsr7JbYZb" }
+editor_schema = { path = "../../schemas/editor", deployment = "7YPl6V92S7V7oFZLrWJchN" }
+hide_cursor = { path = "../../std/hide_cursor", enabled = false, deployment = "1fhHcV3griYjVRM4RCzYlG" }
 
 [components]
 # Player components
