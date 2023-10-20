@@ -5,6 +5,7 @@ use ambient_api::{
         },
         transform::components::{lookat_target, rotation, translation},
     },
+    input::is_game_focused,
     prelude::*,
 };
 use packages::this::components::{camera_angle, camera_distance, is_orbit_camera};
@@ -46,8 +47,13 @@ pub fn main() {
     query(is_orbit_camera()).each_frame(|cameras| {
         let (delta, input) = input::get_delta();
 
-        let distance_delta = delta.mouse_wheel * -0.1;
-        let angle_delta = if input.mouse_buttons.contains(&MouseButton::Right) {
+        let distance_delta = if is_game_focused() {
+            delta.mouse_wheel * -0.1
+        } else {
+            0.
+        };
+        let angle_delta = if is_game_focused() && input.mouse_buttons.contains(&MouseButton::Right)
+        {
             delta.mouse_position * 0.01
         } else {
             Vec2::ZERO
