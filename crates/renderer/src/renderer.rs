@@ -230,7 +230,19 @@ impl Renderer {
                     "forward",
                     TreeRendererConfig {
                         renderer_config: config.clone(),
-                        targets: vec![Some(gpu.swapchain_format().into()), Some(normals_format)],
+                        targets: vec![
+                            Some(wgpu::ColorTargetState {
+                                format: gpu.swapchain_format(),
+                                blend: None,
+                                // NOTE: We had problems where the solid renderer would output alpha values like
+                                // 0.8, because it was using alpha cutoff, and then just outputing the alpha value
+                                // of the texture. This lead to black borders around the edges of the texture when
+                                // it was blended with the background. A better solution _might_ be to update the
+                                // shaders to output either 1 or 0 for alpha when it's the solids pass.
+                                write_mask: wgpu::ColorWrites::COLOR,
+                            }),
+                            Some(normals_format),
+                        ],
                         filter: ArchetypeFilter::new().incl(config.scene),
                         renderer_resources: renderer_resources.clone(),
                         fs_main: FSMain::Forward,
