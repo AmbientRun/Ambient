@@ -13,4 +13,4 @@ description = "Collision between two objects."
 fields = { emitter = "EntityId", listener = "EntityId" }
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "3UmsTyXf2oRCYR6jnPEjEI" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "76f3ocg7elJnHiFKTZDJ7L" }
