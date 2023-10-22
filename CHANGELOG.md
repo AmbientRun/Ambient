@@ -56,6 +56,8 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 - **Rendering**: Fixed 3D line drawing when they're behind the camera.
 - **Web**: The web client will now update its size when the window is resized.
+- **Rendering**: Fixed an issue where a black border would appear around solid objects with an alpha cutoff #1104
+- **Package/`orbit_camera`**: Not longer zooming in and out when the user tries to scroll the ecs inspector 
 
 ### Community PRs to internals
 
