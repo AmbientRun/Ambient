@@ -8,5 +8,5 @@ ambient_version = "0.3.1-nightly-2023-10-22"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "2qVO6HVusDnFkikypDRUkL" }
-game_object = { path = "../../../../schemas/game_object", deployment = "5MXzdwcMruUB3Np7pWSfO1" }
+tangent_schema = { path = "../../schema", deployment = "2qvG7fxeYAOvNzQuQpmo3f" }
+game_object = { path = "../../../../schemas/game_object", deployment = "39JQv9A3bKaXDEYwIlasAF" }

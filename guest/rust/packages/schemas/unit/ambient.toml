@@ -7,7 +7,7 @@ content = { type = "Asset", schema = true }
 ambient_version = "0.3.1-nightly-2023-10-22"
 
 [dependencies]
-game_object = { path = "../game_object", deployment = "5MXzdwcMruUB3Np7pWSfO1" }
+game_object = { path = "../game_object", deployment = "39JQv9A3bKaXDEYwIlasAF" }
 
 [components]
 run_direction = { type = "Vec2", attributes = ["Debuggable", "Networked"] }
