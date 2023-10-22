@@ -2,9 +2,9 @@
 id = "ianwyihfsaiuc26xjldmwd3duidju2tb"
 name = "Tangent Gameplay: Fire Rain"
 description = "Changes the sky to fire red, and throws a constant stream of asteroids at players."
-version = "0.3.1-nightly-2023-10-21"
+version = "0.3.1-nightly-2023-10-22"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.1-nightly-2023-10-21"
+ambient_version = "0.3.1-nightly-2023-10-22"
 authors = ["philpax"]
 
 [dependencies]
