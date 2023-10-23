@@ -2,9 +2,9 @@
 id = "jyp2hh3fpjfe7kaos36zbdztfypqip3m"
 name = "Tangent Gun: Laser"
 description = "Implements laser guns."
-version = "0.3.1-nightly-2023-10-22"
+version = "0.3.1-nightly-2023-10-23"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.1-nightly-2023-10-22"
+ambient_version = "0.3.1-nightly-2023-10-23"
 authors = ["philpax"]
 
 [dependencies]

@@ -2,8 +2,8 @@
 name = "Animation"
 description = "Components relating to animations."
 content = { type = "Asset", schema = true }
-version = "0.3.1-dev"
-ambient_version = "0.3.1-nightly-2023-10-22"
+version = "0.3.1-nightly-2023-10-23"
+ambient_version = "0.3.1-nightly-2023-10-23"
 
 [components.is_animation_player]
 type = "Empty"
