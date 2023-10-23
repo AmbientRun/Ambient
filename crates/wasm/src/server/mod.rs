@@ -41,8 +41,8 @@ pub fn systems() -> SystemGroup {
                     Some(collisions) => collisions.lock().clone(),
                     None => return,
                 };
-                for (a, b) in collisions.into_iter() {
-                    messages::Collision::new(vec![a, b])
+                for (a, b, positions, normals) in collisions.into_iter() {
+                    messages::Collision::new(vec![a, b], positions, normals)
                         .run(world, None)
                         .unwrap();
                 }

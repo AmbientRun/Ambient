@@ -38,7 +38,7 @@ fields = {}
 [messages.Collision]
 name = "Collision"
 description = "Sent when a collision occurs."
-fields = { ids = { container_type = "Vec", element_type = "EntityId" } }
+fields = { ids = { container_type = "Vec", element_type = "EntityId" }, points = { container_type = "Vec", element_type = "Vec3" }, normals = { container_type = "Vec", element_type = "Vec3" }}
 
 [messages.ColliderLoads]
 name = "Collider Loads"
