@@ -10,20 +10,20 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_native_std = { path = "../native_std" , version = "0.3.1-nightly-2023-10-23" }
-ambient_ecs = { path = "../ecs" , version = "0.3.1-nightly-2023-10-23" }
-ambient_gpu = { path = "../gpu" , version = "0.3.1-nightly-2023-10-23" }
-ambient_core = { path = "../core" , version = "0.3.1-nightly-2023-10-23" }
-ambient_meshes = { path = "../meshes" , version = "0.3.1-nightly-2023-10-23" }
-ambient_renderer = { path = "../renderer" , version = "0.3.1-nightly-2023-10-23" }
-ambient_layout = { path = "../layout" , version = "0.3.1-nightly-2023-10-23" }
-ambient_text = { path = "../text" , version = "0.3.1-nightly-2023-10-23" }
-ambient_rect = { path = "../rect" , version = "0.3.1-nightly-2023-10-23" }
-ambient_cb = { path = "../../libs/cb" , version = "0.3.1-nightly-2023-10-23" }
-ambient_element = { path = "../../shared_crates/element" , version = "0.3.1-nightly-2023-10-23" }
-ambient_ui = { path = "../../shared_crates/ui", default-features = false, features = ["native"] , version = "0.3.1-nightly-2023-10-23" }
-ambient_editor_derive = { path = "../../shared_crates/editor_derive" , version = "0.3.1-nightly-2023-10-23" }
-ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.3.1-nightly-2023-10-23" }
+ambient_native_std = { path = "../native_std" , version = "0.3.1-dev" }
+ambient_ecs = { path = "../ecs" , version = "0.3.1-dev" }
+ambient_gpu = { path = "../gpu" , version = "0.3.1-dev" }
+ambient_core = { path = "../core" , version = "0.3.1-dev" }
+ambient_meshes = { path = "../meshes" , version = "0.3.1-dev" }
+ambient_renderer = { path = "../renderer" , version = "0.3.1-dev" }
+ambient_layout = { path = "../layout" , version = "0.3.1-dev" }
+ambient_text = { path = "../text" , version = "0.3.1-dev" }
+ambient_rect = { path = "../rect" , version = "0.3.1-dev" }
+ambient_cb = { path = "../../libs/cb" , version = "0.3.1-dev" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.3.1-dev" }
+ambient_ui = { path = "../../shared_crates/ui", default-features = false, features = ["native"] , version = "0.3.1-dev" }
+ambient_editor_derive = { path = "../../shared_crates/editor_derive" , version = "0.3.1-dev" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.3.1-dev" }
 glam = { workspace = true }
 winit = { workspace = true }
 itertools = { workspace = true }
@@ -33,8 +33,8 @@ bytemuck = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
-ambient_app = { path = "../app" , version = "0.3.1-nightly-2023-10-23" }
-ambient_cameras = { path = "../cameras" , version = "0.3.1-nightly-2023-10-23" }
+ambient_app = { path = "../app" , version = "0.3.1-dev" }
+ambient_cameras = { path = "../cameras" , version = "0.3.1-dev" }
 fixed-vec-deque = { workspace = true }
 tokio = { workspace = true }
 itertools = { workspace = true }
