@@ -52,6 +52,8 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 #### Non-breaking
 
+- **Physics**: The `Collision` message now includes the points of collision and their corresponding normals.
+
 ### Fixed
 
 - **Rendering**: Fixed 3D line drawing when they're behind the camera.

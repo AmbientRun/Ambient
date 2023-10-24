@@ -37,7 +37,7 @@ fields = {}
 
 [messages.Collision]
 name = "Collision"
-description = "Sent when a collision occurs."
+description = "Sent when a collision occurs. The points and normals are in world space."
 fields = { ids = { container_type = "Vec", element_type = "EntityId" }, points = { container_type = "Vec", element_type = "Vec3" }, normals = { container_type = "Vec", element_type = "Vec3" }}
 
 [messages.ColliderLoads]
