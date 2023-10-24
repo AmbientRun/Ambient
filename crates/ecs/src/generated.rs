@@ -1055,7 +1055,7 @@ mod raw {
                 }
             }
             #[derive(Clone, Debug)]
-            #[doc = "**Collision**: Sent when a collision occurs."]
+            #[doc = "**Collision**: Sent when a collision occurs. The points and normals are in world space."]
             pub struct Collision {
                 pub ids: Vec<EntityId>,
                 pub points: Vec<Vec3>,

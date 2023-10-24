@@ -527,7 +527,7 @@ fn check_docker_run() -> anyhow::Result<()> {
 }
 
 fn check_crates_io_validity() -> anyhow::Result<()> {
-    let crates = get_all_publishable_crates(false)?;
+    let crates = get_all_publishable_crates(true)?;
     for (path, manifest) in crates {
         let Some(package) = manifest.package else {
             anyhow::bail!("no package for {}", path.display())
