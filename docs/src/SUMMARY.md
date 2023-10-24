@@ -43,6 +43,7 @@
 - [Audio](reference/audio.md)
 - [UI](reference/ui.md)
 - [Distributing](reference/distributing.md)
+- [CI](reference/ci.md)
 - [Terminology](reference/terminology.md)
 - [Common pitfalls](reference/common_pitfalls.md)
 - [Advanced installation](reference/advanced_installing.md)
