@@ -70,7 +70,7 @@ pub async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     };
 
     if gi.ambient_path.is_none() {
-        run("Build ambient", "", build_package, &["ambient"], true, &[]).await?;
+        run("Build ambient", "", build_ambient, &["ambient"], true, &[]).await?;
     }
 
     let ambient_path = gi
@@ -167,12 +167,14 @@ async fn parse_tests_from_manifest() -> anyhow::Result<Vec<PathBuf>> {
     Ok(manifest.tests)
 }
 
-fn build_package(_i: usize, _: &str, name: &str) -> (String, Vec<String>) {
+fn build_ambient(_i: usize, _: &str, name: &str) -> (String, Vec<String>) {
     let args = vec![
         "build".to_string(),
         "--release".to_string(),
         "--package".to_string(),
         name.to_string(),
+        "-F".to_string(),
+        "production".to_string(),
     ];
 
     ("cargo".to_string(), args)
