@@ -18,7 +18,7 @@ use tracing::{Instrument, Span};
 
 use std::{path::Path, str::FromStr, sync::Arc};
 
-use ambient_core::{asset_cache, async_ecs::async_run, runtime};
+use ambient_core::{asset_cache, async_ecs::async_run, hierarchy::despawn_recursive, runtime};
 use ambient_ecs::{
     dont_despawn_on_unload, generated::messages, query, world_events, EntityId, FnSystem, Message,
     SystemGroup, World, WorldContext, WorldEventReader,
@@ -423,9 +423,18 @@ pub(crate) fn unload(world: &mut World, module_id: EntityId, reason: &str) {
         return;
     }
 
-    messages::ModuleUnload::new()
-        .run(world, Some(module_id))
-        .unwrap();
+    let messenger = world.resource(messenger()).clone();
+    if let Err(e) = messages::ModuleUnload::new().run(world, Some(module_id)) {
+        messenger(
+            world,
+            module_id,
+            MessageType::Info,
+            &format!(
+                "Failed to run module unload message (reason: {})",
+                e.to_string()
+            ),
+        );
+    }
 
     let spawned_entities = world
         .get_mut(module_id, module_state())
@@ -440,11 +449,10 @@ pub(crate) fn unload(world: &mut World, module_id: EntityId, reason: &str) {
 
     for id in spawned_entities {
         if !world.has_component(id, dont_despawn_on_unload()) {
-            world.despawn(id);
+            despawn_recursive(world, id);
         }
     }
 
-    let messenger = world.resource(messenger()).clone();
     messenger(
         world,
         module_id,
