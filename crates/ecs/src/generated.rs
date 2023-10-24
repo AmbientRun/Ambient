@@ -1058,11 +1058,21 @@ mod raw {
             #[doc = "**Collision**: Sent when a collision occurs."]
             pub struct Collision {
                 pub ids: Vec<EntityId>,
+                pub points: Vec<Vec3>,
+                pub normals: Vec<Vec3>,
             }
             impl Collision {
                 #[allow(clippy::too_many_arguments)]
-                pub fn new(ids: impl Into<Vec<EntityId>>) -> Self {
-                    Self { ids: ids.into() }
+                pub fn new(
+                    ids: impl Into<Vec<EntityId>>,
+                    points: impl Into<Vec<Vec3>>,
+                    normals: impl Into<Vec<Vec3>>,
+                ) -> Self {
+                    Self {
+                        ids: ids.into(),
+                        points: points.into(),
+                        normals: normals.into(),
+                    }
                 }
             }
             impl Message for Collision {
@@ -1072,11 +1082,15 @@ mod raw {
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
                     self.ids.serialize_message_part(&mut output)?;
+                    self.points.serialize_message_part(&mut output)?;
+                    self.normals.serialize_message_part(&mut output)?;
                     Ok(output)
                 }
                 fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
                     Ok(Self {
                         ids: Vec::<EntityId>::deserialize_message_part(&mut input)?,
+                        points: Vec::<Vec3>::deserialize_message_part(&mut input)?,
+                        normals: Vec::<Vec3>::deserialize_message_part(&mut input)?,
                     })
                 }
             }
