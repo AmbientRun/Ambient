@@ -8,9 +8,9 @@ ambient_version = "0.3.1-nightly-2023-10-24"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "6SqzrAu96Oyl3a8GmkW2kB" }
+tangent_schema = { path = "../../schema", deployment = "1Fq0lfl2sfAt2dLBG9vxtp" }
 
-spawner_vehicle = { path = "../../core/spawner_vehicle", deployment = "1NYjyzTzRlrMgylyBkgCAw" }
+spawner_vehicle = { path = "../../core/spawner_vehicle", deployment = "7OJO94kxKzIAaaHmOqJ8G1" }
 
 [messages.VehicleSpawnRequest]
 description = "Sent by the client to request a vehicle spawn."
