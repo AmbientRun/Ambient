@@ -33,7 +33,7 @@ async fn run() -> anyhow::Result<()> {
         Cli::Doc(doc) => doc::main(&doc),
         Cli::Package(p) => package::main(&p),
         Cli::GoldenImages(gi) => golden_images::main(&gi).await,
-        Cli::Release(re) => release::main(&re),
+        Cli::Release(re) => release::main(&re).await,
         Cli::Install(install) => install::main(&install),
         Cli::Join(join) => join::main(&join),
 

@@ -2210,6 +2210,7 @@ dependencies = [
  "anyhow",
  "cargo_toml",
  "clap 4.4.6",
+ "crates_io_api",
  "data-encoding",
  "dunce",
  "flume 0.11.0",
@@ -2223,6 +2224,7 @@ dependencies = [
  "num_cpus",
  "rustdoc-json",
  "rustdoc-types",
+ "semver 1.0.19",
  "serde",
  "serde_json",
  "sha2",
@@ -2889,6 +2891,24 @@ dependencies = [
  "libc",
  "mach2",
  "parking_lot",
+]
+
+[[package]]
+name = "crates_io_api"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9fdfaac64c5eb7a33a5b895ffbaf6f1146721b6cd4c889010d19c8a1c1cae562"
+dependencies = [
+ "chrono",
+ "futures",
+ "log",
+ "reqwest",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_path_to_error",
+ "tokio",
+ "url",
 ]
 
 [[package]]
@@ -8027,7 +8047,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
- "rand 0.7.3",
+ "rand 0.8.5",
  "static_assertions",
 ]
 

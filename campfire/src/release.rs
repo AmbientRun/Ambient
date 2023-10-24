@@ -2,12 +2,14 @@ use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
     process::Command,
+    time::Duration,
 };
 
 use anyhow::{ensure, Context};
 use cargo_toml::Inheritable;
 use clap::{Parser, ValueEnum};
 use itertools::Itertools;
+use semver::Version;
 use serde::Deserialize;
 use std::str;
 
@@ -68,14 +70,14 @@ pub enum PublishCommand {
     Doc,
 }
 
-pub fn main(args: &Release) -> anyhow::Result<()> {
+pub async fn main(args: &Release) -> anyhow::Result<()> {
     match args {
         Release::UpdateVersion {
             new_version,
             no_package_ambient_version_update,
         } => update_version(new_version, *no_package_ambient_version_update),
         Release::UpdateMsrv { new_version } => update_msrv(new_version),
-        Release::Publish { execute, command } => publish(*execute, *command),
+        Release::Publish { execute, command } => publish(*execute, *command).await,
         Release::Check {
             no_docker,
             no_crates_io_validity,
@@ -198,7 +200,7 @@ fn update_version(
 
     let candidate_crates = all_publishable_crates
         .iter()
-        .map(|p| p.1.package.as_ref().unwrap().name.clone())
+        .map(|p| p.0 .1.package.as_ref().unwrap().name.clone())
         // HACK: insert crates that are dependencies of packages, but are not depended upon
         // by the Ambient app or by the API. It would be nice to solve this properly at some
         // point.
@@ -215,7 +217,7 @@ fn update_version(
         );
     })?;
 
-    for (path, _) in &all_publishable_crates {
+    for ((path, _), _) in &all_publishable_crates {
         edit_toml(path, |toml| {
             for dependencies in ["dependencies", "build-dependencies", "dev-dependencies"] {
                 if let Some(deps) = toml.get_mut(dependencies) {
@@ -331,7 +333,7 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
 /// Only publishes API crates, and is built around that assumption.
 ///
 /// If you want to publish the runtime, here be dragons
-fn publish(execute: bool, command: PublishCommand) -> anyhow::Result<()> {
+async fn publish(execute: bool, command: PublishCommand) -> anyhow::Result<()> {
     let crates = get_all_publishable_crates(true)?;
 
     #[derive(Debug)]
@@ -340,40 +342,65 @@ fn publish(execute: bool, command: PublishCommand) -> anyhow::Result<()> {
         Wait(usize),
     }
 
-    let tasks = crates.into_iter().map(|p| {
-        let crate_path = p.0.parent().unwrap().canonicalize().unwrap();
-        let crates_path = crate_path
-            .parent()
-            .unwrap()
-            .file_name()
-            .unwrap()
-            .to_string_lossy();
+    let client =
+        crates_io_api::AsyncClient::new("Ambient Publisher (ambient.run)", Duration::from_secs(1))?;
 
-        let features = if crates_path == "shared_crates" {
-            if !p.1.features.contains_key("default") && p.1.features.contains_key("guest") {
-                vec!["guest".to_string()]
+    println!("Querying crates.io...");
+    let mut already_published_crates = HashSet::new();
+    for ((_, package), version) in &crates {
+        let name = package.package().name();
+        let Ok(published_crate) = client.get_crate(name).await else {
+            continue;
+        };
+        if published_crate
+            .versions
+            .iter()
+            .any(|v| Version::parse(&v.num).unwrap() == *version)
+        {
+            already_published_crates.insert(name);
+        }
+    }
+    println!("Skipping publish of {already_published_crates:?}.");
+
+    let tasks = crates
+        .iter()
+        .filter(|p| !already_published_crates.contains(p.0 .1.package().name()))
+        .map(|((path, package), _)| {
+            let crate_path = path.parent().unwrap().canonicalize().unwrap();
+            let crates_path = crate_path
+                .parent()
+                .unwrap()
+                .file_name()
+                .unwrap()
+                .to_string_lossy();
+
+            let features = if crates_path == "shared_crates" {
+                if !package.features.contains_key("default")
+                    && package.features.contains_key("guest")
+                {
+                    vec!["guest".to_string()]
+                } else {
+                    vec![]
+                }
             } else {
                 vec![]
-            }
-        } else {
-            vec![]
-        };
+            };
 
-        // If it's not excluded, assume it's wasm32-wasi
-        let build_with_host: HashSet<&str> = HashSet::from_iter([
-            "ambient_package_semantic",
-            "ambient_package_macro_common",
-            "ambient_element",
-        ]);
-        let specify_target =
-            p.1.package
+            // If it's not excluded, assume it's wasm32-wasi
+            let build_with_host: HashSet<&str> = HashSet::from_iter([
+                "ambient_package_semantic",
+                "ambient_package_macro_common",
+                "ambient_element",
+            ]);
+            let specify_target = package
+                .package
                 .as_ref()
                 .is_some_and(|p| !build_with_host.contains(p.name.as_str()))
                 && crates_path != "crates"
                 && crates_path != "libs";
 
-        Task::Command(crate_path, specify_target, features)
-    });
+            Task::Command(crate_path, specify_target, features)
+        });
 
     let tasks = if command != PublishCommand::Publish {
         tasks.collect_vec()
@@ -528,7 +555,7 @@ fn check_docker_run() -> anyhow::Result<()> {
 
 fn check_crates_io_validity() -> anyhow::Result<()> {
     let crates = get_all_publishable_crates(true)?;
-    for (path, manifest) in crates {
+    for ((path, manifest), _) in crates {
         let Some(package) = manifest.package else {
             anyhow::bail!("no package for {}", path.display())
         };
@@ -686,7 +713,7 @@ fn check(path: impl AsRef<Path>) -> anyhow::Result<()> {
 
 fn get_all_publishable_crates(
     include_ambient_crates: bool,
-) -> anyhow::Result<Vec<(PathBuf, cargo_toml::Manifest)>> {
+) -> anyhow::Result<Vec<((PathBuf, cargo_toml::Manifest), Version)>> {
     // Our publishing process is complicated by the presence of two workspaces
     // that share crates. None of the existing tooling, as far as I can tell,
     // handles this well.
@@ -741,9 +768,14 @@ fn get_all_publishable_crates(
 
         ambient_crates
             .iter()
-            .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
-            .filter(|p| manifests.exists(p))
-            .map(|p| p.to_string())
+            .map(|p| {
+                (
+                    p.repr().split_ascii_whitespace().next().unwrap(),
+                    ambient_graph.metadata(*p).unwrap().version().clone(),
+                )
+            })
+            .filter(|p| manifests.exists(p.0))
+            .map(|p| (p.0.to_string(), p.1))
             .collect::<Vec<_>>()
     } else {
         vec![]
@@ -768,17 +800,22 @@ fn get_all_publishable_crates(
 
         api_crates
             .iter()
-            .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
-            .filter(|p| manifests.exists(p))
-            .filter(|p| !(include_ambient_crates && ambient_crates.iter().any(|tp| tp == p)))
-            .map(|p| p.to_string())
+            .map(|p| {
+                (
+                    p.repr().split_ascii_whitespace().next().unwrap(),
+                    api_graph.metadata(*p).unwrap().version().clone(),
+                )
+            })
+            .filter(|p| manifests.exists(p.0))
+            .filter(|p| !(include_ambient_crates && ambient_crates.iter().any(|tp| tp.0 == p.0)))
+            .map(|p| (p.0.to_string(), p.1))
             .collect::<Vec<_>>()
     };
 
     Ok(ambient_crates
         .into_iter()
         .chain(api_crates)
-        .map(|p| manifests.get(&p).unwrap())
+        .map(|p| (manifests.get(&p.0).unwrap(), p.1))
         .collect_vec())
 }
 

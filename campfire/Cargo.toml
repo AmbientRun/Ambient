@@ -32,6 +32,8 @@ num_cpus = "1.16.0"
 home = "0.5"
 x509-certificate = "0.21.0"
 spki = "0.7"
+crates_io_api = "0.8.1"
+semver = "1.0"
 
 # Hope this won't cause any issues!
 ambient_shared_types = { path = "../shared_crates/shared_types" }
