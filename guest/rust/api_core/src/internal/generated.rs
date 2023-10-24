@@ -510,7 +510,7 @@ mod raw {
                     global::serde::{self, Deserialize, Serialize},
                     prelude::*,
                 };
-                #[doc = "**Camera**: Base components for a camera. You will need other components to make a fully-functioning camera.\n\n**Extends**: `ambient_core::transform::Transformable`"]
+                #[doc = "**Camera**: Base components for a camera. You will need other components to make a fully-functioning camera.\n\n**Extends**: `ambient_core::transform::Transformable`\n\n**Required**:\n- `local_to_world`: Transformation from the entity's local space to worldspace.\n- `near`: The near plane of this camera, measured in meters.\n- `projection`: The projection matrix of this camera.\nThis can be driven by other components, including `perspective` and `perspective_infinite_reverse`.\n- `projection_view`: The composition of the projection and view (inverse-local-to-world) matrices.\n- `active_camera`: The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.\nIf there's no `user_id`, the camera is considered global and potentially applies to all users (if its `active_camera` value is high enough).\n- `inv_local_to_world`: Converts a world position to a local position.\nThis is automatically updated.\n\n\n**Optional**:\n- `translation`: The translation/position of this entity.\n- `rotation`: The rotation of this entity.\n- `scale`: The scale of this entity.\n- `main_scene`: Either the main or UI scene must be specified for this camera to be used.\n- `ui_scene`: Either the main or UI scene must be specified for this camera to be used.\n- `user_id`: If set, this camera will only be used for the specified user."]
                 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
                 #[serde(crate = "self::serde")]
                 pub struct Camera {
@@ -784,7 +784,7 @@ mod raw {
                         }
                     }
                 }
-                #[doc = "**Perspective Common Camera**: Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n**Extends**: `ambient_core::camera::Camera`"]
+                #[doc = "**Perspective Common Camera**: Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n**Extends**: `ambient_core::camera::Camera`\n\n**Required**:\n- `local_to_world`: Transformation from the entity's local space to worldspace.\n- `near`: The near plane of this camera, measured in meters.\n- `projection`: The projection matrix of this camera.\nThis can be driven by other components, including `perspective` and `perspective_infinite_reverse`.\n- `projection_view`: The composition of the projection and view (inverse-local-to-world) matrices.\n- `active_camera`: The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.\nIf there's no `user_id`, the camera is considered global and potentially applies to all users (if its `active_camera` value is high enough).\n- `inv_local_to_world`: Converts a world position to a local position.\nThis is automatically updated.\n- `fovy`: The field of view of this camera in the Y/vertical direction, measured in radians.\n- `aspect_ratio`: The aspect ratio of this camera.\nIf `aspect_ratio_from_window` is set, this will be automatically updated to match the window.\n\n\n**Optional**:\n- `translation`: The translation/position of this entity.\n- `rotation`: The rotation of this entity.\n- `scale`: The scale of this entity.\n- `main_scene`: Either the main or UI scene must be specified for this camera to be used.\n- `ui_scene`: Either the main or UI scene must be specified for this camera to be used.\n- `user_id`: If set, this camera will only be used for the specified user.\n- `aspect_ratio_from_window`: If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component."]
                 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
                 #[serde(crate = "self::serde")]
                 pub struct PerspectiveCommonCamera {
@@ -1013,7 +1013,7 @@ mod raw {
                         }
                     }
                 }
-                #[doc = "**Perspective Camera**: A perspective camera.\n\n**Extends**: `ambient_core::camera::PerspectiveCommonCamera`"]
+                #[doc = "**Perspective Camera**: A perspective camera.\n\n**Extends**: `ambient_core::camera::PerspectiveCommonCamera`\n\n**Required**:\n- `local_to_world`: Transformation from the entity's local space to worldspace.\n- `near`: The near plane of this camera, measured in meters.\n- `projection`: The projection matrix of this camera.\nThis can be driven by other components, including `perspective` and `perspective_infinite_reverse`.\n- `projection_view`: The composition of the projection and view (inverse-local-to-world) matrices.\n- `active_camera`: The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.\nIf there's no `user_id`, the camera is considered global and potentially applies to all users (if its `active_camera` value is high enough).\n- `inv_local_to_world`: Converts a world position to a local position.\nThis is automatically updated.\n- `fovy`: The field of view of this camera in the Y/vertical direction, measured in radians.\n- `aspect_ratio`: The aspect ratio of this camera.\nIf `aspect_ratio_from_window` is set, this will be automatically updated to match the window.\n- `perspective`: If attached, this camera will use a standard perspective projection matrix.\nEnsure that `near` and `far` are set.\n- `far`: The far plane of this camera, measured in meters.\n\n\n**Optional**:\n- `translation`: The translation/position of this entity.\n- `rotation`: The rotation of this entity.\n- `scale`: The scale of this entity.\n- `main_scene`: Either the main or UI scene must be specified for this camera to be used.\n- `ui_scene`: Either the main or UI scene must be specified for this camera to be used.\n- `user_id`: If set, this camera will only be used for the specified user.\n- `aspect_ratio_from_window`: If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component."]
                 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
                 #[serde(crate = "self::serde")]
                 pub struct PerspectiveCamera {
@@ -1263,7 +1263,7 @@ mod raw {
                         }
                     }
                 }
-                #[doc = "**Perspective-Infinite-Reverse Camera**: A perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n**Extends**: `ambient_core::camera::PerspectiveCommonCamera`"]
+                #[doc = "**Perspective-Infinite-Reverse Camera**: A perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n**Extends**: `ambient_core::camera::PerspectiveCommonCamera`\n\n**Required**:\n- `local_to_world`: Transformation from the entity's local space to worldspace.\n- `near`: The near plane of this camera, measured in meters.\n- `projection`: The projection matrix of this camera.\nThis can be driven by other components, including `perspective` and `perspective_infinite_reverse`.\n- `projection_view`: The composition of the projection and view (inverse-local-to-world) matrices.\n- `active_camera`: The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.\nIf there's no `user_id`, the camera is considered global and potentially applies to all users (if its `active_camera` value is high enough).\n- `inv_local_to_world`: Converts a world position to a local position.\nThis is automatically updated.\n- `fovy`: The field of view of this camera in the Y/vertical direction, measured in radians.\n- `aspect_ratio`: The aspect ratio of this camera.\nIf `aspect_ratio_from_window` is set, this will be automatically updated to match the window.\n- `perspective_infinite_reverse`: If attached, this camera will use a perspective-infinite-reverse projection matrix.\nThis is well-suited for rendering large worlds as it has no far plane. Ensure `near` is set.\n\n\n**Optional**:\n- `translation`: The translation/position of this entity.\n- `rotation`: The rotation of this entity.\n- `scale`: The scale of this entity.\n- `main_scene`: Either the main or UI scene must be specified for this camera to be used.\n- `ui_scene`: Either the main or UI scene must be specified for this camera to be used.\n- `user_id`: If set, this camera will only be used for the specified user.\n- `aspect_ratio_from_window`: If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component."]
                 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
                 #[serde(crate = "self::serde")]
                 pub struct PerspectiveInfiniteReverseCamera {
@@ -1462,7 +1462,7 @@ mod raw {
                         }
                     }
                 }
-                #[doc = "**Orthographic Camera**: An orthographic camera.\n\n**Extends**: `ambient_core::camera::Camera`"]
+                #[doc = "**Orthographic Camera**: An orthographic camera.\n\n**Extends**: `ambient_core::camera::Camera`\n\n**Required**:\n- `local_to_world`: Transformation from the entity's local space to worldspace.\n- `near`: The near plane of this camera, measured in meters.\n- `projection`: The projection matrix of this camera.\nThis can be driven by other components, including `perspective` and `perspective_infinite_reverse`.\n- `projection_view`: The composition of the projection and view (inverse-local-to-world) matrices.\n- `active_camera`: The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.\nIf there's no `user_id`, the camera is considered global and potentially applies to all users (if its `active_camera` value is high enough).\n- `inv_local_to_world`: Converts a world position to a local position.\nThis is automatically updated.\n- `orthographic`: If attached, this camera will use a standard orthographic projection matrix.\nEnsure that the `orthographic_` components are set, including `left`, right`, `top` and `bottom`, as well as `near` and `far`.\n- `orthographic_left`: The left bound for this `orthographic` camera.\n- `orthographic_right`: The right bound for this `orthographic` camera.\n- `orthographic_top`: The top bound for this `orthographic` camera.\n- `orthographic_bottom`: The bottom bound for this `orthographic` camera.\n- `far`: The far plane of this camera, measured in meters.\n\n\n**Optional**:\n- `translation`: The translation/position of this entity.\n- `rotation`: The rotation of this entity.\n- `scale`: The scale of this entity.\n- `main_scene`: Either the main or UI scene must be specified for this camera to be used.\n- `ui_scene`: Either the main or UI scene must be specified for this camera to be used.\n- `user_id`: If set, this camera will only be used for the specified user."]
                 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
                 #[serde(crate = "self::serde")]
                 pub struct OrthographicCamera {
@@ -2716,7 +2716,7 @@ mod raw {
                     global::serde::{self, Deserialize, Serialize},
                     prelude::*,
                 };
-                #[doc = "**Package**: A package is a collection of assets, definitions and WASM logic."]
+                #[doc = "**Package**: A package is a collection of assets, definitions and WASM logic.\n\n**Required**:\n- `is_package`: Whether or not this entity is a package.\n- `enabled`: Whether or not this package is enabled.\n- `id`: The ID of the package.\n- `name`: The name of the package.\n- `version`: The version of the package.\n- `authors`: The authors of the package.\n- `asset_url`: The asset URL (i.e. where the built assets are) of the package.\n- `client_modules`: The clientside WASM modules spawned by this package.\n- `server_modules`: The serverside WASM modules spawned by this package.\n\n\n**Optional**:\n- `description`: The description of the package. If not attached, the package does not have a description.\n- `repository`: The repository of the package. If not attached, the package does not have a repository.\n- `for_playables`: The playable IDs that this package is for. This package must be a `Mod`."]
                 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
                 #[serde(crate = "self::serde")]
                 pub struct Package {
@@ -3288,7 +3288,7 @@ mod raw {
                     global::serde::{self, Deserialize, Serialize},
                     prelude::*,
                 };
-                #[doc = "**Character Controller**: A capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n**Note**: The character controller is not affected by gravity; you will have to manually simulate gravity by moving the character down in accordance with a vertical velocity you maintain. See the `character_movement` package for an example."]
+                #[doc = "**Character Controller**: A capsule character controller. The capsule is defined as a position, a vertical height, and a radius. The height is the distance between the two sphere centers at the end of the capsule.\n\n**Note**: The character controller is not affected by gravity; you will have to manually simulate gravity by moving the character down in accordance with a vertical velocity you maintain. See the `character_movement` package for an example.\n\n**Required**:\n- `character_controller_height`: The height of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_radius`, it will be given a physical character collider.\n- `character_controller_radius`: The radius of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_height`, it will be given a physical character collider.\n- `physics_controlled`: If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider."]
                 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
                 #[serde(crate = "self::serde")]
                 pub struct CharacterController {
@@ -3538,7 +3538,7 @@ mod raw {
                     global::serde::{self, Deserialize, Serialize},
                     prelude::*,
                 };
-                #[doc = "**Sphere**: A primitive sphere."]
+                #[doc = "**Sphere**: A primitive sphere.\n\n**Required**:\n- `sphere`: If attached to an entity alongside the other `sphere_*` components, the entity will be converted to a sphere primitive.\nTo easily instantiate a unit-diameter `sphere`, consider using the `Sphere` concept.\n- `sphere_radius`: Set the radius of a `sphere` entity.\n- `sphere_sectors`: Set the longitudinal sectors of a `sphere` entity.\n- `sphere_stacks`: Set the latitudinal stacks of a `sphere` entity."]
                 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
                 #[serde(crate = "self::serde")]
                 pub struct Sphere {
@@ -3666,7 +3666,7 @@ mod raw {
                         }
                     }
                 }
-                #[doc = "**Capsule**: A primitive capsule. Defined as a cylinder capped by hemispheres."]
+                #[doc = "**Capsule**: A primitive capsule. Defined as a cylinder capped by hemispheres.\n\n**Required**:\n- `capsule`: If attached to an entity alongside the other `capsule_*` components, the entity will be converted to a capsule primitive.\nTo easily instantiate a default `capsule`, consider using the `Capsule` concept.\n- `capsule_radius`: Set the radius of a `capsule` entity, spanning XY-plane.\n- `capsule_half_height`: Set the half-height of the `capsule` entity, spanning Z-axis, excluding the caps.\n- `capsule_rings`: Set the number of sections between the caps.\n- `capsule_latitudes`: Set the number of latitudinal sections. Should be even.\n- `capsule_longitudes`: Set the number of longitudinal sections."]
                 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
                 #[serde(crate = "self::serde")]
                 pub struct Capsule {
@@ -3833,7 +3833,7 @@ mod raw {
                         }
                     }
                 }
-                #[doc = "**Torus**: A primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution."]
+                #[doc = "**Torus**: A primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution.\n\n**Required**:\n- `torus`: If attached to an entity alongside the other `torus_*` components, the entity will be converted to a torus primitive.\nTo easily instantiate a default `torus`, consider using the `Torus` concept.\n- `torus_inner_radius`: Set the inner radius of a `torus` entity, spanning XY-plane.\n- `torus_outer_radius`: Set the outer radius of a `torus` entity, spanning XY-plane.\n- `torus_slices`: Set the slices of a `torus` entity, spanning XY-plane.\n- `torus_loops`: Set the loops of a `torus` entity, spanning XY-plane."]
                 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
                 #[serde(crate = "self::serde")]
                 pub struct Torus {
@@ -4533,7 +4533,7 @@ mod raw {
                     global::serde::{self, Deserialize, Serialize},
                     prelude::*,
                 };
-                #[doc = "**Transformable**: Can be translated, rotated and scaled."]
+                #[doc = "**Transformable**: Can be translated, rotated and scaled.\n\n**Required**:\n- `local_to_world`: Transformation from the entity's local space to worldspace.\n\n\n**Optional**:\n- `translation`: The translation/position of this entity.\n- `rotation`: The rotation of this entity.\n- `scale`: The scale of this entity."]
                 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
                 #[serde(crate = "self::serde")]
                 pub struct Transformable {
@@ -4779,7 +4779,7 @@ mod raw {
                     global::serde::{self, Deserialize, Serialize},
                     prelude::*,
                 };
-                #[doc = "**Module**: A WASM module that can be enabled or disabled, and may or may not be on the server."]
+                #[doc = "**Module**: A WASM module that can be enabled or disabled, and may or may not be on the server.\n\n**Required**:\n- `is_module`: A module.\n- `bytecode_from_url`: Asset URL for the bytecode of a WASM component.\n- `module_enabled`: Whether or not this module is enabled.\n- `module_name`: The name of this module.\n- `package_ref`: The package that this module belongs to.\n\n\n**Optional**:\n- `is_module_on_server`: Whether or not this module is on the server."]
                 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
                 #[serde(crate = "self::serde")]
                 pub struct Module {
