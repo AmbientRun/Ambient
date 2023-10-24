@@ -1,5 +1,6 @@
 use ambient_api::{
     core::{
+        camera::components::projection,
         messages::Frame,
         primitives::components::cube,
         rendering::components::color,
@@ -20,6 +21,12 @@ pub fn main() {
 
     Frame::subscribe(move |_| {
         let (delta, input) = input::get_delta();
+        if !entity::has_component(camera, projection()) {
+            // HACK: workaround for the orbit_camera package not adding components to the camera
+            // entity until the next frame. In future, the API functions will be fallible, allowing them
+            // to return an error if the entity doesn't have the required components.
+            return;
+        }
         let ray = camera::screen_position_to_world_ray(camera, input.mouse_position);
 
         // Send screen ray to server

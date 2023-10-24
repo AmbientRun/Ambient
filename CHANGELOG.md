@@ -30,7 +30,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 ### Removed
 -->
 
-## Unreleased (YYYY-MM-DD)
+## Version 0.3.1 (2023-10-24)
 
 ### Added
 
