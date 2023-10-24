@@ -4,14 +4,24 @@ use ambient_api::{
             PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         transform::components::{lookat_target, rotation, translation},
+        ui::components::focusable,
     },
-    input::is_game_focused,
+    input::{is_game_focused, GAME_FOCUS_ID},
     prelude::*,
 };
 use packages::this::components::{camera_angle, camera_distance, is_orbit_camera};
 
 #[main]
 pub fn main() {
+    // Spawn a window-sized element to ensure we have focus access. We do not use `hide_cursor`
+    // as we want the cursor to be generally visible.
+    WindowSized::el([])
+        .init(translation(), vec3(0., 0., 1.1))
+        .with_clickarea()
+        .el()
+        .with(focusable(), GAME_FOCUS_ID.to_string())
+        .spawn_interactive();
+
     spawn_query(is_orbit_camera()).bind(|cameras| {
         for (camera_id, _) in cameras {
             entity::add_components(
