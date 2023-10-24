@@ -332,7 +332,7 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
 ///
 /// If you want to publish the runtime, here be dragons
 fn publish(execute: bool, command: PublishCommand) -> anyhow::Result<()> {
-    let crates = get_all_publishable_crates(false)?;
+    let crates = get_all_publishable_crates(true)?;
 
     #[derive(Debug)]
     enum Task {
@@ -368,7 +368,9 @@ fn publish(execute: bool, command: PublishCommand) -> anyhow::Result<()> {
         let specify_target =
             p.1.package
                 .as_ref()
-                .is_some_and(|p| !build_with_host.contains(p.name.as_str()));
+                .is_some_and(|p| !build_with_host.contains(p.name.as_str()))
+                && crates_path != "crates"
+                && crates_path != "libs";
 
         Task::Command(crate_path, specify_target, features)
     });
@@ -706,24 +708,34 @@ fn get_all_publishable_crates(
             .package_ids(DependencyDirection::Forward)
             .next()
             .unwrap();
-        let ambient_wasm_id = ambient_graph
-            .resolve_package_name("ambient_wasm")
-            .package_ids(DependencyDirection::Forward)
-            .next()
-            .unwrap();
+
+        // Crates that have Git dependencies, or crates that depend on crates with Git dependencies
+        let mut git_dependency_poisoned_crates = HashSet::new();
+        for package in ambient_graph.packages() {
+            if git_dependency_poisoned_crates.contains(package.id()) {
+                continue;
+            }
+
+            if package
+                .source()
+                .external_source()
+                .is_some_and(|s| s.starts_with("git"))
+            {
+                git_dependency_poisoned_crates.insert(package.id());
+                let poisoned_reverse_deps = ambient_graph
+                    .query_reverse([package.id()])?
+                    .resolve()
+                    .package_ids(DependencyDirection::Forward)
+                    .collect_vec();
+                git_dependency_poisoned_crates.extend(poisoned_reverse_deps);
+            }
+        }
 
         let mut ambient_crates = ambient_graph
             .query_forward([ambient_id])?
             .resolve()
             .package_ids(DependencyDirection::Forward)
-            .filter(|id| {
-                // We purposely exclude the WASM crate, as well as anything
-                // that depends on it, as it has Git dependencies that we
-                // can't publish at present.
-                !ambient_graph
-                    .depends_on(id, ambient_wasm_id)
-                    .unwrap_or(true)
-            })
+            .filter(|id| !git_dependency_poisoned_crates.contains(id))
             .collect::<Vec<_>>();
         ambient_crates.reverse();
 
@@ -758,7 +770,7 @@ fn get_all_publishable_crates(
             .iter()
             .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
             .filter(|p| manifests.exists(p))
-            .filter(|p| !ambient_crates.iter().any(|tp| tp == p))
+            .filter(|p| !(include_ambient_crates && ambient_crates.iter().any(|tp| tp == p)))
             .map(|p| p.to_string())
             .collect::<Vec<_>>()
     };
