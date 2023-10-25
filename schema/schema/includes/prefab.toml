@@ -2,8 +2,8 @@
 name = "Prefab"
 description = "Prefab-related state, including loading of prefabs."
 content = { type = "Asset", schema = true }
-version = "0.3.1-rc.2"
-ambient_version = "0.3.1-rc.2"
+version = "0.3.1-internal-test-full-docker-release"
+ambient_version = "0.3.1-internal-test-full-docker-release"
 
 [components.prefab_from_url]
 type = "String"

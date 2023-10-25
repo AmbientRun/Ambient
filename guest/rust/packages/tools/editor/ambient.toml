@@ -2,9 +2,9 @@
 id = "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu"
 name = "Editor [WIP]"
 description = "An extremely early basic sketch of a level editor."
-version = "0.3.1-rc.2"
+version = "0.3.1-internal-test-full-docker-release"
 content = { type = "Tool" }
-ambient_version = "0.3.1-rc.2"
+ambient_version = "0.3.1-internal-test-full-docker-release"
 
 [dependencies]
 editor_schema = { path = "../../schemas/editor", deployment = "2ruH9ZdNqgW7tBklWFw8j7" }
