@@ -2,8 +2,8 @@
 id = "gcmnpmewi3axaamblf5zeldtwk4u2u3m"
 name = "Button"
 description = "UI buttons, including different styles."
-version = "0.3.1-rc.2"
+version = "0.3.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/button"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.1-rc.2"
+ambient_version = "0.3.1"

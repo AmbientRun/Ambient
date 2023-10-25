@@ -2,9 +2,9 @@
 id = "mnm43qv33k7kx235bz5hcgoguokwxzwo"
 name = "Tangent Behavior: Vehicle"
 description = "Implements the vehicle behavior for Tangent."
-version = "0.3.1-rc.2"
+version = "0.3.1"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.1-rc.2"
+ambient_version = "0.3.1"
 authors = ["philpax"]
 
 [dependencies]
