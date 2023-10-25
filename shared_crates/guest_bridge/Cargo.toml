@@ -21,14 +21,14 @@ ambient_renderer = { path = "../../crates/renderer", optional = true, version = 
 ambient_text = { path = "../../crates/text", optional = true, version = "0.3.1-dev" }
 ambient_rect = { path = "../../crates/rect", optional = true, version = "0.3.1-dev" }
 ambient_input = { path = "../../crates/input", optional = true, version = "0.3.1-dev" }
-ambient_sys = { path = "../../crates/sys", optional = true, version = "0.3.1-rc.1" }
+ambient_sys = { path = "../../crates/sys", optional = true, version = "0.3.1-dev" }
 anyhow = { workspace = true }
 
 # Guest only
-ambient_api_core = { path = "../../guest/rust/api_core", optional = true, version = "0.3.1-rc.1" }
+ambient_api_core = { path = "../../guest/rust/api_core", optional = true, version = "0.3.1-dev" }
 
 # Shared
-ambient_shared_types = { path = "../shared_types", version = "0.3.1-rc.1" }
+ambient_shared_types = { path = "../shared_types", version = "0.3.1-dev" }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 arboard = { workspace = true, optional = true }

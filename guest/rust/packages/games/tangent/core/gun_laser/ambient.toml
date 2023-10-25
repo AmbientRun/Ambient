@@ -2,17 +2,17 @@
 id = "jyp2hh3fpjfe7kaos36zbdztfypqip3m"
 name = "Tangent Gun: Laser"
 description = "Implements laser guns."
-version = "0.3.1-rc.1"
+version = "0.3.1-nightly-2023-10-25"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.1-rc.1"
+ambient_version = "0.3.1-nightly-2023-10-25"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "1Fq0lfl2sfAt2dLBG9vxtp" }
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "pYJY9VMexAV2P8gMWErg2" }
-kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "5M24YulKadHVfsML8tDrVX" }
+tangent_schema = { path = "../../schema", deployment = "255eBHSX2Pci5BnNdoPx4d" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "4PnLB3CWUAgMRUmAGDkfM6" }
+kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "33yyuPQKHoCxgrBm4rtBqW" }
 
-explosion = { path = "../../../../std/explosion", deployment = "6aDTMoC76OCZSuOymrFwKi" }
+explosion = { path = "../../../../std/explosion", deployment = "2JqRFs8eeviOrTljqogUTx" }
 
 [components]
 is_gun_laser = { type = "Empty", name = "Is Gun (Laser)", description = "This entity is a laser gun." }
