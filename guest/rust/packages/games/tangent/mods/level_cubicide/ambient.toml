@@ -8,12 +8,12 @@ ambient_version = "0.3.1-nightly-2023-10-25"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "1Fq0lfl2sfAt2dLBG9vxtp" }
-spawner_vehicle = { path = "../../core/spawner_vehicle", deployment = "7OJO94kxKzIAaaHmOqJ8G1" }
+tangent_schema = { path = "../../schema", deployment = "255eBHSX2Pci5BnNdoPx4d" }
+spawner_vehicle = { path = "../../core/spawner_vehicle", deployment = "17czZYD5R2AzVn2IceYUjP" }
 
-pickup_health = { path = "../pickup_health", deployment = "2ReU7ZXIfyOEkTUa3kuVcf" }
+pickup_health = { path = "../pickup_health", deployment = "72mPLoUrHluw0YhjQBL6hI" }
 
-game_object = { path = "../../../../schemas/game_object", deployment = "7DZF8ONLXv5nonZqMmnCIC" }
+game_object = { path = "../../../../schemas/game_object", deployment = "48CmASU8u1ODut7LD0NREr" }
 
 [components]
 include_corners = { name = "Include Corners", description = "Whether or not the corner spawnpoints are created.", type = "Bool", default = true, attributes = [
