@@ -102,6 +102,7 @@ const WEB_CARGO: &str = "web/Cargo.toml";
 const GUEST_RUST_CARGO: &str = "guest/rust/Cargo.toml";
 const ADVANCED_INSTALLING_DOCS: &str = "docs/src/reference/advanced_installing.md";
 const CHANGELOG: &str = "CHANGELOG.md";
+const DEPLOY_SERVER: &str = ".github/workflows/deploy-server.yml";
 
 fn check_release(
     no_docker: bool,
@@ -240,12 +241,38 @@ fn update_version(
     }
 
     edit_file(ADVANCED_INSTALLING_DOCS, |document| {
-        const PREFIX: &str = "cargo install --git https://github.com/AmbientRun/Ambient.git --tag";
+        replace_suffix_of_lines_with_prefix(
+            document,
+            "cargo install --git https://github.com/AmbientRun/Ambient.git --tag ",
+            &format!("v{new_version} ambient"),
+        )
+    })?;
+
+    // Run `cargo check` in the root and API to force the lockfile to update
+    check(".")?;
+    check("web")?;
+    check("guest/rust")?;
+
+    // Update workflows
+    let new_version_suffixless = new_version
+        .split_once('-')
+        .map(|p| p.0)
+        .unwrap_or(new_version);
+
+    edit_file(DEPLOY_SERVER, |document| {
+        replace_suffix_of_lines_with_prefix(
+            document,
+            "  CANARY_SERVER_BINARY_NAME: ",
+            &format!("ambient-{new_version_suffixless}-dev"),
+        )
+    })?;
+
+    fn replace_suffix_of_lines_with_prefix(document: &str, prefix: &str, suffix: &str) -> String {
         document
             .lines()
             .map(|l| {
-                if l.starts_with(PREFIX) {
-                    format!("{PREFIX} v{new_version} ambient")
+                if l.starts_with(prefix) {
+                    format!("{prefix}{suffix}")
                 } else {
                     l.to_string()
                 }
@@ -254,12 +281,7 @@ fn update_version(
             .chain(std::iter::once("".to_string()))
             .collect::<Vec<String>>()
             .join("\n")
-    })?;
-
-    // Run `cargo check` in the root and API to force the lockfile to update
-    check(".")?;
-    check("web")?;
-    check("guest/rust")?;
+    }
 
     Ok(())
 }
