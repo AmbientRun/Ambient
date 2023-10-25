@@ -17,7 +17,9 @@ RUN strip target/release/ambient
 FROM rust:1.73-bullseye
 RUN apt-get update && \
     apt-get install -y \
-    libasound2
+    ca-certificates libasound2
+RUN rustup toolchain install stable
+RUN rustup target add --toolchain stable wasm32-wasi
 WORKDIR /app
 COPY --from=builder /build/target/release/ambient ./
-CMD [ "./ambient", "serve", "--public-host", "localhost", "--no-build", "project" ]
+CMD [ "./ambient", "serve", "--public-host", "localhost", "--release", "project" ]
