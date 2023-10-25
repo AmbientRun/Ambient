@@ -9,7 +9,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   BUILD_DIR: build-${{ github.sha }}
   SERVER_BINARY_NAME: ambient-${{ github.sha }}
-  CANARY_SERVER_BINARY_NAME: ambient-0.3.0-dev
+  CANARY_SERVER_BINARY_NAME: ambient-0.3.1-dev
 
 jobs:
   build-and-push:
@@ -45,7 +45,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
-          file: slim-release.Dockerfile
+          file: Dockerfile
           context: .
           push: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
           tags: ${{ steps.meta.outputs.tags }}
