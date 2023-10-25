@@ -14,13 +14,13 @@ targets = ["wasm32-wasi"]
 
 [dependencies]
 # Native only
-ambient_ecs = { path = "../../crates/ecs", optional = true, version = "0.3.1-dev" }
-ambient_core = { path = "../../crates/core", optional = true, version = "0.3.1-dev" }
-ambient_layout = { path = "../../crates/layout", optional = true, version = "0.3.1-dev" }
-ambient_renderer = { path = "../../crates/renderer", optional = true, version = "0.3.1-dev" }
-ambient_text = { path = "../../crates/text", optional = true, version = "0.3.1-dev" }
-ambient_rect = { path = "../../crates/rect", optional = true, version = "0.3.1-dev" }
-ambient_input = { path = "../../crates/input", optional = true, version = "0.3.1-dev" }
+ambient_ecs = { path = "../../crates/ecs", optional = true, version = "0.3.1" }
+ambient_core = { path = "../../crates/core", optional = true, version = "0.3.1" }
+ambient_layout = { path = "../../crates/layout", optional = true, version = "0.3.1" }
+ambient_renderer = { path = "../../crates/renderer", optional = true, version = "0.3.1" }
+ambient_text = { path = "../../crates/text", optional = true, version = "0.3.1" }
+ambient_rect = { path = "../../crates/rect", optional = true, version = "0.3.1" }
+ambient_input = { path = "../../crates/input", optional = true, version = "0.3.1" }
 ambient_sys = { path = "../../crates/sys", optional = true, version = "0.3.1" }
 anyhow = { workspace = true }
 

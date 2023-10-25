@@ -149,7 +149,7 @@ fn update_version(
     }
 
     // This must be done first, before we mutate anything, to ensure that it's in a consistent state
-    let all_publishable_crates = get_all_publishable_crates(true)?;
+    let all_publishable_crates = get_all_publishable_crates(true, true)?;
 
     if !no_package_ambient_version_update {
         fn add_ambient_version(toml: &mut toml_edit::Document, new_version: &str) {
@@ -334,7 +334,7 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
 ///
 /// If you want to publish the runtime, here be dragons
 async fn publish(execute: bool, command: PublishCommand) -> anyhow::Result<()> {
-    let crates = get_all_publishable_crates(true)?;
+    let crates = get_all_publishable_crates(true, false)?;
 
     #[derive(Debug)]
     enum Task {
@@ -554,7 +554,7 @@ fn check_docker_run() -> anyhow::Result<()> {
 }
 
 fn check_crates_io_validity() -> anyhow::Result<()> {
-    let crates = get_all_publishable_crates(true)?;
+    let crates = get_all_publishable_crates(true, false)?;
     for ((path, manifest), _) in crates {
         let Some(package) = manifest.package else {
             anyhow::bail!("no package for {}", path.display())
@@ -711,8 +711,10 @@ fn check(path: impl AsRef<Path>) -> anyhow::Result<()> {
     Ok(())
 }
 
+// TODO: consider spliting this up into two functions: "all Ambient crates" and "all publishable crates"
 fn get_all_publishable_crates(
     include_ambient_crates: bool,
+    include_unpublishable_crates: bool,
 ) -> anyhow::Result<Vec<((PathBuf, cargo_toml::Manifest), Version)>> {
     // Our publishing process is complicated by the presence of two workspaces
     // that share crates. None of the existing tooling, as far as I can tell,
@@ -738,23 +740,26 @@ fn get_all_publishable_crates(
 
         // Crates that have Git dependencies, or crates that depend on crates with Git dependencies
         let mut git_dependency_poisoned_crates = HashSet::new();
-        for package in ambient_graph.packages() {
-            if git_dependency_poisoned_crates.contains(package.id()) {
-                continue;
-            }
 
-            if package
-                .source()
-                .external_source()
-                .is_some_and(|s| s.starts_with("git"))
-            {
-                git_dependency_poisoned_crates.insert(package.id());
-                let poisoned_reverse_deps = ambient_graph
-                    .query_reverse([package.id()])?
-                    .resolve()
-                    .package_ids(DependencyDirection::Forward)
-                    .collect_vec();
-                git_dependency_poisoned_crates.extend(poisoned_reverse_deps);
+        if !include_unpublishable_crates {
+            for package in ambient_graph.packages() {
+                if git_dependency_poisoned_crates.contains(package.id()) {
+                    continue;
+                }
+
+                if package
+                    .source()
+                    .external_source()
+                    .is_some_and(|s| s.starts_with("git"))
+                {
+                    git_dependency_poisoned_crates.insert(package.id());
+                    let poisoned_reverse_deps = ambient_graph
+                        .query_reverse([package.id()])?
+                        .resolve()
+                        .package_ids(DependencyDirection::Forward)
+                        .collect_vec();
+                    git_dependency_poisoned_crates.extend(poisoned_reverse_deps);
+                }
             }
         }
 

@@ -16,7 +16,7 @@ ambient_friendly_id = { path = "../../libs/friendly_id" , version = "0.3.1" }
 
 # Only on native
 ambient_sys = { path = "../../crates/sys", optional = true , version = "0.3.1" }
-ambient_core = { path = "../../crates/core", optional = true , version = "0.3.1-dev" }
+ambient_core = { path = "../../crates/core", optional = true , version = "0.3.1" }
 tokio = { workspace = true, optional = true }
 
 parking_lot = { workspace = true }
