@@ -15,9 +15,9 @@ syn = { workspace = true }
 proc-macro2 = { workspace = true }
 glam = { workspace = true }
 
-ambient_package = { path = "../package" , version = "0.3.1" }
-ambient_package_semantic = { path = "../package_semantic" , version = "0.3.1" }
-ambient_shared_types = { path = "../shared_types" , version = "0.3.1" }
+ambient_package = { path = "../package" , version = "0.3.1-nightly-2023-10-26" }
+ambient_package_semantic = { path = "../package_semantic" , version = "0.3.1-nightly-2023-10-26" }
+ambient_shared_types = { path = "../shared_types" , version = "0.3.1-nightly-2023-10-26" }
 
 [dev-dependencies]
 indoc = "2.0"
