@@ -2,11 +2,11 @@
 id = "jruv4zn5tfe2s3kpyhhq7z3uezbi27cv"
 name = "To-do List"
 description = "A multiplayer to-do list."
-version = "0.3.1"
+version = "0.3.1-nightly-2023-10-26"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/todo"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.1"
+ambient_version = "0.3.1-nightly-2023-10-26"
 
 [messages.NewItem]
 description = "Add a new todo item"
