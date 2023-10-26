@@ -9,7 +9,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   BUILD_DIR: build-${{ github.sha }}
   SERVER_BINARY_NAME: ambient-${{ github.sha }}
-  CANARY_SERVER_BINARY_NAME: ambient-0.3.1-dev
+  CANARY_SERVER_BINARY_NAME: ambient-0.3.2-dev
 
 jobs:
   build-and-push:
