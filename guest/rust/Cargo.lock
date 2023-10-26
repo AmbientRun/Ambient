@@ -45,7 +45,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_api"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api_core",
  "ambient_cb",
@@ -62,7 +62,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_api_core"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api_macros",
  "ambient_package_rt",
@@ -84,7 +84,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_api_macros"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_package_macro_common",
  "anyhow",
@@ -97,7 +97,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_brand_theme"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
  "ambient_color",
@@ -108,11 +108,11 @@ dependencies = [
 
 [[package]]
 name = "ambient_cb"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 
 [[package]]
 name = "ambient_color"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "glam",
  "hex",
@@ -145,14 +145,14 @@ dependencies = [
 
 [[package]]
 name = "ambient_dirs"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "directories",
 ]
 
 [[package]]
 name = "ambient_editor_derive"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "pretty_assertions",
  "proc-macro-crate",
@@ -163,7 +163,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_cb",
  "ambient_element_component",
@@ -181,7 +181,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element_component"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "itertools 0.10.5",
  "proc-macro2",
@@ -191,49 +191,49 @@ dependencies = [
 
 [[package]]
 name = "ambient_example_arkanoid"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_async"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_audio_ctrl"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_auto_editor"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_basic_model"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_button"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_clientside"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -247,28 +247,28 @@ dependencies = [
 
 [[package]]
 name = "ambient_example_counter"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_decals"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_dock_layout"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_editors"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
  "indexmap 2.0.0",
@@ -276,28 +276,28 @@ dependencies = [
 
 [[package]]
 name = "ambient_example_first_person_camera"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_flow_layout"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_fog"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_generate_pipeline"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
  "ambient_pipeline_types",
@@ -305,63 +305,63 @@ dependencies = [
 
 [[package]]
 name = "ambient_example_image"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_image_quad"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_input"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_instancing"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_line"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_material_overriding"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_messaging"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_minigolf"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_multiplayer"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
  "rand 0.8.5",
@@ -369,35 +369,35 @@ dependencies = [
 
 [[package]]
 name = "ambient_example_music_sequencer"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_physics"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_pong"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_primitives"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_procedural_generation"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
  "noise",
@@ -408,35 +408,35 @@ dependencies = [
 
 [[package]]
 name = "ambient_example_raw_text"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_rect"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_samplers"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_screen_ray"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_screens"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
  "ambient_friendly_id",
@@ -444,49 +444,49 @@ dependencies = [
 
 [[package]]
 name = "ambient_example_scroll"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_skinmesh"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_slider"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_sun"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_text"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_third_person_camera"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_tictactoe"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
  "palette 0.6.1",
@@ -494,28 +494,28 @@ dependencies = [
 
 [[package]]
 name = "ambient_example_todo"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_example_transparency"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_friendly_id"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "rand 0.8.5",
 ]
 
 [[package]]
 name = "ambient_guest_bridge"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api_core",
  "ambient_shared_types",
@@ -524,7 +524,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_math"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "glam",
  "rand 0.8.5",
@@ -533,7 +533,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_shared_types",
  "chrono",
@@ -555,7 +555,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_macro_common"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_package",
  "ambient_package_semantic",
@@ -570,7 +570,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_rt"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_shared_types",
  "byteorder",
@@ -582,7 +582,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_semantic"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_dirs",
  "ambient_package",
@@ -605,7 +605,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_pipeline_types"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "glam",
  "serde",
@@ -615,11 +615,11 @@ dependencies = [
 
 [[package]]
 name = "ambient_schema"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 
 [[package]]
 name = "ambient_shared_types"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "bitflags 1.3.2",
  "paste",
@@ -630,7 +630,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_std"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "itertools 0.10.5",
  "thiserror",
@@ -638,14 +638,14 @@ dependencies = [
 
 [[package]]
 name = "ambient_testcase_588"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "ambient_time"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "itertools 0.10.5",
  "thiserror",
@@ -653,7 +653,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ui"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_cb",
  "ambient_color",
@@ -689,7 +689,7 @@ dependencies = [
 
 [[package]]
 name = "animations"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -720,7 +720,7 @@ checksum = "5b8a30a44e99a1c83ccb2a6298c563c888952a1c9134953db26876528f84c93a"
 
 [[package]]
 name = "assimp"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -858,7 +858,7 @@ dependencies = [
 
 [[package]]
 name = "code"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -1019,7 +1019,7 @@ dependencies = [
 
 [[package]]
 name = "dependencies"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -1135,7 +1135,7 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 
 [[package]]
 name = "explosion"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -1261,7 +1261,7 @@ dependencies = [
 
 [[package]]
 name = "gameplay_daynight"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -1696,7 +1696,7 @@ dependencies = [
 
 [[package]]
 name = "nameplates"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -1930,7 +1930,7 @@ checksum = "9b2a4787296e9989611394c33f193f676704af1686e70b8f8033ab5ba9a35a94"
 
 [[package]]
 name = "performance_bar"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -2593,14 +2593,14 @@ dependencies = [
 
 [[package]]
 name = "tangent_behavior_character"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "tangent_behavior_vehicle"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -2621,21 +2621,21 @@ dependencies = [
 
 [[package]]
 name = "tangent_class_assault"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "tangent_class_scout"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "tangent_class_tank"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -2649,14 +2649,14 @@ dependencies = [
 
 [[package]]
 name = "tangent_gameplay_fire_rain"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "tangent_gun_laser"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -2670,7 +2670,7 @@ dependencies = [
 
 [[package]]
 name = "tangent_level_cubicide_one_spawn"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -2684,14 +2684,14 @@ dependencies = [
 
 [[package]]
 name = "tangent_reskin_classes"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "tangent_spawner_vehicle"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -2705,7 +2705,7 @@ dependencies = [
 
 [[package]]
 name = "tangent_ui_flat_hud"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -2719,14 +2719,14 @@ dependencies = [
 
 [[package]]
 name = "tangent_ui_spawn_menu"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "tangent_vehicle_standard"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
  "serde_json",
@@ -2996,7 +2996,7 @@ checksum = "f962df74c8c05a667b5ee8bcf162993134c104e96440b663c8daa176dc772d8c"
 
 [[package]]
 name = "unity"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -3027,7 +3027,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "visualize_colliders"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api",
 ]
