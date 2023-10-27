@@ -272,17 +272,24 @@ impl FrameDropStats {
 struct FrameDropping {
     stats: FrameDropStats,
     accummulated_delay: Duration,
+    last_frame_timestamp: Option<Instant>,
 }
 impl FrameDropping {
     pub fn new() -> Self {
         Self {
             stats: FrameDropStats::new(120),
             accummulated_delay: Duration::ZERO,
+            last_frame_timestamp: None,
         }
     }
 
     pub fn should_drop(&mut self, now: Instant) -> bool {
         self.stats.on_frame();
+
+        if let Some(last) = self.last_frame_timestamp {
+            self.observe_frame_time(now - last);
+        }
+        self.last_frame_timestamp = Some(now);
 
         if self.accummulated_delay > MAX_ACCUMMULATED_FRAME_DELAY {
             self.accummulated_delay = Duration::ZERO;
@@ -293,24 +300,13 @@ impl FrameDropping {
         }
     }
 
-    pub fn observe_frame_time(&mut self, frame_time: Duration) {
+    fn observe_frame_time(&mut self, frame_time: Duration) {
         self.accummulated_delay = if frame_time < ALLOWED_FRAME_TIME {
             // frame was processed in time -> reset the accummulated delay
             Duration::ZERO
         } else {
             self.accummulated_delay + frame_time
         };
-    }
-}
-
-struct FrameDroppingCtx<'a> {
-    now: Instant,
-    frame_dropping: parking_lot::MutexGuard<'a, FrameDropping>,
-}
-impl<'a> FrameDroppingCtx<'a> {
-    pub fn observe_frame_time(mut self) {
-        let frame_time = self.now.elapsed();
-        self.frame_dropping.observe_frame_time(frame_time);
     }
 }
 
@@ -327,8 +323,6 @@ fn run_game_logic(
     let frame_dropping = Mutex::new(FrameDropping::new());
 
     use_frame(hooks, move |app_world| {
-        let mut frame_dropping_ctx: Option<FrameDroppingCtx<'_>> = None;
-
         #[cfg(feature = "frame-dropping")]
         {
             let now = Instant::now();
@@ -336,10 +330,6 @@ fn run_game_logic(
             if frame_dropping.should_drop(now) {
                 return;
             }
-            frame_dropping_ctx = Some(FrameDroppingCtx {
-                now,
-                frame_dropping,
-            });
         }
 
         let mut game_state = game_state.lock();
@@ -356,10 +346,6 @@ fn run_game_logic(
         }
 
         game_state.on_frame(&gpu, &render_target.0);
-
-        if let Some(frame_dropping_ctx) = frame_dropping_ctx {
-            frame_dropping_ctx.observe_frame_time();
-        }
     });
 }
 
