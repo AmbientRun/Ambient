@@ -2,15 +2,15 @@
 id = "pfzpi7ypoegwizizej5ojfcsncqa4bet"
 name = "First-person camera"
 description = "A simple FPS camera and input example."
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-10-27"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/first_person_camera"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-dev"
+ambient_version = "0.3.2-nightly-2023-10-27"
 
 
 [dependencies]
-base_assets = { path = "../../../packages/std/base_assets", deployment = "hLmVKwoOKK6gSuhix0bOH" }
-third_person_controller = { path = "../../../packages/std/third_person_controller", deployment = "2oemRpumlBKvnkzLpis5RH" }
-character_animation = { path = "../../../packages/std/character_animation", deployment = "3UNM7y5ipRO3ikkBPSm3Ba" }
-hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "3IeSsZNb60kDEwm1KbWkCt" }
+base_assets = { path = "../../../packages/std/base_assets", deployment = "1YbGZKGZhUwfiNqV0yBPVC" }
+third_person_controller = { path = "../../../packages/std/third_person_controller", deployment = "3LrhrhEm8nVtpJpPzbzP1s" }
+character_animation = { path = "../../../packages/std/character_animation", deployment = "7iQjEoUGsdTsiYuwqvGuJ6" }
+hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "7lvyUA7FWes9NBZv3VmXdR" }
