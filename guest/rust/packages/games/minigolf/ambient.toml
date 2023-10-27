@@ -2,11 +2,11 @@
 id = "uigiqyr7qugdncpzkyzinvwxh26daahx"
 name = "Minigolf"
 description = "Can you hit a hole-in-one?"
-version = "0.3.2-nightly-2023-10-27"
+version = "0.3.2-internal-adjusted-frame-dropping-time-calc"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/minigolf"
 type = "Game"
 content = { type = "Playable" }
-ambient_version = "0.3.2-nightly-2023-10-27"
+ambient_version = "0.3.2-internal-adjusted-frame-dropping-time-calc"
 
 [dependencies]
 hide_cursor = { path = "../../std/hide_cursor", deployment = "7lvyUA7FWes9NBZv3VmXdR" }

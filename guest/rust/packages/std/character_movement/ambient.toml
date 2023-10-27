@@ -2,9 +2,9 @@
 id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
 name = "Character Movement"
 description = "Simulates character movement, including gravity, for a unit."
-version = "0.3.2-nightly-2023-10-27"
+version = "0.3.2-internal-adjusted-frame-dropping-time-calc"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-10-27"
+ambient_version = "0.3.2-internal-adjusted-frame-dropping-time-calc"
 
 [dependencies]
 unit_schema = { path = "../../schemas/unit", deployment = "2UCAJXP5nO55C9sbGXEoKy" }

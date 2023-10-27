@@ -2,9 +2,9 @@
 id = "per6j2iqhj3jz4da3fqr75jcj2kqjooo"
 name = "Nameplates"
 description = "Basic 3D nameplates for players."
-version = "0.3.2-nightly-2023-10-27"
+version = "0.3.2-internal-adjusted-frame-dropping-time-calc"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-10-27"
+ambient_version = "0.3.2-internal-adjusted-frame-dropping-time-calc"
 
 [dependencies]
 game_object = { path = "../../schemas/game_object", deployment = "3U9tVe9IXe4arWOMmmOYD9" }
