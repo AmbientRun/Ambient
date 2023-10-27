@@ -8,10 +8,10 @@ ambient_version = "0.3.2-nightly-2023-10-27"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "1sTfa0gpme6G6zIea7NUX5" }
-game_object = { path = "../../../../schemas/game_object", deployment = "4tgGpzFpvpBI56iMiviTMr" }
-kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "3ZTx7Fb3mUHywA1kUm6iea" }
-explosion = { path = "../../../../std/explosion", deployment = "485bmhX1Z8Ta8K5EhRNP80" }
+tangent_schema = { path = "../../schema", deployment = "2A2nEFDYDMlHaZwPd4fqGm" }
+game_object = { path = "../../../../schemas/game_object", deployment = "3U9tVe9IXe4arWOMmmOYD9" }
+kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "5JQd7EbNkJpn0XpZoh96mp" }
+explosion = { path = "../../../../std/explosion", deployment = "2lK5lGHlBONR0UnhiJlcQh" }
 
 [messages.OnCollision]
 name = "On Collision"
