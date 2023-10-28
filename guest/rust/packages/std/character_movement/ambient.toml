@@ -2,12 +2,12 @@
 id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
 name = "Character Movement"
 description = "Simulates character movement, including gravity, for a unit."
-version = "0.3.2-nightly-2023-10-27"
+version = "0.3.2-nightly-2023-10-28"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-10-27"
+ambient_version = "0.3.2-nightly-2023-10-28"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "2UCAJXP5nO55C9sbGXEoKy" }
+unit_schema = { path = "../../schemas/unit", deployment = "4TwZdMj3mIxNT9gp5dKrO0" }
 
 [concepts.CharacterMovement]
 extends = ["ambient_core::physics::CharacterController"]
