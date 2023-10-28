@@ -7,7 +7,7 @@ content = { type = "Asset", code = true }
 ambient_version = "0.3.2-nightly-2023-10-28"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "2UCAJXP5nO55C9sbGXEoKy" }
+unit_schema = { path = "../../schemas/unit", deployment = "4TwZdMj3mIxNT9gp5dKrO0" }
 
 [concepts.CharacterMovement]
 extends = ["ambient_core::physics::CharacterController"]
