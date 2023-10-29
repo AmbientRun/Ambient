@@ -3,6 +3,6 @@ id = "e4unr4x2lz2ov7dsd5vnjylbykwixvv2"
 name = "Kenney's Impact Sounds"
 authors = ["Kenney"]
 description = "https://www.kenney.nl/assets/impact-sounds for Ambient. (Uploaded by Ambient, not Kenney.)"
-version = "0.3.2-nightly-2023-10-28"
+version = "0.3.2-nightly-2023-10-29"
 content = { type = "Asset", audio = true }
-ambient_version = "0.3.2-nightly-2023-10-28"
+ambient_version = "0.3.2-nightly-2023-10-29"
