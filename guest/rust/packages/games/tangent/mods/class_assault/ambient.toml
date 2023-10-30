@@ -2,13 +2,13 @@
 id = "j32xi2gg5rvgob2cu7uirdbtj5ce4jw7"
 name = "Tangent Class: Assault"
 description = "Defines the Assault class, which is a balanced all-rounder."
-version = "0.3.2-nightly-2023-10-29"
+version = "0.3.2-nightly-2023-10-30"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.2-nightly-2023-10-29"
+ambient_version = "0.3.2-nightly-2023-10-30"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "1ZPnOZ40JB4U1mDSr8Mkdn" }
-gun_laser = { path = "../../core/gun_laser", deployment = "6WYxKyBp7HN7S5fD8mtfmR" }
+tangent_schema = { path = "../../schema", deployment = "5fOf67oQSJq5GXlXo9NuEd" }
+gun_laser = { path = "../../core/gun_laser", deployment = "3ZHrkSsSrH5vDIajHAudRp" }
 
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "2xP2XjsLR7nzBDgAwUKoLK" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "5nazVq262hiSUX82p9vm9s" }
