@@ -2,9 +2,9 @@
 id = "gzbamly2shtnz3siisf3mdzglsi67vul"
 name = "Tangent Level: Cubicide"
 description = "A procedurally-generated level for Tangent using cubes with pathways cut through them."
-version = "0.3.2-nightly-2023-10-29"
+version = "0.3.2-nightly-2023-10-30"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.2-nightly-2023-10-29"
+ambient_version = "0.3.2-nightly-2023-10-30"
 authors = ["philpax"]
 
 [dependencies]
