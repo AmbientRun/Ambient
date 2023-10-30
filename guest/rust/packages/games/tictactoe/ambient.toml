@@ -32,4 +32,4 @@ right = "Bool"
 capture = "Bool"
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "3h5UYUQFCvs8TQZoOTXvHQ" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "6XOl6W9CGTi6Kj5plwZnRD" }
