@@ -90,7 +90,7 @@ pub struct HostCli {
     #[arg(long)]
     pub public_host: Option<String>,
 
-    /// Defaults to 8889
+    /// Defaults to 8999
     #[arg(long)]
     pub http_interface_port: Option<u16>,
 
