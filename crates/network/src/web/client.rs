@@ -40,8 +40,8 @@ use crate::{
 
 use super::ProxyMessage;
 
-const ALLOWED_FRAME_TIME: Duration = Duration::from_nanos(16_666_666); // 1/60 s
-const MAX_ACCUMMULATED_FRAME_DELAY: Duration = Duration::from_millis(50);
+// expressed in number of frames
+const MAX_ACCUMMULATED_FRAME_DELAY: u32 = 3;
 
 #[derive(Debug, Clone)]
 pub struct GameClientView {
@@ -273,6 +273,8 @@ struct FrameDropping {
     stats: FrameDropStats,
     accummulated_delay: Duration,
     last_frame_timestamp: Option<Instant>,
+    consecutive_frames_dropped: u32,
+    detected_frame_time: Duration,
 }
 impl FrameDropping {
     pub fn new() -> Self {
@@ -280,33 +282,47 @@ impl FrameDropping {
             stats: FrameDropStats::new(120),
             accummulated_delay: Duration::ZERO,
             last_frame_timestamp: None,
+            consecutive_frames_dropped: 0,
+            // starting with 0 so we drop a few frames in the very beginning to get proper estimate
+            detected_frame_time: Duration::ZERO,
         }
     }
 
     pub fn should_drop(&mut self, now: Instant) -> bool {
         self.stats.on_frame();
 
+        // process frame time
         if let Some(last) = self.last_frame_timestamp {
-            self.observe_frame_time(now - last);
+            let frame_time = now - last;
+
+            if self.consecutive_frames_dropped > 1 {
+                // we are dropping frames and this is not the first dropped one
+                // we can use it to estimate frame time expected by the browser
+                self.detected_frame_time = ((self.detected_frame_time * 15) + frame_time) / 16;
+            }
+
+            // check how much delay we have accummulated
+            self.accummulated_delay = if frame_time <= self.detected_frame_time {
+                // frame was processed in time -> reset the accummulated delay
+                Duration::ZERO
+            } else {
+                self.accummulated_delay + frame_time
+            };
         }
         self.last_frame_timestamp = Some(now);
 
-        if self.accummulated_delay > MAX_ACCUMMULATED_FRAME_DELAY {
+        // drop 2 frames in a row to get a good estimate of expected frame rate
+        if self.consecutive_frames_dropped == 1
+            || self.accummulated_delay > self.detected_frame_time * MAX_ACCUMMULATED_FRAME_DELAY
+        {
             self.accummulated_delay = Duration::ZERO;
             self.stats.on_dropped_frame(now);
+            self.consecutive_frames_dropped += 1;
             true
         } else {
+            self.consecutive_frames_dropped = 0;
             false
         }
-    }
-
-    fn observe_frame_time(&mut self, frame_time: Duration) {
-        self.accummulated_delay = if frame_time < ALLOWED_FRAME_TIME {
-            // frame was processed in time -> reset the accummulated delay
-            Duration::ZERO
-        } else {
-            self.accummulated_delay + frame_time
-        };
     }
 }
 
