@@ -2,7 +2,7 @@
 name = "Rect"
 description = "Rounded corners rectangle rendering components, with an optional border."
 content = { type = "Asset", schema = true }
-version = "0.3.2-nightly-2023-10-31"
+version = "0.3.2-dev"
 ambient_version = "0.3.2-nightly-2023-10-31"
 
 [components.background_color]
