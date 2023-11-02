@@ -2,11 +2,11 @@
 id = "jkr622pbesmaaco76bjc6ll6v4t4lajh"
 name = "Screen Ray"
 description = "Intersect a ray from the screen with the world."
-version = "0.3.2-nightly-2023-11-01"
+version = "0.3.2-nightly-2023-11-02"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/screen_ray"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-11-01"
+ambient_version = "0.3.2-nightly-2023-11-02"
 
 [messages.Input.fields]
 ray_origin = "Vec3"
@@ -20,4 +20,4 @@ type = "EntityId"
 attributes = ["Networked", "Debuggable"]
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "56DbYleVB2oTXezot5lxf4" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "2ZPQIa66r7kLlVpr6B9ORd" }

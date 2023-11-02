@@ -2,41 +2,41 @@
 id = "t5qdqwpkoxtelvafs7qpvzhaoperwfpt"
 name = "Tangent"
 description = "Ambient's tech demo game. Third-person, hovercars, and more."
-version = "0.3.2-nightly-2023-11-01"
+version = "0.3.2-nightly-2023-11-02"
 content = { type = "Playable" }
-ambient_version = "0.3.2-nightly-2023-11-01"
+ambient_version = "0.3.2-nightly-2023-11-02"
 authors = ["philpax"]
 
 [dependencies]
-hide_cursor = { path = "../../std/hide_cursor", deployment = "50fXLEO2S6ifA2L5VpNypj", enabled = true }
+hide_cursor = { path = "../../std/hide_cursor", deployment = "4LbVSvmCQkZVjmlgIFxHGo", enabled = true }
 
-core = { path = "core/core", deployment = "7An5nibrmiLgc0Iki5hVLi" }
-behavior_vehicle = { path = "core/behavior_vehicle", deployment = "4lPQV1kmLbXcTCJqWZvxGq" }
-behavior_character = { path = "core/behavior_character", deployment = "3SCaeF9KsNuIgKq76sNXU8" }
-camera_follow = { path = "core/camera_follow", deployment = "20bulDyaNMdGjDz27negzl" }
-ui_class_selection = { path = "core/ui_class_selection", deployment = "23yBTXcDUVvkYKPekiAy7t" }
+core = { path = "core/core", deployment = "2Hokulte7SkkL5sMSm2WG4" }
+behavior_vehicle = { path = "core/behavior_vehicle", deployment = "5uB1B3f7DGChaLCuMncVim" }
+behavior_character = { path = "core/behavior_character", deployment = "5qHbadExBP7SEVManLFDEU" }
+camera_follow = { path = "core/camera_follow", deployment = "1tbc2ogfoWeAf70Ua9PMfA" }
+ui_class_selection = { path = "core/ui_class_selection", deployment = "6M0XQckhRvBE1FXlVKPzZl" }
 
-camera_topdown = { path = "mods/camera_topdown", enabled = false, deployment = "6IiepAFBlqQ13foxapcmh7" }
+camera_topdown = { path = "mods/camera_topdown", enabled = false, deployment = "5AmvRHNiBtnSfdA8jtbia8" }
 
-ui_holohud = { path = "mods/ui_holohud", enabled = false, deployment = "7L3RnQySKIdstdlhJxijCk" }
-ui_flathud = { path = "mods/ui_flathud", enabled = true, deployment = "3F3BZB2we1EfFZjp8qbIds" }
-ui_spawn_menu = { path = "mods/ui_spawn_menu", enabled = false, deployment = "7AtvhTBKlGZ8HDUnzyEG1c" }
+ui_holohud = { path = "mods/ui_holohud", enabled = false, deployment = "3X6FWNvJFrmJS6uroqHVCA" }
+ui_flathud = { path = "mods/ui_flathud", enabled = true, deployment = "6wObPIKpLxunomby7dwdso" }
+ui_spawn_menu = { path = "mods/ui_spawn_menu", enabled = false, deployment = "3OMDDMp7BlBuWHksr8sLoM" }
 
-pickup_health = { path = "mods/pickup_health", deployment = "5HgbLdx9t5NXly3zJC3Bbc" }
+pickup_health = { path = "mods/pickup_health", deployment = "4XFNKbrQHk4m8IF8cS1IZo" }
 
-level_cubicide = { path = "mods/level_cubicide", deployment = "3LLCK8Nd6KJIbT2DlXAE6r" }
-level_cubicide_onespawn = { path = "mods/level_cubicide_onespawn", enabled = false, deployment = "1VtdTSxRv4FlC1AFfujmG4" }
+level_cubicide = { path = "mods/level_cubicide", deployment = "3aXdtRLax8uilqcXXkM3eb" }
+level_cubicide_onespawn = { path = "mods/level_cubicide_onespawn", enabled = false, deployment = "1zsW9RYt2ryQaDoYq0vUBb" }
 
-class_assault = { path = "mods/class_assault", deployment = "7JXtYWSJ62ndXRN1ku4gKS" }
-class_scout = { path = "mods/class_scout", deployment = "3WQdxZBDqZhWjXBuuh8iEZ", enabled = false }
-class_tank = { path = "mods/class_tank", deployment = "7X1pzIzMIUQYMWSdDg8bs8" }
+class_assault = { path = "mods/class_assault", deployment = "5RslyJGaLNfZrdTmhAjB6T" }
+class_scout = { path = "mods/class_scout", deployment = "q6CsGTXJ2O0585IZMnIvE", enabled = false }
+class_tank = { path = "mods/class_tank", deployment = "1XP6jqIAYjKxYUa1tAN9lq" }
 
-vehicle_standard = { path = "mods/vehicle_standard", deployment = "6iETZpB9u91n8e9WNlWYaR" }
+vehicle_standard = { path = "mods/vehicle_standard", deployment = "7aiFb87JeFmouSxjfIdXVl" }
 
-gameplay_firerain = { path = "mods/gameplay_firerain", enabled = false, deployment = "5hXptQnDLfmTvudI0Du27K" }
-gameplay_daynight = { path = "mods/gameplay_daynight", enabled = false, deployment = "1fRfZKp8akLUFiSAFWZGXg" }
+gameplay_firerain = { path = "mods/gameplay_firerain", enabled = false, deployment = "4D0RPs0xqAibJ7NyN8itDl" }
+gameplay_daynight = { path = "mods/gameplay_daynight", enabled = false, deployment = "4Nz5PHqT3YfSSx9AbNJhUP" }
 
-reskin_classes = { path = "mods/reskin_classes", enabled = false, deployment = "7RQNRbVaiiCBcdey6UwEPA" }
+reskin_classes = { path = "mods/reskin_classes", enabled = false, deployment = "3Vivsj58E79T90YQBo5CGH" }
 
-package_manager = { path = "../../tools/package_manager", deployment = "71vpDwSTWyIjtkB84oo7jH" }
-editor = { path = "../../tools/editor", deployment = "3x56Lz62zWNAkNUeLdQHB5" }
+package_manager = { path = "../../tools/package_manager", deployment = "5r9R7gGFtowyvgy8Yxz4Br" }
+editor = { path = "../../tools/editor", deployment = "2L1oiYJYxSllKcaBnXNaSs" }

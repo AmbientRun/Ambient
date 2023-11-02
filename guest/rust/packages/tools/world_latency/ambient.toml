@@ -2,9 +2,9 @@
 id = "fclqpkeyujrl3jeb6na6qmkl6jsumyoq"
 name = "World Latency"
 description = "World latency is a simple utility that displays the relative latency # of world streamed from the server as seen by all players in the world."
-version = "0.3.2-nightly-2023-11-01"
+version = "0.3.2-nightly-2023-11-02"
 content = { type = "Tool" }
-ambient_version = "0.3.2-nightly-2023-11-01"
+ambient_version = "0.3.2-nightly-2023-11-02"
 
 [components]
 player_last_frame = { type = "U64", description = "Last frame number reported by player", attributes = [
