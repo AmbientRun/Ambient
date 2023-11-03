@@ -10,17 +10,17 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_native_std = { path = "../native_std", version = "0.3.2-nightly-2023-11-03" }
-ambient_core = { path = "../core", version = "0.3.2-nightly-2023-11-03" }
-ambient_ecs = { path = "../ecs", version = "0.3.2-nightly-2023-11-03" }
-ambient_gpu = { path = "../gpu", version = "0.3.2-nightly-2023-11-03" }
-ambient_renderer = { path = "../renderer", version = "0.3.2-nightly-2023-11-03" }
-ambient_physics = { path = "../physics", version = "0.3.2-nightly-2023-11-03" }
-ambient_model = { path = "../model", version = "0.3.2-nightly-2023-11-03" }
-ambient_animation = { path = "../animation", version = "0.3.2-nightly-2023-11-03" }
-ambient_pipeline_types = { path = "../pipeline_types", version = "0.3.2-nightly-2023-11-03" }
+ambient_native_std = { path = "../native_std", version = "0.3.2-dev" }
+ambient_core = { path = "../core", version = "0.3.2-dev" }
+ambient_ecs = { path = "../ecs", version = "0.3.2-dev" }
+ambient_gpu = { path = "../gpu", version = "0.3.2-dev" }
+ambient_renderer = { path = "../renderer", version = "0.3.2-dev" }
+ambient_physics = { path = "../physics", version = "0.3.2-dev" }
+ambient_model = { path = "../model", version = "0.3.2-dev" }
+ambient_animation = { path = "../animation", version = "0.3.2-dev" }
+ambient_pipeline_types = { path = "../pipeline_types", version = "0.3.2-dev" }
 
-physxx = { path = "../../libs/physxx", version = "0.3.2-nightly-2023-11-03" }
+physxx = { path = "../../libs/physxx", version = "0.3.2-dev" }
 glam = { workspace = true }
 env_logger = { workspace = true }
 gltf = { workspace = true }
@@ -44,12 +44,12 @@ russimp = { workspace = true, optional = true }
 convert_case = { workspace = true }
 
 [dev-dependencies]
-ambient_app = { path = "../app" , version = "0.3.2-nightly-2023-11-03" }
-ambient_gizmos = { path = "../gizmos" , version = "0.3.2-nightly-2023-11-03" }
-ambient_primitives = { path = "../primitives" , version = "0.3.2-nightly-2023-11-03" }
-ambient_cameras = { path = "../cameras" , version = "0.3.2-nightly-2023-11-03" }
+ambient_app = { path = "../app" , version = "0.3.2-dev" }
+ambient_gizmos = { path = "../gizmos" , version = "0.3.2-dev" }
+ambient_primitives = { path = "../primitives" , version = "0.3.2-dev" }
+ambient_cameras = { path = "../cameras" , version = "0.3.2-dev" }
 
-ambient_element = { path = "../../shared_crates/element" , version = "0.3.2-nightly-2023-11-03" }
-ambient_std = { path = "../../shared_crates/std" , version = "0.3.2-nightly-2023-11-03" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.3.2-dev" }
+ambient_std = { path = "../../shared_crates/std" , version = "0.3.2-dev" }
 
 winit = { workspace = true }
