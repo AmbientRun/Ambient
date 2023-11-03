@@ -11,4 +11,4 @@ ambient_version = "0.3.2-nightly-2023-11-03"
 SetController = { name = "Set controller", description = "Sets the animation controller.", fields = { value = "U32" } }
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "2ZPQIa66r7kLlVpr6B9ORd" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "7isSzH4HpDPnivgijamsaO" }

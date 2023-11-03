@@ -7,8 +7,8 @@ content = { type = "Asset", animations = true, code = true }
 ambient_version = "0.3.2-nightly-2023-11-03"
 
 [dependencies]
-game_object = { path = "../../schemas/game_object", deployment = "13CEvQUPx8J41LEktamkP8" }
-unit_schema = { path = "../../schemas/unit", deployment = "7khkq6oWKpzPq0wqWdeFcV" }
+game_object = { path = "../../schemas/game_object", deployment = "4jjT76AfzruPinNk2rf3hM" }
+unit_schema = { path = "../../schemas/unit", deployment = "4VnUSgxF55dvaWwQOsXHy7" }
 
 [components]
 basic_character_animations = { type = "EntityId", description = "Apply animations to the model this points to. Parameters such as health etc. is read from the entity this component is attached to.", attributes = [
