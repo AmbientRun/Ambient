@@ -8,8 +8,8 @@ ambient_version = "0.3.2-nightly-2023-11-04"
 authors = ["philpax"]
 
 [dependencies]
-kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "1xXCBPV6RT9e3CFPez2aQ4" }
-game_object = { path = "../../../../schemas/game_object", deployment = "4jjT76AfzruPinNk2rf3hM" }
+kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "641X7QPQrau0nn1JNbJ1PP" }
+game_object = { path = "../../../../schemas/game_object", deployment = "1rBNMlZmlHLVMR1Cn1WIye" }
 
 [components]
 is_health_pickup = { type = "Empty", name = "Is Health Pickup", description = "This entity is a health pickup." }

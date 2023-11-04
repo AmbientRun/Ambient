@@ -7,8 +7,8 @@ content = { type = "Asset", code = true }
 ambient_version = "0.3.2-nightly-2023-11-04"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "4VnUSgxF55dvaWwQOsXHy7" }
-character_movement = { path = "../character_movement", deployment = "1vIr6PV6dggadhnzxW6awX" }
+unit_schema = { path = "../../schemas/unit", deployment = "1wdC1bmAn43z5WCgJlcdIW" }
+character_movement = { path = "../character_movement", deployment = "63MFsIeWM4q8F0ifnJgHgg" }
 
 [components]
 use_third_person_controller = { type = "Empty", name = "Use Third-Person Controller", description = "Use a third-person controller to drive this entity.", attributes = [
