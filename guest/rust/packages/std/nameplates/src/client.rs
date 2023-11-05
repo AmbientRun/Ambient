@@ -1,6 +1,6 @@
 use ambient_api::{
     core::{
-        player::components::{is_player, user_id},
+        player::components::{is_player, local_user_id, user_id},
         rendering::components::{double_sided, local_bounding_aabb_max},
         transform::components::local_to_world,
     },
@@ -8,7 +8,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use packages::this::components::{height_offset, text_size};
+use packages::this::components::{height_offset, hide, text_size};
 
 #[main]
 pub fn main() {
@@ -19,7 +19,15 @@ pub fn main() {
 fn Nameplates(hooks: &mut Hooks) -> Element {
     let players = use_query(hooks, is_player());
 
-    Group::el(players.into_iter().map(|player| Nameplate::el(player.0)))
+    Group::el(players.into_iter().map(|player| {
+        let should_hide = entity::has_component(player.0, hide());
+        println!("should hide?? {:?} {:?}", player.0, should_hide);
+        if should_hide {
+            Element::new()
+        } else {
+            Nameplate::el(player.0)
+        }
+    }))
 }
 
 // Consider moving this to ambient_api if there's more demand for it

@@ -18,3 +18,4 @@ text_size = { type = "F32", name = "Nameplate Text Size", description = "The tex
     "Debuggable",
     "Networked",
 ] }
+hide = { type="Empty", name ="Nameplate hide for local player", description = "If true hide the nameplate for the local user", attributes = ["Networked", "Debuggable"]}
