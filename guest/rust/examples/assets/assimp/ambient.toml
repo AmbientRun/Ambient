@@ -2,9 +2,9 @@
 id = "ucrv73n74dw42ldnz4kxeadvm5uwzgm5"
 name = "Assimp"
 description = "Import over 30+ different 3D file formats into your project, using the built in assimp integration."
-version = "0.3.2-nightly-2023-11-04"
+version = "0.3.2-nightly-2023-11-05"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-11-04"
+ambient_version = "0.3.2-nightly-2023-11-05"
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "4ittQdnnTWOzRvz9sVb0nJ" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "g9dM0FsTI4yvfCNKcKKIJ" }

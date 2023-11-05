@@ -2,15 +2,15 @@
 id = "jm77qrzni2f4gied5fy54bia2lqmhebn"
 name = "Physics"
 description = "Make things collide and interact in a physically realistic way."
-version = "0.3.2-nightly-2023-11-04"
+version = "0.3.2-nightly-2023-11-05"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/physics/basics"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-11-04"
+ambient_version = "0.3.2-nightly-2023-11-05"
 
 [messages.Bonk]
 description = "Collision between two objects."
 fields = { emitter = "EntityId", listener = "EntityId" }
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "4ittQdnnTWOzRvz9sVb0nJ" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "g9dM0FsTI4yvfCNKcKKIJ" }

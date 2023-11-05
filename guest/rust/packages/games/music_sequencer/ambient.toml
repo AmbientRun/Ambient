@@ -2,11 +2,11 @@
 id = "ar7fnf3vl72bdb77nvnzbjpvps3lhvas"
 name = "Music sequencer [WIP]"
 description = "Make some sweet beats. Audio does not currently work on the web."
-version = "0.3.2-nightly-2023-11-04"
+version = "0.3.2-nightly-2023-11-05"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/music_sequencer"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-11-04"
+ambient_version = "0.3.2-nightly-2023-11-05"
 
 [messages.Click]
 description = "Select or deselect a note."
