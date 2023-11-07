@@ -224,11 +224,11 @@ pub async fn log_task_result(task: impl Future<Output = anyhow::Result<()>>) {
 #[cfg(not(target_os = "unknown"))]
 pub fn log_network_error(err: &anyhow::Error) {
     if let Some(quinn::WriteError::ConnectionLost(err)) = err.downcast_ref::<quinn::WriteError>() {
-        log::info!("Connection lost: {:#}", err);
+        tracing::info!("Connection lost: {:#}", err);
     } else if let Some(err) = err.downcast_ref::<quinn::ConnectionError>() {
-        log::info!("Connection error: {:#}", err);
+        tracing::info!("Connection error: {:#}", err);
     } else if let Some(err) = err.downcast_ref::<quinn::WriteError>() {
-        log::info!("Write error: {:#}", err);
+        tracing::info!("Write error: {:#}", err);
     } else {
         log_error(err);
     }

@@ -112,7 +112,7 @@ impl PipelineCtx {
             .map(|p| glob::Pattern::new(p))
             .collect::<Result<Vec<_>, glob::PatternError>>()
             .unwrap();
-        log::debug!(
+        tracing::debug!(
             "[{}] Sources filter: {:?}",
             self.pipeline_path(),
             sources_filter
@@ -122,7 +122,7 @@ impl PipelineCtx {
             .input_file_filter
             .as_ref()
             .and_then(|x| glob::Pattern::new(x).ok());
-        log::debug!(
+        tracing::debug!(
             "[{}] Input file filter: {:?}",
             self.pipeline_path(),
             sources_filter
@@ -153,7 +153,7 @@ impl PipelineCtx {
             .iter()
             .filter(move |file| {
                 if !filter_by_sources(file) {
-                    log::debug!(
+                    tracing::debug!(
                         "[{}] Skipping file {} because it doesn't match sources filter",
                         self.pipeline_path(),
                         file
@@ -161,7 +161,7 @@ impl PipelineCtx {
                     return false;
                 }
                 if !filter_by_opt_filter(file) {
-                    log::debug!(
+                    tracing::debug!(
                         "[{}] Skipping file {} because it doesn't match input file filter",
                         self.pipeline_path(),
                         file
@@ -169,7 +169,7 @@ impl PipelineCtx {
                     return false;
                 }
                 if !filter(file) {
-                    log::debug!(
+                    tracing::debug!(
                         "[{}] Skipping file {} because it doesn't match pipeline filter",
                         self.pipeline_path(),
                         file

@@ -243,7 +243,7 @@ impl Shader {
         let label = label.into();
         let gpu = GpuKey.get(assets);
 
-        let _span = tracing::info_span!("Shader::from_modules", ?label).entered();
+        let _span = tracing::debug_span!("Shader::from_modules", ?label).entered();
 
         // The complete dependency graph, in the correct order
         let modules = resolve_module_graph(&[module]);
@@ -298,6 +298,17 @@ impl Shader {
                     .iter()
                     .map(|(name, &index)| (name.to_string(), (index as u32).to_string())),
             )
+            .chain([(
+                "ZERO_INTEGER_ON_WEB_FLOAT_ON_NATIVE".to_string(),
+                // HACKFIX: https://github.com/AmbientRun/Ambient/issues/1098
+                // Remove once https://github.com/gfx-rs/naga/issues/2582 is fixed
+                if cfg!(target_os = "unknown") {
+                    "0"
+                } else {
+                    "0.0"
+                }
+                .to_string(),
+            )])
             .unzip();
 
         tracing::debug!(

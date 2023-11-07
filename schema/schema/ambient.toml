@@ -1,9 +1,9 @@
 [package]
 description = "Contains all core components for the Ambient runtime."
 name = "Core Components"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.1-dev"
+ambient_version = "0.3.2-nightly-2023-11-07"
 
 [includes]
 animation = "includes/animation.toml"
@@ -37,8 +37,8 @@ fields = {}
 
 [messages.Collision]
 name = "Collision"
-description = "Sent when a collision occurs."
-fields = { ids = { container_type = "Vec", element_type = "EntityId" } }
+description = "Sent when a collision occurs. The points and normals are in world space."
+fields = { ids = { container_type = "Vec", element_type = "EntityId" }, points = { container_type = "Vec", element_type = "Vec3" }, normals = { container_type = "Vec", element_type = "Vec3" }}
 
 [messages.ColliderLoads]
 name = "Collider Loads"

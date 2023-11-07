@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use ambient_native_std::asset_cache::SyncAssetKey;
 use ambient_settings::RenderSettings;
+use anyhow::Context;
 use bytemuck::{Pod, Zeroable};
 use glam::{uvec2, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use wgpu::{InstanceDescriptor, PresentMode, TextureFormat};
@@ -29,15 +30,15 @@ pub struct Gpu {
 }
 
 impl Gpu {
-    pub async fn new(window: Option<&Window>) -> Self {
+    pub async fn new(window: Option<&Window>) -> anyhow::Result<Self> {
         Self::with_config(window, false, &RenderSettings::default()).await
     }
-    #[tracing::instrument(level = "info")]
     pub async fn with_config(
         window: Option<&Window>,
         will_be_polled: bool,
         settings: &RenderSettings,
-    ) -> Self {
+    ) -> anyhow::Result<Self> {
+        let _span = tracing::info_span!("create_gpu").entered();
         // From: https://github.com/KhronosGroup/Vulkan-Loader/issues/552
         #[cfg(not(target_os = "unknown"))]
         {
@@ -55,8 +56,6 @@ impl Gpu {
             wgpu::Backends::all()
         };
 
-        tracing::info!("Configured backends: {backends:?}");
-
         let instance = wgpu::Instance::new(InstanceDescriptor {
             backends,
             // NOTE: Vulkan is used for windows as a non-zero indirect `first_instance` is not supported, and we have to resort direct rendering
@@ -73,7 +72,11 @@ impl Gpu {
             // },
         });
 
-        let surface = window.map(|window| unsafe { instance.create_surface(window).unwrap() });
+        let surface = window
+            .map(|window| unsafe { instance.create_surface(window) })
+            .transpose()
+            .context("Failed to create surface")?;
+
         #[cfg(not(target_os = "unknown"))]
         {
             tracing::debug!("Available adapters:");
@@ -90,9 +93,10 @@ impl Gpu {
                 force_fallback_adapter: false,
             })
             .await
-            .expect("Failed to find an appropriate adapter");
+            .context("Failed to find an appopriate adapter")?;
 
         tracing::info!("Using gpu adapter: {:?}", adapter.get_info());
+
         tracing::debug!("Adapter features:\n{:#?}", adapter.features());
         let adapter_limits = adapter.limits();
         tracing::debug!("Adapter limits:\n{:#?}", adapter_limits);
@@ -117,7 +121,7 @@ impl Gpu {
             }
         };
 
-        tracing::info!("Using features: {features:#?}");
+        tracing::info!("Using device features: {features:?}");
 
         let (device, queue) = adapter
             .request_device(
@@ -137,7 +141,7 @@ impl Gpu {
                 None,
             )
             .await
-            .expect("Failed to create device");
+            .context("Failed to request a device")?;
 
         tracing::debug!("Device limits:\n{:#?}", device.limits());
 
@@ -172,9 +176,8 @@ impl Gpu {
                 &Self::create_sc_desc(format, mode, uvec2(size.width, size.height)),
             );
         }
-        tracing::debug!("Created gpu");
 
-        Self {
+        Ok(Self {
             device,
             surface,
             queue,
@@ -182,13 +185,12 @@ impl Gpu {
             swapchain_mode,
             adapter,
             will_be_polled,
-        }
+        })
     }
 
     pub fn resize(&self, size: winit::dpi::PhysicalSize<u32>) {
         if let Some(surface) = &self.surface {
             if size.width > 0 && size.height > 0 {
-                tracing::info!("Resizing to {size:?}");
                 surface.configure(&self.device, &self.sc_desc(uvec2(size.width, size.height)));
             }
         }

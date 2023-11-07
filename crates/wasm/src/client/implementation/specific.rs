@@ -190,7 +190,7 @@ impl wit::client_camera::Host for Bindings {
         &mut self,
         camera: wit::types::EntityId,
         world_pos: wit::types::Vec3,
-    ) -> anyhow::Result<wit::types::Vec2> {
+    ) -> anyhow::Result<wit::types::Vec3> {
         let clip_pos = world_to_clip_space(
             self.world(),
             camera.from_bindgen(),

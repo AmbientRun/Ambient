@@ -3,9 +3,8 @@ use std::sync::{Arc, Mutex};
 use ambient_api::{
     core::{
         messages::Frame,
-        physics::components::linear_velocity,
         rect::components::{background_color, line_from, line_to, line_width},
-        transform::components::{local_to_world, rotation, translation},
+        transform::components::{local_to_world, translation},
     },
     element::{use_frame, use_state},
     prelude::*,
@@ -13,20 +12,11 @@ use ambient_api::{
 };
 use packages::{
     game_object::player::components as gopc,
-    tangent_schema::vehicle::{client::components as vcc, components as vc},
     this::messages::{Input, UseFailed},
 };
 
 #[main]
 pub fn main() {
-    query((rotation(), linear_velocity()))
-        .requires(vc::is_vehicle())
-        .each_frame(|vehicles| {
-            for (id, (rot, lv)) in vehicles {
-                entity::add_component(id, vcc::speed_kph(), lv.dot(rot * -Vec3::Y) * 3.6);
-            }
-        });
-
     handle_input();
 
     UseFailed::subscribe(|ctx, _msg| {

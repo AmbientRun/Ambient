@@ -1,5 +1,4 @@
 use std::{
-    borrow::Cow,
     collections::{HashMap, HashSet},
     fmt::Display,
     sync::Arc,
@@ -187,92 +186,25 @@ impl<'a> IntoIterator for &'a WorldDiff {
     }
 }
 
-#[derive(Serialize, Clone, Debug, Default)]
-pub struct WorldDiffView<'a> {
-    pub changes: Vec<Cow<'a, WorldChange>>,
-}
-
-impl<'a> From<&'a WorldDiff> for WorldDiffView<'a> {
-    fn from(value: &'a WorldDiff) -> Self {
-        WorldDiffView {
-            changes: value.changes.iter().map(Cow::Borrowed).collect(),
-        }
-    }
-}
-
-impl<'a> IntoIterator for &'a WorldDiffView<'a> {
-    type Item = &'a WorldChange;
-
-    type IntoIter = WorldDiffViewIter<'a>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        WorldDiffViewIter {
-            inner: self.changes.iter(),
-        }
-    }
-}
-pub struct WorldDiffViewIter<'a> {
-    inner: core::slice::Iter<'a, Cow<'a, WorldChange>>,
-}
-impl<'a> Iterator for WorldDiffViewIter<'a> {
-    type Item = &'a WorldChange;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.inner.next().map(AsRef::as_ref)
-    }
-}
-impl<'a> ExactSizeIterator for WorldDiffViewIter<'a> {
-    fn len(&self) -> usize {
-        self.inner.len()
-    }
-}
-
 /// Immutable version of WorldDiff, cheap to clone
 #[derive(Serialize, Clone, Debug)]
 pub struct FrozenWorldDiff {
     changes: Arc<[WorldChange]>,
-}
-impl FrozenWorldDiff {
-    pub fn merge(diffs: &[Self]) -> WorldDiffView<'_> {
-        // indexes of the last SetComponents for each entity
-        let mut set_idx: HashMap<EntityId, usize> = HashMap::new();
-        // merged changes
-        let mut changes = Vec::new();
-
-        for change in diffs.iter().flat_map(|diff| diff.changes.iter()) {
-            if let WorldChange::SetComponents(entity_id, entity) = change {
-                if let Some(idx) = set_idx.get(entity_id) {
-                    if let Some(WorldChange::SetComponents(_, existing_entity)) =
-                        changes.get_mut(*idx).map(Cow::to_mut)
-                    {
-                        existing_entity.merge(entity.clone());
-                    } else {
-                        // all indexes in set_idx should point to SetComponents in changes vec
-                        unreachable!();
-                    }
-                } else {
-                    set_idx.insert(*entity_id, changes.len());
-                    changes.push(Cow::Borrowed(change));
-                }
-            } else {
-                changes.push(Cow::Borrowed(change));
-            }
-        }
-
-        tracing::debug!(
-            "Merged {} changes into {}",
-            diffs.iter().map(|diff| diff.changes.len()).sum::<usize>(),
-            changes.len(),
-        );
-
-        WorldDiffView { changes }
-    }
 }
 impl From<WorldDiff> for FrozenWorldDiff {
     fn from(diff: WorldDiff) -> Self {
         Self {
             changes: diff.changes.into(),
         }
+    }
+}
+impl<'a> IntoIterator for &'a FrozenWorldDiff {
+    type Item = &'a WorldChange;
+
+    type IntoIter = std::slice::Iter<'a, WorldChange>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.changes.iter()
     }
 }
 
@@ -363,7 +295,7 @@ impl WorldChange {
                     if panic_on_error {
                         panic!("WorldChange::apply spawn_mirror entity already exists: {id:?}");
                     } else {
-                        log::error!(
+                        tracing::error!(
                             "WorldChange::apply spawn_mirror entity already exists: {id:?}"
                         );
                     }

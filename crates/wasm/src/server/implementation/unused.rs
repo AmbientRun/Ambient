@@ -66,7 +66,7 @@ impl wit::client_camera::Host for Bindings {
         &mut self,
         _camera: wit::types::EntityId,
         _world_pos: wit::types::Vec3,
-    ) -> anyhow::Result<wit::types::Vec2> {
+    ) -> anyhow::Result<wit::types::Vec3> {
         unsupported()
     }
 }

@@ -143,7 +143,7 @@ impl WorldInstance {
 
         for (_, (entity_stream,)) in query((player_entity_stream(),)).iter(&self.world, None) {
             if let Err(err) = entity_stream.send(diff.clone()) {
-                log::warn!("Failed to broadcast diff to player: {err:?}");
+                tracing::warn!("Failed to broadcast diff to player: {err:?}");
             }
         }
     }
@@ -248,7 +248,7 @@ impl ServerState {
         self.get_player_world_instance(user_id).map(|i| &i.world)
     }
     pub fn remove_instance(&mut self, instance_id: &str) {
-        log::debug!("Removing server instance id={}", instance_id);
+        tracing::debug!("Removing server instance id={}", instance_id);
         let mut sys = (self.create_shutdown_systems)();
         let old_instance = self.instances.get_mut(instance_id).unwrap();
         sys.run(&mut old_instance.world, &ShutdownEvent);

@@ -5,14 +5,14 @@ members = ["crates/*", "libs/*", "shared_crates/*", "app", "campfire", "schema"]
 resolver = "2"
 
 [workspace.package]
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 rust-version = "1.70.0"
 
 [workspace.dependencies]
 aho-corasick = "1.1.1"
 profiling = { version = "1.0.11", features = ["profile-with-puffin"] }
 tracing = "0.1.37"
-tracing-tree = { version = "0.2" }
+tracing-tree = { version = "0.2", features = ["time"] }
 tracing-stackdriver = "0.6.2"
 tracing-subscriber = { version = "0.3.17", features = [
     "env-filter",
@@ -20,7 +20,6 @@ tracing-subscriber = { version = "0.3.17", features = [
     "local-time",
     "parking_lot",
 ] }
-tracing-log = { version = "0.1" }
 wgpu = { version = "0.16.3", features = ["serde", "trace", "replay"] }
 wgpu-types = { version = "0.16", features = ["serde"] }
 winit = { version = "0.28.6", features = ["serde"] }
@@ -38,7 +37,6 @@ ndarray = { version = "0.15.6", features = ["serde"] }
 rand = "0.8.5"
 rand_pcg = "0.3.1"
 glyph_brush = "0.7.7"
-log = "0.4"
 dyn-clonable = "0.9.0"
 semver = { version = "1.0", features = ["serde"] }
 paste = "1.0"
@@ -177,7 +175,7 @@ wasm-bindgen-futures = "0.4"
 #
 # Networking
 #
-time = { version = "0.3" }
+time = { version = "0.3", features = ["local-offset"] }
 quinn = { version = "0.10" }
 rustls-native-certs = "0.6.3"
 webpki-roots = "0.23.1"

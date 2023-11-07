@@ -30,7 +30,7 @@ pub struct Blitter {
 }
 impl Blitter {
     pub fn new(gpu: &Gpu, assets: &AssetCache, conf: &BlitterKey) -> Self {
-        log::debug!("Creating blitter: {conf:#?}");
+        tracing::debug!("Creating blitter: {conf:#?}");
         let colorspace = if let Some(gamma) = conf.gamma_correction {
             let inv_gamma = 1.0 / gamma;
             format!("vec4<f32>(pow(color.xyz, vec3<f32>({inv_gamma})), color.w)")
@@ -79,7 +79,7 @@ impl Blitter {
                 push_constant_ranges: &[],
             });
 
-        log::debug!("Setting up blitter");
+        tracing::debug!("Setting up blitter");
         let pipeline = gpu
             .device
             .create_render_pipeline(&wgpu::RenderPipelineDescriptor {

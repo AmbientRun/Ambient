@@ -201,7 +201,7 @@ pub fn layout_systems() -> SystemGroup {
                         return;
                     }
                 }
-                log::warn!("Layout ran the full 100 iterations");
+                tracing::warn!("Layout ran the full 100 iterations");
             }),
             query_mut((mesh_to_local(),), (width().changed(), height().changed()))
                 .incl(mesh_to_local_from_size())

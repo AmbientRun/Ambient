@@ -124,7 +124,7 @@ impl<T: ComponentValue> EditorAction<T> {
     pub fn cancel(&self) {
         let id = self.id.clone();
         if let Some(id) = id {
-            tracing::info!("Cancelling action: {id}");
+            tracing::debug!("Cancelling action: {id}");
             let client = self.client.clone();
             self.runtime.spawn(async move {
                 client.rpc(rpc_undo_head_exact, id).await.unwrap();
@@ -135,7 +135,7 @@ impl<T: ComponentValue> EditorAction<T> {
 
 impl<T: ComponentValue> Drop for EditorAction<T> {
     fn drop(&mut self) {
-        tracing::info!("Dropping editor action");
+        tracing::trace!("Dropping editor action");
         self.cancel()
     }
 }
@@ -170,7 +170,7 @@ impl ElementComponent for EditorBuildMode {
                     .collect_vec();
 
                 if Some(&res) != prev.as_ref() {
-                    tracing::info!("Resolving targets: {selection:?} => {res:?}");
+                    tracing::debug!("Resolving targets: {selection:?} => {res:?}");
                     prev = Some(res.clone());
                     *targets.lock() = res.into();
                     rerender();
@@ -234,7 +234,7 @@ impl ElementComponent for EditorBuildMode {
                             let client_state = client_state.clone();
                             let async_run = world.resource(async_run()).clone();
                             select_asset(world.resource(asset_cache()), AssetType::Prefab, move |object_url| {
-                                tracing::info!("got object_url: {object_url:?}");
+                                tracing::debug!("got object_url: {object_url:?}");
                                 if let Some(object_url) = object_url.random().cloned() {
                                     async_run.run(move |world| {
                                         let set_srt_mode = set_srt_mode.clone();
@@ -297,10 +297,10 @@ impl ElementComponent for EditorBuildMode {
                                 let set_srt_mode = set_srt_mode.clone();
                                 let client_state = client_state.clone();
 
-                                tracing::info!("Duplicating {targets:?}");
+                                tracing::debug!("Duplicating {targets:?}");
                                 world.resource(runtime()).spawn(
                                     client_push_intent(client_state, intent_duplicate(), IntentDuplicate { new_uids: targets.iter().map(|_| EntityId::new()).collect(), entities: targets.to_vec(), select: true }, None, Some(Box::new(move || {
-                                        tracing::info!("Entering translate move");
+                                        tracing::debug!("Entering translate move");
 
 
                                         set_srt_mode(Some(TransformMode::Translate));

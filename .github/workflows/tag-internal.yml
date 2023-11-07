@@ -36,6 +36,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Add wasm32-wasi target
         run: rustup target add --toolchain stable wasm32-wasi
+      - name: Add wasm32-unknown-unknown target
+        run: rustup target add --toolchain stable wasm32-unknown-unknown
       - name: Rust cache
         uses: Leafwing-Studios/cargo-cache@v1.1.0
 

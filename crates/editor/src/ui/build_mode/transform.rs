@@ -107,7 +107,7 @@ fn initial_transforms(
         let transforms = match get_world_transforms(&state.world, targets) {
             Ok(v) => v,
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 return Default::default();
             }
         };

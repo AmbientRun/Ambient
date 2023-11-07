@@ -28,35 +28,37 @@ pub fn main(join: &Join) -> anyhow::Result<()> {
     let mut args = vec!["join"];
 
     let mut url = match (&join.url, &join.deployment, &join.package) {
-        (Some(url), None, None) => url.to_string(),
-        (None, Some(deployment), None) => {
-            urls::ensure_running_url(urls::ServerSelector::Deployment(deployment))
-        }
-        (None, None, Some(package)) => {
-            urls::ensure_running_url(urls::ServerSelector::Package(package))
-        }
+        (Some(url), None, None) => Some(url.to_string()),
+        (None, Some(deployment), None) => Some(urls::ensure_running_url(
+            urls::ServerSelector::Deployment(deployment),
+        )),
+        (None, None, Some(package)) => Some(urls::ensure_running_url(
+            urls::ServerSelector::Package(package),
+        )),
 
         (None, None, None) => {
-            anyhow::bail!("at least one of `url`, `deployment`, or `package` must be specified")
+            tracing::info!("no join method specified, joining local server");
+            None
         }
         _ => {
             anyhow::bail!("only one of `url`, `deployment`, or `package` can be specified")
         }
     };
 
-    if let Some(context) = &join.context {
-        if join.url.is_some() {
-            anyhow::bail!("`context` cannot be specified when `url` is specified");
+    if let Some(url) = url.as_mut() {
+        if let Some(context) = &join.context {
+            if join.url.is_some() {
+                anyhow::bail!("`context` cannot be specified when `url` is specified");
+            }
+
+            url.push_str(&format!("&context={context}"));
         }
-
-        url.push_str(&format!("&context={context}"));
+        args.push(url);
     }
-
-    args.push(&url);
 
     if !join.params.args.is_empty() {
         args.extend(join.params.args.iter().map(|s| s.as_str()));
     }
 
-    run_ambient(&args, join.params.release)
+    run_ambient(&args, join.params.release, false)
 }

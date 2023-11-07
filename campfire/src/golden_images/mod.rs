@@ -70,7 +70,7 @@ pub async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     };
 
     if gi.ambient_path.is_none() {
-        run("Build ambient", "", build_package, &["ambient"], true, &[]).await?;
+        run("Build ambient", "", build_ambient, &["ambient"], true, &[]).await?;
     }
 
     let ambient_path = gi
@@ -86,7 +86,7 @@ pub async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
             .into_iter()
             .filter(|test| test.starts_with(prefix))
             .collect_vec();
-        log::info!(
+        tracing::info!(
             "--prefix {prefix} resulted in {} out of {total_test_count} tests",
             filtered_tests.len(),
         );
@@ -159,7 +159,7 @@ async fn parse_tests_from_manifest() -> anyhow::Result<Vec<PathBuf>> {
         .context("Failed to read test manifest")?;
 
     let manifest: Manifest = toml::from_str(&manifest)?;
-    log::info!(
+    tracing::info!(
         "Read manifest from '{}', parsed {} tests",
         manifest_path.display(),
         manifest.tests.len()
@@ -167,12 +167,14 @@ async fn parse_tests_from_manifest() -> anyhow::Result<Vec<PathBuf>> {
     Ok(manifest.tests)
 }
 
-fn build_package(_i: usize, _: &str, name: &str) -> (String, Vec<String>) {
+fn build_ambient(_i: usize, _: &str, name: &str) -> (String, Vec<String>) {
     let args = vec![
         "build".to_string(),
         "--release".to_string(),
         "--package".to_string(),
         name.to_string(),
+        "-F".to_string(),
+        "production".to_string(),
     ];
 
     ("cargo".to_string(), args)
@@ -325,7 +327,7 @@ async fn run<S: AsRef<str>>(
             eprintln!("{failure}")
         }
 
-        log::error!(
+        tracing::error!(
             "Failed tests: \n    {}",
             failures.iter().map(|v| &v.test).join("\n    ")
         );

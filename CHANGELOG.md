@@ -15,8 +15,6 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 
 #### Other
 
-#### Examples
-
 ### Changed
 
 #### Breaking
@@ -31,6 +29,49 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 ### Removed
 -->
+
+## Version 0.3.1 (2023-10-24)
+
+### Added
+
+#### Headline features
+
+#### Other
+
+- **Package/`character_movement`**: `CharacterMovement` concept added.
+- **Assets**: Added support for animations and skinning for assimp.
+- **Examples**: Added assimp example.
+- **Examples**: Added benchmark/animations example.
+
+### Changed
+
+#### Breaking
+
+- **Server**: The logging format has changed to increase consistency, remove unnecessary logs, and improve readability.
+- **API**: `camera::world_to_screen` now returns a 3D vector instead of a 2D vector, which can be used to determine if the point is behind the camera.
+- **Packages**: Renamed the `character_controller` package to `third_person_controller` and added a `ThirdPersonController` concept.
+
+#### Non-breaking
+
+- **Physics**: The `Collision` message now includes the points of collision and their corresponding normals. Thanks to [@kevzettler](https://github.com/kevzettler) for fixing this in [#1107](https://github.com/AmbientRun/Ambient/pull/1107)!
+- **Pipeline Types**: A few extra types have been exported. Thanks to [@kevzettler](https://github.com/kevzettler) for fixing this in [#1082](https://github.com/AmbientRun/Ambient/pull/1082)!
+
+### Fixed
+
+- **Debugger**: The debugger has now been re-enabled.
+- **CLI**: Released `crates.io` versions are now used as the API dependency in a new project instead of git tags of the Ambient repository.
+- **Rendering**: Fixed 3D line drawing when they're behind the camera.
+- **Networking**: The send queue is now compacted during send to reduce queue growth when backlogged by a slow player connection.
+- **Web**: The web client will now update its size when the window is resized.
+- **Rendering**: Fixed an issue where a black border would appear around solid objects with an alpha cutoff ([#1104](https://github.com/AmbientRun/Ambient/pull/1104)).
+- **Rendering**: Fixed water not working on the web.
+- **Package/`orbit_camera`**: Scrolling the ECS inspector will no longer zoom the camera in and out.
+
+### Community PRs to internals
+
+These PRs are not directly user-facing, but improve the development experience. They're just as appreciated!
+
+### Removed
 
 ## Version 0.3.0 (2023-10-04)
 

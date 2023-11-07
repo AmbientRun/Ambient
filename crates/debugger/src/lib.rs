@@ -30,6 +30,7 @@ use glam::Vec3;
 type GetDebuggerState =
     Cb<dyn Fn(&mut dyn FnMut(&mut Renderer, &RenderTarget, &mut World)) + Sync + Send>;
 
+#[allow(clippy::let_unit_value)]
 pub async fn rpc_dump_world_hierarchy(args: ServerRpcArgs, _: ()) -> Option<String> {
     let mut res = Vec::new();
     let mut state = args.state.lock();
@@ -151,7 +152,7 @@ pub fn AppStatsView(hooks: &mut Hooks) -> Element {
     ])
 }
 
-const DEBUGGER_BUTTONS: bool = false;
+const DEBUGGER_BUTTONS: bool = true;
 
 #[element_component]
 pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {

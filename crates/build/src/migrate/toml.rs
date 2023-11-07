@@ -29,7 +29,7 @@ pub async fn process(path: PathBuf) -> anyhow::Result<()> {
 }
 
 async fn migrate_pipeline(path: &Path) -> anyhow::Result<()> {
-    tracing::info!(?path, "Processing pipeline");
+    tracing::info!("Processing pipeline {path:?}");
 
     let str = tokio::fs::read_to_string(path)
         .await

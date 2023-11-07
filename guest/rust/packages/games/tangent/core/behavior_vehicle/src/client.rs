@@ -1,6 +1,13 @@
-use ambient_api::{once_cell::sync::Lazy, prelude::*};
+use ambient_api::{
+    core::{physics::components::linear_velocity, transform::components::rotation},
+    once_cell::sync::Lazy,
+    prelude::*,
+};
 
-use packages::this::messages::OnCollision;
+use packages::{
+    tangent_schema::vehicle::{client::components::speed_kph, components::is_vehicle},
+    this::messages::OnCollision,
+};
 
 #[main]
 pub fn main() {
@@ -11,6 +18,14 @@ pub fn main() {
 
         ["light", "medium", "heavy"].map(|ty| (0..5).map(|idx| url(ty, idx)).collect())
     });
+
+    query((rotation(), linear_velocity()))
+        .requires(is_vehicle())
+        .each_frame(|vehicles| {
+            for (id, (rot, lv)) in vehicles {
+                entity::add_component(id, speed_kph(), lv.dot(rot * -Vec3::Y) * 3.6);
+            }
+        });
 
     OnCollision::subscribe(|ctx, msg| {
         if !ctx.server() {

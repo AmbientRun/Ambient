@@ -118,7 +118,7 @@ impl ElementComponent for FlowColumn {
     }
 }
 
-//// A [FlowRow] is a [Flow] that is oriented horizontally.
+/// A [FlowRow] is a [Flow] that is oriented horizontally.
 ///
 /// See <https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#container-flow-layout>
 #[derive(Debug, Clone)]

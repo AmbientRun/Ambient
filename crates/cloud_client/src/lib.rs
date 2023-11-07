@@ -106,7 +106,7 @@ where
     wasm_nonsend(move || async move {
         let client = ReqwestClientKey.get(&assets);
 
-        log::debug!("Requesting {}", url_str);
+        tracing::debug!("Requesting {}", url_str);
         let mut builder = client
             .request(method.clone(), url.clone())
             .bearer_auth(auth_token);
@@ -127,7 +127,7 @@ where
             .with_context(|| format!("Failed to send request to \"{url_str}\""))?;
 
         if !resp.status().is_success() {
-            log::warn!("Request for {} failed: {:?}", url_str, resp.status());
+            tracing::warn!("Request for {} failed: {:?}", url_str, resp.status());
             return Err(anyhow!(
                 "Requesting {url_str} failed, bad status code: {:?}",
                 resp.status()

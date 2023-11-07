@@ -1,0 +1,53 @@
+[package]
+id = "vuph6dqdj6li4apmcgomn3faudcbfz56"
+name = "Third-person Controller"
+description = "A third-person controller for the player that takes input and updates their unit's movement and camera. Can be used in first-person mode by reducing the `camera_distance`."
+version = "0.3.2-nightly-2023-11-07"
+content = { type = "Asset", code = true }
+ambient_version = "0.3.2-nightly-2023-11-07"
+
+[dependencies]
+unit_schema = { path = "../../schemas/unit", deployment = "ToV9pDyQolaauNhDnTy7E" }
+character_movement = { path = "../character_movement", deployment = "1yfErgZHW2Gh6OIPI3NXMS" }
+
+[components]
+use_third_person_controller = { type = "Empty", name = "Use Third-Person Controller", description = "Use a third-person controller to drive this entity.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+player_camera_ref = { type = "EntityId", name = "Player camera ref", description = "The player's camera.", attributes = [
+    "Debuggable",
+] }
+camera_distance = { type = "F32", name = "Camera distance", description = "The distance of the camera from the player's head.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+# Internal
+
+player_intermediate_rotation = { type = "Vec2", attributes = ["Debuggable"] }
+
+
+[messages.Input]
+description = "Describes the input state of the player."
+[messages.Input.fields]
+run_direction = "Vec2"
+body_yaw = "F32"
+head_pitch = "F32"
+shooting = "Bool"
+ducking = "Bool"
+running = "Bool"
+
+[messages.Jump]
+fields = {}
+
+[concepts.ThirdPersonController]
+extends = [
+    "character_movement::CharacterMovement",
+    "ambient_core::transform::Transformable",
+]
+[concepts.ThirdPersonController.components.required]
+use_third_person_controller = { suggested = [] }
+"unit_schema::shooting" = { suggested = false }
+[concepts.ThirdPersonController.components.optional]
+"unit_schema::head_ref" = {}

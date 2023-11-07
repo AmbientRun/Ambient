@@ -182,13 +182,13 @@ pub fn main() {
         ) in players
         {
             if !entity::exists(vehicle_id) {
-                return;
+                continue;
             }
 
             // If the user opted to respawn, immediately destroy their vehicle
             if input_respawn {
                 entity::set_component(vehicle_id, goc::health(), 0.0);
-                return;
+                continue;
             }
 
             entity::add_components(
@@ -313,7 +313,10 @@ pub fn main() {
                         });
 
                     match hit {
-                        Some(hit) if entity::has_component(hit.entity, vc::is_vehicle()) => {
+                        Some(hit)
+                            if entity::has_component(hit.entity, vc::is_vehicle())
+                                && !entity::has_component(hit.entity, vc::driver_ref()) =>
+                        {
                             entity::add_component(hit.entity, vc::driver_ref(), player_id);
                         }
                         _ => {

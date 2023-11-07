@@ -1,10 +1,9 @@
 use ambient_api::{
     core::{
         app::components::name,
-        physics::concepts::CharacterController,
         transform::{
             components::{local_to_parent, rotation, translation},
-            concepts::{Transformable, TransformableOptional},
+            concepts::Transformable,
         },
     },
     entity::{add_child, add_component, get_component, set_component},
@@ -12,7 +11,7 @@ use ambient_api::{
 };
 use packages::{
     this::{
-        components::use_character_controller,
+        components::use_third_person_controller,
         messages::{Input, Jump},
     },
     unit_schema::components::{
@@ -23,32 +22,7 @@ use std::f32::consts::PI;
 
 #[main]
 pub fn main() {
-    spawn_query(use_character_controller()).bind(move |players| {
-        for (id, _) in players {
-            entity::add_components(
-                id,
-                Entity::new()
-                    .with_merge(CharacterController {
-                        character_controller_height: 2.,
-                        character_controller_radius: 0.5,
-                        physics_controlled: (),
-                    })
-                    .with_merge(Transformable {
-                        local_to_world: default(),
-                        optional: TransformableOptional {
-                            translation: Some(Vec3::ZERO),
-                            rotation: Some(default()),
-                            scale: Some(Vec3::ONE),
-                        },
-                    })
-                    .with(run_direction(), Vec2::ZERO)
-                    .with(vertical_velocity(), 0.)
-                    .with(running(), false)
-                    .with(jumping(), false),
-            );
-        }
-    });
-    spawn_query(use_character_controller())
+    spawn_query(use_third_person_controller())
         .excludes(head_ref())
         .bind(|players| {
             for (id, _) in players {
@@ -75,10 +49,10 @@ pub fn main() {
             return;
         };
 
-        entity::add_component(player_id, run_direction(), msg.run_direction);
-        entity::add_component(player_id, running(), msg.running);
-        entity::add_component(player_id, shooting(), msg.shooting);
-        entity::add_component(player_id, rotation(), Quat::from_rotation_z(msg.body_yaw));
+        entity::set_component(player_id, run_direction(), msg.run_direction);
+        entity::set_component(player_id, running(), msg.running);
+        entity::set_component(player_id, shooting(), msg.shooting);
+        entity::set_component(player_id, rotation(), Quat::from_rotation_z(msg.body_yaw));
         if let Some(head) = get_component(player_id, head_ref()) {
             set_component(
                 head,
@@ -96,8 +70,8 @@ pub fn main() {
         };
 
         if get_component(player_id, is_on_ground()).unwrap_or_default() {
-            entity::add_component(player_id, vertical_velocity(), 0.1);
-            entity::add_component(player_id, jumping(), true);
+            entity::set_component(player_id, vertical_velocity(), 0.1);
+            entity::set_component(player_id, jumping(), true);
         }
     });
 }

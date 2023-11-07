@@ -14,13 +14,13 @@
     "cmd": "cargo run -p ambient"
   },
   "third-person-camera-release": {
-    "cmd": "cargo run --features profile --release -- run ./guest/rust/examples/controllers/third_person_camera"
+    "cmd": "cargo run --release -- run ./guest/rust/examples/controllers/third_person_camera"
   },
   "third-person-camera": {
-    "cmd": "cargo run --features tracing -- run ./guest/rust/examples/controllers/third_person_camera --debugger"
+    "cmd": "cargo run --features tracing-tree -- run ./guest/rust/examples/controllers/third_person_camera --debugger"
   },
   "primitives": {
-    "cmd": "cargo run --features hotload-includes -- run ./guest/rust/examples/basics/primitives/"
+    "cmd": "cargo run -- run ./guest/rust/examples/basics/primitives/"
   },
   "gi-samplers": {
     "cmd": "cargo run --release -- run --release guest/rust/examples/basics/samplers --headless --no-proxy --quic-interface-port 9009 --http-interface-port 10009 golden-image-check --timeout-seconds 30.0",
@@ -81,13 +81,13 @@
     }
   },
   "serve-primitives": {
-    "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/primitives/",
+    "cmd": "cargo run -- serve ./guest/rust/examples/basics/primitives/",
     "env": {
       "RUST_LOG": "ambient_network=debug,info"
     }
   },
   "serve-procedural": {
-    "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/procedural_generation/",
+    "cmd": "cargo run -- serve ./guest/rust/examples/basics/procedural_generation/",
     "env": {
       "RUST_LOG": "ambient_network=debug,info"
     }

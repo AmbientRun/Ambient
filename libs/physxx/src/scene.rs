@@ -18,6 +18,43 @@ use crate::{
     PxTransform,
 };
 
+pub fn extract_contact_points(
+    iter: &physx_sys::PxContactStreamIterator,
+) -> Result<Vec<PxContactPoint>, &'static str> {
+    if iter.contact.is_null() || iter.patch.is_null() {
+        return Err("Null pointer detected in PxContactStreamIterator");
+    }
+
+    let mut contact_points = Vec::new();
+
+    let mut local_iter = *iter; // Create a mutable copy of iter
+
+    unsafe {
+        let patches =
+            std::slice::from_raw_parts(local_iter.patch, local_iter.totalPatches as usize);
+        let contacts =
+            std::slice::from_raw_parts(local_iter.contact, local_iter.totalContacts as usize);
+
+        for patch in patches {
+            for _ in 0..patch.nbContacts {
+                let contact = contacts[local_iter.nextContactIndex as usize];
+
+                contact_points.push(PxContactPoint {
+                    position: to_glam_vec3(&contact.contact),
+                    separation: contact.separation,
+                    normal: to_glam_vec3(&patch.normal),
+                });
+
+                local_iter.nextContactIndex += 1;
+            }
+
+            local_iter.nextPatchIndex += 1;
+        }
+    }
+
+    Ok(contact_points)
+}
+
 pub struct PxSceneDesc(physx_sys::PxSceneDesc);
 impl PxSceneDesc {
     pub fn new(physics: PxPhysicsRef) -> Self {
@@ -53,36 +90,68 @@ impl PxSceneDesc {
             );
         }
     }
-    pub fn set_simulation_event_callbacks<C: FnMut(&PxContactPairHeader)>(
+    pub fn set_simulation_event_callbacks<C: FnMut(&PxContactPairHeader, Vec<PxContactPoint>)>(
         &mut self,
         callbacks: PxSimulationEventCallback<C>,
     ) {
         unsafe {
-            unsafe extern "C" fn collision_callback_trampoline<C: FnMut(&PxContactPairHeader)>(
+            unsafe extern "C" fn collision_callback_trampoline<
+                C: FnMut(&PxContactPairHeader, Vec<PxContactPoint>),
+            >(
                 user_data: *mut std::ffi::c_void,
                 pair_header: *const physx_sys::PxContactPairHeader,
-                _pairs: *const physx_sys::PxContactPair,
+                pairs: *const physx_sys::PxContactPair,
                 _nb_pairs: u32,
             ) {
                 let mut cb: Box<C> = Box::from_raw(user_data as _);
                 let pair_header_flags =
                     PxContactPairHeaderFlag::from_bits((*pair_header).flags.mBits).unwrap();
-                cb(&PxContactPairHeader {
-                    actors: [
-                        if pair_header_flags.contains(PxContactPairHeaderFlag::REMOVED_ACTOR_0) {
-                            None
-                        } else {
-                            PxRigidActorRef::from_ptr((*pair_header).actors[0])
-                        },
-                        if pair_header_flags.contains(PxContactPairHeaderFlag::REMOVED_ACTOR_1) {
-                            None
-                        } else {
-                            PxRigidActorRef::from_ptr((*pair_header).actors[1])
-                        },
-                    ],
-                });
-                Box::into_raw(cb);
+                let mut contact_points_vec = Vec::new();
+
+                // Check for a valid contact stream
+                if let Some(pair) = pairs.as_ref() {
+                    // Create the PxContactStreamIterator from the contact pair data
+                    let contact_stream_iterator = unsafe {
+                        physx_sys::PxContactStreamIterator_new(
+                            pair.contactPatches,
+                            pair.contactPoints,
+                            std::ptr::null(), // Assuming we don't have the contactFaceIndices, passing a null pointer.
+                            pair.patchCount as u32,
+                            pair.contactCount as u32,
+                        )
+                    };
+
+                    if let Ok(points) = extract_contact_points(&contact_stream_iterator) {
+                        contact_points_vec = points;
+                    } else {
+                        // Handle the error
+                        println!("Error extracting contact points");
+                    }
+                }
+
+                cb(
+                    &PxContactPairHeader {
+                        actors: [
+                            if pair_header_flags.contains(PxContactPairHeaderFlag::REMOVED_ACTOR_0)
+                            {
+                                None
+                            } else {
+                                PxRigidActorRef::from_ptr((*pair_header).actors[0])
+                            },
+                            if pair_header_flags.contains(PxContactPairHeaderFlag::REMOVED_ACTOR_1)
+                            {
+                                None
+                            } else {
+                                PxRigidActorRef::from_ptr((*pair_header).actors[1])
+                            },
+                        ],
+                    },
+                    contact_points_vec,
+                );
+
+                Box::into_raw(cb); // Convert the box back into a raw pointer.
             }
+
             let mut cbs = physx_sys::SimulationEventCallbackInfo {
                 ..Default::default()
             };
@@ -106,11 +175,18 @@ impl PxSceneDesc {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct PxContactPoint {
+    pub position: glam::Vec3,
+    pub normal: glam::Vec3,
+    pub separation: f32,
+}
+
 pub struct PxContactPairHeader {
     pub actors: [Option<PxRigidActorRef>; 2],
 }
 
-pub struct PxSimulationEventCallback<C: FnMut(&PxContactPairHeader)> {
+pub struct PxSimulationEventCallback<C: FnMut(&PxContactPairHeader, Vec<PxContactPoint>)> {
     pub collision_callback: Option<Box<C>>,
 }
 

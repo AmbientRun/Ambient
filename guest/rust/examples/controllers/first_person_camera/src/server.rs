@@ -8,7 +8,9 @@ use ambient_api::{
     },
     prelude::*,
 };
-use packages::character_controller::components::{camera_distance, use_character_controller};
+use packages::third_person_controller::{
+    components::camera_distance, concepts::ThirdPersonController,
+};
 
 #[main]
 pub fn main() {
@@ -30,7 +32,7 @@ pub fn main() {
             entity::add_components(
                 id,
                 Entity::new()
-                    .with(use_character_controller(), ())
+                    .with_merge(ThirdPersonController::suggested())
                     .with(camera_distance(), 0.0),
             );
         }

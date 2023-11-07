@@ -1,0 +1,108 @@
+name: Deploy api docs
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [v*]
+    branches:
+      # For workflow testing only
+      # This is to simulate pushing to a tag
+      - WORKFLOW-TESTING/deploy-docs/v*
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  meta:
+    runs-on: ubuntu-22.04
+    outputs:
+      tag: ${{ steps.extract.outputs.tag }}
+      version: ${{ steps.extract.outputs.version }}
+      docs_name: ${{ steps.extract.outputs.docs_name }}
+    steps:
+      - name: Extract docs name
+        id: extract
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            tag=${GITHUB_REF#refs/tags/}
+          elif [[ $GITHUB_REF == refs/heads/WORKFLOW-TESTING/deploy-docs/* ]]; then
+            # This is a special case for testing only
+            tag=${GITHUB_REF#refs/heads/WORKFLOW-TESTING/deploy-docs/}
+          else
+            echo "Triggered for unexpected git ref"
+            exit 1
+          fi
+
+          # Version is the tag without the v
+          version=${tag#v}
+
+          if [[ $tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+-(rc|alpha|beta)(\..*)?$ ]]; then
+            # few special cases for full versions, for example: v0.3.0-rc v0.3.0-rc.1 v0.3.0-alpha v0.3.0-beta
+            # but not: v0.3.0-rcNot
+            docs_name=${version}
+          elif [[ $tag == v*-* ]]; then
+            # anything with a dash is internal, for example: v0.3.0-nightly-2023-09-29
+            if [[ $tag == v*-nightly-* ]]; then
+                docs_name=nightly
+            fi
+          else
+            # no dashes then it's a plain old full version, for example: v0.3.0
+            docs_name=${version}
+          fi
+
+          echo "tag=${tag}" >> $GITHUB_OUTPUT
+          echo "version=${version}" >> $GITHUB_OUTPUT
+          echo "docs_name=${docs_name}" >> $GITHUB_OUTPUT
+
+          # print out what was set
+          echo "tag=${tag}"
+          echo "version=${version}"
+          echo "docs_name=${docs_name}"
+
+  build:
+    if: needs.meta.outputs.docs_name != ''
+    needs: meta
+    permissions:
+      id-token: write
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly
+          target: wasm32-wasi
+
+      - name: Rust cache
+        uses: Leafwing-Studios/cargo-cache@v1.1.0
+
+      - name: Build campfire
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --package campfire --no-default-features
+
+      - name: Build docs
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: --package campfire --no-default-features -- doc api
+
+      # Renaming so we can upload as a correct name
+      - name: Rename docs dir
+        run: mv guest/rust/target/wasm32-wasi/doc guest/rust/target/wasm32-wasi/${{ needs.meta.outputs.docs_name }}
+
+      - id: auth
+        name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          token_format: access_token
+          workload_identity_provider: projects/549180905870/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github@ambient-733e7.iam.gserviceaccount.com
+          access_token_lifetime: 1800s
+
+      - name: Upload
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: "guest/rust/target/wasm32-wasi/${{ needs.meta.outputs.docs_name }}"
+          destination: "ambient-docs"

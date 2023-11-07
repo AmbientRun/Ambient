@@ -815,7 +815,7 @@ mod tests {
     #[tokio::test]
     async fn test_read_texture() {
         use std::sync::Arc;
-        let gpu = Arc::new(Gpu::new(None).await);
+        let gpu = Arc::new(Gpu::new(None).await.unwrap());
         let tex = Texture::new_with_data(
             &gpu,
             &wgpu::TextureDescriptor {

@@ -13,8 +13,8 @@ use ambient_api::{
 use packages::{
     base_assets,
     character_animation::components::{basic_character_animations, use_rifle_animations},
-    character_controller::components::use_character_controller,
     nameplates::components::height_offset,
+    third_person_controller::concepts::ThirdPersonController,
 };
 
 const USE_RIFLE_ANIMATIONS: bool = false;
@@ -52,7 +52,7 @@ pub fn main() {
             entity::add_components(
                 id,
                 Entity::new()
-                    .with(use_character_controller(), ())
+                    .with_merge(ThirdPersonController::suggested())
                     .with(model_from_url(), base_assets::assets::url("Y Bot.fbx"))
                     .with(basic_character_animations(), id)
                     .with(height_offset(), 2.0),

@@ -45,6 +45,7 @@ members = [
     "examples/assets/material_overriding",
     "examples/assets/generate_pipeline",
     "examples/assets/unity",
+    "examples/assets/assimp",
 
     # Physics
     "examples/physics/basics",
@@ -79,13 +80,16 @@ members = [
     "examples/ui/text",
     "examples/ui/todo",
 
+    # Benchmarks
+    "examples/benchmarks/animations",
+
     # Test cases
     "testcases/588-prefab-despawn-panic",
 
     # Packages (std)
     "packages/std/character_animation",
     "packages/std/character_movement",
-    "packages/std/character_controller",
+    "packages/std/third_person_controller",
     "packages/std/orbit_camera",
     "packages/std/hide_cursor",
     "packages/std/explosion",
@@ -96,6 +100,7 @@ members = [
     "packages/tools/editor",
     "packages/tools/package_manager",
     "packages/tools/world_latency",
+    "packages/tools/performance_bar",
 
     # Packages (games)
     "packages/games/tangent",
@@ -116,31 +121,31 @@ resolver = "2"
 
 [workspace.package]
 rust-version = "1.70.0"
-version = "0.3.1-dev"
+version = "0.3.2-dev"
 
 [workspace.dependencies]
-ambient_api = { path = "api", version = "0.3.1-dev" }
-ambient_api_core = { path = "api_core", version = "0.3.1-dev" }
-ambient_api_macros = { path = "api_core/api_macros", version = "0.3.1-dev" }
-ambient_brand_theme = { path = "crates/brand_theme", version = "0.3.1-dev" }
+ambient_api = { path = "api", version = "0.3.2-dev" }
+ambient_api_core = { path = "api_core", version = "0.3.2-dev" }
+ambient_api_macros = { path = "api_core/api_macros", version = "0.3.2-dev" }
+ambient_brand_theme = { path = "crates/brand_theme", version = "0.3.2-dev" }
 
-ambient_package = { path = "../../shared_crates/package", version = "0.3.1-dev" }
-ambient_package_macro_common = { path = "../../shared_crates/package_macro_common", version = "0.3.1-dev" }
-ambient_package_rt = { path = "../../shared_crates/package_rt", version = "0.3.1-dev" }
-ambient_shared_types = { path = "../../shared_crates/shared_types", version = "0.3.1-dev" }
-ambient_ui = { path = "../../shared_crates/ui", version = "0.3.1-dev", features = [
+ambient_package = { path = "../../shared_crates/package", version = "0.3.2-dev" }
+ambient_package_macro_common = { path = "../../shared_crates/package_macro_common", version = "0.3.2-dev" }
+ambient_package_rt = { path = "../../shared_crates/package_rt", version = "0.3.2-dev" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", version = "0.3.2-dev" }
+ambient_ui = { path = "../../shared_crates/ui", version = "0.3.2-dev", features = [
     "guest",
 ] }
-ambient_element = { path = "../../shared_crates/element", version = "0.3.1-dev", default-features = false, features = [
+ambient_element = { path = "../../shared_crates/element", version = "0.3.2-dev", default-features = false, features = [
     "guest",
 ] }
-ambient_editor_derive = { path = "../../shared_crates/editor_derive", version = "0.3.1-dev" }
+ambient_editor_derive = { path = "../../shared_crates/editor_derive", version = "0.3.2-dev" }
 
-ambient_pipeline_types = { path = "../../crates/pipeline_types", version = "0.3.1-dev" }
+ambient_pipeline_types = { path = "../../crates/pipeline_types", version = "0.3.2-dev" }
 
-ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.3.1-dev" }
-ambient_cb = { path = "../../libs/cb", version = "0.3.1-dev" }
-ambient_color = { path = "../../libs/color", version = "0.3.1-dev" }
+ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.3.2-dev" }
+ambient_cb = { path = "../../libs/cb", version = "0.3.2-dev" }
+ambient_color = { path = "../../libs/color", version = "0.3.2-dev" }
 
 anyhow = "1.0"
 thiserror = "1.0"
