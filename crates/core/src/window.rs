@@ -1,6 +1,6 @@
 use ambient_ecs::{components, Description, Name, Resource, World};
 use ambient_native_std::math::interpolate;
-use glam::{uvec2, vec2, UVec2, Vec2};
+use glam::{uvec2, vec2, UVec2, Vec2, Vec3, Vec3Swizzles};
 use winit::window::{CursorGrabMode, CursorIcon, Window};
 
 pub use ambient_ecs::generated::app::components::{
@@ -29,15 +29,16 @@ pub fn screen_to_clip_space(world: &World, screen_pos: Vec2) -> Vec2 {
         vec2(1., -1.),
     )
 }
-pub fn clip_to_screen_space(world: &World, clip_pos: Vec2) -> Vec2 {
+pub fn clip_to_screen_space(world: &World, clip_pos: Vec3) -> Vec3 {
     let screen_size = *world.resource(window_logical_size());
     interpolate(
-        clip_pos,
+        clip_pos.xy(),
         vec2(-1., 1.),
         vec2(1., -1.),
         Vec2::ZERO,
         screen_size.as_vec2(),
     )
+    .extend(clip_pos.z)
 }
 pub fn get_mouse_clip_space_position(world: &World) -> Vec2 {
     let mouse_position = *world.resource(cursor_position());

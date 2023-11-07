@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-pub const AMBIENT_WEB_APP_URL: &str = "https://ambient-733e7.web.app";
+pub const AMBIENT_WEB_APP_URL: &str = "https://ambient.run";
 pub const ASSETS_URL: &str = "https://assets.ambient.run";
 pub const API_URL: &str = "https://api.ambient.run";
 

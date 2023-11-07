@@ -6,6 +6,8 @@ To create a new Ambient project, type the following in your terminal of choice a
 ambient new my_project
 ```
 
+> **Note**: Initial build times can be slow, especially on Windows, where Rust compilation is slower. Subsequent builds will be faster.
+
 This will create a new Ambient package with the default template, which is set up for Rust and creates a quad and a camera.
 
 > **In-depth**: A package is a bundle of code and assets which can be deployed. Read more about packages [here](../../reference/package.md).
@@ -15,8 +17,6 @@ Enter the project folder by typing `cd my_project`, and then run it with:
 ```sh
 ambient run
 ```
-
-> **Note**: Initial build times can be slow, especially on Windows, where Rust compilation is slower. Subsequent builds will be faster.
 
 You should see a window like this:
 
@@ -54,7 +54,7 @@ The basic structure of an Ambient package is as follows:
     - `client.rs`: This file contains the code that run on your player's computers.
     - `server.rs`: This file contains code that runs on the game server.
 
-> **In-depth**: You can read more about Ambient's ECS [in the ECS reference](../../reference/ecs.html), and about Ambient's asset pipeline [in the asset pipeline reference](../../reference/asset_pipeline.md).
+> **In-depth**: You can read more about Ambient's ECS [in the ECS reference](../../reference/ecs.md), and about Ambient's asset pipeline [in the asset pipeline reference](../../reference/asset_pipeline.md).
 
 ## Client and server?
 

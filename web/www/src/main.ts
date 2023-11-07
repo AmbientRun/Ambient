@@ -96,6 +96,7 @@ import("ambient_web")
         const context = urlParams.get('context');
         const debuggerOn = urlParams.get('debugger') != null;
         const serverUrl = urlParams.get('server_url');
+        const maxPlayers = urlParams.get('max_players');
 
         let params = new URLSearchParams();
         if (packageId) {
@@ -103,6 +104,10 @@ import("ambient_web")
         }
         if (deploymentId) {
             params.set('deployment_id', deploymentId);
+        }
+
+        if (maxPlayers) {
+            params.set('max_players', maxPlayers);
         }
        
         if (context) {
@@ -121,6 +126,14 @@ import("ambient_web")
             debugger: debuggerOn,
             userId: userId,
         };
-        ambient.start(target, url, settings);
+
+        (async () => {
+            try {
+                await ambient.start(target, url, settings)
+            }
+             catch (e) {
+                console.error("Error starting ambient: ", e);
+             }
+        })()
         // setupAudio();
     });

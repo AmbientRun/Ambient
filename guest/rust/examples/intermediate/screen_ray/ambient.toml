@@ -2,18 +2,22 @@
 id = "jkr622pbesmaaco76bjc6ll6v4t4lajh"
 name = "Screen Ray"
 description = "Intersect a ray from the screen with the world."
-version = "0.3.0-nightly-2023-10-03"
+version = "0.3.2-nightly-2023-11-07"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/screen_ray"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-10-03"
+ambient_version = "0.3.2-nightly-2023-11-07"
 
 [messages.Input.fields]
 ray_origin = "Vec3"
 ray_dir = "Vec3"
+spawn = "Bool"
 
-[messages.WorldPosition.fields]
-position = "Vec3"
+[components.player_cube_ref]
+name = "Player Cube Ref"
+description = "Attached to the player; references the preview cube the player is controlling."
+type = "EntityId"
+attributes = ["Networked", "Debuggable"]
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "gsh4cYnOlYsrisXPu5l7t" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "5rhwKSx0NdvgIZSEuOdMnz" }

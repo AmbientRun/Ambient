@@ -40,7 +40,7 @@ mod client {
     }
 
     /// Converts a world-space position to a screen position (e.g. mouse position).
-    pub fn world_to_screen(camera: EntityId, world_position: Vec3) -> Vec2 {
+    pub fn world_to_screen(camera: EntityId, world_position: Vec3) -> Vec3 {
         wit::client_camera::world_to_screen(camera.into_bindgen(), world_position.into_bindgen())
             .from_bindgen()
     }

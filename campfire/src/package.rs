@@ -73,7 +73,7 @@ pub fn main(args: &Package) -> anyhow::Result<()> {
 }
 
 pub fn clean() -> anyhow::Result<()> {
-    log::info!("Cleaning examples...");
+    tracing::info!("Cleaning examples...");
     for path in get_all_packages(true, true, true)? {
         let build_path = path.join("build");
         if !build_path.exists() {
@@ -81,9 +81,9 @@ pub fn clean() -> anyhow::Result<()> {
         }
 
         std::fs::remove_dir_all(&build_path)?;
-        log::info!("Removed build directory for {}.", path.display());
+        tracing::info!("Removed build directory for {}.", path.display());
     }
-    log::info!("Done cleaning examples.");
+    tracing::info!("Done cleaning examples.");
     Ok(())
 }
 
@@ -91,7 +91,7 @@ pub fn run(args: &Run) -> anyhow::Result<()> {
     let Run { package, params } = args;
     let path = find_package(package)?;
 
-    log::info!("Running example {} (params: {params:?})...", path.display());
+    tracing::info!("Running example {} (params: {params:?})...", path.display());
     run_package("run", &path, params)
 }
 
@@ -99,7 +99,7 @@ pub fn serve(args: &Run) -> anyhow::Result<()> {
     let Run { package, params } = args;
     let path = find_package(package)?;
 
-    log::info!("Serving example {} (params: {params:?})...", path.display());
+    tracing::info!("Serving example {} (params: {params:?})...", path.display());
     run_package("serve", &path, params)
 }
 
@@ -120,7 +120,7 @@ fn list() -> anyhow::Result<()> {
 
 fn run_all(params: &RunParams) -> anyhow::Result<()> {
     for path in get_all_packages(true, true, false)? {
-        log::info!("Running example {} (params: {params:?})...", path.display());
+        tracing::info!("Running example {} (params: {params:?})...", path.display());
         run_package("run", &path, params)?;
     }
 
@@ -131,10 +131,10 @@ fn check_all() -> anyhow::Result<()> {
     // Rust
     {
         let root_path = Path::new("guest/rust");
-        log::info!("Checking Rust guest code...");
+        tracing::info!("Checking Rust guest code...");
 
         for features in ["", "client", "server", "client,server"] {
-            log::info!("Checking Rust guest code with features `{}`...", features);
+            tracing::info!("Checking Rust guest code with features `{}`...", features);
 
             let mut command = std::process::Command::new("cargo");
             command.current_dir(root_path);
@@ -154,7 +154,7 @@ fn check_all() -> anyhow::Result<()> {
             }
         }
 
-        log::info!("Checked Rust guest code.");
+        tracing::info!("Checked Rust guest code.");
     }
 
     Ok(())
@@ -164,7 +164,11 @@ pub fn build_all() -> anyhow::Result<()> {
     let package_paths = get_all_packages(true, true, true)?;
 
     for path in &package_paths {
-        run_ambient(&["build", &path.to_string_lossy(), "--clean-build"], true)?;
+        run_ambient(
+            &["build", &path.to_string_lossy(), "--clean-build"],
+            true,
+            false,
+        )?;
     }
 
     Ok(())
@@ -185,7 +189,7 @@ pub fn deploy_all(token: &str, include_examples: bool) -> anyhow::Result<()> {
     args.push(token);
     args.push("--clean-build");
 
-    run_ambient(&args, true)
+    run_ambient(&args, true, true)
 }
 
 fn run_package(run_cmd: &str, path: &Path, params: &RunParams) -> anyhow::Result<()> {
@@ -195,7 +199,7 @@ fn run_package(run_cmd: &str, path: &Path, params: &RunParams) -> anyhow::Result
     if !params.args.is_empty() {
         args.extend(params.args.iter().map(|s| s.as_str()));
     }
-    run_ambient(&args, params.release)
+    run_ambient(&args, params.release, false)
 }
 
 pub fn get_all_packages(
@@ -255,7 +259,7 @@ fn get_all_examples(include_testcases: bool) -> anyhow::Result<Vec<PathBuf>> {
         let dirs = match all_directories_in(&examples_path) {
             Ok(v) => v,
             Err(e) => {
-                log::warn!("Failed to query examples directory at {examples_path:?}: {e}");
+                tracing::warn!("Failed to query examples directory at {examples_path:?}: {e}");
                 continue;
             }
         };
@@ -284,7 +288,11 @@ fn get_all_examples(include_testcases: bool) -> anyhow::Result<Vec<PathBuf>> {
 fn regenerate_ids() -> anyhow::Result<()> {
     for path in get_all_packages(true, true, true)? {
         println!("Regenerating ID for {path:?}");
-        run_ambient(&["package", "regenerate-id", &path.to_string_lossy()], true)?;
+        run_ambient(
+            &["package", "regenerate-id", &path.to_string_lossy()],
+            true,
+            false,
+        )?;
     }
 
     Ok(())

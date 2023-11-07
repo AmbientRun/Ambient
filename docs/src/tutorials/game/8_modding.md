@@ -7,10 +7,10 @@ In this final chapter, we'll look at modding. All games are moddable by default 
 We'll start by adding the Mod Manager UI package to your game, so that you can list and enable mods for your game. Start by adding the following to your `ambient.toml`'s dependencies:
 
 ```toml
-package_manager = { deployment = "4hEHArTmKMprisqnQPNxLK" }
+package_manager = { deployment = "2nkcSe373rR3IdVwxkKHkj" }
 ```
 
-(To find the latest deployment, visit the page for [the package mananger](https://ambient-733e7.web.app/packages/hr4pxz7kfhzgimicoyh65ydel3aehuhk).)
+(To find the latest deployment, visit the page for [the package mananger](https://ambient.run/packages/hr4pxz7kfhzgimicoyh65ydel3aehuhk).)
 
 Then add this to the top of your `server.rs`'s main function:
 
@@ -29,16 +29,15 @@ Launch your game, and then press F4 to open the Mod Manager. From here, you can 
 
 ## Creating a mod
 
-To create a mod for your game, run `ambient new my_mod --rust empty`, then update the `ambient.toml` with this:
+To create a mod for your game, run `ambient new my_mod --rust empty`, then update the `ambient.toml` of the mod with this:
 
 ```toml
-# Note: There will already be another content field in the TOML. Replace it with this,
-# making sure to update the ID:
+# Note: Add this field, or replace it if it already exists, making sure to update the ID:
 content = { type = "Mod", for_playables = ["the_id_of_your_game_from_its_ambient_toml"] }
 
 [dependencies]
 # Note: This line will make it possible to run the mod locally, as it will pull in your game as a dependency.
-# Replace LATEST_DEPLOYMENT_ID with the latest deployment ID of your game
+# Replace LATEST_DEPLOYMENT_ID with the latest deployment ID of your game, which can be found on the game's page.
 # When you want to deploy the mod, comment this line out first
 my_game = { deployment = "LATEST_DEPLOYMENT_ID" }
 ```

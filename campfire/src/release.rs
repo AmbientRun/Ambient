@@ -2,12 +2,14 @@ use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
     process::Command,
+    time::Duration,
 };
 
 use anyhow::{ensure, Context};
 use cargo_toml::Inheritable;
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use itertools::Itertools;
+use semver::Version;
 use serde::Deserialize;
 use std::str;
 
@@ -36,6 +38,10 @@ pub enum Release {
     Publish {
         #[clap(long)]
         execute: bool,
+
+        // Lets you switch out the command used to verify that the steps work locally.
+        #[arg(long, value_enum, default_value_t)]
+        command: PublishCommand,
     },
     /// Checks that Ambient is ready for a release to be cut
     Check {
@@ -56,14 +62,22 @@ pub enum Release {
     },
 }
 
-pub fn main(args: &Release) -> anyhow::Result<()> {
+#[derive(ValueEnum, Copy, Clone, Debug, Default, PartialEq)]
+pub enum PublishCommand {
+    #[default]
+    Publish,
+    Package,
+    Doc,
+}
+
+pub async fn main(args: &Release) -> anyhow::Result<()> {
     match args {
         Release::UpdateVersion {
             new_version,
             no_package_ambient_version_update,
         } => update_version(new_version, *no_package_ambient_version_update),
         Release::UpdateMsrv { new_version } => update_msrv(new_version),
-        Release::Publish { execute } => publish(*execute),
+        Release::Publish { execute, command } => publish(*execute, *command).await,
         Release::Check {
             no_docker,
             no_crates_io_validity,
@@ -88,6 +102,7 @@ const WEB_CARGO: &str = "web/Cargo.toml";
 const GUEST_RUST_CARGO: &str = "guest/rust/Cargo.toml";
 const ADVANCED_INSTALLING_DOCS: &str = "docs/src/reference/advanced_installing.md";
 const CHANGELOG: &str = "CHANGELOG.md";
+const DEPLOY_SERVER: &str = ".github/workflows/deploy-server.yml";
 
 fn check_release(
     no_docker: bool,
@@ -135,7 +150,7 @@ fn update_version(
     }
 
     // This must be done first, before we mutate anything, to ensure that it's in a consistent state
-    let all_publishable_crates = get_all_publishable_crates(true)?;
+    let all_publishable_crates = get_all_publishable_crates(true, true)?;
 
     if !no_package_ambient_version_update {
         fn add_ambient_version(toml: &mut toml_edit::Document, new_version: &str) {
@@ -184,33 +199,80 @@ fn update_version(
         toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
     })?;
 
+    let candidate_crates = all_publishable_crates
+        .iter()
+        .map(|p| p.0 .1.package.as_ref().unwrap().name.clone())
+        // HACK: insert crates that are dependencies of packages, but are not depended upon
+        // by the Ambient app or by the API. It would be nice to solve this properly at some
+        // point.
+        .chain(["ambient_brand_theme".to_string()])
+        .collect::<HashSet<_>>();
+
     // Fix all of the dependency versions of publishable Ambient crates
     edit_toml(GUEST_RUST_CARGO, |toml| {
         toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
         update_ambient_dependency_versions(
-            &all_publishable_crates,
+            &candidate_crates,
             &mut toml["workspace"]["dependencies"],
             new_version,
         );
     })?;
 
-    for (path, _) in &all_publishable_crates {
+    for ((path, _), _) in &all_publishable_crates {
         edit_toml(path, |toml| {
-            update_ambient_dependency_versions(
-                &all_publishable_crates,
-                &mut toml["dependencies"],
-                new_version,
-            );
+            for dependencies in ["dependencies", "build-dependencies", "dev-dependencies"] {
+                if let Some(deps) = toml.get_mut(dependencies) {
+                    update_ambient_dependency_versions(&candidate_crates, deps, new_version);
+                }
+            }
+
+            // Handle `[target.'cfg(not(target_os = "unknown"))'.dependencies]`
+            if let Some(target) = toml.get_mut("target").and_then(|t| t.as_table_like_mut()) {
+                for (_, target_table) in target.iter_mut() {
+                    if let Some(deps) = target_table
+                        .get_mut("dependencies")
+                        .filter(|t| t.is_table_like())
+                    {
+                        update_ambient_dependency_versions(&candidate_crates, deps, new_version);
+                    }
+                }
+            }
         })?;
     }
 
     edit_file(ADVANCED_INSTALLING_DOCS, |document| {
-        const PREFIX: &str = "cargo install --git https://github.com/AmbientRun/Ambient.git --tag";
+        replace_suffix_of_lines_with_prefix(
+            document,
+            "cargo install --git https://github.com/AmbientRun/Ambient.git --tag ",
+            &format!("v{new_version} ambient"),
+        )
+    })?;
+
+    // Run `cargo check` in the root and API to force the lockfile to update
+    check(".")?;
+    check("web")?;
+    check("guest/rust")?;
+
+    // Update workflows
+    let new_version_suffixless = new_version
+        .split_once('-')
+        .map(|p| p.0)
+        .unwrap_or(new_version);
+
+    edit_file(DEPLOY_SERVER, |document| {
+        replace_suffix_of_lines_with_prefix(
+            document,
+            "  CANARY_SERVER_BINARY_NAME: ",
+            &format!("ambient-{new_version_suffixless}-dev"),
+        )
+    })?;
+
+    fn replace_suffix_of_lines_with_prefix(document: &str, prefix: &str, suffix: &str) -> String {
         document
             .lines()
             .map(|l| {
-                if l.starts_with(PREFIX) {
-                    format!("{PREFIX} v{new_version} ambient")
+                if l.starts_with(prefix) {
+                    format!("{prefix}{suffix}")
                 } else {
                     l.to_string()
                 }
@@ -219,25 +281,16 @@ fn update_version(
             .chain(std::iter::once("".to_string()))
             .collect::<Vec<String>>()
             .join("\n")
-    })?;
-
-    // Run `cargo check` in the root and API to force the lockfile to update
-    check(".")?;
-    check("guest/rust")?;
+    }
 
     Ok(())
 }
 
 fn update_ambient_dependency_versions(
-    all_publishable_crates: &[(PathBuf, cargo_toml::Manifest)],
+    candidate_crates: &HashSet<String>,
     dependencies: &mut toml_edit::Item,
     new_version: &str,
 ) {
-    let candidate_crates = all_publishable_crates
-        .iter()
-        .map(|p| p.1.package.as_ref().unwrap().name.clone())
-        .collect::<HashSet<_>>();
-
     for (key, value) in dependencies
         .as_table_like_mut()
         .expect("dependencies is not a table")
@@ -299,19 +352,43 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn publish(execute: bool) -> anyhow::Result<()> {
-    let crates = get_all_publishable_crates(false)?;
+/// Only publishes API crates, and is built around that assumption.
+///
+/// If you want to publish the runtime, here be dragons
+async fn publish(execute: bool, command: PublishCommand) -> anyhow::Result<()> {
+    let crates = get_all_publishable_crates(true, false)?;
 
     #[derive(Debug)]
     enum Task {
-        Publish(PathBuf, Vec<String>),
+        Command(PathBuf, bool, Vec<String>),
         Wait(usize),
     }
 
+    let client =
+        crates_io_api::AsyncClient::new("Ambient Publisher (ambient.run)", Duration::from_secs(1))?;
+
+    println!("Querying crates.io...");
+    let mut already_published_crates = HashSet::new();
+    for ((_, package), version) in &crates {
+        let name = package.package().name();
+        let Ok(published_crate) = client.get_crate(name).await else {
+            continue;
+        };
+        if published_crate
+            .versions
+            .iter()
+            .any(|v| Version::parse(&v.num).unwrap() == *version)
+        {
+            already_published_crates.insert(name);
+        }
+    }
+    println!("Skipping publish of {already_published_crates:?}.");
+
     let tasks = crates
-        .into_iter()
-        .map(|p| {
-            let crate_path = p.0.parent().unwrap().canonicalize().unwrap();
+        .iter()
+        .filter(|p| !already_published_crates.contains(p.0 .1.package().name()))
+        .map(|((path, package), _)| {
+            let crate_path = path.parent().unwrap().canonicalize().unwrap();
             let crates_path = crate_path
                 .parent()
                 .unwrap()
@@ -320,8 +397,10 @@ fn publish(execute: bool) -> anyhow::Result<()> {
                 .to_string_lossy();
 
             let features = if crates_path == "shared_crates" {
-                if !p.1.features.contains_key("default") && p.1.features.contains_key("native") {
-                    vec!["native".to_string()]
+                if !package.features.contains_key("default")
+                    && package.features.contains_key("guest")
+                {
+                    vec!["guest".to_string()]
                 } else {
                     vec![]
                 }
@@ -329,12 +408,31 @@ fn publish(execute: bool) -> anyhow::Result<()> {
                 vec![]
             };
 
-            Task::Publish(crate_path, features)
-        })
-        .chunks(5)
-        .into_iter()
-        .flat_map(|c| c.chain(std::iter::once(Task::Wait(30))))
-        .collect_vec();
+            // If it's not excluded, assume it's wasm32-wasi
+            let build_with_host: HashSet<&str> = HashSet::from_iter([
+                "ambient_package_semantic",
+                "ambient_package_macro_common",
+                "ambient_element",
+            ]);
+            let specify_target = package
+                .package
+                .as_ref()
+                .is_some_and(|p| !build_with_host.contains(p.name.as_str()))
+                && crates_path != "crates"
+                && crates_path != "libs";
+
+            Task::Command(crate_path, specify_target, features)
+        });
+
+    let tasks = if command != PublishCommand::Publish {
+        tasks.collect_vec()
+    } else {
+        tasks
+            .chunks(5)
+            .into_iter()
+            .flat_map(|c| c.chain(std::iter::once(Task::Wait(30))))
+            .collect_vec()
+    };
     // Remove the last wait
     let tasks = &tasks[0..tasks.len() - 1];
 
@@ -342,17 +440,32 @@ fn publish(execute: bool) -> anyhow::Result<()> {
         true => {
             for task in tasks {
                 match task {
-                    Task::Publish(path, features) => {
-                        let mut command = Command::new("cargo");
-                        command.arg("publish");
-                        command.arg("--no-verify");
-                        if !features.is_empty() {
-                            command.arg("-F").arg(features.join(","));
+                    Task::Command(path, specify_target, features) => {
+                        let mut cmd = Command::new("cargo");
+                        match command {
+                            PublishCommand::Publish => {
+                                cmd.arg("publish");
+                                cmd.arg("--no-verify");
+                            }
+                            PublishCommand::Package => {
+                                cmd.arg("package");
+                                cmd.arg("--no-verify");
+                            }
+                            PublishCommand::Doc => {
+                                cmd.arg("doc");
+                            }
                         }
 
-                        let status = command.current_dir(path).spawn()?.wait()?;
+                        if *specify_target {
+                            cmd.arg("--target").arg("wasm32-wasi");
+                        }
+                        if !features.is_empty() {
+                            cmd.arg("-F").arg(features.join(","));
+                        }
+
+                        let status = cmd.current_dir(path).spawn()?.wait()?;
                         if !status.success() {
-                            anyhow::bail!("failed to upload {}", path.display());
+                            anyhow::bail!("failed to operate {}", path.display());
                         }
                     }
                     Task::Wait(seconds) => {
@@ -364,15 +477,24 @@ fn publish(execute: bool) -> anyhow::Result<()> {
         false => {
             for task in tasks {
                 match task {
-                    Task::Publish(path, features) => {
-                        let features = features.join(",");
+                    Task::Command(path, specify_target, features) => {
                         println!(
-                            "cd {} && cargo publish --no-verify{}; cd -",
+                            "cd {} && cargo {}{}{}; cd -",
                             path.display(),
+                            match command {
+                                PublishCommand::Publish => "publish --no-verify",
+                                PublishCommand::Package => "package --no-verify",
+                                PublishCommand::Doc => "doc",
+                            },
+                            if *specify_target {
+                                " --target wasm32-wasi"
+                            } else {
+                                ""
+                            },
                             if features.is_empty() {
                                 "".to_string()
                             } else {
-                                format!(" -F {}", features)
+                                format!(" -F {}", features.join(","))
                             }
                         )
                     }
@@ -410,7 +532,7 @@ fn edit_toml(
 }
 
 fn check_docker_build() -> anyhow::Result<()> {
-    log::info!("Building Docker image...");
+    tracing::info!("Building Docker image...");
     let success = Command::new("docker")
         .args(["build", ".", "-t", "ambient_campfire"])
         .spawn()?
@@ -419,13 +541,13 @@ fn check_docker_build() -> anyhow::Result<()> {
     if !success {
         anyhow::bail!("failed to build Docker image");
     }
-    log::info!("Built Docker image.");
+    tracing::info!("Built Docker image.");
 
     Ok(())
 }
 
 fn check_docker_run() -> anyhow::Result<()> {
-    log::info!("Running Docker instance...");
+    tracing::info!("Running Docker instance...");
     let success = Command::new("docker")
         .args([
             "run",
@@ -448,14 +570,14 @@ fn check_docker_run() -> anyhow::Result<()> {
     if !success {
         anyhow::bail!("failed to execute cargo run in Docker instance");
     }
-    log::info!("Ran Docker instance.");
+    tracing::info!("Ran Docker instance.");
 
     Ok(())
 }
 
 fn check_crates_io_validity() -> anyhow::Result<()> {
-    let crates = get_all_publishable_crates(false)?;
-    for (path, manifest) in crates {
+    let crates = get_all_publishable_crates(true, false)?;
+    for ((path, manifest), _) in crates {
         let Some(package) = manifest.package else {
             anyhow::bail!("no package for {}", path.display())
         };
@@ -497,7 +619,7 @@ fn check_crates_io_validity() -> anyhow::Result<()> {
 }
 
 fn check_msrv() -> anyhow::Result<()> {
-    log::info!("Checking MSRV...");
+    tracing::info!("Checking MSRV...");
 
     let msrv = {
         let output = Command::new("cargo")
@@ -558,12 +680,12 @@ fn check_msrv() -> anyhow::Result<()> {
 
     // TODO: check dockerfile
 
-    log::info!("MSRV OK.");
+    tracing::info!("MSRV OK.");
     Ok(())
 }
 
 fn check_builds() -> anyhow::Result<()> {
-    log::info!("Checking builds...");
+    tracing::info!("Checking builds...");
     let success = Command::new("cargo")
         .args(["build", "--release"])
         .spawn()?
@@ -583,18 +705,18 @@ fn check_builds() -> anyhow::Result<()> {
         anyhow::bail!("failed to build guest crate");
     }
 
-    log::info!("Builds OK.");
+    tracing::info!("Builds OK.");
     Ok(())
 }
 
 fn check_changelog() -> anyhow::Result<()> {
-    log::info!("Checking CHANGELOG...");
+    tracing::info!("Checking CHANGELOG...");
 
     // TODO: Currently unimplemented; the implementation needs to handle
     // commented out Markdown, so it has to have some degree of smarts about it
     let _changelog = std::fs::read_to_string(CHANGELOG)?;
 
-    log::info!("CHANGELOG skipped (unimplemented, see code).");
+    tracing::info!("CHANGELOG skipped (unimplemented, see code).");
     Ok(())
 }
 
@@ -611,9 +733,11 @@ fn check(path: impl AsRef<Path>) -> anyhow::Result<()> {
     Ok(())
 }
 
+// TODO: consider spliting this up into two functions: "all Ambient crates" and "all publishable crates"
 fn get_all_publishable_crates(
     include_ambient_crates: bool,
-) -> anyhow::Result<Vec<(PathBuf, cargo_toml::Manifest)>> {
+    include_unpublishable_crates: bool,
+) -> anyhow::Result<Vec<((PathBuf, cargo_toml::Manifest), Version)>> {
     // Our publishing process is complicated by the presence of two workspaces
     // that share crates. None of the existing tooling, as far as I can tell,
     // handles this well.
@@ -635,32 +759,50 @@ fn get_all_publishable_crates(
             .package_ids(DependencyDirection::Forward)
             .next()
             .unwrap();
-        let ambient_wasm_id = ambient_graph
-            .resolve_package_name("ambient_wasm")
-            .package_ids(DependencyDirection::Forward)
-            .next()
-            .unwrap();
+
+        // Crates that have Git dependencies, or crates that depend on crates with Git dependencies
+        let mut git_dependency_poisoned_crates = HashSet::new();
+
+        if !include_unpublishable_crates {
+            for package in ambient_graph.packages() {
+                if git_dependency_poisoned_crates.contains(package.id()) {
+                    continue;
+                }
+
+                if package
+                    .source()
+                    .external_source()
+                    .is_some_and(|s| s.starts_with("git"))
+                {
+                    git_dependency_poisoned_crates.insert(package.id());
+                    let poisoned_reverse_deps = ambient_graph
+                        .query_reverse([package.id()])?
+                        .resolve()
+                        .package_ids(DependencyDirection::Forward)
+                        .collect_vec();
+                    git_dependency_poisoned_crates.extend(poisoned_reverse_deps);
+                }
+            }
+        }
 
         let mut ambient_crates = ambient_graph
             .query_forward([ambient_id])?
             .resolve()
             .package_ids(DependencyDirection::Forward)
-            .filter(|id| {
-                // We purposely exclude the WASM crate, as well as anything
-                // that depends on it, as it has Git dependencies that we
-                // can't publish at present.
-                !ambient_graph
-                    .depends_on(id, ambient_wasm_id)
-                    .unwrap_or(true)
-            })
+            .filter(|id| !git_dependency_poisoned_crates.contains(id))
             .collect::<Vec<_>>();
         ambient_crates.reverse();
 
         ambient_crates
             .iter()
-            .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
-            .filter(|p| manifests.exists(p))
-            .map(|p| p.to_string())
+            .map(|p| {
+                (
+                    p.repr().split_ascii_whitespace().next().unwrap(),
+                    ambient_graph.metadata(*p).unwrap().version().clone(),
+                )
+            })
+            .filter(|p| manifests.exists(p.0))
+            .map(|p| (p.0.to_string(), p.1))
             .collect::<Vec<_>>()
     } else {
         vec![]
@@ -685,17 +827,22 @@ fn get_all_publishable_crates(
 
         api_crates
             .iter()
-            .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
-            .filter(|p| manifests.exists(p))
-            .filter(|p| !ambient_crates.iter().any(|tp| tp == p))
-            .map(|p| p.to_string())
+            .map(|p| {
+                (
+                    p.repr().split_ascii_whitespace().next().unwrap(),
+                    api_graph.metadata(*p).unwrap().version().clone(),
+                )
+            })
+            .filter(|p| manifests.exists(p.0))
+            .filter(|p| !(include_ambient_crates && ambient_crates.iter().any(|tp| tp.0 == p.0)))
+            .map(|p| (p.0.to_string(), p.1))
             .collect::<Vec<_>>()
     };
 
     Ok(ambient_crates
         .into_iter()
         .chain(api_crates)
-        .map(|p| manifests.get(&p).unwrap())
+        .map(|p| (manifests.get(&p.0).unwrap(), p.1))
         .collect_vec())
 }
 

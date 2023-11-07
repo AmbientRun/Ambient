@@ -101,6 +101,7 @@ pub async fn rpc_push_intent(args: ServerRpcArgs, intent: Entity) -> Option<Enti
     Some(push_intent(args.state, args.user_id, intent))
 }
 
+#[allow(clippy::let_unit_value)]
 pub async fn rpc_undo_head(args: ServerRpcArgs, _: ()) -> Option<()> {
     undo_head(args.state, &args.user_id)?;
     Some(())
@@ -113,6 +114,7 @@ pub async fn rpc_undo_head_exact(args: ServerRpcArgs, id: String) -> Option<()> 
     Some(())
 }
 
+#[allow(clippy::let_unit_value)]
 pub async fn rpc_redo(args: ServerRpcArgs, _: ()) -> Option<()> {
     let state = args.state;
     redo_intent(state, &args.user_id).await?;

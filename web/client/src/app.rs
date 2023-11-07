@@ -46,7 +46,7 @@ pub fn MainApp(_hooks: &mut Hooks, server_url: String, settings: Settings) -> El
             UICamera.el().spawn_static(world);
 
             Ok(Box::new(|| {
-                tracing::info!("Disconnecting client");
+                tracing::debug!("Disconnecting client");
             }))
         }),
         create_rpc_registry: cb(create_server_rpc_registry),
@@ -67,7 +67,7 @@ fn systems() -> SystemGroup {
             // Box::new(ambient_decals::client_systems()),
             Box::new(ambient_primitives::systems()),
             Box::new(ambient_sky::systems()),
-            // Box::new(ambient_water::systems()),
+            Box::new(ambient_water::systems()),
             // Box::new(ambient_physics::client_systems()),
             // Box::new(ambient_gizmos::client_systems()),
             Box::new(wasm::systems()),

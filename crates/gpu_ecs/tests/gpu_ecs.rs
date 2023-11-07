@@ -45,7 +45,7 @@ impl TestCommon {
         init_components();
         init_gpu_components();
 
-        let gpu = Arc::new(Gpu::new(None).await);
+        let gpu = Arc::new(Gpu::new(None).await.unwrap());
         let mut world = World::new_unknown("TestCommon");
 
         let assets = AssetCache::new(tokio::runtime::Handle::current());

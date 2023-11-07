@@ -1,12 +1,13 @@
 [package]
 id = "cneomdouziieskjvs3szwmigzotofjzs"
-name = "Explosion"
-version = "0.3.0-nightly-2023-10-03"
+name = "Explosion [WIP]"
+description = "Implements *very* simple explosions."
+version = "0.3.2-nightly-2023-11-07"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-10-03"
+ambient_version = "0.3.2-nightly-2023-11-07"
 
 [dependencies]
-game_object = { path = "../../schemas/game_object" , deployment = "1dyIvQx50CG6vvLfa8xCqa" }
+game_object = { path = "../../schemas/game_object", deployment = "4OntbO6EXwu0A2ezaNjdM3" }
 
 [components]
 is_explosion = { type = "Empty", name = "Is Explosion", description = "Is an explosion", attributes = [
@@ -18,6 +19,8 @@ radius = { type = "F32", name = "Radius", description = "Radius of the explosion
 damage = { type = "F32", name = "Damage", description = "Damage of the explosion", attributes = [
     "Networked",
 ] }
+
+# Internal
 created_at = { type = "Duration", name = "Created At", description = "Time the explosion was created. Must be manually attached using a spawn_query as time is not synchronized between client and server at time of writing." }
 
 [concepts.Explosion]

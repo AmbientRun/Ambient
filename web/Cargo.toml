@@ -4,7 +4,7 @@ default-members = ["client"]
 resolver = "2"
 
 [workspace.package]
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 rust-version = "1.70.0"
 
 [workspace.dependencies]
@@ -21,7 +21,7 @@ ambient_ui_native = { path = "../crates/ui_native" }
 ambient_cameras = { path = "../crates/cameras/" }
 ambient_renderer = { path = "../crates/renderer/" }
 ambient_element = { path = "../shared_crates/element/" }
-ambient_network = { path = "../crates/network/", features = [ "frame-dropping" ] }
+ambient_network = { path = "../crates/network/", features = ["frame-dropping"] }
 ambient_rpc = { path = "../crates/rpc/" }
 ambient_world_audio = { path = "../crates/world_audio" }
 ambient_wasm = { path = "../crates/wasm" }
@@ -35,6 +35,7 @@ ambient_decals = { path = "../crates/decals/" }
 ambient_prefab = { path = "../crates/prefab/" }
 ambient_package_semantic_native = { path = "../crates/package_semantic_native/" }
 ambient_sky = { path = "../crates/sky/" }
+ambient_git_rev_init = { path = "../crates/git_rev_init/" }
 
 url = "2.3"
 anyhow = "1.0"
@@ -54,7 +55,7 @@ time = { version = "0.3", features = ["wasm-bindgen"] }
 chrono = { version = "0.4", default-features = false, features = [
     "serde",
     "clock",
-    "wasmbind"
+    "wasmbind",
 ] }
 getrandom = { version = "0.2.8", features = ["js"] }
 web-sys = { version = "0.3", features = [
@@ -65,6 +66,7 @@ web-sys = { version = "0.3", features = [
     "HtmlDocument",
     "Performance",
     "Window",
+    "ResizeObserver",
 ] }
 
 js-sys = { version = "0.3" }

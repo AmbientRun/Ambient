@@ -2,7 +2,7 @@ pub mod audio;
 pub mod materials;
 pub mod models;
 pub use audio::AudioPipeline;
-pub use materials::MaterialsPipeline;
+pub use materials::{MaterialsImporter, MaterialsPipeline, PipelinePbrMaterial};
 pub use models::{Collider, ModelImporter, ModelsPipeline};
 use serde::{Deserialize, Serialize};
 use std::path::Path;

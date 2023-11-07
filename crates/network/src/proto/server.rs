@@ -1,12 +1,13 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use ambient_core::player::get_by_user_id;
-use ambient_ecs::{ComponentRegistry, FrozenWorldDiff, WorldDiff, WorldStreamFilter};
+use ambient_ecs::{
+    ComponentRegistry, Entity, EntityId, FrozenWorldDiff, WorldChange, WorldDiff, WorldStreamFilter,
+};
 use ambient_native_std::{fps_counter::FpsSample, log_result};
 use anyhow::Context;
 use bytes::Bytes;
-use flume::Receiver;
-use futures::{Stream, StreamExt};
+use futures::{future::OptionFuture, Stream, StreamExt};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
 use tracing::{debug_span, Instrument};
 use uuid::Uuid;
@@ -112,12 +113,12 @@ impl ServerProtoState {
     ) -> anyhow::Result<()> {
         match (frame, &self) {
             (_, Self::Disconnected) => {
-                tracing::info!("Client is disconnected, ignoring control frame");
+                tracing::debug!("Client is disconnected, ignoring control frame");
                 Ok(())
             }
             (ClientRequest::Connect(user_id), Self::PendingConnection) => {
                 // Connect the user
-                tracing::info!("User connected");
+                tracing::debug!("User connected");
                 self.process_connect(data, user_id);
                 Ok(())
             }
@@ -173,10 +174,10 @@ impl ServerProtoState {
 
             instance.world.add_components(id, entity_data).unwrap();
 
-            tracing::info!(user_id, ?id, "Player reconnected");
+            tracing::debug!(user_id, ?id, "Player reconnected");
         } else {
             let id = instance.spawn_player(entity_data);
-            tracing::info!(user_id, ?id, "Player connected");
+            tracing::debug!(user_id, ?id, "Player connected");
         }
 
         *self = Self::Connected(ConnectedClient {
@@ -188,7 +189,7 @@ impl ServerProtoState {
     #[tracing::instrument(level = "debug")]
     pub fn process_disconnect(&mut self, data: &ConnectionData) {
         if let Self::Connected(ConnectedClient { user_id, .. }) = self {
-            tracing::info!(?user_id, "User disconnected");
+            tracing::debug!(%user_id, "User disconnected");
             let mut state = data.state.lock();
 
             let Some(player) = state.players.get(&**user_id) else {
@@ -358,7 +359,7 @@ pub async fn handle_stats<S>(
 
 /// Sends the world diffs over the network
 pub async fn handle_diffs<S>(
-    mut stream: stream::FramedSendStream<WorldDiff, S>,
+    stream: stream::FramedSendStream<WorldDiff, S>,
     diffs_rx: flume::Receiver<FrozenWorldDiff>,
 ) where
     S: Unpin + AsyncWrite,
@@ -378,55 +379,91 @@ pub async fn handle_diffs<S>(
     #[cfg(debug_assertions)]
     let mut deserializer = DiffSerializer::default();
 
+    let mut needs_external_components = false;
+    let mut intermediate_diff = IntermediateWorldDiff::default();
+
+    let mut stream = Some(stream);
+    let mut sending_future = OptionFuture::default();
+
     loop {
-        let msg = tokio::select! {
+        tokio::select! {
+            // check if sending has finished (if any)
+            Some(sending_result) = &mut sending_future => {
+                assert!(stream.is_none());
+                match sending_result {
+                    Ok(returned_stream) => {
+                        stream = Some(returned_stream);
+                        sending_future = None.into();
+                    }
+                    Err(err) => {
+                        tracing::error!(?err, "Failed to send world diff.");
+                        break;
+                    }
+                }
+            }
             _ = external_components_rx.recv_async() => {
-                serializer.serialize_external_components().unwrap()
+                needs_external_components = true;
             }
             Ok(diff) = diffs_rx.recv_async() => {
-                let _span = tracing::debug_span!("handle_diffs prep").entered();
+                intermediate_diff.merge_in(&diff);
+            }
+        }
 
-                // get all diffs waiting in the channel to clear the queue
-                let mut diffs = Vec::with_capacity(diffs_rx.len() + 1);
-                diffs.push(diff);
-                diffs.extend(diffs_rx.drain());
+        // check if we have anything to send
+        if needs_external_components || !intermediate_diff.is_empty() {
+            let Some(mut stream) = stream.take() else {
+                // stream is not available - we must be still in progress of sending the previous message
+                continue;
+            };
 
-                // merge them together, deduplicate and serialize
-                let merged_diff = FrozenWorldDiff::merge(&diffs);
-                let merged_diffs_count = merged_diff.changes.len();
-                let final_diff = deduplicator.deduplicate(merged_diff);
-                let msg = serializer.serialize(&final_diff).unwrap();
+            // prepare the message to send
+            let msg = if needs_external_components {
+                needs_external_components = false;
+                serializer.serialize_external_components().unwrap()
+            } else {
+                // take the merged diff, deduplicate and serialize
+                let input_diffs_count = intermediate_diff.diffs_merged;
+                let input_changes_count = intermediate_diff.changes_merged;
+                let mut diff = intermediate_diff.take();
+                let merged_changes_count = diff.changes.len();
+                deduplicator.deduplicate(&mut diff);
+                let msg = serializer.serialize(&diff).unwrap();
                 tracing::trace!(
-                    diffs_count = diffs.len(),
-                    merged_diffs_count,
-                    final_diffs_count = final_diff.changes.len(),
+                    input_diffs_count,
+                    input_changes_count,
+                    merged_changes_count,
+                    final_changes_count = diff.changes.len(),
                     bytes = msg.len(),
                 );
 
                 msg
+            };
+
+            // make sure that what we've serialized is going to be deserialized correctly on the other side
+            #[cfg(debug_assertions)]
+            {
+                let deserialized = deserializer.deserialize(msg.clone());
+                debug_assert!(
+                    deserialized.is_ok(),
+                    "Diff should deserialize as WorldDiff correctly: {:?}",
+                    deserialized,
+                );
             }
-        };
 
-        #[cfg(debug_assertions)]
-        {
-            let deserialized = deserializer.deserialize(msg.clone());
-            debug_assert!(
-                deserialized.is_ok(),
-                "Diff should deserialize as WorldDiff correctly: {:?}",
-                deserialized,
-            );
-        }
-
-        let span = tracing::debug_span!("send_world_diff");
-        tracing::trace!(diff=?msg);
-        if let Err(err) = stream.send_bytes(msg).instrument(span).await {
-            tracing::error!(?err, "Failed to send world diff.");
-            break;
+            let span = tracing::debug_span!("send_world_diff");
+            sending_future = Some(Box::pin(async move {
+                stream
+                    .send_bytes(msg)
+                    .instrument(span)
+                    .await
+                    .map(|_| stream)
+            }))
+            .into();
         }
     }
 }
 
-fn create_external_components_trigger() -> (Receiver<()>, Arc<dyn Fn() + Send + Sync>) {
+fn create_external_components_trigger() -> (flume::Receiver<()>, Arc<dyn Fn() + Send + Sync>) {
     let (tx, rx) = flume::unbounded();
     (
         rx,
@@ -434,4 +471,44 @@ fn create_external_components_trigger() -> (Receiver<()>, Arc<dyn Fn() + Send + 
             let _ = tx.send(());
         }),
     )
+}
+
+#[derive(Debug, Default)]
+struct IntermediateWorldDiff {
+    shape_changes: Vec<WorldChange>,
+    set_changes: HashMap<EntityId, Entity>,
+    diffs_merged: usize,
+    changes_merged: usize,
+}
+
+impl IntermediateWorldDiff {
+    pub fn is_empty(&self) -> bool {
+        self.shape_changes.is_empty() && self.set_changes.is_empty()
+    }
+
+    pub fn merge_in<'a>(&mut self, changes: impl IntoIterator<Item = &'a WorldChange> + 'a) {
+        self.diffs_merged += 1;
+        for change in changes.into_iter().cloned() {
+            if let WorldChange::SetComponents(id, entity) = change {
+                self.set_changes.entry(id).or_default().merge(entity);
+            } else {
+                self.shape_changes.push(change);
+            }
+            self.changes_merged += 1;
+        }
+    }
+
+    pub fn take(&mut self) -> WorldDiff {
+        self.diffs_merged = 0;
+        self.changes_merged = 0;
+        let mut changes = Vec::new();
+        std::mem::swap(&mut changes, &mut self.shape_changes);
+        changes.reserve(self.set_changes.len());
+        changes.extend(
+            self.set_changes
+                .drain()
+                .map(|(id, entity)| WorldChange::SetComponents(id, entity)),
+        );
+        WorldDiff { changes }
+    }
 }

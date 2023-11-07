@@ -117,6 +117,7 @@ pub enum RpcError {
 mod tests {
     use crate::RpcRegistry;
 
+    #[allow(clippy::let_unit_value)]
     async fn testy(_args: (), req: i32) -> i32 {
         req * 2
     }

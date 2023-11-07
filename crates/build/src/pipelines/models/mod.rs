@@ -127,7 +127,7 @@ fn create_texture_resolver(ctx: &PipelineCtx) -> TextureResolver {
                 match download_image(&ctx.process_ctx.assets, file).await {
                     Ok(img) => Some(img.into_rgba8()),
                     Err(err) => {
-                        log::error!("Failed to import image {:?}: {:?}", path, err);
+                        tracing::error!("Failed to import image {:?}: {:?}", path, err);
                         None
                     }
                 }

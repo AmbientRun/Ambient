@@ -1,6 +1,9 @@
 [package]
 name = "ambient_pipeline_types"
 version.workspace = true
+license = "MIT OR Apache-2.0"
+description = "Asset pipeline types for Ambient."
+repository = "https://github.com/AmbientRun/Ambient"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

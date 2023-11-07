@@ -1,6 +1,10 @@
 # Settings
 
-Ambient supports a number of settings that can be configured using the `settings.toml` file. This file is located under the platform's config directory, e.g. `C:\Users\*USER*\AppData\Roaming\Ambient\Ambient\config\settings.toml` on Windows.
+Ambient supports a number of settings that can be configured using the `settings.toml` file. This file is located under the platform's config directory:
+
+- Windows: `C:\Users\*USER*\AppData\Roaming\Ambient\Ambient\config\settings.toml`
+- MacOS: `~/Library/Application\ Support/com.Ambient.Ambient/settings.toml`
+- Linux: `~/.config/Ambient/settings.toml`
 
 ## Settings
 

@@ -11,6 +11,8 @@ Install [Visual Studio Code](https://code.visualstudio.com/), then install the f
 
 `ambient new` will set up your package for VSCode by default by creating a `.vscode/settings.json` for you.
 
+> Mac users: There is currently a bug which triggers a SIGHUP crash each time you close Ambient, when it's started through VSCode. For a fix and more details, see this issue: https://github.com/AmbientRun/Ambient/issues/909
+
 ## Emacs
 
 There are multiple ways to configure Emacs as a Rust IDE. The following assumes you are using [rustic](https://github.com/brotzeit/rustic),
@@ -34,4 +36,4 @@ Furthermore, you can add a `.dir-locals.el` file to your Ambient package directo
 
 ## Other IDEs
 
-To get rust-analyzer to work, you need to make sure it's building with the `server` and `client` feature flags enabled. See [.vscode/settings.json](https://github.com/AmbientRun/Ambient/blob/main/app/src/cli/new_package_template/.vscode/settings.json) for an example.
+To get rust-analyzer to work, you need to make sure it's building with the `server` and `client` feature flags enabled. See [.vscode/settings.json](https://github.com/AmbientRun/Ambient/blob/main/app/src/cli/package/new_package_template/.vscode/settings.json) for an example.

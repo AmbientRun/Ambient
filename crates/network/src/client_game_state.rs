@@ -200,9 +200,6 @@ impl ClientGameState {
             screen_size.as_vec2(),
         )
     }
-    pub fn world_to_screen_space(&self, p: Vec3) -> Vec2 {
-        self.clip_to_screen_space(self.world_to_clip_space(p))
-    }
 
     pub fn is_master_client(&self) -> bool {
         let first = query((user_id(), is_player()))

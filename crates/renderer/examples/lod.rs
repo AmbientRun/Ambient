@@ -63,7 +63,7 @@ async fn init(app: &mut App) {
         })
         .unzip();
 
-    log::info!("Lod levels: {lods:?}");
+    tracing::info!("Lod levels: {lods:?}");
 
     let aabb = AABB {
         min: -Vec3::ONE,

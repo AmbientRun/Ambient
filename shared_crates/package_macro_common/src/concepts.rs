@@ -116,6 +116,30 @@ fn generate_one(
                 writeln!(doc_comment)?;
                 writeln!(doc_comment)?;
             }
+
+            fn write_component_fields(
+                doc_comment: &mut String,
+                components: &[ComponentField],
+                title: &str,
+            ) -> anyhow::Result<()> {
+                if components.is_empty() {
+                    return Ok(());
+                }
+
+                writeln!(doc_comment, "**{}**:", title)?;
+                for field in components {
+                    write!(doc_comment, "- ")?;
+                    writeln!(doc_comment, "`{}`: {}", field.id, field.description)?;
+                }
+                writeln!(doc_comment)?;
+                writeln!(doc_comment)?;
+
+                Ok(())
+            }
+
+            write_component_fields(&mut doc_comment, &required_components, "Required")?;
+            write_component_fields(&mut doc_comment, &optional_components, "Optional")?;
+
             doc_comment.trim().to_string()
         };
 
@@ -371,6 +395,7 @@ struct ComponentField<'a> {
     id: &'a Identifier,
     ty: TokenStream,
     path: TokenStream,
+    description: &'a str,
     suggested: Option<&'a Value>,
 }
 impl ComponentField<'_> {
@@ -442,11 +467,18 @@ fn component_to_field<'a>(
 
     let component_path = context.get_path(items, None, component_item_id)?;
 
+    let description = value
+        .description
+        .as_deref()
+        .or(component.description.as_deref())
+        .unwrap_or("No description provided.");
+
     Ok(ComponentField {
         doc_comment,
         id: component_id,
         ty: component_ty,
         path: component_path,
+        description,
         suggested: value.suggested.as_ref().and_then(|v| v.as_resolved()),
     })
 }

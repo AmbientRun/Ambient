@@ -162,6 +162,7 @@ pub struct InstanceInfo {
     pub n_players: u32,
 }
 
+#[allow(clippy::let_unit_value)]
 pub async fn rpc_get_instances_info(args: ServerRpcArgs, _: ()) -> InstancesInfo {
     let state = args.state.lock();
     InstancesInfo {

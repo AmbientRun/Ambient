@@ -71,7 +71,7 @@ fn load_asset_no_keepalive(world: &mut World) -> JoinHandle<()> {
     let assets = world.resource(asset_cache()).clone();
     world.resource(runtime()).spawn(async move {
         let asset = NoKeepaliveKey.get(&assets).await;
-        tracing::info!("Finished loading asset");
+        tracing::debug!("Finished loading asset");
         tokio::time::sleep(Duration::from_secs(5)).await;
         drop(asset);
     })

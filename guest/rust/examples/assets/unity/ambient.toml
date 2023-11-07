@@ -1,7 +1,7 @@
 [package]
 id = "tt7dtctg4qbptrbe6uahkx2lyuudy2gb"
-name = "Unity"
-description = "Load and spawn a Unity prefab"
-version = "0.3.0-nightly-2023-10-03"
+name = "Unity [WIP]"
+description = "Loading and spawning a Unity prefab. This example currently uses non-redistributable assets that are not included in the example. This will be revised in the near-future."
+version = "0.3.2-nightly-2023-11-07"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-10-03"
+ambient_version = "0.3.2-nightly-2023-11-07"

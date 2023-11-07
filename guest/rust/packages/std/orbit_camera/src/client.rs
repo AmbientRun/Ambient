@@ -4,13 +4,24 @@ use ambient_api::{
             PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
         transform::components::{lookat_target, rotation, translation},
+        ui::components::focusable,
     },
+    input::{is_game_focused, GAME_FOCUS_ID},
     prelude::*,
 };
 use packages::this::components::{camera_angle, camera_distance, is_orbit_camera};
 
 #[main]
 pub fn main() {
+    // Spawn a window-sized element to ensure we have focus access. We do not use `hide_cursor`
+    // as we want the cursor to be generally visible.
+    WindowSized::el([])
+        .init(translation(), vec3(0., 0., 1.1))
+        .with_clickarea()
+        .el()
+        .with(focusable(), GAME_FOCUS_ID.to_string())
+        .spawn_interactive();
+
     spawn_query(is_orbit_camera()).bind(|cameras| {
         for (camera_id, _) in cameras {
             entity::add_components(
@@ -46,8 +57,13 @@ pub fn main() {
     query(is_orbit_camera()).each_frame(|cameras| {
         let (delta, input) = input::get_delta();
 
-        let distance_delta = delta.mouse_wheel * -0.1;
-        let angle_delta = if input.mouse_buttons.contains(&MouseButton::Right) {
+        let distance_delta = if is_game_focused() {
+            delta.mouse_wheel * -0.1
+        } else {
+            0.
+        };
+        let angle_delta = if is_game_focused() && input.mouse_buttons.contains(&MouseButton::Right)
+        {
             delta.mouse_position * 0.01
         } else {
             Vec2::ZERO

@@ -79,7 +79,6 @@ impl<'a> Future for ReadChunk<'a> {
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let data = ready!(self.stream.poll_read_chunk(cx)?);
-        tracing::info!("Data: {data:?}");
 
         if let Some(data) = data {
             Poll::Ready(Some(Ok(std::mem::take(data))))

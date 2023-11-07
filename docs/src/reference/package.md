@@ -333,7 +333,7 @@ A `ValueType` is either:
 
   - Note that `Vec` and `Option` are the only supported container types, and `element_type` must be a primitive `ValueType` (that is, you cannot have nested contained types).
 
-- a string that refers to an `enum` defined by a package; see [Enums](#enums--enums).
+- a string that refers to an `enum` defined by a package; see [Enums](./package.md#enums--enums).
 
 Note that `ValueType`s are not themselves values, but rather types of values. For example, `Vec2` is a `ValueType`, but `Vec2(1.0, 2.0)` is a value of type `Vec2`. Additionally, `ValueType`s from other packages can be referred to using `ItemPath`s: `my_package::my_component::MyType`.
 

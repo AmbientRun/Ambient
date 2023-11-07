@@ -4,16 +4,16 @@ use ambient_api::{
     core::{
         app::components::name,
         model::components::model_from_url,
-        physics::concepts::CharacterController,
         transform::{
-            components::{local_to_parent, rotation, translation},
-            concepts::{Transformable, TransformableOptional},
+            components::{local_to_parent, local_to_world, rotation, translation},
+            concepts::Transformable,
         },
     },
     prelude::*,
 };
 use packages::{
     character_animation::components::basic_character_animations,
+    character_movement::concepts::{CharacterMovement, CharacterMovementOptional},
     tangent_schema::{
         character::components::is_character,
         concepts::{Character, CharacterDef},
@@ -34,26 +34,24 @@ pub fn main() {
                 Entity::new()
                     .with(model_from_url(), def.model_url)
                     .with(basic_character_animations(), id)
-                    .with_merge(CharacterController {
+                    .with(local_to_world(), default())
+                    .with_merge(CharacterMovement {
                         character_controller_height: 2.,
                         character_controller_radius: 0.5,
                         physics_controlled: (),
-                    })
-                    .with_merge(Transformable {
-                        local_to_world: default(),
-                        optional: TransformableOptional {
-                            translation: None,
-                            rotation: Some(Quat::IDENTITY),
-                            scale: None,
+                        rotation: Quat::IDENTITY,
+                        run_direction: Vec2::ZERO,
+                        vertical_velocity: 0.,
+                        running: false,
+                        jumping: false,
+                        is_on_ground: true,
+                        optional: CharacterMovementOptional {
+                            run_speed_multiplier: Some(def.run_speed_multiplier),
+                            speed: Some(def.speed),
+                            strafe_speed_multiplier: Some(def.strafe_speed_multiplier),
+                            air_speed_multiplier: Some(1.0),
                         },
-                    })
-                    .with(uc::speed(), def.speed)
-                    .with(uc::run_speed_multiplier(), def.run_speed_multiplier)
-                    .with(uc::strafe_speed_multiplier(), def.strafe_speed_multiplier)
-                    .with(uc::run_direction(), Vec2::ZERO)
-                    .with(uc::vertical_velocity(), 0.)
-                    .with(uc::running(), false)
-                    .with(uc::jumping(), false),
+                    }),
             );
         }
     });

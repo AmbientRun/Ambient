@@ -110,7 +110,7 @@ dependencies = [
 
 [[package]]
 name = "ambient"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -125,6 +125,7 @@ dependencies = [
  "ambient_deploy",
  "ambient_ecs",
  "ambient_element",
+ "ambient_git_rev_init",
  "ambient_gizmos",
  "ambient_model_import",
  "ambient_native_std",
@@ -154,7 +155,6 @@ dependencies = [
  "glam 0.24.2",
  "image",
  "image_hasher",
- "log",
  "parking_lot",
  "rpassword",
  "rustls-pemfile",
@@ -168,7 +168,6 @@ dependencies = [
  "toml_edit",
  "tower-http",
  "tracing",
- "tracing-log",
  "tracing-stackdriver",
  "tracing-subscriber",
  "tracing-tree",
@@ -182,7 +181,7 @@ checksum = "e9d4ee0d472d1cd2e28c97dfa124b3d8d992e10eb0a035f33f5d12e3a177ba3b"
 
 [[package]]
 name = "ambient_animation"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -194,11 +193,12 @@ dependencies = [
  "itertools",
  "ordered-float 3.9.1",
  "serde",
+ "tracing",
 ]
 
 [[package]]
 name = "ambient_api_core"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api_macros",
  "ambient_package_rt",
@@ -220,7 +220,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_api_macros"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_package_macro_common",
  "anyhow",
@@ -232,7 +232,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_app"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_animation",
  "ambient_cameras",
@@ -269,7 +269,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_asset_cache"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_sys",
  "as-any",
@@ -286,7 +286,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_asset_timeline"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -309,7 +309,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_audio"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_native_std",
  "ambient_sys",
@@ -328,7 +328,6 @@ dependencies = [
  "hound",
  "itertools",
  "lewton",
- "log",
  "lyon",
  "macroquad",
  "num",
@@ -347,7 +346,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_build"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_asset_cache",
  "ambient_core",
@@ -380,7 +379,6 @@ dependencies = [
  "glob",
  "image",
  "itertools",
- "log",
  "parking_lot",
  "rand 0.8.5",
  "relative-path",
@@ -399,7 +397,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_cameras"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -412,11 +410,11 @@ dependencies = [
 
 [[package]]
 name = "ambient_cb"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 
 [[package]]
 name = "ambient_client_shared"
-version = "0.0.0"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_debugger",
@@ -434,20 +432,20 @@ dependencies = [
 
 [[package]]
 name = "ambient_cloud_client"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_asset_cache",
  "ambient_native_std",
  "ambient_sys",
  "anyhow",
- "log",
  "reqwest",
  "serde",
+ "tracing",
 ]
 
 [[package]]
 name = "ambient_color"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "glam 0.24.2",
  "hex",
@@ -458,7 +456,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_core"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_gpu",
@@ -480,7 +478,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_curve"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_native_std",
  "glam 0.24.2",
@@ -488,7 +486,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_debugger"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -509,7 +507,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_decals"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_app",
  "ambient_asset_cache",
@@ -525,12 +523,12 @@ dependencies = [
  "ambient_renderer",
  "env_logger 0.10.0",
  "glam 0.24.2",
- "log",
+ "tracing",
 ]
 
 [[package]]
 name = "ambient_deploy"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_native_std",
  "ambient_package",
@@ -538,25 +536,25 @@ dependencies = [
  "ambient_sys",
  "anyhow",
  "flume 0.11.0",
- "log",
  "md-5",
  "prost",
  "tokio",
  "tokio-stream",
  "tonic",
+ "tracing",
  "walkdir",
 ]
 
 [[package]]
 name = "ambient_dirs"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "directories",
 ]
 
 [[package]]
 name = "ambient_ecs"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_native_std",
  "ambient_package_macro_common",
@@ -574,7 +572,6 @@ dependencies = [
  "erased-serde",
  "glam 0.24.2",
  "itertools",
- "log",
  "once_cell",
  "parking_lot",
  "paste",
@@ -589,7 +586,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ecs_editor"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -608,7 +605,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_editor"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_decals",
@@ -640,7 +637,6 @@ dependencies = [
  "glam 0.24.2",
  "image",
  "itertools",
- "log",
  "ordered-float 3.9.1",
  "parking_lot",
  "physxx",
@@ -654,7 +650,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_editor_derive"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_ui_native",
  "pretty_assertions",
@@ -666,7 +662,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_cb",
  "ambient_core",
@@ -687,7 +683,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element_component"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -697,7 +693,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_focus"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_ecs",
  "winit",
@@ -705,18 +701,28 @@ dependencies = [
 
 [[package]]
 name = "ambient_friendly_id"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "rand 0.8.5",
 ]
 
 [[package]]
 name = "ambient_git_rev"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
+dependencies = [
+ "once_cell",
+]
+
+[[package]]
+name = "ambient_git_rev_init"
+version = "0.3.2-dev"
+dependencies = [
+ "ambient_git_rev",
+]
 
 [[package]]
 name = "ambient_gizmos"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -730,16 +736,16 @@ dependencies = [
  "bytemuck",
  "dashmap",
  "glam 0.24.2",
- "log",
  "once_cell",
  "profiling",
  "serde",
+ "tracing",
  "wgpu 0.16.3",
 ]
 
 [[package]]
 name = "ambient_gpu"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "aho-corasick",
  "ambient_native_std",
@@ -755,7 +761,6 @@ dependencies = [
  "glam 0.24.2",
  "image",
  "itertools",
- "log",
  "ndarray",
  "ordered-float 3.9.1",
  "parking_lot",
@@ -770,7 +775,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_gpu_ecs"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -792,7 +797,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_guest_bridge"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_api_core",
  "ambient_core",
@@ -810,7 +815,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_input"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -825,7 +830,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_intent"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_element",
@@ -845,7 +850,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_layout"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -854,13 +859,13 @@ dependencies = [
  "ambient_input",
  "glam 0.24.2",
  "itertools",
- "log",
  "profiling",
+ "tracing",
 ]
 
 [[package]]
 name = "ambient_math"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "glam 0.24.2",
  "rand 0.8.5",
@@ -869,7 +874,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_meshes"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_gpu",
  "ambient_native_std",
@@ -879,7 +884,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_model"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -902,7 +907,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_model_import"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -933,7 +938,6 @@ dependencies = [
  "image",
  "indexmap 2.0.2",
  "itertools",
- "log",
  "ordered-float 3.9.1",
  "physxx",
  "relative-path",
@@ -941,12 +945,13 @@ dependencies = [
  "russimp",
  "serde_json",
  "tokio",
+ "tracing",
  "winit",
 ]
 
 [[package]]
 name = "ambient_native_std"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_asset_cache",
  "ambient_cb",
@@ -964,7 +969,6 @@ dependencies = [
  "data-encoding",
  "futures",
  "glam 0.24.2",
- "log",
  "mikktspace",
  "ordered-float 3.9.1",
  "percent-encoding",
@@ -987,7 +991,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_naturals"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1013,7 +1017,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_network"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_app",
  "ambient_core",
@@ -1044,7 +1048,6 @@ dependencies = [
  "http",
  "itertools",
  "js-sys",
- "log",
  "parking_lot",
  "pin-project",
  "profiling",
@@ -1069,7 +1072,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_shared_types",
  "chrono",
@@ -1093,7 +1096,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_macro_common"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_package",
  "ambient_package_semantic",
@@ -1109,7 +1112,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_rt"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_shared_types",
  "byteorder",
@@ -1121,7 +1124,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_semantic"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_dirs",
  "ambient_package",
@@ -1145,7 +1148,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_semantic_native"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_cb",
  "ambient_core",
@@ -1163,7 +1166,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_physics"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -1182,7 +1185,6 @@ dependencies = [
  "futures",
  "glam 0.24.2",
  "itertools",
- "log",
  "ordered-float 3.9.1",
  "parking_lot",
  "physxx",
@@ -1195,7 +1197,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_pipeline_types"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "glam 0.24.2",
  "serde",
@@ -1205,7 +1207,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_prefab"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_decals",
@@ -1223,7 +1225,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_primitives"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1236,7 +1238,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_procedurals"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1275,7 +1277,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_rect"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1287,13 +1289,13 @@ dependencies = [
  "async-trait",
  "bytemuck",
  "glam 0.24.2",
- "log",
+ "tracing",
  "wgpu 0.16.3",
 ]
 
 [[package]]
 name = "ambient_renderer"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -1319,7 +1321,6 @@ dependencies = [
  "env_logger 0.10.0",
  "glam 0.24.2",
  "itertools",
- "log",
  "ordered-float 3.9.1",
  "parking_lot",
  "profiling",
@@ -1333,7 +1334,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_rpc"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "bincode",
  "futures",
@@ -1344,7 +1345,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_rustc"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "anyhow",
  "is-terminal",
@@ -1354,11 +1355,11 @@ dependencies = [
 
 [[package]]
 name = "ambient_schema"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 
 [[package]]
 name = "ambient_settings"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_dirs",
  "ambient_native_std",
@@ -1373,7 +1374,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_shared_types"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "bitflags 1.3.2",
  "paste",
@@ -1385,7 +1386,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_sky"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_cameras",
  "ambient_core",
@@ -1407,7 +1408,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_std"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "itertools",
  "thiserror",
@@ -1415,7 +1416,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_sys"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "anyhow",
  "arboard",
@@ -1443,7 +1444,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_terrain"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_app",
  "ambient_core",
@@ -1480,7 +1481,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_text"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1492,14 +1493,14 @@ dependencies = [
  "async-trait",
  "glam 0.24.2",
  "glyph_brush",
- "log",
  "parking_lot",
+ "tracing",
  "wgpu 0.16.3",
 ]
 
 [[package]]
 name = "ambient_time"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "itertools",
  "thiserror",
@@ -1507,7 +1508,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ui"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_cb",
  "ambient_color",
@@ -1529,7 +1530,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ui_native"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -1553,7 +1554,6 @@ dependencies = [
  "fixed-vec-deque",
  "glam 0.24.2",
  "itertools",
- "log",
  "parking_lot",
  "rand 0.8.5",
  "tokio",
@@ -1564,7 +1564,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_unity_parser"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_native_std",
  "anyhow",
@@ -1576,7 +1576,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_wasm"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1603,7 +1603,6 @@ dependencies = [
  "futures",
  "glam 0.24.2",
  "itertools",
- "log",
  "once_cell",
  "parking_lot",
  "paste",
@@ -1629,7 +1628,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_water"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1645,7 +1644,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_world_audio"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_app",
  "ambient_audio",
@@ -1663,7 +1662,6 @@ dependencies = [
  "flume 0.11.0",
  "glam 0.24.2",
  "itertools",
- "log",
  "parking_lot",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
@@ -2206,12 +2204,13 @@ dependencies = [
 
 [[package]]
 name = "campfire"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "ambient_shared_types",
  "anyhow",
  "cargo_toml",
  "clap 4.4.6",
+ "crates_io_api",
  "data-encoding",
  "dunce",
  "flume 0.11.0",
@@ -2220,20 +2219,21 @@ dependencies = [
  "home",
  "indicatif",
  "itertools",
- "log",
  "nix 0.26.4",
  "notify",
  "num_cpus",
  "rustdoc-json",
  "rustdoc-types",
+ "semver 1.0.19",
  "serde",
  "serde_json",
  "sha2",
- "simplelog",
  "spki",
  "tokio",
  "toml 0.7.8",
  "toml_edit",
+ "tracing",
+ "tracing-subscriber",
  "which",
  "x509-certificate",
 ]
@@ -2822,7 +2822,7 @@ dependencies = [
 [[package]]
 name = "cranelift-entity"
 version = "0.101.0"
-source = "git+https://github.com/bytecodealliance/wasmtime#233786c257fd9f15ec6c8f69f5bccbfcf01c3fa2"
+source = "git+https://github.com/bytecodealliance/wasmtime#e2f1bdd782de03946ed607cc8a08fd2858068434"
 dependencies = [
  "serde",
  "serde_derive",
@@ -2891,6 +2891,24 @@ dependencies = [
  "libc",
  "mach2",
  "parking_lot",
+]
+
+[[package]]
+name = "crates_io_api"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9fdfaac64c5eb7a33a5b895ffbaf6f1146721b6cd4c889010d19c8a1c1cae562"
+dependencies = [
+ "chrono",
+ "futures",
+ "log",
+ "reqwest",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_path_to_error",
+ "tokio",
+ "url",
 ]
 
 [[package]]
@@ -4515,7 +4533,7 @@ dependencies = [
 [[package]]
 name = "js-component-bindgen"
 version = "0.11.0"
-source = "git+https://github.com/AmbientRun/jco#418b622fc8fb429e3a92b658d7c02bf948e7b69b"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#574192363a8448e86604142a331501e71b2cc023"
 dependencies = [
  "anyhow",
  "base64 0.21.4",
@@ -5808,7 +5826,7 @@ dependencies = [
 
 [[package]]
 name = "physxx"
-version = "0.3.0-dev"
+version = "0.3.2-dev"
 dependencies = [
  "as-any",
  "bitflags 1.3.2",
@@ -6578,9 +6596,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.15"
+version = "0.38.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2f9da0cbd88f9f09e7814e388301c8414c51c62aa6ce1e4b5c551d49d96e531"
+checksum = "67ce50cb2e16c2903e30d1cbccfd8387a74b9d4c938b6a4c5ec6cc7556f7a8a0"
 dependencies = [
  "bitflags 2.4.0",
  "errno",
@@ -7075,17 +7093,6 @@ name = "simd-adler32"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
-
-[[package]]
-name = "simplelog"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "acee08041c5de3d5048c8b3f6f13fafb3026b24ba43c6a695a0c76179b844369"
-dependencies = [
- "log",
- "termcolor",
- "time",
-]
 
 [[package]]
 name = "slab"
@@ -7994,12 +8001,12 @@ dependencies = [
 
 [[package]]
 name = "tracing-tree"
-version = "0.2.4"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92d6b63348fad3ae0439b8bebf8d38fb5bda0b115d7a8a7e6f165f12790c58c3"
+checksum = "2ec6adcab41b1391b08a308cc6302b79f8095d1673f6947c2dc65ffb028b0b2d"
 dependencies = [
- "is-terminal",
  "nu-ansi-term",
+ "time",
  "tracing-core",
  "tracing-log",
  "tracing-subscriber",
@@ -8040,7 +8047,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
- "rand 0.7.3",
+ "rand 0.8.5",
  "static_assertions",
 ]
 
@@ -8392,7 +8399,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#151d90d1263e730163a9740d5f63da4ac498a20c"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#574192363a8448e86604142a331501e71b2cc023"
 dependencies = [
  "async-trait",
  "wasm-bridge-js",
@@ -8404,7 +8411,7 @@ dependencies = [
 [[package]]
 name = "wasm-bridge-js"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#151d90d1263e730163a9740d5f63da4ac498a20c"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#574192363a8448e86604142a331501e71b2cc023"
 dependencies = [
  "anyhow",
  "convert_case 0.6.0",
@@ -8416,13 +8423,13 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bridge-macros",
- "wat 1.0.74 (git+https://github.com/bytecodealliance/wasm-tools)",
+ "wat 1.0.75",
 ]
 
 [[package]]
 name = "wasm-bridge-macros"
 version = "0.2.2"
-source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#151d90d1263e730163a9740d5f63da4ac498a20c"
+source = "git+https://github.com/AmbientRun/wasm-bridge?branch=wasmtime-git#574192363a8448e86604142a331501e71b2cc023"
 dependencies = [
  "anyhow",
  "heck",
@@ -8474,7 +8481,7 @@ dependencies = [
 [[package]]
 name = "wasm-encoder"
 version = "0.33.2"
-source = "git+https://github.com/bytecodealliance/wasm-tools#c950866ed5787266f71da934d66a27d4ef1fb0e1"
+source = "git+https://github.com/bytecodealliance/wasm-tools#d3b6542d567b14e9af9cb310526cd705e2494814"
 dependencies = [
  "leb128",
 ]
@@ -8605,7 +8612,7 @@ dependencies = [
  "wasmtime-jit",
  "wasmtime-runtime",
  "wasmtime-winch",
- "wat 1.0.74 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wat 1.0.74",
  "windows-sys 0.48.0",
 ]
 
@@ -8645,7 +8652,7 @@ source = "git+https://github.com/bytecodealliance/wasmtime?rev=9f00198611537c7a9
 [[package]]
 name = "wasmtime-component-util"
 version = "14.0.0"
-source = "git+https://github.com/bytecodealliance/wasmtime#233786c257fd9f15ec6c8f69f5bccbfcf01c3fa2"
+source = "git+https://github.com/bytecodealliance/wasmtime#e2f1bdd782de03946ed607cc8a08fd2858068434"
 
 [[package]]
 name = "wasmtime-cranelift"
@@ -8711,7 +8718,7 @@ dependencies = [
 [[package]]
 name = "wasmtime-environ"
 version = "14.0.0"
-source = "git+https://github.com/bytecodealliance/wasmtime#233786c257fd9f15ec6c8f69f5bccbfcf01c3fa2"
+source = "git+https://github.com/bytecodealliance/wasmtime#e2f1bdd782de03946ed607cc8a08fd2858068434"
 dependencies = [
  "anyhow",
  "cranelift-entity 0.101.0 (git+https://github.com/bytecodealliance/wasmtime)",
@@ -8830,7 +8837,7 @@ dependencies = [
 [[package]]
 name = "wasmtime-types"
 version = "14.0.0"
-source = "git+https://github.com/bytecodealliance/wasmtime#233786c257fd9f15ec6c8f69f5bccbfcf01c3fa2"
+source = "git+https://github.com/bytecodealliance/wasmtime#e2f1bdd782de03946ed607cc8a08fd2858068434"
 dependencies = [
  "cranelift-entity 0.101.0 (git+https://github.com/bytecodealliance/wasmtime)",
  "serde",
@@ -8949,8 +8956,8 @@ dependencies = [
 
 [[package]]
 name = "wast"
-version = "65.0.2"
-source = "git+https://github.com/bytecodealliance/wasm-tools#c950866ed5787266f71da934d66a27d4ef1fb0e1"
+version = "66.0.0"
+source = "git+https://github.com/bytecodealliance/wasm-tools#d3b6542d567b14e9af9cb310526cd705e2494814"
 dependencies = [
  "leb128",
  "memchr",
@@ -8964,15 +8971,15 @@ version = "1.0.74"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d83e1a8d86d008adc7bafa5cf4332d448699a08fcf2a715a71fbb75e2c5ca188"
 dependencies = [
- "wast 65.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wast 65.0.2",
 ]
 
 [[package]]
 name = "wat"
-version = "1.0.74"
-source = "git+https://github.com/bytecodealliance/wasm-tools#c950866ed5787266f71da934d66a27d4ef1fb0e1"
+version = "1.0.75"
+source = "git+https://github.com/bytecodealliance/wasm-tools#d3b6542d567b14e9af9cb310526cd705e2494814"
 dependencies = [
- "wast 65.0.2 (git+https://github.com/bytecodealliance/wasm-tools)",
+ "wast 66.0.0",
 ]
 
 [[package]]
@@ -9786,7 +9793,7 @@ dependencies = [
  "wasm-encoder 0.33.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wasm-metadata 0.10.6",
  "wasmparser 0.113.2",
- "wat 1.0.74 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wat 1.0.74",
  "wit-parser 0.11.3",
 ]
 

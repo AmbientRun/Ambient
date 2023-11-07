@@ -152,13 +152,13 @@ pub(crate) async fn handle(args: &New, assets: &AssetCache) -> anyhow::Result<()
         std::fs::write(&path, contents).with_context(|| format!("Failed to create {path:?}"))?;
     }
 
-    log::info!("Package \"{name}\" created; doing first build");
+    tracing::info!("Package \"{name}\" created; doing first build");
 
     // Build the new package to ensure that the user can use it immediately, and to have the proc-macro
     // ready for rust-analyzer to use
     build::handle_inner(&args.package, assets, false).await?;
 
-    log::info!("Package \"{name}\" built successfully - ready to go at {package_path:?}");
+    tracing::info!("Package \"{name}\" built successfully - ready to go at {package_path:?}");
 
     Ok(())
 }
@@ -187,16 +187,19 @@ fn build_cargo_toml(
             let version = ambient_version();
             (
                 if let Some(api_path) = api_path {
-                    log::info!("Ambient path: {}", api_path);
+                    tracing::info!("Ambient path: {}", api_path);
                     format!("ambient_api = {{ path = {:?} }}", api_path)
+                } else if version.is_released_version() {
+                    tracing::info!("Ambient version: {}", version.version);
+                    format!("ambient_api = \"{}\"", version.version)
                 } else if let Some(tag) = version.tag() {
-                    log::info!("Ambient tag: {}", tag);
+                    tracing::info!("Ambient tag: {}", tag);
                     format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", tag = \"{}\" }}", tag)
                 } else if !version.revision.is_empty() {
-                    log::info!("Ambient revision: {}", version.revision);
+                    tracing::info!("Ambient revision: {}", version.revision);
                     format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", version.revision)
                 } else {
-                    log::info!("Ambient version: {}", version.version);
+                    tracing::info!("Ambient version: {}", version.version);
                     format!("ambient_api = \"{}\"", version.version)
                 },
                 false,

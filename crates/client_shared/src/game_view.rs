@@ -19,6 +19,8 @@ use ambient_ui_native::{
 };
 use glam::{uvec2, vec4, Vec2};
 
+const ECS_DEBUGGER: bool = true;
+
 #[element_component]
 pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (client_state, _) = consume_context::<ClientState>(hooks).unwrap();
@@ -97,7 +99,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     });
 
     Dock::el([
-        if show_debug {
+        if ECS_DEBUGGER && show_debug {
             MeasureSize::el(
                 Dock::el([
                     Button::new(if show_ecs { "\u{f137}" } else { "\u{f138}" }, move |_| {

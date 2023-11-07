@@ -1,9 +1,27 @@
 [package]
 id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
-name = "character_movement"
-version = "0.3.0-nightly-2023-10-03"
+name = "Character Movement"
+description = "Simulates character movement, including gravity, for a unit."
+version = "0.3.2-nightly-2023-11-07"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.0-nightly-2023-10-03"
+ambient_version = "0.3.2-nightly-2023-11-07"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "6KW1f3MjAJ1DTrKUcY2fS5" }
+unit_schema = { path = "../../schemas/unit", deployment = "ToV9pDyQolaauNhDnTy7E" }
+
+[concepts.CharacterMovement]
+extends = ["ambient_core::physics::CharacterController"]
+
+[concepts.CharacterMovement.components.required]
+"ambient_core::transform::rotation" = { suggested = "Identity" }
+"unit_schema::run_direction" = { suggested = [0.0, 0.0] }
+"unit_schema::vertical_velocity" = { suggested = 0.0 }
+"unit_schema::running" = { suggested = false }
+"unit_schema::jumping" = { suggested = false }
+"unit_schema::is_on_ground" = { suggested = true }
+
+[concepts.CharacterMovement.components.optional]
+"unit_schema::run_speed_multiplier" = {}
+"unit_schema::speed" = {}
+"unit_schema::strafe_speed_multiplier" = {}
+"unit_schema::air_speed_multiplier" = {}

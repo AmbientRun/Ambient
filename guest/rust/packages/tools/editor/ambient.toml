@@ -1,13 +1,14 @@
 [package]
 id = "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu"
-name = "Editor"
-version = "0.3.0-nightly-2023-10-03"
+name = "Editor [WIP]"
+description = "An extremely early basic sketch of a level editor."
+version = "0.3.2-nightly-2023-11-07"
 content = { type = "Tool" }
-ambient_version = "0.3.0-nightly-2023-10-03"
+ambient_version = "0.3.2-nightly-2023-11-07"
 
 [dependencies]
-editor_schema = { path = "../../schemas/editor", deployment = "1N0bL5LOoHWqU4ltUNDRGd" }
-hide_cursor = { path = "../../std/hide_cursor", enabled = false , deployment = "5kkli2YCjv5b7Yjofsokqc" }
+editor_schema = { path = "../../schemas/editor", deployment = "4IfsmyiFILzUD7exsMkHWA" }
+hide_cursor = { path = "../../std/hide_cursor", enabled = false, deployment = "3nflovtNHMNIs0HsRKKJ6E" }
 
 [components]
 # Player components

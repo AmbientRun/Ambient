@@ -32,9 +32,11 @@ fn screen_space_reflections(world_position: vec3<f32>, screen_ray_dir: vec3<f32>
         if screen_tc.x < 0. || screen_tc.x >= 1. || screen_tc.y < 0. || screen_tc.y >= 1. {
             continue;
         }
-        let screen_depth = textureSampleLevel(solids_screen_depth, default_sampler, screen_tc, 0.);
-        if pos_ndc.z >= screen_depth && pos_ndc.z < screen_depth * 1.001 && screen_depth < 0.9999 {
-            return textureSampleLevel(solids_screen_color, default_sampler, screen_tc, 0.).rgb;
+        // HACKFIX: https://github.com/AmbientRun/Ambient/issues/1098
+        // Remove `ZERO_INTEGER_ON_WEB_FLOAT_ON_NATIVE` once https://github.com/gfx-rs/naga/issues/2582 is fixed
+        let screen_depth = textureSampleLevel(solids_screen_depth, default_sampler, screen_tc, ZERO_INTEGER_ON_WEB_FLOAT_ON_NATIVE);
+        if pos_ndc.z >= screen_depth && pos_ndc.z < screen_depth * 1.001 && screen_depth < 0.999 {
+            return textureSampleLevel(solids_screen_color, default_sampler, screen_tc, 0.0).rgb;
         }
         step = step * 2.;
         pos = pos + step;

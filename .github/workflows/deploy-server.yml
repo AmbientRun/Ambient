@@ -1,11 +1,7 @@
 name: Deploy server
 
 on:
-  workflow_dispatch:
-  push:
-    tags: [v*]
-    branches:
-      - main
+  workflow_dispatch: {}
 
 env:
   CARGO_TERM_COLOR: always
@@ -13,7 +9,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   BUILD_DIR: build-${{ github.sha }}
   SERVER_BINARY_NAME: ambient-${{ github.sha }}
-  CANARY_SERVER_BINARY_NAME: ambient-0.3.0-dev
+  CANARY_SERVER_BINARY_NAME: ambient-0.3.2-dev
 
 jobs:
   build-and-push:
@@ -49,7 +45,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
-          file: slim-release.Dockerfile
+          file: Dockerfile
           context: .
           push: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -76,14 +72,12 @@ jobs:
       - name: Prepare canary
         if: github.ref == 'refs/heads/main'
         shell: bash
-        run:
-          cp "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}" "${{ env.BUILD_DIR }}/${{ env.CANARY_SERVER_BINARY_NAME }}"
+        run: cp "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}" "${{ env.BUILD_DIR }}/${{ env.CANARY_SERVER_BINARY_NAME }}"
 
       - name: Prepare versioned
         if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
-        run:
-          cp "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}" "${{ env.BUILD_DIR }}/ambient-${GITHUB_REF#refs/tags/v}"
+        run: cp "${{ env.BUILD_DIR }}/${{ env.SERVER_BINARY_NAME }}" "${{ env.BUILD_DIR }}/ambient-${GITHUB_REF#refs/tags/v}"
 
       - name: Upload ambient server binary
         uses: google-github-actions/upload-cloud-storage@v1

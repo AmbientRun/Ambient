@@ -1,9 +1,9 @@
 [package]
 id = "ezucewnosj4da35cbwtopwzrqbaea6jx"
 name = "Editors"
-description = "Text editor, number editor, list editor etc. etc."
-version = "0.3.0-nightly-2023-10-03"
+description = "Demonstration of various editors, including text, numbers, lists, and more."
+version = "0.3.2-nightly-2023-11-07"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/editors"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.0-nightly-2023-10-03"
+ambient_version = "0.3.2-nightly-2023-11-07"
