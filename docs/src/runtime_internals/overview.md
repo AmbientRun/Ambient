@@ -36,3 +36,7 @@ The name is based on the end of the path, so additional context can be provided 
 ```sh
 cargo cf run -r basics/primitives
 ```
+
+## Dependency graph
+
+![Dependency graph](dependency_graph.png)
