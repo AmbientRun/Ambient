@@ -32,7 +32,8 @@ jobs:
           cargo depgraph --workspace-only --root ambient --dedup-transitive-deps > ${{ env.DEPGRAPH_PATH }}.dot
 
           # early exit if the graph has not changed
-          if ! git diff ${{ env.DEPGRAPH_PATH }}.dot > /dev/null; then
+          if ! git diff ${{ env.DEPGRAPH_PATH }}.dot; then
+            echo "No changes to dependency graph"
             exit 0
           fi
 
