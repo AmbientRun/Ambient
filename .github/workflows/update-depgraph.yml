@@ -33,8 +33,6 @@ jobs:
 
           # early exit if the graph has not changed
           if git diff --exit-code ${{ env.DEPGRAPH_PATH }}.dot; then
-            echo "Dependency graph has changed - generating new PNG file"
-          else
             echo "No changes to dependency graph"
             exit 0
           fi
