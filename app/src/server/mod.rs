@@ -29,7 +29,7 @@ use ambient_network::{
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
 use axum::{
-    extract::State,
+    extract::{Host, State},
     http::{Method, StatusCode},
     response::IntoResponse,
     routing::{get, get_service},
@@ -143,6 +143,7 @@ pub async fn start(
         start_http_interface(
             Some(&build_path_fs),
             http_interface_port,
+            addr.port(),
             server_state_holder.clone(),
             use_https,
         );
@@ -155,6 +156,7 @@ pub async fn start(
         start_http_interface(
             None,
             http_interface_port,
+            addr.port(),
             server_state_holder.clone(),
             use_https,
         );
@@ -312,9 +314,34 @@ struct ServerStatus {
 
 pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
+
+const INDEX_TEMPLATE: &str = r#"<html>
+<style>
+    #ambient {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        right: 0px;
+        bottom: 0px;
+    }
+</style>
+<body>
+    <div id="ambient" />
+    <script type="module">
+        import { AmbientClient } from 'https://storage.googleapis.com/ambient-artifacts/ambient-web-embed/ambient-web-embed-0.1.js';
+        (async function () {
+            const client = new AmbientClient("ambient-web-$VERSION$");
+            await client.init();
+            await client.start(document.getElementById("ambient"), "https://$ENDPOINT$", { });
+        })()
+    </script>
+</body>
+</html>"#;
+
 fn start_http_interface(
     build_path: Option<&Path>,
     http_interface_port: u16,
+    quic_interface_port: u16,
     server_state_holder: Arc<Mutex<Option<SharedServerState>>>,
     use_https: Option<Crypto>,
 ) {
@@ -336,6 +363,19 @@ fn start_http_interface(
             "/info",
             get(|| async move { axum::Json(ambient_version()) }),
         );
+
+    if ambient_version().is_released_version() {
+        router = router.route(
+            "/",
+            get(move |Host(hostname): Host| async move {
+                axum::response::Html(
+                    INDEX_TEMPLATE
+                        .replace("$VERSION$", &ambient_version().to_string())
+                        .replace("$ENDPOINT$", &format!("{hostname}:{quic_interface_port}")),
+                )
+            }),
+        );
+    }
 
     if let Some(build_path) = build_path {
         router = router.nest_service(
