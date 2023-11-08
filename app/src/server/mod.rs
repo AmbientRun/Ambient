@@ -367,9 +367,9 @@ fn start_http_interface(
             "/",
             get(move |Host(hostname): Host| async move {
                 let version = ambient_version();
-                let html = if version.is_released_version() {
+                let html = if version.tag().is_some() {
                     INDEX_TEMPLATE
-                        .replace("$VERSION$", &version.to_string())
+                        .replace("$VERSION$", &version.version.to_string())
                         .replace("$ENDPOINT$", &format!("{hostname}:{quic_interface_port}"))
                 } else {
                     "<h1>Unreleased versions do not support the self-hosted web client</h1>"
