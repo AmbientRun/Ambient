@@ -3,9 +3,6 @@ on:
   workflow_dispatch: {}
   push:
     branches: ["main", "kuba/depgraph"]
-    paths-ignore:
-      - "docs/**"
-      - "README.md"
 
 env:
   CARGO_TERM_COLOR: always
