@@ -362,20 +362,22 @@ fn start_http_interface(
         .route(
             "/info",
             get(|| async move { axum::Json(ambient_version()) }),
-        );
-
-    if ambient_version().is_released_version() {
-        router = router.route(
+        )
+        .route(
             "/",
             get(move |Host(hostname): Host| async move {
-                axum::response::Html(
+                let version = ambient_version();
+                let html = if version.is_released_version() {
                     INDEX_TEMPLATE
-                        .replace("$VERSION$", &ambient_version().to_string())
-                        .replace("$ENDPOINT$", &format!("{hostname}:{quic_interface_port}")),
-                )
+                        .replace("$VERSION$", &version.to_string())
+                        .replace("$ENDPOINT$", &format!("{hostname}:{quic_interface_port}"))
+                } else {
+                    "<h1>Unreleased versions do not support the self-hosted web client</h1>"
+                        .to_owned()
+                };
+                axum::response::Html(html)
             }),
         );
-    }
 
     if let Some(build_path) = build_path {
         router = router.nest_service(
