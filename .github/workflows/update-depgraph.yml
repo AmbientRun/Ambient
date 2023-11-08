@@ -42,7 +42,10 @@ jobs:
       - run: |
           cargo depgraph --workspace-only --root ambient --dedup-transitive-deps > ${{ env.DEPGRAPH_PATH }}.dot
 
-          # check if graph has changed
+          # early exit if the graph has not changed
+          if ! git diff ${{ env.DEPGRAPH_PATH }}.dot > /dev/null; then
+            exit 0
+          fi
 
           # install graphviz to render the graph as PNG
           sudo apt-get update
