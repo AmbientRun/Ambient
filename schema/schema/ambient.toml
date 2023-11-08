@@ -1,9 +1,9 @@
 [package]
 description = "Contains all core components for the Ambient runtime."
 name = "Core Components"
-version = "0.3.2-dev"
+version = "0.3.2-internal-easy-hosting-test"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.2-nightly-2023-11-08"
+ambient_version = "0.3.2-internal-easy-hosting-test"
 
 [includes]
 animation = "includes/animation.toml"
