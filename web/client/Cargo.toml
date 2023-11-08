@@ -62,6 +62,9 @@ futures.workspace = true
 tracing.workspace = true
 js-sys.workspace = true
 
+[features]
+debug-local-datagram-latency = ["ambient_wasm/debug-local-datagram-latency"]
+
 [profile.profiling]
 debug = true
 

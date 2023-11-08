@@ -23,11 +23,58 @@ pub fn subscribe(subscribed_events: &mut HashSet<String>, name: String) -> anyho
     Ok(())
 }
 
+#[cfg(feature = "debug-local-datagram-latency")]
+#[derive(Debug, Default)]
+struct DatagramLatencyStat {
+    count: usize,
+    latency: std::time::Duration,
+}
+#[cfg(feature = "debug-local-datagram-latency")]
+impl DatagramLatencyStat {
+    const SMOOTHING_FACTOR: u32 = 16;
+
+    pub fn on_datagram(&mut self, latency: std::time::Duration) {
+        self.count += 1;
+        self.latency =
+            ((Self::SMOOTHING_FACTOR - 1) * self.latency + latency) / Self::SMOOTHING_FACTOR;
+    }
+
+    pub fn now() -> std::time::Duration {
+        use ambient_sys::time::SystemTime;
+        SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+    }
+}
+
 /// Reads an incoming datagram and dispatches to WASM
 pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> anyhow::Result<()> {
     use byteorder::ReadBytesExt;
 
     let mut cursor = Cursor::new(&bytes);
+
+    #[cfg(feature = "debug-local-datagram-latency")]
+    {
+        use parking_lot::Mutex;
+        use std::collections::HashMap;
+        static DATAGRAM_LATENCIES: Mutex<Option<HashMap<String, DatagramLatencyStat>>> =
+            Mutex::new(None);
+        let ts = cursor.read_f64::<byteorder::BigEndian>()?;
+        if let Some(user_id) = &user_id {
+            let latency =
+                DatagramLatencyStat::now().saturating_sub(std::time::Duration::from_secs_f64(ts));
+            let map = &mut *DATAGRAM_LATENCIES.lock();
+            if map.is_none() {
+                *map = Some(HashMap::new());
+            }
+            let stats = map.as_mut().unwrap().entry(user_id.clone()).or_default();
+            stats.on_datagram(latency);
+            if stats.count % 60 == 0 {
+                tracing::warn!("Datagram latency {} {:?}", user_id, stats.latency);
+            }
+        }
+    }
+
     let package_id = cursor.read_u128::<byteorder::BigEndian>()?;
     let package_id = EntityId(package_id);
 
@@ -142,6 +189,9 @@ fn send_datagram(
     data: &[u8],
 ) -> anyhow::Result<()> {
     let mut payload = BytesMut::new();
+
+    #[cfg(feature = "debug-local-datagram-latency")]
+    payload.put_f64(DatagramLatencyStat::now().as_secs_f64());
 
     payload.put_u128(package_id.0);
 
