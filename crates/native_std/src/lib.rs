@@ -149,13 +149,15 @@ pub struct AmbientVersion {
 }
 
 impl AmbientVersion {
-    /// Returns git tag for this version, if any. Currently only available for releases and nightly builds.
+    /// Returns git tag for this version, if any. Currently only available for releases, nightly and internal builds.
     pub fn tag(&self) -> Option<String> {
         if !self.version.build.is_empty() {
             return None;
         }
-        (self.version.pre.is_empty() || self.version.pre.starts_with("nightly-"))
-            .then(|| format!("v{}", self.version))
+        (self.version.pre.is_empty()
+            || self.version.pre.starts_with("nightly-")
+            || self.version.pre.starts_with("internal-"))
+        .then(|| format!("v{}", self.version))
     }
 
     /// True if this is a full released version (that is there's a tag, uploaded build and api is released to crates.io).

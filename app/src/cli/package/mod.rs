@@ -84,6 +84,7 @@ impl PackageArgs {
 pub struct HostCli {
     #[arg(long, default_value = "0.0.0.0")]
     pub bind_address: IpAddr,
+
     /// Provide a public address or IP to the instance, which will allow users to connect to this instance over the internet
     ///
     /// Defaults to localhost
@@ -93,6 +94,12 @@ pub struct HostCli {
     /// Defaults to 8999
     #[arg(long)]
     pub http_interface_port: Option<u16>,
+
+    /// Use HTTPS for http interface (content serving, ping, ...)
+    ///
+    /// Defaults to not using HTTPS
+    #[arg(long, requires("cert"))]
+    pub use_https: bool,
 
     /// Defaults to 9000
     #[arg(long)]

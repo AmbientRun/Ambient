@@ -29,13 +29,15 @@ use ambient_network::{
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
 use axum::{
-    extract::State,
+    extract::{Host, State},
     http::{Method, StatusCode},
     response::IntoResponse,
     routing::{get, get_service},
     Router,
 };
+use axum_server::tls_rustls::RustlsConfig;
 use parking_lot::Mutex;
+use rustls::{Certificate, PrivateKey, ServerConfig};
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
 use crate::{cli::package::HostCli, shared};
@@ -115,6 +117,7 @@ pub async fn start(
 
     tracing::info!("Created server, running at {addr}");
     let http_interface_port = host_cli.http_interface_port.unwrap_or(HTTP_INTERFACE_PORT);
+    let use_https = host_cli.use_https.then(|| crypto.clone());
 
     let public_host = match (&host_cli.public_host, addr.ip()) {
         // use public_host if specified in cli
@@ -131,7 +134,8 @@ pub async fn start(
     // here the key is inserted into the asset cache
     let server_state_holder = Arc::new(Mutex::new(None));
     if let Ok(Some(build_path_fs)) = build_root_path.to_file_path() {
-        let key = format!("http://{public_host}:{http_interface_port}/content/");
+        let proto = if host_cli.use_https { "https" } else { "http" };
+        let key = format!("{proto}://{public_host}:{http_interface_port}/content/");
         let base_url = AbsAssetUrl::from_str(&key).unwrap();
         ServerBaseUrlKey.insert(&assets, base_url.clone());
         ContentBaseUrlKey.insert(&assets, base_url);
@@ -139,7 +143,9 @@ pub async fn start(
         start_http_interface(
             Some(&build_path_fs),
             http_interface_port,
+            addr.port(),
             server_state_holder.clone(),
+            use_https,
         );
     } else {
         let base_url = build_root_path.clone();
@@ -147,7 +153,13 @@ pub async fn start(
         ServerBaseUrlKey.insert(&assets, base_url.clone());
         ContentBaseUrlKey.insert(&assets, base_url);
 
-        start_http_interface(None, http_interface_port, server_state_holder.clone());
+        start_http_interface(
+            None,
+            http_interface_port,
+            addr.port(),
+            server_state_holder.clone(),
+            use_https,
+        );
     }
 
     let join_handle = tokio::task::spawn(async move {
@@ -302,10 +314,36 @@ struct ServerStatus {
 
 pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
+
+const INDEX_TEMPLATE: &str = r#"<html>
+<style>
+    #ambient {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        right: 0px;
+        bottom: 0px;
+    }
+</style>
+<body>
+    <div id="ambient" />
+    <script type="module">
+        import { AmbientClient } from 'https://storage.googleapis.com/ambient-artifacts/ambient-web-embed/ambient-web-embed-0.1.js';
+        (async function () {
+            const client = new AmbientClient("ambient-web-$VERSION$");
+            await client.init();
+            await client.start(document.getElementById("ambient"), "https://$ENDPOINT$", { });
+        })()
+    </script>
+</body>
+</html>"#;
+
 fn start_http_interface(
     build_path: Option<&Path>,
     http_interface_port: u16,
+    quic_interface_port: u16,
     server_state_holder: Arc<Mutex<Option<SharedServerState>>>,
+    use_https: Option<Crypto>,
 ) {
     let mut router = Router::new()
         .route("/ping", get(|| async move { "ok" }))
@@ -324,6 +362,21 @@ fn start_http_interface(
         .route(
             "/info",
             get(|| async move { axum::Json(ambient_version()) }),
+        )
+        .route(
+            "/",
+            get(move |Host(hostname): Host| async move {
+                let version = ambient_version();
+                let html = if version.tag().is_some() {
+                    INDEX_TEMPLATE
+                        .replace("$VERSION$", &version.version.to_string())
+                        .replace("$ENDPOINT$", &format!("{hostname}:{quic_interface_port}"))
+                } else {
+                    "<h1>Unreleased versions do not support the self-hosted web client</h1>"
+                        .to_owned()
+                };
+                axum::response::Html(html)
+            }),
         );
 
     if let Some(build_path) = build_path {
@@ -341,9 +394,16 @@ fn start_http_interface(
     );
 
     let serve = |addr| async move {
-        axum::Server::try_bind(&addr)?
-            .serve(router.into_make_service())
-            .await?;
+        if let Some(tls_config) = use_https.map(make_http_tls_config) {
+            let tls_config = tls_config?;
+            axum_server::bind_rustls(addr, tls_config)
+                .serve(router.into_make_service())
+                .await?;
+        } else {
+            axum::Server::try_bind(&addr)?
+                .serve(router.into_make_service())
+                .await?;
+        }
 
         Ok::<_, anyhow::Error>(())
     };
@@ -366,4 +426,17 @@ fn start_http_interface(
 
 async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
     (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
+}
+
+fn make_http_tls_config(Crypto { cert_chain, key }: Crypto) -> anyhow::Result<RustlsConfig> {
+    let certs: Vec<_> = cert_chain.into_iter().map(Certificate).collect();
+    let cert_key = PrivateKey(key);
+
+    let mut server_conf = ServerConfig::builder()
+        .with_safe_defaults()
+        .with_no_client_auth()
+        .with_single_cert(certs, cert_key)
+        .map_err(anyhow::Error::from)?;
+    server_conf.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec(), b"http/1.0".to_vec()];
+    Ok(RustlsConfig::from_config(Arc::new(server_conf)))
 }

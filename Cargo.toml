@@ -110,6 +110,7 @@ atomic_refcell = "0.1.11"
 flume = { version = "0.11", features = ["async"] }
 im = "15.1.0"
 axum = "0.6.20"
+axum-server = { version = "0.5", features = ["rustls", "tls-rustls"] }
 tower-http = { version = "0.3.5", features = ["cors", "fs"] }
 tower = "0.4.13"
 indexmap = { version = "2.0", features = ["serde"] }

@@ -88,4 +88,6 @@ debug-local-datagram-latency = ["ambient_wasm/debug-local-datagram-latency"]
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 axum = { workspace = true }
+axum-server = { workspace = true }
+rustls = { workspace = true }
 ambient_wasm = { path = "../crates/wasm" , version = "0.3.2-dev" }
