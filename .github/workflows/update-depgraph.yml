@@ -2,7 +2,9 @@ name: Update depgraph
 on:
   workflow_dispatch: {}
   push:
-    branches: ["main", "kuba/depgraph"]
+    branches: ["main"]
+    paths-ignore:
+      - "docs/src/runtime_internals/dependency_graph.png"
 
 env:
   CARGO_TERM_COLOR: always
@@ -38,8 +40,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y graphviz
 
-          # render and commit
+          # render
           dot -Tpng ${{ env.DEPGRAPH_PATH }}.dot > ${{ env.DEPGRAPH_PATH }}.png
+
+          # commit
           base_branch=${GITHUB_REF#refs/heads/}
           branch=${base_branch}-depgraph-${{ github.sha }}
           git config --global user.name "${{ env.BOT_NAME }}"
