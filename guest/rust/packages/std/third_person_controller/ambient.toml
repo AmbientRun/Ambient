@@ -2,13 +2,13 @@
 id = "vuph6dqdj6li4apmcgomn3faudcbfz56"
 name = "Third-person Controller"
 description = "A third-person controller for the player that takes input and updates their unit's movement and camera. Can be used in first-person mode by reducing the `camera_distance`."
-version = "0.3.2-nightly-2023-11-08"
+version = "0.3.2-nightly-2023-11-09"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-11-08"
+ambient_version = "0.3.2-nightly-2023-11-09"
 
 [dependencies]
-unit_schema = { path = "../../schemas/unit", deployment = "6Ts8IWM4vUNRaQ0xFm42FC" }
-character_movement = { path = "../character_movement", deployment = "4FVjr3h5ni74gi19eVwTTH" }
+unit_schema = { path = "../../schemas/unit", deployment = "271s6tfy6BAk8FpLlBTNa4" }
+character_movement = { path = "../character_movement", deployment = "2Dke7tYsEq0ixd9OLEXaUE" }
 
 [components]
 use_third_person_controller = { type = "Empty", name = "Use Third-Person Controller", description = "Use a third-person controller to drive this entity.", attributes = [
