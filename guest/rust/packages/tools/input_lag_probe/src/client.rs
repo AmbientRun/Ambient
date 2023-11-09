@@ -1,7 +1,7 @@
 use std::time::SystemTime;
 
 use ambient_api::{
-    core::{messages::Frame, player::components::user_id, rendering::components::color},
+    core::{messages::Frame, player::components::user_id},
     element::{use_entity_component, use_module_message, use_query, use_state},
     prelude::*,
 };
