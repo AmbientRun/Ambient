@@ -79,6 +79,7 @@ members = [
     # Packages (tools)
     "packages/tools/console",
     "packages/tools/editor",
+    "packages/tools/input_lag_probe",
     "packages/tools/package_manager",
     "packages/tools/world_latency",
     "packages/tools/performance_bar",
