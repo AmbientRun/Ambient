@@ -1,5 +1,5 @@
 [package]
-name = "input_lag"
+name = "input_lag_probe"
 
 edition = "2021"
 publish = false
@@ -7,14 +7,15 @@ version = "0.0.1"
 
 [dependencies]
 ambient_api.workspace = true
+ambient_brand_theme.workspace = true
 
 [[bin]]
-name = "input_lag_client"
+name = "input_lag_probe_client"
 path = "src/client.rs"
 required-features = ["client"]
 
 [[bin]]
-name = "input_lag_server"
+name = "input_lag_probe_server"
 path = "src/server.rs"
 required-features = ["server"]
 

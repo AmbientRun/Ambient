@@ -1,11 +1,20 @@
 use std::time::SystemTime;
 
-use ambient_api::{core::messages::Frame, prelude::*};
+use ambient_api::{
+    core::{messages::Frame, player::components::user_id, rendering::components::color},
+    element::{use_entity_component, use_module_message, use_query, use_state},
+    prelude::*,
+};
+use ambient_brand_theme::{
+    design_tokens::BRANDLIGHT::SEMANTIC_MAIN_ELEMENTS_PRIMARY, window_style, AmbientInternalStyle,
+    SEMANTIC_MAIN_ELEMENTS_TERTIARY,
+};
 use packages::this::{
     components::{
-        input_frequency, input_timestamp, last_processed_timestamp, local_lag, smoothing_factor,
+        input_frequency, input_lag, input_timestamp, last_processed_timestamp, local_lag,
+        smoothing_factor,
     },
-    messages::Input,
+    messages::{Input, ShowInputLagWindow},
 };
 
 fn unix_timestamp() -> Duration {
@@ -60,4 +69,58 @@ pub fn main() {
             *old_lag = ((factor - 1) * *old_lag + lag) / factor;
         });
     });
+
+    InputLagWindow::el().spawn_interactive();
+}
+
+#[element_component]
+fn InputLagWindow(hooks: &mut Hooks) -> Element {
+    let (visible, set_visible) = use_state(hooks, false);
+    use_module_message::<ShowInputLagWindow>(hooks, {
+        let set_visible = set_visible.clone();
+        move |_, _, _| {
+            set_visible(true);
+        }
+    });
+
+    let lag = use_entity_component(hooks, entity::resources(), local_lag()).unwrap_or_default();
+
+    let close = cb(move || set_visible(false));
+    Window {
+        title: format!("Input Lag: {:?}", lag),
+        visible,
+        close: Some(close),
+        style: Some(window_style()),
+        child: InputLagWindowInner::el(),
+    }
+    .el()
+    .with(min_width(), 200.)
+}
+
+#[element_component]
+fn InputLagWindowInner(hooks: &mut Hooks) -> Element {
+    let mut player_latencies = use_query(hooks, (user_id(), input_lag()));
+    player_latencies.sort_unstable();
+
+    let local_player_id = player::get_local();
+    let mut players = Vec::with_capacity(player_latencies.len());
+    let mut latencies = Vec::with_capacity(player_latencies.len());
+    for (id, (player, latency)) in player_latencies.into_iter() {
+        let color = if id == local_player_id {
+            SEMANTIC_MAIN_ELEMENTS_PRIMARY
+        } else {
+            SEMANTIC_MAIN_ELEMENTS_TERTIARY
+        };
+        players.push(Text::el(player).mono_xs_500upp().hex_text_color(color));
+        latencies.push(
+            Text::el(format!("{:?}", latency))
+                .mono_xs_500upp()
+                .hex_text_color(color),
+        );
+    }
+    FlowRow::el([
+        FlowColumn::el(players).with(space_between_items(), 4.0),
+        FlowColumn::el(latencies).with(space_between_items(), 4.0),
+    ])
+    .with(space_between_items(), 4.0)
 }

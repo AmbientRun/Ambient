@@ -16,3 +16,7 @@ local_lag = { type = "Duration", attributes = [ "Resource" ], description = "Cur
 [message.Input.fields]
 timestamp = "Duration"
 lag = "Duration"
+
+[message.ShowInputLagWindow]
+description = "Show input lag UI"
+fields = {}
