@@ -8,7 +8,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use packages::this::components::{height_offset, text_size};
+use packages::this::components::{height_offset, hide, text_size};
 
 #[main]
 pub fn main() {
@@ -39,6 +39,10 @@ fn use_active_camera(hooks: &mut Hooks) -> Option<EntityId> {
 
 #[element_component]
 fn Nameplate(hooks: &mut Hooks, player_id: EntityId) -> Element {
+    if use_entity_component(hooks, player_id, hide()).is_some() {
+        return Element::new();
+    }
+
     let Some(camera_id) = use_active_camera(hooks) else {
         return Element::new();
     };
