@@ -7,7 +7,7 @@ content = { type = "Asset", code = true }
 ambient_version = "0.3.2-nightly-2023-11-10"
 
 [dependencies]
-game_object = { path = "../../schemas/game_object", deployment = "44sFfAzf64Lx4KZwRV0aiJ" }
+game_object = { path = "../../schemas/game_object", deployment = "2tptvSLmHzD2E8dW3rqKBu" }
 
 [components]
 is_explosion = { type = "Empty", name = "Is Explosion", description = "Is an explosion", attributes = [

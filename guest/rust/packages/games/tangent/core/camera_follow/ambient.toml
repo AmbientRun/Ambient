@@ -8,4 +8,4 @@ ambient_version = "0.3.2-nightly-2023-11-10"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "1U6schj82DrmPaBMr8OABZ" }
+tangent_schema = { path = "../../schema", deployment = "4EoIZHXYUaAQVYMO3EH3yg" }
