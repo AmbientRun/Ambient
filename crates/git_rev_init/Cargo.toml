@@ -10,4 +10,4 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_git_rev = { path = "../git_rev", version = "0.3.2-dev" }
+ambient_git_rev = { path = "../git_rev", version = "0.3.2-internal-lag-probe-smoketest" }

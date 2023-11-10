@@ -2,9 +2,9 @@
 id = "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu"
 name = "Editor [WIP]"
 description = "An extremely early basic sketch of a level editor."
-version = "0.3.2-nightly-2023-11-10"
+version = "0.3.2-internal-lag-probe-smoketest"
 content = { type = "Tool" }
-ambient_version = "0.3.2-nightly-2023-11-10"
+ambient_version = "0.3.2-internal-lag-probe-smoketest"
 
 [dependencies]
 editor_schema = { path = "../../schemas/editor", deployment = "3tJb772hSVImtVJtZp4jaX" }
