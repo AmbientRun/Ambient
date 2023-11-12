@@ -2,18 +2,18 @@
 id = "gzbamly2shtnz3siisf3mdzglsi67vul"
 name = "Tangent Level: Cubicide"
 description = "A procedurally-generated level for Tangent using cubes with pathways cut through them."
-version = "0.3.2-nightly-2023-11-11"
+version = "0.3.2-nightly-2023-11-12"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.2-nightly-2023-11-11"
+ambient_version = "0.3.2-nightly-2023-11-12"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "6DsLKoJhtbpI1tRqANZ4GI" }
-spawner_vehicle = { path = "../../core/spawner_vehicle", deployment = "eJGHn154YMzSglxXOc9G3" }
+tangent_schema = { path = "../../schema", deployment = "4q7I4eoIMEqWHZ6GfS8drj" }
+spawner_vehicle = { path = "../../core/spawner_vehicle", deployment = "5mYAxIiZAdcGMRIqcCN96B" }
 
-pickup_health = { path = "../pickup_health", deployment = "2PwOZWpTnVBfAebWja3CsR" }
+pickup_health = { path = "../pickup_health", deployment = "5B9blD8dFsQnd0NsT10N4O" }
 
-game_object = { path = "../../../../schemas/game_object", deployment = "2yqZEzlDKVXksTT93viaze" }
+game_object = { path = "../../../../schemas/game_object", deployment = "5KrUXsoDAhlVsZIBdJpsgC" }
 
 [components]
 include_corners = { name = "Include Corners", description = "Whether or not the corner spawnpoints are created.", type = "Bool", default = true, attributes = [

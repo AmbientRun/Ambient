@@ -2,13 +2,13 @@
 id = "ys6g5noe72fbhnoj6l3psjq75knd7gko"
 name = "Tangent Class: Tank"
 description = "Defines the Tank class, which is strong but slow."
-version = "0.3.2-nightly-2023-11-11"
+version = "0.3.2-nightly-2023-11-12"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.2-nightly-2023-11-11"
+ambient_version = "0.3.2-nightly-2023-11-12"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "6DsLKoJhtbpI1tRqANZ4GI" }
-gun_laser = { path = "../../core/gun_laser", deployment = "3k8R2Kp5wE0vkr4rd6jlLr" }
+tangent_schema = { path = "../../schema", deployment = "4q7I4eoIMEqWHZ6GfS8drj" }
+gun_laser = { path = "../../core/gun_laser", deployment = "3VjecPLCC58Ob5CpTnsoI3" }
 
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "5JzdRDxsnSpvDXaq63Ju3V" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "4YF8SPpjqXWikLIOKHucJ7" }

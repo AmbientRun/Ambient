@@ -1,12 +1,12 @@
 [package]
 id = "jkfalriqol5mtd7hxq7yssldubgpcf5o"
 name = "animations"
-version = "0.3.2-nightly-2023-11-11"
+version = "0.3.2-nightly-2023-11-12"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-11-11"
+ambient_version = "0.3.2-nightly-2023-11-12"
 
 [dependencies]
-base_assets = { path = "../../../packages/std/base_assets", deployment = "7jrW1Ar3oMLYw1zpeebrz9" }
-character_animation = { path = "../../../packages/std/character_animation", deployment = "3BM8MGqqGQNVb9gUBUdT4m" }
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "7Myv8ccN5BREFCwlF1mra3" }
-performance_bar = { path = "../../../packages/tools/performance_bar", deployment = "4eNxYVBLU7vX9QkKekJDyU" }
+base_assets = { path = "../../../packages/std/base_assets", deployment = "1eiioS8ZOr6eGs7szuvHgg" }
+character_animation = { path = "../../../packages/std/character_animation", deployment = "23lWuMSXbVYNCh0zvK0LZe" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "2XVP5s0J3HWF8HPYs4l8fo" }
+performance_bar = { path = "../../../packages/tools/performance_bar", deployment = "6m02qBgXHx1X90AIK07ehJ" }
