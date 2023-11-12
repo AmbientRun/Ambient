@@ -8,10 +8,10 @@ ambient_version = "0.3.2-nightly-2023-11-12"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "6DsLKoJhtbpI1tRqANZ4GI" }
-game_object = { path = "../../../../schemas/game_object", deployment = "2yqZEzlDKVXksTT93viaze" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "76cvu5bVYNIPfhopbAtKlJ" }
+tangent_schema = { path = "../../schema", deployment = "4q7I4eoIMEqWHZ6GfS8drj" }
+game_object = { path = "../../../../schemas/game_object", deployment = "5KrUXsoDAhlVsZIBdJpsgC" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "6Gwr2rKPVPqVagSnQaIU0r" }
 
-base_assets = { path = "../../../../std/base_assets", deployment = "7jrW1Ar3oMLYw1zpeebrz9" }
-character_animation = { path = "../../../../std/character_animation", deployment = "3BM8MGqqGQNVb9gUBUdT4m" }
-character_movement = { path = "../../../../std/character_movement", deployment = "2kSKsF9ysHoFCnEcQjvgR1" }
+base_assets = { path = "../../../../std/base_assets", deployment = "1eiioS8ZOr6eGs7szuvHgg" }
+character_animation = { path = "../../../../std/character_animation", deployment = "23lWuMSXbVYNCh0zvK0LZe" }
+character_movement = { path = "../../../../std/character_movement", deployment = "Mm3oFqCCaG58PZajqHIvx" }
