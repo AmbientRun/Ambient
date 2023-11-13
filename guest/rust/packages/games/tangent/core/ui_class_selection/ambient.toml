@@ -2,13 +2,13 @@
 id = "hs7ygpw4pmpsixtcohdcvzxwmrfzubvi"
 name = "Tangent UI: Class Selection"
 description = "Implements the class selection UI."
-version = "0.3.2-nightly-2023-11-12"
+version = "0.3.2-nightly-2023-11-13"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-11-12"
+ambient_version = "0.3.2-nightly-2023-11-13"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "4q7I4eoIMEqWHZ6GfS8drj" }
+tangent_schema = { path = "../../schema", deployment = "5Dxfql36E5hkktqsE0Eabx" }
 
 [messages.ClassSetRequest]
 description = "Sent by the client to request a class set change."

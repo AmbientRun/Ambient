@@ -2,15 +2,15 @@
 id = "roosvvawp6sjvlolokk5qyafl5vp2su7"
 name = "Tangent Spawner: Vehicle"
 description = "Handles vehicle spawning for Tangent."
-version = "0.3.2-nightly-2023-11-12"
+version = "0.3.2-nightly-2023-11-13"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-11-12"
+ambient_version = "0.3.2-nightly-2023-11-13"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "4q7I4eoIMEqWHZ6GfS8drj" }
+tangent_schema = { path = "../../schema", deployment = "5Dxfql36E5hkktqsE0Eabx" }
 
-nameplates = { path = "../../../../std/nameplates", deployment = "dKsRfBT5MigDVlz1NV8BU" }
+nameplates = { path = "../../../../std/nameplates", deployment = "72DSQZF3Epi0GCy9JUmnAh" }
 
 [messages.VehicleSpawn]
 name = "Vehicle Spawn"

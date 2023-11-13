@@ -2,11 +2,11 @@
 id = "nd2mwrslb3iyo2bw4jmwcbkuo4mtuyfr"
 name = "Decals"
 description = "Render 'stickers' onto any surface."
-version = "0.3.2-nightly-2023-11-12"
+version = "0.3.2-nightly-2023-11-13"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/decals"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-11-12"
+ambient_version = "0.3.2-nightly-2023-11-13"
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "2XVP5s0J3HWF8HPYs4l8fo" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "5LYimSMVCEG1d8FIRz7yXj" }
