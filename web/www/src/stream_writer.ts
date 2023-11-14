@@ -6,7 +6,11 @@ self.onmessage = function (e) {
         writer = e.data.getWriter();
         return;
     } else if (writer != null) {
-        writer.write(e.data);
+        let now = new Date();
+        writer.write(e.data).then(() => {
+            let elapsed = new Date().getTime() - now.getTime();
+            console.warn("Write took " + elapsed + "ms");
+        });
     } else {
         console.error("Got data but no stream is available");
     }
