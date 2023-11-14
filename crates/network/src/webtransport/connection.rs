@@ -11,8 +11,7 @@ use parking_lot::Mutex;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{
-    ReadableStream, WebTransport, WebTransportBidirectionalStream, WritableStream,
-    WritableStreamDefaultWriter,
+    ReadableStream, WebTransport, WebTransportBidirectionalStream, Worker, WritableStream,
 };
 
 use crate::NetworkError;
@@ -27,7 +26,7 @@ use super::{
 /// Disconnects when dropped
 pub struct Connection {
     transport: WebTransport,
-    datagrams: WritableStreamDefaultWriter,
+    worker: Worker,
     incoming_datagrams: Mutex<StreamReader<Uint8Array>>,
     incoming_recv_streams: Mutex<StreamReader<ReadableStream>>,
     incoming_bi_streams: Mutex<StreamReader<WebTransportBidirectionalStream>>,
@@ -50,8 +49,15 @@ impl Connection {
             .map_err(|e| anyhow!("{e:?}"))
             .context("While waiting for ready handshake")?;
 
+        tracing::warn!("Creating worker");
         let datagrams = transport.datagrams();
-        let datagrams = datagrams.writable().get_writer().unwrap();
+        let worker = web_sys::Worker::new("/src/stream_writer.ts").unwrap();
+        let transfer = js_sys::Array::new_with_length(1);
+        transfer.set(0, datagrams.writable().dyn_into().unwrap());
+        worker
+            .post_message_with_transfer(&datagrams.writable(), &transfer)
+            .unwrap();
+
         let incoming_datagrams = transport.datagrams().readable();
 
         let incoming_datagrams = Mutex::new(StreamReader::new(
@@ -71,7 +77,7 @@ impl Connection {
 
         Ok(Connection {
             transport,
-            datagrams,
+            worker,
             incoming_datagrams,
             incoming_recv_streams,
             incoming_bi_streams,
@@ -123,14 +129,9 @@ impl Connection {
     }
 
     /// Sends data to a WebTransport connection.
-    pub fn send_datagram(&self, data: &[u8]) -> impl Future<Output = Result<(), NetworkError>> {
+    pub fn send_datagram(&self, data: &[u8]) {
         let data = Uint8Array::from(data);
-        let fut = JsFuture::from(self.datagrams.write_with_chunk(&data));
-
-        async move {
-            let _stream = fut.await.map_err(|_| NetworkError::ConnectionClosed)?;
-            Ok(())
-        }
+        self.worker.post_message(&data).unwrap();
     }
 }
 

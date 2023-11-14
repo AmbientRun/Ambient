@@ -525,10 +525,7 @@ async fn handle_request(
             bytes.put_u32(id);
             bytes.put_slice(&data);
 
-            let fut = conn.send_datagram(&bytes[..]);
-            runtime.spawn_local(async move {
-                log_network_result!(fut.await);
-            });
+            conn.send_datagram(&bytes[..]);
 
             Ok(())
         }
