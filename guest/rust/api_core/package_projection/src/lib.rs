@@ -9,7 +9,7 @@ pub fn generate() {
     let generated = generate_impl(manifest_dir)
         .unwrap_or_else(|e| {
             let msg = format!(
-                "Error while running Ambient package macro: {e}{}",
+                "Unable to project Ambient package into Rust code: {e}{}",
                 e.source()
                     .map(|e| format!("\nCaused by: {e}"))
                     .unwrap_or_default()
