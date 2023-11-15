@@ -11,7 +11,7 @@ use wasm_bindgen_futures::JsFuture;
 use web_sys::{WritableStream, WritableStreamDefaultWriter};
 
 /// Allow sending a continuous stream bytes
-pub struct SendStream {
+struct SendStream {
     fut: Option<JsFuture>,
     stream: WritableStream,
     writer: Option<WritableStreamDefaultWriter>,

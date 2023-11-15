@@ -1,25 +1,20 @@
 use std::{
+    collections::HashMap,
+    io,
     pin::Pin,
+    sync::{Arc, Weak},
     task::{Context, Poll},
 };
 
-use anyhow::{anyhow, Context as _};
-use bytes::Bytes;
-use futures::{ready, Future};
-use js_sys::{Function, Reflect, Uint8Array};
+use bytes::{Buf, Bytes};
+use futures::StreamExt;
+use js_sys::{Number, Reflect, Uint8Array};
 use parking_lot::Mutex;
+use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 use wasm_bindgen::{closure::Closure, JsCast, JsValue};
-use wasm_bindgen_futures::JsFuture;
-use web_sys::{
-    ReadableStream, WebTransport, WebTransportBidirectionalStream, Worker, WritableStream,
-};
+use web_sys::Worker;
 
 use crate::NetworkError;
-
-use super::{
-    reader::{ReadError, StreamReader},
-    recv_stream, RecvStream, SendStream,
-};
 
 enum WorkerRequest<'a> {
     Connect(&'a str),
@@ -28,6 +23,8 @@ enum WorkerRequest<'a> {
     OpenUni,
     AcceptUni,
     AcceptBi,
+    SendStreamData(u32, &'a [u8]),
+    PollStream(u32),
 }
 
 impl<'a> Into<JsValue> for WorkerRequest<'a> {
@@ -65,6 +62,19 @@ impl<'a> Into<JsValue> for WorkerRequest<'a> {
                 array.set(0, JsValue::from("accept_bi")); // TODO: turn to ints
                 array.into()
             }
+            Self::SendStreamData(stream_id, data) => {
+                let array = js_sys::Array::new_with_length(3);
+                array.set(0, JsValue::from("send_stream_data")); // TODO: turn to ints
+                array.set(1, Number::from(stream_id).into());
+                array.set(2, Uint8Array::from(data).into());
+                array.into()
+            }
+            Self::PollStream(stream_id) => {
+                let array = js_sys::Array::new_with_length(2);
+                array.set(0, JsValue::from("poll_stream")); // TODO: turn to ints
+                array.set(1, Number::from(stream_id).into());
+                array.into()
+            }
         }
     }
 }
@@ -73,9 +83,10 @@ enum WorkerResponse {
     Ready,
     ConnectError(String),
     Datagram(Option<Bytes>),
-    OpenedUni(Result<SendStream, String>),
-    AcceptedUni(Option<Result<RecvStream, String>>),
-    AcceptedBi(Option<Result<(SendStream, RecvStream), String>>),
+    OpenedUni(Result<u32, String>),
+    AcceptedUni(Option<Result<u32, String>>),
+    AcceptedBi(Option<Result<u32, String>>),
+    ReceivedStreamData(u32, Bytes),
 }
 
 impl TryFrom<JsValue> for WorkerResponse {
@@ -104,10 +115,11 @@ impl TryFrom<JsValue> for WorkerResponse {
                 }
             }
             "opened_uni" => {
-                let result = match array.get(1).dyn_into::<WritableStream>() {
-                    Ok(stream) => Ok(SendStream::new(stream)),
-                    Err(err) => Err(format!("{:?}", err)),
-                };
+                let val = array.get(1);
+                let result = val
+                    .as_f64()
+                    .map(|id| id as u32)
+                    .ok_or_else(|| format!("{:?}", val));
                 Ok(Self::OpenedUni(result))
             }
             "accepted_uni" => {
@@ -115,10 +127,10 @@ impl TryFrom<JsValue> for WorkerResponse {
                 if val.is_null() {
                     Ok(Self::AcceptedUni(None))
                 } else {
-                    let result = match val.dyn_into::<ReadableStream>() {
-                        Ok(stream) => Ok(RecvStream::new(stream)),
-                        Err(err) => Err(format!("{:?}", err)),
-                    };
+                    let result = val
+                        .as_f64()
+                        .map(|id| id as u32)
+                        .ok_or_else(|| format!("{:?}", val));
                     Ok(Self::AcceptedUni(Some(result)))
                 }
             }
@@ -127,16 +139,20 @@ impl TryFrom<JsValue> for WorkerResponse {
                 if val.is_null() {
                     Ok(Self::AcceptedBi(None))
                 } else {
-                    let send_stream = match val.dyn_into::<WritableStream>() {
-                        Ok(stream) => SendStream::new(stream),
-                        Err(err) => return Ok(Self::AcceptedBi(Some(Err(format!("{:?}", err))))),
-                    };
-                    let recv_stream = match array.get(2).dyn_into::<ReadableStream>() {
-                        Ok(stream) => RecvStream::new(stream),
-                        Err(err) => return Ok(Self::AcceptedBi(Some(Err(format!("{:?}", err))))),
-                    };
-                    Ok(Self::AcceptedBi(Some(Ok((send_stream, recv_stream)))))
+                    let result = val
+                        .as_f64()
+                        .map(|id| id as u32)
+                        .ok_or_else(|| format!("{:?}", val));
+                    Ok(Self::AcceptedBi(Some(result)))
                 }
+            }
+            "received_stream_data" => {
+                let val = array.get(1);
+                let Some(stream_id) = val.as_f64().map(|id| id as u32) else {
+                    return Err("missing stream id");
+                };
+                let data = array.get(2).dyn_into::<Uint8Array>().unwrap();
+                Ok(Self::ReceivedStreamData(stream_id, data.to_vec().into()))
             }
             _ => Err("unknown response"),
         }
@@ -147,18 +163,22 @@ impl TryFrom<JsValue> for WorkerResponse {
 ///
 /// Disconnects when dropped
 pub struct Connection {
-    worker: Worker,
+    worker: Arc<Mutex<Worker>>,
     incoming_datagrams: flume::Receiver<Option<Bytes>>,
-    incoming_recv_streams: flume::Receiver<Option<Result<RecvStream, String>>>,
-    incoming_bi_streams: flume::Receiver<Option<Result<(SendStream, RecvStream), String>>>,
-    outgoing_send_streams: flume::Receiver<Result<SendStream, String>>,
+    incoming_recv_streams: flume::Receiver<Option<Result<u32, String>>>,
+    incoming_bi_streams: flume::Receiver<Option<Result<u32, String>>>,
+    outgoing_send_streams: flume::Receiver<Result<u32, String>>,
+    read_channels: Arc<Mutex<HashMap<u32, flume::Sender<Bytes>>>>,
     _cb: Closure<dyn FnMut(JsValue)>,
 }
 
 impl Connection {
     /// Open a connection to `url`
     pub async fn connect(url: &str) -> anyhow::Result<Self> {
-        let worker = web_sys::Worker::new("/src/networker.ts").unwrap();
+        let worker = Arc::new(Mutex::new(
+            web_sys::Worker::new("/src/networker.ts").unwrap(),
+        ));
+        let read_channels = Arc::new(Mutex::new(HashMap::<u32, flume::Sender<Bytes>>::new()));
 
         let (incoming_datagrams_tx, incoming_datagrams) = flume::unbounded();
         let (incoming_recv_streams_tx, incoming_recv_streams) = flume::unbounded();
@@ -168,47 +188,60 @@ impl Connection {
         let (ready_tx, ready_rx) = futures::channel::oneshot::channel();
         let mut ready_tx = Some(ready_tx);
 
-        let cb = Closure::new(move |event| {
-            tracing::warn!("Worker message: {event:?}");
-            let Ok(event_data) = Reflect::get(&event, &JsValue::from_str("data")) else {
-                tracing::error!("Failed to get event data");
-                return;
-            };
-            let resp = match WorkerResponse::try_from(event_data) {
-                Ok(resp) => resp,
-                Err(err) => {
-                    tracing::error!("Failed to parse worker response: {err:?}");
+        let cb = Closure::new({
+            let read_channels = read_channels.clone();
+            move |event| {
+                let Ok(event_data) = Reflect::get(&event, &JsValue::from_str("data")) else {
+                    tracing::error!("Failed to get event data");
                     return;
-                }
-            };
-            match resp {
-                WorkerResponse::Ready => {
-                    if let Some(ready_tx) = ready_tx.take() {
-                        ready_tx.send(anyhow::Ok(())).unwrap()
-                    } else {
-                        tracing::error!("Received multiple ready messages");
+                };
+                let resp = match WorkerResponse::try_from(event_data) {
+                    Ok(resp) => resp,
+                    Err(err) => {
+                        tracing::error!("Failed to parse worker response: {err:?}");
+                        return;
                     }
-                }
-                WorkerResponse::ConnectError(err) => {
-                    if let Some(ready_tx) = ready_tx.take() {
-                        ready_tx
-                            .send(Err(anyhow::anyhow!("Connection error: {}", err)))
-                            .unwrap()
-                    } else {
-                        tracing::error!("Received multiple ready messages");
+                };
+                match resp {
+                    WorkerResponse::Ready => {
+                        if let Some(ready_tx) = ready_tx.take() {
+                            ready_tx.send(anyhow::Ok(())).unwrap()
+                        } else {
+                            tracing::error!("Received multiple ready messages");
+                        }
                     }
-                }
-                WorkerResponse::Datagram(data) => incoming_datagrams_tx.send(data).unwrap(),
-                WorkerResponse::OpenedUni(stream) => outgoing_send_streams_tx.send(stream).unwrap(),
-                WorkerResponse::AcceptedUni(stream) => {
-                    incoming_recv_streams_tx.send(stream).unwrap()
-                }
-                WorkerResponse::AcceptedBi(streams) => {
-                    incoming_bi_streams_tx.send(streams).unwrap()
+                    WorkerResponse::ConnectError(err) => {
+                        if let Some(ready_tx) = ready_tx.take() {
+                            ready_tx
+                                .send(Err(anyhow::anyhow!("Connection error: {}", err)))
+                                .unwrap()
+                        } else {
+                            tracing::error!("Received multiple ready messages");
+                        }
+                    }
+                    WorkerResponse::Datagram(data) => incoming_datagrams_tx.send(data).unwrap(),
+                    WorkerResponse::OpenedUni(stream) => {
+                        outgoing_send_streams_tx.send(stream).unwrap()
+                    }
+                    WorkerResponse::AcceptedUni(stream) => {
+                        incoming_recv_streams_tx.send(stream).unwrap()
+                    }
+                    WorkerResponse::AcceptedBi(streams) => {
+                        incoming_bi_streams_tx.send(streams).unwrap()
+                    }
+                    WorkerResponse::ReceivedStreamData(stream_id, data) => {
+                        if let Some(tx) = read_channels.lock().get(&stream_id) {
+                            tx.send(data).unwrap();
+                        } else {
+                            tracing::error!("Received data for unknown stream {}", stream_id);
+                        }
+                    }
                 }
             }
         });
-        worker.set_onmessage(Some(cb.as_ref().unchecked_ref()));
+        worker
+            .lock()
+            .set_onmessage(Some(cb.as_ref().unchecked_ref()));
 
         let conn = Connection {
             worker,
@@ -216,6 +249,7 @@ impl Connection {
             incoming_recv_streams,
             incoming_bi_streams,
             outgoing_send_streams,
+            read_channels,
             _cb: cb,
         };
         conn.request(WorkerRequest::Connect(url));
@@ -224,16 +258,19 @@ impl Connection {
     }
 
     fn request(&self, req: WorkerRequest) {
-        self.worker.post_message(&req.into()).unwrap();
+        self.worker.lock().post_message(&req.into()).unwrap();
     }
 
     pub async fn open_uni(&self) -> Result<SendStream, NetworkError> {
         self.request(WorkerRequest::OpenUni);
-        self.outgoing_send_streams
-            .recv_async()
-            .await
-            .map_err(|_| NetworkError::ConnectionClosed)?
-            .map_err(|_| NetworkError::ConnectionClosed)
+        let stream_id = self.outgoing_send_streams.recv_async().await;
+        let Ok(Ok(stream_id)) = stream_id else {
+            return Err(NetworkError::ConnectionClosed);
+        };
+        Ok(SendStream {
+            stream_id,
+            worker: Arc::downgrade(&self.worker),
+        })
     }
 
     pub async fn open_bi(&self) -> Result<(SendStream, RecvStream), NetworkError> {
@@ -244,22 +281,42 @@ impl Connection {
     pub async fn accept_bi(&self) -> Option<Result<(SendStream, RecvStream), NetworkError>> {
         self.request(WorkerRequest::AcceptBi);
         // FIXME: properly handle errors
-        let streams = self.incoming_bi_streams.recv_async().await.transpose()?;
-        let Ok(Ok(streams)) = streams else {
+        let stream_id = self.incoming_bi_streams.recv_async().await.transpose()?;
+        let Ok(Ok(stream_id)) = stream_id else {
             return Some(Err(NetworkError::ConnectionClosed));
         };
-        Some(Ok(streams))
+        let (tx, rx) = flume::unbounded();
+        self.read_channels.lock().insert(stream_id, tx);
+        Some(Ok((
+            SendStream {
+                stream_id,
+                worker: Arc::downgrade(&self.worker),
+            },
+            RecvStream {
+                stream_id,
+                worker: Arc::downgrade(&self.worker),
+                rx: Box::pin(rx.into_stream()),
+                buf: Bytes::new(),
+            },
+        )))
     }
 
     /// Accepts an incoming unidirectional stream
     pub async fn accept_uni(&self) -> Option<Result<RecvStream, NetworkError>> {
         self.request(WorkerRequest::AcceptUni);
         // FIXME: properly handle errors
-        let stream = self.incoming_recv_streams.recv_async().await.transpose()?;
-        let Ok(Ok(stream)) = stream else {
+        let stream_id = self.incoming_recv_streams.recv_async().await.transpose()?;
+        let Ok(Ok(stream_id)) = stream_id else {
             return Some(Err(NetworkError::ConnectionClosed));
         };
-        Some(Ok(stream))
+        let (tx, rx) = flume::unbounded();
+        self.read_channels.lock().insert(stream_id, tx);
+        Some(Ok(RecvStream {
+            stream_id,
+            worker: Arc::downgrade(&self.worker),
+            rx: Box::pin(rx.into_stream()),
+            buf: Bytes::new(),
+        }))
     }
 
     /// Reads the next datagram from the connection
@@ -278,68 +335,87 @@ impl Connection {
     }
 }
 
-/// Reads the next datagram from the connection
-pub struct ReadDatagram<'a> {
-    stream: &'a Mutex<StreamReader<Uint8Array>>,
+pub struct SendStream {
+    stream_id: u32,
+    worker: Weak<Mutex<Worker>>,
 }
 
-impl Future for ReadDatagram<'_> {
-    type Output = Option<Result<Bytes, ReadError>>;
-
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let mut datagrams = self.stream.lock();
-
-        let data = ready!(datagrams.poll_next(cx));
-
-        match data {
-            Some(Ok(data)) => Poll::Ready(Some(Ok(data.to_vec().into()))),
-            Some(Err(err)) => Poll::Ready(Some(Err(err))),
-            None => Poll::Ready(None),
+impl AsyncWrite for SendStream {
+    fn poll_write(
+        self: Pin<&mut Self>,
+        _cx: &mut Context<'_>,
+        buf: &[u8],
+    ) -> Poll<Result<usize, io::Error>> {
+        if let Some(worker) = self.worker.upgrade() {
+            worker
+                .lock()
+                .post_message(&WorkerRequest::SendStreamData(self.stream_id, buf).into())
+                .unwrap();
+            Poll::Ready(Ok(buf.len()))
+        } else {
+            Poll::Ready(Err(io::Error::new(
+                io::ErrorKind::BrokenPipe,
+                "Connection closed",
+            )))
         }
+    }
+
+    fn poll_flush(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Result<(), io::Error>> {
+        Poll::Ready(
+            self.worker
+                .upgrade()
+                .ok_or_else(|| io::Error::new(io::ErrorKind::BrokenPipe, "Connection closed"))
+                .map(|_| ()),
+        )
+    }
+
+    fn poll_shutdown(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Result<(), io::Error>> {
+        todo!()
     }
 }
 
-/// Reads the next datagram from the connection
-pub struct AcceptUni<'a> {
-    stream: &'a Mutex<StreamReader<ReadableStream>>,
+pub struct RecvStream {
+    stream_id: u32,
+    worker: Weak<Mutex<Worker>>,
+    rx: Pin<Box<dyn futures::Stream<Item = Bytes>>>,
+    buf: Bytes,
 }
 
-impl<'a> Future for AcceptUni<'a> {
-    type Output = Option<Result<RecvStream, ReadError>>;
+impl AsyncRead for RecvStream {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut ReadBuf<'_>,
+    ) -> Poll<Result<(), io::Error>> {
+        if let Some(worker) = self.worker.upgrade() {
+            if self.buf.has_remaining() {
+                let len = buf.remaining().min(self.buf.len());
 
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let mut datagrams = self.stream.lock();
+                buf.put_slice(&self.buf[..len]);
+                self.buf.advance(len);
 
-        let data = ready!(datagrams.poll_next(cx)?);
-
-        match data {
-            Some(data) => Poll::Ready(Some(Ok(RecvStream::new(data)))),
-            None => Poll::Ready(None),
-        }
-    }
-}
-
-/// Reads the next datagram from the connection
-pub struct AcceptBi<'a> {
-    stream: &'a Mutex<StreamReader<WebTransportBidirectionalStream>>,
-}
-
-impl<'a> Future for AcceptBi<'a> {
-    type Output = Option<Result<(SendStream, RecvStream), ReadError>>;
-
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let mut datagrams = self.stream.lock();
-
-        let data = ready!(datagrams.poll_next(cx)?);
-
-        match data {
-            Some(data) => {
-                let send = data.writable().dyn_into().unwrap();
-                let recv = data.readable().dyn_into().unwrap();
-
-                Poll::Ready(Some(Ok((SendStream::new(send), RecvStream::new(recv)))))
+                return Poll::Ready(Ok(()));
             }
-            None => Poll::Ready(None),
+
+            worker
+                .lock()
+                .post_message(&WorkerRequest::PollStream(self.stream_id).into())
+                .unwrap();
+
+            self.rx.poll_next_unpin(cx).map(|data| {
+                if let Some(data) = data {
+                    self.buf = data;
+                    let len = buf.remaining().min(self.buf.len());
+                    buf.put_slice(&self.buf[..len]);
+                    self.buf.advance(len);
+                }
+                Ok(())
+            })
+        } else {
+            Poll::Ready(Err(io::Error::new(
+                io::ErrorKind::BrokenPipe,
+                "Connection closed",
+            )))
         }
     }
 }

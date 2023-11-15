@@ -11,7 +11,7 @@ use tokio::io::{AsyncRead, ReadBuf};
 use web_sys::ReadableStream;
 
 /// A continuous stream of bytes
-pub struct RecvStream {
+struct RecvStream {
     buf: Bytes,
     stream: StreamReader<Uint8Array>,
 }

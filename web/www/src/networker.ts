@@ -3,6 +3,9 @@ var datagramsReader: ReadableStreamDefaultReader<Uint8Array> | null = null;
 var datagramsWriter: WritableStreamDefaultWriter<Uint8Array> | null = null;
 var incomingUnidirectionalStreams: ReadableStreamDefaultReader<ReadableStream> | null = null;
 var incomingBidirectionalStreams: ReadableStreamDefaultReader<ReadableStream> | null = null;
+var writeStreams: { [id: number]: WritableStreamDefaultWriter<Uint8Array> } = {};
+var readStreams: { [id: number]: ReadableStreamDefaultReader<Uint8Array> } = {};
+var nextStreamId = 0;
 
 self.onmessage = function (e) {
     if (e.data instanceof Array) {
@@ -58,9 +61,10 @@ self.onmessage = function (e) {
             case "open_uni": {
                 if (webtransport) {
                     webtransport.createUnidirectionalStream().then((stream) => {
-                        console.info("Opened unidirectional stream: ", stream);
-                        //@ts-ignore
-                        postMessage(["opened_uni", stream], [stream]);
+                        const streamId = nextStreamId++;
+                        console.info("Opened unidirectional stream: ", streamId);
+                        writeStreams[streamId] = stream.getWriter();
+                        postMessage(["opened_uni", streamId]);
                     }, (e) => {
                         console.error("Error opening unidirectional stream: ", e);
                         self.postMessage(["opened_uni", e.message]);
@@ -77,9 +81,10 @@ self.onmessage = function (e) {
                             console.info("No more incoming unidirectional streams");
                             self.postMessage(["accepted_uni", null]);
                         } else {
-                            console.info("Accepted unidirectional stream: ", value);
-                            //@ts-ignore
-                            postMessage(["accepted_uni", value], [value]);
+                            const streamId = nextStreamId++;
+                            console.info("Accepted unidirectional stream: ", streamId);
+                            readStreams[streamId] = value.getReader();
+                            postMessage(["accepted_uni", streamId]);
                         }
                     }, (e) => {
                         console.error("Error accepting unidirectional stream: ", e);
@@ -97,11 +102,13 @@ self.onmessage = function (e) {
                             console.info("No more incoming bidirectional streams");
                             self.postMessage(["accepted_bi", null]);
                         } else {
-                            console.info("Accepted bidirectional stream: ", value);
+                            const streamId = nextStreamId++;
+                            console.info("Accepted bidirectional stream: ", streamId);
                             //@ts-ignore
                             let { writable, readable } = value;
-                            //@ts-ignore
-                            postMessage(["accepted_bi", writable, readable], [writable, readable]);
+                            writeStreams[streamId] = writable.getWriter();
+                            readStreams[streamId] = readable.getReader();
+                            postMessage(["accepted_bi", streamId]);
                         }
                     }, (e) => {
                         console.error("Error accepting bidirectional stream: ", e);
@@ -109,6 +116,37 @@ self.onmessage = function (e) {
                     });
                 } else {
                     console.error("No WebTransport");
+                }
+                break;
+            }
+            case "send_stream_data": {
+                const streamId = e.data[1];
+                const data = e.data[2];
+                if (writeStreams[streamId]) {
+                    writeStreams[streamId].write(data).then(() => {
+                    }, (e) => {
+                        console.error("Error writing stream data: ", e);
+                    });
+                } else {
+                    console.error("No write stream for id: ", streamId);
+                }
+                break;
+            }
+            case "poll_stream": {
+                const streamId = e.data[1];
+                if (readStreams[streamId]) {
+                    readStreams[streamId].read().then(({ value, done }) => {
+                        if (done) {
+                            console.info("No more stream data");
+                            self.postMessage(["received_stream_data", streamId, null]);
+                        } else {
+                            self.postMessage(["received_stream_data", streamId, value]);
+                        }
+                    }, (e) => {
+                        console.error("Error reading stream data: ", e);
+                    });
+                } else {
+                    console.error("No read stream for id: ", streamId);
                 }
                 break;
             }
