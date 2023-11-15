@@ -6,6 +6,126 @@
     clippy::unused_unit
 )]
 mod raw {
+    pub mod ambient_core {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("ambient_core")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod thr5tsq3g3vvf7ilap2jfu6bpoyas53s {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("thr5tsq3g3vvf7ilap2jfu6bpoyas53s")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static CELLS: Lazy<Component<Vec<EntityId>>> =
+                Lazy::new(|| __internal_get_component("thr5tsq3g3vvf7ilap2jfu6bpoyas53s::cells"));
+            #[doc = "**Cells**: The cells in the game\n\n*Attributes*: Debuggable, Networked"]
+            pub fn cells() -> Component<Vec<EntityId>> {
+                *CELLS
+            }
+            static CELL: Lazy<Component<i32>> =
+                Lazy::new(|| __internal_get_component("thr5tsq3g3vvf7ilap2jfu6bpoyas53s::cell"));
+            #[doc = "**Cell**: The ID of the cell this player is in\n\n*Attributes*: Debuggable, Networked"]
+            pub fn cell() -> Component<i32> {
+                *CELL
+            }
+            static OWNED_BY: Lazy<Component<EntityId>> = Lazy::new(|| {
+                __internal_get_component("thr5tsq3g3vvf7ilap2jfu6bpoyas53s::owned_by")
+            });
+            #[doc = "**Owned By**: The ID of the player that owns this cell\n\n*Attributes*: Debuggable, Networked"]
+            pub fn owned_by() -> Component<EntityId> {
+                *OWNED_BY
+            }
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
+        pub mod messages {
+            use ambient_api::{
+                message::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                },
+                prelude::*,
+            };
+            #[derive(Clone, Debug)]
+            #[doc = "**Input**: The player's input"]
+            pub struct Input {
+                pub up: bool,
+                pub down: bool,
+                pub left: bool,
+                pub right: bool,
+                pub capture: bool,
+            }
+            impl Input {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(
+                    up: impl Into<bool>,
+                    down: impl Into<bool>,
+                    left: impl Into<bool>,
+                    right: impl Into<bool>,
+                    capture: impl Into<bool>,
+                ) -> Self {
+                    Self {
+                        up: up.into(),
+                        down: down.into(),
+                        left: left.into(),
+                        right: right.into(),
+                        capture: capture.into(),
+                    }
+                }
+            }
+            impl Message for Input {
+                fn id() -> &'static str {
+                    "thr5tsq3g3vvf7ilap2jfu6bpoyas53s::Input"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.up.serialize_message_part(&mut output)?;
+                    self.down.serialize_message_part(&mut output)?;
+                    self.left.serialize_message_part(&mut output)?;
+                    self.right.serialize_message_part(&mut output)?;
+                    self.capture.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        up: bool::deserialize_message_part(&mut input)?,
+                        down: bool::deserialize_message_part(&mut input)?,
+                        left: bool::deserialize_message_part(&mut input)?,
+                        right: bool::deserialize_message_part(&mut input)?,
+                        capture: bool::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for Input {}
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
     pub mod tijz7x6fimbgu24sbbtp4nllhfxbgblp {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
@@ -127,126 +247,6 @@ mod raw {
                     }
                 }
             }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod ambient_core {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("ambient_core")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod thr5tsq3g3vvf7ilap2jfu6bpoyas53s {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("thr5tsq3g3vvf7ilap2jfu6bpoyas53s")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static CELLS: Lazy<Component<Vec<EntityId>>> =
-                Lazy::new(|| __internal_get_component("thr5tsq3g3vvf7ilap2jfu6bpoyas53s::cells"));
-            #[doc = "**Cells**: The cells in the game\n\n*Attributes*: Debuggable, Networked"]
-            pub fn cells() -> Component<Vec<EntityId>> {
-                *CELLS
-            }
-            static CELL: Lazy<Component<i32>> =
-                Lazy::new(|| __internal_get_component("thr5tsq3g3vvf7ilap2jfu6bpoyas53s::cell"));
-            #[doc = "**Cell**: The ID of the cell this player is in\n\n*Attributes*: Debuggable, Networked"]
-            pub fn cell() -> Component<i32> {
-                *CELL
-            }
-            static OWNED_BY: Lazy<Component<EntityId>> = Lazy::new(|| {
-                __internal_get_component("thr5tsq3g3vvf7ilap2jfu6bpoyas53s::owned_by")
-            });
-            #[doc = "**Owned By**: The ID of the player that owns this cell\n\n*Attributes*: Debuggable, Networked"]
-            pub fn owned_by() -> Component<EntityId> {
-                *OWNED_BY
-            }
-        }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
-        #[doc = r" and with other modules."]
-        pub mod messages {
-            use ambient_api::{
-                message::{
-                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
-                },
-                prelude::*,
-            };
-            #[derive(Clone, Debug)]
-            #[doc = "**Input**: The player's input"]
-            pub struct Input {
-                pub up: bool,
-                pub down: bool,
-                pub left: bool,
-                pub right: bool,
-                pub capture: bool,
-            }
-            impl Input {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(
-                    up: impl Into<bool>,
-                    down: impl Into<bool>,
-                    left: impl Into<bool>,
-                    right: impl Into<bool>,
-                    capture: impl Into<bool>,
-                ) -> Self {
-                    Self {
-                        up: up.into(),
-                        down: down.into(),
-                        left: left.into(),
-                        right: right.into(),
-                        capture: capture.into(),
-                    }
-                }
-            }
-            impl Message for Input {
-                fn id() -> &'static str {
-                    "thr5tsq3g3vvf7ilap2jfu6bpoyas53s::Input"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.up.serialize_message_part(&mut output)?;
-                    self.down.serialize_message_part(&mut output)?;
-                    self.left.serialize_message_part(&mut output)?;
-                    self.right.serialize_message_part(&mut output)?;
-                    self.capture.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        up: bool::deserialize_message_part(&mut input)?,
-                        down: bool::deserialize_message_part(&mut input)?,
-                        left: bool::deserialize_message_part(&mut input)?,
-                        right: bool::deserialize_message_part(&mut input)?,
-                        capture: bool::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for Input {}
         }
         #[doc = r" Helpers for accessing the assets for this package."]
         pub mod assets {

@@ -6,6 +6,1641 @@
     clippy::unused_unit
 )]
 mod raw {
+    pub mod afl5yv5ya35vbuaj3aido22cwjzat25z {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("afl5yv5ya35vbuaj3aido22cwjzat25z")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static RUN_DIRECTION: Lazy<Component<Vec2>> = Lazy::new(|| {
+                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::run_direction")
+            });
+            #[doc = "**run_direction**\n\n*Attributes*: Debuggable, Networked"]
+            pub fn run_direction() -> Component<Vec2> {
+                *RUN_DIRECTION
+            }
+            static SPEED: Lazy<Component<f32>> =
+                Lazy::new(|| __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::speed"));
+            #[doc = "**speed**: The speed the unit can walk at\n\n*Attributes*: Debuggable, Networked"]
+            pub fn speed() -> Component<f32> {
+                *SPEED
+            }
+            static RUN_SPEED_MULTIPLIER: Lazy<Component<f32>> = Lazy::new(|| {
+                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::run_speed_multiplier")
+            });
+            #[doc = "**run_speed_multiplier**: The speed the unit can run at\n\n*Attributes*: Debuggable, Networked"]
+            pub fn run_speed_multiplier() -> Component<f32> {
+                *RUN_SPEED_MULTIPLIER
+            }
+            static STRAFE_SPEED_MULTIPLIER: Lazy<Component<f32>> = Lazy::new(|| {
+                __internal_get_component(
+                    "afl5yv5ya35vbuaj3aido22cwjzat25z::strafe_speed_multiplier",
+                )
+            });
+            #[doc = "**strafe_speed_multiplier**: The speed the unit can strafe at\n\n*Attributes*: Debuggable, Networked"]
+            pub fn strafe_speed_multiplier() -> Component<f32> {
+                *STRAFE_SPEED_MULTIPLIER
+            }
+            static AIR_SPEED_MULTIPLIER: Lazy<Component<f32>> = Lazy::new(|| {
+                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::air_speed_multiplier")
+            });
+            #[doc = "**air_speed_multiplier**: When the unit is in the air; how much can it control its movement? If this is 0, it can't control it at all. If it's 1 it's the same as on the ground.\n\n*Attributes*: Debuggable, Networked"]
+            pub fn air_speed_multiplier() -> Component<f32> {
+                *AIR_SPEED_MULTIPLIER
+            }
+            static UNIT_DISPLACEMENT: Lazy<Component<Vec3>> = Lazy::new(|| {
+                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::unit_displacement")
+            });
+            #[doc = "**unit_displacement**: The distance the unit tried to move last frame (though it may have collided so the actual distance may be shorter).\n\n*Attributes*: Debuggable, Networked"]
+            pub fn unit_displacement() -> Component<Vec3> {
+                *UNIT_DISPLACEMENT
+            }
+            static JUMPING: Lazy<Component<bool>> =
+                Lazy::new(|| __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::jumping"));
+            #[doc = "**jumping**\n\n*Attributes*: Debuggable, Networked"]
+            pub fn jumping() -> Component<bool> {
+                *JUMPING
+            }
+            static RUNNING: Lazy<Component<bool>> =
+                Lazy::new(|| __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::running"));
+            #[doc = "**running**\n\n*Attributes*: Debuggable, Networked"]
+            pub fn running() -> Component<bool> {
+                *RUNNING
+            }
+            static SHOOTING: Lazy<Component<bool>> = Lazy::new(|| {
+                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::shooting")
+            });
+            #[doc = "**shooting**\n\n*Attributes*: Debuggable, Networked"]
+            pub fn shooting() -> Component<bool> {
+                *SHOOTING
+            }
+            static VERTICAL_VELOCITY: Lazy<Component<f32>> = Lazy::new(|| {
+                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::vertical_velocity")
+            });
+            #[doc = "**Unit vertical speed**: The units's vertical speed.\n\n*Attributes*: Debuggable, Networked"]
+            pub fn vertical_velocity() -> Component<f32> {
+                *VERTICAL_VELOCITY
+            }
+            static IS_ON_GROUND: Lazy<Component<bool>> = Lazy::new(|| {
+                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::is_on_ground")
+            });
+            #[doc = "**is_on_ground**\n\n*Attributes*: Debuggable, Networked"]
+            pub fn is_on_ground() -> Component<bool> {
+                *IS_ON_GROUND
+            }
+            static HEAD_REF: Lazy<Component<EntityId>> = Lazy::new(|| {
+                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::head_ref")
+            });
+            #[doc = "**head_ref**\n\n*Attributes*: Debuggable, Networked"]
+            pub fn head_ref() -> Component<EntityId> {
+                *HEAD_REF
+            }
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod ambient_core {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("ambient_core")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod c72h7qyqnp4njboj7tu4vomadoj2zu6e {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("c72h7qyqnp4njboj7tu4vomadoj2zu6e")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
+        pub mod messages {
+            use ambient_api::{
+                message::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                },
+                prelude::*,
+            };
+            #[derive(Clone, Debug)]
+            #[doc = "**VehicleSpawnRequest**: Sent by the client to request a vehicle spawn."]
+            pub struct VehicleSpawnRequest {
+                pub def_id: EntityId,
+            }
+            impl VehicleSpawnRequest {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(def_id: impl Into<EntityId>) -> Self {
+                    Self {
+                        def_id: def_id.into(),
+                    }
+                }
+            }
+            impl Message for VehicleSpawnRequest {
+                fn id() -> &'static str {
+                    "c72h7qyqnp4njboj7tu4vomadoj2zu6e::VehicleSpawnRequest"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.def_id.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        def_id: EntityId::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for VehicleSpawnRequest {}
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod cneomdouziieskjvs3szwmigzotofjzs {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("cneomdouziieskjvs3szwmigzotofjzs")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static IS_EXPLOSION: Lazy<Component<()>> = Lazy::new(|| {
+                __internal_get_component("cneomdouziieskjvs3szwmigzotofjzs::is_explosion")
+            });
+            #[doc = "**Is Explosion**: Is an explosion\n\n*Attributes*: Networked"]
+            pub fn is_explosion() -> Component<()> {
+                *IS_EXPLOSION
+            }
+            static RADIUS: Lazy<Component<f32>> =
+                Lazy::new(|| __internal_get_component("cneomdouziieskjvs3szwmigzotofjzs::radius"));
+            #[doc = "**Radius**: Radius of the explosion\n\n*Attributes*: Networked"]
+            pub fn radius() -> Component<f32> {
+                *RADIUS
+            }
+            static DAMAGE: Lazy<Component<f32>> =
+                Lazy::new(|| __internal_get_component("cneomdouziieskjvs3szwmigzotofjzs::damage"));
+            #[doc = "**Damage**: Damage of the explosion\n\n*Attributes*: Networked"]
+            pub fn damage() -> Component<f32> {
+                *DAMAGE
+            }
+            static CREATED_AT: Lazy<Component<Duration>> = Lazy::new(|| {
+                __internal_get_component("cneomdouziieskjvs3szwmigzotofjzs::created_at")
+            });
+            #[doc = "**Created At**: Time the explosion was created. Must be manually attached using a spawn_query as time is not synchronized between client and server at time of writing."]
+            pub fn created_at() -> Component<Duration> {
+                *CREATED_AT
+            }
+        }
+        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+        #[doc = r""]
+        #[doc = r" They do not have any runtime representation outside of the components that compose them."]
+        pub mod concepts {
+            use ambient_api::{
+                global::serde::{self, Deserialize, Serialize},
+                prelude::*,
+            };
+            #[doc = "**Explosion**: An explosion\n\n**Required**:\n- `is_explosion`: Is an explosion\n- `radius`: Radius of the explosion\n- `damage`: Damage of the explosion\n- `translation`: The translation/position of this entity.\n\n\n**Optional**:\n- `created_at`: Time the explosion was created. Must be manually attached using a spawn_query as time is not synchronized between client and server at time of writing."]
+            #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+            #[serde(crate = "self::serde")]
+            pub struct Explosion {
+                #[doc = "**Component**: `cneomdouziieskjvs3szwmigzotofjzs::is_explosion`\n\n**Component description**: Is an explosion\n\n"]
+                pub is_explosion: (),
+                #[doc = "**Component**: `cneomdouziieskjvs3szwmigzotofjzs::radius`\n\n**Component description**: Radius of the explosion\n\n"]
+                pub radius: f32,
+                #[doc = "**Component**: `cneomdouziieskjvs3szwmigzotofjzs::damage`\n\n**Component description**: Damage of the explosion\n\n"]
+                pub damage: f32,
+                #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Component description**: The translation/position of this entity.\n\n"]
+                pub translation: Vec3,
+                #[doc = r" Optional components."]
+                pub optional: ExplosionOptional,
+            }
+            #[doc = "Optional part of [Explosion]."]
+            #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+            #[serde(crate = "self::serde")]
+            pub struct ExplosionOptional {
+                #[doc = "**Component**: `cneomdouziieskjvs3szwmigzotofjzs::created_at`\n\n**Component description**: Time the explosion was created. Must be manually attached using a spawn_query as time is not synchronized between client and server at time of writing.\n\n"]
+                pub created_at: Option<Duration>,
+            }
+            impl Concept for Explosion {
+                fn make(self) -> Entity {
+                    let mut entity = Entity :: new () . with (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: is_explosion () , self . is_explosion) . with (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: radius () , self . radius) . with (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: damage () , self . damage) . with (ambient_api :: core :: transform :: components :: translation () , self . translation) ;
+                    if let Some(created_at) = self.optional.created_at {
+                        entity . set (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: created_at () , created_at) ;
+                    }
+                    entity
+                }
+                fn get_spawned(id: EntityId) -> Option<Self> {
+                    Some (Self { is_explosion : entity :: get_component (id , crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: is_explosion ()) ? , radius : entity :: get_component (id , crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: radius ()) ? , damage : entity :: get_component (id , crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: damage ()) ? , translation : entity :: get_component (id , ambient_api :: core :: transform :: components :: translation ()) ? , optional : ExplosionOptional { created_at : entity :: get_component (id , crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: created_at ()) , } })
+                }
+                fn get_unspawned(entity: &Entity) -> Option<Self> {
+                    Some (Self { is_explosion : entity . get (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: is_explosion ()) ? , radius : entity . get (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: radius ()) ? , damage : entity . get (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: damage ()) ? , translation : entity . get (ambient_api :: core :: transform :: components :: translation ()) ? , optional : ExplosionOptional { created_at : entity . get (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: created_at ()) , } })
+                }
+                fn contained_by_spawned(id: EntityId) -> bool {
+                    entity :: has_components (id , & [& crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: is_explosion () , & crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: radius () , & crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: damage () , & ambient_api :: core :: transform :: components :: translation ()])
+                }
+                fn contained_by_unspawned(entity: &Entity) -> bool {
+                    entity . has_components (& [& crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: is_explosion () , & crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: radius () , & crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: damage () , & ambient_api :: core :: transform :: components :: translation ()])
+                }
+            }
+            impl ConceptComponents for Explosion {
+                type Required = (
+                    Component<()>,
+                    Component<f32>,
+                    Component<f32>,
+                    Component<Vec3>,
+                );
+                type Optional = (Component<Duration>,);
+                fn required() -> Self::Required {
+                    (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: is_explosion () , crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: radius () , crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: damage () , ambient_api :: core :: transform :: components :: translation () ,)
+                }
+                fn optional() -> Self::Optional {
+                    (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: created_at () ,)
+                }
+                fn from_required_data(required: <Self::Required as ComponentsTuple>::Data) -> Self {
+                    Self {
+                        is_explosion: required.0,
+                        radius: required.1,
+                        damage: required.2,
+                        translation: required.3,
+                        optional: Default::default(),
+                    }
+                }
+            }
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod d3y3wbexrclipsykysumem3fthkudwx2 {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("d3y3wbexrclipsykysumem3fthkudwx2")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static BASIC_CHARACTER_ANIMATIONS: Lazy<Component<EntityId>> = Lazy::new(|| {
+                __internal_get_component(
+                    "d3y3wbexrclipsykysumem3fthkudwx2::basic_character_animations",
+                )
+            });
+            #[doc = "**basic_character_animations**: Apply animations to the model this points to. Parameters such as health etc. is read from the entity this component is attached to.\n\n*Attributes*: Debuggable, Networked"]
+            pub fn basic_character_animations() -> Component<EntityId> {
+                *BASIC_CHARACTER_ANIMATIONS
+            }
+            static USE_RIFLE_ANIMATIONS: Lazy<Component<()>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::use_rifle_animations")
+            });
+            #[doc = "**use_rifle_animations**: Use rifle animations instead of no-weapon animations\n\n*Attributes*: Debuggable, Networked"]
+            pub fn use_rifle_animations() -> Component<()> {
+                *USE_RIFLE_ANIMATIONS
+            }
+            static WALK_FORWARD: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_forward")
+            });
+            #[doc = "**walk_forward**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn walk_forward() -> Component<String> {
+                *WALK_FORWARD
+            }
+            static WALK_BACKWARD: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_backward")
+            });
+            #[doc = "**walk_backward**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn walk_backward() -> Component<String> {
+                *WALK_BACKWARD
+            }
+            static WALK_LEFT: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_left")
+            });
+            #[doc = "**walk_left**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn walk_left() -> Component<String> {
+                *WALK_LEFT
+            }
+            static WALK_RIGHT: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_right")
+            });
+            #[doc = "**walk_right**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn walk_right() -> Component<String> {
+                *WALK_RIGHT
+            }
+            static WALK_FORWARD_LEFT: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_forward_left")
+            });
+            #[doc = "**walk_forward_left**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn walk_forward_left() -> Component<String> {
+                *WALK_FORWARD_LEFT
+            }
+            static WALK_FORWARD_RIGHT: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_forward_right")
+            });
+            #[doc = "**walk_forward_right**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn walk_forward_right() -> Component<String> {
+                *WALK_FORWARD_RIGHT
+            }
+            static WALK_BACKWARD_LEFT: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_backward_left")
+            });
+            #[doc = "**walk_backward_left**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn walk_backward_left() -> Component<String> {
+                *WALK_BACKWARD_LEFT
+            }
+            static WALK_BACKWARD_RIGHT: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_backward_right")
+            });
+            #[doc = "**walk_backward_right**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn walk_backward_right() -> Component<String> {
+                *WALK_BACKWARD_RIGHT
+            }
+            static RUN_FORWARD: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_forward")
+            });
+            #[doc = "**run_forward**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn run_forward() -> Component<String> {
+                *RUN_FORWARD
+            }
+            static RUN_BACKWARD: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_backward")
+            });
+            #[doc = "**run_backward**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn run_backward() -> Component<String> {
+                *RUN_BACKWARD
+            }
+            static RUN_LEFT: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_left")
+            });
+            #[doc = "**run_left**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn run_left() -> Component<String> {
+                *RUN_LEFT
+            }
+            static RUN_RIGHT: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_right")
+            });
+            #[doc = "**run_right**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn run_right() -> Component<String> {
+                *RUN_RIGHT
+            }
+            static RUN_FORWARD_LEFT: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_forward_left")
+            });
+            #[doc = "**run_forward_left**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn run_forward_left() -> Component<String> {
+                *RUN_FORWARD_LEFT
+            }
+            static RUN_FORWARD_RIGHT: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_forward_right")
+            });
+            #[doc = "**run_forward_right**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn run_forward_right() -> Component<String> {
+                *RUN_FORWARD_RIGHT
+            }
+            static RUN_BACKWARD_LEFT: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_backward_left")
+            });
+            #[doc = "**run_backward_left**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn run_backward_left() -> Component<String> {
+                *RUN_BACKWARD_LEFT
+            }
+            static RUN_BACKWARD_RIGHT: Lazy<Component<String>> = Lazy::new(|| {
+                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_backward_right")
+            });
+            #[doc = "**run_backward_right**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn run_backward_right() -> Component<String> {
+                *RUN_BACKWARD_RIGHT
+            }
+            static IDLE: Lazy<Component<String>> =
+                Lazy::new(|| __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::idle"));
+            #[doc = "**idle**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn idle() -> Component<String> {
+                *IDLE
+            }
+            static DEATH: Lazy<Component<String>> =
+                Lazy::new(|| __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::death"));
+            #[doc = "**death**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn death() -> Component<String> {
+                *DEATH
+            }
+            static JUMP: Lazy<Component<String>> =
+                Lazy::new(|| __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::jump"));
+            #[doc = "**jump**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
+            pub fn jump() -> Component<String> {
+                *JUMP
+            }
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod d7rxxncafgtwf7c3brhsw7oh7h2ccfip {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("d7rxxncafgtwf7c3brhsw7oh7h2ccfip")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod e4unr4x2lz2ov7dsd5vnjylbykwixvv2 {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("e4unr4x2lz2ov7dsd5vnjylbykwixvv2")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod fvn74ns4ozf3gn42vmowphmvmpsfklbi {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("fvn74ns4ozf3gn42vmowphmvmpsfklbi")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod ggu2h7bk4jrvshq7zteboipyut7wuib2 {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("ggu2h7bk4jrvshq7zteboipyut7wuib2")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod gzbamly2shtnz3siisf3mdzglsi67vul {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("gzbamly2shtnz3siisf3mdzglsi67vul")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static INCLUDE_CORNERS: Lazy<Component<bool>> = Lazy::new(|| {
+                __internal_get_component("gzbamly2shtnz3siisf3mdzglsi67vul::include_corners")
+            });
+            #[doc = "**Include Corners**: Whether or not the corner spawnpoints are created.\n\n*Attributes*: Debuggable, Networked\n\n*Suggested Default*: true"]
+            pub fn include_corners() -> Component<bool> {
+                *INCLUDE_CORNERS
+            }
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod hr4pxz7kfhzgimicoyh65ydel3aehuhk {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("hr4pxz7kfhzgimicoyh65ydel3aehuhk")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static MOD_MANAGER_FOR: Lazy<Component<EntityId>> = Lazy::new(|| {
+                __internal_get_component("hr4pxz7kfhzgimicoyh65ydel3aehuhk::mod_manager_for")
+            });
+            #[doc = "**Mod Manager For**: Package config component. Attach this component to this package's entity to make it a mod manager for the given package.\n\n*Attributes*: Networked, Debuggable"]
+            pub fn mod_manager_for() -> Component<EntityId> {
+                *MOD_MANAGER_FOR
+            }
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
+        pub mod messages {
+            use ambient_api::{
+                message::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                },
+                prelude::*,
+            };
+            #[derive(Clone, Debug)]
+            #[doc = "**PackageLoad**"]
+            pub struct PackageLoad {
+                pub url: String,
+                pub enabled: bool,
+            }
+            impl PackageLoad {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(url: impl Into<String>, enabled: impl Into<bool>) -> Self {
+                    Self {
+                        url: url.into(),
+                        enabled: enabled.into(),
+                    }
+                }
+            }
+            impl Message for PackageLoad {
+                fn id() -> &'static str {
+                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageLoad"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.url.serialize_message_part(&mut output)?;
+                    self.enabled.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        url: String::deserialize_message_part(&mut input)?,
+                        enabled: bool::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for PackageLoad {}
+            #[derive(Clone, Debug)]
+            #[doc = "**PackageLoadSuccess**"]
+            pub struct PackageLoadSuccess {
+                pub id: EntityId,
+                pub name: String,
+            }
+            impl PackageLoadSuccess {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(id: impl Into<EntityId>, name: impl Into<String>) -> Self {
+                    Self {
+                        id: id.into(),
+                        name: name.into(),
+                    }
+                }
+            }
+            impl Message for PackageLoadSuccess {
+                fn id() -> &'static str {
+                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageLoadSuccess"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.id.serialize_message_part(&mut output)?;
+                    self.name.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        id: EntityId::deserialize_message_part(&mut input)?,
+                        name: String::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for PackageLoadSuccess {}
+            #[derive(Clone, Debug)]
+            #[doc = "**PackageLoadFailure**"]
+            pub struct PackageLoadFailure {
+                pub reason: String,
+            }
+            impl PackageLoadFailure {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(reason: impl Into<String>) -> Self {
+                    Self {
+                        reason: reason.into(),
+                    }
+                }
+            }
+            impl Message for PackageLoadFailure {
+                fn id() -> &'static str {
+                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageLoadFailure"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.reason.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        reason: String::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for PackageLoadFailure {}
+            #[derive(Clone, Debug)]
+            #[doc = "**PackageSetEnabled**"]
+            pub struct PackageSetEnabled {
+                pub id: EntityId,
+                pub enabled: bool,
+            }
+            impl PackageSetEnabled {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(id: impl Into<EntityId>, enabled: impl Into<bool>) -> Self {
+                    Self {
+                        id: id.into(),
+                        enabled: enabled.into(),
+                    }
+                }
+            }
+            impl Message for PackageSetEnabled {
+                fn id() -> &'static str {
+                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageSetEnabled"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.id.serialize_message_part(&mut output)?;
+                    self.enabled.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        id: EntityId::deserialize_message_part(&mut input)?,
+                        enabled: bool::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for PackageSetEnabled {}
+            #[derive(Clone, Debug)]
+            #[doc = "**WasmSetEnabled**"]
+            pub struct WasmSetEnabled {
+                pub id: EntityId,
+                pub enabled: bool,
+            }
+            impl WasmSetEnabled {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(id: impl Into<EntityId>, enabled: impl Into<bool>) -> Self {
+                    Self {
+                        id: id.into(),
+                        enabled: enabled.into(),
+                    }
+                }
+            }
+            impl Message for WasmSetEnabled {
+                fn id() -> &'static str {
+                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::WasmSetEnabled"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.id.serialize_message_part(&mut output)?;
+                    self.enabled.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        id: EntityId::deserialize_message_part(&mut input)?,
+                        enabled: bool::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for WasmSetEnabled {}
+            #[derive(Clone, Debug)]
+            #[doc = "**WasmReload**"]
+            pub struct WasmReload {
+                pub id: EntityId,
+            }
+            impl WasmReload {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(id: impl Into<EntityId>) -> Self {
+                    Self { id: id.into() }
+                }
+            }
+            impl Message for WasmReload {
+                fn id() -> &'static str {
+                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::WasmReload"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.id.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        id: EntityId::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for WasmReload {}
+            #[derive(Clone, Debug)]
+            #[doc = "**PackageShow**: Shows the package view for a package"]
+            pub struct PackageShow {
+                pub id: EntityId,
+            }
+            impl PackageShow {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(id: impl Into<EntityId>) -> Self {
+                    Self { id: id.into() }
+                }
+            }
+            impl Message for PackageShow {
+                fn id() -> &'static str {
+                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageShow"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.id.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        id: EntityId::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for PackageShow {}
+            #[derive(Clone, Debug)]
+            #[doc = "**PackageLoadShow**: Shows the package load view"]
+            pub struct PackageLoadShow;
+            impl PackageLoadShow {
+                pub fn new() -> Self {
+                    Self
+                }
+            }
+            impl Message for PackageLoadShow {
+                fn id() -> &'static str {
+                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageLoadShow"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {})
+                }
+            }
+            impl ModuleMessage for PackageLoadShow {}
+            impl Default for PackageLoadShow {
+                fn default() -> Self {
+                    Self::new()
+                }
+            }
+            #[derive(Clone, Debug)]
+            #[doc = "**PackageRemoteRequest**: Requests all relevant remote packages"]
+            pub struct PackageRemoteRequest;
+            impl PackageRemoteRequest {
+                pub fn new() -> Self {
+                    Self
+                }
+            }
+            impl Message for PackageRemoteRequest {
+                fn id() -> &'static str {
+                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageRemoteRequest"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {})
+                }
+            }
+            impl ModuleMessage for PackageRemoteRequest {}
+            impl Default for PackageRemoteRequest {
+                fn default() -> Self {
+                    Self::new()
+                }
+            }
+            #[derive(Clone, Debug)]
+            #[doc = "**PackageRemoteResponse**: Response to a remote package request"]
+            pub struct PackageRemoteResponse {
+                pub packages: Vec<String>,
+                pub error: Option<String>,
+            }
+            impl PackageRemoteResponse {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(
+                    packages: impl Into<Vec<String>>,
+                    error: impl Into<Option<String>>,
+                ) -> Self {
+                    Self {
+                        packages: packages.into(),
+                        error: error.into(),
+                    }
+                }
+            }
+            impl Message for PackageRemoteResponse {
+                fn id() -> &'static str {
+                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageRemoteResponse"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.packages.serialize_message_part(&mut output)?;
+                    self.error.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        packages: Vec::<String>::deserialize_message_part(&mut input)?,
+                        error: Option::<String>::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for PackageRemoteResponse {}
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod hs7ygpw4pmpsixtcohdcvzxwmrfzubvi {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("hs7ygpw4pmpsixtcohdcvzxwmrfzubvi")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
+        pub mod messages {
+            use ambient_api::{
+                message::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                },
+                prelude::*,
+            };
+            #[derive(Clone, Debug)]
+            #[doc = "**ClassSetRequest**: Sent by the client to request a class set change."]
+            pub struct ClassSetRequest {
+                pub class_id: EntityId,
+            }
+            impl ClassSetRequest {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(class_id: impl Into<EntityId>) -> Self {
+                    Self {
+                        class_id: class_id.into(),
+                    }
+                }
+            }
+            impl Message for ClassSetRequest {
+                fn id() -> &'static str {
+                    "hs7ygpw4pmpsixtcohdcvzxwmrfzubvi::ClassSetRequest"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.class_id.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        class_id: EntityId::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for ClassSetRequest {}
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod hvxms7i2px7krvkm23sxfjxsjqlcmtb5 {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("hvxms7i2px7krvkm23sxfjxsjqlcmtb5")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        pub mod player {
+            #[doc = r" Auto-generated component definitions."]
+            pub mod components {
+                use ambient_api::{
+                    ecs::{Component, __internal_get_component},
+                    once_cell::sync::Lazy,
+                    prelude::*,
+                };
+                static CONTROL_OF_ENTITY: Lazy<Component<EntityId>> = Lazy::new(|| {
+                    __internal_get_component(
+                        "hvxms7i2px7krvkm23sxfjxsjqlcmtb5::player::control_of_entity",
+                    )
+                });
+                #[doc = "**Player's Control-of Entity**: The entity that this player is controlling.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn control_of_entity() -> Component<EntityId> {
+                    *CONTROL_OF_ENTITY
+                }
+            }
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static HEALTH: Lazy<Component<f32>> =
+                Lazy::new(|| __internal_get_component("hvxms7i2px7krvkm23sxfjxsjqlcmtb5::health"));
+            #[doc = "**Health**: This game object's health. \"Standard\" health is 100 HP.\n\n*Attributes*: Debuggable, Networked"]
+            pub fn health() -> Component<f32> {
+                *HEALTH
+            }
+            static MAX_HEALTH: Lazy<Component<f32>> = Lazy::new(|| {
+                __internal_get_component("hvxms7i2px7krvkm23sxfjxsjqlcmtb5::max_health")
+            });
+            #[doc = "**Max Health**: Maximum health of the object. 100 HP is \"standard.\"\n\n*Attributes*: Debuggable, Networked"]
+            pub fn max_health() -> Component<f32> {
+                *MAX_HEALTH
+            }
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod ianwyihfsaiuc26xjldmwd3duidju2tb {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("ianwyihfsaiuc26xjldmwd3duidju2tb")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod itzh3wovmdje4ttrmo6wrravaaxp6b52 {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("itzh3wovmdje4ttrmo6wrravaaxp6b52")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
+        pub mod messages {
+            use ambient_api::{
+                message::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                },
+                prelude::*,
+            };
+            #[derive(Clone, Debug)]
+            #[doc = "**Input**: Input"]
+            pub struct Input {
+                pub direction: Vec2,
+                pub jump: bool,
+                pub fire: bool,
+                pub use_button: bool,
+                pub sprint: bool,
+                pub respawn: bool,
+                pub aim_direction: Vec2,
+                pub aim_ray_origin: Vec3,
+                pub aim_ray_direction: Vec3,
+            }
+            impl Input {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(
+                    direction: impl Into<Vec2>,
+                    jump: impl Into<bool>,
+                    fire: impl Into<bool>,
+                    use_button: impl Into<bool>,
+                    sprint: impl Into<bool>,
+                    respawn: impl Into<bool>,
+                    aim_direction: impl Into<Vec2>,
+                    aim_ray_origin: impl Into<Vec3>,
+                    aim_ray_direction: impl Into<Vec3>,
+                ) -> Self {
+                    Self {
+                        direction: direction.into(),
+                        jump: jump.into(),
+                        fire: fire.into(),
+                        use_button: use_button.into(),
+                        sprint: sprint.into(),
+                        respawn: respawn.into(),
+                        aim_direction: aim_direction.into(),
+                        aim_ray_origin: aim_ray_origin.into(),
+                        aim_ray_direction: aim_ray_direction.into(),
+                    }
+                }
+            }
+            impl Message for Input {
+                fn id() -> &'static str {
+                    "itzh3wovmdje4ttrmo6wrravaaxp6b52::Input"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.direction.serialize_message_part(&mut output)?;
+                    self.jump.serialize_message_part(&mut output)?;
+                    self.fire.serialize_message_part(&mut output)?;
+                    self.use_button.serialize_message_part(&mut output)?;
+                    self.sprint.serialize_message_part(&mut output)?;
+                    self.respawn.serialize_message_part(&mut output)?;
+                    self.aim_direction.serialize_message_part(&mut output)?;
+                    self.aim_ray_origin.serialize_message_part(&mut output)?;
+                    self.aim_ray_direction.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        direction: Vec2::deserialize_message_part(&mut input)?,
+                        jump: bool::deserialize_message_part(&mut input)?,
+                        fire: bool::deserialize_message_part(&mut input)?,
+                        use_button: bool::deserialize_message_part(&mut input)?,
+                        sprint: bool::deserialize_message_part(&mut input)?,
+                        respawn: bool::deserialize_message_part(&mut input)?,
+                        aim_direction: Vec2::deserialize_message_part(&mut input)?,
+                        aim_ray_origin: Vec3::deserialize_message_part(&mut input)?,
+                        aim_ray_direction: Vec3::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for Input {}
+            #[derive(Clone, Debug)]
+            #[doc = "**UseFailed**: Sent from the server to the client when a use action fails."]
+            pub struct UseFailed;
+            impl UseFailed {
+                pub fn new() -> Self {
+                    Self
+                }
+            }
+            impl Message for UseFailed {
+                fn id() -> &'static str {
+                    "itzh3wovmdje4ttrmo6wrravaaxp6b52::UseFailed"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {})
+                }
+            }
+            impl ModuleMessage for UseFailed {}
+            impl Default for UseFailed {
+                fn default() -> Self {
+                    Self::new()
+                }
+            }
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod j32xi2gg5rvgob2cu7uirdbtj5ce4jw7 {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("j32xi2gg5rvgob2cu7uirdbtj5ce4jw7")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod jyp2hh3fpjfe7kaos36zbdztfypqip3m {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("jyp2hh3fpjfe7kaos36zbdztfypqip3m")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static IS_GUN_LASER: Lazy<Component<()>> = Lazy::new(|| {
+                __internal_get_component("jyp2hh3fpjfe7kaos36zbdztfypqip3m::is_gun_laser")
+            });
+            #[doc = "**Is Gun (Laser)**: This entity is a laser gun."]
+            pub fn is_gun_laser() -> Component<()> {
+                *IS_GUN_LASER
+            }
+            static DAMAGE: Lazy<Component<f32>> =
+                Lazy::new(|| __internal_get_component("jyp2hh3fpjfe7kaos36zbdztfypqip3m::damage"));
+            #[doc = "**Damage**: The amount of damage this gun does."]
+            pub fn damage() -> Component<f32> {
+                *DAMAGE
+            }
+            static TIME_BETWEEN_SHOTS: Lazy<Component<Duration>> = Lazy::new(|| {
+                __internal_get_component("jyp2hh3fpjfe7kaos36zbdztfypqip3m::time_between_shots")
+            });
+            #[doc = "**Time Between Shots**: The amount of time between shots."]
+            pub fn time_between_shots() -> Component<Duration> {
+                *TIME_BETWEEN_SHOTS
+            }
+            static LAST_SHOT_TIME: Lazy<Component<Duration>> = Lazy::new(|| {
+                __internal_get_component("jyp2hh3fpjfe7kaos36zbdztfypqip3m::last_shot_time")
+            });
+            #[doc = "**Last Shot Time**: The time of the last shot."]
+            pub fn last_shot_time() -> Component<Duration> {
+                *LAST_SHOT_TIME
+            }
+        }
+        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+        #[doc = r""]
+        #[doc = r" They do not have any runtime representation outside of the components that compose them."]
+        pub mod concepts {
+            use ambient_api::{
+                global::serde::{self, Deserialize, Serialize},
+                prelude::*,
+            };
+            #[doc = "**Gun Laser**: A laser gun.\n\n**Extends**: `ambient_core::transform::Transformable`\n\n**Required**:\n- `local_to_world`: Transformation from the entity's local space to worldspace.\n- `is_gun_laser`: This entity is a laser gun.\n- `damage`: The amount of damage this gun does.\n- `time_between_shots`: The amount of time between shots.\n\n\n**Optional**:\n- `translation`: The translation/position of this entity.\n- `rotation`: The rotation of this entity.\n- `scale`: The scale of this entity.\n- `last_shot_time`: The time of the last shot."]
+            #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+            #[serde(crate = "self::serde")]
+            pub struct GunLaser {
+                #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
+                pub local_to_world: Mat4,
+                #[doc = "**Component**: `jyp2hh3fpjfe7kaos36zbdztfypqip3m::is_gun_laser`\n\n**Component description**: This entity is a laser gun.\n\n"]
+                pub is_gun_laser: (),
+                #[doc = "**Component**: `jyp2hh3fpjfe7kaos36zbdztfypqip3m::damage`\n\n**Component description**: The amount of damage this gun does.\n\n"]
+                pub damage: f32,
+                #[doc = "**Component**: `jyp2hh3fpjfe7kaos36zbdztfypqip3m::time_between_shots`\n\n**Component description**: The amount of time between shots.\n\n"]
+                pub time_between_shots: Duration,
+                #[doc = r" Optional components."]
+                pub optional: GunLaserOptional,
+            }
+            #[doc = "Optional part of [GunLaser]."]
+            #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+            #[serde(crate = "self::serde")]
+            pub struct GunLaserOptional {
+                #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
+                pub translation: Option<Vec3>,
+                #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
+                pub rotation: Option<Quat>,
+                #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
+                pub scale: Option<Vec3>,
+                #[doc = "**Component**: `jyp2hh3fpjfe7kaos36zbdztfypqip3m::last_shot_time`\n\n**Component description**: The time of the last shot.\n\n"]
+                pub last_shot_time: Option<Duration>,
+            }
+            impl Concept for GunLaser {
+                fn make(self) -> Entity {
+                    let mut entity = Entity :: new () . with (ambient_api :: core :: transform :: components :: local_to_world () , self . local_to_world) . with (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: is_gun_laser () , self . is_gun_laser) . with (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: damage () , self . damage) . with (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: time_between_shots () , self . time_between_shots) ;
+                    if let Some(translation) = self.optional.translation {
+                        entity.set(
+                            ambient_api::core::transform::components::translation(),
+                            translation,
+                        );
+                    }
+                    if let Some(rotation) = self.optional.rotation {
+                        entity.set(
+                            ambient_api::core::transform::components::rotation(),
+                            rotation,
+                        );
+                    }
+                    if let Some(scale) = self.optional.scale {
+                        entity.set(ambient_api::core::transform::components::scale(), scale);
+                    }
+                    if let Some(last_shot_time) = self.optional.last_shot_time {
+                        entity . set (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: last_shot_time () , last_shot_time) ;
+                    }
+                    entity
+                }
+                fn get_spawned(id: EntityId) -> Option<Self> {
+                    Some (Self { local_to_world : entity :: get_component (id , ambient_api :: core :: transform :: components :: local_to_world ()) ? , is_gun_laser : entity :: get_component (id , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: is_gun_laser ()) ? , damage : entity :: get_component (id , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: damage ()) ? , time_between_shots : entity :: get_component (id , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: time_between_shots ()) ? , optional : GunLaserOptional { translation : entity :: get_component (id , ambient_api :: core :: transform :: components :: translation ()) , rotation : entity :: get_component (id , ambient_api :: core :: transform :: components :: rotation ()) , scale : entity :: get_component (id , ambient_api :: core :: transform :: components :: scale ()) , last_shot_time : entity :: get_component (id , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: last_shot_time ()) , } })
+                }
+                fn get_unspawned(entity: &Entity) -> Option<Self> {
+                    Some (Self { local_to_world : entity . get (ambient_api :: core :: transform :: components :: local_to_world ()) ? , is_gun_laser : entity . get (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: is_gun_laser ()) ? , damage : entity . get (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: damage ()) ? , time_between_shots : entity . get (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: time_between_shots ()) ? , optional : GunLaserOptional { translation : entity . get (ambient_api :: core :: transform :: components :: translation ()) , rotation : entity . get (ambient_api :: core :: transform :: components :: rotation ()) , scale : entity . get (ambient_api :: core :: transform :: components :: scale ()) , last_shot_time : entity . get (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: last_shot_time ()) , } })
+                }
+                fn contained_by_spawned(id: EntityId) -> bool {
+                    entity :: has_components (id , & [& ambient_api :: core :: transform :: components :: local_to_world () , & crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: is_gun_laser () , & crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: damage () , & crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: time_between_shots ()])
+                }
+                fn contained_by_unspawned(entity: &Entity) -> bool {
+                    entity . has_components (& [& ambient_api :: core :: transform :: components :: local_to_world () , & crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: is_gun_laser () , & crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: damage () , & crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: time_between_shots ()])
+                }
+            }
+            impl ConceptComponents for GunLaser {
+                type Required = (
+                    Component<Mat4>,
+                    Component<()>,
+                    Component<f32>,
+                    Component<Duration>,
+                );
+                type Optional = (
+                    Component<Vec3>,
+                    Component<Quat>,
+                    Component<Vec3>,
+                    Component<Duration>,
+                );
+                fn required() -> Self::Required {
+                    (ambient_api :: core :: transform :: components :: local_to_world () , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: is_gun_laser () , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: damage () , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: time_between_shots () ,)
+                }
+                fn optional() -> Self::Optional {
+                    (ambient_api :: core :: transform :: components :: translation () , ambient_api :: core :: transform :: components :: rotation () , ambient_api :: core :: transform :: components :: scale () , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: last_shot_time () ,)
+                }
+                fn from_required_data(required: <Self::Required as ComponentsTuple>::Data) -> Self {
+                    Self {
+                        local_to_world: required.0,
+                        is_gun_laser: required.1,
+                        damage: required.2,
+                        time_between_shots: required.3,
+                        optional: Default::default(),
+                    }
+                }
+            }
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
+        pub mod messages {
+            use ambient_api::{
+                message::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                },
+                prelude::*,
+            };
+            #[derive(Clone, Debug)]
+            #[doc = "**Fire**: Sent to the client-side when a gun is fired."]
+            pub struct Fire {
+                pub weapon_id: EntityId,
+            }
+            impl Fire {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(weapon_id: impl Into<EntityId>) -> Self {
+                    Self {
+                        weapon_id: weapon_id.into(),
+                    }
+                }
+            }
+            impl Message for Fire {
+                fn id() -> &'static str {
+                    "jyp2hh3fpjfe7kaos36zbdztfypqip3m::Fire"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.weapon_id.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        weapon_id: EntityId::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for Fire {}
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod k7svgbw5j6orlwzj45koeownlodsdbth {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("k7svgbw5j6orlwzj45koeownlodsdbth")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod lktsfudbjw2qikhyumt573ozxhadkiwm {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("lktsfudbjw2qikhyumt573ozxhadkiwm")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+        #[doc = r""]
+        #[doc = r" They do not have any runtime representation outside of the components that compose them."]
+        pub mod concepts {
+            use ambient_api::{
+                global::serde::{self, Deserialize, Serialize},
+                prelude::*,
+            };
+            #[doc = "**CharacterMovement**\n\n**Extends**: `ambient_core::physics::CharacterController`\n\n**Required**:\n- `character_controller_height`: The height of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_radius`, it will be given a physical character collider.\n- `character_controller_radius`: The radius of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_height`, it will be given a physical character collider.\n- `physics_controlled`: If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider.\n- `rotation`: The rotation of this entity.\n- `run_direction`: No description provided.\n- `vertical_velocity`: The units's vertical speed.\n- `running`: No description provided.\n- `jumping`: No description provided.\n- `is_on_ground`: No description provided.\n\n\n**Optional**:\n- `run_speed_multiplier`: The speed the unit can run at\n- `speed`: The speed the unit can walk at\n- `strafe_speed_multiplier`: The speed the unit can strafe at\n- `air_speed_multiplier`: When the unit is in the air; how much can it control its movement? If this is 0, it can't control it at all. If it's 1 it's the same as on the ground."]
+            #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+            #[serde(crate = "self::serde")]
+            pub struct CharacterMovement {
+                #[doc = "**Component**: `ambient_core::physics::character_controller_height`\n\n**Suggested value**: `2f32`\n\n**Component description**: The height of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_radius`, it will be given a physical character collider.\n\n"]
+                pub character_controller_height: f32,
+                #[doc = "**Component**: `ambient_core::physics::character_controller_radius`\n\n**Suggested value**: `0.5f32`\n\n**Component description**: The radius of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_height`, it will be given a physical character collider.\n\n"]
+                pub character_controller_radius: f32,
+                #[doc = "**Component**: `ambient_core::physics::physics_controlled`\n\n**Suggested value**: `()`\n\n**Component description**: If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider.\n\n"]
+                pub physics_controlled: (),
+                #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
+                pub rotation: Quat,
+                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::run_direction`\n\n**Suggested value**: `Vec2::new(0f32, 0f32, )`\n\n"]
+                pub run_direction: Vec2,
+                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::vertical_velocity`\n\n**Suggested value**: `0f32`\n\n**Component description**: The units's vertical speed.\n\n"]
+                pub vertical_velocity: f32,
+                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::running`\n\n**Suggested value**: `false`\n\n"]
+                pub running: bool,
+                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::jumping`\n\n**Suggested value**: `false`\n\n"]
+                pub jumping: bool,
+                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::is_on_ground`\n\n**Suggested value**: `true`\n\n"]
+                pub is_on_ground: bool,
+                #[doc = r" Optional components."]
+                pub optional: CharacterMovementOptional,
+            }
+            #[doc = "Optional part of [CharacterMovement]."]
+            #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+            #[serde(crate = "self::serde")]
+            pub struct CharacterMovementOptional {
+                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::run_speed_multiplier`\n\n**Component description**: The speed the unit can run at\n\n"]
+                pub run_speed_multiplier: Option<f32>,
+                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::speed`\n\n**Component description**: The speed the unit can walk at\n\n"]
+                pub speed: Option<f32>,
+                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::strafe_speed_multiplier`\n\n**Component description**: The speed the unit can strafe at\n\n"]
+                pub strafe_speed_multiplier: Option<f32>,
+                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::air_speed_multiplier`\n\n**Component description**: When the unit is in the air; how much can it control its movement? If this is 0, it can't control it at all. If it's 1 it's the same as on the ground.\n\n"]
+                pub air_speed_multiplier: Option<f32>,
+            }
+            impl Concept for CharacterMovement {
+                fn make(self) -> Entity {
+                    let mut entity = Entity :: new () . with (ambient_api :: core :: physics :: components :: character_controller_height () , self . character_controller_height) . with (ambient_api :: core :: physics :: components :: character_controller_radius () , self . character_controller_radius) . with (ambient_api :: core :: physics :: components :: physics_controlled () , self . physics_controlled) . with (ambient_api :: core :: transform :: components :: rotation () , self . rotation) . with (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_direction () , self . run_direction) . with (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: vertical_velocity () , self . vertical_velocity) . with (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: running () , self . running) . with (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: jumping () , self . jumping) . with (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: is_on_ground () , self . is_on_ground) ;
+                    if let Some(run_speed_multiplier) = self.optional.run_speed_multiplier {
+                        entity . set (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_speed_multiplier () , run_speed_multiplier) ;
+                    }
+                    if let Some(speed) = self.optional.speed {
+                        entity . set (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: speed () , speed) ;
+                    }
+                    if let Some(strafe_speed_multiplier) = self.optional.strafe_speed_multiplier {
+                        entity . set (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: strafe_speed_multiplier () , strafe_speed_multiplier) ;
+                    }
+                    if let Some(air_speed_multiplier) = self.optional.air_speed_multiplier {
+                        entity . set (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: air_speed_multiplier () , air_speed_multiplier) ;
+                    }
+                    entity
+                }
+                fn get_spawned(id: EntityId) -> Option<Self> {
+                    Some (Self { character_controller_height : entity :: get_component (id , ambient_api :: core :: physics :: components :: character_controller_height ()) ? , character_controller_radius : entity :: get_component (id , ambient_api :: core :: physics :: components :: character_controller_radius ()) ? , physics_controlled : entity :: get_component (id , ambient_api :: core :: physics :: components :: physics_controlled ()) ? , rotation : entity :: get_component (id , ambient_api :: core :: transform :: components :: rotation ()) ? , run_direction : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_direction ()) ? , vertical_velocity : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: vertical_velocity ()) ? , running : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: running ()) ? , jumping : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: jumping ()) ? , is_on_ground : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: is_on_ground ()) ? , optional : CharacterMovementOptional { run_speed_multiplier : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_speed_multiplier ()) , speed : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: speed ()) , strafe_speed_multiplier : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: strafe_speed_multiplier ()) , air_speed_multiplier : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: air_speed_multiplier ()) , } })
+                }
+                fn get_unspawned(entity: &Entity) -> Option<Self> {
+                    Some (Self { character_controller_height : entity . get (ambient_api :: core :: physics :: components :: character_controller_height ()) ? , character_controller_radius : entity . get (ambient_api :: core :: physics :: components :: character_controller_radius ()) ? , physics_controlled : entity . get (ambient_api :: core :: physics :: components :: physics_controlled ()) ? , rotation : entity . get (ambient_api :: core :: transform :: components :: rotation ()) ? , run_direction : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_direction ()) ? , vertical_velocity : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: vertical_velocity ()) ? , running : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: running ()) ? , jumping : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: jumping ()) ? , is_on_ground : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: is_on_ground ()) ? , optional : CharacterMovementOptional { run_speed_multiplier : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_speed_multiplier ()) , speed : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: speed ()) , strafe_speed_multiplier : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: strafe_speed_multiplier ()) , air_speed_multiplier : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: air_speed_multiplier ()) , } })
+                }
+                fn contained_by_spawned(id: EntityId) -> bool {
+                    entity :: has_components (id , & [& ambient_api :: core :: physics :: components :: character_controller_height () , & ambient_api :: core :: physics :: components :: character_controller_radius () , & ambient_api :: core :: physics :: components :: physics_controlled () , & ambient_api :: core :: transform :: components :: rotation () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_direction () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: vertical_velocity () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: running () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: jumping () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: is_on_ground ()])
+                }
+                fn contained_by_unspawned(entity: &Entity) -> bool {
+                    entity . has_components (& [& ambient_api :: core :: physics :: components :: character_controller_height () , & ambient_api :: core :: physics :: components :: character_controller_radius () , & ambient_api :: core :: physics :: components :: physics_controlled () , & ambient_api :: core :: transform :: components :: rotation () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_direction () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: vertical_velocity () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: running () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: jumping () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: is_on_ground ()])
+                }
+            }
+            impl ConceptSuggested for CharacterMovement {
+                #[doc = "```\ncharacter_controller_height: 2f32,\ncharacter_controller_radius: 0.5f32,\nphysics_controlled: (),\nrotation: Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, ),\nrun_direction: Vec2::new(0f32, 0f32, ),\nvertical_velocity: 0f32,\nrunning: false,\njumping: false,\nis_on_ground: true,\n```"]
+                fn suggested() -> Self {
+                    Self {
+                        character_controller_height: 2f32,
+                        character_controller_radius: 0.5f32,
+                        physics_controlled: (),
+                        rotation: Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
+                        run_direction: Vec2::new(0f32, 0f32),
+                        vertical_velocity: 0f32,
+                        running: false,
+                        jumping: false,
+                        is_on_ground: true,
+                        optional: Default::default(),
+                    }
+                }
+            }
+            impl ConceptComponents for CharacterMovement {
+                type Required = (
+                    Component<f32>,
+                    Component<f32>,
+                    Component<()>,
+                    Component<Quat>,
+                    Component<Vec2>,
+                    Component<f32>,
+                    Component<bool>,
+                    Component<bool>,
+                    Component<bool>,
+                );
+                type Optional = (
+                    Component<f32>,
+                    Component<f32>,
+                    Component<f32>,
+                    Component<f32>,
+                );
+                fn required() -> Self::Required {
+                    (ambient_api :: core :: physics :: components :: character_controller_height () , ambient_api :: core :: physics :: components :: character_controller_radius () , ambient_api :: core :: physics :: components :: physics_controlled () , ambient_api :: core :: transform :: components :: rotation () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_direction () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: vertical_velocity () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: running () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: jumping () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: is_on_ground () ,)
+                }
+                fn optional() -> Self::Optional {
+                    (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_speed_multiplier () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: speed () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: strafe_speed_multiplier () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: air_speed_multiplier () ,)
+                }
+                fn from_required_data(required: <Self::Required as ComponentsTuple>::Data) -> Self {
+                    Self {
+                        character_controller_height: required.0,
+                        character_controller_radius: required.1,
+                        physics_controlled: required.2,
+                        rotation: required.3,
+                        run_direction: required.4,
+                        vertical_velocity: required.5,
+                        running: required.6,
+                        jumping: required.7,
+                        is_on_ground: required.8,
+                        optional: Default::default(),
+                    }
+                }
+            }
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod llhdryqkfsr6gy4f26wbolh4kfwnzn3c {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("llhdryqkfsr6gy4f26wbolh4kfwnzn3c")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod mkd4mhans4bdn3mvmt45vxqbxepdhys3 {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("mkd4mhans4bdn3mvmt45vxqbxepdhys3")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod mnm43qv33k7kx235bz5hcgoguokwxzwo {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("mnm43qv33k7kx235bz5hcgoguokwxzwo")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
+        pub mod messages {
+            use ambient_api::{
+                message::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                },
+                prelude::*,
+            };
+            #[derive(Clone, Debug)]
+            #[doc = "**OnCollision**: Sent to the client when a vehicle collides with something."]
+            pub struct OnCollision {
+                pub position: Vec3,
+                pub speed: f32,
+                pub vehicle_id: EntityId,
+            }
+            impl OnCollision {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(
+                    position: impl Into<Vec3>,
+                    speed: impl Into<f32>,
+                    vehicle_id: impl Into<EntityId>,
+                ) -> Self {
+                    Self {
+                        position: position.into(),
+                        speed: speed.into(),
+                        vehicle_id: vehicle_id.into(),
+                    }
+                }
+            }
+            impl Message for OnCollision {
+                fn id() -> &'static str {
+                    "mnm43qv33k7kx235bz5hcgoguokwxzwo::OnCollision"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.position.serialize_message_part(&mut output)?;
+                    self.speed.serialize_message_part(&mut output)?;
+                    self.vehicle_id.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        position: Vec3::deserialize_message_part(&mut input)?,
+                        speed: f32::deserialize_message_part(&mut input)?,
+                        vehicle_id: EntityId::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for OnCollision {}
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
     pub mod mwrcsok65na7owrbdococ5sthr3ccskc {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
@@ -1204,148 +2839,6 @@ mod raw {
             }
         }
     }
-    pub mod vvuixyn4jy3xv4ij4hi75atzfwk2j37k {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("vvuixyn4jy3xv4ij4hi75atzfwk2j37k")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod cneomdouziieskjvs3szwmigzotofjzs {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("cneomdouziieskjvs3szwmigzotofjzs")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static IS_EXPLOSION: Lazy<Component<()>> = Lazy::new(|| {
-                __internal_get_component("cneomdouziieskjvs3szwmigzotofjzs::is_explosion")
-            });
-            #[doc = "**Is Explosion**: Is an explosion\n\n*Attributes*: Networked"]
-            pub fn is_explosion() -> Component<()> {
-                *IS_EXPLOSION
-            }
-            static RADIUS: Lazy<Component<f32>> =
-                Lazy::new(|| __internal_get_component("cneomdouziieskjvs3szwmigzotofjzs::radius"));
-            #[doc = "**Radius**: Radius of the explosion\n\n*Attributes*: Networked"]
-            pub fn radius() -> Component<f32> {
-                *RADIUS
-            }
-            static DAMAGE: Lazy<Component<f32>> =
-                Lazy::new(|| __internal_get_component("cneomdouziieskjvs3szwmigzotofjzs::damage"));
-            #[doc = "**Damage**: Damage of the explosion\n\n*Attributes*: Networked"]
-            pub fn damage() -> Component<f32> {
-                *DAMAGE
-            }
-            static CREATED_AT: Lazy<Component<Duration>> = Lazy::new(|| {
-                __internal_get_component("cneomdouziieskjvs3szwmigzotofjzs::created_at")
-            });
-            #[doc = "**Created At**: Time the explosion was created. Must be manually attached using a spawn_query as time is not synchronized between client and server at time of writing."]
-            pub fn created_at() -> Component<Duration> {
-                *CREATED_AT
-            }
-        }
-        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
-        #[doc = r""]
-        #[doc = r" They do not have any runtime representation outside of the components that compose them."]
-        pub mod concepts {
-            use ambient_api::{
-                global::serde::{self, Deserialize, Serialize},
-                prelude::*,
-            };
-            #[doc = "**Explosion**: An explosion\n\n**Required**:\n- `is_explosion`: Is an explosion\n- `radius`: Radius of the explosion\n- `damage`: Damage of the explosion\n- `translation`: The translation/position of this entity.\n\n\n**Optional**:\n- `created_at`: Time the explosion was created. Must be manually attached using a spawn_query as time is not synchronized between client and server at time of writing."]
-            #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-            #[serde(crate = "self::serde")]
-            pub struct Explosion {
-                #[doc = "**Component**: `cneomdouziieskjvs3szwmigzotofjzs::is_explosion`\n\n**Component description**: Is an explosion\n\n"]
-                pub is_explosion: (),
-                #[doc = "**Component**: `cneomdouziieskjvs3szwmigzotofjzs::radius`\n\n**Component description**: Radius of the explosion\n\n"]
-                pub radius: f32,
-                #[doc = "**Component**: `cneomdouziieskjvs3szwmigzotofjzs::damage`\n\n**Component description**: Damage of the explosion\n\n"]
-                pub damage: f32,
-                #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Component description**: The translation/position of this entity.\n\n"]
-                pub translation: Vec3,
-                #[doc = r" Optional components."]
-                pub optional: ExplosionOptional,
-            }
-            #[doc = "Optional part of [Explosion]."]
-            #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
-            #[serde(crate = "self::serde")]
-            pub struct ExplosionOptional {
-                #[doc = "**Component**: `cneomdouziieskjvs3szwmigzotofjzs::created_at`\n\n**Component description**: Time the explosion was created. Must be manually attached using a spawn_query as time is not synchronized between client and server at time of writing.\n\n"]
-                pub created_at: Option<Duration>,
-            }
-            impl Concept for Explosion {
-                fn make(self) -> Entity {
-                    let mut entity = Entity :: new () . with (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: is_explosion () , self . is_explosion) . with (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: radius () , self . radius) . with (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: damage () , self . damage) . with (ambient_api :: core :: transform :: components :: translation () , self . translation) ;
-                    if let Some(created_at) = self.optional.created_at {
-                        entity . set (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: created_at () , created_at) ;
-                    }
-                    entity
-                }
-                fn get_spawned(id: EntityId) -> Option<Self> {
-                    Some (Self { is_explosion : entity :: get_component (id , crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: is_explosion ()) ? , radius : entity :: get_component (id , crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: radius ()) ? , damage : entity :: get_component (id , crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: damage ()) ? , translation : entity :: get_component (id , ambient_api :: core :: transform :: components :: translation ()) ? , optional : ExplosionOptional { created_at : entity :: get_component (id , crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: created_at ()) , } })
-                }
-                fn get_unspawned(entity: &Entity) -> Option<Self> {
-                    Some (Self { is_explosion : entity . get (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: is_explosion ()) ? , radius : entity . get (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: radius ()) ? , damage : entity . get (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: damage ()) ? , translation : entity . get (ambient_api :: core :: transform :: components :: translation ()) ? , optional : ExplosionOptional { created_at : entity . get (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: created_at ()) , } })
-                }
-                fn contained_by_spawned(id: EntityId) -> bool {
-                    entity :: has_components (id , & [& crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: is_explosion () , & crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: radius () , & crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: damage () , & ambient_api :: core :: transform :: components :: translation ()])
-                }
-                fn contained_by_unspawned(entity: &Entity) -> bool {
-                    entity . has_components (& [& crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: is_explosion () , & crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: radius () , & crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: damage () , & ambient_api :: core :: transform :: components :: translation ()])
-                }
-            }
-            impl ConceptComponents for Explosion {
-                type Required = (
-                    Component<()>,
-                    Component<f32>,
-                    Component<f32>,
-                    Component<Vec3>,
-                );
-                type Optional = (Component<Duration>,);
-                fn required() -> Self::Required {
-                    (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: is_explosion () , crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: radius () , crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: damage () , ambient_api :: core :: transform :: components :: translation () ,)
-                }
-                fn optional() -> Self::Optional {
-                    (crate :: packages :: raw :: cneomdouziieskjvs3szwmigzotofjzs :: components :: created_at () ,)
-                }
-                fn from_required_data(required: <Self::Required as ComponentsTuple>::Data) -> Self {
-                    Self {
-                        is_explosion: required.0,
-                        radius: required.1,
-                        damage: required.2,
-                        translation: required.3,
-                        optional: Default::default(),
-                    }
-                }
-            }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
     pub mod mx4o7x2s4zqc6pxmsfcb7hznbv4chxe5 {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
@@ -1362,437 +2855,11 @@ mod raw {
             }
         }
     }
-    pub mod mnm43qv33k7kx235bz5hcgoguokwxzwo {
+    pub mod n7a4j7htvenss35tsnfvegbhxuwij5il {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("mnm43qv33k7kx235bz5hcgoguokwxzwo")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
-        #[doc = r" and with other modules."]
-        pub mod messages {
-            use ambient_api::{
-                message::{
-                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
-                },
-                prelude::*,
-            };
-            #[derive(Clone, Debug)]
-            #[doc = "**OnCollision**: Sent to the client when a vehicle collides with something."]
-            pub struct OnCollision {
-                pub position: Vec3,
-                pub speed: f32,
-                pub vehicle_id: EntityId,
-            }
-            impl OnCollision {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(
-                    position: impl Into<Vec3>,
-                    speed: impl Into<f32>,
-                    vehicle_id: impl Into<EntityId>,
-                ) -> Self {
-                    Self {
-                        position: position.into(),
-                        speed: speed.into(),
-                        vehicle_id: vehicle_id.into(),
-                    }
-                }
-            }
-            impl Message for OnCollision {
-                fn id() -> &'static str {
-                    "mnm43qv33k7kx235bz5hcgoguokwxzwo::OnCollision"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.position.serialize_message_part(&mut output)?;
-                    self.speed.serialize_message_part(&mut output)?;
-                    self.vehicle_id.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        position: Vec3::deserialize_message_part(&mut input)?,
-                        speed: f32::deserialize_message_part(&mut input)?,
-                        vehicle_id: EntityId::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for OnCollision {}
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod jyp2hh3fpjfe7kaos36zbdztfypqip3m {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("jyp2hh3fpjfe7kaos36zbdztfypqip3m")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static IS_GUN_LASER: Lazy<Component<()>> = Lazy::new(|| {
-                __internal_get_component("jyp2hh3fpjfe7kaos36zbdztfypqip3m::is_gun_laser")
-            });
-            #[doc = "**Is Gun (Laser)**: This entity is a laser gun."]
-            pub fn is_gun_laser() -> Component<()> {
-                *IS_GUN_LASER
-            }
-            static DAMAGE: Lazy<Component<f32>> =
-                Lazy::new(|| __internal_get_component("jyp2hh3fpjfe7kaos36zbdztfypqip3m::damage"));
-            #[doc = "**Damage**: The amount of damage this gun does."]
-            pub fn damage() -> Component<f32> {
-                *DAMAGE
-            }
-            static TIME_BETWEEN_SHOTS: Lazy<Component<Duration>> = Lazy::new(|| {
-                __internal_get_component("jyp2hh3fpjfe7kaos36zbdztfypqip3m::time_between_shots")
-            });
-            #[doc = "**Time Between Shots**: The amount of time between shots."]
-            pub fn time_between_shots() -> Component<Duration> {
-                *TIME_BETWEEN_SHOTS
-            }
-            static LAST_SHOT_TIME: Lazy<Component<Duration>> = Lazy::new(|| {
-                __internal_get_component("jyp2hh3fpjfe7kaos36zbdztfypqip3m::last_shot_time")
-            });
-            #[doc = "**Last Shot Time**: The time of the last shot."]
-            pub fn last_shot_time() -> Component<Duration> {
-                *LAST_SHOT_TIME
-            }
-        }
-        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
-        #[doc = r""]
-        #[doc = r" They do not have any runtime representation outside of the components that compose them."]
-        pub mod concepts {
-            use ambient_api::{
-                global::serde::{self, Deserialize, Serialize},
-                prelude::*,
-            };
-            #[doc = "**Gun Laser**: A laser gun.\n\n**Extends**: `ambient_core::transform::Transformable`\n\n**Required**:\n- `local_to_world`: Transformation from the entity's local space to worldspace.\n- `is_gun_laser`: This entity is a laser gun.\n- `damage`: The amount of damage this gun does.\n- `time_between_shots`: The amount of time between shots.\n\n\n**Optional**:\n- `translation`: The translation/position of this entity.\n- `rotation`: The rotation of this entity.\n- `scale`: The scale of this entity.\n- `last_shot_time`: The time of the last shot."]
-            #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-            #[serde(crate = "self::serde")]
-            pub struct GunLaser {
-                #[doc = "**Component**: `ambient_core::transform::local_to_world`\n\n**Suggested value**: `Mat4::from_cols_array(&[1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, 0f32, 0f32, 0f32, 0f32, 1f32, ])`\n\n**Component description**: Transformation from the entity's local space to worldspace.\n\n"]
-                pub local_to_world: Mat4,
-                #[doc = "**Component**: `jyp2hh3fpjfe7kaos36zbdztfypqip3m::is_gun_laser`\n\n**Component description**: This entity is a laser gun.\n\n"]
-                pub is_gun_laser: (),
-                #[doc = "**Component**: `jyp2hh3fpjfe7kaos36zbdztfypqip3m::damage`\n\n**Component description**: The amount of damage this gun does.\n\n"]
-                pub damage: f32,
-                #[doc = "**Component**: `jyp2hh3fpjfe7kaos36zbdztfypqip3m::time_between_shots`\n\n**Component description**: The amount of time between shots.\n\n"]
-                pub time_between_shots: Duration,
-                #[doc = r" Optional components."]
-                pub optional: GunLaserOptional,
-            }
-            #[doc = "Optional part of [GunLaser]."]
-            #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
-            #[serde(crate = "self::serde")]
-            pub struct GunLaserOptional {
-                #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Suggested value**: `Vec3::new(0f32, 0f32, 0f32, )`\n\n**Component description**: The translation/position of this entity.\n\n"]
-                pub translation: Option<Vec3>,
-                #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
-                pub rotation: Option<Quat>,
-                #[doc = "**Component**: `ambient_core::transform::scale`\n\n**Suggested value**: `Vec3::new(1f32, 1f32, 1f32, )`\n\n**Component description**: The scale of this entity.\n\n"]
-                pub scale: Option<Vec3>,
-                #[doc = "**Component**: `jyp2hh3fpjfe7kaos36zbdztfypqip3m::last_shot_time`\n\n**Component description**: The time of the last shot.\n\n"]
-                pub last_shot_time: Option<Duration>,
-            }
-            impl Concept for GunLaser {
-                fn make(self) -> Entity {
-                    let mut entity = Entity :: new () . with (ambient_api :: core :: transform :: components :: local_to_world () , self . local_to_world) . with (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: is_gun_laser () , self . is_gun_laser) . with (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: damage () , self . damage) . with (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: time_between_shots () , self . time_between_shots) ;
-                    if let Some(translation) = self.optional.translation {
-                        entity.set(
-                            ambient_api::core::transform::components::translation(),
-                            translation,
-                        );
-                    }
-                    if let Some(rotation) = self.optional.rotation {
-                        entity.set(
-                            ambient_api::core::transform::components::rotation(),
-                            rotation,
-                        );
-                    }
-                    if let Some(scale) = self.optional.scale {
-                        entity.set(ambient_api::core::transform::components::scale(), scale);
-                    }
-                    if let Some(last_shot_time) = self.optional.last_shot_time {
-                        entity . set (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: last_shot_time () , last_shot_time) ;
-                    }
-                    entity
-                }
-                fn get_spawned(id: EntityId) -> Option<Self> {
-                    Some (Self { local_to_world : entity :: get_component (id , ambient_api :: core :: transform :: components :: local_to_world ()) ? , is_gun_laser : entity :: get_component (id , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: is_gun_laser ()) ? , damage : entity :: get_component (id , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: damage ()) ? , time_between_shots : entity :: get_component (id , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: time_between_shots ()) ? , optional : GunLaserOptional { translation : entity :: get_component (id , ambient_api :: core :: transform :: components :: translation ()) , rotation : entity :: get_component (id , ambient_api :: core :: transform :: components :: rotation ()) , scale : entity :: get_component (id , ambient_api :: core :: transform :: components :: scale ()) , last_shot_time : entity :: get_component (id , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: last_shot_time ()) , } })
-                }
-                fn get_unspawned(entity: &Entity) -> Option<Self> {
-                    Some (Self { local_to_world : entity . get (ambient_api :: core :: transform :: components :: local_to_world ()) ? , is_gun_laser : entity . get (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: is_gun_laser ()) ? , damage : entity . get (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: damage ()) ? , time_between_shots : entity . get (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: time_between_shots ()) ? , optional : GunLaserOptional { translation : entity . get (ambient_api :: core :: transform :: components :: translation ()) , rotation : entity . get (ambient_api :: core :: transform :: components :: rotation ()) , scale : entity . get (ambient_api :: core :: transform :: components :: scale ()) , last_shot_time : entity . get (crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: last_shot_time ()) , } })
-                }
-                fn contained_by_spawned(id: EntityId) -> bool {
-                    entity :: has_components (id , & [& ambient_api :: core :: transform :: components :: local_to_world () , & crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: is_gun_laser () , & crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: damage () , & crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: time_between_shots ()])
-                }
-                fn contained_by_unspawned(entity: &Entity) -> bool {
-                    entity . has_components (& [& ambient_api :: core :: transform :: components :: local_to_world () , & crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: is_gun_laser () , & crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: damage () , & crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: time_between_shots ()])
-                }
-            }
-            impl ConceptComponents for GunLaser {
-                type Required = (
-                    Component<Mat4>,
-                    Component<()>,
-                    Component<f32>,
-                    Component<Duration>,
-                );
-                type Optional = (
-                    Component<Vec3>,
-                    Component<Quat>,
-                    Component<Vec3>,
-                    Component<Duration>,
-                );
-                fn required() -> Self::Required {
-                    (ambient_api :: core :: transform :: components :: local_to_world () , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: is_gun_laser () , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: damage () , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: time_between_shots () ,)
-                }
-                fn optional() -> Self::Optional {
-                    (ambient_api :: core :: transform :: components :: translation () , ambient_api :: core :: transform :: components :: rotation () , ambient_api :: core :: transform :: components :: scale () , crate :: packages :: raw :: jyp2hh3fpjfe7kaos36zbdztfypqip3m :: components :: last_shot_time () ,)
-                }
-                fn from_required_data(required: <Self::Required as ComponentsTuple>::Data) -> Self {
-                    Self {
-                        local_to_world: required.0,
-                        is_gun_laser: required.1,
-                        damage: required.2,
-                        time_between_shots: required.3,
-                        optional: Default::default(),
-                    }
-                }
-            }
-        }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
-        #[doc = r" and with other modules."]
-        pub mod messages {
-            use ambient_api::{
-                message::{
-                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
-                },
-                prelude::*,
-            };
-            #[derive(Clone, Debug)]
-            #[doc = "**Fire**: Sent to the client-side when a gun is fired."]
-            pub struct Fire {
-                pub weapon_id: EntityId,
-            }
-            impl Fire {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(weapon_id: impl Into<EntityId>) -> Self {
-                    Self {
-                        weapon_id: weapon_id.into(),
-                    }
-                }
-            }
-            impl Message for Fire {
-                fn id() -> &'static str {
-                    "jyp2hh3fpjfe7kaos36zbdztfypqip3m::Fire"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.weapon_id.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        weapon_id: EntityId::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for Fire {}
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod afl5yv5ya35vbuaj3aido22cwjzat25z {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("afl5yv5ya35vbuaj3aido22cwjzat25z")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static RUN_DIRECTION: Lazy<Component<Vec2>> = Lazy::new(|| {
-                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::run_direction")
-            });
-            #[doc = "**run_direction**\n\n*Attributes*: Debuggable, Networked"]
-            pub fn run_direction() -> Component<Vec2> {
-                *RUN_DIRECTION
-            }
-            static SPEED: Lazy<Component<f32>> =
-                Lazy::new(|| __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::speed"));
-            #[doc = "**speed**: The speed the unit can walk at\n\n*Attributes*: Debuggable, Networked"]
-            pub fn speed() -> Component<f32> {
-                *SPEED
-            }
-            static RUN_SPEED_MULTIPLIER: Lazy<Component<f32>> = Lazy::new(|| {
-                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::run_speed_multiplier")
-            });
-            #[doc = "**run_speed_multiplier**: The speed the unit can run at\n\n*Attributes*: Debuggable, Networked"]
-            pub fn run_speed_multiplier() -> Component<f32> {
-                *RUN_SPEED_MULTIPLIER
-            }
-            static STRAFE_SPEED_MULTIPLIER: Lazy<Component<f32>> = Lazy::new(|| {
-                __internal_get_component(
-                    "afl5yv5ya35vbuaj3aido22cwjzat25z::strafe_speed_multiplier",
-                )
-            });
-            #[doc = "**strafe_speed_multiplier**: The speed the unit can strafe at\n\n*Attributes*: Debuggable, Networked"]
-            pub fn strafe_speed_multiplier() -> Component<f32> {
-                *STRAFE_SPEED_MULTIPLIER
-            }
-            static AIR_SPEED_MULTIPLIER: Lazy<Component<f32>> = Lazy::new(|| {
-                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::air_speed_multiplier")
-            });
-            #[doc = "**air_speed_multiplier**: When the unit is in the air; how much can it control its movement? If this is 0, it can't control it at all. If it's 1 it's the same as on the ground.\n\n*Attributes*: Debuggable, Networked"]
-            pub fn air_speed_multiplier() -> Component<f32> {
-                *AIR_SPEED_MULTIPLIER
-            }
-            static UNIT_DISPLACEMENT: Lazy<Component<Vec3>> = Lazy::new(|| {
-                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::unit_displacement")
-            });
-            #[doc = "**unit_displacement**: The distance the unit tried to move last frame (though it may have collided so the actual distance may be shorter).\n\n*Attributes*: Debuggable, Networked"]
-            pub fn unit_displacement() -> Component<Vec3> {
-                *UNIT_DISPLACEMENT
-            }
-            static JUMPING: Lazy<Component<bool>> =
-                Lazy::new(|| __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::jumping"));
-            #[doc = "**jumping**\n\n*Attributes*: Debuggable, Networked"]
-            pub fn jumping() -> Component<bool> {
-                *JUMPING
-            }
-            static RUNNING: Lazy<Component<bool>> =
-                Lazy::new(|| __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::running"));
-            #[doc = "**running**\n\n*Attributes*: Debuggable, Networked"]
-            pub fn running() -> Component<bool> {
-                *RUNNING
-            }
-            static SHOOTING: Lazy<Component<bool>> = Lazy::new(|| {
-                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::shooting")
-            });
-            #[doc = "**shooting**\n\n*Attributes*: Debuggable, Networked"]
-            pub fn shooting() -> Component<bool> {
-                *SHOOTING
-            }
-            static VERTICAL_VELOCITY: Lazy<Component<f32>> = Lazy::new(|| {
-                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::vertical_velocity")
-            });
-            #[doc = "**Unit vertical speed**: The units's vertical speed.\n\n*Attributes*: Debuggable, Networked"]
-            pub fn vertical_velocity() -> Component<f32> {
-                *VERTICAL_VELOCITY
-            }
-            static IS_ON_GROUND: Lazy<Component<bool>> = Lazy::new(|| {
-                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::is_on_ground")
-            });
-            #[doc = "**is_on_ground**\n\n*Attributes*: Debuggable, Networked"]
-            pub fn is_on_ground() -> Component<bool> {
-                *IS_ON_GROUND
-            }
-            static HEAD_REF: Lazy<Component<EntityId>> = Lazy::new(|| {
-                __internal_get_component("afl5yv5ya35vbuaj3aido22cwjzat25z::head_ref")
-            });
-            #[doc = "**head_ref**\n\n*Attributes*: Debuggable, Networked"]
-            pub fn head_ref() -> Component<EntityId> {
-                *HEAD_REF
-            }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod per6j2iqhj3jz4da3fqr75jcj2kqjooo {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("per6j2iqhj3jz4da3fqr75jcj2kqjooo")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static HEIGHT_OFFSET: Lazy<Component<f32>> = Lazy::new(|| {
-                __internal_get_component("per6j2iqhj3jz4da3fqr75jcj2kqjooo::height_offset")
-            });
-            #[doc = "**Nameplate Height Offset**: The height offset from the base of this entity at which to render a nameplate. If not specified, it will default to this entity's local bounding AABB Z, and if that's not available, it will default to a constant.\n\n*Attributes*: Debuggable, Networked"]
-            pub fn height_offset() -> Component<f32> {
-                *HEIGHT_OFFSET
-            }
-            static TEXT_SIZE: Lazy<Component<f32>> = Lazy::new(|| {
-                __internal_get_component("per6j2iqhj3jz4da3fqr75jcj2kqjooo::text_size")
-            });
-            #[doc = "**Nameplate Text Size**: The text size of the nameplate to render. If not specified, it will default to 2.0.\n\n*Attributes*: Debuggable, Networked"]
-            pub fn text_size() -> Component<f32> {
-                *TEXT_SIZE
-            }
-            static HIDE: Lazy<Component<()>> =
-                Lazy::new(|| __internal_get_component("per6j2iqhj3jz4da3fqr75jcj2kqjooo::hide"));
-            #[doc = "**Nameplate Hide**: If attached to a player, hide the nameplate for that player.\n\n*Attributes*: Networked, Debuggable"]
-            pub fn hide() -> Component<()> {
-                *HIDE
-            }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod xar372tfo2oswb4pkvx7h7o3rxi6tap6 {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("xar372tfo2oswb4pkvx7h7o3rxi6tap6")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod ys6g5noe72fbhnoj6l3psjq75knd7gko {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("ys6g5noe72fbhnoj6l3psjq75knd7gko")
+                ambient_api::package::get_entity_for_package_id("n7a4j7htvenss35tsnfvegbhxuwij5il")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY
@@ -1925,751 +2992,6 @@ mod raw {
             }
         }
     }
-    pub mod d3y3wbexrclipsykysumem3fthkudwx2 {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("d3y3wbexrclipsykysumem3fthkudwx2")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static BASIC_CHARACTER_ANIMATIONS: Lazy<Component<EntityId>> = Lazy::new(|| {
-                __internal_get_component(
-                    "d3y3wbexrclipsykysumem3fthkudwx2::basic_character_animations",
-                )
-            });
-            #[doc = "**basic_character_animations**: Apply animations to the model this points to. Parameters such as health etc. is read from the entity this component is attached to.\n\n*Attributes*: Debuggable, Networked"]
-            pub fn basic_character_animations() -> Component<EntityId> {
-                *BASIC_CHARACTER_ANIMATIONS
-            }
-            static USE_RIFLE_ANIMATIONS: Lazy<Component<()>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::use_rifle_animations")
-            });
-            #[doc = "**use_rifle_animations**: Use rifle animations instead of no-weapon animations\n\n*Attributes*: Debuggable, Networked"]
-            pub fn use_rifle_animations() -> Component<()> {
-                *USE_RIFLE_ANIMATIONS
-            }
-            static WALK_FORWARD: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_forward")
-            });
-            #[doc = "**walk_forward**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn walk_forward() -> Component<String> {
-                *WALK_FORWARD
-            }
-            static WALK_BACKWARD: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_backward")
-            });
-            #[doc = "**walk_backward**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn walk_backward() -> Component<String> {
-                *WALK_BACKWARD
-            }
-            static WALK_LEFT: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_left")
-            });
-            #[doc = "**walk_left**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn walk_left() -> Component<String> {
-                *WALK_LEFT
-            }
-            static WALK_RIGHT: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_right")
-            });
-            #[doc = "**walk_right**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn walk_right() -> Component<String> {
-                *WALK_RIGHT
-            }
-            static WALK_FORWARD_LEFT: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_forward_left")
-            });
-            #[doc = "**walk_forward_left**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn walk_forward_left() -> Component<String> {
-                *WALK_FORWARD_LEFT
-            }
-            static WALK_FORWARD_RIGHT: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_forward_right")
-            });
-            #[doc = "**walk_forward_right**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn walk_forward_right() -> Component<String> {
-                *WALK_FORWARD_RIGHT
-            }
-            static WALK_BACKWARD_LEFT: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_backward_left")
-            });
-            #[doc = "**walk_backward_left**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn walk_backward_left() -> Component<String> {
-                *WALK_BACKWARD_LEFT
-            }
-            static WALK_BACKWARD_RIGHT: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::walk_backward_right")
-            });
-            #[doc = "**walk_backward_right**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn walk_backward_right() -> Component<String> {
-                *WALK_BACKWARD_RIGHT
-            }
-            static RUN_FORWARD: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_forward")
-            });
-            #[doc = "**run_forward**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn run_forward() -> Component<String> {
-                *RUN_FORWARD
-            }
-            static RUN_BACKWARD: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_backward")
-            });
-            #[doc = "**run_backward**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn run_backward() -> Component<String> {
-                *RUN_BACKWARD
-            }
-            static RUN_LEFT: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_left")
-            });
-            #[doc = "**run_left**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn run_left() -> Component<String> {
-                *RUN_LEFT
-            }
-            static RUN_RIGHT: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_right")
-            });
-            #[doc = "**run_right**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn run_right() -> Component<String> {
-                *RUN_RIGHT
-            }
-            static RUN_FORWARD_LEFT: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_forward_left")
-            });
-            #[doc = "**run_forward_left**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn run_forward_left() -> Component<String> {
-                *RUN_FORWARD_LEFT
-            }
-            static RUN_FORWARD_RIGHT: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_forward_right")
-            });
-            #[doc = "**run_forward_right**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn run_forward_right() -> Component<String> {
-                *RUN_FORWARD_RIGHT
-            }
-            static RUN_BACKWARD_LEFT: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_backward_left")
-            });
-            #[doc = "**run_backward_left**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn run_backward_left() -> Component<String> {
-                *RUN_BACKWARD_LEFT
-            }
-            static RUN_BACKWARD_RIGHT: Lazy<Component<String>> = Lazy::new(|| {
-                __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::run_backward_right")
-            });
-            #[doc = "**run_backward_right**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn run_backward_right() -> Component<String> {
-                *RUN_BACKWARD_RIGHT
-            }
-            static IDLE: Lazy<Component<String>> =
-                Lazy::new(|| __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::idle"));
-            #[doc = "**idle**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn idle() -> Component<String> {
-                *IDLE
-            }
-            static DEATH: Lazy<Component<String>> =
-                Lazy::new(|| __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::death"));
-            #[doc = "**death**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn death() -> Component<String> {
-                *DEATH
-            }
-            static JUMP: Lazy<Component<String>> =
-                Lazy::new(|| __internal_get_component("d3y3wbexrclipsykysumem3fthkudwx2::jump"));
-            #[doc = "**jump**: URL to animation\n\n*Attributes*: Debuggable, Networked"]
-            pub fn jump() -> Component<String> {
-                *JUMP
-            }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod n7a4j7htvenss35tsnfvegbhxuwij5il {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("n7a4j7htvenss35tsnfvegbhxuwij5il")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod t5qdqwpkoxtelvafs7qpvzhaoperwfpt {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("t5qdqwpkoxtelvafs7qpvzhaoperwfpt")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod hvxms7i2px7krvkm23sxfjxsjqlcmtb5 {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("hvxms7i2px7krvkm23sxfjxsjqlcmtb5")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        pub mod player {
-            #[doc = r" Auto-generated component definitions."]
-            pub mod components {
-                use ambient_api::{
-                    ecs::{Component, __internal_get_component},
-                    once_cell::sync::Lazy,
-                    prelude::*,
-                };
-                static CONTROL_OF_ENTITY: Lazy<Component<EntityId>> = Lazy::new(|| {
-                    __internal_get_component(
-                        "hvxms7i2px7krvkm23sxfjxsjqlcmtb5::player::control_of_entity",
-                    )
-                });
-                #[doc = "**Player's Control-of Entity**: The entity that this player is controlling.\n\n*Attributes*: Debuggable, Networked"]
-                pub fn control_of_entity() -> Component<EntityId> {
-                    *CONTROL_OF_ENTITY
-                }
-            }
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static HEALTH: Lazy<Component<f32>> =
-                Lazy::new(|| __internal_get_component("hvxms7i2px7krvkm23sxfjxsjqlcmtb5::health"));
-            #[doc = "**Health**: This game object's health. \"Standard\" health is 100 HP.\n\n*Attributes*: Debuggable, Networked"]
-            pub fn health() -> Component<f32> {
-                *HEALTH
-            }
-            static MAX_HEALTH: Lazy<Component<f32>> = Lazy::new(|| {
-                __internal_get_component("hvxms7i2px7krvkm23sxfjxsjqlcmtb5::max_health")
-            });
-            #[doc = "**Max Health**: Maximum health of the object. 100 HP is \"standard.\"\n\n*Attributes*: Debuggable, Networked"]
-            pub fn max_health() -> Component<f32> {
-                *MAX_HEALTH
-            }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod lktsfudbjw2qikhyumt573ozxhadkiwm {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("lktsfudbjw2qikhyumt573ozxhadkiwm")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
-        #[doc = r""]
-        #[doc = r" They do not have any runtime representation outside of the components that compose them."]
-        pub mod concepts {
-            use ambient_api::{
-                global::serde::{self, Deserialize, Serialize},
-                prelude::*,
-            };
-            #[doc = "**CharacterMovement**\n\n**Extends**: `ambient_core::physics::CharacterController`\n\n**Required**:\n- `character_controller_height`: The height of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_radius`, it will be given a physical character collider.\n- `character_controller_radius`: The radius of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_height`, it will be given a physical character collider.\n- `physics_controlled`: If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider.\n- `rotation`: The rotation of this entity.\n- `run_direction`: No description provided.\n- `vertical_velocity`: The units's vertical speed.\n- `running`: No description provided.\n- `jumping`: No description provided.\n- `is_on_ground`: No description provided.\n\n\n**Optional**:\n- `run_speed_multiplier`: The speed the unit can run at\n- `speed`: The speed the unit can walk at\n- `strafe_speed_multiplier`: The speed the unit can strafe at\n- `air_speed_multiplier`: When the unit is in the air; how much can it control its movement? If this is 0, it can't control it at all. If it's 1 it's the same as on the ground."]
-            #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-            #[serde(crate = "self::serde")]
-            pub struct CharacterMovement {
-                #[doc = "**Component**: `ambient_core::physics::character_controller_height`\n\n**Suggested value**: `2f32`\n\n**Component description**: The height of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_radius`, it will be given a physical character collider.\n\n"]
-                pub character_controller_height: f32,
-                #[doc = "**Component**: `ambient_core::physics::character_controller_radius`\n\n**Suggested value**: `0.5f32`\n\n**Component description**: The radius of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_height`, it will be given a physical character collider.\n\n"]
-                pub character_controller_radius: f32,
-                #[doc = "**Component**: `ambient_core::physics::physics_controlled`\n\n**Suggested value**: `()`\n\n**Component description**: If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider.\n\n"]
-                pub physics_controlled: (),
-                #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Suggested value**: `Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, )`\n\n**Component description**: The rotation of this entity.\n\n"]
-                pub rotation: Quat,
-                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::run_direction`\n\n**Suggested value**: `Vec2::new(0f32, 0f32, )`\n\n"]
-                pub run_direction: Vec2,
-                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::vertical_velocity`\n\n**Suggested value**: `0f32`\n\n**Component description**: The units's vertical speed.\n\n"]
-                pub vertical_velocity: f32,
-                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::running`\n\n**Suggested value**: `false`\n\n"]
-                pub running: bool,
-                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::jumping`\n\n**Suggested value**: `false`\n\n"]
-                pub jumping: bool,
-                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::is_on_ground`\n\n**Suggested value**: `true`\n\n"]
-                pub is_on_ground: bool,
-                #[doc = r" Optional components."]
-                pub optional: CharacterMovementOptional,
-            }
-            #[doc = "Optional part of [CharacterMovement]."]
-            #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
-            #[serde(crate = "self::serde")]
-            pub struct CharacterMovementOptional {
-                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::run_speed_multiplier`\n\n**Component description**: The speed the unit can run at\n\n"]
-                pub run_speed_multiplier: Option<f32>,
-                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::speed`\n\n**Component description**: The speed the unit can walk at\n\n"]
-                pub speed: Option<f32>,
-                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::strafe_speed_multiplier`\n\n**Component description**: The speed the unit can strafe at\n\n"]
-                pub strafe_speed_multiplier: Option<f32>,
-                #[doc = "**Component**: `afl5yv5ya35vbuaj3aido22cwjzat25z::air_speed_multiplier`\n\n**Component description**: When the unit is in the air; how much can it control its movement? If this is 0, it can't control it at all. If it's 1 it's the same as on the ground.\n\n"]
-                pub air_speed_multiplier: Option<f32>,
-            }
-            impl Concept for CharacterMovement {
-                fn make(self) -> Entity {
-                    let mut entity = Entity :: new () . with (ambient_api :: core :: physics :: components :: character_controller_height () , self . character_controller_height) . with (ambient_api :: core :: physics :: components :: character_controller_radius () , self . character_controller_radius) . with (ambient_api :: core :: physics :: components :: physics_controlled () , self . physics_controlled) . with (ambient_api :: core :: transform :: components :: rotation () , self . rotation) . with (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_direction () , self . run_direction) . with (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: vertical_velocity () , self . vertical_velocity) . with (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: running () , self . running) . with (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: jumping () , self . jumping) . with (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: is_on_ground () , self . is_on_ground) ;
-                    if let Some(run_speed_multiplier) = self.optional.run_speed_multiplier {
-                        entity . set (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_speed_multiplier () , run_speed_multiplier) ;
-                    }
-                    if let Some(speed) = self.optional.speed {
-                        entity . set (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: speed () , speed) ;
-                    }
-                    if let Some(strafe_speed_multiplier) = self.optional.strafe_speed_multiplier {
-                        entity . set (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: strafe_speed_multiplier () , strafe_speed_multiplier) ;
-                    }
-                    if let Some(air_speed_multiplier) = self.optional.air_speed_multiplier {
-                        entity . set (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: air_speed_multiplier () , air_speed_multiplier) ;
-                    }
-                    entity
-                }
-                fn get_spawned(id: EntityId) -> Option<Self> {
-                    Some (Self { character_controller_height : entity :: get_component (id , ambient_api :: core :: physics :: components :: character_controller_height ()) ? , character_controller_radius : entity :: get_component (id , ambient_api :: core :: physics :: components :: character_controller_radius ()) ? , physics_controlled : entity :: get_component (id , ambient_api :: core :: physics :: components :: physics_controlled ()) ? , rotation : entity :: get_component (id , ambient_api :: core :: transform :: components :: rotation ()) ? , run_direction : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_direction ()) ? , vertical_velocity : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: vertical_velocity ()) ? , running : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: running ()) ? , jumping : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: jumping ()) ? , is_on_ground : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: is_on_ground ()) ? , optional : CharacterMovementOptional { run_speed_multiplier : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_speed_multiplier ()) , speed : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: speed ()) , strafe_speed_multiplier : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: strafe_speed_multiplier ()) , air_speed_multiplier : entity :: get_component (id , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: air_speed_multiplier ()) , } })
-                }
-                fn get_unspawned(entity: &Entity) -> Option<Self> {
-                    Some (Self { character_controller_height : entity . get (ambient_api :: core :: physics :: components :: character_controller_height ()) ? , character_controller_radius : entity . get (ambient_api :: core :: physics :: components :: character_controller_radius ()) ? , physics_controlled : entity . get (ambient_api :: core :: physics :: components :: physics_controlled ()) ? , rotation : entity . get (ambient_api :: core :: transform :: components :: rotation ()) ? , run_direction : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_direction ()) ? , vertical_velocity : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: vertical_velocity ()) ? , running : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: running ()) ? , jumping : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: jumping ()) ? , is_on_ground : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: is_on_ground ()) ? , optional : CharacterMovementOptional { run_speed_multiplier : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_speed_multiplier ()) , speed : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: speed ()) , strafe_speed_multiplier : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: strafe_speed_multiplier ()) , air_speed_multiplier : entity . get (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: air_speed_multiplier ()) , } })
-                }
-                fn contained_by_spawned(id: EntityId) -> bool {
-                    entity :: has_components (id , & [& ambient_api :: core :: physics :: components :: character_controller_height () , & ambient_api :: core :: physics :: components :: character_controller_radius () , & ambient_api :: core :: physics :: components :: physics_controlled () , & ambient_api :: core :: transform :: components :: rotation () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_direction () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: vertical_velocity () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: running () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: jumping () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: is_on_ground ()])
-                }
-                fn contained_by_unspawned(entity: &Entity) -> bool {
-                    entity . has_components (& [& ambient_api :: core :: physics :: components :: character_controller_height () , & ambient_api :: core :: physics :: components :: character_controller_radius () , & ambient_api :: core :: physics :: components :: physics_controlled () , & ambient_api :: core :: transform :: components :: rotation () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_direction () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: vertical_velocity () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: running () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: jumping () , & crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: is_on_ground ()])
-                }
-            }
-            impl ConceptSuggested for CharacterMovement {
-                #[doc = "```\ncharacter_controller_height: 2f32,\ncharacter_controller_radius: 0.5f32,\nphysics_controlled: (),\nrotation: Quat::from_xyzw(0f32, 0f32, 0f32, 1f32, ),\nrun_direction: Vec2::new(0f32, 0f32, ),\nvertical_velocity: 0f32,\nrunning: false,\njumping: false,\nis_on_ground: true,\n```"]
-                fn suggested() -> Self {
-                    Self {
-                        character_controller_height: 2f32,
-                        character_controller_radius: 0.5f32,
-                        physics_controlled: (),
-                        rotation: Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),
-                        run_direction: Vec2::new(0f32, 0f32),
-                        vertical_velocity: 0f32,
-                        running: false,
-                        jumping: false,
-                        is_on_ground: true,
-                        optional: Default::default(),
-                    }
-                }
-            }
-            impl ConceptComponents for CharacterMovement {
-                type Required = (
-                    Component<f32>,
-                    Component<f32>,
-                    Component<()>,
-                    Component<Quat>,
-                    Component<Vec2>,
-                    Component<f32>,
-                    Component<bool>,
-                    Component<bool>,
-                    Component<bool>,
-                );
-                type Optional = (
-                    Component<f32>,
-                    Component<f32>,
-                    Component<f32>,
-                    Component<f32>,
-                );
-                fn required() -> Self::Required {
-                    (ambient_api :: core :: physics :: components :: character_controller_height () , ambient_api :: core :: physics :: components :: character_controller_radius () , ambient_api :: core :: physics :: components :: physics_controlled () , ambient_api :: core :: transform :: components :: rotation () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_direction () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: vertical_velocity () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: running () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: jumping () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: is_on_ground () ,)
-                }
-                fn optional() -> Self::Optional {
-                    (crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: run_speed_multiplier () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: speed () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: strafe_speed_multiplier () , crate :: packages :: raw :: afl5yv5ya35vbuaj3aido22cwjzat25z :: components :: air_speed_multiplier () ,)
-                }
-                fn from_required_data(required: <Self::Required as ComponentsTuple>::Data) -> Self {
-                    Self {
-                        character_controller_height: required.0,
-                        character_controller_radius: required.1,
-                        physics_controlled: required.2,
-                        rotation: required.3,
-                        run_direction: required.4,
-                        vertical_velocity: required.5,
-                        running: required.6,
-                        jumping: required.7,
-                        is_on_ground: required.8,
-                        optional: Default::default(),
-                    }
-                }
-            }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod c72h7qyqnp4njboj7tu4vomadoj2zu6e {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("c72h7qyqnp4njboj7tu4vomadoj2zu6e")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
-        #[doc = r" and with other modules."]
-        pub mod messages {
-            use ambient_api::{
-                message::{
-                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
-                },
-                prelude::*,
-            };
-            #[derive(Clone, Debug)]
-            #[doc = "**VehicleSpawnRequest**: Sent by the client to request a vehicle spawn."]
-            pub struct VehicleSpawnRequest {
-                pub def_id: EntityId,
-            }
-            impl VehicleSpawnRequest {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(def_id: impl Into<EntityId>) -> Self {
-                    Self {
-                        def_id: def_id.into(),
-                    }
-                }
-            }
-            impl Message for VehicleSpawnRequest {
-                fn id() -> &'static str {
-                    "c72h7qyqnp4njboj7tu4vomadoj2zu6e::VehicleSpawnRequest"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.def_id.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        def_id: EntityId::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for VehicleSpawnRequest {}
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod xgafi5ckk5vhxscb6tqubfvy2fwfyqxo {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("xgafi5ckk5vhxscb6tqubfvy2fwfyqxo")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod zlu324bqcibov3o4co42eriyfhcnzsus {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("zlu324bqcibov3o4co42eriyfhcnzsus")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod d7rxxncafgtwf7c3brhsw7oh7h2ccfip {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("d7rxxncafgtwf7c3brhsw7oh7h2ccfip")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod xr6whcy65gn3vlzrp2ssyn7udcbxb6mu {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static EDITOR_CAMERA: Lazy<Component<EntityId>> = Lazy::new(|| {
-                __internal_get_component("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::editor_camera")
-            });
-            #[doc = "**editor_camera**\n\n*Attributes*: Networked, Debuggable"]
-            pub fn editor_camera() -> Component<EntityId> {
-                *EDITOR_CAMERA
-            }
-            static MOUSEOVER_POSITION: Lazy<Component<Vec3>> = Lazy::new(|| {
-                __internal_get_component("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::mouseover_position")
-            });
-            #[doc = "**mouseover_position**\n\n*Attributes*: Networked, Debuggable"]
-            pub fn mouseover_position() -> Component<Vec3> {
-                *MOUSEOVER_POSITION
-            }
-            static MOUSEOVER_ENTITY: Lazy<Component<EntityId>> = Lazy::new(|| {
-                __internal_get_component("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::mouseover_entity")
-            });
-            #[doc = "**mouseover_entity**\n\n*Attributes*: Networked, Debuggable"]
-            pub fn mouseover_entity() -> Component<EntityId> {
-                *MOUSEOVER_ENTITY
-            }
-            static SELECTED_ENTITY: Lazy<Component<EntityId>> = Lazy::new(|| {
-                __internal_get_component("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::selected_entity")
-            });
-            #[doc = "**selected_entity**\n\n*Attributes*: Networked, Debuggable"]
-            pub fn selected_entity() -> Component<EntityId> {
-                *SELECTED_ENTITY
-            }
-            static HAS_SAMPLE_SCENE: Lazy<Component<()>> = Lazy::new(|| {
-                __internal_get_component("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::has_sample_scene")
-            });
-            #[doc = "**has_sample_scene**\n\n*Attributes*: Networked, MaybeResource"]
-            pub fn has_sample_scene() -> Component<()> {
-                *HAS_SAMPLE_SCENE
-            }
-            static CAMERA_ANGLE: Lazy<Component<Vec2>> = Lazy::new(|| {
-                __internal_get_component("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::camera_angle")
-            });
-            #[doc = "**camera_angle**: X is yaw, Y is pitch\n\n*Attributes*: Networked, Debuggable"]
-            pub fn camera_angle() -> Component<Vec2> {
-                *CAMERA_ANGLE
-            }
-        }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
-        #[doc = r" and with other modules."]
-        pub mod messages {
-            use ambient_api::{
-                message::{
-                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
-                },
-                prelude::*,
-            };
-            #[derive(Clone, Debug)]
-            #[doc = "**ToggleEditor**"]
-            pub struct ToggleEditor {
-                pub camera_transform: Option<Mat4>,
-            }
-            impl ToggleEditor {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(camera_transform: impl Into<Option<Mat4>>) -> Self {
-                    Self {
-                        camera_transform: camera_transform.into(),
-                    }
-                }
-            }
-            impl Message for ToggleEditor {
-                fn id() -> &'static str {
-                    "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::ToggleEditor"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.camera_transform.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        camera_transform: Option::<Mat4>::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for ToggleEditor {}
-            #[derive(Clone, Debug)]
-            #[doc = "**Input**"]
-            pub struct Input {
-                pub aim_delta: Vec2,
-                pub movement: Vec2,
-                pub boost: bool,
-                pub ray_origin: Vec3,
-                pub ray_direction: Vec3,
-                pub select: bool,
-                pub freeze: bool,
-                pub translate_to: Option<Vec3>,
-            }
-            impl Input {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(
-                    aim_delta: impl Into<Vec2>,
-                    movement: impl Into<Vec2>,
-                    boost: impl Into<bool>,
-                    ray_origin: impl Into<Vec3>,
-                    ray_direction: impl Into<Vec3>,
-                    select: impl Into<bool>,
-                    freeze: impl Into<bool>,
-                    translate_to: impl Into<Option<Vec3>>,
-                ) -> Self {
-                    Self {
-                        aim_delta: aim_delta.into(),
-                        movement: movement.into(),
-                        boost: boost.into(),
-                        ray_origin: ray_origin.into(),
-                        ray_direction: ray_direction.into(),
-                        select: select.into(),
-                        freeze: freeze.into(),
-                        translate_to: translate_to.into(),
-                    }
-                }
-            }
-            impl Message for Input {
-                fn id() -> &'static str {
-                    "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::Input"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.aim_delta.serialize_message_part(&mut output)?;
-                    self.movement.serialize_message_part(&mut output)?;
-                    self.boost.serialize_message_part(&mut output)?;
-                    self.ray_origin.serialize_message_part(&mut output)?;
-                    self.ray_direction.serialize_message_part(&mut output)?;
-                    self.select.serialize_message_part(&mut output)?;
-                    self.freeze.serialize_message_part(&mut output)?;
-                    self.translate_to.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        aim_delta: Vec2::deserialize_message_part(&mut input)?,
-                        movement: Vec2::deserialize_message_part(&mut input)?,
-                        boost: bool::deserialize_message_part(&mut input)?,
-                        ray_origin: Vec3::deserialize_message_part(&mut input)?,
-                        ray_direction: Vec3::deserialize_message_part(&mut input)?,
-                        select: bool::deserialize_message_part(&mut input)?,
-                        freeze: bool::deserialize_message_part(&mut input)?,
-                        translate_to: Option::<Vec3>::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for Input {}
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod mkd4mhans4bdn3mvmt45vxqbxepdhys3 {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("mkd4mhans4bdn3mvmt45vxqbxepdhys3")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod e4unr4x2lz2ov7dsd5vnjylbykwixvv2 {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("e4unr4x2lz2ov7dsd5vnjylbykwixvv2")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod ggu2h7bk4jrvshq7zteboipyut7wuib2 {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("ggu2h7bk4jrvshq7zteboipyut7wuib2")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod ianwyihfsaiuc26xjldmwd3duidju2tb {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("ianwyihfsaiuc26xjldmwd3duidju2tb")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
     pub mod oa46hyuls6l24bmqapdm3iqzh3p37di6 {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
@@ -2686,214 +3008,11 @@ mod raw {
             }
         }
     }
-    pub mod itzh3wovmdje4ttrmo6wrravaaxp6b52 {
+    pub mod per6j2iqhj3jz4da3fqr75jcj2kqjooo {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("itzh3wovmdje4ttrmo6wrravaaxp6b52")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
-        #[doc = r" and with other modules."]
-        pub mod messages {
-            use ambient_api::{
-                message::{
-                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
-                },
-                prelude::*,
-            };
-            #[derive(Clone, Debug)]
-            #[doc = "**Input**: Input"]
-            pub struct Input {
-                pub direction: Vec2,
-                pub jump: bool,
-                pub fire: bool,
-                pub use_button: bool,
-                pub sprint: bool,
-                pub respawn: bool,
-                pub aim_direction: Vec2,
-                pub aim_ray_origin: Vec3,
-                pub aim_ray_direction: Vec3,
-            }
-            impl Input {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(
-                    direction: impl Into<Vec2>,
-                    jump: impl Into<bool>,
-                    fire: impl Into<bool>,
-                    use_button: impl Into<bool>,
-                    sprint: impl Into<bool>,
-                    respawn: impl Into<bool>,
-                    aim_direction: impl Into<Vec2>,
-                    aim_ray_origin: impl Into<Vec3>,
-                    aim_ray_direction: impl Into<Vec3>,
-                ) -> Self {
-                    Self {
-                        direction: direction.into(),
-                        jump: jump.into(),
-                        fire: fire.into(),
-                        use_button: use_button.into(),
-                        sprint: sprint.into(),
-                        respawn: respawn.into(),
-                        aim_direction: aim_direction.into(),
-                        aim_ray_origin: aim_ray_origin.into(),
-                        aim_ray_direction: aim_ray_direction.into(),
-                    }
-                }
-            }
-            impl Message for Input {
-                fn id() -> &'static str {
-                    "itzh3wovmdje4ttrmo6wrravaaxp6b52::Input"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.direction.serialize_message_part(&mut output)?;
-                    self.jump.serialize_message_part(&mut output)?;
-                    self.fire.serialize_message_part(&mut output)?;
-                    self.use_button.serialize_message_part(&mut output)?;
-                    self.sprint.serialize_message_part(&mut output)?;
-                    self.respawn.serialize_message_part(&mut output)?;
-                    self.aim_direction.serialize_message_part(&mut output)?;
-                    self.aim_ray_origin.serialize_message_part(&mut output)?;
-                    self.aim_ray_direction.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        direction: Vec2::deserialize_message_part(&mut input)?,
-                        jump: bool::deserialize_message_part(&mut input)?,
-                        fire: bool::deserialize_message_part(&mut input)?,
-                        use_button: bool::deserialize_message_part(&mut input)?,
-                        sprint: bool::deserialize_message_part(&mut input)?,
-                        respawn: bool::deserialize_message_part(&mut input)?,
-                        aim_direction: Vec2::deserialize_message_part(&mut input)?,
-                        aim_ray_origin: Vec3::deserialize_message_part(&mut input)?,
-                        aim_ray_direction: Vec3::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for Input {}
-            #[derive(Clone, Debug)]
-            #[doc = "**UseFailed**: Sent from the server to the client when a use action fails."]
-            pub struct UseFailed;
-            impl UseFailed {
-                pub fn new() -> Self {
-                    Self
-                }
-            }
-            impl Message for UseFailed {
-                fn id() -> &'static str {
-                    "itzh3wovmdje4ttrmo6wrravaaxp6b52::UseFailed"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {})
-                }
-            }
-            impl ModuleMessage for UseFailed {}
-            impl Default for UseFailed {
-                fn default() -> Self {
-                    Self::new()
-                }
-            }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod xadcwjtmzuagnoydry5h4psaph3hccbw {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("xadcwjtmzuagnoydry5h4psaph3hccbw")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod llhdryqkfsr6gy4f26wbolh4kfwnzn3c {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("llhdryqkfsr6gy4f26wbolh4kfwnzn3c")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod j32xi2gg5rvgob2cu7uirdbtj5ce4jw7 {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("j32xi2gg5rvgob2cu7uirdbtj5ce4jw7")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod k7svgbw5j6orlwzj45koeownlodsdbth {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("k7svgbw5j6orlwzj45koeownlodsdbth")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod fvn74ns4ozf3gn42vmowphmvmpsfklbi {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("fvn74ns4ozf3gn42vmowphmvmpsfklbi")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod gzbamly2shtnz3siisf3mdzglsi67vul {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("gzbamly2shtnz3siisf3mdzglsi67vul")
+                ambient_api::package::get_entity_for_package_id("per6j2iqhj3jz4da3fqr75jcj2kqjooo")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY
@@ -2905,12 +3024,25 @@ mod raw {
                 once_cell::sync::Lazy,
                 prelude::*,
             };
-            static INCLUDE_CORNERS: Lazy<Component<bool>> = Lazy::new(|| {
-                __internal_get_component("gzbamly2shtnz3siisf3mdzglsi67vul::include_corners")
+            static HEIGHT_OFFSET: Lazy<Component<f32>> = Lazy::new(|| {
+                __internal_get_component("per6j2iqhj3jz4da3fqr75jcj2kqjooo::height_offset")
             });
-            #[doc = "**Include Corners**: Whether or not the corner spawnpoints are created.\n\n*Attributes*: Debuggable, Networked\n\n*Suggested Default*: true"]
-            pub fn include_corners() -> Component<bool> {
-                *INCLUDE_CORNERS
+            #[doc = "**Nameplate Height Offset**: The height offset from the base of this entity at which to render a nameplate. If not specified, it will default to this entity's local bounding AABB Z, and if that's not available, it will default to a constant.\n\n*Attributes*: Debuggable, Networked"]
+            pub fn height_offset() -> Component<f32> {
+                *HEIGHT_OFFSET
+            }
+            static TEXT_SIZE: Lazy<Component<f32>> = Lazy::new(|| {
+                __internal_get_component("per6j2iqhj3jz4da3fqr75jcj2kqjooo::text_size")
+            });
+            #[doc = "**Nameplate Text Size**: The text size of the nameplate to render. If not specified, it will default to 2.0.\n\n*Attributes*: Debuggable, Networked"]
+            pub fn text_size() -> Component<f32> {
+                *TEXT_SIZE
+            }
+            static HIDE: Lazy<Component<()>> =
+                Lazy::new(|| __internal_get_component("per6j2iqhj3jz4da3fqr75jcj2kqjooo::hide"));
+            #[doc = "**Nameplate Hide**: If attached to a player, hide the nameplate for that player.\n\n*Attributes*: Networked, Debuggable"]
+            pub fn hide() -> Component<()> {
+                *HIDE
             }
         }
         #[doc = r" Helpers for accessing the assets for this package."]
@@ -3117,11 +3249,91 @@ mod raw {
             }
         }
     }
-    pub mod hr4pxz7kfhzgimicoyh65ydel3aehuhk {
+    pub mod t5qdqwpkoxtelvafs7qpvzhaoperwfpt {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("hr4pxz7kfhzgimicoyh65ydel3aehuhk")
+                ambient_api::package::get_entity_for_package_id("t5qdqwpkoxtelvafs7qpvzhaoperwfpt")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod vvuixyn4jy3xv4ij4hi75atzfwk2j37k {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("vvuixyn4jy3xv4ij4hi75atzfwk2j37k")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod xadcwjtmzuagnoydry5h4psaph3hccbw {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("xadcwjtmzuagnoydry5h4psaph3hccbw")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod xar372tfo2oswb4pkvx7h7o3rxi6tap6 {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("xar372tfo2oswb4pkvx7h7o3rxi6tap6")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod xgafi5ckk5vhxscb6tqubfvy2fwfyqxo {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("xgafi5ckk5vhxscb6tqubfvy2fwfyqxo")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod xr6whcy65gn3vlzrp2ssyn7udcbxb6mu {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY
@@ -3133,12 +3345,47 @@ mod raw {
                 once_cell::sync::Lazy,
                 prelude::*,
             };
-            static MOD_MANAGER_FOR: Lazy<Component<EntityId>> = Lazy::new(|| {
-                __internal_get_component("hr4pxz7kfhzgimicoyh65ydel3aehuhk::mod_manager_for")
+            static EDITOR_CAMERA: Lazy<Component<EntityId>> = Lazy::new(|| {
+                __internal_get_component("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::editor_camera")
             });
-            #[doc = "**Mod Manager For**: Package config component. Attach this component to this package's entity to make it a mod manager for the given package.\n\n*Attributes*: Networked, Debuggable"]
-            pub fn mod_manager_for() -> Component<EntityId> {
-                *MOD_MANAGER_FOR
+            #[doc = "**editor_camera**\n\n*Attributes*: Networked, Debuggable"]
+            pub fn editor_camera() -> Component<EntityId> {
+                *EDITOR_CAMERA
+            }
+            static MOUSEOVER_POSITION: Lazy<Component<Vec3>> = Lazy::new(|| {
+                __internal_get_component("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::mouseover_position")
+            });
+            #[doc = "**mouseover_position**\n\n*Attributes*: Networked, Debuggable"]
+            pub fn mouseover_position() -> Component<Vec3> {
+                *MOUSEOVER_POSITION
+            }
+            static MOUSEOVER_ENTITY: Lazy<Component<EntityId>> = Lazy::new(|| {
+                __internal_get_component("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::mouseover_entity")
+            });
+            #[doc = "**mouseover_entity**\n\n*Attributes*: Networked, Debuggable"]
+            pub fn mouseover_entity() -> Component<EntityId> {
+                *MOUSEOVER_ENTITY
+            }
+            static SELECTED_ENTITY: Lazy<Component<EntityId>> = Lazy::new(|| {
+                __internal_get_component("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::selected_entity")
+            });
+            #[doc = "**selected_entity**\n\n*Attributes*: Networked, Debuggable"]
+            pub fn selected_entity() -> Component<EntityId> {
+                *SELECTED_ENTITY
+            }
+            static HAS_SAMPLE_SCENE: Lazy<Component<()>> = Lazy::new(|| {
+                __internal_get_component("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::has_sample_scene")
+            });
+            #[doc = "**has_sample_scene**\n\n*Attributes*: Networked, MaybeResource"]
+            pub fn has_sample_scene() -> Component<()> {
+                *HAS_SAMPLE_SCENE
+            }
+            static CAMERA_ANGLE: Lazy<Component<Vec2>> = Lazy::new(|| {
+                __internal_get_component("xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::camera_angle")
+            });
+            #[doc = "**camera_angle**: X is yaw, Y is pitch\n\n*Attributes*: Networked, Debuggable"]
+            pub fn camera_angle() -> Component<Vec2> {
+                *CAMERA_ANGLE
             }
         }
         #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
@@ -3151,308 +3398,100 @@ mod raw {
                 prelude::*,
             };
             #[derive(Clone, Debug)]
-            #[doc = "**PackageLoad**"]
-            pub struct PackageLoad {
-                pub url: String,
-                pub enabled: bool,
+            #[doc = "**ToggleEditor**"]
+            pub struct ToggleEditor {
+                pub camera_transform: Option<Mat4>,
             }
-            impl PackageLoad {
+            impl ToggleEditor {
                 #[allow(clippy::too_many_arguments)]
-                pub fn new(url: impl Into<String>, enabled: impl Into<bool>) -> Self {
+                pub fn new(camera_transform: impl Into<Option<Mat4>>) -> Self {
                     Self {
-                        url: url.into(),
-                        enabled: enabled.into(),
+                        camera_transform: camera_transform.into(),
                     }
                 }
             }
-            impl Message for PackageLoad {
+            impl Message for ToggleEditor {
                 fn id() -> &'static str {
-                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageLoad"
+                    "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::ToggleEditor"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
-                    self.url.serialize_message_part(&mut output)?;
-                    self.enabled.serialize_message_part(&mut output)?;
+                    self.camera_transform.serialize_message_part(&mut output)?;
                     Ok(output)
                 }
                 fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
                     Ok(Self {
-                        url: String::deserialize_message_part(&mut input)?,
-                        enabled: bool::deserialize_message_part(&mut input)?,
+                        camera_transform: Option::<Mat4>::deserialize_message_part(&mut input)?,
                     })
                 }
             }
-            impl ModuleMessage for PackageLoad {}
+            impl ModuleMessage for ToggleEditor {}
             #[derive(Clone, Debug)]
-            #[doc = "**PackageLoadSuccess**"]
-            pub struct PackageLoadSuccess {
-                pub id: EntityId,
-                pub name: String,
+            #[doc = "**Input**"]
+            pub struct Input {
+                pub aim_delta: Vec2,
+                pub movement: Vec2,
+                pub boost: bool,
+                pub ray_origin: Vec3,
+                pub ray_direction: Vec3,
+                pub select: bool,
+                pub freeze: bool,
+                pub translate_to: Option<Vec3>,
             }
-            impl PackageLoadSuccess {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(id: impl Into<EntityId>, name: impl Into<String>) -> Self {
-                    Self {
-                        id: id.into(),
-                        name: name.into(),
-                    }
-                }
-            }
-            impl Message for PackageLoadSuccess {
-                fn id() -> &'static str {
-                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageLoadSuccess"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.id.serialize_message_part(&mut output)?;
-                    self.name.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        id: EntityId::deserialize_message_part(&mut input)?,
-                        name: String::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for PackageLoadSuccess {}
-            #[derive(Clone, Debug)]
-            #[doc = "**PackageLoadFailure**"]
-            pub struct PackageLoadFailure {
-                pub reason: String,
-            }
-            impl PackageLoadFailure {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(reason: impl Into<String>) -> Self {
-                    Self {
-                        reason: reason.into(),
-                    }
-                }
-            }
-            impl Message for PackageLoadFailure {
-                fn id() -> &'static str {
-                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageLoadFailure"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.reason.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        reason: String::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for PackageLoadFailure {}
-            #[derive(Clone, Debug)]
-            #[doc = "**PackageSetEnabled**"]
-            pub struct PackageSetEnabled {
-                pub id: EntityId,
-                pub enabled: bool,
-            }
-            impl PackageSetEnabled {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(id: impl Into<EntityId>, enabled: impl Into<bool>) -> Self {
-                    Self {
-                        id: id.into(),
-                        enabled: enabled.into(),
-                    }
-                }
-            }
-            impl Message for PackageSetEnabled {
-                fn id() -> &'static str {
-                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageSetEnabled"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.id.serialize_message_part(&mut output)?;
-                    self.enabled.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        id: EntityId::deserialize_message_part(&mut input)?,
-                        enabled: bool::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for PackageSetEnabled {}
-            #[derive(Clone, Debug)]
-            #[doc = "**WasmSetEnabled**"]
-            pub struct WasmSetEnabled {
-                pub id: EntityId,
-                pub enabled: bool,
-            }
-            impl WasmSetEnabled {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(id: impl Into<EntityId>, enabled: impl Into<bool>) -> Self {
-                    Self {
-                        id: id.into(),
-                        enabled: enabled.into(),
-                    }
-                }
-            }
-            impl Message for WasmSetEnabled {
-                fn id() -> &'static str {
-                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::WasmSetEnabled"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.id.serialize_message_part(&mut output)?;
-                    self.enabled.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        id: EntityId::deserialize_message_part(&mut input)?,
-                        enabled: bool::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for WasmSetEnabled {}
-            #[derive(Clone, Debug)]
-            #[doc = "**WasmReload**"]
-            pub struct WasmReload {
-                pub id: EntityId,
-            }
-            impl WasmReload {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(id: impl Into<EntityId>) -> Self {
-                    Self { id: id.into() }
-                }
-            }
-            impl Message for WasmReload {
-                fn id() -> &'static str {
-                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::WasmReload"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.id.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        id: EntityId::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for WasmReload {}
-            #[derive(Clone, Debug)]
-            #[doc = "**PackageShow**: Shows the package view for a package"]
-            pub struct PackageShow {
-                pub id: EntityId,
-            }
-            impl PackageShow {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(id: impl Into<EntityId>) -> Self {
-                    Self { id: id.into() }
-                }
-            }
-            impl Message for PackageShow {
-                fn id() -> &'static str {
-                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageShow"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.id.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        id: EntityId::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for PackageShow {}
-            #[derive(Clone, Debug)]
-            #[doc = "**PackageLoadShow**: Shows the package load view"]
-            pub struct PackageLoadShow;
-            impl PackageLoadShow {
-                pub fn new() -> Self {
-                    Self
-                }
-            }
-            impl Message for PackageLoadShow {
-                fn id() -> &'static str {
-                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageLoadShow"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {})
-                }
-            }
-            impl ModuleMessage for PackageLoadShow {}
-            impl Default for PackageLoadShow {
-                fn default() -> Self {
-                    Self::new()
-                }
-            }
-            #[derive(Clone, Debug)]
-            #[doc = "**PackageRemoteRequest**: Requests all relevant remote packages"]
-            pub struct PackageRemoteRequest;
-            impl PackageRemoteRequest {
-                pub fn new() -> Self {
-                    Self
-                }
-            }
-            impl Message for PackageRemoteRequest {
-                fn id() -> &'static str {
-                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageRemoteRequest"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {})
-                }
-            }
-            impl ModuleMessage for PackageRemoteRequest {}
-            impl Default for PackageRemoteRequest {
-                fn default() -> Self {
-                    Self::new()
-                }
-            }
-            #[derive(Clone, Debug)]
-            #[doc = "**PackageRemoteResponse**: Response to a remote package request"]
-            pub struct PackageRemoteResponse {
-                pub packages: Vec<String>,
-                pub error: Option<String>,
-            }
-            impl PackageRemoteResponse {
+            impl Input {
                 #[allow(clippy::too_many_arguments)]
                 pub fn new(
-                    packages: impl Into<Vec<String>>,
-                    error: impl Into<Option<String>>,
+                    aim_delta: impl Into<Vec2>,
+                    movement: impl Into<Vec2>,
+                    boost: impl Into<bool>,
+                    ray_origin: impl Into<Vec3>,
+                    ray_direction: impl Into<Vec3>,
+                    select: impl Into<bool>,
+                    freeze: impl Into<bool>,
+                    translate_to: impl Into<Option<Vec3>>,
                 ) -> Self {
                     Self {
-                        packages: packages.into(),
-                        error: error.into(),
+                        aim_delta: aim_delta.into(),
+                        movement: movement.into(),
+                        boost: boost.into(),
+                        ray_origin: ray_origin.into(),
+                        ray_direction: ray_direction.into(),
+                        select: select.into(),
+                        freeze: freeze.into(),
+                        translate_to: translate_to.into(),
                     }
                 }
             }
-            impl Message for PackageRemoteResponse {
+            impl Message for Input {
                 fn id() -> &'static str {
-                    "hr4pxz7kfhzgimicoyh65ydel3aehuhk::PackageRemoteResponse"
+                    "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu::Input"
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
-                    self.packages.serialize_message_part(&mut output)?;
-                    self.error.serialize_message_part(&mut output)?;
+                    self.aim_delta.serialize_message_part(&mut output)?;
+                    self.movement.serialize_message_part(&mut output)?;
+                    self.boost.serialize_message_part(&mut output)?;
+                    self.ray_origin.serialize_message_part(&mut output)?;
+                    self.ray_direction.serialize_message_part(&mut output)?;
+                    self.select.serialize_message_part(&mut output)?;
+                    self.freeze.serialize_message_part(&mut output)?;
+                    self.translate_to.serialize_message_part(&mut output)?;
                     Ok(output)
                 }
                 fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
                     Ok(Self {
-                        packages: Vec::<String>::deserialize_message_part(&mut input)?,
-                        error: Option::<String>::deserialize_message_part(&mut input)?,
+                        aim_delta: Vec2::deserialize_message_part(&mut input)?,
+                        movement: Vec2::deserialize_message_part(&mut input)?,
+                        boost: bool::deserialize_message_part(&mut input)?,
+                        ray_origin: Vec3::deserialize_message_part(&mut input)?,
+                        ray_direction: Vec3::deserialize_message_part(&mut input)?,
+                        select: bool::deserialize_message_part(&mut input)?,
+                        freeze: bool::deserialize_message_part(&mut input)?,
+                        translate_to: Option::<Vec3>::deserialize_message_part(&mut input)?,
                     })
                 }
             }
-            impl ModuleMessage for PackageRemoteResponse {}
+            impl ModuleMessage for Input {}
         }
         #[doc = r" Helpers for accessing the assets for this package."]
         pub mod assets {
@@ -3461,54 +3500,15 @@ mod raw {
             }
         }
     }
-    pub mod hs7ygpw4pmpsixtcohdcvzxwmrfzubvi {
+    pub mod ys6g5noe72fbhnoj6l3psjq75knd7gko {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("hs7ygpw4pmpsixtcohdcvzxwmrfzubvi")
+                ambient_api::package::get_entity_for_package_id("ys6g5noe72fbhnoj6l3psjq75knd7gko")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
-        #[doc = r" and with other modules."]
-        pub mod messages {
-            use ambient_api::{
-                message::{
-                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
-                },
-                prelude::*,
-            };
-            #[derive(Clone, Debug)]
-            #[doc = "**ClassSetRequest**: Sent by the client to request a class set change."]
-            pub struct ClassSetRequest {
-                pub class_id: EntityId,
-            }
-            impl ClassSetRequest {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(class_id: impl Into<EntityId>) -> Self {
-                    Self {
-                        class_id: class_id.into(),
-                    }
-                }
-            }
-            impl Message for ClassSetRequest {
-                fn id() -> &'static str {
-                    "hs7ygpw4pmpsixtcohdcvzxwmrfzubvi::ClassSetRequest"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.class_id.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        class_id: EntityId::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for ClassSetRequest {}
-        }
         #[doc = r" Helpers for accessing the assets for this package."]
         pub mod assets {
             pub fn url(path: &str) -> String {
@@ -3516,11 +3516,11 @@ mod raw {
             }
         }
     }
-    pub mod ambient_core {
+    pub mod zlu324bqcibov3o4co42eriyfhcnzsus {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("ambient_core")
+                ambient_api::package::get_entity_for_package_id("zlu324bqcibov3o4co42eriyfhcnzsus")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY

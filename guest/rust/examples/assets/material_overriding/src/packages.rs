@@ -6,6 +6,53 @@
     clippy::unused_unit
 )]
 mod raw {
+    pub mod ambient_core {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("ambient_core")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod ib2djsnjew5tb2k5igq6le7rzjdwlvhq {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("ib2djsnjew5tb2k5igq6le7rzjdwlvhq")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static IS_THE_BEST: Lazy<Component<bool>> = Lazy::new(|| {
+                __internal_get_component("ib2djsnjew5tb2k5igq6le7rzjdwlvhq::is_the_best")
+            });
+            #[doc = "**Is The Best**: Declares whether or not the entity this is attached is the best.\n\n*Attributes*: Networked, Debuggable"]
+            pub fn is_the_best() -> Component<bool> {
+                *IS_THE_BEST
+            }
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
     pub mod tijz7x6fimbgu24sbbtp4nllhfxbgblp {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
@@ -127,53 +174,6 @@ mod raw {
                     }
                 }
             }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod ib2djsnjew5tb2k5igq6le7rzjdwlvhq {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("ib2djsnjew5tb2k5igq6le7rzjdwlvhq")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static IS_THE_BEST: Lazy<Component<bool>> = Lazy::new(|| {
-                __internal_get_component("ib2djsnjew5tb2k5igq6le7rzjdwlvhq::is_the_best")
-            });
-            #[doc = "**Is The Best**: Declares whether or not the entity this is attached is the best.\n\n*Attributes*: Networked, Debuggable"]
-            pub fn is_the_best() -> Component<bool> {
-                *IS_THE_BEST
-            }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod ambient_core {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("ambient_core")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
         }
         #[doc = r" Helpers for accessing the assets for this package."]
         pub mod assets {

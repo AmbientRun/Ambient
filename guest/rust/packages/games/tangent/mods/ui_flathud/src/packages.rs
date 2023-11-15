@@ -6,62 +6,6 @@
     clippy::unused_unit
 )]
 mod raw {
-    pub mod hvxms7i2px7krvkm23sxfjxsjqlcmtb5 {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("hvxms7i2px7krvkm23sxfjxsjqlcmtb5")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        pub mod player {
-            #[doc = r" Auto-generated component definitions."]
-            pub mod components {
-                use ambient_api::{
-                    ecs::{Component, __internal_get_component},
-                    once_cell::sync::Lazy,
-                    prelude::*,
-                };
-                static CONTROL_OF_ENTITY: Lazy<Component<EntityId>> = Lazy::new(|| {
-                    __internal_get_component(
-                        "hvxms7i2px7krvkm23sxfjxsjqlcmtb5::player::control_of_entity",
-                    )
-                });
-                #[doc = "**Player's Control-of Entity**: The entity that this player is controlling.\n\n*Attributes*: Debuggable, Networked"]
-                pub fn control_of_entity() -> Component<EntityId> {
-                    *CONTROL_OF_ENTITY
-                }
-            }
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static HEALTH: Lazy<Component<f32>> =
-                Lazy::new(|| __internal_get_component("hvxms7i2px7krvkm23sxfjxsjqlcmtb5::health"));
-            #[doc = "**Health**: This game object's health. \"Standard\" health is 100 HP.\n\n*Attributes*: Debuggable, Networked"]
-            pub fn health() -> Component<f32> {
-                *HEALTH
-            }
-            static MAX_HEALTH: Lazy<Component<f32>> = Lazy::new(|| {
-                __internal_get_component("hvxms7i2px7krvkm23sxfjxsjqlcmtb5::max_health")
-            });
-            #[doc = "**Max Health**: Maximum health of the object. 100 HP is \"standard.\"\n\n*Attributes*: Debuggable, Networked"]
-            pub fn max_health() -> Component<f32> {
-                *MAX_HEALTH
-            }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
     pub mod afl5yv5ya35vbuaj3aido22cwjzat25z {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
@@ -160,6 +104,78 @@ mod raw {
             #[doc = "**head_ref**\n\n*Attributes*: Debuggable, Networked"]
             pub fn head_ref() -> Component<EntityId> {
                 *HEAD_REF
+            }
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod ambient_core {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("ambient_core")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod hvxms7i2px7krvkm23sxfjxsjqlcmtb5 {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("hvxms7i2px7krvkm23sxfjxsjqlcmtb5")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        pub mod player {
+            #[doc = r" Auto-generated component definitions."]
+            pub mod components {
+                use ambient_api::{
+                    ecs::{Component, __internal_get_component},
+                    once_cell::sync::Lazy,
+                    prelude::*,
+                };
+                static CONTROL_OF_ENTITY: Lazy<Component<EntityId>> = Lazy::new(|| {
+                    __internal_get_component(
+                        "hvxms7i2px7krvkm23sxfjxsjqlcmtb5::player::control_of_entity",
+                    )
+                });
+                #[doc = "**Player's Control-of Entity**: The entity that this player is controlling.\n\n*Attributes*: Debuggable, Networked"]
+                pub fn control_of_entity() -> Component<EntityId> {
+                    *CONTROL_OF_ENTITY
+                }
+            }
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static HEALTH: Lazy<Component<f32>> =
+                Lazy::new(|| __internal_get_component("hvxms7i2px7krvkm23sxfjxsjqlcmtb5::health"));
+            #[doc = "**Health**: This game object's health. \"Standard\" health is 100 HP.\n\n*Attributes*: Debuggable, Networked"]
+            pub fn health() -> Component<f32> {
+                *HEALTH
+            }
+            static MAX_HEALTH: Lazy<Component<f32>> = Lazy::new(|| {
+                __internal_get_component("hvxms7i2px7krvkm23sxfjxsjqlcmtb5::max_health")
+            });
+            #[doc = "**Max Health**: Maximum health of the object. 100 HP is \"standard.\"\n\n*Attributes*: Debuggable, Networked"]
+            pub fn max_health() -> Component<f32> {
+                *MAX_HEALTH
             }
         }
         #[doc = r" Helpers for accessing the assets for this package."]
@@ -1359,22 +1375,6 @@ mod raw {
                     }
                 }
             }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod ambient_core {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("ambient_core")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
         }
         #[doc = r" Helpers for accessing the assets for this package."]
         pub mod assets {

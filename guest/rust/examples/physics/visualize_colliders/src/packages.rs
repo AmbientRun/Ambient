@@ -22,6 +22,22 @@ mod raw {
             }
         }
     }
+    pub mod s37z23uqis7ts6ya7v2f66ni23m3upt7 {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("s37z23uqis7ts6ya7v2f66ni23m3upt7")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
     pub mod tijz7x6fimbgu24sbbtp4nllhfxbgblp {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
@@ -143,22 +159,6 @@ mod raw {
                     }
                 }
             }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod s37z23uqis7ts6ya7v2f66ni23m3upt7 {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("s37z23uqis7ts6ya7v2f66ni23m3upt7")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
         }
         #[doc = r" Helpers for accessing the assets for this package."]
         pub mod assets {

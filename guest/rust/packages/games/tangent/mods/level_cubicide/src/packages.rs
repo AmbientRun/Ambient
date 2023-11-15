@@ -113,11 +113,27 @@ mod raw {
             }
         }
     }
-    pub mod per6j2iqhj3jz4da3fqr75jcj2kqjooo {
+    pub mod ambient_core {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("per6j2iqhj3jz4da3fqr75jcj2kqjooo")
+                ambient_api::package::get_entity_for_package_id("ambient_core")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod gzbamly2shtnz3siisf3mdzglsi67vul {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("gzbamly2shtnz3siisf3mdzglsi67vul")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY
@@ -129,25 +145,12 @@ mod raw {
                 once_cell::sync::Lazy,
                 prelude::*,
             };
-            static HEIGHT_OFFSET: Lazy<Component<f32>> = Lazy::new(|| {
-                __internal_get_component("per6j2iqhj3jz4da3fqr75jcj2kqjooo::height_offset")
+            static INCLUDE_CORNERS: Lazy<Component<bool>> = Lazy::new(|| {
+                __internal_get_component("gzbamly2shtnz3siisf3mdzglsi67vul::include_corners")
             });
-            #[doc = "**Nameplate Height Offset**: The height offset from the base of this entity at which to render a nameplate. If not specified, it will default to this entity's local bounding AABB Z, and if that's not available, it will default to a constant.\n\n*Attributes*: Debuggable, Networked"]
-            pub fn height_offset() -> Component<f32> {
-                *HEIGHT_OFFSET
-            }
-            static TEXT_SIZE: Lazy<Component<f32>> = Lazy::new(|| {
-                __internal_get_component("per6j2iqhj3jz4da3fqr75jcj2kqjooo::text_size")
-            });
-            #[doc = "**Nameplate Text Size**: The text size of the nameplate to render. If not specified, it will default to 2.0.\n\n*Attributes*: Debuggable, Networked"]
-            pub fn text_size() -> Component<f32> {
-                *TEXT_SIZE
-            }
-            static HIDE: Lazy<Component<()>> =
-                Lazy::new(|| __internal_get_component("per6j2iqhj3jz4da3fqr75jcj2kqjooo::hide"));
-            #[doc = "**Nameplate Hide**: If attached to a player, hide the nameplate for that player.\n\n*Attributes*: Networked, Debuggable"]
-            pub fn hide() -> Component<()> {
-                *HIDE
+            #[doc = "**Include Corners**: Whether or not the corner spawnpoints are created.\n\n*Attributes*: Debuggable, Networked\n\n*Suggested Default*: true"]
+            pub fn include_corners() -> Component<bool> {
+                *INCLUDE_CORNERS
             }
         }
         #[doc = r" Helpers for accessing the assets for this package."]
@@ -213,226 +216,14 @@ mod raw {
             }
         }
     }
-    pub mod skpc6fwjkbidr7a6pmx4mab6zl37oiut {
+    pub mod k7svgbw5j6orlwzj45koeownlodsdbth {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("skpc6fwjkbidr7a6pmx4mab6zl37oiut")
+                ambient_api::package::get_entity_for_package_id("k7svgbw5j6orlwzj45koeownlodsdbth")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static IS_HEALTH_PICKUP: Lazy<Component<()>> = Lazy::new(|| {
-                __internal_get_component("skpc6fwjkbidr7a6pmx4mab6zl37oiut::is_health_pickup")
-            });
-            #[doc = "**Is Health Pickup**: This entity is a health pickup."]
-            pub fn is_health_pickup() -> Component<()> {
-                *IS_HEALTH_PICKUP
-            }
-        }
-        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
-        #[doc = r""]
-        #[doc = r" They do not have any runtime representation outside of the components that compose them."]
-        pub mod concepts {
-            use ambient_api::{
-                global::serde::{self, Deserialize, Serialize},
-                prelude::*,
-            };
-            #[doc = "**Health Pickup**: This entity is a health pickup.\n\n**Required**:\n- `is_health_pickup`: This entity is a health pickup.\n- `translation`: The translation/position of this entity.\n- `rotation`: The rotation of this entity."]
-            #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-            #[serde(crate = "self::serde")]
-            pub struct HealthPickup {
-                #[doc = "**Component**: `skpc6fwjkbidr7a6pmx4mab6zl37oiut::is_health_pickup`\n\n**Component description**: This entity is a health pickup.\n\n"]
-                pub is_health_pickup: (),
-                #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Component description**: The translation/position of this entity.\n\n"]
-                pub translation: Vec3,
-                #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Component description**: The rotation of this entity.\n\n"]
-                pub rotation: Quat,
-            }
-            impl Concept for HealthPickup {
-                fn make(self) -> Entity {
-                    let mut entity = Entity :: new () . with (crate :: packages :: raw :: skpc6fwjkbidr7a6pmx4mab6zl37oiut :: components :: is_health_pickup () , self . is_health_pickup) . with (ambient_api :: core :: transform :: components :: translation () , self . translation) . with (ambient_api :: core :: transform :: components :: rotation () , self . rotation) ;
-                    entity
-                }
-                fn get_spawned(id: EntityId) -> Option<Self> {
-                    Some (Self { is_health_pickup : entity :: get_component (id , crate :: packages :: raw :: skpc6fwjkbidr7a6pmx4mab6zl37oiut :: components :: is_health_pickup ()) ? , translation : entity :: get_component (id , ambient_api :: core :: transform :: components :: translation ()) ? , rotation : entity :: get_component (id , ambient_api :: core :: transform :: components :: rotation ()) ? , })
-                }
-                fn get_unspawned(entity: &Entity) -> Option<Self> {
-                    Some (Self { is_health_pickup : entity . get (crate :: packages :: raw :: skpc6fwjkbidr7a6pmx4mab6zl37oiut :: components :: is_health_pickup ()) ? , translation : entity . get (ambient_api :: core :: transform :: components :: translation ()) ? , rotation : entity . get (ambient_api :: core :: transform :: components :: rotation ()) ? , })
-                }
-                fn contained_by_spawned(id: EntityId) -> bool {
-                    entity :: has_components (id , & [& crate :: packages :: raw :: skpc6fwjkbidr7a6pmx4mab6zl37oiut :: components :: is_health_pickup () , & ambient_api :: core :: transform :: components :: translation () , & ambient_api :: core :: transform :: components :: rotation ()])
-                }
-                fn contained_by_unspawned(entity: &Entity) -> bool {
-                    entity . has_components (& [& crate :: packages :: raw :: skpc6fwjkbidr7a6pmx4mab6zl37oiut :: components :: is_health_pickup () , & ambient_api :: core :: transform :: components :: translation () , & ambient_api :: core :: transform :: components :: rotation ()])
-                }
-            }
-            impl ConceptComponents for HealthPickup {
-                type Required = (Component<()>, Component<Vec3>, Component<Quat>);
-                type Optional = ();
-                fn required() -> Self::Required {
-                    (crate :: packages :: raw :: skpc6fwjkbidr7a6pmx4mab6zl37oiut :: components :: is_health_pickup () , ambient_api :: core :: transform :: components :: translation () , ambient_api :: core :: transform :: components :: rotation () ,)
-                }
-                fn optional() -> Self::Optional {
-                    ()
-                }
-                fn from_required_data(required: <Self::Required as ComponentsTuple>::Data) -> Self {
-                    Self {
-                        is_health_pickup: required.0,
-                        translation: required.1,
-                        rotation: required.2,
-                    }
-                }
-            }
-        }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
-        #[doc = r" and with other modules."]
-        pub mod messages {
-            use ambient_api::{
-                message::{
-                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
-                },
-                prelude::*,
-            };
-            #[derive(Clone, Debug)]
-            #[doc = "**OnHealthPickup**: Sent to the client when a health pickup is picked up."]
-            pub struct OnHealthPickup {
-                pub position: Vec3,
-            }
-            impl OnHealthPickup {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(position: impl Into<Vec3>) -> Self {
-                    Self {
-                        position: position.into(),
-                    }
-                }
-            }
-            impl Message for OnHealthPickup {
-                fn id() -> &'static str {
-                    "skpc6fwjkbidr7a6pmx4mab6zl37oiut::OnHealthPickup"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.position.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        position: Vec3::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for OnHealthPickup {}
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod gzbamly2shtnz3siisf3mdzglsi67vul {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("gzbamly2shtnz3siisf3mdzglsi67vul")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static INCLUDE_CORNERS: Lazy<Component<bool>> = Lazy::new(|| {
-                __internal_get_component("gzbamly2shtnz3siisf3mdzglsi67vul::include_corners")
-            });
-            #[doc = "**Include Corners**: Whether or not the corner spawnpoints are created.\n\n*Attributes*: Debuggable, Networked\n\n*Suggested Default*: true"]
-            pub fn include_corners() -> Component<bool> {
-                *INCLUDE_CORNERS
-            }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod roosvvawp6sjvlolokk5qyafl5vp2su7 {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("roosvvawp6sjvlolokk5qyafl5vp2su7")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
-        #[doc = r" and with other modules."]
-        pub mod messages {
-            use ambient_api::{
-                message::{
-                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
-                },
-                prelude::*,
-            };
-            #[derive(Clone, Debug)]
-            #[doc = "**VehicleSpawn**: Spawns the vehicle from the given definition."]
-            pub struct VehicleSpawn {
-                pub def_id: EntityId,
-                pub position: Vec3,
-                pub rotation: Option<Quat>,
-                pub driver_id: Option<EntityId>,
-            }
-            impl VehicleSpawn {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(
-                    def_id: impl Into<EntityId>,
-                    position: impl Into<Vec3>,
-                    rotation: impl Into<Option<Quat>>,
-                    driver_id: impl Into<Option<EntityId>>,
-                ) -> Self {
-                    Self {
-                        def_id: def_id.into(),
-                        position: position.into(),
-                        rotation: rotation.into(),
-                        driver_id: driver_id.into(),
-                    }
-                }
-            }
-            impl Message for VehicleSpawn {
-                fn id() -> &'static str {
-                    "roosvvawp6sjvlolokk5qyafl5vp2su7::VehicleSpawn"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.def_id.serialize_message_part(&mut output)?;
-                    self.position.serialize_message_part(&mut output)?;
-                    self.rotation.serialize_message_part(&mut output)?;
-                    self.driver_id.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        def_id: EntityId::deserialize_message_part(&mut input)?,
-                        position: Vec3::deserialize_message_part(&mut input)?,
-                        rotation: Option::<Quat>::deserialize_message_part(&mut input)?,
-                        driver_id: Option::<EntityId>::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for VehicleSpawn {}
         }
         #[doc = r" Helpers for accessing the assets for this package."]
         pub mod assets {
@@ -1639,14 +1430,42 @@ mod raw {
             }
         }
     }
-    pub mod k7svgbw5j6orlwzj45koeownlodsdbth {
+    pub mod per6j2iqhj3jz4da3fqr75jcj2kqjooo {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("k7svgbw5j6orlwzj45koeownlodsdbth")
+                ambient_api::package::get_entity_for_package_id("per6j2iqhj3jz4da3fqr75jcj2kqjooo")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static HEIGHT_OFFSET: Lazy<Component<f32>> = Lazy::new(|| {
+                __internal_get_component("per6j2iqhj3jz4da3fqr75jcj2kqjooo::height_offset")
+            });
+            #[doc = "**Nameplate Height Offset**: The height offset from the base of this entity at which to render a nameplate. If not specified, it will default to this entity's local bounding AABB Z, and if that's not available, it will default to a constant.\n\n*Attributes*: Debuggable, Networked"]
+            pub fn height_offset() -> Component<f32> {
+                *HEIGHT_OFFSET
+            }
+            static TEXT_SIZE: Lazy<Component<f32>> = Lazy::new(|| {
+                __internal_get_component("per6j2iqhj3jz4da3fqr75jcj2kqjooo::text_size")
+            });
+            #[doc = "**Nameplate Text Size**: The text size of the nameplate to render. If not specified, it will default to 2.0.\n\n*Attributes*: Debuggable, Networked"]
+            pub fn text_size() -> Component<f32> {
+                *TEXT_SIZE
+            }
+            static HIDE: Lazy<Component<()>> =
+                Lazy::new(|| __internal_get_component("per6j2iqhj3jz4da3fqr75jcj2kqjooo::hide"));
+            #[doc = "**Nameplate Hide**: If attached to a player, hide the nameplate for that player.\n\n*Attributes*: Networked, Debuggable"]
+            pub fn hide() -> Component<()> {
+                *HIDE
+            }
         }
         #[doc = r" Helpers for accessing the assets for this package."]
         pub mod assets {
@@ -1655,14 +1474,195 @@ mod raw {
             }
         }
     }
-    pub mod ambient_core {
+    pub mod roosvvawp6sjvlolokk5qyafl5vp2su7 {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("ambient_core")
+                ambient_api::package::get_entity_for_package_id("roosvvawp6sjvlolokk5qyafl5vp2su7")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
+        pub mod messages {
+            use ambient_api::{
+                message::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                },
+                prelude::*,
+            };
+            #[derive(Clone, Debug)]
+            #[doc = "**VehicleSpawn**: Spawns the vehicle from the given definition."]
+            pub struct VehicleSpawn {
+                pub def_id: EntityId,
+                pub position: Vec3,
+                pub rotation: Option<Quat>,
+                pub driver_id: Option<EntityId>,
+            }
+            impl VehicleSpawn {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(
+                    def_id: impl Into<EntityId>,
+                    position: impl Into<Vec3>,
+                    rotation: impl Into<Option<Quat>>,
+                    driver_id: impl Into<Option<EntityId>>,
+                ) -> Self {
+                    Self {
+                        def_id: def_id.into(),
+                        position: position.into(),
+                        rotation: rotation.into(),
+                        driver_id: driver_id.into(),
+                    }
+                }
+            }
+            impl Message for VehicleSpawn {
+                fn id() -> &'static str {
+                    "roosvvawp6sjvlolokk5qyafl5vp2su7::VehicleSpawn"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.def_id.serialize_message_part(&mut output)?;
+                    self.position.serialize_message_part(&mut output)?;
+                    self.rotation.serialize_message_part(&mut output)?;
+                    self.driver_id.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        def_id: EntityId::deserialize_message_part(&mut input)?,
+                        position: Vec3::deserialize_message_part(&mut input)?,
+                        rotation: Option::<Quat>::deserialize_message_part(&mut input)?,
+                        driver_id: Option::<EntityId>::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for VehicleSpawn {}
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod skpc6fwjkbidr7a6pmx4mab6zl37oiut {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("skpc6fwjkbidr7a6pmx4mab6zl37oiut")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static IS_HEALTH_PICKUP: Lazy<Component<()>> = Lazy::new(|| {
+                __internal_get_component("skpc6fwjkbidr7a6pmx4mab6zl37oiut::is_health_pickup")
+            });
+            #[doc = "**Is Health Pickup**: This entity is a health pickup."]
+            pub fn is_health_pickup() -> Component<()> {
+                *IS_HEALTH_PICKUP
+            }
+        }
+        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+        #[doc = r""]
+        #[doc = r" They do not have any runtime representation outside of the components that compose them."]
+        pub mod concepts {
+            use ambient_api::{
+                global::serde::{self, Deserialize, Serialize},
+                prelude::*,
+            };
+            #[doc = "**Health Pickup**: This entity is a health pickup.\n\n**Required**:\n- `is_health_pickup`: This entity is a health pickup.\n- `translation`: The translation/position of this entity.\n- `rotation`: The rotation of this entity."]
+            #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+            #[serde(crate = "self::serde")]
+            pub struct HealthPickup {
+                #[doc = "**Component**: `skpc6fwjkbidr7a6pmx4mab6zl37oiut::is_health_pickup`\n\n**Component description**: This entity is a health pickup.\n\n"]
+                pub is_health_pickup: (),
+                #[doc = "**Component**: `ambient_core::transform::translation`\n\n**Component description**: The translation/position of this entity.\n\n"]
+                pub translation: Vec3,
+                #[doc = "**Component**: `ambient_core::transform::rotation`\n\n**Component description**: The rotation of this entity.\n\n"]
+                pub rotation: Quat,
+            }
+            impl Concept for HealthPickup {
+                fn make(self) -> Entity {
+                    let mut entity = Entity :: new () . with (crate :: packages :: raw :: skpc6fwjkbidr7a6pmx4mab6zl37oiut :: components :: is_health_pickup () , self . is_health_pickup) . with (ambient_api :: core :: transform :: components :: translation () , self . translation) . with (ambient_api :: core :: transform :: components :: rotation () , self . rotation) ;
+                    entity
+                }
+                fn get_spawned(id: EntityId) -> Option<Self> {
+                    Some (Self { is_health_pickup : entity :: get_component (id , crate :: packages :: raw :: skpc6fwjkbidr7a6pmx4mab6zl37oiut :: components :: is_health_pickup ()) ? , translation : entity :: get_component (id , ambient_api :: core :: transform :: components :: translation ()) ? , rotation : entity :: get_component (id , ambient_api :: core :: transform :: components :: rotation ()) ? , })
+                }
+                fn get_unspawned(entity: &Entity) -> Option<Self> {
+                    Some (Self { is_health_pickup : entity . get (crate :: packages :: raw :: skpc6fwjkbidr7a6pmx4mab6zl37oiut :: components :: is_health_pickup ()) ? , translation : entity . get (ambient_api :: core :: transform :: components :: translation ()) ? , rotation : entity . get (ambient_api :: core :: transform :: components :: rotation ()) ? , })
+                }
+                fn contained_by_spawned(id: EntityId) -> bool {
+                    entity :: has_components (id , & [& crate :: packages :: raw :: skpc6fwjkbidr7a6pmx4mab6zl37oiut :: components :: is_health_pickup () , & ambient_api :: core :: transform :: components :: translation () , & ambient_api :: core :: transform :: components :: rotation ()])
+                }
+                fn contained_by_unspawned(entity: &Entity) -> bool {
+                    entity . has_components (& [& crate :: packages :: raw :: skpc6fwjkbidr7a6pmx4mab6zl37oiut :: components :: is_health_pickup () , & ambient_api :: core :: transform :: components :: translation () , & ambient_api :: core :: transform :: components :: rotation ()])
+                }
+            }
+            impl ConceptComponents for HealthPickup {
+                type Required = (Component<()>, Component<Vec3>, Component<Quat>);
+                type Optional = ();
+                fn required() -> Self::Required {
+                    (crate :: packages :: raw :: skpc6fwjkbidr7a6pmx4mab6zl37oiut :: components :: is_health_pickup () , ambient_api :: core :: transform :: components :: translation () , ambient_api :: core :: transform :: components :: rotation () ,)
+                }
+                fn optional() -> Self::Optional {
+                    ()
+                }
+                fn from_required_data(required: <Self::Required as ComponentsTuple>::Data) -> Self {
+                    Self {
+                        is_health_pickup: required.0,
+                        translation: required.1,
+                        rotation: required.2,
+                    }
+                }
+            }
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
+        pub mod messages {
+            use ambient_api::{
+                message::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                },
+                prelude::*,
+            };
+            #[derive(Clone, Debug)]
+            #[doc = "**OnHealthPickup**: Sent to the client when a health pickup is picked up."]
+            pub struct OnHealthPickup {
+                pub position: Vec3,
+            }
+            impl OnHealthPickup {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(position: impl Into<Vec3>) -> Self {
+                    Self {
+                        position: position.into(),
+                    }
+                }
+            }
+            impl Message for OnHealthPickup {
+                fn id() -> &'static str {
+                    "skpc6fwjkbidr7a6pmx4mab6zl37oiut::OnHealthPickup"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.position.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        position: Vec3::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for OnHealthPickup {}
         }
         #[doc = r" Helpers for accessing the assets for this package."]
         pub mod assets {

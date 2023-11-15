@@ -6,94 +6,14 @@
     clippy::unused_unit
 )]
 mod raw {
-    pub mod viyiawgsl5lsiul6pup6pyv6bbt6o3vw {
+    pub mod ambient_core {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("viyiawgsl5lsiul6pup6pyv6bbt6o3vw")
+                ambient_api::package::get_entity_for_package_id("ambient_core")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY
-        }
-        #[doc = r" Auto-generated component definitions."]
-        pub mod components {
-            use ambient_api::{
-                ecs::{Component, __internal_get_component},
-                once_cell::sync::Lazy,
-                prelude::*,
-            };
-            static SPIN_SPEED: Lazy<Component<f32>> = Lazy::new(|| {
-                __internal_get_component("viyiawgsl5lsiul6pup6pyv6bbt6o3vw::spin_speed")
-            });
-            #[doc = "**Spin speed**"]
-            pub fn spin_speed() -> Component<f32> {
-                *SPIN_SPEED
-            }
-        }
-        #[doc = r" Auto-generated type definitions."]
-        pub mod types {
-            use ambient_api::{global::serde, message::*};
-            #[derive(
-                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
-            )]
-            #[serde(crate = "self::serde")]
-            #[doc = "**SpinDirection**: The direction the cube should spin"]
-            pub enum SpinDirection {
-                #[default]
-                #[doc = "Forward"]
-                Forward,
-                #[doc = "Backward"]
-                Backward,
-            }
-            impl ambient_api::ecs::EnumComponent for SpinDirection {
-                fn to_u32(&self) -> u32 {
-                    match self {
-                        Self::Forward => SpinDirection::Forward as u32,
-                        Self::Backward => SpinDirection::Backward as u32,
-                    }
-                }
-                fn from_u32(value: u32) -> Option<Self> {
-                    if value == SpinDirection::Forward as u32 {
-                        return Some(Self::Forward);
-                    }
-                    if value == SpinDirection::Backward as u32 {
-                        return Some(Self::Backward);
-                    }
-                    None
-                }
-            }
-            impl ambient_api::ecs::SupportedValue for SpinDirection {
-                fn from_result(result: ambient_api::ecs::WitComponentValue) -> Option<Self> {
-                    use ambient_api::ecs::EnumComponent;
-                    u32::from_result(result).and_then(Self::from_u32)
-                }
-                fn into_result(self) -> ambient_api::ecs::WitComponentValue {
-                    use ambient_api::ecs::EnumComponent;
-                    self.to_u32().into_result()
-                }
-                fn from_value(value: ambient_api::ecs::ComponentValue) -> Option<Self> {
-                    use ambient_api::ecs::EnumComponent;
-                    u32::from_value(value).and_then(Self::from_u32)
-                }
-                fn into_value(self) -> ambient_api::ecs::ComponentValue {
-                    use ambient_api::ecs::EnumComponent;
-                    self.to_u32().into_value()
-                }
-            }
-            impl MessageSerde for SpinDirection {
-                fn serialize_message_part(
-                    &self,
-                    output: &mut Vec<u8>,
-                ) -> Result<(), MessageSerdeError> {
-                    ambient_api::ecs::EnumComponent::to_u32(self).serialize_message_part(output)
-                }
-                fn deserialize_message_part(
-                    input: &mut dyn std::io::Read,
-                ) -> Result<Self, MessageSerdeError> {
-                    ambient_api::ecs::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
-                        .ok_or(MessageSerdeError::InvalidValue)
-                }
-            }
         }
         #[doc = r" Helpers for accessing the assets for this package."]
         pub mod assets {
@@ -319,14 +239,94 @@ mod raw {
             }
         }
     }
-    pub mod xjoy27d3i4hc4l7fmlm5pacc2cmxlnlw {
+    pub mod viyiawgsl5lsiul6pup6pyv6bbt6o3vw {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("xjoy27d3i4hc4l7fmlm5pacc2cmxlnlw")
+                ambient_api::package::get_entity_for_package_id("viyiawgsl5lsiul6pup6pyv6bbt6o3vw")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY
+        }
+        #[doc = r" Auto-generated component definitions."]
+        pub mod components {
+            use ambient_api::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+                prelude::*,
+            };
+            static SPIN_SPEED: Lazy<Component<f32>> = Lazy::new(|| {
+                __internal_get_component("viyiawgsl5lsiul6pup6pyv6bbt6o3vw::spin_speed")
+            });
+            #[doc = "**Spin speed**"]
+            pub fn spin_speed() -> Component<f32> {
+                *SPIN_SPEED
+            }
+        }
+        #[doc = r" Auto-generated type definitions."]
+        pub mod types {
+            use ambient_api::{global::serde, message::*};
+            #[derive(
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
+            )]
+            #[serde(crate = "self::serde")]
+            #[doc = "**SpinDirection**: The direction the cube should spin"]
+            pub enum SpinDirection {
+                #[default]
+                #[doc = "Forward"]
+                Forward,
+                #[doc = "Backward"]
+                Backward,
+            }
+            impl ambient_api::ecs::EnumComponent for SpinDirection {
+                fn to_u32(&self) -> u32 {
+                    match self {
+                        Self::Forward => SpinDirection::Forward as u32,
+                        Self::Backward => SpinDirection::Backward as u32,
+                    }
+                }
+                fn from_u32(value: u32) -> Option<Self> {
+                    if value == SpinDirection::Forward as u32 {
+                        return Some(Self::Forward);
+                    }
+                    if value == SpinDirection::Backward as u32 {
+                        return Some(Self::Backward);
+                    }
+                    None
+                }
+            }
+            impl ambient_api::ecs::SupportedValue for SpinDirection {
+                fn from_result(result: ambient_api::ecs::WitComponentValue) -> Option<Self> {
+                    use ambient_api::ecs::EnumComponent;
+                    u32::from_result(result).and_then(Self::from_u32)
+                }
+                fn into_result(self) -> ambient_api::ecs::WitComponentValue {
+                    use ambient_api::ecs::EnumComponent;
+                    self.to_u32().into_result()
+                }
+                fn from_value(value: ambient_api::ecs::ComponentValue) -> Option<Self> {
+                    use ambient_api::ecs::EnumComponent;
+                    u32::from_value(value).and_then(Self::from_u32)
+                }
+                fn into_value(self) -> ambient_api::ecs::ComponentValue {
+                    use ambient_api::ecs::EnumComponent;
+                    self.to_u32().into_value()
+                }
+            }
+            impl MessageSerde for SpinDirection {
+                fn serialize_message_part(
+                    &self,
+                    output: &mut Vec<u8>,
+                ) -> Result<(), MessageSerdeError> {
+                    ambient_api::ecs::EnumComponent::to_u32(self).serialize_message_part(output)
+                }
+                fn deserialize_message_part(
+                    input: &mut dyn std::io::Read,
+                ) -> Result<Self, MessageSerdeError> {
+                    ambient_api::ecs::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                        .ok_or(MessageSerdeError::InvalidValue)
+                }
+            }
         }
         #[doc = r" Helpers for accessing the assets for this package."]
         pub mod assets {
@@ -335,11 +335,11 @@ mod raw {
             }
         }
     }
-    pub mod ambient_core {
+    pub mod xjoy27d3i4hc4l7fmlm5pacc2cmxlnlw {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("ambient_core")
+                ambient_api::package::get_entity_for_package_id("xjoy27d3i4hc4l7fmlm5pacc2cmxlnlw")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY

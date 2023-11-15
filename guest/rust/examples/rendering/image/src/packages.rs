@@ -6,11 +6,11 @@
     clippy::unused_unit
 )]
 mod raw {
-    pub mod nc2wi4w5w276k4duik4f36ltvec2nv4z {
+    pub mod ambient_core {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("nc2wi4w5w276k4duik4f36ltvec2nv4z")
+                ambient_api::package::get_entity_for_package_id("ambient_core")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY
@@ -22,11 +22,11 @@ mod raw {
             }
         }
     }
-    pub mod ambient_core {
+    pub mod nc2wi4w5w276k4duik4f36ltvec2nv4z {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
             static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("ambient_core")
+                ambient_api::package::get_entity_for_package_id("nc2wi4w5w276k4duik4f36ltvec2nv4z")
                     .expect("Failed to get package entity - was it despawned?")
             });
             *ENTITY

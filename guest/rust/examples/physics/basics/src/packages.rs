@@ -6,6 +6,81 @@
     clippy::unused_unit
 )]
 mod raw {
+    pub mod ambient_core {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("ambient_core")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
+    pub mod jm77qrzni2f4gied5fy54bia2lqmhebn {
+        pub fn entity() -> ambient_api::global::EntityId {
+            use ambient_api::once_cell::sync::Lazy;
+            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
+                ambient_api::package::get_entity_for_package_id("jm77qrzni2f4gied5fy54bia2lqmhebn")
+                    .expect("Failed to get package entity - was it despawned?")
+            });
+            *ENTITY
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
+        pub mod messages {
+            use ambient_api::{
+                message::{
+                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
+                },
+                prelude::*,
+            };
+            #[derive(Clone, Debug)]
+            #[doc = "**Bonk**: Collision between two objects."]
+            pub struct Bonk {
+                pub emitter: EntityId,
+                pub listener: EntityId,
+            }
+            impl Bonk {
+                #[allow(clippy::too_many_arguments)]
+                pub fn new(emitter: impl Into<EntityId>, listener: impl Into<EntityId>) -> Self {
+                    Self {
+                        emitter: emitter.into(),
+                        listener: listener.into(),
+                    }
+                }
+            }
+            impl Message for Bonk {
+                fn id() -> &'static str {
+                    "jm77qrzni2f4gied5fy54bia2lqmhebn::Bonk"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.emitter.serialize_message_part(&mut output)?;
+                    self.listener.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        emitter: EntityId::deserialize_message_part(&mut input)?,
+                        listener: EntityId::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+            impl ModuleMessage for Bonk {}
+        }
+        #[doc = r" Helpers for accessing the assets for this package."]
+        pub mod assets {
+            pub fn url(path: &str) -> String {
+                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
+            }
+        }
+    }
     pub mod tijz7x6fimbgu24sbbtp4nllhfxbgblp {
         pub fn entity() -> ambient_api::global::EntityId {
             use ambient_api::once_cell::sync::Lazy;
@@ -127,81 +202,6 @@ mod raw {
                     }
                 }
             }
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod jm77qrzni2f4gied5fy54bia2lqmhebn {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("jm77qrzni2f4gied5fy54bia2lqmhebn")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
-        }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
-        #[doc = r" and with other modules."]
-        pub mod messages {
-            use ambient_api::{
-                message::{
-                    Message, MessageSerde, MessageSerdeError, ModuleMessage, RuntimeMessage,
-                },
-                prelude::*,
-            };
-            #[derive(Clone, Debug)]
-            #[doc = "**Bonk**: Collision between two objects."]
-            pub struct Bonk {
-                pub emitter: EntityId,
-                pub listener: EntityId,
-            }
-            impl Bonk {
-                #[allow(clippy::too_many_arguments)]
-                pub fn new(emitter: impl Into<EntityId>, listener: impl Into<EntityId>) -> Self {
-                    Self {
-                        emitter: emitter.into(),
-                        listener: listener.into(),
-                    }
-                }
-            }
-            impl Message for Bonk {
-                fn id() -> &'static str {
-                    "jm77qrzni2f4gied5fy54bia2lqmhebn::Bonk"
-                }
-                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
-                    let mut output = vec![];
-                    self.emitter.serialize_message_part(&mut output)?;
-                    self.listener.serialize_message_part(&mut output)?;
-                    Ok(output)
-                }
-                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-                    Ok(Self {
-                        emitter: EntityId::deserialize_message_part(&mut input)?,
-                        listener: EntityId::deserialize_message_part(&mut input)?,
-                    })
-                }
-            }
-            impl ModuleMessage for Bonk {}
-        }
-        #[doc = r" Helpers for accessing the assets for this package."]
-        pub mod assets {
-            pub fn url(path: &str) -> String {
-                ambient_api::asset::url_for_package_asset(super::entity(), path).unwrap()
-            }
-        }
-    }
-    pub mod ambient_core {
-        pub fn entity() -> ambient_api::global::EntityId {
-            use ambient_api::once_cell::sync::Lazy;
-            static ENTITY: Lazy<ambient_api::global::EntityId> = Lazy::new(|| {
-                ambient_api::package::get_entity_for_package_id("ambient_core")
-                    .expect("Failed to get package entity - was it despawned?")
-            });
-            *ENTITY
         }
         #[doc = r" Helpers for accessing the assets for this package."]
         pub mod assets {
