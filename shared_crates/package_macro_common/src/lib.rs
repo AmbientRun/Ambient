@@ -85,18 +85,6 @@ pub async fn generate_code(
         #imports
     };
 
-    let output = if context == Context::GuestUser {
-        // In guest code, we wrap all generated output in an `packages` module to avoid polluting their
-        // global scope.
-        quote! {
-            pub mod packages {
-                #output
-            }
-        }
-    } else {
-        output
-    };
-
     Ok(output)
 }
 

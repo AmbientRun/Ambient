@@ -14,13 +14,4 @@ proc-macro = true
 [dependencies]
 quote = "1.0"
 proc-macro2 = "1.0"
-
-ambient_package_macro_common = { workspace = true }
-
-anyhow = { workspace = true }
-
 syn = { version = "1.0", features = ["full"] }
-tokio = { version = "1.0", features = ["full"] }
-
-[dev-dependencies]
-indoc = "2.0.0"
