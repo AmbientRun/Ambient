@@ -15,6 +15,8 @@ use packages::{
     this::messages::VehicleSpawnRequest,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     App {}.el().spawn_interactive();

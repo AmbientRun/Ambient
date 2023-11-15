@@ -5,6 +5,8 @@ mod shared;
 
 use packages::this::messages::{ConsoleServerInput, ConsoleServerOutput};
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     let console = Console::new(true);

@@ -224,12 +224,9 @@ dependencies = [
 name = "ambient_api_macros"
 version = "0.3.2-dev"
 dependencies = [
- "ambient_package_macro_common",
- "anyhow",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
- "tokio",
 ]
 
 [[package]]

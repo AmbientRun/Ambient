@@ -19,4 +19,6 @@ fn main() {
     }
     .save_to_file("assets/pipeline.toml")
     .unwrap();
+
+    ambient_package_projection::generate();
 }

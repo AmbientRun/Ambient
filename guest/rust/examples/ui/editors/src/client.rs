@@ -5,6 +5,13 @@ use ambient_api::{
 };
 use indexmap::IndexMap;
 
+pub mod packages;
+
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
+}
+
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
     let (text, set_text) = use_state(hooks, "Enter some text".to_string());
@@ -71,9 +78,4 @@ fn App(hooks: &mut Hooks) -> Element {
     .with(width(), 200.)
     .with(space_between_items(), STREET)
     .with_padding_even(STREET)
-}
-
-#[main]
-pub fn main() {
-    App.el().spawn_interactive();
 }

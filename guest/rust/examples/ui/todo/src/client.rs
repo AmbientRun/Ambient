@@ -8,6 +8,13 @@ use packages::this::{
     messages::{DeleteItem, NewItem},
 };
 
+pub mod packages;
+
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
+}
+
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
     FlowColumn::el([NewTodoItem.el(), TodoItems.el()])
@@ -50,9 +57,4 @@ fn TodoItems(hooks: &mut Hooks) -> Element {
         ])
     }))
     .with(space_between_items(), 10.)
-}
-
-#[main]
-pub fn main() {
-    App.el().spawn_interactive();
 }

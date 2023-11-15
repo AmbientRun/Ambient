@@ -13,6 +13,8 @@ use ambient_api::{
 };
 use packages::this::messages::{Hello, HelloWithoutBody, Local};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     // The main serverside WASM of the messaging example.

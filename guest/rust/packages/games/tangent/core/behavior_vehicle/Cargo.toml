@@ -9,6 +9,9 @@ version = { workspace = true }
 [dependencies]
 ambient_api = { path = "../../../../../api" }
 
+[build-dependencies]
+ambient_package_projection = { workspace = true }
+
 [[bin]]
 name = "tangent_behavior_vehicle_client"
 path = "src/client.rs"

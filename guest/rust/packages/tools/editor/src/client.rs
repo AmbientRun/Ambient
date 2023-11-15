@@ -34,6 +34,8 @@ use packages::{
 // TODO: make this an option in the UI
 const WORLDSPACE_MOVEMENT: bool = true;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     if entity::has_component(entity::synchronized_resources(), has_sample_scene()) {

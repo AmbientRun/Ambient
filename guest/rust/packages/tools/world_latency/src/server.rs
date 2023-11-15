@@ -8,6 +8,8 @@ use packages::this::{
     messages::FrameSeen,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     spawn_query(is_player()).bind(|results| {

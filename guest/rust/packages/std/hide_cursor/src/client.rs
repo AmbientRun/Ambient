@@ -18,6 +18,8 @@ fn update() {
     }
 }
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     WindowSized::el([])

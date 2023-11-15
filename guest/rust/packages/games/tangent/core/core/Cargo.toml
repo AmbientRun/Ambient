@@ -8,6 +8,9 @@ version = "0.1.0"
 [dependencies]
 ambient_api = { workspace = true }
 
+[build-dependencies]
+ambient_package_projection = { workspace = true }
+
 [[bin]]
 name = "client_tangent_core"
 path = "src/client.rs"

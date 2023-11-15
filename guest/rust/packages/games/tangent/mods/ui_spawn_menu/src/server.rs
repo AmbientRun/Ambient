@@ -4,6 +4,8 @@ use packages::{
     this::messages::VehicleSpawnRequest,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     VehicleSpawnRequest::subscribe(|ctx, msg| {

@@ -16,6 +16,8 @@ use palette::FromColor;
 
 mod constants;
 
+pub mod packages;
+
 #[main]
 async fn main() {
     let cells = entity::wait_for_component(entity::synchronized_resources(), cells())

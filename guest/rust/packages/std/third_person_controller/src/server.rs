@@ -20,6 +20,8 @@ use packages::{
 };
 use std::f32::consts::PI;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     spawn_query(use_third_person_controller())

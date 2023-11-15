@@ -10,6 +10,8 @@ use packages::{
     this::{concepts::HealthPickup, messages::OnHealthPickup},
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     spawn_query(HealthPickup::as_query()).bind(|pickups| {

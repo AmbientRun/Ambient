@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 documentation = "https://docs.rs/ambient_package_projection"
 repository = "https://github.com/AmbientRun/Ambient"
 
-[dependencies]
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 quote = "1.0"
 proc-macro2 = "1.0"
 

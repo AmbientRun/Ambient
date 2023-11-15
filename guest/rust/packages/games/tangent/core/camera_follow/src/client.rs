@@ -18,6 +18,8 @@ use packages::tangent_schema::player::components as pc;
 
 const CAMERA_OFFSET: Vec3 = vec3(1.5, 5.4, 1.8);
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     let camera_id = PerspectiveInfiniteReverseCamera {

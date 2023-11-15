@@ -20,6 +20,8 @@ use packages::this::{
     messages::{Input, Ping},
 };
 
+pub mod packages;
+
 #[main]
 async fn main() {
     let url_from_server =

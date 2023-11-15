@@ -4,6 +4,8 @@ use ambient_api::{
 };
 use packages::{game_object::components::health, this::concepts::Explosion};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     let vehicle_query = query(translation()).requires(health()).build();

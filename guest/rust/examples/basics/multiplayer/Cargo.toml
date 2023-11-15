@@ -10,6 +10,9 @@ version = { workspace = true }
 ambient_api = { workspace = true }
 rand = "0.8.5"
 
+[build-dependencies]
+ambient_package_projection = { workspace = true }
+
 [[bin]]
 name = "multiplayer_server"
 path = "src/server.rs"

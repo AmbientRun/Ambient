@@ -9,6 +9,9 @@ version = { workspace = true }
 [dependencies]
 ambient_api = { path = "../../../../../api" }
 
+[build-dependencies]
+ambient_package_projection = { workspace = true }
+
 [[bin]]
 name = "gameplay_daynight_server"
 path = "src/server.rs"

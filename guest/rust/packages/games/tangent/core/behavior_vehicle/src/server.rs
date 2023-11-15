@@ -20,6 +20,8 @@ use packages::{
     this::messages::OnCollision,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     // When a collision occurs involving a vehicle, damage it.

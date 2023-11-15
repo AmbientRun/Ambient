@@ -7,6 +7,8 @@ use client::{
     package_load::PackageLoad, package_manager::PackageManager, package_view::PackageViews,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     App {}.el().spawn_interactive();

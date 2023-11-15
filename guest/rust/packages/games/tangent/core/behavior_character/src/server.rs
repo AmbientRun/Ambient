@@ -21,6 +21,8 @@ use packages::{
     unit_schema::components as uc,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     spawn_query(Character::as_query()).bind(move |characters| {

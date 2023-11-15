@@ -4,6 +4,8 @@ use packages::{
     this::messages::ClassSetRequest,
 };
 
+pub mod packages;
+
 #[main]
 fn main() {
     ClassSetRequest::subscribe(|ctx, msg| {

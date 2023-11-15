@@ -1,6 +1,7 @@
-use ambient_package_macro_common as apmc;
+#[cfg(not(target_arch = "wasm32"))]
 use std::path::Path;
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn generate() {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("no manifest dir");
     let manifest_dir = Path::new(&manifest_dir);
@@ -34,7 +35,10 @@ pub fn generate() {
         .expect("failed to run rustfmt on packages.rs");
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn generate_impl(manifest_dir: &Path) -> anyhow::Result<proc_macro2::TokenStream> {
+    use ambient_package_macro_common as apmc;
+
     tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()

@@ -9,6 +9,9 @@ version = "0.0.1"
 ambient_api.workspace = true
 ambient_brand_theme.workspace = true
 
+[build-dependencies]
+ambient_package_projection = { workspace = true }
+
 [[bin]]
 name = "input_lag_probe_client"
 path = "src/client.rs"

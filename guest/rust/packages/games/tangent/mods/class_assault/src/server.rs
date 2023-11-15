@@ -2,6 +2,8 @@ use ambient_api::prelude::*;
 
 use packages::tangent_schema::concepts::{CharacterDef, PlayerClass};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     PlayerClass {

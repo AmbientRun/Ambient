@@ -18,6 +18,8 @@ use packages::{
     this::messages::VehicleSpawn,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     VehicleSpawn::subscribe(|ctx, msg| {
