@@ -356,6 +356,7 @@ dependencies = [
  "ambient_model_import",
  "ambient_native_std",
  "ambient_package",
+ "ambient_package_json",
  "ambient_package_semantic",
  "ambient_package_semantic_native",
  "ambient_physics",
@@ -377,6 +378,7 @@ dependencies = [
  "glam 0.24.2",
  "glob",
  "image",
+ "indexmap 2.0.2",
  "itertools",
  "parking_lot",
  "rand 0.8.5",
@@ -1094,6 +1096,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_package_json"
+version = "0.3.2-dev"
+dependencies = [
+ "ambient_primitive_component_definitions",
+ "indexmap 2.0.2",
+ "serde",
+]
+
+[[package]]
 name = "ambient_package_macro_common"
 version = "0.3.2-dev"
 dependencies = [
@@ -1221,6 +1232,10 @@ dependencies = [
  "serde_json",
  "tokio",
 ]
+
+[[package]]
+name = "ambient_primitive_component_definitions"
+version = "0.3.2-dev"
 
 [[package]]
 name = "ambient_primitives"
@@ -1375,6 +1390,7 @@ dependencies = [
 name = "ambient_shared_types"
 version = "0.3.2-dev"
 dependencies = [
+ "ambient_primitive_component_definitions",
  "bitflags 1.3.2",
  "paste",
  "serde",

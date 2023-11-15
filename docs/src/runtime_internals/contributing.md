@@ -134,7 +134,7 @@ To do so, you will need to update the following files:
 ### Core definitions
 
 - `crates/wasm/wit/component.wit`: Add the new type to the three `value` enums.
-- `shared_crates/shared_types/src/lib.rs`: Add the new type to the `primitive_component_definitions` definition.
+- `shared_crates/primitive_component_definitions/src/lib.rs`: Add the new type to the `primitive_component_definitions` definition.
 
 ### Code generation
 
@@ -157,6 +157,7 @@ To do so, you will need to update the following files:
 
 - `CHANGELOG.md`: Document the addition of the new supported type.
 - `docs/src/reference/package.md`: Document the new type in the components section.
+- `crates/build/src/package_json.rs`: Specify how to convert the type to JSON.
 
 ## Golden image tests
 

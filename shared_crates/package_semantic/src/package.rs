@@ -12,7 +12,7 @@ use url::Url;
 use crate::{
     schema,
     util::{retrieve_file, retrieve_url, RetrieveError},
-    Item, ItemData, ItemId, ItemType, ItemValue, Resolve, Scope, Semantic,
+    Item, ItemData, ItemId, ItemType, ItemVariant, Resolve, Scope, Semantic,
 };
 use semver::Version;
 
@@ -253,22 +253,22 @@ impl Item for Package {
 
     type Unresolved = ();
 
-    fn from_item_value(value: &ItemValue) -> Option<&Self> {
+    fn from_item_value(value: &ItemVariant) -> Option<&Self> {
         match value {
-            ItemValue::Package(value) => Some(value),
+            ItemVariant::Package(value) => Some(value),
             _ => None,
         }
     }
 
-    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self> {
+    fn from_item_value_mut(value: &mut ItemVariant) -> Option<&mut Self> {
         match value {
-            ItemValue::Package(value) => Some(value),
+            ItemVariant::Package(value) => Some(value),
             _ => None,
         }
     }
 
-    fn into_item_value(self) -> ItemValue {
-        ItemValue::Package(self)
+    fn into_item_value(self) -> ItemVariant {
+        ItemVariant::Package(self)
     }
 
     fn data(&self) -> &ItemData {

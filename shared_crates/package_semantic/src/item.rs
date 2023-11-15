@@ -25,7 +25,7 @@ pub enum GetScopeError {
 
 #[derive(Clone, PartialEq, Debug, Default)]
 pub struct ItemMap {
-    items: HashMap<Ulid, ItemValue>,
+    items: HashMap<Ulid, ItemVariant>,
     vec_items: HashMap<ItemId<Type>, ItemId<Type>>,
     option_items: HashMap<ItemId<Type>, ItemId<Type>>,
 }
@@ -239,6 +239,10 @@ impl ItemMap {
 
         topological_sort(std::iter::once(id), self).unwrap()
     }
+
+    pub fn iter(&self) -> impl Iterator<Item = (&Ulid, &ItemVariant)> {
+        self.items.iter()
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -258,7 +262,7 @@ impl Display for ItemType {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum ItemValue {
+pub enum ItemVariant {
     Component(Component),
     Concept(Concept),
     Message(Message),
@@ -294,9 +298,9 @@ pub trait Item: Clone {
     const TYPE: ItemType;
     type Unresolved: Eq + Debug;
 
-    fn from_item_value(value: &ItemValue) -> Option<&Self>;
-    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self>;
-    fn into_item_value(self) -> ItemValue;
+    fn from_item_value(value: &ItemVariant) -> Option<&Self>;
+    fn from_item_value_mut(value: &mut ItemVariant) -> Option<&mut Self>;
+    fn into_item_value(self) -> ItemVariant;
 
     fn data(&self) -> &ItemData;
 }
@@ -333,6 +337,10 @@ impl<T: Item> Eq for ItemId<T> {}
 impl<T: Item> ItemId<T> {
     pub(crate) fn empty_you_should_really_initialize_this() -> Self {
         Self(Ulid::default(), PhantomData)
+    }
+
+    pub fn as_u128(&self) -> u128 {
+        self.0 .0
     }
 }
 

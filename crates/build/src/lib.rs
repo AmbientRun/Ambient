@@ -26,6 +26,8 @@ use walkdir::WalkDir;
 pub mod migrate;
 pub mod pipelines;
 
+mod package_json;
+
 #[derive(Clone, Debug)]
 pub struct BuildResult {
     pub build_path: PathBuf,
@@ -209,7 +211,8 @@ pub async fn build_package(
 
     tokio::fs::write(&output_manifest_path, toml::to_string(&manifest)?).await?;
 
-    store_metadata(&package_path, &build_path, settings, &assets).await?;
+    write_metadata(&package_path, &build_path, settings, &assets).await?;
+    package_json::write(&build_path, &semantic, package_item_id)?;
 
     Ok(BuildResult {
         build_path,
@@ -373,7 +376,7 @@ fn get_component_paths(target: &str, build_path: &Path) -> Vec<String> {
         .unwrap_or_default()
 }
 
-async fn store_metadata(
+async fn write_metadata(
     package_path: &Path,
     build_path: &Path,
     settings: &BuildSettings,

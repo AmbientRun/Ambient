@@ -2,7 +2,7 @@ use ambient_package::{PascalCaseIdentifier, SnakeCaseIdentifier};
 use indexmap::IndexMap;
 
 use crate::{
-    Attribute, Component, Concept, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Message,
+    Attribute, Component, Concept, Item, ItemData, ItemId, ItemMap, ItemType, ItemVariant, Message,
     Package, Resolve, Semantic, Type,
 };
 
@@ -52,22 +52,22 @@ impl Item for Scope {
 
     type Unresolved = ();
 
-    fn from_item_value(value: &ItemValue) -> Option<&Self> {
+    fn from_item_value(value: &ItemVariant) -> Option<&Self> {
         match value {
-            ItemValue::Scope(value) => Some(value),
+            ItemVariant::Scope(value) => Some(value),
             _ => None,
         }
     }
 
-    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self> {
+    fn from_item_value_mut(value: &mut ItemVariant) -> Option<&mut Self> {
         match value {
-            ItemValue::Scope(value) => Some(value),
+            ItemVariant::Scope(value) => Some(value),
             _ => None,
         }
     }
 
-    fn into_item_value(self) -> ItemValue {
-        ItemValue::Scope(self)
+    fn into_item_value(self) -> ItemVariant {
+        ItemVariant::Scope(self)
     }
 
     fn data(&self) -> &ItemData {

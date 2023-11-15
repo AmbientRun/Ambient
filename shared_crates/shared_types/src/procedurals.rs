@@ -17,6 +17,12 @@ macro_rules! make_procedural_storage_handles {
         )]
         pub struct [<Procedural $name:camel Handle>](Ulid);
 
+        impl [<Procedural $name:camel Handle>] {
+            pub fn as_u128(&self) -> u128 {
+                self.0. 0
+            }
+        }
+
         impl Default for [<Procedural $name:camel Handle>] {
             fn default() -> Self {
                 Self(Ulid::nil())

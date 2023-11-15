@@ -1,6 +1,6 @@
 use ambient_package::ItemPathBuf;
 
-use crate::{Item, ItemData, ItemId, ItemType, ItemValue, Resolve, Semantic};
+use crate::{Item, ItemData, ItemId, ItemType, ItemVariant, Resolve, Semantic};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Attribute {
@@ -10,22 +10,22 @@ impl Item for Attribute {
     const TYPE: ItemType = ItemType::Attribute;
     type Unresolved = ItemPathBuf;
 
-    fn from_item_value(value: &ItemValue) -> Option<&Self> {
+    fn from_item_value(value: &ItemVariant) -> Option<&Self> {
         match value {
-            ItemValue::Attribute(value) => Some(value),
+            ItemVariant::Attribute(value) => Some(value),
             _ => None,
         }
     }
 
-    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self> {
+    fn from_item_value_mut(value: &mut ItemVariant) -> Option<&mut Self> {
         match value {
-            ItemValue::Attribute(value) => Some(value),
+            ItemVariant::Attribute(value) => Some(value),
             _ => None,
         }
     }
 
-    fn into_item_value(self) -> ItemValue {
-        ItemValue::Attribute(self)
+    fn into_item_value(self) -> ItemVariant {
+        ItemVariant::Attribute(self)
     }
 
     fn data(&self) -> &ItemData {
