@@ -88,6 +88,12 @@ pub async fn generate_code(
         #imports
     };
 
+    for package_locator in semantic.packages.keys() {
+        if let Some(path) = package_locator.source.as_local_path() {
+            println!("cargo:rerun-if-changed={}", path.display());
+        }
+    }
+
     Ok(output)
 }
 

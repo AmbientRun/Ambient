@@ -6,11 +6,6 @@ pub fn generate() {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("no manifest dir");
     let manifest_dir = Path::new(&manifest_dir);
 
-    println!(
-        "cargo:rerun-if-changed={}",
-        manifest_dir.join("ambient.toml").display()
-    );
-
     let generated = generate_impl(manifest_dir)
         .unwrap_or_else(|e| {
             let msg = format!(
