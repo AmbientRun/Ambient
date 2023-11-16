@@ -13,14 +13,33 @@ pub enum Value {
     Option(Option<ScalarValue>),
     Enum(EnumValue),
 }
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Value::Scalar(v) => fmt::Display::fmt(v, f),
+            Value::Vec(v) => fmt::Debug::fmt(v, f),
+            Value::Option(v) => fmt::Debug::fmt(v, f),
+            Value::Enum(v) => write!(f, "{}", v.member),
+        }
+    }
+}
 macro_rules! define_scalar_value {
     ($(($value:ident, $type:ty)),*) => {
-        #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+        #[derive(Serialize, Deserialize, Clone, PartialEq)]
         #[serde(tag = "type", content = "value")]
         pub enum ScalarValue {
             $(
                 $value($type),
             )*
+        }
+        impl fmt::Debug for ScalarValue {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                match self {
+                    $(
+                        Self::$value(value) => fmt::Debug::fmt(value, f),
+                    )*
+                }
+            }
         }
         impl fmt::Display for ScalarValue {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

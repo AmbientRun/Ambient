@@ -13,7 +13,12 @@
     {% for component_id, component_item_id in scope.components %}
     <li>
         {% set component = get_item(id = component_item_id) %}
-        <a href="TODO">{{ component_id }}</a>
+        <a
+            href="TODO"
+            {% if component_item_id == item_id %}
+            class="highlight"
+            {% endif %}
+        >{{ component_id }}</a>
     </li>
     {% endfor %}
 </ul>

@@ -1,10 +1,10 @@
 {% extends "views/base" %}
 
-{% block title %}{{ package.name }}{% endblock title %}
+{% block title %}{{ item.name }}{% endblock title %}
 
 {% block sidebar %}
-<h2>{{ package.name }}</h2>
-<small>{{ package.version }}</small>
+<h2>{{ item.name }}</h2>
+<small>{{ item.version }}</small>
 
 <h3>Packages</h3>
 <ul>
@@ -17,28 +17,28 @@
 {% endblock sidebar %}
 
 {% block content %}
-<h1>{{ package.name }} <small>{{ package.version }}</small></h1>
+<h1>{{ item.name }} <small>{{ item.version }}</small></h1>
 
 <h3>Metadata</h3>
 <table>
-    {% if package.repository %}
+    {% if item.repository %}
     <tr>
         <th>Repository</th>
-        <td>{{ package.repository }}</td>
+        <td>{{ item.repository }}</td>
     </tr>
     {% endif %}
-    {% if package.ambient_version %}
+    {% if item.ambient_version %}
     <tr>
         <th>Ambient version</th>
-        <td>{{ package.ambient_version }}</td>
+        <td>{{ item.ambient_version }}</td>
     </tr>
     {% endif %}
 </table>
 
 <h3>Description</h3>
 <p>
-    {% if package.description %}
-    {{ package.description | markdown }}
+    {% if item.description %}
+    {{ item.description | markdown }}
     {% else %}
     No description available.
     {% endif %}
@@ -46,7 +46,7 @@
 
 <h3>Dependencies</h3>
 <ul>
-    {% for dep_id, dep in package.dependencies %}
+    {% for dep_id, dep in item.dependencies %}
     <li>
         <a href="{{ package_url(from=page_url, item_id=dep.id) }}">{{ dep_id }}</a>
     </li>

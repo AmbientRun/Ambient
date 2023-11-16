@@ -19,10 +19,10 @@
         <th>Attributes</th>
         <td>{{ item.attributes | join(sep = ", ") }}</td>
     </tr>
-    {% if item.default %}
+    {% if default %}
     <tr>
         <th>Default</th>
-        <td>{{ item.default }}</td>
+        <td>{{ default }}</td>
     </tr>
     {% endif %}
 </table>

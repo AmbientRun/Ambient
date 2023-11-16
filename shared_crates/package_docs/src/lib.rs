@@ -258,7 +258,6 @@ fn write_package(
     packages.sort_by(|a, b| a.0.cmp(b.0));
 
     let mut tera_ctx = ctx.tera_ctx(&package_path, Some((package, package_id)));
-    tera_ctx.insert("package", package);
     tera_ctx.insert("packages", &packages);
     tera_ctx.insert("scope", scope);
 
@@ -329,7 +328,10 @@ fn write_component(
 ) -> anyhow::Result<()> {
     let component_path = output_dir.join(format!("{}.html", component.data.id));
 
-    let tera_ctx = ctx.tera_ctx(&component_path, Some((component, component_id)));
+    let mut tera_ctx = ctx.tera_ctx(&component_path, Some((component, component_id)));
+    if let Some(default) = &component.default {
+        tera_ctx.insert("default", &default.to_string());
+    }
 
     std::fs::write(
         component_path,
