@@ -2,9 +2,9 @@
 id = "oa46hyuls6l24bmqapdm3iqzh3p37di6"
 name = "Tangent Reskin: Classes"
 description = "Replaces the models for the Assault and Tank classes with other models."
-version = "0.3.2-nightly-2023-11-15"
+version = "0.3.2-nightly-2023-11-16"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.2-nightly-2023-11-15"
+ambient_version = "0.3.2-nightly-2023-11-16"
 authors = ["philpax"]
 
 [dependencies]
