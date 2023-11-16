@@ -1,0 +1,57 @@
+{% extends "views/base" %}
+
+{% block title %}{{ package.name }}{% endblock title %}
+
+{% block sidebar %}
+<h2>{{ package.name }}</h2>
+<small>{{ package.version }}</small>
+
+<h3>Packages</h3>
+<ul>
+    {% for package in packages %}
+    <li>
+        <a href="{{package_url(from=page_url, package_id=package[1])}}">{{ package[0] }}</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock sidebar %}
+
+{% block content %}
+<h1>{{ package.name }} <small>{{ package.version }}</small></h1>
+
+<h3>Metadata</h3>
+<table>
+    {% if package.repository %}
+    <tr>
+        <th>Repository</th>
+        <td>{{ package.repository }}</td>
+    </tr>
+    {% endif %}
+    {% if package.ambient_version %}
+    <tr>
+        <th>Ambient version</th>
+        <td>{{ package.ambient_version }}</td>
+    </tr>
+    {% endif %}
+</table>
+
+<h3>Description</h3>
+<p>
+    {% if package.description %}
+    {{ package.description | markdown }}
+    {% else %}
+    No description available.
+    {% endif %}
+</p>
+
+<h3>Dependencies</h3>
+<ul>
+    {% for dep_id, dep in package.dependencies %}
+    <li>
+        <a href="{{ package_url(from=page_url, item_id=dep.id) }}">{{ dep_id }}</a>
+    </li>
+    {% endfor %}
+</ul>
+
+{% include "partials/scope" %}
+{% endblock content %}

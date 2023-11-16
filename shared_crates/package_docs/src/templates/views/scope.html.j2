@@ -1,0 +1,26 @@
+{% extends "views/base" %}
+
+{% block title %}TODO: SCOPE_PATH{% endblock title %}
+
+{% block sidebar %}
+<!-- This should all be a macro for an item in a package -->
+<h2>TODO: PACKAGE NAME</h2>
+<small>TODO: PACKAGE VERSION</small>
+
+<h3>In TODO: SCOPE_PATH</h3>
+
+<h3>Components</h3>
+<ul>
+    {# {% for component in components %}
+    <li>
+        <a href="{{component_url(from=page_url, component_id=component[1])}}">{{ component[0] }}</a>
+    </li>
+    {% endfor %} #}
+</ul>
+{% endblock sidebar %}
+
+{% block content %}
+<h1>Scope SCOPE_PATH</h1>
+
+{% include "partials/scope" %}
+{% endblock content %}

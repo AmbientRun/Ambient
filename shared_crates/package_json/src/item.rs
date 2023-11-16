@@ -11,7 +11,9 @@ pub type ErasedItemId = String;
 
 pub trait Item {
     fn data(&self) -> &ItemData;
-    fn from_item_variant(value: &ItemVariant) -> Option<&Self>;
+    fn from_item_variant(value: &ItemVariant) -> Option<&Self>
+    where
+        Self: Sized;
     fn into_item_variant(self) -> ItemVariant;
 }
 
@@ -22,7 +24,10 @@ macro_rules! impl_item_for_type {
                 &self.data
             }
 
-            fn from_item_variant(value: &ItemVariant) -> Option<&Self> {
+            fn from_item_variant(value: &ItemVariant) -> Option<&Self>
+            where
+                Self: Sized,
+            {
                 match value {
                     ItemVariant::$ty(item) => Some(item),
                     _ => None,
@@ -68,8 +73,21 @@ pub enum ItemVariant {
     Type(Type),
     Attribute(Attribute),
 }
+impl ItemVariant {
+    pub fn item(&self) -> &dyn Item {
+        match self {
+            ItemVariant::Package(item) => item,
+            ItemVariant::Scope(item) => item,
+            ItemVariant::Component(item) => item,
+            ItemVariant::Concept(item) => item,
+            ItemVariant::Message(item) => item,
+            ItemVariant::Type(item) => item,
+            ItemVariant::Attribute(item) => item,
+        }
+    }
+}
 
-pub struct ItemId<T: Item>(String, PhantomData<T>);
+pub struct ItemId<T: Item>(pub String, PhantomData<T>);
 impl<T: Item> ItemId<T> {
     pub fn from_u128(id: u128) -> Self {
         Self(id.to_string(), PhantomData)

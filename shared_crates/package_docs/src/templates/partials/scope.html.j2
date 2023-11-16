@@ -1,0 +1,26 @@
+<h3>Imports</h3>
+<ul>
+    {% for import_id, import_package_id in scope.imports %}
+    <li>
+        <a href="{{ package_url(from=page_url, item_id=import_package_id) }}">{{ import_id }}</a>
+    </li>
+    {% endfor %}
+</ul>
+
+<h3>Scopes</h3>
+<ul>
+    {% for scope_id, _scope_package_id in scope.scopes %}
+    <li>
+        <a href="./{{ scope_id }}/index.html">{{ scope_id }}</a>
+    </li>
+    {% endfor %}
+</ul>
+
+<h3>Components</h3>
+<ul>
+    {% for component_id, _component_package_id in scope.components %}
+    <li>
+        <a href="./components/{{ component_id }}.html">{{ component_id }}</a>
+    </li>
+    {% endfor %}
+</ul>

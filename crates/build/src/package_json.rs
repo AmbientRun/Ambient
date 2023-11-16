@@ -1,4 +1,8 @@
-use std::{collections::HashMap, path::Path, time::Duration};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    time::Duration,
+};
 
 use ambient_ecs::EntityId;
 use ambient_package as pkg;
@@ -17,11 +21,11 @@ pub fn write(
     build_path: &Path,
     semantic: &sema::Semantic,
     package_item_id: sema::ItemId<sema::Package>,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<PathBuf> {
     let output_path = build_path.join("ambient_package.json");
 
     std::fs::write(
-        output_path,
+        &output_path,
         serde_json::to_string(&json::Manifest {
             main_package_id: package_item_id.to_json(),
             items: semantic
@@ -32,7 +36,7 @@ pub fn write(
         })?,
     )?;
 
-    Ok(())
+    Ok(output_path)
 }
 
 trait SemanticToJson {
@@ -292,6 +296,7 @@ impl SemanticToJson for sema::Package {
                 .ambient_version
                 .as_ref()
                 .map(|s| s.to_string()),
+            scope_id: self.scope_id.to_json(),
             dependencies: self
                 .dependencies
                 .iter()

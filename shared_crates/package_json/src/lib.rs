@@ -25,6 +25,15 @@ pub struct Manifest {
     pub main_package_id: ItemId<Package>,
     pub items: HashMap<ErasedItemId, ItemVariant>,
 }
+impl Manifest {
+    pub fn get<T: Item>(&self, id: &ItemId<T>) -> &T {
+        T::from_item_variant(self.items.get(&id.0).unwrap()).unwrap()
+    }
+
+    pub fn main_package(&self) -> &Package {
+        self.get(&self.main_package_id)
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct Package {
@@ -34,6 +43,7 @@ pub struct Package {
     pub description: Option<String>,
     pub repository: Option<String>,
     pub ambient_version: Option<String>,
+    pub scope_id: ItemId<Scope>,
     pub dependencies: IndexMap<Identifier, Dependency>,
 }
 impl_item_for_type!(Package);

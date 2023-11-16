@@ -26,6 +26,8 @@ ambient_package_semantic_native = { path = "../package_semantic_native" , versio
 ambient_package = { path = "../../shared_crates/package" , version = "0.3.2-dev" }
 ambient_package_semantic = { path = "../../shared_crates/package_semantic" , version = "0.3.2-dev" }
 ambient_package_json = { path = "../../shared_crates/package_json" , version = "0.3.2-dev" }
+ambient_package_docs = { path = "../../shared_crates/package_docs" , version = "0.3.2-dev" }
+
 ambient_std = { path = "../../shared_crates/std" , version = "0.3.2-dev" }
 ambient_shared_types = { path = "../../shared_crates/shared_types" , version = "0.3.2-dev" }
 

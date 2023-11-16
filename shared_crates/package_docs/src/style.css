@@ -1,0 +1,13 @@
+body {
+    display: flex;
+}
+
+body > nav {
+    width: 20%;
+    padding: 8px;
+}
+
+body > main {
+    width: 80%;
+    padding: 8px;
+}

@@ -6,5 +6,5 @@
     "editor.formatOnSave": false
   },
   "rust-analyzer.showUnlinkedFileNotification": false,
-  "rust-analyzer.checkOnSave": true
+  "rust-analyzer.checkOnSave": false
 }

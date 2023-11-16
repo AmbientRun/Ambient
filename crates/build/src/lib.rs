@@ -35,6 +35,14 @@ pub struct BuildResult {
     pub was_built: bool,
 }
 
+// Settings to disable build steps for faster iteration
+/// If false, always build packages, even if they are unchanged
+const SKIP_BUILD_IF_UNCHANGED: bool = true;
+/// If false, asset building (code, assets) will be skipped
+const BUILD_ASSETS: bool = true;
+/// If false, package documentation will not be built
+const BUILD_DOCS: bool = true;
+
 /// This takes the path to a single Ambient package and builds it.
 /// It assumes all of its dependencies are already built.
 ///
@@ -179,40 +187,51 @@ pub async fn build_package(
         .map(|s| s.as_str())
         .unwrap_or("missing ID");
 
-    if last_build_settings.as_ref() == Some(settings) && last_modified_before_build {
-        tracing::info!("Skipping unmodified package \"{package_name}\" ({package_id})");
-        return Ok(BuildResult {
-            build_path,
-            package_name: package_name.clone(),
-            was_built: false,
-        });
+    if SKIP_BUILD_IF_UNCHANGED {
+        if last_build_settings.as_ref() == Some(settings) && last_modified_before_build {
+            tracing::info!("Skipping unmodified package \"{package_name}\" ({package_id})");
+            return Ok(BuildResult {
+                build_path,
+                package_name: package_name.clone(),
+                was_built: false,
+            });
+        }
     }
 
     tracing::info!("Building package \"{package_name}\" ({package_id})");
 
-    let assets_path = package_path.join("assets");
-    tokio::fs::create_dir_all(&build_path)
-        .await
-        .context("Failed to create build directory")?;
+    if BUILD_ASSETS {
+        let assets_path = package_path.join("assets");
+        tokio::fs::create_dir_all(&build_path)
+            .await
+            .context("Failed to create build directory")?;
 
-    let assets = if !settings.wasm_only {
-        build_assets(assets, &assets_path, &build_path, false).await?
-    } else {
-        vec![]
-    };
+        let assets = if !settings.wasm_only {
+            build_assets(assets, &assets_path, &build_path, false).await?
+        } else {
+            vec![]
+        };
 
-    tracing::info!("Assets built, building source code...");
+        tracing::info!("Assets built, building source code...");
 
-    build_rust_if_available(&package_path, &manifest, &build_path, settings.release)
-        .await
-        .with_context(|| format!("Failed to build Rust in {build_path:?}"))?;
+        build_rust_if_available(&package_path, &manifest, &build_path, settings.release)
+            .await
+            .with_context(|| format!("Failed to build Rust in {build_path:?}"))?;
 
-    tracing::info!("Source built");
+        tracing::info!("Source built");
 
-    tokio::fs::write(&output_manifest_path, toml::to_string(&manifest)?).await?;
+        tokio::fs::write(&output_manifest_path, toml::to_string(&manifest)?).await?;
 
-    write_metadata(&package_path, &build_path, settings, &assets).await?;
-    package_json::write(&build_path, &semantic, package_item_id)?;
+        write_metadata(&package_path, &build_path, settings, &assets).await?;
+    }
+
+    if BUILD_DOCS {
+        let json_path = package_json::write(&build_path, &semantic, package_item_id)?;
+        let docs_path = build_path.join("docs");
+        std::fs::remove_dir_all(&docs_path).ok();
+        std::fs::create_dir_all(&docs_path)?;
+        ambient_package_docs::write(&docs_path, &json_path, false)?;
+    }
 
     Ok(BuildResult {
         build_path,
