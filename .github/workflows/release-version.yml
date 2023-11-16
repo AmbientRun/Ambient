@@ -111,6 +111,19 @@ jobs:
       # We don't do caching here because we only have 10gb and they'll be occupied by normal builds all the time anyway
       - name: Build
         run: cargo build --release -p ambient --target ${{ matrix.target }} --features production
+      - name: Code Sign Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        uses: sslcom/esigner-codesign@develop
+        with:
+          command: sign
+          username: ${{secrets.ES_USERNAME}}
+          password: ${{secrets.ES_PASSWORD}}
+          credential_id: ${{secrets.ES_CREDENTIAL_ID}}
+          totp_secret: ${{secrets.ES_TOTP_SECRET}}
+          file_path: ${{ env.EXE_DIR }}/${{ matrix.exe_name }}
+          dir_path: ${{ env.EXE_DIR }}
+          override: true
+          malware_block: false
       - name: Install certificate (OSX)
         if: matrix.os == 'macos-latest'
         uses: apple-actions/import-codesign-certs@v1
