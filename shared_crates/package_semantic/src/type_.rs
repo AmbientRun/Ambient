@@ -63,21 +63,21 @@ impl Item for Type {
     const TYPE: ItemType = ItemType::Type;
     type Unresolved = ComponentType;
 
-    fn from_item_value(value: &ItemVariant) -> Option<&Self> {
+    fn from_item_variant(value: &ItemVariant) -> Option<&Self> {
         match value {
             ItemVariant::Type(value) => Some(value),
             _ => None,
         }
     }
 
-    fn from_item_value_mut(value: &mut ItemVariant) -> Option<&mut Self> {
+    fn from_item_variant_mut(value: &mut ItemVariant) -> Option<&mut Self> {
         match value {
             ItemVariant::Type(value) => Some(value),
             _ => None,
         }
     }
 
-    fn into_item_value(self) -> ItemVariant {
+    fn into_item_variant(self) -> ItemVariant {
         ItemVariant::Type(self)
     }
 

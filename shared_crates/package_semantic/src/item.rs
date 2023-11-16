@@ -69,7 +69,7 @@ impl ItemMap {
     #[allow(clippy::disallowed_methods)]
     fn add_raw<T: Item>(&mut self, value: T) -> ItemId<T> {
         let ulid = ulid::Ulid::new();
-        self.items.insert(ulid, value.into_item_value());
+        self.items.insert(ulid, value.into_item_variant());
         ItemId(ulid, PhantomData)
     }
 
@@ -77,18 +77,18 @@ impl ItemMap {
     ///
     /// Does not resolve the item.
     pub fn get<T: Item>(&self, id: ItemId<T>) -> &T {
-        T::from_item_value(self.items.get(&id.0).unwrap()).unwrap()
+        T::from_item_variant(self.items.get(&id.0).unwrap()).unwrap()
     }
 
     /// Returns a mutable reference to the item with the given id.
     ///
     /// Does not resolve the item.
     pub fn get_mut<T: Item>(&mut self, id: ItemId<T>) -> &mut T {
-        T::from_item_value_mut(self.items.get_mut(&id.0).unwrap()).unwrap()
+        T::from_item_variant_mut(self.items.get_mut(&id.0).unwrap()).unwrap()
     }
 
     pub fn insert<T: Item>(&mut self, id: ItemId<T>, item: T) {
-        self.items.insert(id.0, item.into_item_value());
+        self.items.insert(id.0, item.into_item_variant());
     }
 
     pub fn get_vec_id(&self, id: ItemId<Type>) -> ItemId<Type> {
@@ -298,9 +298,9 @@ pub trait Item: Clone {
     const TYPE: ItemType;
     type Unresolved: Eq + Debug;
 
-    fn from_item_value(value: &ItemVariant) -> Option<&Self>;
-    fn from_item_value_mut(value: &mut ItemVariant) -> Option<&mut Self>;
-    fn into_item_value(self) -> ItemVariant;
+    fn from_item_variant(value: &ItemVariant) -> Option<&Self>;
+    fn from_item_variant_mut(value: &mut ItemVariant) -> Option<&mut Self>;
+    fn into_item_variant(self) -> ItemVariant;
 
     fn data(&self) -> &ItemData;
 }

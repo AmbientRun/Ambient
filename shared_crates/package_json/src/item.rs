@@ -11,8 +11,8 @@ pub type ErasedItemId = String;
 
 pub trait Item {
     fn data(&self) -> &ItemData;
-    fn from_item_value(value: &ItemVariant) -> Option<&Self>;
-    fn into_item_value(self) -> ItemVariant;
+    fn from_item_variant(value: &ItemVariant) -> Option<&Self>;
+    fn into_item_variant(self) -> ItemVariant;
 }
 
 macro_rules! impl_item_for_type {
@@ -22,14 +22,14 @@ macro_rules! impl_item_for_type {
                 &self.data
             }
 
-            fn from_item_value(value: &ItemVariant) -> Option<&Self> {
+            fn from_item_variant(value: &ItemVariant) -> Option<&Self> {
                 match value {
                     ItemVariant::$ty(item) => Some(item),
                     _ => None,
                 }
             }
 
-            fn into_item_value(self) -> ItemVariant {
+            fn into_item_variant(self) -> ItemVariant {
                 ItemVariant::$ty(self)
             }
         }
