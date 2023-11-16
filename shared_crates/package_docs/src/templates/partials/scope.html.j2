@@ -1,5 +1,5 @@
 {% if scope.imports %}
-<h3>Imports</h3>
+<h3 id="imports">Imports</h3>
 <ul>
     {% for import_id, import_package_id in scope.imports %}
     <li>
@@ -10,7 +10,7 @@
 {% endif %}
 
 {% if scope.scopes %}
-<h3>Scopes</h3>
+<h3 id="scopes">Scopes</h3>
 <ul>
     {% for scope_id, _scope_package_id in scope.scopes %}
     <li>

@@ -1,9 +1,10 @@
+{% if scope.imports %}
+<h4><a href="#imports">Imports</a></h4>
+{% endif %}
 
-<h3>Scope
-    <a href="{{ item_url(from=page_url, item_id=scope_id)}}">
-        <code>{{ item_path(data = scope.data) }}</code>
-    </a>
-</h3>
+{% if scope.scopes %}
+<h4><a href="#scopes">Scopes</a></h4>
+{% endif %}
 
 {% if scope.components %}
 <h4><a href="#components">Components</a></h4>

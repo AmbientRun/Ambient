@@ -19,6 +19,14 @@
     {% endfor %}
 </ul>
 
+
+<h3>Package</h3>
+
+<h4><a href="#metadata">Metadata</a></h4>
+<h4><a href="#description">Description</a></h4>
+{% if item.dependencies %}
+<h4><a href="#dependencies">Dependencies</a></h4>
+{% endif %}
 {% include "partials/scope_sidebar" %}
 
 {% endblock sidebar %}
@@ -51,6 +59,7 @@
     {% endif %}
 </p>
 
+{% if item.dependencies %}
 <h3>Dependencies</h3>
 <ul>
     {% for dep_id, dep in item.dependencies %}
@@ -59,6 +68,7 @@
     </li>
     {% endfor %}
 </ul>
+{% endif %}
 
 {% include "partials/scope" %}
 {% endblock content %}
