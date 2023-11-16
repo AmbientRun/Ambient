@@ -91,6 +91,11 @@ impl ItemVariant {
 
 pub struct ItemId<T: Item>(pub String, PhantomData<T>);
 impl<T: Item> ItemId<T> {
+    /// Use carefully.
+    pub(crate) fn forge(id: String) -> Self {
+        Self(id, PhantomData)
+    }
+
     pub fn from_u128(id: u128) -> Self {
         Self(id.to_string(), PhantomData)
     }

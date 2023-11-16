@@ -31,6 +31,13 @@ impl Manifest {
         T::from_item_variant(self.items.get(&id.0).unwrap()).unwrap()
     }
 
+    pub fn packages(&self) -> impl Iterator<Item = (ItemId<Package>, &Package)> {
+        self.items.iter().filter_map(|(k, v)| {
+            let package = Package::from_item_variant(v)?;
+            Some((ItemId::forge(k.clone()), package))
+        })
+    }
+
     pub fn main_package(&self) -> &Package {
         self.get(&self.main_package_id)
     }

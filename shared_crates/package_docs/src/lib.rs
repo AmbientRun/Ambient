@@ -5,17 +5,19 @@ use std::{
 };
 
 use ambient_package_json as apj;
-use apj::Item;
 use tera::{Context, Tera};
 
 pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::Result<()> {
     let manifest: Arc<apj::Manifest> =
         Arc::new(serde_json::from_str(&std::fs::read_to_string(json_path)?)?);
-    let packages: HashMap<_, _> = manifest
-        .items
-        .iter()
-        .filter_map(|item| Some((item.0.as_str(), apj::Package::from_item_variant(item.1)?)))
-        .collect();
+
+    let mut packages = vec![];
+    let mut scope_id_to_package_id = HashMap::new();
+
+    for (id, package) in manifest.packages() {
+        packages.push((id.clone(), package));
+        scope_id_to_package_id.insert(package.scope_id.0.clone(), id.clone());
+    }
 
     let mut tera = Tera::default();
     tera.add_raw_templates([
@@ -93,24 +95,31 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     tera.register_function("item_path", {
         let manifest = manifest.clone();
         move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
-            let data = get_arg::<apj::ItemData>(args, "data")
-                .or_else(|_: tera::Error| {
-                    let item_id = get_arg::<String>(args, "item_id")?;
-                    let item = manifest
-                        .items
-                        .get(&item_id)
-                        .ok_or_else(|| tera::Error::msg("Item not found"))?
-                        .item();
-
-                    Ok(item.data().clone())
-                })
-                .or_else(|_: tera::Error| {
-                    Err(tera::Error::msg(
-                        "One of `data` or `item_id` must be specified",
-                    ))
-                })?;
+            let data = get_data_arg(args, &manifest)?;
 
             Ok(tera::to_value(path_to_item(&manifest, &data))?)
+        }
+    });
+    tera.register_function("item_package", {
+        let manifest = manifest.clone();
+        move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
+            let item_id = get_arg::<String>(args, "item_id")?;
+
+            let mut next = &item_id;
+            loop {
+                let current = manifest.items.get(next).unwrap();
+                if let Some(parent_id) = current.item().data().parent_id.as_ref() {
+                    next = &parent_id.0;
+                } else {
+                    break;
+                }
+            }
+
+            let package_id = scope_id_to_package_id.get(next).ok_or_else(|| {
+                tera::Error::msg(format!("Could not find package for item `{}`", item_id))
+            })?;
+
+            Ok(tera::to_value(manifest.get(package_id))?)
         }
     });
     tera.register_function("get_item", {
@@ -140,6 +149,7 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     write_scope(
         ctx,
         output_path,
+        &manifest.root_scope_id,
         manifest.get(&manifest.root_scope_id),
         false,
     )?;
@@ -147,8 +157,8 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     let packages_dir = output_path.join("packages");
     std::fs::create_dir_all(&packages_dir)?;
 
-    for (_, package) in &packages {
-        write_package(ctx, &packages_dir, &packages, package)?;
+    for (package_id, package) in &packages {
+        write_package(ctx, &packages_dir, &packages, package_id, package)?;
     }
 
     let index_path = output_path.join("index.html");
@@ -160,6 +170,29 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     std::fs::write(index_path, tera.render("views/redirect", &index_context)?)?;
 
     Ok(())
+}
+
+fn get_data_arg(
+    args: &HashMap<String, serde_json::Value>,
+    manifest: &Arc<apj::Manifest>,
+) -> tera::Result<apj::ItemData> {
+    let data = get_arg::<apj::ItemData>(args, "data")
+        .or_else(|_: tera::Error| {
+            let item_id = get_arg::<String>(args, "item_id")?;
+            let item = manifest
+                .items
+                .get(&item_id)
+                .ok_or_else(|| tera::Error::msg("Item not found"))?
+                .item();
+
+            Ok(item.data().clone())
+        })
+        .or_else(|_: tera::Error| {
+            Err(tera::Error::msg(
+                "One of `data` or `item_id` must be specified",
+            ))
+        })?;
+    Ok(data)
 }
 
 fn get_arg<T: serde::de::DeserializeOwned>(
@@ -182,7 +215,11 @@ struct GenContext<'a> {
     autoreload: bool,
 }
 impl GenContext<'_> {
-    fn tera_ctx(&self, page_path: &Path) -> Context {
+    fn tera_ctx<T: apj::Item + serde::Serialize>(
+        &self,
+        page_path: &Path,
+        item: Option<(&T, &apj::ItemId<T>)>,
+    ) -> Context {
         let mut ctx = Context::new();
         ctx.insert(
             "style_css_path",
@@ -190,6 +227,10 @@ impl GenContext<'_> {
         );
         ctx.insert("autoreload", &self.autoreload);
         ctx.insert("page_url", &diff_paths(self.output_path, page_path));
+        if let Some((item, item_id)) = item {
+            ctx.insert("item", item);
+            ctx.insert("item_id", item_id);
+        }
 
         ctx
     }
@@ -198,24 +239,25 @@ impl GenContext<'_> {
 fn write_package(
     ctx: GenContext,
     packages_dir: &Path,
-    packages: &HashMap<&str, &apj::Package>,
+    packages: &[(apj::ItemId<apj::Package>, &apj::Package)],
+    package_id: &apj::ItemId<apj::Package>,
     package: &apj::Package,
 ) -> anyhow::Result<()> {
     let package_dir = packages_dir.join(&package.data.id);
     std::fs::create_dir_all(&package_dir)?;
 
     let scope = ctx.manifest.get(&package.scope_id);
-    write_scope(ctx, &package_dir, scope, false)?;
+    write_scope(ctx, &package_dir, &package.scope_id, scope, false)?;
 
     let package_path = package_dir.join("index.html");
 
     let mut packages = packages
-        .values()
-        .map(|p| (&p.name, &p.data.id))
+        .iter()
+        .map(|(_, p)| (&p.name, &p.data.id))
         .collect::<Vec<_>>();
     packages.sort_by(|a, b| a.0.cmp(b.0));
 
-    let mut tera_ctx = ctx.tera_ctx(&package_path);
+    let mut tera_ctx = ctx.tera_ctx(&package_path, Some((package, package_id)));
     tera_ctx.insert("package", package);
     tera_ctx.insert("packages", &packages);
     tera_ctx.insert("scope", scope);
@@ -228,6 +270,7 @@ fn write_package(
 fn write_scope(
     ctx: GenContext,
     output_dir: &Path,
+    scope_id: &apj::ItemId<apj::Scope>,
     scope: &apj::Scope,
     generate_view: bool,
 ) -> anyhow::Result<()> {
@@ -235,7 +278,7 @@ fn write_scope(
         let scope = ctx.manifest.get(scope_id);
         let scope_dir = output_dir.join(scope_name);
         std::fs::create_dir_all(&scope_dir)?;
-        write_scope(ctx, &scope_dir, scope, true)?;
+        write_scope(ctx, &scope_dir, scope_id, scope, true)?;
     }
 
     if !scope.components.is_empty() {
@@ -243,7 +286,7 @@ fn write_scope(
         std::fs::create_dir_all(&components_dir)?;
         for (_, component_id) in &scope.components {
             let component = ctx.manifest.get(component_id);
-            write_component(ctx, &components_dir, component)?;
+            write_component(ctx, &components_dir, component_id, component)?;
         }
     }
 
@@ -269,7 +312,7 @@ fn write_scope(
 
     if generate_view {
         let output_path = output_dir.join("index.html");
-        let mut tera_ctx = ctx.tera_ctx(&output_path);
+        let mut tera_ctx = ctx.tera_ctx(&output_path, Some((scope, scope_id)));
         tera_ctx.insert("scope", scope);
 
         std::fs::write(output_path, ctx.tera.render("views/scope", &tera_ctx)?)?;
@@ -281,12 +324,12 @@ fn write_scope(
 fn write_component(
     ctx: GenContext,
     output_dir: &Path,
+    component_id: &apj::ItemId<apj::Component>,
     component: &apj::Component,
 ) -> anyhow::Result<()> {
     let component_path = output_dir.join(format!("{}.html", component.data.id));
 
-    let mut tera_ctx = ctx.tera_ctx(&component_path);
-    tera_ctx.insert("item", component);
+    let tera_ctx = ctx.tera_ctx(&component_path, Some((component, component_id)));
 
     std::fs::write(
         component_path,
