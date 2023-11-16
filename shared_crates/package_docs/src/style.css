@@ -1,15 +1,21 @@
 body {
     display: flex;
+    margin: 0;
 }
 
 body > nav {
     width: 30%;
-    padding: 8px;
+    height: 100vh;
+    padding: 16px;
+    box-sizing: border-box;
+
+    overflow: scroll;
 }
 
 body > main {
     width: 70%;
-    padding: 8px;
+    padding: 16px;
+    box-sizing: border-box;
 }
 
 a.highlight {
