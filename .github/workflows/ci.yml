@@ -175,21 +175,6 @@ jobs:
         uses: Leafwing-Studios/cargo-cache@v1.1.0
       - name: Build
         run: cargo build --workspace --release
-
-      - name: Code Sign Windows
-        if: ${{ matrix.os == 'windows-latest' }}
-        uses: sslcom/esigner-codesign@develop
-        with:
-          command: sign
-          username: ${{secrets.ES_USERNAME}}
-          password: ${{secrets.ES_PASSWORD}}
-          credential_id: ${{secrets.ES_CREDENTIAL_ID}}
-          totp_secret: ${{secrets.ES_TOTP_SECRET}}
-          file_path: target/release/ambient.exe
-          dir_path: target/release/
-          override: true
-          malware_block: false
-
       - name: Upload ambient executable artifact
         uses: actions/upload-artifact@v3
         with:
