@@ -31,7 +31,11 @@ pub fn normalize(path: &Path) -> PathBuf {
             }
             Component::CurDir => {}
             Component::ParentDir => {
-                ret.pop();
+                if ret.components().any(|c| matches!(c, Component::Normal(_))) {
+                    ret.pop();
+                } else {
+                    ret.push(component.as_os_str());
+                }
             }
             Component::Normal(c) => {
                 ret.push(c);
@@ -76,4 +80,50 @@ pub fn path_to_unix_string(path: impl AsRef<Path>) -> Option<String> {
         Some(Cow::Borrowed("/")),
     )
     .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::normalize;
+    use std::path::Path;
+
+    #[test]
+    fn test_relative_path_simplification() {
+        assert_eq!(
+            normalize(Path::new("a/b/./../c")),
+            Path::new("a/c").to_path_buf()
+        );
+        assert_eq!(
+            normalize(Path::new("../../a/b/c/../d")),
+            Path::new("../../a/b/d").to_path_buf()
+        );
+    }
+
+    #[test]
+    fn test_absolute_path_handling() {
+        assert_eq!(
+            normalize(Path::new("/a/b/../c")),
+            Path::new("/a/c").to_path_buf()
+        );
+    }
+
+    #[test]
+    fn test_edge_cases() {
+        assert_eq!(normalize(Path::new("..")), Path::new("..").to_path_buf());
+        assert_eq!(normalize(Path::new(".")), Path::new("").to_path_buf());
+    }
+
+    #[test]
+    fn test_mixed_components() {
+        assert_eq!(
+            normalize(Path::new("a/./b/.././c/d/..")),
+            Path::new("a/c").to_path_buf()
+        );
+    }
+
+    #[test]
+    fn test_empty_and_single_component_paths() {
+        assert_eq!(normalize(Path::new("")), Path::new("").to_path_buf());
+        assert_eq!(normalize(Path::new("a")), Path::new("a").to_path_buf());
+    }
 }

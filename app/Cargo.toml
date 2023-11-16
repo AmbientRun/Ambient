@@ -66,6 +66,7 @@ rpassword = { workspace = true }
 sentry = { workspace = true }
 sentry-rust-minidump = { workspace = true }
 colored = { workspace = true }
+pathdiff = { workspace = true }
 
 [dev-dependencies]
 glam = { workspace = true }
