@@ -1,13 +1,13 @@
 {% extends "views/base" %}
 
-{% block title %}{{ item.data.id }} in {{ item_path(item_id = item.data.parent_id) }}{% endblock title %}
+{% block title %}{{ item.data.id }} in <code>{{ item_path(item_id = item.data.parent_id) }}</code>{% endblock title %}
 
 {% block sidebar %}
 {% include "partials/item_sidebar" %}
 {% endblock sidebar %}
 
 {% block content %}
-<h1>Component {{ item_path(data = item.data) }}</h1>
+<h1>Component <code>{{ item_path(data = item.data) }}</code></h1>
 
 <h3>Metadata</h3>
 <table>
