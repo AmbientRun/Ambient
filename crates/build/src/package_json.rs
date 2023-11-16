@@ -282,6 +282,16 @@ impl SemanticToJson for sema::Package {
     fn to_json(&self) -> Self::Json {
         json::Package {
             data: self.data.to_json(),
+            name: self.manifest.package.name.to_json(),
+            version: self.manifest.package.version.to_string(),
+            description: self.manifest.package.description.to_json(),
+            repository: self.manifest.package.repository.to_json(),
+            ambient_version: self
+                .manifest
+                .package
+                .ambient_version
+                .as_ref()
+                .map(|s| s.to_string()),
             dependencies: self
                 .dependencies
                 .iter()

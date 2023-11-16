@@ -29,6 +29,11 @@ pub struct Manifest {
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct Package {
     pub data: ItemData,
+    pub name: String,
+    pub version: String,
+    pub description: Option<String>,
+    pub repository: Option<String>,
+    pub ambient_version: Option<String>,
     pub dependencies: IndexMap<Identifier, Dependency>,
 }
 impl_item_for_type!(Package);
