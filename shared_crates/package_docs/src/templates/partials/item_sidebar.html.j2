@@ -1,12 +1,13 @@
 {% if scope is undefined %}
-    {% set scope = get_item(id = item.data.parent_id) %}
+    {% set scope_id = item.data.parent_id %}
+    {% set scope = get_item(id=scope_id) %}
 {% endif %}
 
-{% set package = item_package(item_id = item_id) %}
-<h2>{{ package.name }}</h2>
-<small>{{ package.version }}</small>
+{% set package_id = item_package_id(item_id=item_id) %}
+{% set package = get_item(id=package_id) %}
+<h2><a href="{{ item_url(from=page_url, item_id=package_id) }}">{{ package.name }}</a> <small>{{ package.version }}</small></h2>
 
-<h3>In scope {{ item_path(data = scope.data) }}</h3>
+<h3>In scope <a href="{{ item_url(from=page_url, item_id=scope_id)}}">{{ item_path(data = scope.data) }}</a></h3>
 
 <h3>Components</h3>
 <ul>
@@ -14,7 +15,7 @@
     <li>
         {% set component = get_item(id = component_item_id) %}
         <a
-            href="TODO"
+            href="{{ item_url(from=page_url, item_id=component_item_id) }}"
             {% if component_item_id == item_id %}
             class="highlight"
             {% endif %}

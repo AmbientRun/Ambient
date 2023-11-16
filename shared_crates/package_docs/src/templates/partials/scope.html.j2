@@ -3,7 +3,7 @@
 <ul>
     {% for import_id, import_package_id in scope.imports %}
     <li>
-        <a href="{{ package_url(from=page_url, item_id=import_package_id) }}">{{ import_id }}</a>
+        <a href="{{ item_url(from=page_url, item_id=import_package_id) }}">{{ import_id }}</a>
     </li>
     {% endfor %}
 </ul>

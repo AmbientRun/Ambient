@@ -3,14 +3,18 @@
 {% block title %}{{ item.name }}{% endblock title %}
 
 {% block sidebar %}
-<h2>{{ item.name }}</h2>
-<small>{{ item.version }}</small>
+<h2>{{ item.name }} <small>{{ item.version }}</small></h2>
 
 <h3>Packages</h3>
 <ul>
-    {% for package in packages %}
+    {% for pair in packages %}
     <li>
-        <a href="{{package_url(from=page_url, package_id=package[1])}}">{{ package[0] }}</a>
+        <a
+            href="{{item_url(from=page_url, item_id=pair[0])}}"
+            {% if pair[0] == item_id %}
+            class="highlight"
+            {% endif %}
+        >{{ pair[1].name }}</a>
     </li>
     {% endfor %}
 </ul>
@@ -48,7 +52,7 @@
 <ul>
     {% for dep_id, dep in item.dependencies %}
     <li>
-        <a href="{{ package_url(from=page_url, item_id=dep.id) }}">{{ dep_id }}</a>
+        <a href="{{ item_url(from=page_url, item_id=dep.id) }}">{{ dep_id }}</a>
     </li>
     {% endfor %}
 </ul>
