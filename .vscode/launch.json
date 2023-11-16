@@ -2,6 +2,22 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "cppvsdbg",
+            "request": "launch",
+            "name": "ambient [windows debug]",
+            "program": "${workspaceFolder}/target/debug/ambient.exe",
+            "args": [
+                "run",
+                "guest/rust/examples/basics/primitives",
+            ],
+            "stopAtEntry": false,
+            "enableDebugHeap": false,
+            "cwd": "${workspaceFolder}",
+            "symbolOptions": {
+                "searchMicrosoftSymbolServer": true,
+            },
+        },
+        {
             "type": "lldb",
             "request": "launch",
             "name": "ambient [debug]",
