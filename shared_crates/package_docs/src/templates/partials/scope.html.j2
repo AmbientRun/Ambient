@@ -3,7 +3,7 @@
 <ul>
     {% for import_id, import_package_id in scope.imports %}
     <li>
-        <a href="{{ item_url(from=page_url, item_id=import_package_id) }}">{{ import_id }}</a>
+        <a href="{{ item_url(from=page_url, item_id=import_package_id) }}"><code>{{ import_id }}</code></a>
     </li>
     {% endfor %}
 </ul>
@@ -14,7 +14,7 @@
 <ul>
     {% for scope_id, _scope_package_id in scope.scopes %}
     <li>
-        <a href="./{{ scope_id }}/index.html">{{ scope_id }}</a>
+        <a href="./{{ scope_id }}/index.html"><code>{{ scope_id }}</code></a>
     </li>
     {% endfor %}
 </ul>
@@ -25,7 +25,7 @@
 <ul>
     {% for component_id, _component_package_id in scope.components %}
     <li>
-        <a href="./components/{{ component_id }}.html">{{ component_id }}</a>
+        <a href="./components/{{ component_id }}.html"><code>{{ component_id }}</code></a>
     </li>
     {% endfor %}
 </ul>

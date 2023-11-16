@@ -43,6 +43,10 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
             "partials/item_sidebar",
             include_str!("templates/partials/item_sidebar.html.j2"),
         ),
+        (
+            "partials/scope_sidebar",
+            include_str!("templates/partials/scope_sidebar.html.j2"),
+        ),
     ])?;
     tera.register_filter(
         "markdown",
@@ -305,6 +309,7 @@ fn write_package(
     let mut tera_ctx = ctx.tera_ctx(&package_path, Some((package, package_id)));
     tera_ctx.insert("packages", &packages);
     tera_ctx.insert("scope", scope);
+    tera_ctx.insert("scope_id", &package.scope_id);
 
     std::fs::write(package_path, ctx.tera.render("views/package", &tera_ctx)?)?;
 

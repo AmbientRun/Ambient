@@ -8,11 +8,7 @@
 {% set package = get_item(id=package_id) %}
 <h2><a href="{{ item_url(from=page_url, item_id=package_id) }}">{{ package.name }}</a> <small>{{ package.version }}</small></h2>
 
-<h3>Scope <a href="{{ item_url(from=page_url, item_id=scope_id)}}"><code>{{ item_path(data = scope.data) }}</code></a></h3>
-
-{% if scope.components %}
-<h4><a href="#components">Components</a></h4>
-{% endif %}
+{% include "partials/scope_sidebar" %}
 
 {% endblock sidebar %}
 
