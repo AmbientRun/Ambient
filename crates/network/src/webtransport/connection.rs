@@ -19,7 +19,7 @@ use crate::NetworkError;
 enum WorkerRequest<'a> {
     Connect(&'a str),
     PollDatagrams,
-    SendDatagram(&'a [u8]),
+    SendDatagram(&'a [u8], Option<f64>),
     OpenUni,
     AcceptUni,
     AcceptBi,
@@ -41,10 +41,14 @@ impl<'a> Into<JsValue> for WorkerRequest<'a> {
                 array.set(0, JsValue::from("poll_datagrams")); // TODO: turn to ints
                 array.into()
             }
-            Self::SendDatagram(data) => {
-                let array = js_sys::Array::new_with_length(2);
+            Self::SendDatagram(data, timestamp) => {
+                let array =
+                    js_sys::Array::new_with_length(2 + timestamp.map(|_| 1).unwrap_or_default());
                 array.set(0, JsValue::from("send_datagram")); // TODO: turn to ints
                 array.set(1, Uint8Array::from(data).into());
+                if let Some(timestamp) = timestamp {
+                    array.set(2, timestamp.into());
+                }
                 array.into()
             }
             Self::OpenUni => {
@@ -86,7 +90,7 @@ enum WorkerResponse {
     OpenedUni(Result<u32, String>),
     AcceptedUni(Option<Result<u32, String>>),
     AcceptedBi(Option<Result<u32, String>>),
-    ReceivedStreamData(u32, Bytes),
+    ReceivedStreamData(u32, Bytes, Option<f64>),
 }
 
 impl TryFrom<JsValue> for WorkerResponse {
@@ -152,7 +156,17 @@ impl TryFrom<JsValue> for WorkerResponse {
                     return Err("missing stream id");
                 };
                 let data = array.get(2).dyn_into::<Uint8Array>().unwrap();
-                Ok(Self::ReceivedStreamData(stream_id, data.to_vec().into()))
+                let timestamp = array.get(3);
+                let timestamp = if timestamp.is_falsy() {
+                    None
+                } else {
+                    timestamp.as_f64()
+                };
+                Ok(Self::ReceivedStreamData(
+                    stream_id,
+                    data.to_vec().into(),
+                    timestamp,
+                ))
             }
             _ => Err("unknown response"),
         }
@@ -221,16 +235,24 @@ impl Connection {
                     }
                     WorkerResponse::Datagram(data) => incoming_datagrams_tx.send(data).unwrap(),
                     WorkerResponse::OpenedUni(stream) => {
-                        outgoing_send_streams_tx.send(stream).unwrap()
+                        outgoing_send_streams_tx.send(stream).unwrap();
                     }
                     WorkerResponse::AcceptedUni(stream) => {
-                        incoming_recv_streams_tx.send(stream).unwrap()
+                        incoming_recv_streams_tx.send(stream).unwrap();
                     }
                     WorkerResponse::AcceptedBi(streams) => {
-                        incoming_bi_streams_tx.send(streams).unwrap()
+                        incoming_bi_streams_tx.send(streams).unwrap();
                     }
-                    WorkerResponse::ReceivedStreamData(stream_id, data) => {
-                        if let Some(tx) = read_channels.lock().get(&stream_id) {
+                    WorkerResponse::ReceivedStreamData(stream_id, data, timestamp) => {
+                        // if let Some(timestamp) = timestamp {
+                        //     let elapsed = js_sys::Date::now() - timestamp;
+                        //     tracing::info!(
+                        //         "Received stream data context switch latency: {}ms",
+                        //         elapsed
+                        //     );
+                        // }
+                        let read_channels = read_channels.lock();
+                        if let Some(tx) = read_channels.get(&stream_id) {
                             tx.send(data).unwrap();
                         } else {
                             tracing::error!("Received data for unknown stream {}", stream_id);
@@ -331,7 +353,7 @@ impl Connection {
 
     /// Sends data to a WebTransport connection.
     pub fn send_datagram(&self, data: &[u8]) {
-        self.request(WorkerRequest::SendDatagram(data));
+        self.request(WorkerRequest::SendDatagram(data, Some(js_sys::Date::now())));
     }
 }
 

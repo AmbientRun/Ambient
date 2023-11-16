@@ -36,7 +36,7 @@ self.onmessage = function (e) {
                             console.info("Datagrams reader done");
                             self.postMessage(["datagram", null]);
                         } else {
-                            self.postMessage(["datagram", value]);
+                            self.postMessage(["datagram", value, Date.now()]);
                         }
                     }, (e) => {
                         console.error("Error reading datagrams: ", e);
@@ -49,7 +49,9 @@ self.onmessage = function (e) {
             case "send_datagram": {
                 if (datagramsWriter) {
                     datagramsWriter.write(e.data[1]).then(() => {
-                        // TODO: measure latency?
+                        // if (e.data[2]) {
+                        //     console.log("Sent datagram delay: ", Date.now() - e.data[2]);
+                        // }
                     }, (e) => {
                         console.error("Error writing datagrams: ", e);
                     });
@@ -140,7 +142,7 @@ self.onmessage = function (e) {
                             console.info("No more stream data");
                             self.postMessage(["received_stream_data", streamId, null]);
                         } else {
-                            self.postMessage(["received_stream_data", streamId, value]);
+                            self.postMessage(["received_stream_data", streamId, value, Date.now()]);
                         }
                     }, (e) => {
                         console.error("Error reading stream data: ", e);
