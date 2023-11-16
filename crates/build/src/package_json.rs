@@ -28,6 +28,7 @@ pub fn write(
         &output_path,
         serde_json::to_string(&json::Manifest {
             main_package_id: package_item_id.to_json(),
+            root_scope_id: semantic.root_scope_id.to_json(),
             items: semantic
                 .items
                 .iter()
@@ -107,6 +108,7 @@ impl SemanticToJson for sema::ItemData {
     type Json = json::ItemData;
     fn to_json(&self) -> Self::Json {
         json::ItemData {
+            parent_id: self.parent_id.to_json(),
             id: self.id.to_json(),
             source: self.source.to_json(),
         }

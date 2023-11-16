@@ -23,6 +23,7 @@ pub type Identifier = String;
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct Manifest {
     pub main_package_id: ItemId<Package>,
+    pub root_scope_id: ItemId<Scope>,
     pub items: HashMap<ErasedItemId, ItemVariant>,
 }
 impl Manifest {

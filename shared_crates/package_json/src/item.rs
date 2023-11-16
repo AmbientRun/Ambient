@@ -44,6 +44,8 @@ pub(crate) use impl_item_for_type;
 
 #[derive(Clone, PartialEq, Debug, Eq, Serialize, Deserialize)]
 pub struct ItemData {
+    /// The parent scope of this item, if available
+    pub parent_id: Option<ItemId<Scope>>,
     /// The identifier of this item
     pub id: String,
     /// Where this item came from.

@@ -1,3 +1,4 @@
+{% if scope.imports %}
 <h3>Imports</h3>
 <ul>
     {% for import_id, import_package_id in scope.imports %}
@@ -6,7 +7,9 @@
     </li>
     {% endfor %}
 </ul>
+{% endif %}
 
+{% if scope.scopes %}
 <h3>Scopes</h3>
 <ul>
     {% for scope_id, _scope_package_id in scope.scopes %}
@@ -15,7 +18,9 @@
     </li>
     {% endfor %}
 </ul>
+{% endif %}
 
+{% if scope.components %}
 <h3>Components</h3>
 <ul>
     {% for component_id, _component_package_id in scope.components %}
@@ -24,3 +29,4 @@
     </li>
     {% endfor %}
 </ul>
+{% endif %}

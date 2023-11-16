@@ -1,55 +1,42 @@
 {% extends "views/base" %}
 
-{% block title %}{{ component.data.id }} in TODO: SCOPE_PATH{% endblock title %}
+{% block title %}{{ item.data.id }} in {{ item_path(item_id = item.data.parent_id) }}{% endblock title %}
 
 {% block sidebar %}
-<!-- This should all be a macro for an item in a package -->
-<h2>TODO: PACKAGE NAME</h2>
-<small>TODO: PACKAGE VERSION</small>
-
-<h3>In TODO: SCOPE_PATH</h3>
-
-<h3>Components</h3>
-<ul>
-    {# {% for component in components %}
-    <li>
-        <a href="{{component_url(from=page_url, component_id=component[1])}}">{{ component[0] }}</a>
-    </li>
-    {% endfor %} #}
-</ul>
+{% include "partials/item_sidebar" %}
 {% endblock sidebar %}
 
 {% block content %}
-<h1>Component SCOPE_PATH::{{ component.data.id }}</h1>
+<h1>Component {{ item_path(data = item.data) }}</h1>
 
 <h3>Metadata</h3>
 <table>
     <tr>
         <th>Type</th>
-        <td>{{ component.type_ }}</td>
+        <td>{{ item.type_ }}</td>
     </tr>
     <tr>
         <th>Attributes</th>
-        <td>{{ component.attributes | join(sep = ", ") }}</td>
+        <td>{{ item.attributes | join(sep = ", ") }}</td>
     </tr>
-    {% if component.default %}
+    {% if item.default %}
     <tr>
         <th>Default</th>
-        <td>{{ component.default }}</td>
+        <td>{{ item.default }}</td>
     </tr>
     {% endif %}
 </table>
 
 <h3>Description</h3>
 <p>
-    {% if component.name %}
-    <h4>{{ component.name }}</h4>
+    {% if item.name %}
+    <h4>{{ item.name }}</h4>
     {% else %}
-    <h4><code>{{ component.data.id }}</code></h4>
+    <h4><code>{{ item.data.id }}</code></h4>
     {% endif %}
 
-    {% if component.description %}
-    {{ component.description | markdown }}
+    {% if item.description %}
+    {{ item.description | markdown }}
     {% else %}
     No description available.
     {% endif %}

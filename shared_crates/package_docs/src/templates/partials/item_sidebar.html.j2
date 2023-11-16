@@ -1,0 +1,18 @@
+{% if scope is undefined %}
+    {% set scope = get_item(id = item.data.parent_id) %}
+{% endif %}
+
+<h2>TODO: PACKAGE NAME</h2>
+<small>TODO: PACKAGE VERSION</small>
+
+<h3>In scope {{ item_path(data = scope.data) }}</h3>
+
+<h3>Components</h3>
+<ul>
+    {% for component_id, component_item_id in scope.components %}
+    <li>
+        {% set component = get_item(id = component_item_id) %}
+        <a href="TODO">{{ component_id }}</a>
+    </li>
+    {% endfor %}
+</ul>
