@@ -1,17 +1,17 @@
 {% macro sidebar_render_items(title, items) %}
     {% if items %}
-    <h4>{{ title }}</h4>
-    <ul>
-        {% for sidebar_id, sidebar_item_id in items %}
-        <li>
-            <a
-                href="{{ item_url(from=page_url, item_id=sidebar_item_id) }}"
-                {% if sidebar_item_id == item_id %}
-                class="highlight"
-                {% endif %}
-            ><code>{{ sidebar_id }}</code></a>
-        </li>
-        {% endfor %}
-    </ul>
+        <h4>{{ title }}</h4>
+        <ul>
+            {% for sidebar_id, sidebar_item_id in items %}
+                <li>
+                    <a
+                        href="{{ item_url(from=page_url, item_id=sidebar_item_id) }}"
+                        {% if sidebar_item_id == item_id %}
+                            class="highlight"
+                        {% endif %}
+                    ><code>{{ sidebar_id }}</code></a>
+                </li>
+            {% endfor %}
+        </ul>
     {% endif %}
 {% endmacro %}

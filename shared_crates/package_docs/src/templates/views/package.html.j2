@@ -1,34 +1,35 @@
 {% extends "views/base" %}
 
-{% block title %}{{ item.name }}{% endblock title %}
+{% block title %}
+    {{ item.name }}
+{% endblock title %}
 
 {% block sidebar %}
-<h2>{{ item.name }} <small>{{ item.version }}</small></h2>
+    {% set package_id = item_id %}
+    {% set package = item %}
+    {% include "partials/sidebar_package_heading" %}
 
-<h3>Packages</h3>
-<ul>
-    {% for pair in packages %}
-    <li>
-        <a
-            href="{{item_url(from=page_url, item_id=pair[0])}}"
-            {% if pair[0] == item_id %}
-            class="highlight"
-            {% endif %}
-        >{{ pair[1].name }}</a>
-    </li>
-    {% endfor %}
-</ul>
+    <h3>Packages</h3>
+    <ul>
+        {% for pair in packages %}
+            <li>
+                <a href="{{item_url(from=page_url, item_id=pair[0])}}"
+                    {% if pair[0] == item_id %}
+                        class="highlight"
+                    {% endif %}
+                >{{ pair[1].name }}</a>
+            </li>
+        {% endfor %}
+    </ul>
 
+    <h3>Package</h3>
+    <h4><a href="#metadata">Metadata</a></h4>
+    <h4><a href="#description">Description</a></h4>
+    {% if item.dependencies %}
+        <h4><a href="#dependencies">Dependencies</a></h4>
+    {% endif %}
 
-<h3>Package</h3>
-
-<h4><a href="#metadata">Metadata</a></h4>
-<h4><a href="#description">Description</a></h4>
-{% if item.dependencies %}
-<h4><a href="#dependencies">Dependencies</a></h4>
-{% endif %}
-{% include "partials/scope_sidebar" %}
-
+    {% include "partials/scope_sidebar" %}
 {% endblock sidebar %}
 
 {% block content %}
@@ -37,37 +38,39 @@
 <h3>Metadata</h3>
 <table>
     {% if item.repository %}
-    <tr>
-        <th>Repository</th>
-        <td>{{ item.repository }}</td>
-    </tr>
+        <tr>
+            <th>Repository</th>
+            <td>{{ item.repository }}</td>
+        </tr>
     {% endif %}
     {% if item.ambient_version %}
-    <tr>
-        <th>Ambient version</th>
-        <td>{{ item.ambient_version }}</td>
-    </tr>
+        <tr>
+            <th>Ambient version</th>
+            <td>{{ item.ambient_version }}</td>
+        </tr>
     {% endif %}
 </table>
 
 <h3>Description</h3>
 <p>
     {% if item.description %}
-    {{ item.description | markdown }}
+        {{ item.description | markdown }}
     {% else %}
-    No description available.
+        No description available.
     {% endif %}
 </p>
 
 {% if item.dependencies %}
-<h3>Dependencies</h3>
-<ul>
-    {% for dep_id, dep in item.dependencies %}
-    <li>
-        <a href="{{ item_url(from=page_url, item_id=dep.id) }}"><code>{{ dep_id }}</code></a>
-    </li>
-    {% endfor %}
-</ul>
+    <h3>Dependencies</h3>
+    <ul>
+        {% for dep_id, dep in item.dependencies %}
+            <li>
+                <a href="{{ item_url(from=page_url, item_id=dep.id) }}">
+                    <code>{{ dep_id }}</code>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
 {% endif %}
 
 {% include "partials/scope" %}

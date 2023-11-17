@@ -1,85 +1,88 @@
 {% extends "views/base" %}
 
-{% block title %}{{ item.data.id }} in {{ item_path(item_id = item.data.parent_id) }}{% endblock title %}
+{% block title %}
+    {{ item.data.id }} in {{ item_path(item_id = item.data.parent_id) }}
+{% endblock title %}
 
 {% block sidebar %}
-{% include "partials/item_sidebar_package_heading" %}
+    {% include "partials/item_sidebar_package_heading" %}
 
-<h3>Concept</h3>
-{% if item.extends %}
-<h4><a href="#metadata">Metadata</a></h4>
-{% endif %}
+    <h3>Concept</h3>
+    {% if item.extends %}
+        <h4><a href="#metadata">Metadata</a></h4>
+    {% endif %}
 
-<h4><a href="#description">Description</a></h4>
+    <h4><a href="#description">Description</a></h4>
 
-{% if item.required_components %}
-<h4><a href="#required-components">Required Components</a></h4>
-{% endif %}
+    {% if item.required_components %}
+        <h4><a href="#required-components">Required Components</a></h4>
+    {% endif %}
 
-{% if item.optional_components %}
-<h4><a href="#optional-components">Optional Components</a></h4>
-{% endif %}
+    {% if item.optional_components %}
+        <h4><a href="#optional-components">Optional Components</a></h4>
+    {% endif %}
 
-{% include "partials/item_sidebar" %}
+    {% include "partials/item_sidebar" %}
 {% endblock sidebar %}
 
 {% block content %}
-<h1>Concept <code>{{ item_path(data = item.data) }}</code></h1>
+    <h1>Concept <code>{{ item_path(data = item.data) }}</code></h1>
 
-{% if item.extends %}
-<h3 id="metadata">Metadata</h3>
-<table>
-    <tr>
-        <th>Extends</th>
-        <td>{{ item.extends | join(sep = ", ") }}</td>
-    </tr>
-</table>
-{% endif %}
-
-<h3 id="description">Description</h3>
-<p>
-    {% if item.name %}
-    <h4>{{ item.name }}</h4>
-    {% else %}
-    <h4><code>{{ item.data.id }}</code></h4>
+    {% if item.extends %}
+        <h3 id="metadata">Metadata</h3>
+        <table>
+            <tr>
+                <th>Extends</th>
+                <td>{{ item.extends | join(sep = ", ") }}</td>
+            </tr>
+        </table>
     {% endif %}
 
-    {% if item.description %}
-    {{ item.description | markdown }}
-    {% else %}
-    No description available.
-    {% endif %}
-</p>
+    <h3 id="description">Description</h3>
+    <p>
+        {% if item.name %}
+            <h4>{{ item.name }}</h4>
+        {% else %}
+            <h4><code>{{ item.data.id }}</code></h4>
+        {% endif %}
 
-{{ self::render_components(title="Required Components", components=item.required_components) }}
-{{ self::render_components(title="Optional Components", components=item.optional_components) }}
+        {% if item.description %}
+            {{ item.description | markdown }}
+        {% else %}
+            No description available.
+        {% endif %}
+    </p>
 
+    {{ self::render_components(title="Required Components", components=item.required_components) }}
+    {{ self::render_components(title="Optional Components", components=item.optional_components) }}
 {% endblock content %}
 
 {% macro render_components(title, components) %}
-{% if components %}
-<h3 id="{{ title | slugify }}">{{ title }}</h3>
-<ul>
-    {% for component_item_id, value in components %}
-    {% set component = get_item(item_id = component_item_id) %}
-    <li>
-        <a
-            href="{{ item_url(from=page_url, item_id=component_item_id) }}"
-        ><code>{{ item_path(item_id=component_item_id) }}</code></a>
-        <p>
-            {% if value.suggested %}
-            <em>Suggested: </em> {{ value_string(value=value.suggested) }}
-            {% endif %}
-            {% if value.description %}
-            {{ value.description | markdown }}
-            {% elif component.description %}
-            {{ component.description | markdown }}
-            {% else %}
-            No description available.
-            {% endif %}
-        </p>
-    </li>
-    {% endfor %}
-</ul>
-{% endif %}
+    {% if components %}
+        <h3 id="{{ title | slugify }}">{{ title }}</h3>
+        <ul>
+            {% for component_item_id, value in components %}
+            {% set component = get_item(item_id = component_item_id) %}
+            <li>
+                <a href="{{ item_url(from=page_url, item_id=component_item_id) }}">
+                    <code>{{ item_path(item_id=component_item_id) }}</code>
+                </a>
+                <p>
+                    {% if value.suggested %}
+                        <em>Suggested: </em> {{ value_string(value=value.suggested) }}
+                    {% endif %}
+                </p>
+                <p>
+                    {% if value.description %}
+                        {{ value.description | markdown }}
+                    {% elif component.description %}
+                        {{ component.description | markdown }}
+                    {% else %}
+                        No description available.
+                    {% endif %}
+                </p>
+            </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 {% endmacro render_components %}

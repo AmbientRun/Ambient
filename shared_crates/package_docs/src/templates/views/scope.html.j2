@@ -1,25 +1,26 @@
 {% extends "views/base" %}
 
-{% block title %}{{item_path(data = scope.data)}}{% endblock title %}
+{% block title %}
+    {{item_path(data = scope.data)}}
+{% endblock title %}
 
 {% block sidebar %}
+    {% include "partials/item_sidebar_package_heading" %}
+    <h3>
+        Scope
+        <a href="{{ item_url(from=page_url, item_id=scope_id)}}">
+            <code>{{ item_path(data = scope.data) }}</code>
+        </a>
+    </h3>
 
-{% set package_id = item_package_id(item_id=item_id) %}
-{% set package = get_item(item_id=package_id) %}
-<h2><a href="{{ item_url(from=page_url, item_id=package_id) }}">{{ package.name }}</a> <small>{{ package.version }}</small></h2>
-
-<h3>Scope
-    <a href="{{ item_url(from=page_url, item_id=scope_id)}}">
-        <code>{{ item_path(data = scope.data) }}</code>
-    </a>
-</h3>
-
-{% include "partials/scope_sidebar" %}
-
+    {% include "partials/scope_sidebar" %}
 {% endblock sidebar %}
 
 {% block content %}
-<h1>Scope <code>{{item_path(data = scope.data)}}</code></h1>
+    <h1>
+        Scope
+        <code>{{item_path(data = scope.data)}}</code>
+    </h1>
 
-{% include "partials/scope" %}
+    {% include "partials/scope" %}
 {% endblock content %}

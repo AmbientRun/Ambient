@@ -1,48 +1,50 @@
 {% extends "views/base" %}
 
-{% block title %}{{ item.data.id }} in {{ item_path(item_id = item.data.parent_id) }}{% endblock title %}
+{% block title %}
+    {{ item.data.id }} in {{ item_path(item_id = item.data.parent_id) }}
+{% endblock title %}
 
 {% block sidebar %}
-{% include "partials/item_sidebar_package_heading" %}
-<h4><a href="#metadata">Metadata</a></h4>
-<h4><a href="#description">Description</a></h4>
-{% include "partials/item_sidebar" %}
+    {% include "partials/item_sidebar_package_heading" %}
+    <h3>Component</h3>
+    <h4><a href="#metadata">Metadata</a></h4>
+    <h4><a href="#description">Description</a></h4>
+    {% include "partials/item_sidebar" %}
 {% endblock sidebar %}
 
 {% block content %}
-<h1>Component <code>{{ item_path(data = item.data) }}</code></h1>
+    <h1>Component <code>{{ item_path(data = item.data) }}</code></h1>
 
-<h3 id="metadata">Metadata</h3>
-<table>
-    <tr>
-        <th>Type</th>
-        <td>{{ item.type_ }}</td>
-    </tr>
-    <tr>
-        <th>Attributes</th>
-        <td>{{ item.attributes | join(sep = ", ") }}</td>
-    </tr>
-    {% if item.default %}
-    <tr>
-        <th>Default</th>
-        <td>{{ value_string(value=item.default) }}</td>
-    </tr>
-    {% endif %}
-</table>
+    <h3 id="metadata">Metadata</h3>
+    <table>
+        <tr>
+            <th>Type</th>
+            <td>{{ item.type_ }}</td>
+        </tr>
+        <tr>
+            <th>Attributes</th>
+            <td>{{ item.attributes | join(sep = ", ") }}</td>
+        </tr>
+        {% if item.default %}
+            <tr>
+                <th>Default</th>
+                <td>{{ value_string(value=item.default) }}</td>
+            </tr>
+        {% endif %}
+    </table>
 
-<h3 id="description">Description</h3>
-<p>
-    {% if item.name %}
-    <h4>{{ item.name }}</h4>
-    {% else %}
-    <h4><code>{{ item.data.id }}</code></h4>
-    {% endif %}
+    <h3 id="description">Description</h3>
+    <p>
+        {% if item.name %}
+            <h4>{{ item.name }}</h4>
+        {% else %}
+            <h4><code>{{ item.data.id }}</code></h4>
+        {% endif %}
 
-    {% if item.description %}
-    {{ item.description | markdown }}
-    {% else %}
-    No description available.
-    {% endif %}
-</p>
-
+        {% if item.description %}
+            {{ item.description | markdown }}
+        {% else %}
+            No description available.
+        {% endif %}
+    </p>
 {% endblock content %}

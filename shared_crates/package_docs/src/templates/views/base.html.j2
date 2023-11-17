@@ -4,15 +4,15 @@
 
 <head>
     {% block head %}
-    <link rel="stylesheet" href="{{ style_css_path }}" />
-    <title>{% block title %}{% endblock title %} - Ambient</title>
-    {% if autoreload %}
-    <script>
-        setInterval(function () {
-            location.reload();
-        }, 5000);
-    </script>
-    {% endif %}
+        <link rel="stylesheet" href="{{ style_css_path }}" />
+        <title>{% block title %}{% endblock title %} - Ambient</title>
+        {% if autoreload %}
+            <script>
+                setInterval(function () {
+                    location.reload();
+                }, 5000);
+            </script>
+        {% endif %}
     {% endblock head %}
 </head>
 
