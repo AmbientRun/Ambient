@@ -1,4 +1,4 @@
 <h2>
-    <a href="{{ item_url(from=page_url, item_id=package_id) }}">{{ package.name }}</a>
+    {{ macros::item_link(item_id=package_id, text=package.name) }}
     <small>{{ package.version }}</small>
 </h2>

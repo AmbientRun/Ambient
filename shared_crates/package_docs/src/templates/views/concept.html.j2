@@ -28,14 +28,14 @@
 {% endblock sidebar %}
 
 {% block content %}
-    <h1>Concept <code>{{ item_path(data = item.data) }}</code></h1>
+    <h1>Concept <code>{{ item_path(item_id=item_id) }}</code></h1>
 
     {% if item.extends %}
         <h3 id="metadata">Metadata</h3>
         <table>
             <tr>
                 <th>Extends</th>
-                <td>{{ item.extends | join(sep = ", ") }}</td>
+                <td>{{ macros::list_of_item_links(items=item.extends) }}</td>
             </tr>
         </table>
     {% endif %}
@@ -66,9 +66,7 @@
             {% for component_item_id, value in components %}
             {% set component = get_item(item_id = component_item_id) %}
             <li>
-                <a href="{{ item_url(from=page_url, item_id=component_item_id) }}">
-                    <code>{{ item_path(item_id=component_item_id) }}</code>
-                </a>
+                {{ macros::item_link(item_id=component_item_id) }}
                 <p>
                     {% if value.suggested %}
                         <em>Suggested:</em> <code>{{ value_string(value=value.suggested) }}</code>

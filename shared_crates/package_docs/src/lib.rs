@@ -163,9 +163,9 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     tera.register_function("item_path", {
         let manifest = manifest.clone();
         move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
-            let data = get_data_arg(args, &manifest)?;
+            let item_id = get_arg::<String>(args, "item_id")?;
 
-            Ok(tera::to_value(path_to_item(&manifest, &data))?)
+            Ok(tera::to_value(path_to_item(&manifest, &item_id))?)
         }
     });
     tera.register_function("item_package_id", {
@@ -245,29 +245,6 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     std::fs::write(index_path, tera.render("views/redirect", &index_context)?)?;
 
     Ok(())
-}
-
-fn get_data_arg(
-    args: &HashMap<String, serde_json::Value>,
-    manifest: &Arc<apj::Manifest>,
-) -> tera::Result<apj::ItemData> {
-    let data = get_arg::<apj::ItemData>(args, "data")
-        .or_else(|_: tera::Error| {
-            let item_id = get_arg::<String>(args, "item_id")?;
-            let item = manifest
-                .items
-                .get(&item_id)
-                .ok_or_else(|| tera::Error::msg("Item not found"))?
-                .item();
-
-            Ok(item.data().clone())
-        })
-        .or_else(|_: tera::Error| {
-            Err(tera::Error::msg(
-                "One of `data` or `item_id` must be specified",
-            ))
-        })?;
-    Ok(data)
 }
 
 fn get_arg<T: serde::de::DeserializeOwned>(
@@ -433,21 +410,30 @@ fn diff_paths<'a>(from: &'a Path, to: &'a Path) -> String {
     .to_string()
 }
 
-fn path_to_item(manifest: &apj::Manifest, data: &apj::ItemData) -> String {
+fn path_to_item(manifest: &apj::Manifest, item_id: &apj::ErasedItemId) -> String {
     let mut segments = vec![];
 
-    let mut next = Some(data);
+    let mut next = manifest.items.get(item_id);
     while let Some(current) = next {
-        segments.push(current.id.clone());
-        next = current
+        let data = current.item().data();
+        segments.push(current);
+        next = data
             .parent_id
             .as_ref()
-            .map(|id| manifest.get(id) as &dyn apj::Item)
-            .map(|item| item.data());
+            .and_then(|id| manifest.items.get(&id.0));
     }
-    // Drop the root scope as it's likely an auto-generated ID
-    segments.pop();
+
+    if let &[apj::ItemVariant::Package(package)] = &segments[..] {
+        return package.name.clone();
+    } else {
+        // Drop the root scope as it's likely an auto-generated ID if there's more than one segment
+        segments.pop();
+    }
     segments.reverse();
 
-    segments.join("::")
+    segments
+        .into_iter()
+        .map(|v| v.item().data().id.as_str())
+        .collect::<Vec<_>>()
+        .join("::")
 }

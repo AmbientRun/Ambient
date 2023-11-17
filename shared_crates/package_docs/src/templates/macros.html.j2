@@ -4,14 +4,26 @@
         <ul>
             {% for sidebar_id, sidebar_item_id in items %}
                 <li>
-                    <a
-                        href="{{ item_url(from=page_url, item_id=sidebar_item_id) }}"
-                        {% if sidebar_item_id == item_id %}
-                            class="highlight"
-                        {% endif %}
-                    ><code>{{ sidebar_id }}</code></a>
+                    {{ macros::item_link(item_id=sidebar_item_id, highlight=sidebar_item_id == item_id, text=sidebar_id) }}
                 </li>
             {% endfor %}
         </ul>
     {% endif %}
+{% endmacro %}
+
+{% macro item_link(item_id, highlight=false, text='') %}{{ macros::item_link_inner(item_id=item_id, highlight=highlight, text=text) | spaceless | trim }}{% endmacro %}
+
+{% macro item_link_inner(item_id, highlight, text) %}
+    <a
+        href="{{ item_url(from=page_url, item_id=item_id) }}"
+        {% if highlight %} class="highlight" {% endif %}
+    >
+        <code>{% if text %}{{ text }}{% else %}{{ item_path(item_id=item_id) }}{% endif %}</code>
+    </a>
+{% endmacro %}
+
+{% macro list_of_item_links(items) %}
+    {% for item_id in items %}
+        {{ macros::item_link(item_id=item_id) }}{%- if not loop.last -%}, {%- endif -%}
+    {% endfor %}
 {% endmacro %}

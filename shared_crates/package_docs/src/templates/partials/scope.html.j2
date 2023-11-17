@@ -3,9 +3,7 @@
     <ul>
         {% for import_id, import_package_id in scope.imports %}
             <li>
-                <a href="{{ item_url(from=page_url, item_id=import_package_id) }}">
-                    <code>{{ import_id }}</code>
-                </a>
+                {{ macros::item_link(item_id=import_package_id, text=import_id) }}
             </li>
         {% endfor %}
     </ul>

@@ -1,17 +1,12 @@
 {% extends "views/base" %}
 
 {% block title %}
-    {{item_path(data = scope.data)}}
+    {{item_path(item_id=scope_id)}}
 {% endblock title %}
 
 {% block sidebar %}
     {% include "partials/item_sidebar_package_heading" %}
-    <h3>
-        Scope
-        <a href="{{ item_url(from=page_url, item_id=scope_id)}}">
-            <code>{{ item_path(data = scope.data) }}</code>
-        </a>
-    </h3>
+    <h3>Scope {{ macros::item_link(item_id = scope_id) }}</h3>
 
     <ul>
         {% include "partials/scope_sidebar" %}
@@ -21,7 +16,7 @@
 {% block content %}
     <h1>
         Scope
-        <code>{{item_path(data = scope.data)}}</code>
+        <code>{{item_path(item_id=scope_id)}}</code>
     </h1>
 
     {% include "partials/scope" %}

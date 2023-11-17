@@ -4,10 +4,7 @@
 {% endif %}
 
 <h3>
-    In scope
-    <a href="{{ item_url(from=page_url, item_id=scope_id)}}">
-        <code>{{ item_path(data = scope.data) }}</code>
-    </a>
+    In scope {{ macros::item_link(item_id=scope_id) }}
 </h3>
 
 {{ macros::sidebar_render_items(title="Components", items=scope.components) }}

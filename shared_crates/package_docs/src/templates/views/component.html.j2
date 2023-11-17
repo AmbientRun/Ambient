@@ -1,7 +1,7 @@
 {% extends "views/base" %}
 
 {% block title %}
-    {{ item.data.id }} in {{ item_path(item_id = item.data.parent_id) }}
+    {{ item.data.id }} in {{ item_path(item_id=item.data.parent_id) }}
 {% endblock title %}
 
 {% block sidebar %}
@@ -15,17 +15,17 @@
 {% endblock sidebar %}
 
 {% block content %}
-    <h1>Component <code>{{ item_path(data = item.data) }}</code></h1>
+    <h1>Component <code>{{ item_path(item_id=item_id) }}</code></h1>
 
     <h3 id="metadata">Metadata</h3>
     <table>
         <tr>
             <th>Type</th>
-            <td>{{ item.type_ }}</td>
+            <td>{{ macros::item_link(item_id=item.type_) }}</td>
         </tr>
         <tr>
             <th>Attributes</th>
-            <td>{{ item.attributes | join(sep = ", ") }}</td>
+            <td>{{ macros::list_of_item_links(items=item.attributes) }}</td>
         </tr>
         {% if item.default %}
             <tr>

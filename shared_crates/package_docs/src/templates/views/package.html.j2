@@ -13,11 +13,7 @@
     <ul>
         {% for pair in packages %}
             <li>
-                <a href="{{item_url(from=page_url, item_id=pair[0])}}"
-                    {% if pair[0] == item_id %}
-                        class="highlight"
-                    {% endif %}
-                >{{ pair[1].name }}</a>
+                {{ macros::item_link(item_id=pair[0], highlight=pair[0] == item_id, text=pair[1].name) }}
             </li>
         {% endfor %}
     </ul>
@@ -66,11 +62,7 @@
     <h3>Dependencies</h3>
     <ul>
         {% for dep_id, dep in item.dependencies %}
-            <li>
-                <a href="{{ item_url(from=page_url, item_id=dep.id) }}">
-                    <code>{{ dep_id }}</code>
-                </a>
-            </li>
+            <li>{{macros::item_link(item_id=dep.id, text=dep_id)}}</li>
         {% endfor %}
     </ul>
 {% endif %}
