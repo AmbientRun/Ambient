@@ -1,11 +1,13 @@
-{% if scope is undefined %}
-    {% set scope_id = item.data.parent_id %}
-    {% set scope = get_item(item_id=scope_id) %}
-{% endif %}
-
+{% set scope_id = item.data.parent_id %}
+{% set scope = get_item(item_id=scope_id) %}
 <h3>
     In scope {{ macros::item_link(item_id=scope_id) }}
 </h3>
 
+{{ macros::sidebar_render_items(title="Imports", items=scope.imports) }}
+{{ macros::sidebar_render_items(title="Scopes", items=scope.scopes) }}
 {{ macros::sidebar_render_items(title="Components", items=scope.components) }}
 {{ macros::sidebar_render_items(title="Concepts", items=scope.concepts) }}
+{{ macros::sidebar_render_items(title="Messages", items=scope.messages) }}
+{{ macros::sidebar_render_items(title="Types", items=scope.types) }}
+{{ macros::sidebar_render_items(title="Attributes", items=scope.attributes) }}

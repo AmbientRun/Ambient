@@ -371,10 +371,7 @@ fn write_scope(
 
     if generate_view {
         let output_path = output_dir.join("index.html");
-        let mut tera_ctx = ctx.tera_ctx(&output_path, Some((scope, scope_id)));
-        tera_ctx.insert("scope", scope);
-        tera_ctx.insert("scope_id", scope_id);
-
+        let tera_ctx = ctx.tera_ctx(&output_path, Some((scope, scope_id)));
         std::fs::write(output_path, ctx.tera.render("views/scope", &tera_ctx)?)?;
     }
 

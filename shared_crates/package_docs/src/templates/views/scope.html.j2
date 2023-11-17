@@ -1,23 +1,28 @@
 {% extends "views/base" %}
 
 {% block title %}
-    {{item_path(item_id=scope_id)}}
+    {{item_path(item_id=item_id)}}
 {% endblock title %}
 
 {% block sidebar %}
+    {% set scope = item %}
+
     {% include "partials/item_sidebar_package_heading" %}
-    <h3>Scope {{ macros::item_link(item_id = scope_id) }}</h3>
+    <h3>Scope {{ macros::item_link(item_id = item_id) }}</h3>
 
     <ul>
         {% include "partials/scope_sidebar" %}
     </ul>
+
+    {% include "partials/item_sidebar" %}
 {% endblock sidebar %}
 
 {% block content %}
     <h1>
         Scope
-        <code>{{item_path(item_id=scope_id)}}</code>
+        <code>{{item_path(item_id=item_id)}}</code>
     </h1>
 
+    {% set scope = item %}
     {% include "partials/scope" %}
 {% endblock content %}
