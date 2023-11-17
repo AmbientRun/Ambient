@@ -17,7 +17,7 @@
 {% endblock sidebar %}
 
 {% block content %}
-    <h1>Message <code>{{ item_path(item_id=item_id) }}</code></h1>
+    <h1>Message {{ macros::item_link(item_id=item_id) }}</h1>
 
     <h3 id="description">Description</h3>
     <p>

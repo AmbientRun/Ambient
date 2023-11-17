@@ -21,7 +21,7 @@
 {% endblock sidebar %}
 
 {% block content %}
-    <h1>Type <code>{{ item_path(item_id=item_id) }}</code></h1>
+    <h1>Type {{ macros::item_link(item_id=item_id) }}</h1>
     {% set inner = item.inner %}
     {% if inner.type == "Primitive" %}
         <p>Primitive type.</p>

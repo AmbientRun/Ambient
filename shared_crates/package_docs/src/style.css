@@ -1,6 +1,9 @@
 body {
     display: flex;
     margin: 0;
+    font-family: sans-serif;
+
+    background-color: rgb(250, 250, 250);
 }
 
 body > nav {
@@ -8,16 +11,79 @@ body > nav {
     height: 100vh;
     padding: 16px;
     box-sizing: border-box;
-
     overflow: scroll;
+
+    background-color: rgb(205, 205, 205);
 }
 
 body > main {
     width: 70%;
+    height: 100vh;
     padding: 16px;
     box-sizing: border-box;
+    overflow: scroll;
+}
+
+a {
+    color: rgb(18, 18, 18);
+}
+
+a:visited {
+    color: inherit;
 }
 
 a.highlight {
-    background-color: yellow;
+    background-color: rgb(250, 250, 250);
+}
+
+a.Package {
+    color: hsl(51deg, 100%, 20%);
+}
+a.Scope {
+    color: hsl(102deg, 100%, 20%);
+}
+a.Component {
+    color: hsl(153deg, 100%, 20%);
+}
+a.Concept {
+    color: hsl(204deg, 100%, 20%);
+}
+a.Message {
+    color: hsl(255deg, 100%, 20%);
+}
+a.Type {
+    color: hsl(306deg, 100%, 20%);
+}
+a.Attribute {
+    color: hsl(360deg, 100%, 20%);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 16px 0px 0px;
+}
+
+nav > h2 {
+    margin: 0px;
+}
+
+ul {
+    margin: 8px 0px;
+    padding-left: 16px;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+td {
+    padding: 4px 4px;
+}
+
+th {
+    padding: 4px 4px 4px 0px;
+    text-align: right;
+}
+
+p {
+    margin: 8px 0px;
 }

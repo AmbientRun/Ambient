@@ -8,7 +8,7 @@
     {% set scope = item %}
 
     {% include "partials/item_sidebar_package_heading" %}
-    <h3>Scope {{ macros::item_link(item_id = item_id) }}</h3>
+    <h3>Scope {{ macros::item_link(item_id=item_id) }}</h3>
 
     <ul>
         {% include "partials/scope_sidebar" %}
@@ -18,10 +18,7 @@
 {% endblock sidebar %}
 
 {% block content %}
-    <h1>
-        Scope
-        <code>{{item_path(item_id=item_id)}}</code>
-    </h1>
+    <h1>Scope {{ macros::item_link(item_id=item_id) }}</h1>
 
     {% set scope = item %}
     {% include "partials/scope" %}

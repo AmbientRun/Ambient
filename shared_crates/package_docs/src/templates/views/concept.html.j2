@@ -28,7 +28,7 @@
 {% endblock sidebar %}
 
 {% block content %}
-    <h1>Concept <code>{{ item_path(item_id=item_id) }}</code></h1>
+    <h1>Concept {{ macros::item_link(item_id=item_id) }}</h1>
 
     {% if item.extends %}
         <h3 id="metadata">Metadata</h3>

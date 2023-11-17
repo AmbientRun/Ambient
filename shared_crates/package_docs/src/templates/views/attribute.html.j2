@@ -11,5 +11,5 @@
 {% endblock sidebar %}
 
 {% block content %}
-    <h1>Attribute <code>{{ item_path(item_id=item_id) }}</code></h1>
+    <h1>Attribute {{ macros::item_link(item_id=item_id) }}</h1>
 {% endblock content %}

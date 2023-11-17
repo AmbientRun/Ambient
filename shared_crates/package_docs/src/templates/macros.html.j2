@@ -14,9 +14,10 @@
 {% macro item_link(item_id, highlight=false, text='') %}{{ macros::item_link_inner(item_id=item_id, highlight=highlight, text=text) | spaceless | trim }}{% endmacro %}
 
 {% macro item_link_inner(item_id, highlight, text) %}
+    {% set item = get_item(item_id=item_id) %}
     <a
         href="{{ item_url(from=page_url, item_id=item_id) }}"
-        {% if highlight %} class="highlight" {% endif %}
+        class="{% if highlight %}highlight{% endif %} {{ item.type }}"
     >
         <code>{% if text %}{{ text }}{% else %}{{ item_path(item_id=item_id) }}{% endif %}</code>
     </a>
