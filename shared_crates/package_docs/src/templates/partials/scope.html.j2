@@ -1,6 +1,17 @@
 {{ macros::scope_generate_section(title="Imports", items=scope.imports) }}
 {{ macros::scope_generate_section(title="Scopes", items=scope.scopes) }}
-{{ macros::scope_generate_section(title="Components", items=scope.components) }}
+{# A manual expansion is used here because we need to use component_link instead of item_link. Make sure to keep the two in sync! #}
+{% if scope.components %}
+    {% set title="Components" %}
+    <h3 id="{{ title | slugify }}">{{ title }}</h3>
+    <ul>
+        {% for _, section_item_id in scope.components %}
+            <li>
+                {{ macros::component_link(component_item_id=section_item_id) }}
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
 {{ macros::scope_generate_section(title="Concepts", items=scope.concepts) }}
 {{ macros::scope_generate_section(title="Messages", items=scope.messages) }}
 {{ macros::scope_generate_section(title="Types", items=scope.types) }}

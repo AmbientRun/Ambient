@@ -22,6 +22,11 @@
     </a>
 {% endmacro %}
 
+{% macro component_link(component_item_id) %}
+    {% set component = get_item(item_id=component_item_id) %}
+    {{ macros::item_link(item_id=component_item_id) }}: {{ macros::item_link(item_id=component.type_) }}
+{% endmacro %}
+
 {% macro list_of_item_links(items) %}
     {% for item_id in items %}
         {{ macros::item_link(item_id=item_id) }}{%- if not loop.last -%}, {%- endif -%}
