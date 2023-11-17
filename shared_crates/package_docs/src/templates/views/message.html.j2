@@ -9,7 +9,7 @@
     <h3>Message</h3>
     <ul>
         <li><a href="#description">Description</a></li>
-        {% if message.fields %}
+        {% if item.fields %}
             <li><a href="#fields">Fields</a></li>
         {% endif %}
     </ul>
@@ -34,11 +34,11 @@
         {% endif %}
     </p>
 
-    {% if message.fields %}
+    {% if item.fields %}
         <h3 id="fields">Fields</h3>
         <ul>
-            {% for field_id, field_ty_id in message.fields %}
-                <li><code>{{ field_id }}</code>: {{ item_link(item_id=field_ty_id) }}</li>
+            {% for field_id, field_ty_id in item.fields %}
+                <li><code>{{ field_id }}</code>: {{ macros::item_link(item_id=field_ty_id) }}</li>
             {% endfor %}
         </ul>
     {% endif %}
