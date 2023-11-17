@@ -148,27 +148,47 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
         autoreload,
     };
 
-    ctx.write_scope(
-        output_path,
-        &manifest.root_scope_id,
-        manifest.get(&manifest.root_scope_id),
-        false,
-    )?;
+    // Root scope
+    {
+        ctx.write_scope(
+            output_path,
+            &manifest.root_scope_id,
+            manifest.get(&manifest.root_scope_id),
+            false,
+        )?;
 
-    let packages_dir = output_path.join("packages");
-    std::fs::create_dir_all(&packages_dir)?;
-
-    for (package_id, package) in &packages {
-        ctx.write_package(&packages_dir, &packages, package_id, package)?;
+        // Write Vec and Option types
+        for container_items in [&manifest.vec_items, &manifest.option_items] {
+            ctx.write_items(
+                &output_path,
+                "type",
+                container_items
+                    .values()
+                    .map(|t| (&manifest.get(t).data.id, t)),
+            )?;
+        }
     }
 
-    let index_path = output_path.join("index.html");
-    let mut index_context = Context::new();
-    index_context.insert(
-        "redirect_url",
-        &format!("./packages/{}/index.html", manifest.main_package().data.id),
-    );
-    std::fs::write(index_path, tera.render("views/redirect", &index_context)?)?;
+    // Packages
+    {
+        let packages_dir = output_path.join("packages");
+        std::fs::create_dir_all(&packages_dir)?;
+
+        for (package_id, package) in &packages {
+            ctx.write_package(&packages_dir, &packages, package_id, package)?;
+        }
+    }
+
+    // Redirect to main package
+    {
+        let index_path = output_path.join("index.html");
+        let mut index_context = Context::new();
+        index_context.insert(
+            "redirect_url",
+            &format!("./packages/{}/index.html", manifest.main_package().data.id),
+        );
+        std::fs::write(index_path, tera.render("views/redirect", &index_context)?)?;
+    }
 
     Ok(())
 }

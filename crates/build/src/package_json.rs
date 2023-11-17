@@ -34,6 +34,8 @@ pub fn write(
                 .iter()
                 .map(|(k, v)| (k.0.to_string(), v.to_json()))
                 .collect(),
+            vec_items: semantic.items.vec_items().to_json(),
+            option_items: semantic.items.option_items().to_json(),
         })?,
     )?;
 

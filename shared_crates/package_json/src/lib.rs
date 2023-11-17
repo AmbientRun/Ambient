@@ -25,6 +25,10 @@ pub struct Manifest {
     pub main_package_id: ItemId<Package>,
     pub root_scope_id: ItemId<Scope>,
     pub items: HashMap<ErasedItemId, ItemVariant>,
+    /// Maps a type ID to its Vec type ID
+    pub vec_items: HashMap<ItemId<Type>, ItemId<Type>>,
+    /// Maps a type ID to its Option type ID
+    pub option_items: HashMap<ItemId<Type>, ItemId<Type>>,
 }
 impl Manifest {
     pub fn get<T: Item>(&self, id: &ItemId<T>) -> &T {

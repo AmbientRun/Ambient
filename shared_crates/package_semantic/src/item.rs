@@ -243,6 +243,14 @@ impl ItemMap {
     pub fn iter(&self) -> impl Iterator<Item = (&Ulid, &ItemVariant)> {
         self.items.iter()
     }
+
+    pub fn vec_items(&self) -> &HashMap<ItemId<Type>, ItemId<Type>> {
+        &self.vec_items
+    }
+
+    pub fn option_items(&self) -> &HashMap<ItemId<Type>, ItemId<Type>> {
+        &self.option_items
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
