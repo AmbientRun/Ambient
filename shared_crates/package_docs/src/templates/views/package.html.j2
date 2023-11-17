@@ -22,9 +22,11 @@
     <ul>
         <li><a href="#metadata">Metadata</a></li>
         <li><a href="#description">Description</a></li>
+        {# Dependencies are disabled as they're redundant with imports.
         {% if item.dependencies %}
             <li><a href="#dependencies">Dependencies</a></li>
         {% endif %}
+        #}
 
         {% include "partials/scope_sidebar" %}
     </ul>
@@ -58,6 +60,7 @@
     {% endif %}
 </p>
 
+{# Dependencies are disabled as they're redundant with imports.
 {% if item.dependencies %}
     <h3>Dependencies</h3>
     <ul>
@@ -66,6 +69,7 @@
         {% endfor %}
     </ul>
 {% endif %}
+#}
 
 {% include "partials/scope" %}
 {% endblock content %}
