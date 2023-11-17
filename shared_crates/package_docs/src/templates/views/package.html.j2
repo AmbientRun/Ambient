@@ -23,13 +23,15 @@
     </ul>
 
     <h3>Package</h3>
-    <h4><a href="#metadata">Metadata</a></h4>
-    <h4><a href="#description">Description</a></h4>
-    {% if item.dependencies %}
-        <h4><a href="#dependencies">Dependencies</a></h4>
-    {% endif %}
+    <ul>
+        <li><a href="#metadata">Metadata</a></li>
+        <li><a href="#description">Description</a></li>
+        {% if item.dependencies %}
+            <li><a href="#dependencies">Dependencies</a></li>
+        {% endif %}
 
-    {% include "partials/scope_sidebar" %}
+        {% include "partials/scope_sidebar" %}
+    </ul>
 {% endblock sidebar %}
 
 {% block content %}

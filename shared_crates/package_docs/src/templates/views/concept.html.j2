@@ -8,19 +8,21 @@
     {% include "partials/item_sidebar_package_heading" %}
 
     <h3>Concept</h3>
-    {% if item.extends %}
-        <h4><a href="#metadata">Metadata</a></h4>
-    {% endif %}
+    <ul>
+        {% if item.extends %}
+            <li><a href="#metadata">Metadata</a></li>
+        {% endif %}
 
-    <h4><a href="#description">Description</a></h4>
+        <li><a href="#description">Description</a></li>
 
-    {% if item.required_components %}
-        <h4><a href="#required-components">Required Components</a></h4>
-    {% endif %}
+        {% if item.required_components %}
+            <li><a href="#required-components">Required Components</a></li>
+        {% endif %}
 
-    {% if item.optional_components %}
-        <h4><a href="#optional-components">Optional Components</a></h4>
-    {% endif %}
+        {% if item.optional_components %}
+            <li><a href="#optional-components">Optional Components</a></li>
+        {% endif %}
+    </ul>
 
     {% include "partials/item_sidebar" %}
 {% endblock sidebar %}
