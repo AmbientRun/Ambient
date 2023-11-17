@@ -1,11 +1,9 @@
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{collections::HashMap, path::Path, sync::Arc};
 
 use ambient_package_json as apj;
 use tera::{Context, Tera};
+
+mod util;
 
 pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::Result<()> {
     let manifest: Arc<apj::Manifest> =
@@ -75,10 +73,10 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     tera.register_function(
         "rel_path",
         move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
-            let to = get_arg::<String>(args, "to")?;
-            let from = get_arg::<String>(args, "from")?;
+            let to = util::get_arg::<String>(args, "to")?;
+            let from = util::get_arg::<String>(args, "from")?;
 
-            Ok(tera::to_value(diff_paths(
+            Ok(tera::to_value(util::diff_paths(
                 Path::new(&from),
                 Path::new(&to),
             ))?)
@@ -88,9 +86,9 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
         let manifest = manifest.clone();
         let scope_id_to_package_id = scope_id_to_package_id.clone();
         move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
-            let from = get_arg::<String>(args, "from")?;
-            let item_id = get_arg::<String>(args, "item_id")?;
-            let path = item_url(
+            let from = util::get_arg::<String>(args, "from")?;
+            let item_id = util::get_arg::<String>(args, "item_id")?;
+            let path = util::item_url(
                 manifest.as_ref(),
                 scope_id_to_package_id.as_ref(),
                 &from,
@@ -103,9 +101,9 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
         let manifest = manifest.clone();
         let scope_id_to_package_id = scope_id_to_package_id.clone();
         move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
-            let item_id = get_arg::<String>(args, "item_id")?;
+            let item_id = util::get_arg::<String>(args, "item_id")?;
 
-            Ok(tera::to_value(path_to_item(
+            Ok(tera::to_value(util::path_to_item(
                 &manifest,
                 scope_id_to_package_id.as_ref(),
                 &item_id,
@@ -115,7 +113,7 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     tera.register_function("item_package_id", {
         let manifest = manifest.clone();
         move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
-            let item_id = get_arg::<String>(args, "item_id")?;
+            let item_id = util::get_arg::<String>(args, "item_id")?;
 
             let mut next = &item_id;
             loop {
@@ -137,7 +135,7 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     tera.register_function("get_item", {
         let manifest = manifest.clone();
         move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
-            let id = get_arg::<String>(args, "item_id")?;
+            let id = util::get_arg::<String>(args, "item_id")?;
             let item = manifest
                 .items
                 .get(&id)
@@ -149,7 +147,7 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     tera.register_function(
         "value_string",
         move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
-            let value = get_arg::<apj::Value>(args, "value")?;
+            let value = util::get_arg::<apj::Value>(args, "value")?;
             Ok(tera::to_value(value.to_string())?)
         },
     );
@@ -165,8 +163,7 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
         autoreload,
     };
 
-    write_scope(
-        ctx,
+    ctx.write_scope(
         output_path,
         &manifest.root_scope_id,
         manifest.get(&manifest.root_scope_id),
@@ -177,7 +174,7 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     std::fs::create_dir_all(&packages_dir)?;
 
     for (package_id, package) in &packages {
-        write_package(ctx, &packages_dir, &packages, package_id, package)?;
+        ctx.write_package(&packages_dir, &packages, package_id, package)?;
     }
 
     let index_path = output_path.join("index.html");
@@ -191,96 +188,6 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     Ok(())
 }
 
-fn item_url(
-    manifest: &apj::Manifest,
-    scope_id_to_package_id: &HashMap<String, apj::ItemId<apj::Package>>,
-    from: &str,
-    item_id: &str,
-) -> tera::Result<String> {
-    if let Some(package_id) = scope_id_to_package_id.get(item_id) {
-        return item_url(manifest, scope_id_to_package_id, from, &package_id.0);
-    }
-
-    let item = manifest
-        .items
-        .get(item_id)
-        .ok_or_else(|| tera::Error::msg("Item not found"))?;
-
-    let mut segments = vec![];
-    match item {
-        apj::ItemVariant::Package(v) => {
-            segments.push("index.html".to_string());
-            segments.push(v.data.id.clone());
-        }
-        apj::ItemVariant::Scope(v) => {
-            segments.push("index.html".to_string());
-            segments.push(v.data.id.clone());
-        }
-        apj::ItemVariant::Component(v) => {
-            segments.push(format!("{}.html", v.data.id));
-            segments.push("components".to_string());
-        }
-        apj::ItemVariant::Concept(v) => {
-            segments.push(format!("{}.html", v.data.id));
-            segments.push("concepts".to_string());
-        }
-        apj::ItemVariant::Message(v) => {
-            segments.push(format!("{}.html", v.data.id));
-            segments.push("messages".to_string());
-        }
-        apj::ItemVariant::Type(v) => {
-            segments.push(format!("{}.html", v.data.id));
-            segments.push("types".to_string());
-        }
-        apj::ItemVariant::Attribute(v) => {
-            segments.push(format!("{}.html", v.data.id));
-            segments.push("attributes".to_string());
-        }
-    }
-
-    // Push in all the segments.
-    let mut last = None;
-    let mut next = item.item().data().parent_id.as_ref();
-    while let Some(current) = next {
-        let scope = manifest.get(&current);
-        last = Some(current);
-        next = scope.data.parent_id.as_ref();
-
-        // Skip the last one: that's a root or a package
-        if next.is_some() {
-            segments.push(scope.data.id.clone());
-        }
-    }
-
-    // If the last one is a scope, push the package ID
-    if let Some(root) = last {
-        if let Some(package) = scope_id_to_package_id
-            .get(&root.0)
-            .map(|id| manifest.get(id))
-        {
-            segments.push(package.data.id.clone());
-            segments.push("packages".to_string());
-        }
-    } else if matches!(item, apj::ItemVariant::Package(_)) {
-        segments.push("packages".to_string());
-    }
-
-    segments.reverse();
-
-    Ok(diff_paths(Path::new(&from), &PathBuf::from_iter(segments)))
-}
-
-fn get_arg<T: serde::de::DeserializeOwned>(
-    args: &HashMap<String, tera::Value>,
-    name: &str,
-) -> tera::Result<T> {
-    Ok(tera::from_value::<T>(
-        args.get(name)
-            .ok_or_else(|| tera::Error::msg(format!("Missing argument `{}`", name)))?
-            .clone(),
-    )?)
-}
-
 #[derive(Copy, Clone)]
 struct GenContext<'a> {
     tera: &'a Tera,
@@ -290,6 +197,105 @@ struct GenContext<'a> {
     autoreload: bool,
 }
 impl GenContext<'_> {
+    fn write_package(
+        &self,
+        packages_dir: &Path,
+        packages: &[(apj::ItemId<apj::Package>, &apj::Package)],
+        package_id: &apj::ItemId<apj::Package>,
+        package: &apj::Package,
+    ) -> anyhow::Result<()> {
+        let package_dir = packages_dir.join(&package.data.id);
+        std::fs::create_dir_all(&package_dir)?;
+
+        let scope = self.manifest.get(&package.scope_id);
+        self.write_scope(&package_dir, &package.scope_id, scope, false)?;
+
+        let package_path = package_dir.join("index.html");
+
+        let mut packages = packages.to_vec();
+        packages.sort_by(|a, b| a.1.name.cmp(&b.1.name));
+
+        let mut tera_ctx = self.tera_ctx(&package_path, Some((package, package_id)));
+        tera_ctx.insert("packages", &packages);
+        tera_ctx.insert("scope", scope);
+        tera_ctx.insert("scope_id", &package.scope_id);
+
+        std::fs::write(package_path, self.tera.render("views/package", &tera_ctx)?)?;
+
+        Ok(())
+    }
+
+    fn write_scope(
+        &self,
+        output_dir: &Path,
+        scope_id: &apj::ItemId<apj::Scope>,
+        scope: &apj::Scope,
+        generate_view: bool,
+    ) -> anyhow::Result<()> {
+        for (scope_name, scope_id) in &scope.scopes {
+            let scope = self.manifest.get(scope_id);
+            let scope_dir = output_dir.join(scope_name);
+            std::fs::create_dir_all(&scope_dir)?;
+            self.write_scope(&scope_dir, scope_id, scope, true)?;
+        }
+
+        if !scope.components.is_empty() {
+            let components_dir = output_dir.join("components");
+            std::fs::create_dir_all(&components_dir)?;
+            for (_, component_id) in &scope.components {
+                let component = self.manifest.get(component_id);
+                self.write_item(&components_dir, "views/component", component_id, component)?;
+            }
+        }
+
+        if !scope.concepts.is_empty() {
+            let concepts_dir = output_dir.join("concepts");
+            std::fs::create_dir_all(&concepts_dir)?;
+            for (_, concept_id) in &scope.concepts {
+                let concept = self.manifest.get(concept_id);
+                self.write_item(&concepts_dir, "views/concept", concept_id, concept)?;
+            }
+        }
+
+        if !scope.messages.is_empty() {
+            let messages_dir = output_dir.join("messages");
+            std::fs::create_dir_all(&messages_dir)?;
+        }
+
+        if !scope.types.is_empty() {
+            let types_dir = output_dir.join("types");
+            std::fs::create_dir_all(&types_dir)?;
+        }
+
+        if !scope.attributes.is_empty() {
+            let attributes_dir = output_dir.join("attributes");
+            std::fs::create_dir_all(&attributes_dir)?;
+        }
+
+        if generate_view {
+            let output_path = output_dir.join("index.html");
+            let tera_ctx = self.tera_ctx(&output_path, Some((scope, scope_id)));
+            std::fs::write(output_path, self.tera.render("views/scope", &tera_ctx)?)?;
+        }
+
+        Ok(())
+    }
+
+    fn write_item<T: apj::Item + serde::Serialize>(
+        &self,
+        output_dir: &Path,
+        view_name: &str,
+        item_id: &apj::ItemId<T>,
+        item: &T,
+    ) -> anyhow::Result<()> {
+        let item_path = output_dir.join(format!("{}.html", item.data().id));
+
+        let tera_ctx = self.tera_ctx(&item_path, Some((item, item_id)));
+        std::fs::write(item_path, self.tera.render(view_name, &tera_ctx)?)?;
+
+        Ok(())
+    }
+
     fn tera_ctx<T: apj::Item + serde::Serialize>(
         &self,
         page_path: &Path,
@@ -298,10 +304,10 @@ impl GenContext<'_> {
         let mut ctx = Context::new();
         ctx.insert(
             "style_css_path",
-            &diff_paths(page_path, self.style_css_path),
+            &util::diff_paths(page_path, self.style_css_path),
         );
         ctx.insert("autoreload", &self.autoreload);
-        ctx.insert("page_url", &diff_paths(self.output_path, page_path));
+        ctx.insert("page_url", &util::diff_paths(self.output_path, page_path));
         if let Some((item, item_id)) = item {
             ctx.insert("item", item);
             ctx.insert("item_id", item_id);
@@ -309,156 +315,4 @@ impl GenContext<'_> {
 
         ctx
     }
-}
-
-fn write_package(
-    ctx: GenContext,
-    packages_dir: &Path,
-    packages: &[(apj::ItemId<apj::Package>, &apj::Package)],
-    package_id: &apj::ItemId<apj::Package>,
-    package: &apj::Package,
-) -> anyhow::Result<()> {
-    let package_dir = packages_dir.join(&package.data.id);
-    std::fs::create_dir_all(&package_dir)?;
-
-    let scope = ctx.manifest.get(&package.scope_id);
-    write_scope(ctx, &package_dir, &package.scope_id, scope, false)?;
-
-    let package_path = package_dir.join("index.html");
-
-    let mut packages = packages.to_vec();
-    packages.sort_by(|a, b| a.1.name.cmp(&b.1.name));
-
-    let mut tera_ctx = ctx.tera_ctx(&package_path, Some((package, package_id)));
-    tera_ctx.insert("packages", &packages);
-    tera_ctx.insert("scope", scope);
-    tera_ctx.insert("scope_id", &package.scope_id);
-
-    std::fs::write(package_path, ctx.tera.render("views/package", &tera_ctx)?)?;
-
-    Ok(())
-}
-
-fn write_scope(
-    ctx: GenContext,
-    output_dir: &Path,
-    scope_id: &apj::ItemId<apj::Scope>,
-    scope: &apj::Scope,
-    generate_view: bool,
-) -> anyhow::Result<()> {
-    for (scope_name, scope_id) in &scope.scopes {
-        let scope = ctx.manifest.get(scope_id);
-        let scope_dir = output_dir.join(scope_name);
-        std::fs::create_dir_all(&scope_dir)?;
-        write_scope(ctx, &scope_dir, scope_id, scope, true)?;
-    }
-
-    if !scope.components.is_empty() {
-        let components_dir = output_dir.join("components");
-        std::fs::create_dir_all(&components_dir)?;
-        for (_, component_id) in &scope.components {
-            let component = ctx.manifest.get(component_id);
-            write_item(
-                ctx,
-                &components_dir,
-                "views/component",
-                component_id,
-                component,
-            )?;
-        }
-    }
-
-    if !scope.concepts.is_empty() {
-        let concepts_dir = output_dir.join("concepts");
-        std::fs::create_dir_all(&concepts_dir)?;
-        for (_, concept_id) in &scope.concepts {
-            let concept = ctx.manifest.get(concept_id);
-            write_item(ctx, &concepts_dir, "views/concept", concept_id, concept)?;
-        }
-    }
-
-    if !scope.messages.is_empty() {
-        let messages_dir = output_dir.join("messages");
-        std::fs::create_dir_all(&messages_dir)?;
-    }
-
-    if !scope.types.is_empty() {
-        let types_dir = output_dir.join("types");
-        std::fs::create_dir_all(&types_dir)?;
-    }
-
-    if !scope.attributes.is_empty() {
-        let attributes_dir = output_dir.join("attributes");
-        std::fs::create_dir_all(&attributes_dir)?;
-    }
-
-    if generate_view {
-        let output_path = output_dir.join("index.html");
-        let tera_ctx = ctx.tera_ctx(&output_path, Some((scope, scope_id)));
-        std::fs::write(output_path, ctx.tera.render("views/scope", &tera_ctx)?)?;
-    }
-
-    Ok(())
-}
-
-fn write_item<T: apj::Item + serde::Serialize>(
-    ctx: GenContext,
-    output_dir: &Path,
-    view_name: &str,
-    item_id: &apj::ItemId<T>,
-    item: &T,
-) -> anyhow::Result<()> {
-    let item_path = output_dir.join(format!("{}.html", item.data().id));
-
-    let tera_ctx = ctx.tera_ctx(&item_path, Some((item, item_id)));
-    std::fs::write(item_path, ctx.tera.render(view_name, &tera_ctx)?)?;
-
-    Ok(())
-}
-
-fn diff_paths<'a>(from: &'a Path, to: &'a Path) -> String {
-    pathdiff::diff_paths(
-        to,
-        if from.extension().is_some() {
-            from.parent().unwrap()
-        } else {
-            from
-        },
-    )
-    .unwrap()
-    .to_string_lossy()
-    .to_string()
-}
-
-fn path_to_item(
-    manifest: &apj::Manifest,
-    scope_id_to_package_id: &HashMap<String, apj::ItemId<apj::Package>>,
-    item_id: &apj::ErasedItemId,
-) -> String {
-    let mut segments = vec![];
-
-    let mut next = Some(item_id);
-    while let Some(current) = next {
-        let data = manifest.items.get(current).unwrap().item().data();
-        segments.push(current);
-        next = data.parent_id.as_ref().map(|v| &v.0);
-    }
-
-    if let &[id] = &segments[..] {
-        if let Some(apj::ItemVariant::Scope(_)) = manifest.items.get(id) {
-            if let Some(package_id) = scope_id_to_package_id.get(id) {
-                return manifest.get(package_id).name.clone();
-            }
-        }
-    }
-
-    // Drop the root scope as it's likely an auto-generated ID if there's more than one segment
-    segments.pop();
-    segments.reverse();
-
-    segments
-        .into_iter()
-        .map(|v| manifest.items.get(v).unwrap().item().data().id.clone())
-        .collect::<Vec<_>>()
-        .join("::")
 }
