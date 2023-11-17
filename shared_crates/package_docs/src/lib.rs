@@ -21,6 +21,7 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
 
     let mut tera = Tera::default();
     tera.add_raw_templates([
+        // Views
         ("views/base", include_str!("templates/views/base.html.j2")),
         (
             "views/package",
@@ -30,11 +31,16 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
             "views/component",
             include_str!("templates/views/component.html.j2"),
         ),
+        (
+            "views/concept",
+            include_str!("templates/views/concept.html.j2"),
+        ),
         ("views/scope", include_str!("templates/views/scope.html.j2")),
         (
             "views/redirect",
             include_str!("templates/views/redirect.html.j2"),
         ),
+        // Partials
         (
             "partials/scope",
             include_str!("templates/partials/scope.html.j2"),
@@ -47,6 +53,16 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
             "partials/scope_sidebar",
             include_str!("templates/partials/scope_sidebar.html.j2"),
         ),
+        (
+            "partials/sidebar_package_heading",
+            include_str!("templates/partials/sidebar_package_heading.html.j2"),
+        ),
+        (
+            "partials/item_sidebar_package_heading",
+            include_str!("templates/partials/item_sidebar_package_heading.html.j2"),
+        ),
+        // Misc
+        ("macros", include_str!("templates/macros.html.j2")),
     ])?;
     tera.register_filter(
         "markdown",
@@ -177,7 +193,7 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     tera.register_function("get_item", {
         let manifest = manifest.clone();
         move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
-            let id = get_arg::<String>(args, "id")?;
+            let id = get_arg::<String>(args, "item_id")?;
             let item = manifest
                 .items
                 .get(&id)
@@ -186,6 +202,13 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
             Ok(tera::to_value(item)?)
         }
     });
+    tera.register_function(
+        "value_string",
+        move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
+            let value = get_arg::<apj::Value>(args, "value")?;
+            Ok(tera::to_value(value.to_string())?)
+        },
+    );
 
     let style_css_path = output_path.join("style.css");
     std::fs::write(&style_css_path, include_str!("style.css"))?;
@@ -335,13 +358,23 @@ fn write_scope(
         std::fs::create_dir_all(&components_dir)?;
         for (_, component_id) in &scope.components {
             let component = ctx.manifest.get(component_id);
-            write_component(ctx, &components_dir, component_id, component)?;
+            write_item(
+                ctx,
+                &components_dir,
+                "views/component",
+                component_id,
+                component,
+            )?;
         }
     }
 
     if !scope.concepts.is_empty() {
         let concepts_dir = output_dir.join("concepts");
         std::fs::create_dir_all(&concepts_dir)?;
+        for (_, concept_id) in &scope.concepts {
+            let concept = ctx.manifest.get(concept_id);
+            write_item(ctx, &concepts_dir, "views/concept", concept_id, concept)?;
+        }
     }
 
     if !scope.messages.is_empty() {
@@ -371,23 +404,17 @@ fn write_scope(
     Ok(())
 }
 
-fn write_component(
+fn write_item<T: apj::Item + serde::Serialize>(
     ctx: GenContext,
     output_dir: &Path,
-    component_id: &apj::ItemId<apj::Component>,
-    component: &apj::Component,
+    view_name: &str,
+    item_id: &apj::ItemId<T>,
+    item: &T,
 ) -> anyhow::Result<()> {
-    let component_path = output_dir.join(format!("{}.html", component.data.id));
+    let item_path = output_dir.join(format!("{}.html", item.data().id));
 
-    let mut tera_ctx = ctx.tera_ctx(&component_path, Some((component, component_id)));
-    if let Some(default) = &component.default {
-        tera_ctx.insert("default", &default.to_string());
-    }
-
-    std::fs::write(
-        component_path,
-        ctx.tera.render("views/component", &tera_ctx)?,
-    )?;
+    let tera_ctx = ctx.tera_ctx(&item_path, Some((item, item_id)));
+    std::fs::write(item_path, ctx.tera.render(view_name, &tera_ctx)?)?;
 
     Ok(())
 }

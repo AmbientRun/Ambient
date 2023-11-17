@@ -5,9 +5,8 @@
 {% block sidebar %}
 
 {% set package_id = item_package_id(item_id=item_id) %}
-{% set package = get_item(id=package_id) %}
+{% set package = get_item(item_id=package_id) %}
 <h2><a href="{{ item_url(from=page_url, item_id=package_id) }}">{{ package.name }}</a> <small>{{ package.version }}</small></h2>
-
 
 <h3>Scope
     <a href="{{ item_url(from=page_url, item_id=scope_id)}}">

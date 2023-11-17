@@ -30,3 +30,15 @@
     {% endfor %}
 </ul>
 {% endif %}
+
+{% if scope.concepts %}
+<h3 id="concepts">Concepts</h3>
+<ul>
+    {% for concept_id, _concept_package_id in scope.concepts %}
+    <li>
+        <a href="./concepts/{{ concept_id }}.html"><code>{{ concept_id }}</code></a>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+

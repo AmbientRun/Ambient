@@ -1,15 +1,18 @@
 {% extends "views/base" %}
 
-{% block title %}{{ item.data.id }} in <code>{{ item_path(item_id = item.data.parent_id) }}</code>{% endblock title %}
+{% block title %}{{ item.data.id }} in {{ item_path(item_id = item.data.parent_id) }}{% endblock title %}
 
 {% block sidebar %}
+{% include "partials/item_sidebar_package_heading" %}
+<h4><a href="#metadata">Metadata</a></h4>
+<h4><a href="#description">Description</a></h4>
 {% include "partials/item_sidebar" %}
 {% endblock sidebar %}
 
 {% block content %}
 <h1>Component <code>{{ item_path(data = item.data) }}</code></h1>
 
-<h3>Metadata</h3>
+<h3 id="metadata">Metadata</h3>
 <table>
     <tr>
         <th>Type</th>
@@ -19,15 +22,15 @@
         <th>Attributes</th>
         <td>{{ item.attributes | join(sep = ", ") }}</td>
     </tr>
-    {% if default %}
+    {% if item.default %}
     <tr>
         <th>Default</th>
-        <td>{{ default }}</td>
+        <td>{{ value_string(value=item.default) }}</td>
     </tr>
     {% endif %}
 </table>
 
-<h3>Description</h3>
+<h3 id="description">Description</h3>
 <p>
     {% if item.name %}
     <h4>{{ item.name }}</h4>
