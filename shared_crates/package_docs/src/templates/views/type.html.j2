@@ -1,0 +1,15 @@
+{% extends "views/base" %}
+
+{% block title %}
+    {{ item.data.id }} in {{ item_path(item_id=item.data.parent_id) }}
+{% endblock title %}
+
+{% block sidebar %}
+    {% include "partials/item_sidebar_package_heading" %}
+    <h3>Type</h3>
+    {% include "partials/item_sidebar" %}
+{% endblock sidebar %}
+
+{% block content %}
+    <h1>Type <code>{{ item_path(item_id=item_id) }}</code></h1>
+{% endblock content %}

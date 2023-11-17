@@ -18,50 +18,35 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     let scope_id_to_package_id = Arc::new(scope_id_to_package_id);
 
     let mut tera = Tera::default();
-    tera.add_raw_templates([
+    macro_rules! views {
+        ($($id:literal),*) => {
+            tera.add_raw_templates([
+                $(
+                    ($id, include_str!(concat!("templates/", $id, ".html.j2"))),
+                )*
+            ])?;
+        }
+    }
+    views![
         // Views
-        ("views/base", include_str!("templates/views/base.html.j2")),
-        (
-            "views/package",
-            include_str!("templates/views/package.html.j2"),
-        ),
-        (
-            "views/component",
-            include_str!("templates/views/component.html.j2"),
-        ),
-        (
-            "views/concept",
-            include_str!("templates/views/concept.html.j2"),
-        ),
-        ("views/scope", include_str!("templates/views/scope.html.j2")),
-        (
-            "views/redirect",
-            include_str!("templates/views/redirect.html.j2"),
-        ),
+        "views/attribute",
+        "views/base",
+        "views/component",
+        "views/concept",
+        "views/message",
+        "views/package",
+        "views/redirect",
+        "views/scope",
+        "views/type",
         // Partials
-        (
-            "partials/scope",
-            include_str!("templates/partials/scope.html.j2"),
-        ),
-        (
-            "partials/item_sidebar",
-            include_str!("templates/partials/item_sidebar.html.j2"),
-        ),
-        (
-            "partials/scope_sidebar",
-            include_str!("templates/partials/scope_sidebar.html.j2"),
-        ),
-        (
-            "partials/sidebar_package_heading",
-            include_str!("templates/partials/sidebar_package_heading.html.j2"),
-        ),
-        (
-            "partials/item_sidebar_package_heading",
-            include_str!("templates/partials/item_sidebar_package_heading.html.j2"),
-        ),
+        "partials/scope",
+        "partials/item_sidebar",
+        "partials/scope_sidebar",
+        "partials/sidebar_package_heading",
+        "partials/item_sidebar_package_heading",
         // Misc
-        ("macros", include_str!("templates/macros.html.j2")),
-    ])?;
+        "macros"
+    ];
     tera.register_filter(
         "markdown",
         |value: &tera::Value, _: &_| -> tera::Result<tera::Value> {
@@ -125,9 +110,9 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
                 }
             }
 
-            let package_id = scope_id_to_package_id.get(next).ok_or_else(|| {
-                tera::Error::msg(format!("Could not find package for item `{}`", item_id))
-            })?;
+            let Some(package_id) = scope_id_to_package_id.get(next) else {
+                return Ok(tera::to_value("")?);
+            };
 
             Ok(tera::to_value(package_id)?)
         }
@@ -239,43 +224,42 @@ impl GenContext<'_> {
             self.write_scope(&scope_dir, scope_id, scope, true)?;
         }
 
-        if !scope.components.is_empty() {
-            let components_dir = output_dir.join("components");
-            std::fs::create_dir_all(&components_dir)?;
-            for (_, component_id) in &scope.components {
-                let component = self.manifest.get(component_id);
-                self.write_item(&components_dir, "views/component", component_id, component)?;
-            }
-        }
-
-        if !scope.concepts.is_empty() {
-            let concepts_dir = output_dir.join("concepts");
-            std::fs::create_dir_all(&concepts_dir)?;
-            for (_, concept_id) in &scope.concepts {
-                let concept = self.manifest.get(concept_id);
-                self.write_item(&concepts_dir, "views/concept", concept_id, concept)?;
-            }
-        }
-
-        if !scope.messages.is_empty() {
-            let messages_dir = output_dir.join("messages");
-            std::fs::create_dir_all(&messages_dir)?;
-        }
-
-        if !scope.types.is_empty() {
-            let types_dir = output_dir.join("types");
-            std::fs::create_dir_all(&types_dir)?;
-        }
-
-        if !scope.attributes.is_empty() {
-            let attributes_dir = output_dir.join("attributes");
-            std::fs::create_dir_all(&attributes_dir)?;
-        }
+        self.write_items(&output_dir, "component", scope.components.iter())?;
+        self.write_items(&output_dir, "concept", scope.concepts.iter())?;
+        self.write_items(&output_dir, "message", scope.messages.iter())?;
+        self.write_items(&output_dir, "type", scope.types.iter())?;
+        self.write_items(&output_dir, "attribute", scope.attributes.iter())?;
 
         if generate_view {
             let output_path = output_dir.join("index.html");
             let tera_ctx = self.tera_ctx(&output_path, Some((scope, scope_id)));
             std::fs::write(output_path, self.tera.render("views/scope", &tera_ctx)?)?;
+        }
+
+        Ok(())
+    }
+
+    fn write_items<'a, T: apj::Item + serde::Serialize + 'a>(
+        &self,
+        output_dir: &Path,
+        item_type_name: &str,
+        items: impl ExactSizeIterator<Item = (&'a String, &'a apj::ItemId<T>)>,
+    ) -> anyhow::Result<()> {
+        if items.len() == 0 {
+            return Ok(());
+        }
+
+        let items_dir = output_dir.join(format!("{item_type_name}s"));
+        std::fs::create_dir_all(&items_dir)?;
+
+        for (_, item_id) in items {
+            let item = self.manifest.get(item_id);
+            self.write_item(
+                &items_dir,
+                &format!("views/{item_type_name}"),
+                item_id,
+                item,
+            )?;
         }
 
         Ok(())

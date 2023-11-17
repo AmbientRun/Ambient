@@ -1,3 +1,5 @@
 {% set package_id = item_package_id(item_id=item_id) %}
-{% set package = get_item(item_id=package_id) %}
-{% include "partials/sidebar_package_heading" %}
+{% if package_id %}
+    {% set package = get_item(item_id=package_id) %}
+    {% include "partials/sidebar_package_heading" %}
+{% endif %}

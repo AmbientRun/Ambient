@@ -27,3 +27,16 @@
         {{ macros::item_link(item_id=item_id) }}{%- if not loop.last -%}, {%- endif -%}
     {% endfor %}
 {% endmacro %}
+
+{% macro scope_generate_section(title, items) %}
+    {% if items %}
+        <h3 id="{{ title | slugify }}">{{ title }}</h3>
+        <ul>
+            {% for section_id, section_item_id in items %}
+                <li>
+                    {{ macros::item_link(item_id=section_item_id, text=section_id) }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro %}

@@ -1,50 +1,7 @@
-{% if scope.imports %}
-    <h3 id="imports">Imports</h3>
-    <ul>
-        {% for import_id, import_package_id in scope.imports %}
-            <li>
-                {{ macros::item_link(item_id=import_package_id, text=import_id) }}
-            </li>
-        {% endfor %}
-    </ul>
-{% endif %}
-
-{% if scope.scopes %}
-    <h3 id="scopes">Scopes</h3>
-    <ul>
-        {% for scope_id, _scope_package_id in scope.scopes %}
-            <li>
-                <a href="./{{ scope_id }}/index.html">
-                    <code>{{ scope_id }}</code>
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-{% endif %}
-
-{% if scope.components %}
-    <h3 id="components">Components</h3>
-    <ul>
-        {% for component_id, _component_package_id in scope.components %}
-            <li>
-                <a href="./components/{{ component_id }}.html">
-                    <code>{{ component_id }}</code>
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-{% endif %}
-
-{% if scope.concepts %}
-    <h3 id="concepts">Concepts</h3>
-    <ul>
-        {% for concept_id, _concept_package_id in scope.concepts %}
-            <li>
-                <a href="./concepts/{{ concept_id }}.html">
-                    <code>{{ concept_id }}</code>
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-{% endif %}
-
+{{ macros::scope_generate_section(title="Imports", items=scope.imports) }}
+{{ macros::scope_generate_section(title="Scopes", items=scope.scopes) }}
+{{ macros::scope_generate_section(title="Components", items=scope.components) }}
+{{ macros::scope_generate_section(title="Concepts", items=scope.concepts) }}
+{{ macros::scope_generate_section(title="Messages", items=scope.messages) }}
+{{ macros::scope_generate_section(title="Types", items=scope.types) }}
+{{ macros::scope_generate_section(title="Attributes", items=scope.attributes) }}
