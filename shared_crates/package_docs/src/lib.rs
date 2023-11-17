@@ -90,82 +90,26 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
         move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
             let from = get_arg::<String>(args, "from")?;
             let item_id = get_arg::<String>(args, "item_id")?;
-            let item = manifest
-                .items
-                .get(&item_id)
-                .ok_or_else(|| tera::Error::msg("Item not found"))?;
-
-            let mut segments = vec![];
-            match item {
-                apj::ItemVariant::Package(v) => {
-                    segments.push("index.html".to_string());
-                    segments.push(v.data.id.clone());
-                }
-                apj::ItemVariant::Scope(v) => {
-                    segments.push("index.html".to_string());
-                    segments.push(v.data.id.clone());
-                }
-                apj::ItemVariant::Component(v) => {
-                    segments.push(format!("{}.html", v.data.id));
-                    segments.push("components".to_string());
-                }
-                apj::ItemVariant::Concept(v) => {
-                    segments.push(format!("{}.html", v.data.id));
-                    segments.push("concepts".to_string());
-                }
-                apj::ItemVariant::Message(v) => {
-                    segments.push(format!("{}.html", v.data.id));
-                    segments.push("messages".to_string());
-                }
-                apj::ItemVariant::Type(v) => {
-                    segments.push(format!("{}.html", v.data.id));
-                    segments.push("types".to_string());
-                }
-                apj::ItemVariant::Attribute(v) => {
-                    segments.push(format!("{}.html", v.data.id));
-                    segments.push("attributes".to_string());
-                }
-            }
-
-            let mut last = None;
-            let mut next = item.item().data().parent_id.as_ref();
-            while let Some(current) = next {
-                let scope = manifest.get(&current);
-                last = Some(current);
-                next = scope.data.parent_id.as_ref();
-
-                // Skip the last one: that's a root or a package
-                if next.is_some() {
-                    segments.push(scope.data.id.clone());
-                }
-            }
-
-            if let Some(root) = last {
-                if let Some(package) = scope_id_to_package_id
-                    .get(&root.0)
-                    .map(|id| manifest.get(id))
-                {
-                    segments.push(package.data.id.clone());
-                    segments.push("packages".to_string());
-                }
-            } else if matches!(item, apj::ItemVariant::Package(_)) {
-                segments.push("packages".to_string());
-            }
-
-            segments.reverse();
-
-            Ok(tera::to_value(diff_paths(
-                Path::new(&from),
-                &PathBuf::from_iter(segments),
-            ))?)
+            let path = item_url(
+                manifest.as_ref(),
+                scope_id_to_package_id.as_ref(),
+                &from,
+                &item_id,
+            )?;
+            Ok(tera::to_value(path)?)
         }
     });
     tera.register_function("item_path", {
         let manifest = manifest.clone();
+        let scope_id_to_package_id = scope_id_to_package_id.clone();
         move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
             let item_id = get_arg::<String>(args, "item_id")?;
 
-            Ok(tera::to_value(path_to_item(&manifest, &item_id))?)
+            Ok(tera::to_value(path_to_item(
+                &manifest,
+                scope_id_to_package_id.as_ref(),
+                &item_id,
+            ))?)
         }
     });
     tera.register_function("item_package_id", {
@@ -245,6 +189,85 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
     std::fs::write(index_path, tera.render("views/redirect", &index_context)?)?;
 
     Ok(())
+}
+
+fn item_url(
+    manifest: &apj::Manifest,
+    scope_id_to_package_id: &HashMap<String, apj::ItemId<apj::Package>>,
+    from: &str,
+    item_id: &str,
+) -> tera::Result<String> {
+    if let Some(package_id) = scope_id_to_package_id.get(item_id) {
+        return item_url(manifest, scope_id_to_package_id, from, &package_id.0);
+    }
+
+    let item = manifest
+        .items
+        .get(item_id)
+        .ok_or_else(|| tera::Error::msg("Item not found"))?;
+
+    let mut segments = vec![];
+    match item {
+        apj::ItemVariant::Package(v) => {
+            segments.push("index.html".to_string());
+            segments.push(v.data.id.clone());
+        }
+        apj::ItemVariant::Scope(v) => {
+            segments.push("index.html".to_string());
+            segments.push(v.data.id.clone());
+        }
+        apj::ItemVariant::Component(v) => {
+            segments.push(format!("{}.html", v.data.id));
+            segments.push("components".to_string());
+        }
+        apj::ItemVariant::Concept(v) => {
+            segments.push(format!("{}.html", v.data.id));
+            segments.push("concepts".to_string());
+        }
+        apj::ItemVariant::Message(v) => {
+            segments.push(format!("{}.html", v.data.id));
+            segments.push("messages".to_string());
+        }
+        apj::ItemVariant::Type(v) => {
+            segments.push(format!("{}.html", v.data.id));
+            segments.push("types".to_string());
+        }
+        apj::ItemVariant::Attribute(v) => {
+            segments.push(format!("{}.html", v.data.id));
+            segments.push("attributes".to_string());
+        }
+    }
+
+    // Push in all the segments.
+    let mut last = None;
+    let mut next = item.item().data().parent_id.as_ref();
+    while let Some(current) = next {
+        let scope = manifest.get(&current);
+        last = Some(current);
+        next = scope.data.parent_id.as_ref();
+
+        // Skip the last one: that's a root or a package
+        if next.is_some() {
+            segments.push(scope.data.id.clone());
+        }
+    }
+
+    // If the last one is a scope, push the package ID
+    if let Some(root) = last {
+        if let Some(package) = scope_id_to_package_id
+            .get(&root.0)
+            .map(|id| manifest.get(id))
+        {
+            segments.push(package.data.id.clone());
+            segments.push("packages".to_string());
+        }
+    } else if matches!(item, apj::ItemVariant::Package(_)) {
+        segments.push("packages".to_string());
+    }
+
+    segments.reverse();
+
+    Ok(diff_paths(Path::new(&from), &PathBuf::from_iter(segments)))
 }
 
 fn get_arg<T: serde::de::DeserializeOwned>(
@@ -407,30 +430,35 @@ fn diff_paths<'a>(from: &'a Path, to: &'a Path) -> String {
     .to_string()
 }
 
-fn path_to_item(manifest: &apj::Manifest, item_id: &apj::ErasedItemId) -> String {
+fn path_to_item(
+    manifest: &apj::Manifest,
+    scope_id_to_package_id: &HashMap<String, apj::ItemId<apj::Package>>,
+    item_id: &apj::ErasedItemId,
+) -> String {
     let mut segments = vec![];
 
-    let mut next = manifest.items.get(item_id);
+    let mut next = Some(item_id);
     while let Some(current) = next {
-        let data = current.item().data();
+        let data = manifest.items.get(current).unwrap().item().data();
         segments.push(current);
-        next = data
-            .parent_id
-            .as_ref()
-            .and_then(|id| manifest.items.get(&id.0));
+        next = data.parent_id.as_ref().map(|v| &v.0);
     }
 
-    if let &[apj::ItemVariant::Package(package)] = &segments[..] {
-        return package.name.clone();
-    } else {
-        // Drop the root scope as it's likely an auto-generated ID if there's more than one segment
-        segments.pop();
+    if let &[id] = &segments[..] {
+        if let Some(apj::ItemVariant::Scope(_)) = manifest.items.get(id) {
+            if let Some(package_id) = scope_id_to_package_id.get(id) {
+                return manifest.get(package_id).name.clone();
+            }
+        }
     }
+
+    // Drop the root scope as it's likely an auto-generated ID if there's more than one segment
+    segments.pop();
     segments.reverse();
 
     segments
         .into_iter()
-        .map(|v| v.item().data().id.as_str())
+        .map(|v| manifest.items.get(v).unwrap().item().data().id.clone())
         .collect::<Vec<_>>()
         .join("::")
 }
