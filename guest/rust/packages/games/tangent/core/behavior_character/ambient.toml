@@ -2,9 +2,9 @@
 id = "xgafi5ckk5vhxscb6tqubfvy2fwfyqxo"
 name = "Tangent Behavior: Character"
 description = "Implements the character behavior for Tangent."
-version = "0.3.2-nightly-2023-11-19"
+version = "0.3.2-nightly-2023-11-20"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-11-19"
+ambient_version = "0.3.2-nightly-2023-11-20"
 authors = ["philpax"]
 
 [dependencies]
