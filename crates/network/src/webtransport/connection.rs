@@ -17,6 +17,8 @@ use web_sys::Worker;
 use crate::NetworkError;
 
 enum WorkerRequest<'a> {
+    Ping(f64),
+    Pong(f64),
     Connect(&'a str),
     PollDatagrams,
     SendDatagram(&'a [u8], Option<f64>),
@@ -24,12 +26,18 @@ enum WorkerRequest<'a> {
     AcceptUni,
     AcceptBi,
     SendStreamData(u32, &'a [u8]),
-    PollStream(u32),
+    PollStream(u32, Option<f64>),
 }
 
 impl<'a> Into<JsValue> for WorkerRequest<'a> {
     fn into(self) -> JsValue {
         match self {
+            Self::Ping(timestamp) => {
+                js_sys::Array::of2(&JsValue::from("ping"), &timestamp.into()).into()
+            }
+            Self::Pong(timestamp) => {
+                js_sys::Array::of2(&JsValue::from("pong"), &timestamp.into()).into()
+            }
             Self::Connect(url) => {
                 let array = js_sys::Array::new_with_length(2);
                 array.set(0, JsValue::from("connect")); // TODO: turn to ints
@@ -73,17 +81,23 @@ impl<'a> Into<JsValue> for WorkerRequest<'a> {
                 array.set(2, Uint8Array::from(data).into());
                 array.into()
             }
-            Self::PollStream(stream_id) => {
-                let array = js_sys::Array::new_with_length(2);
-                array.set(0, JsValue::from("poll_stream")); // TODO: turn to ints
-                array.set(1, Number::from(stream_id).into());
-                array.into()
+            Self::PollStream(stream_id, timestamp) => if let Some(timestamp) = timestamp {
+                js_sys::Array::of3(
+                    &JsValue::from("poll_stream"),
+                    &stream_id.into(),
+                    &timestamp.into(),
+                )
+            } else {
+                js_sys::Array::of2(&JsValue::from("poll_stream"), &stream_id.into())
             }
+            .into(),
         }
     }
 }
 
 enum WorkerResponse {
+    Ping(f64),
+    Pong(f64),
     Ready,
     ConnectError(String),
     Datagram(Option<Bytes>),
@@ -104,6 +118,14 @@ impl TryFrom<JsValue> for WorkerResponse {
             return Err("missing response");
         };
         match resp.as_str() {
+            "ping" => {
+                let timestamp = array.get(1).as_f64().unwrap();
+                Ok(Self::Ping(timestamp))
+            }
+            "pong" => {
+                let timestamp = array.get(1).as_f64().unwrap();
+                Ok(Self::Pong(timestamp))
+            }
             "ready" => Ok(Self::Ready),
             "connect_error" => {
                 let err = array.get(1).as_string().unwrap();
@@ -182,7 +204,7 @@ pub struct Connection {
     incoming_recv_streams: flume::Receiver<Option<Result<u32, String>>>,
     incoming_bi_streams: flume::Receiver<Option<Result<u32, String>>>,
     outgoing_send_streams: flume::Receiver<Result<u32, String>>,
-    read_channels: Arc<Mutex<HashMap<u32, flume::Sender<Bytes>>>>,
+    read_channels: Arc<Mutex<HashMap<u32, flume::Sender<(Bytes, Option<f64>)>>>>,
     _cb: Closure<dyn FnMut(JsValue)>,
 }
 
@@ -192,7 +214,7 @@ impl Connection {
         let worker = Arc::new(Mutex::new(
             web_sys::Worker::new("/src/networker.ts").unwrap(),
         ));
-        let read_channels = Arc::new(Mutex::new(HashMap::<u32, flume::Sender<Bytes>>::new()));
+        let read_channels = Arc::new(Mutex::new(HashMap::<u32, flume::Sender<_>>::new()));
 
         let (incoming_datagrams_tx, incoming_datagrams) = flume::unbounded();
         let (incoming_recv_streams_tx, incoming_recv_streams) = flume::unbounded();
@@ -203,6 +225,7 @@ impl Connection {
         let mut ready_tx = Some(ready_tx);
 
         let cb = Closure::new({
+            let worker = Arc::downgrade(&worker);
             let read_channels = read_channels.clone();
             move |event| {
                 let Ok(event_data) = Reflect::get(&event, &JsValue::from_str("data")) else {
@@ -217,6 +240,24 @@ impl Connection {
                     }
                 };
                 match resp {
+                    WorkerResponse::Ping(request_timestamp) => {
+                        tracing::info!(
+                            "Wrkr->App delay: {}ms",
+                            js_sys::Date::now() - request_timestamp
+                        );
+                        if let Some(worker) = worker.upgrade() {
+                            worker
+                                .lock()
+                                .post_message(&WorkerRequest::Pong(request_timestamp).into())
+                                .unwrap();
+                        } else {
+                            tracing::error!("Worker dropped");
+                        }
+                    }
+                    WorkerResponse::Pong(request_timestamp) => {
+                        let elapsed = js_sys::Date::now() - request_timestamp;
+                        tracing::info!("App-Wrkr ping latency: {}ms", elapsed);
+                    }
                     WorkerResponse::Ready => {
                         if let Some(ready_tx) = ready_tx.take() {
                             ready_tx.send(anyhow::Ok(())).unwrap()
@@ -233,7 +274,10 @@ impl Connection {
                             tracing::error!("Received multiple ready messages");
                         }
                     }
-                    WorkerResponse::Datagram(data) => incoming_datagrams_tx.send(data).unwrap(),
+                    WorkerResponse::Datagram(data) => {
+                        incoming_datagrams_tx.send(data).unwrap();
+                        tracing::info!("Datagrams queue: {}", incoming_datagrams_tx.len());
+                    }
                     WorkerResponse::OpenedUni(stream) => {
                         outgoing_send_streams_tx.send(stream).unwrap();
                     }
@@ -253,7 +297,8 @@ impl Connection {
                         // }
                         let read_channels = read_channels.lock();
                         if let Some(tx) = read_channels.get(&stream_id) {
-                            tx.send(data).unwrap();
+                            tx.send((data, timestamp)).unwrap();
+                            tracing::info!("Read channels queue: {}", tx.len());
                         } else {
                             tracing::error!("Received data for unknown stream {}", stream_id);
                         }
@@ -276,6 +321,7 @@ impl Connection {
         };
         conn.request(WorkerRequest::Connect(url));
         ready_rx.await??;
+        conn.request(WorkerRequest::PollDatagrams); // FIXME: migrate to ACK
         Ok(conn)
     }
 
@@ -309,6 +355,7 @@ impl Connection {
         };
         let (tx, rx) = flume::unbounded();
         self.read_channels.lock().insert(stream_id, tx);
+        self.request(WorkerRequest::PollStream(stream_id, None)); // FIXME: migrate to ACK
         Some(Ok((
             SendStream {
                 stream_id,
@@ -333,6 +380,7 @@ impl Connection {
         };
         let (tx, rx) = flume::unbounded();
         self.read_channels.lock().insert(stream_id, tx);
+        self.request(WorkerRequest::PollStream(stream_id, None)); // FIXME: migrate to ACK
         Some(Ok(RecvStream {
             stream_id,
             worker: Arc::downgrade(&self.worker),
@@ -343,12 +391,16 @@ impl Connection {
 
     /// Reads the next datagram from the connection
     pub async fn read_datagram(&self) -> Option<Result<Bytes, NetworkError>> {
-        self.request(WorkerRequest::PollDatagrams);
-        self.incoming_datagrams
+        let result = self
+            .incoming_datagrams
             .recv_async()
             .await
             .map_err(|_| NetworkError::ConnectionClosed)
-            .transpose()
+            .transpose();
+        // if let Some(Ok(ref _data)) = result {
+        //     self.request(WorkerRequest::PollDatagrams); // FIXME: migrate to ACK
+        // }
+        result
     }
 
     /// Sends data to a WebTransport connection.
@@ -399,7 +451,7 @@ impl AsyncWrite for SendStream {
 pub struct RecvStream {
     stream_id: u32,
     worker: Weak<Mutex<Worker>>,
-    rx: Pin<Box<dyn futures::Stream<Item = Bytes>>>,
+    rx: Pin<Box<dyn futures::Stream<Item = (Bytes, Option<f64>)>>>,
     buf: Bytes,
 }
 
@@ -419,13 +471,12 @@ impl AsyncRead for RecvStream {
                 return Poll::Ready(Ok(()));
             }
 
-            worker
-                .lock()
-                .post_message(&WorkerRequest::PollStream(self.stream_id).into())
-                .unwrap();
-
             self.rx.poll_next_unpin(cx).map(|data| {
-                if let Some(data) = data {
+                if let Some((data, _timestamp)) = data {
+                    // worker
+                    //     .lock()
+                    //     .post_message(&WorkerRequest::PollStream(self.stream_id, None).into())
+                    //     .unwrap();  // FIXME: migrate to ACK
                     self.buf = data;
                     let len = buf.remaining().min(self.buf.len());
                     buf.put_slice(&self.buf[..len]);

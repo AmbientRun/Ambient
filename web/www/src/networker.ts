@@ -7,9 +7,21 @@ var writeStreams: { [id: number]: WritableStreamDefaultWriter<Uint8Array> } = {}
 var readStreams: { [id: number]: ReadableStreamDefaultReader<Uint8Array> } = {};
 var nextStreamId = 0;
 
+var pollingDatagrams = false;
+var pollingStreams: { [id: number]: boolean } = {};
+
 self.onmessage = function (e) {
     if (e.data instanceof Array) {
         switch (e.data[0]) {
+            case "ping": {
+                console.log("App->Wrkr delay: ", Date.now() - e.data[1]);
+                self.postMessage(["pong", e.data[1]]);
+                break;
+            }
+            case "pong": {
+                console.log("Wrkr-App ping latency: ", Date.now() - e.data[1]);
+                break;
+            }
             case "connect": {
                 console.log("Connecting to: ", e.data[1]);
                 webtransport = new WebTransport(e.data[1]);
@@ -24,23 +36,38 @@ self.onmessage = function (e) {
                     incomingUnidirectionalStreams = webtransport.incomingUnidirectionalStreams.getReader();
                     incomingBidirectionalStreams = webtransport.incomingBidirectionalStreams.getReader();
                     self.postMessage(["ready"]);
+
+                    const pinger = () => {
+                        self.postMessage(["ping", Date.now()]);
+                        setTimeout(pinger, 1000);
+                    };
+                    pinger();
                 }, (e) => { 
                     self.postMessage(["connect_error", e.message]);
                 });
                 break;
             }
             case "poll_datagrams": {
+                if (pollingDatagrams) {
+                    return;
+                }
+                pollingDatagrams = true;
                 if (datagramsReader) {
-                    datagramsReader.read().then(({ value, done }) => {
-                        if (done) {
-                            console.info("Datagrams reader done");
-                            self.postMessage(["datagram", null]);
-                        } else {
-                            self.postMessage(["datagram", value, Date.now()]);
-                        }
-                    }, (e) => {
-                        console.error("Error reading datagrams: ", e);
-                    });
+                    const reader = datagramsReader;
+                    const poll = () => {
+                        reader.read().then(({ value, done }) => {
+                            if (done) {
+                                console.info("Datagrams reader done");
+                                self.postMessage(["datagram", null]);
+                            } else {
+                                self.postMessage(["datagram", value, Date.now()]);
+                                poll();
+                            }
+                        }, (e) => {
+                            console.error("Error reading datagrams: ", e);
+                        });
+                    };
+                    poll();
                 } else {
                     console.error("No datagrams reader");
                 }
@@ -136,17 +163,26 @@ self.onmessage = function (e) {
             }
             case "poll_stream": {
                 const streamId = e.data[1];
+                if (pollingStreams[streamId]) {
+                    return;
+                }
+                pollingStreams[streamId] = true;
                 if (readStreams[streamId]) {
-                    readStreams[streamId].read().then(({ value, done }) => {
-                        if (done) {
-                            console.info("No more stream data");
-                            self.postMessage(["received_stream_data", streamId, null]);
-                        } else {
-                            self.postMessage(["received_stream_data", streamId, value, Date.now()]);
-                        }
-                    }, (e) => {
-                        console.error("Error reading stream data: ", e);
-                    });
+                    const reader = readStreams[streamId];
+                    const poll = () => {
+                        reader.read().then(({ value, done }) => {
+                            if (done) {
+                                console.info("No more stream data");
+                                self.postMessage(["received_stream_data", streamId, null]);
+                            } else {
+                                self.postMessage(["received_stream_data", streamId, value]);
+                                poll();
+                            }
+                        }, (e) => {
+                            console.error("Error reading stream data: ", e);
+                        });
+                    };
+                    poll();
                 } else {
                     console.error("No read stream for id: ", streamId);
                 }
