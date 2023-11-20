@@ -206,6 +206,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Free up disk space
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
