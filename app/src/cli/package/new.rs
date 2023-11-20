@@ -216,16 +216,18 @@ fn get_ambient_package_locations(
     let paths = if let Some(api_path) = api_path {
         tracing::info!("Ambient path: {}", api_path);
 
-        // TODO: Use relative paths / path diff for this. I was going to use the `relative-path`
-        // crate, but its behaviour if the path is absolute is to raise an error, which would make
-        // this logic rather annoying. This is a relatively rare case, so absolute paths are OK for now.
-        let api_path = pathdiff::diff_paths(
-            Path::new(api_path)
-                .canonicalize()
-                .expect("failed to canonicalize API path; does it exist?"),
-            package_path,
-        )
-        .expect("failed to compute relative path to API path");
+        let api_path = Path::new(api_path);
+        let api_path = if api_path.is_relative() {
+            pathdiff::diff_paths(
+                api_path
+                    .canonicalize()
+                    .expect("failed to canonicalize API path; does it exist?"),
+                package_path,
+            )
+            .expect("failed to compute relative path to API path")
+        } else {
+            api_path.to_owned()
+        };
 
         let package_projection_path = ambient_std::path::normalize(
             &api_path
