@@ -67,6 +67,7 @@ sentry = { workspace = true }
 sentry-rust-minidump = { workspace = true }
 colored = { workspace = true }
 pathdiff = { workspace = true }
+open = { workspace = true }
 
 [dev-dependencies]
 glam = { workspace = true }

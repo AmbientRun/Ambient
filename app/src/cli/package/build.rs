@@ -65,7 +65,7 @@ pub async fn handle_inner(
     let build_wasm_only = package_cli.build_wasm_only;
     let clean_build = package_cli.clean_build;
 
-    self::build(
+    let dirs = self::build(
         assets,
         main_package_fs_path,
         clean_build,
@@ -76,7 +76,16 @@ pub async fn handle_inner(
         |_| async { Ok(()) },
         |_, _, _| async { Ok(()) },
     )
-    .await
+    .await?;
+
+    if package_cli.open_docs {
+        let docs_path = dirs.main_package_path.push("docs")?.push("index.html")?;
+        if let Some(file_path) = docs_path.to_file_path()? {
+            open::that(file_path)?;
+        }
+    }
+
+    Ok(dirs)
 }
 
 #[allow(clippy::too_many_arguments)]
