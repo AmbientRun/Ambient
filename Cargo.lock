@@ -358,7 +358,7 @@ dependencies = [
  "ambient_model_import",
  "ambient_native_std",
  "ambient_package",
- "ambient_package_docs",
+ "ambient_package_docgen",
  "ambient_package_json",
  "ambient_package_semantic",
  "ambient_package_semantic_native",
@@ -1099,7 +1099,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_package_docs"
+name = "ambient_package_docgen"
 version = "0.3.2-dev"
 dependencies = [
  "ambient_package_json",

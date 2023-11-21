@@ -1,5 +1,5 @@
 [package]
-name = "ambient_package_docs"
+name = "ambient_package_docgen"
 edition = "2021"
 description = "Generates documentation for Ambient packages based on an `ambient_package.json`."
 license = "MIT OR Apache-2.0"

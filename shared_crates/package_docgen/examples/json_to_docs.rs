@@ -12,7 +12,7 @@ fn main() -> anyhow::Result<()> {
     let docs_path = build_path.join("docs");
     std::fs::remove_dir_all(&docs_path).ok();
     std::fs::create_dir_all(&docs_path)?;
-    ambient_package_docs::write(&docs_path, &json_path, autoreload)?;
+    ambient_package_docgen::write(&docs_path, &json_path, autoreload)?;
 
     Ok(())
 }
