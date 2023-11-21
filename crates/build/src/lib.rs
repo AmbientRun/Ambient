@@ -40,8 +40,6 @@ pub struct BuildResult {
 const SKIP_BUILD_IF_UNCHANGED: bool = true;
 /// If false, asset building (code, assets) will be skipped
 const BUILD_ASSETS: bool = true;
-/// If false, package documentation will not be built
-const BUILD_DOCS: bool = true;
 
 /// This takes the path to a single Ambient package and builds it.
 /// It assumes all of its dependencies are already built.
@@ -87,8 +85,15 @@ pub async fn build_package(
 
     drop(_span);
 
+    let package_id = manifest
+        .package
+        .id
+        .as_ref()
+        .map(|s| s.as_str())
+        .unwrap_or("missing ID");
     let package_name = &manifest.package.name;
-    let _span = tracing::info_span!("build_package", name = package_name).entered();
+    let _span =
+        tracing::info_span!("build_package", name = package_name, id = package_id).entered();
 
     // Bodge: for local builds, rewrite the dependencies to be relative to this package,
     // assuming that they are all in the same folder
@@ -180,16 +185,9 @@ pub async fn build_package(
         .zip(last_modified_time)
         .is_some_and(|(build, modified)| modified < build);
 
-    let package_id = manifest
-        .package
-        .id
-        .as_ref()
-        .map(|s| s.as_str())
-        .unwrap_or("missing ID");
-
     if SKIP_BUILD_IF_UNCHANGED {
         if last_build_settings.as_ref() == Some(settings) && last_modified_before_build {
-            tracing::info!("Skipping unmodified package \"{package_name}\" ({package_id})");
+            tracing::info!("Skipping unmodified package");
             return Ok(BuildResult {
                 build_path,
                 package_name: package_name.clone(),
@@ -198,7 +196,7 @@ pub async fn build_package(
         }
     }
 
-    tracing::info!("Building package \"{package_name}\" ({package_id})");
+    tracing::info!("Building package");
 
     if BUILD_ASSETS {
         let assets_path = package_path.join("assets");
@@ -225,12 +223,18 @@ pub async fn build_package(
         write_metadata(&package_path, &build_path, settings, &assets).await?;
     }
 
-    if BUILD_DOCS {
+    // Deploy implies docs are always built, as they are required for deployment
+    let build_docs = settings.build_docs || settings.deploy;
+    if build_docs {
+        tracing::info!("Building docs...");
+
         let json_path = package_json::write(&build_path, &semantic, package_item_id)?;
         let docs_path = build_path.join("docs");
         std::fs::remove_dir_all(&docs_path).ok();
         std::fs::create_dir_all(&docs_path)?;
         ambient_package_docs::write(&docs_path, &json_path, false)?;
+
+        tracing::info!("Docs built");
     }
 
     Ok(BuildResult {

@@ -133,10 +133,11 @@ pub async fn build<
             .collect()
     };
 
-    let settings = BuildSettings {
+    let mut settings = BuildSettings {
         release,
         wasm_only,
         deploy,
+        build_docs: false,
     };
 
     // For each package, build the package using a fresh semantic.
@@ -146,6 +147,8 @@ pub async fn build<
     let mut output_package_name = String::new();
     while let Some(manifest_path) = queue.pop() {
         pre_build(manifest_path.clone()).await?;
+
+        settings.build_docs = queue.is_empty();
 
         let BuildResult {
             build_path,
