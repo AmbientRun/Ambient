@@ -20,21 +20,21 @@ fn init_tuners() {
 
 fn listen_client() {
     UpdateTuner::subscribe(|_ctx, msg| {
-        let mut tunername: Option<String> = None;
-        let mut prevraw: Option<f32> = None;
+        // let mut tunername: Option<String> = None;
+        // let mut prevraw: Option<f32> = None;
         if entity::exists(msg.id) {
-            tunername = entity::get_component(msg.id, name());
-            prevraw = entity::get_component(msg.id, raw_value());
+            // tunername = entity::get_component(msg.id, name());
+            // prevraw = entity::get_component(msg.id, raw_value());
             entity::add_component(msg.id, raw_value(), msg.raw);
-            println!(
-                "Changed value of {:?} from {:?} to {}",
-                tunername, prevraw, msg.raw
-            );
+            // println!(
+            //     "Changed value of {:?} from {:?} to {}",
+            //     tunername, prevraw, msg.raw
+            // );
         } else {
-            println!(
-                "(!) Did not change value of {:?} from {:?} to {}",
-                tunername, prevraw, msg.raw
-            );
+            // println!(
+            //     "(!) Did not change value of {:?} from {:?} to {}",
+            //     tunername, prevraw, msg.raw
+            // );
         }
     });
 }

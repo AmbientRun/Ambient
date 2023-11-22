@@ -10,8 +10,10 @@ use ambient_api::{
     prelude::*,
 };
 
-use packages::tuners::{components::output, concepts::Tuner};
-use packages::{this::components::*, tuners::components::tuner_min};
+use packages::{
+    this::components::*,
+    tuners::{components::*, concepts::Tuner},
+};
 
 #[main]
 pub fn main() {
@@ -42,12 +44,14 @@ fn spawn_boid() {
         .with(
             translation(),
             (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.,
+            // (random::<Vec3>() - 0.5) * 50. * 2.,
         )
         .with(cube(), ())
         .with(is_boid(), ())
         .with(
             boid_velocity(),
             (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.,
+            // (random::<Vec3>() - 0.5) * 50. * 2.,
         )
         .spawn();
 }
@@ -55,8 +59,9 @@ fn spawn_boid() {
 fn init_boids_logic() {
     // boids quantity
     {
-        let quantity_tuner = mk_tuner("Num of Boids", 51, 1001);
+        let quantity_tuner = mk_tuner("Number of Boids", 50, 1000);
         entity::set_component(quantity_tuner, tuner_min(), 1.); // minimum 1
+        entity::set_component(quantity_tuner, tuner_max(), 1001.); // increase maximum by 1
 
         query(()).requires(is_boid()).each_frame(move |boids| {
             let target_quantity: usize = entity::get_component(quantity_tuner, output())
@@ -105,11 +110,14 @@ fn init_boids_logic() {
     }
 
     let match_dist_tuner = mk_tuner("Match Range", 10, 50);
+    let posmatch_str_tuner = mk_tuner("Match Position (Coherence)", 1, 10);
+    let velmatch_str_tuner = mk_tuner("Match Velocity (Alignment)", 5, 25);
+    let repulsive_str_tuner = mk_tuner("Avoid Str", 6, 20);
+    let repulsive_dist_tuner = mk_tuner("Avoid Dist", 4, 10);
 
     // to center
     {
         let posmatch_dist_tuner = match_dist_tuner.clone();
-        let posmatch_str_tuner = mk_tuner("Match Position (Coherence)", 1, 10);
 
         query(translation())
             .requires(is_boid())
@@ -146,7 +154,6 @@ fn init_boids_logic() {
     // velocity matching
     {
         let velmatch_dist_tuner = match_dist_tuner.clone();
-        let velmatch_str_tuner = mk_tuner("Match Velocity (Alignment)", 5, 25);
         query((translation(), boid_velocity()))
             .requires(is_boid())
             .each_frame(move |boids| {
@@ -178,9 +185,6 @@ fn init_boids_logic() {
 
     // repulsion
     {
-        let repulsive_dist_tuner = mk_tuner("Avoid Dist", 4, 10);
-        let repulsive_str_tuner = mk_tuner("Avoid Str", 6, 20);
-
         query(translation())
             .requires(is_boid())
             .each_frame(move |boids| {
