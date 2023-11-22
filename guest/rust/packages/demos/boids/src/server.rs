@@ -1,18 +1,27 @@
+use std::f32::consts::PI;
+
 use ambient_api::{
     core::{
         app::components::name,
         camera::concepts::{
             Camera, PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
+        hierarchy::components::{children, parent},
+        model::components::model_from_url,
         network::components::no_sync,
         primitives::components::{cube, quad},
-        rendering::components::color,
-        transform::components::{lookat_target, rotation, scale, translation},
+        rendering::components::{
+            cast_shadows, color, light_ambient, light_diffuse, transparency_group,
+        },
+        transform::components::{
+            local_to_parent, local_to_world, lookat_target, lookat_up, rotation, scale, translation,
+        },
     },
     prelude::*,
 };
 
 use packages::{
+    dead_meets_lead_content::assets,
     this::components::*,
     tuners::{components::*, concepts::Tuner},
 };
@@ -32,27 +41,48 @@ pub fn main() {
     .with(lookat_target(), vec3(0., 0., -10.))
     .spawn();
 
-    init_boids_logic(camera_ent);
+    let floor = Entity::new()
+        .with(quad(), ())
+        .with(scale(), Vec3::splat(60.))
+        .with(color(), vec4(0.1, 0.3, 0.15, 1.))
+        .spawn();
+    entity::add_child(
+        floor,
+        Entity::new()
+            .with(translation(), vec3(0., 0., -0.001))
+            .with(quad(), ())
+            .with(scale(), Vec3::splat(2.))
+            .with(color(), vec4(0.05, 0.15, 0.075, 1.))
+            .with(local_to_parent(), Mat4::default())
+            .spawn(),
+    );
+
+    let _sun = Entity::new()
+        .with(light_ambient(), vec3(0.5, 0.5, 0.5))
+        .with(light_diffuse(), vec3(0.75, 0.75, 0.75))
+        .with(rotation(), Quat::from_rotation_x(PI * 0.25))
+        .spawn();
+
+    init_boids_logic(camera_ent, floor);
 
     println!("Hello, Ambient!");
 }
 
 fn spawn_boid() {
     Entity::new()
-        .with(cube(), ())
         .with(is_boid(), ())
         .with(
             boid_velocity(),
             (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.,
             // (random::<Vec3>() - 0.5) * 50. * 2.,
         )
+        .with(local_to_world(), Mat4::default())
         .spawn();
 }
 
 fn spawn_boid_at(pos: Vec3, vel: Option<Vec3>) {
     Entity::new()
         .with(translation(), pos)
-        .with(cube(), ())
         .with(is_boid(), ())
         .with(
             boid_velocity(),
@@ -62,10 +92,11 @@ fn spawn_boid_at(pos: Vec3, vel: Option<Vec3>) {
             },
             // (random::<Vec3>() - 0.5) * 50. * 2.,
         )
+        .with(local_to_world(), Mat4::default())
         .spawn();
 }
 
-fn init_boids_logic(camera_ent: EntityId) {
+fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
     for _ in 0..100 {
         spawn_boid();
     }
@@ -81,9 +112,10 @@ fn init_boids_logic(camera_ent: EntityId) {
     let repulsive_dist_tuner = mk_tuner("Touching Range", (0, 4, 10), false);
     let repulsive_str_tuner = mk_tuner("Touching Repel (Avoidance)", (0, 6, 20), false);
 
-    let reproduction_rate_tuner = mk_tuner("Touching % Reproduce Rate/second", (0, 5, 100), true);
+    let reproduction_rate_tuner = mk_tuner("Touching % Reproduce Rate/second", (0, 25, 100), true);
+    let reproduction_neighbours_tuner = mk_tuner("Reproduce - Max neighbours", (0, 5, 50), true);
     let fighting_rate_tuner = mk_tuner("Touching % Kill Rate/second", (0, 5, 100), true);
-    let birth_confetti_tuner = mk_tuner("Birth Particles", (0, 1, 100), true);
+    let birth_confetti_tuner = mk_tuner("Birth Particles", (0, 10, 100), true);
     let corpse_lifespan_tuner = mk_tuner("Corpse Lifespan", (0, 1, 10), true);
 
     // boids quantity
@@ -100,7 +132,7 @@ fn init_boids_logic(camera_ent: EntityId) {
                 boids.shuffle(&mut thread_rng());
                 let mut left_to_remove = boid_count - max_quantity;
                 for (boid, _) in boids {
-                    entity::despawn(boid);
+                    entity::despawn_recursive(boid);
                     left_to_remove -= 1;
                     if left_to_remove <= 0 {
                         break;
@@ -109,15 +141,15 @@ fn init_boids_logic(camera_ent: EntityId) {
                 boid_count = max_quantity;
             }
             if boid_count < min_quantity {
-                for _ in 0..min_quantity - boid_count {
-                    spawn_boid();
-                }
+                // for _ in 0..min_quantity - boid_count {
+                spawn_boid();
+                // }
                 // boid_count = min_quantity; // not used after this
             }
         });
     }
 
-    // basic velocity and speed limit
+    // basic velocity - speed limit, as well as turning to face
     {
         query((translation(), boid_velocity()))
             .requires(is_boid())
@@ -125,16 +157,22 @@ fn init_boids_logic(camera_ent: EntityId) {
                 let dt = delta_time();
                 let minspeed = 15.;
                 let maxspeed = 30.;
-                for (boid, (pos, mut vel)) in boids {
-                    if vel.length_squared() < minspeed * minspeed {
-                        vel = vel.normalize_or_zero() * minspeed;
-                        entity::set_component(boid, boid_velocity(), vel);
+                for (boid, (mut pos, mut vel)) in boids {
+                    let dir = vel.normalize_or_zero();
+                    if dir.length_squared() > 0.001 {
+                        if vel.length_squared() < minspeed * minspeed {
+                            vel = vel.normalize_or_zero() * minspeed;
+                            entity::set_component(boid, boid_velocity(), vel);
+                        }
+                        if vel.length_squared() > maxspeed * maxspeed {
+                            vel = vel.normalize() * maxspeed;
+                            entity::set_component(boid, boid_velocity(), vel);
+                        }
+                        pos += vel * dt;
+                        entity::add_component(boid, lookat_target(), pos + dir);
+                        entity::add_component_if_required(boid, lookat_up(), vec3(0., 0., 1.));
+                        entity::set_component(boid, translation(), pos);
                     }
-                    if vel.length_squared() > maxspeed * maxspeed {
-                        vel = vel.normalize() * maxspeed;
-                        entity::set_component(boid, boid_velocity(), vel);
-                    }
-                    entity::set_component(boid, translation(), pos + vel * dt);
                 }
             });
     }
@@ -217,6 +255,10 @@ fn init_boids_logic(camera_ent: EntityId) {
                     entity::get_component(repulsive_dist_tuner, output()).unwrap_or(1.);
                 let repulsive_strength: f32 =
                     entity::get_component(repulsive_str_tuner, output()).unwrap_or(1.);
+                let max_neighbours_for_reproduction: usize =
+                    entity::get_component(reproduction_neighbours_tuner, output())
+                        .unwrap_or(5.)
+                        .round() as usize;
                 let chance_reproduce: f32 =
                     entity::get_component(reproduction_rate_tuner, output()).unwrap_or(0.1)
                         * dt
@@ -225,23 +267,30 @@ fn init_boids_logic(camera_ent: EntityId) {
                     entity::get_component(fighting_rate_tuner, output()).unwrap_or(0.1) * dt * 0.01;
                 for (boid, pos) in &boids {
                     let mut repulsive_force = Vec3::ZERO;
+                    let mut neighbours: usize = 0;
                     for (oboid, opos) in &boids {
                         if oboid != boid
                             && opos.distance_squared(*pos) < repulsive_dist * repulsive_dist
                         {
                             // yes we're touching
+                            neighbours += 1;
                             repulsive_force += (*pos - *opos).normalize_or_zero();
-                            if random::<f32>() < chance_reproduce {
-                                spawn_boid_at(
-                                    (*pos + *opos) * 0.5,
-                                    entity::get_component(*boid, boid_velocity()),
-                                );
-                            }
                             if random::<f32>() < chance_fight {
-                                entity::despawn(*boid);
+                                entity::despawn_recursive(*oboid); // despawn my opponent >:)
                             }
                         }
                     }
+
+                    if neighbours > 0
+                        && neighbours < max_neighbours_for_reproduction
+                        && random::<f32>() < chance_reproduce
+                    {
+                        spawn_boid_at(
+                            *pos + random::<Vec2>().extend(0.) * 2.,
+                            entity::get_component(*boid, boid_velocity()),
+                        );
+                    }
+
                     if repulsive_force.length_squared() > 0. {
                         entity::mutate_component(*boid, boid_velocity(), move |v| {
                             *v += repulsive_force * repulsive_strength * dt;
@@ -261,6 +310,7 @@ fn init_boids_logic(camera_ent: EntityId) {
                     entity::get_component(*&size_tuner, output()).unwrap_or(10.);
                 let edge_strength: f32 = 19.;
                 entity::add_component(camera_ent, translation(), Vec3::splat(edge_sqradius + 20.)); // move camera out according to size
+                entity::add_component(floor_ent, scale(), Vec3::splat(edge_sqradius + 20.) * 2.); // scale ground quad
                 for (boid, pos) in &boids {
                     entity::mutate_component(*boid, boid_velocity(), move |v| {
                         if pos.x.abs() > edge_sqradius {
@@ -295,6 +345,29 @@ fn init_boids_logic(camera_ent: EntityId) {
             });
     }
 
+    // onspawn - add model
+    {
+        spawn_query(())
+            .requires((translation(), is_boid()))
+            .bind(|newboids| {
+                for (newboid, _) in newboids {
+                    let model = Entity::new()
+                        .with(translation(), Vec3::ZERO)
+                        .with(
+                            rotation(),
+                            Quat::from_rotation_x(PI * -0.5) * Quat::from_rotation_z(PI * -0.5),
+                        )
+                        .with(model_from_url(), assets::url("Data/Models/Units/Zombie1.x"))
+                        .with(scale(), Vec3::splat(3.0))
+                        .with(local_to_parent(), Mat4::default())
+                        .with(parent(), newboid)
+                        .with(cast_shadows(), ())
+                        .spawn();
+                    entity::add_child(newboid, model);
+                }
+            });
+    }
+
     // onspawn - make confetti
     {
         spawn_query(translation())
@@ -312,13 +385,13 @@ fn init_boids_logic(camera_ent: EntityId) {
                             ) // anywhere inside the new cube's top half
                             .with(
                                 boid_velocity(),
-                                (random::<Vec2>() - 0.5).extend(random::<f32>()) * 10.,
+                                ((random::<Vec2>() - 0.5) * 10.).extend(random::<f32>() * 20.),
                             )
                             .with(cube(), ())
-                            .with(color(), random::<Vec3>().extend(1.))
+                            .with(transparency_group(), 1)
+                            .with(color(), (random::<Vec3>() * 2.).extend(0.25))
                             .with(is_confetti(), ())
                             .with(rotation(), random::<Quat>().normalize())
-                            .with(scale(), Vec3::splat(0.5))
                             .spawn();
                     }
                 }
@@ -327,41 +400,47 @@ fn init_boids_logic(camera_ent: EntityId) {
 
     // confetti movement
     {
-        const CONFETTI_GRAVITY: f32 = 9.81;
+        const CONFETTI_GRAVITY: f32 = 40.;
         const CONFETTI_DRAG: f32 = 0.05;
         query((translation(), boid_velocity()))
             .requires(is_confetti())
             .each_frame(|confettis| {
                 let dt = delta_time();
                 for (confetti, (pos, vel)) in confettis {
-                    if pos.z < -0.1 {
+                    if pos.z <= 0. {
                         entity::despawn(confetti);
                     } else {
                         entity::mutate_component(confetti, boid_velocity(), |vel| {
                             *vel *= 1.00 - CONFETTI_DRAG * dt;
-                            vel.z -= CONFETTI_GRAVITY * dt
+                            vel.z -= CONFETTI_GRAVITY * dt;
                         });
                         entity::mutate_component(confetti, translation(), move |pos| {
-                            *pos += vel * dt
+                            *pos += vel * dt;
                         });
                     }
                 }
             });
     }
 
-    // on despawn - make corpse
+    // on despawn - make corpse, delete children (shouldn't this happen automatically though?)
     {
         despawn_query(translation())
             .requires(is_boid())
             .bind(move |deadboids| {
-                for (_, pos) in deadboids {
+                for (deadboid, pos) in deadboids {
                     Entity::new()
-                        .with(translation(), pos)
+                        .with(translation(), pos + vec3(0., 0., 0.25))
+                        .with(rotation(), random::<Quat>().normalize())
                         .with(color(), vec4(0.5, 0., 0., 1.))
                         .with(cube(), ())
                         .with(is_corpse(), ())
                         .with(corpse_age(), 0.)
                         .spawn();
+                    // if let Some(remove_children) = entity::get_component(deadboid, children()) {
+                    //     for ent in remove_children {
+                    //         entity::despawn(ent);
+                    //     }
+                    // }
                 }
             });
     }
@@ -385,7 +464,7 @@ fn init_boids_logic(camera_ent: EntityId) {
                     age += age_delta_this_frame;
                     if age < 1. {
                         entity::mutate_component(corpse, translation(), |pos| {
-                            pos.z -= age_delta_this_frame * 5.
+                            pos.z -= age_delta_this_frame
                         }); // corpses fall
                         entity::add_component(corpse, scale(), Vec3::splat(1. - age)); // corpses shrink
                         entity::add_component(corpse, corpse_age(), age);
