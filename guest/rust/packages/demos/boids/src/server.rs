@@ -19,7 +19,7 @@ pub fn main() {
         optional: PerspectiveInfiniteReverseCameraOptional {
             aspect_ratio_from_window: Some(entity::resources()),
             main_scene: Some(()),
-            translation: Some(Vec3::ONE * 25.),
+            translation: Some(Vec3::ONE * 50.),
             ..default()
         },
         ..PerspectiveInfiniteReverseCamera::suggested()
@@ -88,8 +88,13 @@ fn init_boids_logic() {
             .requires(is_boid())
             .each_frame(|boids| {
                 let dt = delta_time();
-                let maxspeed = 50.;
+                let minspeed = 15.;
+                let maxspeed = 30.;
                 for (boid, (pos, mut vel)) in boids {
+                    if vel.length_squared() < minspeed * minspeed {
+                        vel = vel.normalize_or_zero() * minspeed;
+                        entity::set_component(boid, boid_velocity(), vel);
+                    }
                     if vel.length_squared() > maxspeed * maxspeed {
                         vel = vel.normalize() * maxspeed;
                         entity::set_component(boid, boid_velocity(), vel);
@@ -208,8 +213,8 @@ fn init_boids_logic() {
             .requires(is_boid())
             .each_frame(move |boids| {
                 let dt = delta_time();
-                let edge_sqradius: f32 = 25.;
-                let edge_strength: f32 = 19.;
+                let edge_sqradius: f32 = 50.;
+                let edge_strength: f32 = 100.;
                 for (boid, pos) in &boids {
                     entity::mutate_component(*boid, boid_velocity(), move |v| {
                         if pos.x.abs() > edge_sqradius {
