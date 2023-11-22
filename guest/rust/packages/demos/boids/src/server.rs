@@ -2,8 +2,9 @@ use ambient_api::{
     core::{
         app::components::name,
         camera::concepts::{
-            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
+            Camera, PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
+        network::components::no_sync,
         primitives::components::{cube, quad},
         transform::components::{lookat_target, translation},
     },
@@ -17,35 +18,26 @@ use packages::{
 
 #[main]
 pub fn main() {
-    PerspectiveInfiniteReverseCamera {
+    let camera_ent = PerspectiveInfiniteReverseCamera {
         optional: PerspectiveInfiniteReverseCameraOptional {
             aspect_ratio_from_window: Some(entity::resources()),
             main_scene: Some(()),
-            translation: Some(Vec3::ONE * 50.),
+            translation: Some(Vec3::ONE * 70.),
             ..default()
         },
         ..PerspectiveInfiniteReverseCamera::suggested()
     }
     .make()
-    .with(lookat_target(), vec3(0., 0., 0.))
+    .with(lookat_target(), vec3(0., 0., -10.))
     .spawn();
 
-    for _ in 0..100 {
-        spawn_boid();
-    }
-
-    init_boids_logic();
+    init_boids_logic(camera_ent);
 
     println!("Hello, Ambient!");
 }
 
 fn spawn_boid() {
     Entity::new()
-        .with(
-            translation(),
-            (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.,
-            // (random::<Vec3>() - 0.5) * 50. * 2.,
-        )
         .with(cube(), ())
         .with(is_boid(), ())
         .with(
@@ -56,33 +48,66 @@ fn spawn_boid() {
         .spawn();
 }
 
-fn init_boids_logic() {
+fn spawn_boid_at(pos: Vec3, vel: Option<Vec3>) {
+    Entity::new()
+        .with(translation(), pos)
+        .with(cube(), ())
+        .with(is_boid(), ())
+        .with(
+            boid_velocity(),
+            match vel {
+                None => (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.,
+                Some(vel) => vel,
+            },
+            // (random::<Vec3>() - 0.5) * 50. * 2.,
+        )
+        .spawn();
+}
+
+fn init_boids_logic(camera_ent: EntityId) {
+    for _ in 0..100 {
+        spawn_boid();
+    }
+
+    let quantity_min_tuner = mk_tuner("Min # Boids", (1, 101, 1001), true);
+    let quantity_max_tuner = mk_tuner("Max # Boids", (1, 201, 1001), true);
+    let size_tuner = mk_tuner("Size of Arena", (10, 60, 210), true);
+    let match_dist_tuner = mk_tuner("Match Range", (0, 10, 50), false);
+    let posmatch_str_tuner = mk_tuner("Match Position (Coherence)", (0, 1, 10), false);
+    let velmatch_str_tuner = mk_tuner("Match Velocity (Alignment)", (0, 5, 25), false);
+    let repulsive_dist_tuner = mk_tuner("Touching Range", (0, 4, 10), false);
+    let repulsive_str_tuner = mk_tuner("Touching Repel (Avoidance)", (0, 6, 20), false);
+
+    let reproduction_rate_tuner = mk_tuner("Touching % Reproduce Rate/second", (0, 5, 100), true);
+    let fighting_rate_tuner = mk_tuner("Touching % Kill Rate/second", (0, 5, 100), true);
+
     // boids quantity
     {
-        let quantity_tuner = mk_tuner("Number of Boids", 50, 1000);
-        entity::set_component(quantity_tuner, tuner_min(), 1.); // minimum 1
-        entity::set_component(quantity_tuner, tuner_max(), 1001.); // increase maximum by 1
-
-        query(()).requires(is_boid()).each_frame(move |boids| {
-            let target_quantity: usize = entity::get_component(quantity_tuner, output())
+        query(()).requires(is_boid()).each_frame(move |mut boids| {
+            let min_quantity: usize = entity::get_component(quantity_min_tuner, output())
                 .unwrap_or(1.)
-                .ceil() as usize;
-            let to_target_quantity: i32 =
-                (target_quantity as i32 - boids.len() as i32).max(-(boids.len() as i32 - 1));
-            if to_target_quantity > 0 {
-                for _ in 0..to_target_quantity {
-                    spawn_boid();
-                }
-            }
-            if to_target_quantity < 0 {
-                let mut i = 0;
+                .round() as usize;
+            let max_quantity: usize = entity::get_component(quantity_max_tuner, output())
+                .unwrap_or(1.)
+                .round() as usize;
+            let mut boid_count: usize = boids.len();
+            if boid_count > max_quantity {
+                boids.shuffle(&mut thread_rng());
+                let mut left_to_remove = boid_count - max_quantity;
                 for (boid, _) in boids {
                     entity::despawn(boid);
-                    i -= 1;
-                    if i <= to_target_quantity {
+                    left_to_remove -= 1;
+                    if left_to_remove <= 0 {
                         break;
                     }
                 }
+                boid_count = max_quantity;
+            }
+            if boid_count < min_quantity {
+                for _ in 0..min_quantity - boid_count {
+                    spawn_boid();
+                }
+                // boid_count = min_quantity; // not used after this
             }
         });
     }
@@ -108,12 +133,6 @@ fn init_boids_logic() {
                 }
             });
     }
-
-    let match_dist_tuner = mk_tuner("Match Range", 10, 50);
-    let posmatch_str_tuner = mk_tuner("Match Position (Coherence)", 1, 10);
-    let velmatch_str_tuner = mk_tuner("Match Velocity (Alignment)", 5, 25);
-    let repulsive_str_tuner = mk_tuner("Avoid Str", 6, 20);
-    let repulsive_dist_tuner = mk_tuner("Avoid Dist", 4, 10);
 
     // to center
     {
@@ -183,7 +202,7 @@ fn init_boids_logic() {
             });
     }
 
-    // repulsion
+    // touching
     {
         query(translation())
             .requires(is_boid())
@@ -193,13 +212,29 @@ fn init_boids_logic() {
                     entity::get_component(repulsive_dist_tuner, output()).unwrap_or(1.);
                 let repulsive_strength: f32 =
                     entity::get_component(repulsive_str_tuner, output()).unwrap_or(1.);
+                let chance_reproduce: f32 =
+                    entity::get_component(reproduction_rate_tuner, output()).unwrap_or(0.1)
+                        * dt
+                        * 0.01;
+                let chance_fight: f32 =
+                    entity::get_component(fighting_rate_tuner, output()).unwrap_or(0.1) * dt * 0.01;
                 for (boid, pos) in &boids {
                     let mut repulsive_force = Vec3::ZERO;
                     for (oboid, opos) in &boids {
                         if oboid != boid
                             && opos.distance_squared(*pos) < repulsive_dist * repulsive_dist
                         {
+                            // yes we're touching
                             repulsive_force += (*pos - *opos).normalize_or_zero();
+                            if random::<f32>() < chance_reproduce {
+                                spawn_boid_at(
+                                    (*pos + *opos) * 0.5,
+                                    entity::get_component(*boid, boid_velocity()),
+                                );
+                            }
+                            if random::<f32>() < chance_fight {
+                                entity::despawn(*boid);
+                            }
                         }
                     }
                     if repulsive_force.length_squared() > 0. {
@@ -217,8 +252,10 @@ fn init_boids_logic() {
             .requires(is_boid())
             .each_frame(move |boids| {
                 let dt = delta_time();
-                let edge_sqradius: f32 = 50.;
+                let edge_sqradius: f32 =
+                    entity::get_component(*&size_tuner, output()).unwrap_or(10.);
                 let edge_strength: f32 = 19.;
+                entity::add_component(camera_ent, translation(), Vec3::splat(edge_sqradius + 20.)); // move camera out according to size
                 for (boid, pos) in &boids {
                     entity::mutate_component(*boid, boid_velocity(), move |v| {
                         if pos.x.abs() > edge_sqradius {
@@ -234,15 +271,39 @@ fn init_boids_logic() {
                 }
             });
     }
+
+    // onspawn
+    {
+        spawn_query(())
+            .requires(is_boid())
+            .excludes(translation())
+            .bind(move |newboids| {
+                let edge_sqradius: f32 =
+                    entity::get_component(*&size_tuner, output()).unwrap_or(10.);
+                for (newboid, _) in newboids {
+                    entity::add_component(
+                        newboid,
+                        translation(),
+                        (random::<Vec2>() - 0.5).extend(0.) * edge_sqradius * 2.,
+                    );
+                }
+            });
+    }
 }
 
-fn mk_tuner(tuner_name: &str, starting_value: u32, max_value: u32) -> EntityId {
-    Tuner {
-        raw_value: starting_value as f32 / max_value as f32,
+fn mk_tuner(tuner_name: &str, min_starting_max: (u32, u32, u32), tuning_enabled: bool) -> EntityId {
+    let (min_value, starting_value, max_value) = min_starting_max;
+    let mut tuner = Tuner {
+        tuner_min: min_value as f32,
+        raw_value: (starting_value as f32 - min_value as f32)
+            / (max_value as f32 - min_value as f32),
         tuner_max: max_value as f32,
         ..Tuner::suggested()
     }
     .make()
-    .with(name(), tuner_name.to_string())
-    .spawn()
+    .with(name(), tuner_name.to_string());
+    if !tuning_enabled {
+        tuner = tuner.with(no_sync(), ());
+    }
+    tuner.spawn()
 }
