@@ -1,0 +1,31 @@
+[package]
+id = "jkmoentiguhj6r5cpnluwgfe4ryp34xm"
+name = "tuners"
+version = "0.0.1"
+content = { type = "Playable" }
+ambient_version = "0.3.2-nightly-2023-11-16"
+
+[components]
+description = { type = "String", attributes = ["Networked"] }
+tuner_min = { type = "F32", attributes = ["Networked", "Debuggable"]  }
+tuner_max = { type = "F32", attributes = ["Networked", "Debuggable"]  }
+# curve_exp = { type = "F32" }
+raw_value = { type = "F32", attributes = ["Networked", "Debuggable"] }
+output = { type = "F32", attributes = ["Networked", "Debuggable"] }
+client_raw = { type = "F32" }
+
+[concepts.Tuner]
+name = "Tuner"
+description = "A tuner is a value that is rendered and can be modified in clientside UI."
+
+[concepts.Tuner.components.required]
+# ambient_api::core::app::components::name = { suggested = "Unnamed Tuner"}
+tuner_min = { suggested = 0.0 }
+tuner_max = { suggested = 100.0 }
+raw_value = { suggested = 0.5 }
+# curve_exp = { suggested = 1.0 }
+description = { suggested = "(This Tuner does not have a description.)" }
+
+[messages.UpdateTuner.fields]
+id = "EntityId"
+raw = "F32"

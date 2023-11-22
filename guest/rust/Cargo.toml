@@ -83,6 +83,7 @@ members = [
     "packages/tools/package_manager",
     "packages/tools/world_latency",
     "packages/tools/performance_bar",
+    "packages/tools/tuners",
 
     # Packages (games)
     "packages/games/tangent",
@@ -94,6 +95,8 @@ members = [
     "packages/games/pong",
     "packages/games/tictactoe",
     "packages/games/arkanoid",
+
+    "packages/demos/boids",
 
     # Crates
     "crates/brand_theme",
