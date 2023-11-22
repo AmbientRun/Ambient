@@ -6,7 +6,8 @@ use ambient_api::{
         },
         network::components::no_sync,
         primitives::components::{cube, quad},
-        transform::components::{lookat_target, translation},
+        rendering::components::color,
+        transform::components::{lookat_target, rotation, scale, translation},
     },
     prelude::*,
 };
@@ -72,6 +73,8 @@ fn init_boids_logic(camera_ent: EntityId) {
     let quantity_min_tuner = mk_tuner("Min # Boids", (1, 101, 1001), true);
     let quantity_max_tuner = mk_tuner("Max # Boids", (1, 201, 1001), true);
     let size_tuner = mk_tuner("Size of Arena", (10, 60, 210), true);
+
+    // hidden
     let match_dist_tuner = mk_tuner("Match Range", (0, 10, 50), false);
     let posmatch_str_tuner = mk_tuner("Match Position (Coherence)", (0, 1, 10), false);
     let velmatch_str_tuner = mk_tuner("Match Velocity (Alignment)", (0, 5, 25), false);
@@ -80,6 +83,8 @@ fn init_boids_logic(camera_ent: EntityId) {
 
     let reproduction_rate_tuner = mk_tuner("Touching % Reproduce Rate/second", (0, 5, 100), true);
     let fighting_rate_tuner = mk_tuner("Touching % Kill Rate/second", (0, 5, 100), true);
+    let birth_confetti_tuner = mk_tuner("Birth Particles", (0, 1, 100), true);
+    let corpse_lifespan_tuner = mk_tuner("Corpse Lifespan", (0, 1, 10), true);
 
     // boids quantity
     {
@@ -272,7 +277,7 @@ fn init_boids_logic(camera_ent: EntityId) {
             });
     }
 
-    // onspawn
+    // onspawn - give random position
     {
         spawn_query(())
             .requires(is_boid())
@@ -286,6 +291,107 @@ fn init_boids_logic(camera_ent: EntityId) {
                         translation(),
                         (random::<Vec2>() - 0.5).extend(0.) * edge_sqradius * 2.,
                     );
+                }
+            });
+    }
+
+    // onspawn - make confetti
+    {
+        spawn_query(translation())
+            .requires(is_boid())
+            .bind(move |newboids| {
+                let confetti_count = entity::get_component(birth_confetti_tuner, output())
+                    .unwrap_or(0.)
+                    .round() as usize;
+                for (_newboid, pos) in newboids {
+                    for _ in 0..confetti_count {
+                        Entity::new()
+                            .with(
+                                translation(),
+                                pos + (random::<Vec2>() - 0.5).extend(random::<f32>() * 0.5),
+                            ) // anywhere inside the new cube's top half
+                            .with(
+                                boid_velocity(),
+                                (random::<Vec2>() - 0.5).extend(random::<f32>()) * 10.,
+                            )
+                            .with(cube(), ())
+                            .with(color(), random::<Vec3>().extend(1.))
+                            .with(is_confetti(), ())
+                            .with(rotation(), random::<Quat>().normalize())
+                            .with(scale(), Vec3::splat(0.5))
+                            .spawn();
+                    }
+                }
+            });
+    }
+
+    // confetti movement
+    {
+        const CONFETTI_GRAVITY: f32 = 9.81;
+        const CONFETTI_DRAG: f32 = 0.05;
+        query((translation(), boid_velocity()))
+            .requires(is_confetti())
+            .each_frame(|confettis| {
+                let dt = delta_time();
+                for (confetti, (pos, vel)) in confettis {
+                    if pos.z < -0.1 {
+                        entity::despawn(confetti);
+                    } else {
+                        entity::mutate_component(confetti, boid_velocity(), |vel| {
+                            *vel *= 1.00 - CONFETTI_DRAG * dt;
+                            vel.z -= CONFETTI_GRAVITY * dt
+                        });
+                        entity::mutate_component(confetti, translation(), move |pos| {
+                            *pos += vel * dt
+                        });
+                    }
+                }
+            });
+    }
+
+    // on despawn - make corpse
+    {
+        despawn_query(translation())
+            .requires(is_boid())
+            .bind(move |deadboids| {
+                for (_, pos) in deadboids {
+                    Entity::new()
+                        .with(translation(), pos)
+                        .with(color(), vec4(0.5, 0., 0., 1.))
+                        .with(cube(), ())
+                        .with(is_corpse(), ())
+                        .with(corpse_age(), 0.)
+                        .spawn();
+                }
+            });
+    }
+
+    // corpse animation
+    {
+        query(corpse_age())
+            .requires(is_corpse())
+            .each_frame(move |corpses| {
+                let dt = delta_time();
+                let corpse_lifespan =
+                    entity::get_component(corpse_lifespan_tuner, output()).unwrap_or(1.);
+                let age_delta_this_frame = {
+                    if corpse_lifespan > 0.0001 {
+                        dt / corpse_lifespan
+                    } else {
+                        1. // instant death
+                    }
+                };
+                for (corpse, mut age) in corpses {
+                    age += age_delta_this_frame;
+                    if age < 1. {
+                        entity::mutate_component(corpse, translation(), |pos| {
+                            pos.z -= age_delta_this_frame * 5.
+                        }); // corpses fall
+                        entity::add_component(corpse, scale(), Vec3::splat(1. - age)); // corpses shrink
+                        entity::add_component(corpse, corpse_age(), age);
+                    } else {
+                        entity::despawn(corpse);
+                    }
                 }
             });
     }
