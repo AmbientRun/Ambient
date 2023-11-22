@@ -41,7 +41,7 @@ fn spawn_boid() {
     Entity::new()
         .with(
             translation(),
-            (random::<Vec2>() - 0.5).extend(0.) * 25. * 2.,
+            (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.,
         )
         .with(cube(), ())
         .with(is_boid(), ())
@@ -104,12 +104,12 @@ fn init_boids_logic() {
             });
     }
 
-    let match_dist_tuner = mk_tuner("Match Range", 7, 20);
+    let match_dist_tuner = mk_tuner("Match Range", 10, 50);
 
     // to center
     {
         let posmatch_dist_tuner = match_dist_tuner.clone();
-        let posmatch_str_tuner = mk_tuner("Match Position (Coherence)", 5, 25);
+        let posmatch_str_tuner = mk_tuner("Match Position (Coherence)", 1, 10);
 
         query(translation())
             .requires(is_boid())
@@ -178,8 +178,8 @@ fn init_boids_logic() {
 
     // repulsion
     {
-        let repulsive_dist_tuner = mk_tuner("Avoid Dist", 2, 10);
-        let repulsive_str_tuner = mk_tuner("Avoid Str", 3, 10);
+        let repulsive_dist_tuner = mk_tuner("Avoid Dist", 4, 10);
+        let repulsive_str_tuner = mk_tuner("Avoid Str", 6, 20);
 
         query(translation())
             .requires(is_boid())
@@ -195,7 +195,7 @@ fn init_boids_logic() {
                         if oboid != boid
                             && opos.distance_squared(*pos) < repulsive_dist * repulsive_dist
                         {
-                            repulsive_force += *pos - *opos;
+                            repulsive_force += (*pos - *opos).normalize_or_zero();
                         }
                     }
                     if repulsive_force.length_squared() > 0. {
@@ -214,7 +214,7 @@ fn init_boids_logic() {
             .each_frame(move |boids| {
                 let dt = delta_time();
                 let edge_sqradius: f32 = 50.;
-                let edge_strength: f32 = 100.;
+                let edge_strength: f32 = 19.;
                 for (boid, pos) in &boids {
                     entity::mutate_component(*boid, boid_velocity(), move |v| {
                         if pos.x.abs() > edge_sqradius {
