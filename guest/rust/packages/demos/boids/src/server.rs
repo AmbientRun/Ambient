@@ -158,7 +158,7 @@ fn init_boids_logic() {
                             && opos.distance_squared(*pos) < velmatch_dist * velmatch_dist
                         {
                             total_velocity += *ovel;
-                            bns += 0;
+                            bns += 1;
                         }
                     }
                     if bns > 0 {
