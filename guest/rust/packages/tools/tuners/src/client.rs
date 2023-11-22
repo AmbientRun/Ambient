@@ -1,5 +1,8 @@
 use ambient_api::{
-    core::{app::components::name, rendering::components::color, text::components::font_size},
+    core::{
+        app::components::name, network::components::no_sync, rendering::components::color,
+        text::components::font_size,
+    },
     prelude::*,
 };
 use packages::this::{components::*, messages::UpdateTuner};
@@ -7,7 +10,7 @@ use packages::this::{components::*, messages::UpdateTuner};
 pub fn main() {
     Tuners.el().spawn_interactive();
 
-    spawn_query(raw_value()).bind(|tuners| {
+    spawn_query(raw_value()).excludes(no_sync()).bind(|tuners| {
         for (tuner, raw) in tuners {
             entity::add_component(tuner, client_raw(), raw);
         }
