@@ -42,7 +42,7 @@ content = { type = "Mod", for_playables = ["the_id_of_your_game_from_its_ambient
 my_game = { deployment = "LATEST_DEPLOYMENT_ID" }
 ```
 
-You can now edit and run the code in `src/`, as per usual. Once you're happy with your mod, you can deploy it with `ambient deploy` (just like we did with the game).
+You can now edit and run the code in `src/`, as per usual. Once you're happy with your mod, you can deploy it with `ambient deploy`, just like with the game. Providing a `screenshot.png` is recommended to make sure your mod stands out.
 
 Remember to comment out the `my_game = ..` line before deploying.
 
