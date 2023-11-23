@@ -2,9 +2,9 @@
 id = "xjoy27d3i4hc4l7fmlm5pacc2cmxlnlw"
 name = "Dependencies"
 description = "Break your project up into packages."
-version = "0.3.2-nightly-2023-11-22"
+version = "0.3.2-nightly-2023-11-23"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-11-22"
+ambient_version = "0.3.2-nightly-2023-11-23"
 
 [dependencies]
 deps_assets = { path = "deps/assets" , deployment = "3vXIRYG3OA5k6gWxq7oUwS" }
