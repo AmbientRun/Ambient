@@ -1,5 +1,7 @@
 use ambient_api::{core::prefab::components::prefab_from_url, prelude::*};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     let mut count = 0;

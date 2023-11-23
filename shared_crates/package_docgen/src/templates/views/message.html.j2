@@ -1,0 +1,45 @@
+{% extends "views/base" %}
+
+{% block title %}
+    {{ item.data.id }} in {{ item_path(item_id=item.data.parent_id) }}
+{% endblock title %}
+
+{% block sidebar %}
+    {% include "partials/item_sidebar_package_heading" %}
+    <h3>Message</h3>
+    <ul>
+        <li><a href="#description">Description</a></li>
+        {% if item.fields %}
+            <li><a href="#fields">Fields</a></li>
+        {% endif %}
+    </ul>
+    {% include "partials/item_sidebar" %}
+{% endblock sidebar %}
+
+{% block content %}
+    <h1>Message {{ macros::item_link(item_id=item_id) }}</h1>
+
+    <h3 id="description">Description</h3>
+    <p>
+        {% if item.name %}
+            <h4>{{ item.name }}</h4>
+        {% else %}
+            <h4><code>{{ item.data.id }}</code></h4>
+        {% endif %}
+
+        {% if item.description %}
+            {{ item.description | markdown }}
+        {% else %}
+            No description available.
+        {% endif %}
+    </p>
+
+    {% if item.fields %}
+        <h3 id="fields">Fields</h3>
+        <ul>
+            {% for field_id, field_ty_id in item.fields %}
+                <li><code>{{ field_id }}</code>: {{ macros::item_link(item_id=field_ty_id) }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock content %}

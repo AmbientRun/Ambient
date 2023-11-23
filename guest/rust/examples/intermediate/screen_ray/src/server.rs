@@ -10,6 +10,8 @@ use ambient_api::{
 };
 use packages::this::{components::player_cube_ref, messages::Input};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     Entity::new()

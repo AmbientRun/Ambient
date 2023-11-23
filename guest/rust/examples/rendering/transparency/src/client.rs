@@ -10,6 +10,8 @@ use ambient_api::{
 };
 use packages::orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional};
 
+pub mod packages;
+
 #[main]
 fn main() {
     // Camera

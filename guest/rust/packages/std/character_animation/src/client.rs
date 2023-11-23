@@ -18,6 +18,8 @@ use std::{
     sync::{Arc, Mutex, OnceLock},
 };
 
+pub mod packages;
+
 #[element_component(without_el)]
 fn UnitAnimation(
     _hooks: &mut Hooks,

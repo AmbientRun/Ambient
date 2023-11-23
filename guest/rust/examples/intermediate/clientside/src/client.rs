@@ -11,6 +11,8 @@ use packages::{
     this::components::{grid_position, grid_side_length},
 };
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     let side_length =

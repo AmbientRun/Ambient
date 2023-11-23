@@ -13,6 +13,8 @@ mod shared;
 
 const RENDER_LEVEL_BOUNDARIES: bool = false;
 
+pub mod packages;
+
 #[main]
 fn main() {
     // Play ambient wind sound

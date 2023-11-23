@@ -3,11 +3,14 @@ name = "tangent_ui_spawn_menu"
 
 edition = "2021"
 publish = false
-rust-version = {workspace = true}
-version = {workspace = true}
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
-ambient_api = { path = "../../../../../api" }
+ambient_api = { workspace = true }
+
+[build-dependencies]
+ambient_package_projection = { workspace = true }
 
 [[bin]]
 name = "tangent_ui_spawn_menu_client"

@@ -14,7 +14,6 @@ fn main() {
     let working_dir = dunce::simplified(&working_dir).to_owned();
 
     println!("cargo:rerun-if-changed=wit");
-    println!("cargo:rerun-if-changed=../../schema");
     let filenames_to_copy: Vec<_> = std::fs::read_dir("wit")
         .unwrap()
         .map(|r| r.map(|de| de.path()))

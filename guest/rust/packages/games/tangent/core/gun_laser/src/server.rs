@@ -19,6 +19,8 @@ use packages::{
     },
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     spawn_query(is_gun_laser()).bind(|guns| {

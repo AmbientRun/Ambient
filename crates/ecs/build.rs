@@ -1,7 +1,7 @@
 use std::path::Path;
 
 fn main() {
-    println!("cargo:rerun-if-changed=../../schema");
+    println!("cargo:rerun-if-changed=build.rs");
 
     let header = r#"
     #![allow(missing_docs)]

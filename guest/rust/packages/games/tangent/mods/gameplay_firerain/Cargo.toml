@@ -3,11 +3,14 @@ name = "tangent_gameplay_fire_rain"
 
 edition = "2021"
 publish = false
-rust-version = {workspace = true}
-version = {workspace = true}
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
-ambient_api = { path = "../../../../../api" }
+ambient_api = { workspace = true }
+
+[build-dependencies]
+ambient_package_projection = { workspace = true }
 
 [[bin]]
 name = "tangent_gameplay_fire_rain_server"

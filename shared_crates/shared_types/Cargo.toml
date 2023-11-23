@@ -19,5 +19,7 @@ winit = { workspace = true, optional = true }
 ulid = { workspace = true }
 paste = { workspace = true }
 
+ambient_primitive_component_definitions = { path = "../primitive_component_definitions" }
+
 [features]
 native = ["dep:winit"]

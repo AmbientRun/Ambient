@@ -3,6 +3,13 @@ use ambient_api::{
     prelude::*,
 };
 
+pub mod packages;
+
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
+}
+
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
     WindowSized::el(vec![ScrollArea::el(
@@ -54,9 +61,4 @@ fn App(_hooks: &mut Hooks) -> Element {
         ])
         .with(space_between_items(), STREET),
     )])
-}
-
-#[main]
-pub fn main() {
-    App.el().spawn_interactive();
 }

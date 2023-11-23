@@ -9,6 +9,9 @@ version = "0.0.1"
 ambient_api = { workspace = true }
 rhai = { version = "1.15", features = ["sync"] }
 
+[build-dependencies]
+ambient_package_projection = { workspace = true }
+
 [[bin]]
 name = "console_client"
 path = "src/client.rs"

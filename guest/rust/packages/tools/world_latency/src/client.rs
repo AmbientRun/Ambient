@@ -7,6 +7,8 @@ use packages::this::{
     messages::FrameSeen,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     query(server_frame()).each_frame(|frame_counters| {

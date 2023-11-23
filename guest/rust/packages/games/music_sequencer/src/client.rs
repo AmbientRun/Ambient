@@ -18,6 +18,8 @@ use packages::this::{
 
 mod common;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     let mut cursor = 0;

@@ -16,6 +16,8 @@ use packages::this::messages::{ConsoleServerInput, ConsoleServerOutput};
 
 mod shared;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     let console = Console::new(false);

@@ -33,6 +33,9 @@ pub struct BuildSettings {
     #[serde(default)]
     /// Build with deployment in mind (i.e. ignore local dependencies).
     pub deploy: bool,
+    #[serde(default)]
+    /// Build the docs. If `deploy` is set, this is ignored and the docs are always built.
+    pub build_docs: bool,
 }
 
 impl BuildMetadata {

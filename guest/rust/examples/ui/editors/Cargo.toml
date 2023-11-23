@@ -10,6 +10,9 @@ version = { workspace = true }
 ambient_api = { workspace = true }
 indexmap = { workspace = true }
 
+[build-dependencies]
+ambient_package_projection = { workspace = true }
+
 [[bin]]
 name = "ui_input_client"
 path = "src/client.rs"

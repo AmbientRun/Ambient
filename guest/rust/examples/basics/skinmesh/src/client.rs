@@ -19,6 +19,8 @@ use packages::{
     this::assets,
 };
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     OrbitCamera {

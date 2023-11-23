@@ -1,0 +1,51 @@
+{% macro sidebar_render_items(title, items) %}
+    {% if items %}
+        <h4>{{ title }}</h4>
+        <ul>
+            {% for sidebar_id, sidebar_item_id in items %}
+                <li>
+                    {{ macros::item_link(item_id=sidebar_item_id, highlight=sidebar_item_id == item_id, text=sidebar_id) }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro %}
+
+{% macro item_link(item_id, highlight=false, text='') %}{{ macros::item_link_inner(item_id=item_id, highlight=highlight, text=text) | spaceless | trim }}{% endmacro %}
+
+{% macro item_link_inner(item_id, highlight, text) %}
+    {% set item = get_item(item_id=item_id) %}
+    {% if not current_package_id %}
+        {% set current_package_id = '' %}
+    {% endif %}
+    <a
+        href="{{ item_url(from=page_url, item_id=item_id) }}"
+        class="{% if highlight %}highlight{% endif %} {{ item.type }}"
+    >
+        <code>{% if text %}{{ text }}{% else %}{{ item_path(item_id=item_id, current_package_id=current_package_id) }}{% endif %}</code>
+    </a>
+{% endmacro %}
+
+{% macro component_link(component_item_id) %}
+    {% set component = get_item(item_id=component_item_id) %}
+    {{ macros::item_link(item_id=component_item_id) }}: {{ macros::item_link(item_id=component.type_) }}
+{% endmacro %}
+
+{% macro list_of_item_links(items) %}
+    {% for item_id in items %}
+        {{ macros::item_link(item_id=item_id) }}{%- if not loop.last -%}, {%- endif -%}
+    {% endfor %}
+{% endmacro %}
+
+{% macro scope_generate_section(title, items) %}
+    {% if items %}
+        <h3 id="{{ title | slugify }}">{{ title }}</h3>
+        <ul>
+            {% for section_id, section_item_id in items %}
+                <li>
+                    {{ macros::item_link(item_id=section_item_id, text=section_id) }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro %}

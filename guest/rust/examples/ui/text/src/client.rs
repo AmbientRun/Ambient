@@ -6,6 +6,13 @@ use ambient_api::{
     prelude::*,
 };
 
+pub mod packages;
+
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
+}
+
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
     FlowColumn::el([
@@ -20,9 +27,4 @@ fn App(_hooks: &mut Hooks) -> Element {
     ])
     .with_padding_even(STREET)
     .with(space_between_items(), 10.)
-}
-
-#[main]
-pub fn main() {
-    App.el().spawn_interactive();
 }

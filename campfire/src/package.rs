@@ -20,7 +20,7 @@ pub enum Package {
     /// Run all the packages in order
     RunAll(RunParams),
     /// Check all the packages
-    CheckAll,
+    CheckAll(CheckAllParams),
     /// Build all standard packages
     BuildAll,
     /// Publish all standard packages
@@ -55,6 +55,16 @@ pub struct RunParams {
     pub args: Vec<String>,
 }
 
+#[derive(Args, Clone, Debug)]
+#[clap(trailing_var_arg = true)]
+/// Check all packages for compilation, not build, errors
+pub struct CheckAllParams {
+    /// Whether or not to delete the target folder before runs.
+    /// Used by the CI to avoid running out of space.
+    #[arg(short, long, default_value_t = false)]
+    pub delete_target: bool,
+}
+
 pub fn main(args: &Package) -> anyhow::Result<()> {
     match args {
         Package::Clean => clean(),
@@ -62,7 +72,7 @@ pub fn main(args: &Package) -> anyhow::Result<()> {
         Package::Serve(args) => serve(args),
         Package::List => list(),
         Package::RunAll(params) => run_all(params),
-        Package::CheckAll => check_all(),
+        Package::CheckAll(params) => check_all(params),
         Package::BuildAll => build_all(),
         Package::DeployAll {
             token,
@@ -127,13 +137,21 @@ fn run_all(params: &RunParams) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn check_all() -> anyhow::Result<()> {
+fn check_all(params: &CheckAllParams) -> anyhow::Result<()> {
     // Rust
     {
         let root_path = Path::new("guest/rust");
         tracing::info!("Checking Rust guest code...");
 
         for features in ["", "client", "server", "client,server"] {
+            if params.delete_target {
+                tracing::info!("Deleting target directory...");
+                let target_path = root_path.join("target");
+                if target_path.exists() {
+                    std::fs::remove_dir_all(&target_path)?;
+                }
+            }
+
             tracing::info!("Checking Rust guest code with features `{}`...", features);
 
             let mut command = std::process::Command::new("cargo");

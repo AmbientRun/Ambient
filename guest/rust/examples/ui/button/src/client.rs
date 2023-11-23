@@ -1,5 +1,12 @@
 use ambient_api::{core::layout::components::space_between_items, prelude::*};
 
+pub mod packages;
+
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
+}
+
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
     let card_inner = |text| {
@@ -78,9 +85,4 @@ fn App(_hooks: &mut Hooks) -> Element {
     .el()
     .with(space_between_items(), STREET)
     .with_padding_even(STREET)
-}
-
-#[main]
-pub fn main() {
-    App.el().spawn_interactive();
 }

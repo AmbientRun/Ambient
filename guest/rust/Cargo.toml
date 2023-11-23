@@ -3,6 +3,8 @@ members = [
     "api",
     "api_core",
     "api_core/api_macros",
+    "api_core/package_projection",
+
     # Basics
     "examples/basics/input",
     "examples/basics/multiplayer",
@@ -108,6 +110,7 @@ version = "0.3.2-dev"
 ambient_api = { path = "api", version = "0.3.2-dev" }
 ambient_api_core = { path = "api_core", version = "0.3.2-dev" }
 ambient_api_macros = { path = "api_core/api_macros", version = "0.3.2-dev" }
+ambient_package_projection = { path = "api_core/package_projection", version = "0.3.2-dev" }
 ambient_brand_theme = { path = "crates/brand_theme", version = "0.3.2-dev" }
 
 ambient_package = { path = "../../shared_crates/package", version = "0.3.2-dev" }

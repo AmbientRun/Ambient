@@ -4,6 +4,8 @@ use packages::this::{
     messages::{DeleteItem, NewItem},
 };
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     NewItem::subscribe(|_ctx, data| {

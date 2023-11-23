@@ -1,5 +1,7 @@
 use ambient_api::{core::messages::Frame, prelude::*};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     Frame::subscribe(move |_| {

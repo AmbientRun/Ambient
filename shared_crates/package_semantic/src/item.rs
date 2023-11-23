@@ -25,7 +25,7 @@ pub enum GetScopeError {
 
 #[derive(Clone, PartialEq, Debug, Default)]
 pub struct ItemMap {
-    items: HashMap<Ulid, ItemValue>,
+    items: HashMap<Ulid, ItemVariant>,
     vec_items: HashMap<ItemId<Type>, ItemId<Type>>,
     option_items: HashMap<ItemId<Type>, ItemId<Type>>,
 }
@@ -69,7 +69,7 @@ impl ItemMap {
     #[allow(clippy::disallowed_methods)]
     fn add_raw<T: Item>(&mut self, value: T) -> ItemId<T> {
         let ulid = ulid::Ulid::new();
-        self.items.insert(ulid, value.into_item_value());
+        self.items.insert(ulid, value.into_item_variant());
         ItemId(ulid, PhantomData)
     }
 
@@ -77,18 +77,18 @@ impl ItemMap {
     ///
     /// Does not resolve the item.
     pub fn get<T: Item>(&self, id: ItemId<T>) -> &T {
-        T::from_item_value(self.items.get(&id.0).unwrap()).unwrap()
+        T::from_item_variant(self.items.get(&id.0).unwrap()).unwrap()
     }
 
     /// Returns a mutable reference to the item with the given id.
     ///
     /// Does not resolve the item.
     pub fn get_mut<T: Item>(&mut self, id: ItemId<T>) -> &mut T {
-        T::from_item_value_mut(self.items.get_mut(&id.0).unwrap()).unwrap()
+        T::from_item_variant_mut(self.items.get_mut(&id.0).unwrap()).unwrap()
     }
 
     pub fn insert<T: Item>(&mut self, id: ItemId<T>, item: T) {
-        self.items.insert(id.0, item.into_item_value());
+        self.items.insert(id.0, item.into_item_variant());
     }
 
     pub fn get_vec_id(&self, id: ItemId<Type>) -> ItemId<Type> {
@@ -239,6 +239,18 @@ impl ItemMap {
 
         topological_sort(std::iter::once(id), self).unwrap()
     }
+
+    pub fn iter(&self) -> impl Iterator<Item = (&Ulid, &ItemVariant)> {
+        self.items.iter()
+    }
+
+    pub fn vec_items(&self) -> &HashMap<ItemId<Type>, ItemId<Type>> {
+        &self.vec_items
+    }
+
+    pub fn option_items(&self) -> &HashMap<ItemId<Type>, ItemId<Type>> {
+        &self.option_items
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -258,7 +270,7 @@ impl Display for ItemType {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum ItemValue {
+pub enum ItemVariant {
     Component(Component),
     Concept(Concept),
     Message(Message),
@@ -294,9 +306,9 @@ pub trait Item: Clone {
     const TYPE: ItemType;
     type Unresolved: Eq + Debug;
 
-    fn from_item_value(value: &ItemValue) -> Option<&Self>;
-    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self>;
-    fn into_item_value(self) -> ItemValue;
+    fn from_item_variant(value: &ItemVariant) -> Option<&Self>;
+    fn from_item_variant_mut(value: &mut ItemVariant) -> Option<&mut Self>;
+    fn into_item_variant(self) -> ItemVariant;
 
     fn data(&self) -> &ItemData;
 }
@@ -333,6 +345,10 @@ impl<T: Item> Eq for ItemId<T> {}
 impl<T: Item> ItemId<T> {
     pub(crate) fn empty_you_should_really_initialize_this() -> Self {
         Self(Ulid::default(), PhantomData)
+    }
+
+    pub fn as_u128(&self) -> u128 {
+        self.0 .0
     }
 }
 

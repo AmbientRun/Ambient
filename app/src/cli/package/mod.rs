@@ -61,6 +61,10 @@ pub struct PackageArgs {
     #[arg(long)]
     /// Only build the WASM modules
     pub build_wasm_only: bool,
+
+    #[arg(long)]
+    /// Open docs after building
+    pub open_docs: bool,
 }
 impl PackageArgs {
     pub fn is_release(&self) -> Option<bool> {
