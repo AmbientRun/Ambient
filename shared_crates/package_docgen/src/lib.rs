@@ -6,8 +6,34 @@ use tera::{Context, Tera};
 mod util;
 
 pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::Result<()> {
-    let manifest: Arc<apj::Manifest> =
-        Arc::new(serde_json::from_str(&std::fs::read_to_string(json_path)?)?);
+    let mut manifest: apj::Manifest = serde_json::from_str(&std::fs::read_to_string(json_path)?)?;
+    // Be a little cheeky and create a fake package for the root scope
+    let ambient_version = manifest
+        .get(&manifest.main_package_id)
+        .ambient_version
+        .as_deref()
+        .unwrap_or(env!("CARGO_PKG_VERSION"));
+    const SYSTEM_PACKAGE_ID: &str = "system_package";
+    manifest.items.insert(
+        SYSTEM_PACKAGE_ID.to_string(),
+        apj::ItemVariant::Package(apj::Package {
+            data: apj::ItemData {
+                parent_id: None,
+                id: "".to_string(),
+                source: apj::ItemSource::System,
+            },
+            name: "System".to_string(),
+            version: ambient_version.to_owned(),
+            description: Some(
+                "Contains all system-defined items, available to all packages.".to_string(),
+            ),
+            repository: None,
+            ambient_version: Some(ambient_version.to_owned()),
+            scope_id: manifest.root_scope_id.clone(),
+            dependencies: Default::default(),
+        }),
+    );
+    let manifest = Arc::new(manifest);
 
     let mut packages = vec![];
     let mut scope_id_to_package_id = HashMap::new();
