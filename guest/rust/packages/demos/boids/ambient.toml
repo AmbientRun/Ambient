@@ -6,7 +6,7 @@ content = { type = "Playable" }
 ambient_version = "0.3.2-nightly-2023-11-16"
 
 [dependencies]
-tuners = { path = "../../tools/tuners" }
+tuners = { path = "../../tools/tuners" , deployment = "6s0lmTgHKCVjCFxmNdb5tj" }
 dead_meets_lead_content = { deployment = "5emfUlpXvbIAd7mZj2o2GE" }
 
 [components]
