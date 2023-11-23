@@ -4,9 +4,8 @@ use ambient_api::{
     core::{
         app::components::name,
         camera::concepts::{
-            Camera, PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
+            PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
         },
-        hierarchy::components::{children, parent},
         model::components::model_from_url,
         network::components::no_sync,
         primitives::components::{cube, quad},
@@ -69,29 +68,23 @@ pub fn main() {
 }
 
 fn spawn_boid() {
+    let starting_vel: Vec3 = (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.;
     Entity::new()
         .with(is_boid(), ())
-        .with(
-            boid_velocity(),
-            (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.,
-            // (random::<Vec3>() - 0.5) * 50. * 2.,
-        )
+        .with(boid_velocity(), starting_vel)
         .with(local_to_world(), Mat4::default())
         .spawn();
 }
 
 fn spawn_boid_at(pos: Vec3, vel: Option<Vec3>) {
+    let actual_vel: Vec3 = match (vel, vel == Some(Vec3::ZERO)) {
+        (None, _) | (_, true) => (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.,
+        (Some(vel), _) => vel,
+    };
     Entity::new()
         .with(translation(), pos)
         .with(is_boid(), ())
-        .with(
-            boid_velocity(),
-            match vel {
-                None => (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.,
-                Some(vel) => vel,
-            },
-            // (random::<Vec3>() - 0.5) * 50. * 2.,
-        )
+        .with(boid_velocity(), actual_vel)
         .with(local_to_world(), Mat4::default())
         .spawn();
 }
@@ -170,7 +163,6 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                         }
                         pos += vel * dt;
                         entity::add_component(boid, lookat_target(), pos + dir);
-                        entity::add_component_if_required(boid, lookat_up(), vec3(0., 0., 1.));
                         entity::set_component(boid, translation(), pos);
                     }
                 }
@@ -345,6 +337,21 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
             });
     }
 
+    // onspawn - without lookat_up
+    {
+        spawn_query((translation(), boid_velocity()))
+            .requires(is_boid())
+            .excludes(lookat_up())
+            .bind(move |lookless_boids| {
+                for (boid, (pos, vel)) in lookless_boids {
+                    entity::add_component(boid, lookat_up(), vec3(0., 0., 1.));
+                    if vel != Vec3::ZERO {
+                        entity::add_component(boid, lookat_target(), pos + vel);
+                    }
+                }
+            });
+    }
+
     // onspawn - add model
     {
         spawn_query(())
@@ -360,7 +367,6 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                         .with(model_from_url(), assets::url("Data/Models/Units/Zombie1.x"))
                         .with(scale(), Vec3::splat(3.0))
                         .with(local_to_parent(), Mat4::default())
-                        .with(parent(), newboid)
                         .with(cast_shadows(), ())
                         .spawn();
                     entity::add_child(newboid, model);
