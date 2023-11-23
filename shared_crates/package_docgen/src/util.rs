@@ -4,6 +4,7 @@ use std::{
 };
 
 use ambient_package_json as apj;
+use apj::Item as _;
 
 pub fn diff_paths<'a>(from: &'a Path, to: &'a Path) -> String {
     pathdiff::diff_paths(
@@ -23,8 +24,9 @@ pub fn path_to_item(
     manifest: &apj::Manifest,
     scope_id_to_package_id: &HashMap<String, apj::ItemId<apj::Package>>,
     item_id: &apj::ErasedItemId,
+    current_package_id: Option<&apj::ErasedItemId>,
 ) -> String {
-    let mut segments = vec![];
+    let mut segments: Vec<&str> = vec![];
 
     let mut next = Some(item_id);
     while let Some(current) = next {
@@ -42,14 +44,37 @@ pub fn path_to_item(
     }
 
     // Drop the root scope as it's likely an auto-generated ID if there's more than one segment
-    segments.pop();
+    let last = segments.pop().and_then(|last| {
+        remap_root_segment(manifest, scope_id_to_package_id, current_package_id, last)
+    });
+    for segment in segments.iter_mut() {
+        *segment = &manifest.items.get(*segment).unwrap().item().data().id;
+    }
+    if let Some(last) = last {
+        segments.push(last);
+    }
     segments.reverse();
 
-    segments
-        .into_iter()
-        .map(|v| manifest.items.get(v).unwrap().item().data().id.clone())
-        .collect::<Vec<_>>()
-        .join("::")
+    return segments.join("::");
+
+    fn remap_root_segment<'a>(
+        manifest: &'a apj::Manifest,
+        scope_id_to_package_id: &'a HashMap<String, apj::ItemId<apj::Package>>,
+        current_package_id: Option<&apj::ErasedItemId>,
+        last_segment: &str,
+    ) -> Option<&'a String> {
+        let package_id = scope_id_to_package_id.get(last_segment)?;
+        let current_package =
+            apj::Package::from_item_variant(manifest.items.get(current_package_id?)?)?;
+        let current_scope = manifest.get(&current_package.scope_id);
+
+        let (id, _) = current_scope
+            .imports
+            .iter()
+            .find(|(_, pkg)| *pkg == package_id)?;
+
+        Some(id)
+    }
 }
 
 pub fn item_url(
@@ -140,4 +165,23 @@ pub fn get_arg<T: serde::de::DeserializeOwned>(
             .ok_or_else(|| tera::Error::msg(format!("Missing argument `{}`", name)))?
             .clone(),
     )?)
+}
+
+pub fn root_package_for_item_id<'a>(
+    manifest: &'a apj::Manifest,
+    scope_id_to_package_id: &'a HashMap<String, apj::ItemId<apj::Package>>,
+    item_id: &'a str,
+) -> Option<&'a apj::ItemId<apj::Package>> {
+    let mut next = item_id;
+
+    loop {
+        let current = manifest.items.get(next).unwrap();
+        if let Some(parent_id) = current.item().data().parent_id.as_ref() {
+            next = &parent_id.0;
+        } else {
+            break;
+        }
+    }
+
+    scope_id_to_package_id.get(next)
 }

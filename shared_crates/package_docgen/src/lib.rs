@@ -113,34 +113,14 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
         let scope_id_to_package_id = scope_id_to_package_id.clone();
         move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
             let item_id = util::get_arg::<String>(args, "item_id")?;
+            let current_package_id = util::get_arg::<String>(args, "current_package_id").ok();
 
             Ok(tera::to_value(util::path_to_item(
                 &manifest,
                 scope_id_to_package_id.as_ref(),
                 &item_id,
+                current_package_id.as_ref(),
             ))?)
-        }
-    });
-    tera.register_function("item_package_id", {
-        let manifest = manifest.clone();
-        move |args: &HashMap<String, tera::Value>| -> tera::Result<tera::Value> {
-            let item_id = util::get_arg::<String>(args, "item_id")?;
-
-            let mut next = &item_id;
-            loop {
-                let current = manifest.items.get(next).unwrap();
-                if let Some(parent_id) = current.item().data().parent_id.as_ref() {
-                    next = &parent_id.0;
-                } else {
-                    break;
-                }
-            }
-
-            let Some(package_id) = scope_id_to_package_id.get(next) else {
-                return Ok(tera::to_value("")?);
-            };
-
-            Ok(tera::to_value(package_id)?)
         }
     });
     tera.register_function("get_item", {
@@ -171,6 +151,7 @@ pub fn write(output_path: &Path, json_path: &Path, autoreload: bool) -> anyhow::
         style_css_path: &style_css_path,
         output_path,
         manifest: manifest.as_ref(),
+        scope_id_to_package_id: scope_id_to_package_id.as_ref(),
         autoreload,
     };
 
@@ -225,6 +206,7 @@ struct GenContext<'a> {
     output_path: &'a Path,
     style_css_path: &'a Path,
     manifest: &'a apj::Manifest,
+    scope_id_to_package_id: &'a HashMap<String, apj::ItemId<apj::Package>>,
     autoreload: bool,
 }
 impl GenContext<'_> {
@@ -341,6 +323,13 @@ impl GenContext<'_> {
         if let Some((item, item_id)) = item {
             ctx.insert("item", item);
             ctx.insert("item_id", item_id);
+            if let Some(package_id) = util::root_package_for_item_id(
+                self.manifest,
+                self.scope_id_to_package_id,
+                &item_id.0,
+            ) {
+                ctx.insert("current_package_id", package_id);
+            }
         }
 
         ctx

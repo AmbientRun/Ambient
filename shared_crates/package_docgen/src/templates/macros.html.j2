@@ -15,11 +15,14 @@
 
 {% macro item_link_inner(item_id, highlight, text) %}
     {% set item = get_item(item_id=item_id) %}
+    {% if not current_package_id %}
+        {% set current_package_id = '' %}
+    {% endif %}
     <a
         href="{{ item_url(from=page_url, item_id=item_id) }}"
         class="{% if highlight %}highlight{% endif %} {{ item.type }}"
     >
-        <code>{% if text %}{{ text }}{% else %}{{ item_path(item_id=item_id) }}{% endif %}</code>
+        <code>{% if text %}{{ text }}{% else %}{{ item_path(item_id=item_id, current_package_id=current_package_id) }}{% endif %}</code>
     </a>
 {% endmacro %}
 
