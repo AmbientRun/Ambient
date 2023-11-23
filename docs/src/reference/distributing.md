@@ -16,6 +16,8 @@ Package "my-project" deployed successfully!
 
 This will package and upload your creation to the platform. The web URL in the output can be used to browse your game or asset. If you're on a WebGPU enabled browser, the game can be played directly on the website. Any content upload to the Ambient platform is subject to our [terms of services](https://www.ambient.run/terms-of-service).
 
+If a `screenshot.png` is present in the package's directory, it will be used as the game's thumbnail on the Ambient website. We recommend you include one.
+
 In the case your package is a game, it can be played directly on the website (if you're on a WebGPU enabled browser). Additionally, game servers will automatically be spun up when someone wants to play your game.
 
 ## Putting your game on itch.io

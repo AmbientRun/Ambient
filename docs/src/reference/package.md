@@ -2,6 +2,8 @@
 
 All Ambient packages must have an `ambient.toml` manifest that describes their functionality. This format is in flux, but is inspired by Rust's `Cargo.toml`.
 
+Next to the `ambient.toml`, other files may be present. A `screenshot.png` can be used to provide a thumbnail for the package on the Ambient website. A `README.md` can be used to provide a description of the package on the Ambient website.
+
 ## Reference
 
 - `SnakeCaseIdentifier`s are snake-case ASCII identifiers (as a string)
