@@ -25,6 +25,8 @@ use packages::{
     tuners::{components::*, concepts::Tuner},
 };
 
+const MAXIMUM_SPAWNS_PER_FRAME: usize = 1;
+
 #[main]
 pub fn main() {
     let camera_ent = PerspectiveInfiniteReverseCamera {
@@ -67,49 +69,67 @@ pub fn main() {
     println!("Hello, Ambient!");
 }
 
-fn spawn_boid() {
-    let starting_vel: Vec3 = (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.;
-    Entity::new()
-        .with(is_boid(), ())
-        .with(boid_velocity(), starting_vel)
-        .with(local_to_world(), Mat4::default())
-        .spawn();
-}
-
-fn spawn_boid_at(pos: Vec3, vel: Option<Vec3>) {
-    let actual_vel: Vec3 = match (vel, vel == Some(Vec3::ZERO)) {
+fn make_boid(pos: Option<Vec3>, vel: Option<Vec3>) -> Entity {
+    let starting_vel: Vec3 = match (vel, vel == Some(Vec3::ZERO)) {
         (None, _) | (_, true) => (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.,
         (Some(vel), _) => vel,
     };
-    Entity::new()
-        .with(translation(), pos)
+    let boid = Entity::new()
         .with(is_boid(), ())
-        .with(boid_velocity(), actual_vel)
-        .with(local_to_world(), Mat4::default())
-        .spawn();
+        .with(boid_velocity(), starting_vel)
+        .with(boid_neighbour_count(), 0)
+        .with(local_to_world(), Mat4::default());
+
+    match pos {
+        None => boid,
+        Some(starting_pos) => boid.with(translation(), starting_pos),
+    }
 }
 
 fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
     for _ in 0..100 {
-        spawn_boid();
+        make_boid(None, None).spawn();
     }
 
-    let quantity_min_tuner = mk_tuner("Min # Boids", (1, 101, 1001), true);
+    let quantity_min_tuner = mk_tuner("Min # Boids", (1, 1, 1001), true);
     let quantity_max_tuner = mk_tuner("Max # Boids", (1, 201, 1001), true);
     let size_tuner = mk_tuner("Size of Arena", (10, 60, 210), true);
-
-    // hidden
-    let match_dist_tuner = mk_tuner("Match Range", (0, 10, 50), false);
-    let posmatch_str_tuner = mk_tuner("Match Position (Coherence)", (0, 1, 10), false);
-    let velmatch_str_tuner = mk_tuner("Match Velocity (Alignment)", (0, 5, 25), false);
-    let repulsive_dist_tuner = mk_tuner("Touching Range", (0, 4, 10), false);
-    let repulsive_str_tuner = mk_tuner("Touching Repel (Avoidance)", (0, 6, 20), false);
+    describe(
+        quantity_min_tuner,
+        "Auto-spawn boids to this minimum value.\n(Rate limited by MAXIMUM_SPAWNS_PER_FRAME)",
+    );
+    describe(quantity_max_tuner, "Despawn boids above max");
+    describe(size_tuner, "Arena size. Boids attempt to stay inside.");
 
     let reproduction_rate_tuner = mk_tuner("Touching % Reproduce Rate/second", (0, 25, 100), true);
     let reproduction_neighbours_tuner = mk_tuner("Reproduce - Max neighbours", (0, 5, 50), true);
     let fighting_rate_tuner = mk_tuner("Touching % Kill Rate/second", (0, 5, 100), true);
     let birth_confetti_tuner = mk_tuner("Birth Particles", (0, 10, 100), true);
-    let corpse_lifespan_tuner = mk_tuner("Corpse Lifespan", (0, 1, 10), true);
+    let corpse_lifespan_tuner = mk_tuner("Corpse Lifespan", (0, 1, 10), false);
+    describe(
+        reproduction_rate_tuner,
+        "Chance per second of a boid spawning a new boid\n(Only if near other boids)",
+    );
+    describe(
+        reproduction_neighbours_tuner,
+        "Overcrowded boids don't give birth",
+    );
+    describe(fighting_rate_tuner, "Chance to kill each nearby boid");
+    describe(
+        birth_confetti_tuner,
+        "Semitransparent particles spawned per birth",
+    );
+    describe(
+        corpse_lifespan_tuner,
+        "Note; At 0 the corpse particle is still spawned, it is just deleted immediately.",
+    );
+
+    // hidden boids param tuners - not important for benchmark
+    let match_dist_tuner = mk_tuner("Match Range", (0, 10, 50), false);
+    let posmatch_str_tuner = mk_tuner("Match Position (Coherence)", (0, 1, 10), false);
+    let velmatch_str_tuner = mk_tuner("Match Velocity (Alignment)", (0, 5, 25), false);
+    let repulsive_dist_tuner = mk_tuner("Touching Range", (0, 4, 10), false);
+    let repulsive_str_tuner = mk_tuner("Touching Repel (Avoidance)", (0, 6, 20), false);
 
     // boids quantity
     {
@@ -134,10 +154,10 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                 boid_count = max_quantity;
             }
             if boid_count < min_quantity {
-                // for _ in 0..min_quantity - boid_count {
-                spawn_boid();
-                // }
-                // boid_count = min_quantity; // not used after this
+                for _ in 0..(min_quantity - boid_count).min(MAXIMUM_SPAWNS_PER_FRAME) {
+                    make_boid(None, None).spawn();
+                    boid_count += 1;
+                }
             }
         });
     }
@@ -277,16 +297,39 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                         && neighbours < max_neighbours_for_reproduction
                         && random::<f32>() < chance_reproduce
                     {
-                        spawn_boid_at(
-                            *pos + random::<Vec2>().extend(0.) * 2.,
+                        make_boid(
+                            Some(*pos + random::<Vec2>().extend(0.) * 2.),
                             entity::get_component(*boid, boid_velocity()),
-                        );
+                        )
+                        .spawn();
                     }
 
                     if repulsive_force.length_squared() > 0. {
                         entity::mutate_component(*boid, boid_velocity(), move |v| {
                             *v += repulsive_force * repulsive_strength * dt;
                         });
+                    }
+
+                    if entity::exists(*boid) {
+                        // TODO: separate neighbour count stuff out into another query. for now this is fine.
+                        entity::add_component(*boid, boid_neighbour_count(), neighbours as u32);
+                    }
+                }
+            });
+    }
+
+    // boids with more neighbours are... bigger? sure, whatever
+    {
+        change_query(boid_neighbour_count())
+            .track_change(boid_neighbour_count())
+            .bind(|boids| {
+                for (boid, bnct) in boids {
+                    if let Some(model) = entity::get_component(boid, boid_model()) {
+                        entity::add_component(
+                            model,
+                            scale(),
+                            Vec3::splat(2.50 + 0.25 * bnct as f32),
+                        );
                     }
                 }
             });
@@ -370,6 +413,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                         .with(cast_shadows(), ())
                         .spawn();
                     entity::add_child(newboid, model);
+                    entity::add_component(newboid, boid_model(), model);
                 }
             });
     }
@@ -433,7 +477,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
         despawn_query(translation())
             .requires(is_boid())
             .bind(move |deadboids| {
-                for (deadboid, pos) in deadboids {
+                for (_, pos) in deadboids {
                     Entity::new()
                         .with(translation(), pos + vec3(0., 0., 0.25))
                         .with(rotation(), random::<Quat>().normalize())
@@ -442,11 +486,6 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                         .with(is_corpse(), ())
                         .with(corpse_age(), 0.)
                         .spawn();
-                    // if let Some(remove_children) = entity::get_component(deadboid, children()) {
-                    //     for ent in remove_children {
-                    //         entity::despawn(ent);
-                    //     }
-                    // }
                 }
             });
     }
@@ -497,4 +536,8 @@ fn mk_tuner(tuner_name: &str, min_starting_max: (u32, u32, u32), tuning_enabled:
         tuner = tuner.with(no_sync(), ());
     }
     tuner.spawn()
+}
+
+fn describe(tuner: EntityId, desc: &str) {
+    entity::add_component(tuner, description(), desc.to_string());
 }
