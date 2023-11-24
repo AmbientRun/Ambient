@@ -2,9 +2,9 @@
 id = "mkd4mhans4bdn3mvmt45vxqbxepdhys3"
 name = "Tangent Camera: Follow"
 description = "Implements a follow camera for vehicles."
-version = "0.3.2-nightly-2023-11-24"
+version = "0.3.2-internal-test-fix-package-deployment-failure2"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-11-24"
+ambient_version = "0.3.2-internal-test-fix-package-deployment-failure2"
 authors = ["philpax"]
 
 [dependencies]

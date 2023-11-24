@@ -2,9 +2,9 @@
 id = "fvn74ns4ozf3gn42vmowphmvmpsfklbi"
 name = "Tangent Class: Scout"
 description = "Defines the Scout class, which is fast but weak."
-version = "0.3.2-nightly-2023-11-24"
+version = "0.3.2-internal-test-fix-package-deployment-failure2"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.2-nightly-2023-11-24"
+ambient_version = "0.3.2-internal-test-fix-package-deployment-failure2"
 authors = ["philpax"]
 
 [dependencies]
