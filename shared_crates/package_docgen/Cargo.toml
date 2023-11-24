@@ -1,0 +1,23 @@
+[package]
+name = "ambient_package_docgen"
+edition = "2021"
+description = "Generates documentation for Ambient packages based on an `ambient_package.json`."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["wasm32-wasi"]
+
+[dependencies]
+ambient_package_json = { path = "../package_json" , version = "0.3.2-dev" }
+
+tera = "1.19"
+markdown = "1.0.0-alpha.14"
+
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true, features = ["preserve_order"] }
+pathdiff = { workspace = true }

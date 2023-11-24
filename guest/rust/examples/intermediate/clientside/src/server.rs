@@ -7,6 +7,8 @@ use ambient_api::{
 };
 use packages::this::components::{grid_position, grid_side_length};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     let side_length = 10;

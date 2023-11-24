@@ -3,3 +3,4 @@
 **/tmp
 **/.DS_Store
 **/data
+**/src/packages.rs

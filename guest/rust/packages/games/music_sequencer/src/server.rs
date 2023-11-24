@@ -14,6 +14,8 @@ use packages::this::{
 
 mod common;
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     entity::add_component(resources(), next_player_hue(), 0);

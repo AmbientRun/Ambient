@@ -21,6 +21,8 @@ use packages::{
     },
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     const CUBE_SIZE: f32 = 0.6;

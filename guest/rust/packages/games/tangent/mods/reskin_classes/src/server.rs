@@ -13,6 +13,8 @@ use packages::tangent_schema::{
 
 use crate::packages::tangent_schema::character::components::{def_ref, is_character};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     let mut def_id_to_old_model_url = HashMap::new();

@@ -5,6 +5,8 @@ use ambient_api::{
 };
 use packages::{base_assets, character_animation::components::basic_character_animations};
 
+pub mod packages;
+
 #[main]
 fn main() {
     spawn_query(is_player()).bind(move |players| {

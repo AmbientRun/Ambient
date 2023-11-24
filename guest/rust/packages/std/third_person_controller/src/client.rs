@@ -20,6 +20,8 @@ use packages::{
     unit_schema::components::head_ref,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     Frame::subscribe(move |_| {

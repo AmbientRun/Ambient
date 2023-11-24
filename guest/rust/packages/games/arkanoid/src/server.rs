@@ -21,28 +21,7 @@ use packages::this::{
     messages::{Input, Ping},
 };
 
-fn spawn_enemies(enemies: &mut Vec<EntityId>, y_pos: f32, color: Vec3) {
-    for i in 0..7 {
-        enemies.push(
-            Entity::new()
-                .with(cube(), ())
-                .with(scale(), vec3(PADDLE_WIDTH, PADDLE_HEIGHT / 2., 1.))
-                .with(translation(), vec3(-1. + (i as f32 / 3.), y_pos, 0.))
-                .with(self::color(), color.extend(1.))
-                .spawn(),
-        );
-    }
-}
-
-fn gen_ball_velocity() -> Vec3 {
-    let angle = random::<f32>() * (PI / 5.) + PI / 10.;
-    let x_sign = if random::<bool>() { 1. } else { -1. };
-    vec3(
-        angle.cos() * BALL_V_PER_FRAME * x_sign,
-        angle.sin() * BALL_V_PER_FRAME,
-        0.,
-    )
-}
+pub mod packages;
 
 #[main]
 pub fn main() {
@@ -257,4 +236,27 @@ pub fn main() {
             }
         }
     });
+}
+
+fn spawn_enemies(enemies: &mut Vec<EntityId>, y_pos: f32, color: Vec3) {
+    for i in 0..7 {
+        enemies.push(
+            Entity::new()
+                .with(cube(), ())
+                .with(scale(), vec3(PADDLE_WIDTH, PADDLE_HEIGHT / 2., 1.))
+                .with(translation(), vec3(-1. + (i as f32 / 3.), y_pos, 0.))
+                .with(self::color(), color.extend(1.))
+                .spawn(),
+        );
+    }
+}
+
+fn gen_ball_velocity() -> Vec3 {
+    let angle = random::<f32>() * (PI / 5.) + PI / 10.;
+    let x_sign = if random::<bool>() { 1. } else { -1. };
+    vec3(
+        angle.cos() * BALL_V_PER_FRAME * x_sign,
+        angle.sin() * BALL_V_PER_FRAME,
+        0.,
+    )
 }

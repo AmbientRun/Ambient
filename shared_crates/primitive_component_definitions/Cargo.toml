@@ -1,0 +1,8 @@
+[package]
+name = "ambient_primitive_component_definitions"
+edition = "2021"
+description = "Primitive component definitions for Ambient."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }

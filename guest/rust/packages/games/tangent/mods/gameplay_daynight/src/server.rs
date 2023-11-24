@@ -3,6 +3,8 @@ use ambient_api::{
     prelude::*,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     let start_game_time = game_time();

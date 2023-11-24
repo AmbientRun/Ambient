@@ -9,6 +9,13 @@ use ambient_api::{
     prelude::*,
 };
 
+pub mod packages;
+
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
+}
+
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
     let background = |e| FlowRow::el([e]).with_background(vec4(1., 1., 1., 0.02));
@@ -59,9 +66,4 @@ fn App(_hooks: &mut Hooks) -> Element {
     ])
     .with(space_between_items(), 5.)
     .with_padding_even(STREET)
-}
-
-#[main]
-pub fn main() {
-    App.el().spawn_interactive();
 }

@@ -8,6 +8,15 @@ use ambient_api::{
 };
 use packages::this::assets;
 
+pub mod packages;
+
+#[main]
+pub fn main() {
+    let audio_player = audio::AudioPlayer::new();
+    audio_player.set_looping(true); // try false
+    App::el(audio_player).spawn_interactive();
+}
+
 #[element_component]
 fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
     let (f32_value, set_f32_value) = use_state(hooks, 100.);
@@ -102,11 +111,4 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
     ])
     .with(space_between_items(), STREET)
     .with_padding_even(STREET)
-}
-
-#[main]
-pub fn main() {
-    let audio_player = audio::AudioPlayer::new();
-    audio_player.set_looping(true); // try false
-    App::el(audio_player).spawn_interactive();
 }

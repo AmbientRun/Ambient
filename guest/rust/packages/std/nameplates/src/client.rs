@@ -10,6 +10,8 @@ use ambient_api::{
 
 use packages::this::components::{height_offset, hide, text_size};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     Nameplates.el().spawn_interactive();

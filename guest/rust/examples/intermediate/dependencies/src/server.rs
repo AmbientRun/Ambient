@@ -8,6 +8,8 @@ use packages::{
     orbit_camera::concepts::OrbitCamera,
 };
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     OrbitCamera::suggested().spawn();

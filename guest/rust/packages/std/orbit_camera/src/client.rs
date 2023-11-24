@@ -11,6 +11,8 @@ use ambient_api::{
 };
 use packages::this::components::{camera_angle, camera_distance, is_orbit_camera};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     // Spawn a window-sized element to ensure we have focus access. We do not use `hide_cursor`

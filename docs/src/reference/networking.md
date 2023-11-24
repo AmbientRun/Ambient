@@ -4,7 +4,7 @@ Networking is a critical component of Ambient, as it enables communication betwe
 
 ## Protocol
 
-Currently, the Ambient runtime only supports desktop clients and uses QUIC through the `quinn` library as its communication protocol. We are actively working on web deployments and plan to use WebTransport as soon as possible.
+Currently, the Ambient runtime supports both desktop and web clients, using QUIC through the `quinn` library/WebTransport through `h3-webtransport` respectively as its communication protocol.
 
 The HTTP (TCP) port is `8999`, and the QUIC (UDP) port is `9000`.
 

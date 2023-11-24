@@ -26,6 +26,8 @@ use packages::{
     },
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     // If the editor is being launched by itself, create a sample scene to edit.

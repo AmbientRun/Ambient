@@ -20,6 +20,12 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
 
@@ -97,12 +103,18 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - name: Check that guest/rust's documentation is well-formed
         run: cd guest/rust && RUSTDOCFLAGS="-Dwarnings" cargo doc --workspace --all-features --no-deps
       - name: Check that guest/rust builds under all configurations
-        run: cargo campfire-slim package check-all
+        run: cargo campfire-slim package check-all --delete-target
 
   build-web:
     runs-on: ubuntu-22.04
@@ -193,6 +205,13 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Free up disk space
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - name: Rust cache
@@ -209,6 +228,12 @@ jobs:
       RUST_LOG: ambient_gpu=info
       EXAMPLES_ASSETS_HOST: ${{ secrets.EXAMPLES_ASSETS_HOST }}
     steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - run: rustup target add --toolchain stable wasm32-wasi

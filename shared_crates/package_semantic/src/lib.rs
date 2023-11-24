@@ -23,7 +23,7 @@ pub use package::{Dependency, LocalOrRemote, Package, PackageLocator, Retrievabl
 
 mod item;
 pub use item::{
-    Item, ItemData, ItemId, ItemMap, ItemSource, ItemType, ItemValue, ResolvableItemId,
+    Item, ItemData, ItemId, ItemMap, ItemSource, ItemType, ItemVariant, ResolvableItemId,
 };
 
 mod component;

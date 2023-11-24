@@ -13,6 +13,8 @@ use ambient_api::{
 
 use packages::this::assets;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     PerspectiveInfiniteReverseCamera {

@@ -13,6 +13,8 @@ use packages::{
     },
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     Spawn::subscribe(|_, msg| {

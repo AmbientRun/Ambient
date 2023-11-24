@@ -16,6 +16,8 @@ use ambient_api::{
 
 use packages::this::{assets, components::instance_index};
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     PerspectiveInfiniteReverseCamera {

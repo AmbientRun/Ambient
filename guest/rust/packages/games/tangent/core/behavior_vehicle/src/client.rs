@@ -9,6 +9,8 @@ use packages::{
     this::messages::OnCollision,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     static SOUNDS: Lazy<[Vec<String>; 3]> = Lazy::new(|| {

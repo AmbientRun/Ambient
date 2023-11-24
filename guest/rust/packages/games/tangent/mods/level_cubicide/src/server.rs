@@ -28,6 +28,8 @@ use packages::{
 mod shared;
 use shared::LEVEL_RADIUS;
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     // Make sky

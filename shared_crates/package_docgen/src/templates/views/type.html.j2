@@ -1,0 +1,51 @@
+{% extends "views/base" %}
+
+{% block title %}
+    {{ item.data.id }} in {{ item_path(item_id=item.data.parent_id) }}
+{% endblock title %}
+
+{% block sidebar %}
+    {% include "partials/item_sidebar_package_heading" %}
+    <h3>Type</h3>
+    <ul>
+        {% if item.inner.value.description %}
+            <li><a href="#description">Description</a></li>
+        {% endif %}
+
+        {% if item.inner.value.members %}
+            <li><a href="#members">Members</a></li>
+        {% endif %}
+    </ul>
+
+    {% include "partials/item_sidebar" %}
+{% endblock sidebar %}
+
+{% block content %}
+    <h1>Type {{ macros::item_link(item_id=item_id) }}</h1>
+    {% set inner = item.inner %}
+    {% if inner.type == "Primitive" %}
+        <p>Primitive type.</p>
+    {% elif inner.type == "Vec" %}
+        <p><code>Vec</code> (i.e. array) of {{ macros::item_link(item_id=inner.value) }}.</p>
+    {% elif inner.type == "Option" %}
+        <p><code>Option</code> of {{ macros::item_link(item_id=inner.value) }}.</p>
+    {% elif inner.type == "Enum" %}
+        <h3>Enum</h3>
+
+        {% if inner.value.description %}
+            <h3 id="description">Description</h3>
+            <p>
+                {{ inner.value.description | markdown }}
+            </p>
+        {% endif %}
+
+        {% if inner.value.members %}
+            <h3 id="members">Members</h3>
+            <ul>
+                {% for member_name, member_description in inner.value.members %}
+                    <li><code>{{ member_name }}</code>: {{ member_description | markdown }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endif %}
+{% endblock content %}

@@ -19,6 +19,8 @@ use noise::{utils::*, Fbm, Perlin};
 use packages::this::components::rotating_sun;
 use palette::IntoColor;
 
+pub mod packages;
+
 const TAU: f32 = std::f32::consts::TAU;
 const RESOLUTION_X: u32 = 32;
 const RESOLUTION_Y: u32 = 8;
@@ -28,6 +30,15 @@ const SIZE_X: f32 = RESOLUTION_X as f32 / RESOLUTION_Y as f32;
 const SIZE_Y: f32 = 1.0;
 const WAVE_AMPLITUDE: f32 = 0.25;
 const WAVE_FREQUENCY: f32 = 0.5 * TAU;
+
+#[main]
+pub async fn main() {
+    make_camera();
+    make_lighting();
+    make_coordinate_system();
+    make_ground();
+    make_procedurals();
+}
 
 fn make_camera() {
     PerspectiveInfiniteReverseCamera {
@@ -390,13 +401,4 @@ fn make_procedurals() {
         default_nearest_sampler,
         true,
     );
-}
-
-#[main]
-pub async fn main() {
-    make_camera();
-    make_lighting();
-    make_coordinate_system();
-    make_ground();
-    make_procedurals();
 }

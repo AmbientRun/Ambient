@@ -8,6 +8,9 @@ version = "0.0.1"
 [dependencies]
 ambient_api = { workspace = true }
 
+[build-dependencies]
+ambient_package_projection = { workspace = true }
+
 [[bin]]
 name = "server_character_movement"
 path = "src/server.rs"

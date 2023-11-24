@@ -9,7 +9,13 @@ use ambient_api::{
     prelude::*,
     ui::ImageFromUrl,
 };
+pub mod packages;
 use packages::this::assets;
+
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
+}
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
@@ -47,9 +53,4 @@ fn App(_hooks: &mut Hooks) -> Element {
     ])
     .with(space_between_items(), 10.)
     .with_padding_even(STREET)])
-}
-
-#[main]
-pub fn main() {
-    App.el().spawn_interactive();
 }

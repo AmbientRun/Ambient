@@ -3,6 +3,13 @@ use ambient_api::{
     prelude::*,
 };
 
+pub mod packages;
+
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
+}
+
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
     let background = |e| {
@@ -32,9 +39,4 @@ fn App(_hooks: &mut Hooks) -> Element {
     .with_padding_even(STREET)
     .with(width(), 500.)
     .with(height(), 500.)
-}
-
-#[main]
-pub fn main() {
-    App.el().spawn_interactive();
 }

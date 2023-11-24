@@ -1,7 +1,7 @@
 use ambient_package::{ComponentType, PascalCaseIdentifier};
 use indexmap::IndexMap;
 
-use crate::{Item, ItemData, ItemId, ItemType, ItemValue, PrimitiveType, Resolve, Semantic};
+use crate::{Item, ItemData, ItemId, ItemType, ItemVariant, PrimitiveType, Resolve, Semantic};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Type {
@@ -63,22 +63,22 @@ impl Item for Type {
     const TYPE: ItemType = ItemType::Type;
     type Unresolved = ComponentType;
 
-    fn from_item_value(value: &ItemValue) -> Option<&Self> {
+    fn from_item_variant(value: &ItemVariant) -> Option<&Self> {
         match value {
-            ItemValue::Type(value) => Some(value),
+            ItemVariant::Type(value) => Some(value),
             _ => None,
         }
     }
 
-    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self> {
+    fn from_item_variant_mut(value: &mut ItemVariant) -> Option<&mut Self> {
         match value {
-            ItemValue::Type(value) => Some(value),
+            ItemVariant::Type(value) => Some(value),
             _ => None,
         }
     }
 
-    fn into_item_value(self) -> ItemValue {
-        ItemValue::Type(self)
+    fn into_item_variant(self) -> ItemVariant {
+        ItemVariant::Type(self)
     }
 
     fn data(&self) -> &ItemData {

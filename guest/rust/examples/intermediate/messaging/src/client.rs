@@ -16,6 +16,8 @@ use ambient_api::{
 };
 use packages::this::messages::{Hello, Local};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     // The main clientside WASM of the messaging example.

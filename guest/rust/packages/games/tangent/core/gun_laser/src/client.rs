@@ -1,6 +1,8 @@
 use ambient_api::{core::transform::components::local_to_world, prelude::*};
 use packages::this::messages::Fire;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     Fire::subscribe(|ctx, msg| {

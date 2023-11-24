@@ -10,6 +10,8 @@ use packages::{
 
 const DEF_HOTRELOADING: bool = true;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     make_allrounder();

@@ -9,6 +9,13 @@ use ambient_api::{
     prelude::*,
 };
 
+pub mod packages;
+
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
+}
+
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
     Group::el([
@@ -41,9 +48,4 @@ fn App(_hooks: &mut Hooks) -> Element {
             .with(line_width(), 10.)
             .with(background_color(), vec4(0., 0., 1., 1.)),
     ])
-}
-
-#[main]
-pub fn main() {
-    App.el().spawn_interactive();
 }

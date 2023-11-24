@@ -7,6 +7,9 @@ use ambient_api::{
     prelude::*,
 };
 use packages::this::assets;
+
+pub mod packages;
+
 #[main]
 pub async fn main() {
     // Model

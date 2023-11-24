@@ -13,6 +13,8 @@ use ambient_api::{
 use packages::tangent_schema::{concepts::PlayerClass, player::components as pc};
 use packages::this::messages::ClassSetRequest;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     App {}.el().spawn_interactive();

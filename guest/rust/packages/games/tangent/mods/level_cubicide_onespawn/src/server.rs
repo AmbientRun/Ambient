@@ -4,6 +4,8 @@ use ambient_api::{
 };
 use packages::level_cubicide::{self, components::include_corners};
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     entity::add_component(level_cubicide::entity(), include_corners(), false);

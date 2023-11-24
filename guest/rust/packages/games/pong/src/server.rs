@@ -20,25 +20,7 @@ use packages::this::{
 mod constants;
 use constants::*;
 
-fn spawn_paddle(left: bool, paddle_color: Vec3) -> EntityId {
-    let x = X_BOUNDARY + PADDLE_WIDTH / 2.;
-    Entity::new()
-        .with(cube(), ())
-        .with(scale(), vec3(PADDLE_WIDTH, PADDLE_LENGTH, 1.))
-        .with(translation(), vec3(if left { -x } else { x }, 0., 0.))
-        .with(color(), paddle_color.extend(1.))
-        .spawn()
-}
-
-fn gen_ball_velocity() -> Vec3 {
-    let angle = random::<f32>() * (PI / 5.) + PI / 10.;
-    let y_sign = if random::<bool>() { 1. } else { -1. };
-    vec3(
-        angle.cos() * BALL_V_PER_FRAME,
-        angle.sin() * BALL_V_PER_FRAME * y_sign,
-        0.,
-    )
-}
+pub mod packages;
 
 #[main]
 pub fn main() {
@@ -174,4 +156,24 @@ pub fn main() {
             }
         }
     });
+}
+
+fn spawn_paddle(left: bool, paddle_color: Vec3) -> EntityId {
+    let x = X_BOUNDARY + PADDLE_WIDTH / 2.;
+    Entity::new()
+        .with(cube(), ())
+        .with(scale(), vec3(PADDLE_WIDTH, PADDLE_LENGTH, 1.))
+        .with(translation(), vec3(if left { -x } else { x }, 0., 0.))
+        .with(color(), paddle_color.extend(1.))
+        .spawn()
+}
+
+fn gen_ball_velocity() -> Vec3 {
+    let angle = random::<f32>() * (PI / 5.) + PI / 10.;
+    let y_sign = if random::<bool>() { 1. } else { -1. };
+    vec3(
+        angle.cos() * BALL_V_PER_FRAME,
+        angle.sin() * BALL_V_PER_FRAME * y_sign,
+        0.,
+    )
 }

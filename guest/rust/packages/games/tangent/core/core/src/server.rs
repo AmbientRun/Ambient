@@ -23,6 +23,8 @@ use packages::{
     unit_schema::components as uc,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     // When the player's class changes, respawn them.

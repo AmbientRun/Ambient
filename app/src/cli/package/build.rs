@@ -65,7 +65,7 @@ pub async fn handle_inner(
     let build_wasm_only = package_cli.build_wasm_only;
     let clean_build = package_cli.clean_build;
 
-    self::build(
+    let dirs = self::build(
         assets,
         main_package_fs_path,
         clean_build,
@@ -76,7 +76,16 @@ pub async fn handle_inner(
         |_| async { Ok(()) },
         |_, _, _| async { Ok(()) },
     )
-    .await
+    .await?;
+
+    if package_cli.open_docs {
+        let docs_path = dirs.main_package_path.push("docs")?.push("index.html")?;
+        if let Some(file_path) = docs_path.to_file_path()? {
+            open::that(file_path)?;
+        }
+    }
+
+    Ok(dirs)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -133,10 +142,11 @@ pub async fn build<
             .collect()
     };
 
-    let settings = BuildSettings {
+    let mut settings = BuildSettings {
         release,
         wasm_only,
         deploy,
+        build_docs: false,
     };
 
     // For each package, build the package using a fresh semantic.
@@ -146,6 +156,8 @@ pub async fn build<
     let mut output_package_name = String::new();
     while let Some(manifest_path) = queue.pop() {
         pre_build(manifest_path.clone()).await?;
+
+        settings.build_docs = queue.is_empty();
 
         let BuildResult {
             build_path,

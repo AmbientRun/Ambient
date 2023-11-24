@@ -15,6 +15,8 @@ use packages::{
     this::messages::{Input, UseFailed},
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     handle_input();

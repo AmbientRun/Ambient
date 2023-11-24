@@ -100,6 +100,7 @@ pub(crate) async fn handle(args: &New, assets: &AssetCache) -> anyhow::Result<()
         RustTemplate::None => {}
         RustTemplate::Empty | RustTemplate::Quad => {
             files_to_write.push((Path::new("Cargo.toml"), cargo_toml.as_str()));
+            files_to_write.push(template_path_and_file!("build.rs"));
 
             if !in_workspace {
                 files_to_write.extend_from_slice(&[
@@ -168,56 +169,113 @@ fn build_cargo_toml(
     api_path: Option<&str>,
     snake_case_name: String,
 ) -> String {
-    let segments = package_path.iter().collect::<Vec<_>>();
-    let (replacement, in_ambient_examples) = match segments
-        .windows(2)
-        .position(|w| w == ["guest", "rust"])
-    {
-        Some(i) => {
-            let number_of_parents = segments.len() - i - 2;
-            (
-                format!(
-                    r#"ambient_api = {{ path = "{}api" }}"#,
-                    "../".repeat(number_of_parents)
-                ),
-                true,
-            )
-        }
-        None => {
-            let version = ambient_version();
-            (
-                if let Some(api_path) = api_path {
-                    tracing::info!("Ambient path: {}", api_path);
-                    format!("ambient_api = {{ path = {:?} }}", api_path)
-                } else if version.is_released_version() {
-                    tracing::info!("Ambient version: {}", version.version);
-                    format!("ambient_api = \"{}\"", version.version)
-                } else if let Some(tag) = version.tag() {
-                    tracing::info!("Ambient tag: {}", tag);
-                    format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", tag = \"{}\" }}", tag)
-                } else if !version.revision.is_empty() {
-                    tracing::info!("Ambient revision: {}", version.revision);
-                    format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", version.revision)
-                } else {
-                    tracing::info!("Ambient version: {}", version.version);
-                    format!("ambient_api = \"{}\"", version.version)
-                },
-                false,
-            )
-        }
-    };
-    let template_cargo_toml = include_str!("new_package_template/Cargo.toml");
-    let mut template_cargo_toml = template_cargo_toml
+    let ((api_path, package_projection_path), in_guest_rust) =
+        get_ambient_package_locations(package_path, api_path);
+
+    let mut template_cargo_toml = include_str!("new_package_template/Cargo.toml")
         .replace("{{id}}", &snake_case_name)
         .replace(
             "ambient_api = { path = \"../../../../guest/rust/api\" }",
-            &replacement,
+            &api_path,
+        )
+        .replace(
+            r#"ambient_package_projection = { path = "../../../../guest/rust/api_core/package_projection" }"#,
+            &package_projection_path
         );
-    if in_ambient_examples {
+
+    if in_guest_rust {
         template_cargo_toml = template_cargo_toml.replace(
             r#"version = "0.0.1""#,
-            "rust-version = {workspace = true}\nversion = {workspace = true}",
-        )
+            "rust-version = { workspace = true }\nversion = { workspace = true }",
+        );
     }
+
     template_cargo_toml
+}
+
+fn get_ambient_package_locations(
+    package_path: &Path,
+    api_path: Option<&str>,
+) -> ((String, String), bool) {
+    if package_path
+        .iter()
+        .collect::<Vec<_>>()
+        .windows(2)
+        .any(|w| w == ["guest", "rust"])
+    {
+        return (
+            (
+                r"ambient_api = { workspace = true }".to_string(),
+                r"ambient_package_projection = { workspace = true }".to_string(),
+            ),
+            true,
+        );
+    }
+
+    let version = ambient_version();
+    let paths = if let Some(api_path) = api_path {
+        tracing::info!("Ambient path: {}", api_path);
+
+        let api_path = Path::new(api_path);
+        let api_path = if api_path.is_relative() {
+            pathdiff::diff_paths(
+                api_path
+                    .canonicalize()
+                    .expect("failed to canonicalize API path; does it exist?"),
+                package_path,
+            )
+            .expect("failed to compute relative path to API path")
+        } else {
+            api_path.to_owned()
+        };
+
+        let package_projection_path = ambient_std::path::normalize(
+            &api_path
+                .join("..")
+                .join("api_core")
+                .join("package_projection"),
+        );
+
+        (
+            format!("ambient_api = {{ path = {:?} }}", api_path.display()),
+            format!(
+                "ambient_package_projection = {{ path = {:?} }}",
+                package_projection_path.display()
+            ),
+        )
+    } else if version.is_released_version() {
+        tracing::info!("Ambient version: {}", version.version);
+        (
+            format!("ambient_api = \"{}\"", version.version),
+            format!("ambient_package_projection = \"{}\"", version.version),
+        )
+    } else if let Some(tag) = version.tag() {
+        tracing::info!("Ambient tag: {}", tag);
+
+        let location =
+            format!("{{ git = \"https://github.com/AmbientRun/Ambient.git\", tag = \"{tag}\" }}");
+        (
+            format!("ambient_api = {location}"),
+            format!("ambient_package_projection = {location}"),
+        )
+    } else if !version.revision.is_empty() {
+        tracing::info!("Ambient revision: {}", version.revision);
+
+        let location = format!(
+            "{{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}",
+            version.revision
+        );
+        (
+            format!("ambient_api = {location}"),
+            format!("ambient_package_projection = {location}"),
+        )
+    } else {
+        tracing::info!("Ambient version: {}", version.version);
+        (
+            format!("ambient_api = \"{}\"", version.version),
+            format!("ambient_package_projection = \"{}\"", version.version),
+        )
+    };
+
+    (paths, false)
 }

@@ -45,21 +45,24 @@ pub async fn generate_code(
         TypePrinter(map)
     };
 
-    let outputs = semantic
-        .packages
-        .values()
-        .map(|id| generate_package(context, items, &type_printer, *id))
+    let mut package_ids = semantic.packages.values().copied().collect::<Vec<_>>();
+    package_ids.sort_by_key(|id| items.get(*id).data.id.as_str());
+
+    let outputs = package_ids
+        .into_iter()
+        .map(|id| generate_package(context, items, &type_printer, id))
         .collect::<Result<Vec<_>, _>>()?;
 
     let imports = if let Some(package_id) = package_id {
         let package = items.get(package_id);
 
-        let dependencies = std::iter::once(anyhow::Ok(("this", package.data.id.to_string())))
+        let mut dependencies = std::iter::once(anyhow::Ok(("this", package.data.id.to_string())))
             .chain(package.dependencies.iter().map(|(alias, dependency)| {
                 let dependency = items.get(dependency.id);
                 anyhow::Ok((alias.as_str(), dependency.data.id.to_string()))
             }))
             .collect::<Result<Vec<_>, _>>()?;
+        dependencies.sort_by_key(|(alias, _)| *alias);
 
         let dependencies = dependencies.into_iter().map(|(alias, raw)| {
             let alias = make_path(alias);
@@ -85,17 +88,11 @@ pub async fn generate_code(
         #imports
     };
 
-    let output = if context == Context::GuestUser {
-        // In guest code, we wrap all generated output in an `packages` module to avoid polluting their
-        // global scope.
-        quote! {
-            pub mod packages {
-                #output
-            }
+    for package_locator in semantic.packages.keys() {
+        if let Some(path) = package_locator.source.as_local_path() {
+            println!("cargo:rerun-if-changed={}", path.display());
         }
-    } else {
-        output
-    };
+    }
 
     Ok(output)
 }

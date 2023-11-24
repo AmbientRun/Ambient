@@ -4,6 +4,13 @@ use ambient_api::{
 };
 use ambient_friendly_id::friendly_id;
 
+pub mod packages;
+
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
+}
+
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
     let (screen, set_screen) = use_state(hooks, None);
@@ -43,9 +50,4 @@ fn SubScreen(hooks: &mut Hooks, on_back: Cb<dyn Fn() + Sync + Send>) -> Element 
         })
         .el(),
     ])
-}
-
-#[main]
-pub fn main() {
-    App.el().spawn_interactive();
 }
