@@ -2,9 +2,9 @@
 id = "d3y3wbexrclipsykysumem3fthkudwx2"
 name = "Character Animation"
 description = "Implements basic character animations for a unit."
-version = "0.3.2-nightly-2023-11-24"
+version = "0.3.2-internal-test-fix-package-deployment-failure"
 content = { type = "Asset", animations = true, code = true }
-ambient_version = "0.3.2-nightly-2023-11-24"
+ambient_version = "0.3.2-internal-test-fix-package-deployment-failure"
 
 [dependencies]
 game_object = { path = "../../schemas/game_object", deployment = "TFYhFc5wKkplokwUm1uQN" }
