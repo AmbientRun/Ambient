@@ -75,6 +75,7 @@ pub fn init_all_components() {
     ambient_cameras::init_all_components();
     renderers::init_components();
     ambient_procedurals::init_components();
+    ambient_timings::init_components();
 }
 
 pub fn gpu_world_sync_systems(gpu: Arc<Gpu>) -> SystemGroup<GpuWorldSyncEvent> {
@@ -123,6 +124,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(bounding_systems()),
             Box::new(camera_systems()),
             Box::new(ambient_procedurals::client_systems()),
+            Box::new(ambient_timings::TimingSystem),
         ],
     )
 }
@@ -135,6 +137,7 @@ pub struct AppResources {
     window_physical_size: UVec2,
     window_logical_size: UVec2,
     window_scale_factor: f64,
+    timings: Arc<ambient_timings::Timings>,
 }
 
 impl AppResources {
@@ -147,6 +150,7 @@ impl AppResources {
             window_physical_size: *world.resource(ambient_core::window::window_physical_size()),
             window_logical_size: *world.resource(ambient_core::window::window_logical_size()),
             window_scale_factor: *world.resource(ambient_core::window::window_scale_factor()),
+            timings: world.resource(ambient_timings::timings()).clone(),
         }
     }
 }
@@ -187,6 +191,7 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(ambient_core::window::window_ctl(), resources.ctl_tx)
         .with(procedural_storage(), ProceduralStorage::new())
         .with(focus(), Default::default())
+        .with(ambient_timings::timings(), resources.timings)
 }
 
 pub struct AppBuilder {
@@ -514,6 +519,7 @@ impl AppBuilder {
             window_physical_size,
             window_logical_size,
             window_scale_factor,
+            timings: Default::default(),
         };
 
         let resources = world_instance_resources(app_resources);
@@ -546,6 +552,7 @@ impl AppBuilder {
                 Box::new(assets_camera_systems()),
                 Box::new(ambient_input::event_systems()),
                 Box::new(renderers::systems()),
+                Box::new(ambient_timings::TimingSystem),
             ],
         );
         if self.examples_systems {

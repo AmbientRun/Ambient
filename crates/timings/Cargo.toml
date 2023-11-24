@@ -1,0 +1,22 @@
+[package]
+name = "ambient_timings"
+version = { workspace = true }
+rust-version = { workspace = true }
+edition = "2021"
+description = "Ambient frame processing timings. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ambient_native_std = { path = "../native_std" , version = "0.3.2-dev" }
+ambient_sys = { path = "../sys" , version = "0.3.2-dev" }
+ambient_ecs = { path = "../ecs" , version = "0.3.2-dev" }
+ambient_core = { path = "../core" , version = "0.3.2-dev" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.3.2-dev" }
+winit = { workspace = true }
+glam = { workspace = true }
+serde = { workspace = true }
+tracing = { workspace = true }
+flume = { workspace = true }

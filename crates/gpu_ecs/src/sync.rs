@@ -11,7 +11,7 @@ use crate::gpu;
 use gpu::gpu::Gpu;
 
 /// GpuWorld sync/update systems need to run immediately after the GpuWorld has updated it's layout,
-/// so by forcing them to use this even we can make sure they're all in order
+/// so by forcing them to use this event we can make sure they're all in order
 pub struct GpuWorldSyncEvent;
 
 pub struct ArchChangeDetection {
