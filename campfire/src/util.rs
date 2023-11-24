@@ -10,9 +10,18 @@ pub fn run_ambient(args: &[&str], release: bool, production: bool) -> anyhow::Re
     if production {
         command.args(["--features", "production"]);
     }
-    command.args(["-p", "ambient"]).args(args).spawn()?.wait()?;
 
-    Ok(())
+    if command
+        .args(["-p", "ambient"])
+        .args(args)
+        .spawn()?
+        .wait()?
+        .success()
+    {
+        Ok(())
+    } else {
+        anyhow::bail!("Failed to run Ambient with args {:?}", args);
+    }
 }
 
 pub fn all_directories_in(path: &Path) -> anyhow::Result<impl Iterator<Item = DirEntry>> {
