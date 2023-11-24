@@ -57,7 +57,7 @@ impl Resolve for Message {
                             format!(
                                 "Failed to resolve type `{path:?}` for field `{name}` of message `{}`\nSee {} for valid types",
                                 self.data.id,
-                                "https://ambientrun.github.io/Ambient/reference/package.html#valuetype"
+                                "https://ambient.run/docs/reference/package#valuetype"
                             )
                         })?;
                         ResolvableItemId::Resolved(id)
