@@ -2,7 +2,7 @@
 name = "Network"
 description = "Network-related state."
 content = { type = "Asset", schema = true }
-version = "0.3.2-nightly-2023-11-24"
+version = "0.3.2-dev"
 ambient_version = "0.3.2-nightly-2023-11-24"
 
 [components.is_remote_entity]
