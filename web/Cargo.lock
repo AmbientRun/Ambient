@@ -1046,7 +1046,6 @@ version = "0.3.2-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
- "ambient_native_std",
  "ambient_shared_types",
  "ambient_sys",
  "flume 0.11.0",

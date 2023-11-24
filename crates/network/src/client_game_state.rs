@@ -19,7 +19,7 @@ use ambient_native_std::{
     shapes::Ray,
 };
 use ambient_renderer::{RenderTarget, Renderer, RendererConfig, RendererTarget};
-use ambient_sys::time::Instant;
+use ambient_timings::TimingEventType;
 use ambient_world_audio::systems::{audio_systems, setup_audio};
 use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 
@@ -149,23 +149,17 @@ impl ClientGameState {
         );
 
         let timings = self.world.resource(ambient_timings::timings()).clone();
-        let now = Instant::now();
-        tracing::warn!("Submitting commands: {:?}", now.elapsed());
         gpu.queue.submit(Some(encoder.finish()));
         for action in post_submit {
             action();
         }
-        tracing::warn!("Submitted commands: {:?}", now.elapsed());
-        timings.report_gpu_commands_submitted();
-        let callback = move || {
-            tracing::warn!("Done: {:?}", now.elapsed());
-            timings.report_rendering_finished();
-        };
-        #[cfg(target = "wasm32")]
+        // timings.report_gpu_commands_submitted();
+        let callback = move || timings.report_event(TimingEventType::RenderingFinished);
+        #[cfg(target_os = "unknown")]
         {
             callback();
         }
-        #[cfg(not(target = "wasm32"))]
+        #[cfg(not(target_os = "unknown"))]
         {
             gpu.queue.on_submitted_work_done(callback);
         }

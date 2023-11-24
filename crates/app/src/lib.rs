@@ -98,6 +98,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
         "world_instance",
         vec![
             Box::new(ClientTimeResourcesSystem::new()),
+            Box::new(ambient_timings::TimingSystem),
             Box::new(async_ecs_systems()),
             remove_at_time_system(),
             refcount_system(),
@@ -124,7 +125,6 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(bounding_systems()),
             Box::new(camera_systems()),
             Box::new(ambient_procedurals::client_systems()),
-            Box::new(ambient_timings::TimingSystem),
         ],
     )
 }
@@ -549,10 +549,10 @@ impl AppBuilder {
         let mut window_event_systems = SystemGroup::new(
             "window_event_systems",
             vec![
+                Box::new(ambient_timings::TimingSystem),
                 Box::new(assets_camera_systems()),
                 Box::new(ambient_input::event_systems()),
                 Box::new(renderers::systems()),
-                Box::new(ambient_timings::TimingSystem),
             ],
         );
         if self.examples_systems {
