@@ -2,11 +2,11 @@
 id = "xjoy27d3i4hc4l7fmlm5pacc2cmxlnlw"
 name = "Dependencies"
 description = "Break your project up into packages."
-version = "0.3.2-nightly-2023-11-24"
+version = "0.3.2-nightly-2023-11-25"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-11-24"
+ambient_version = "0.3.2-nightly-2023-11-25"
 
 [dependencies]
-deps_assets = { path = "deps/assets" , deployment = "3vXIRYG3OA5k6gWxq7oUwS" }
-deps_code = { path = "deps/code" , deployment = "75NSY2wRv2diIy40tkZ025" }
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "5LYimSMVCEG1d8FIRz7yXj" }
+deps_assets = { path = "deps/assets" , deployment = "5oEXwddgte5VT2VU1Esi3Q" }
+deps_code = { path = "deps/code" , deployment = "3M91iQ9NVKujHd1Y96HKd2" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "1LNk4ROw4E4rCSQX7Ht9iY" }
