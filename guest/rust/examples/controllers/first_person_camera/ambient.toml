@@ -10,7 +10,7 @@ ambient_version = "0.3.2-nightly-2023-11-26"
 
 
 [dependencies]
-base_assets = { path = "../../../packages/std/base_assets", deployment = "4N88NdwcthYvz9FdJNoYOX" }
-third_person_controller = { path = "../../../packages/std/third_person_controller", deployment = "6vXiLhAWtG20NTL8vy0vXx" }
-character_animation = { path = "../../../packages/std/character_animation", deployment = "7UO2f3Sy864EDlOPiHeqZZ" }
-hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "7F7GpoFujJ0TD5Rb0jgSMa" }
+base_assets = { path = "../../../packages/std/base_assets", deployment = "31M1vNt32jNdasXVUfrVlW" }
+third_person_controller = { path = "../../../packages/std/third_person_controller", deployment = "4tUSH6cWfL9QcZ5HBeBKMz" }
+character_animation = { path = "../../../packages/std/character_animation", deployment = "69CopYMZ8C41bpBkLxglrW" }
+hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "13MxG7hSoGc64xQ4yjKWW2" }
