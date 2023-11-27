@@ -1,7 +1,9 @@
 use std::f32::consts::PI;
 
 use ambient_api::{
+    animation::{AnimationPlayerRef, PlayClipFromUrlNodeRef},
     core::{
+        animation::components::apply_animation_player,
         app::components::name,
         camera::concepts::{
             PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
@@ -395,11 +397,19 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
             });
     }
 
-    // onspawn - add model
+    // onspawn - add model and animation
     {
+        let run_clip = PlayClipFromUrlNodeRef::new(assets::url(
+            "Data/Models/Units/Zombie1.x/animations/Run1.anim",
+        ));
+        let _idle_clip = PlayClipFromUrlNodeRef::new(assets::url(
+            "Data/Models/Units/Zombie1.x/animations/Idle1.anim",
+        ));
+        let anim_player = AnimationPlayerRef::new(&run_clip);
+
         spawn_query(())
             .requires((translation(), is_boid()))
-            .bind(|newboids| {
+            .bind(move |newboids| {
                 for (newboid, _) in newboids {
                     let model = Entity::new()
                         .with(translation(), Vec3::ZERO)
@@ -411,6 +421,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                         .with(scale(), Vec3::splat(3.0))
                         .with(local_to_parent(), Mat4::default())
                         .with(cast_shadows(), ())
+                        .with(apply_animation_player(), anim_player.0)
                         .spawn();
                     entity::add_child(newboid, model);
                     entity::add_component(newboid, boid_model(), model);
