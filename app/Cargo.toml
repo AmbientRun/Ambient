@@ -34,6 +34,7 @@ ambient_water = { path = "../crates/water" , version = "0.3.2-dev" }
 ambient_client_shared = { path = "../crates/client_shared/" , version = "0.3.2-dev" }
 ambient_package_semantic_native = { path = "../crates/package_semantic_native" , version = "0.3.2-dev" }
 ambient_settings = { path = "../crates/settings" , version = "0.3.2-dev" }
+ambient_timings = { path = "../crates/timings" , version = "0.3.2-dev" }
 
 ambient_element = { path = "../shared_crates/element" , version = "0.3.2-dev" }
 ambient_package = { path = "../shared_crates/package" , version = "0.3.2-dev" }

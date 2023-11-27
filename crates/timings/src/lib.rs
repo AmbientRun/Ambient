@@ -14,13 +14,13 @@ use winit::event::{DeviceEvent, Event, WindowEvent};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, FromPrimitive, ToPrimitive)]
 pub enum TimingEventType {
     Input,
-    AppSystemsStarted,
+    ScriptingStarted,
+    ScriptingFinished,
     ClientSystemsStarted,
     ClientSystemsFinished,
     DrawingWorld,
     DrawingUI,
     SubmittingGPUCommands,
-    AppSystemsFinished,
     RenderingFinished,
 }
 impl TimingEventType {
@@ -201,16 +201,59 @@ impl<const APP_WORLD_EVENT_TYPE: usize, const CLIENT_WORLD_EVENT_TYPE: usize> Sy
     }
 }
 
+#[derive(Debug)]
+struct ClientWorldTimingSystem<const EVENT_TYPE: usize>;
+impl<const EVENT_TYPE: usize> System for ClientWorldTimingSystem<EVENT_TYPE> {
+    fn run(&mut self, world: &mut World, _event: &FrameEvent) {
+        let time = Instant::now();
+        let event_type = match world.context() {
+            WorldContext::Client => TimingEventType::from_usize(EVENT_TYPE).unwrap(),
+            _ => return,
+        };
+        world
+            .resource(timings())
+            .report_event(TimingEvent { time, event_type });
+    }
+}
+
 pub const fn on_started_timing_system() -> impl System {
-    const APP_WORLD_EVENT_TYPE: usize = TimingEventType::AppSystemsStarted as usize;
-    const CLIENT_WORLD_EVENT_TYPE: usize = TimingEventType::ClientSystemsStarted as usize;
-    TimingSystem::<APP_WORLD_EVENT_TYPE, CLIENT_WORLD_EVENT_TYPE> {}
+    const EVENT_TYPE: usize = TimingEventType::ClientSystemsStarted as usize;
+    ClientWorldTimingSystem::<EVENT_TYPE> {}
 }
 
 pub const fn on_finished_timing_system() -> impl System {
-    const APP_WORLD_EVENT_TYPE: usize = TimingEventType::AppSystemsFinished as usize;
-    const CLIENT_WORLD_EVENT_TYPE: usize = TimingEventType::ClientSystemsFinished as usize;
-    TimingSystem::<APP_WORLD_EVENT_TYPE, CLIENT_WORLD_EVENT_TYPE> {}
+    const EVENT_TYPE: usize = TimingEventType::ClientSystemsFinished as usize;
+    ClientWorldTimingSystem::<EVENT_TYPE> {}
+}
+
+#[derive(Debug)]
+struct SystemWrapper<S> {
+    system: S,
+    on_started: TimingEventType,
+    on_finished: TimingEventType,
+}
+impl<S, E> System<E> for SystemWrapper<S>
+where
+    S: System<E>,
+{
+    fn run(&mut self, world: &mut World, event: &E) {
+        let timings = world.resource(timings()).clone();
+        timings.report_event(TimingEvent::from(self.on_started));
+        self.system.run(world, event);
+        timings.report_event(TimingEvent::from(self.on_finished));
+    }
+}
+
+pub fn wrap_system<E>(
+    system: impl System<E>,
+    on_started: TimingEventType,
+    on_finished: TimingEventType,
+) -> impl System<E> {
+    SystemWrapper {
+        system,
+        on_started,
+        on_finished,
+    }
 }
 
 #[derive(Debug)]

@@ -142,6 +142,7 @@ dependencies = [
  "ambient_sky",
  "ambient_std",
  "ambient_sys",
+ "ambient_timings",
  "ambient_ui_native",
  "ambient_wasm",
  "ambient_water",

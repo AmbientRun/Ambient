@@ -408,7 +408,11 @@ fn systems() -> SystemGroup {
             Box::new(ambient_sky::systems()),
             Box::new(ambient_water::systems()),
             Box::new(ambient_gizmos::client_systems()),
-            Box::new(wasm::systems()),
+            Box::new(ambient_timings::wrap_system(
+                wasm::systems(),
+                ambient_timings::TimingEventType::ScriptingStarted,
+                ambient_timings::TimingEventType::ScriptingFinished,
+            )),
             Box::new(ambient_client_shared::player::systems_final()),
         ],
     )
