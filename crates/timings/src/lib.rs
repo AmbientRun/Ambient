@@ -1,19 +1,38 @@
 use std::{
+    collections::VecDeque,
     sync::{Arc, Mutex},
     time::Duration,
 };
 
 use ambient_ecs::{components, Debuggable, FrameEvent, Resource, System, World, WorldContext};
 use ambient_sys::time::Instant;
+use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::FromPrimitive;
 use winit::event::{DeviceEvent, Event, WindowEvent};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+/// Frame events being timed (in order!)
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, FromPrimitive, ToPrimitive)]
 pub enum TimingEventType {
     Input,
-    SystemsStarted,
-    // RenderingStarted,
-    // GpuCommandsSubmitted,
+    AppSystemsStarted,
+    ClientSystemsStarted,
+    ClientSystemsFinished,
+    DrawingWorld,
+    DrawingUI,
+    SubmittingGPUCommands,
+    AppSystemsFinished,
     RenderingFinished,
+}
+impl TimingEventType {
+    const COUNT: usize = Self::last().idx() + 1;
+
+    const fn last() -> Self {
+        Self::RenderingFinished
+    }
+
+    const fn idx(self) -> usize {
+        self as usize
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -30,49 +49,79 @@ impl From<TimingEventType> for TimingEvent {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-enum FrameState {
-    ReceivingInput,
-    RunningSystems,
-    // Rendering,
-    // SubmittingGpuCommands,
-    // WaitingForGpu,
-}
-
 #[derive(Clone, Copy, Debug)]
 pub struct FrameTimings {
-    pub input_to_rendered: Option<Duration>,
+    event_times: [Option<Instant>; TimingEventType::COUNT],
+}
+impl FrameTimings {
+    pub fn input_to_rendered(&self) -> Option<Duration> {
+        self.event_times[TimingEventType::Input as usize]
+            .zip(self.event_times[TimingEventType::RenderingFinished as usize])
+            .map(|(input, rendered)| rendered - input)
+    }
+}
+impl std::fmt::Display for FrameTimings {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut last = None;
+        for (time, idx) in self
+            .event_times
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, t)| t.zip(Some(idx)))
+        {
+            let event_type = TimingEventType::from_usize(idx).unwrap();
+            if let Some(last) = last {
+                write!(f, " <- {:?} -> ", time - last)?;
+            }
+            write!(f, "{:?}", event_type)?;
+            last = Some(time);
+        }
+        Ok(())
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
 struct Frame {
-    state: FrameState,
-    first_input_time: Option<Instant>,
+    last_event_type: TimingEventType,
+    event_times: [Option<Instant>; TimingEventType::COUNT],
 }
 impl Frame {
-    fn process_event(&mut self, event: TimingEvent) -> Option<FrameTimings> {
-        match (self.state, event.event_type) {
-            (FrameState::ReceivingInput, TimingEventType::Input) => {
-                self.first_input_time = self.first_input_time.or(Some(event.time));
-                None
-            }
-            (FrameState::ReceivingInput, TimingEventType::SystemsStarted) => {
-                self.state = FrameState::RunningSystems;
-                None
-            }
-            (FrameState::RunningSystems, TimingEventType::RenderingFinished) => {
-                let input_to_rendered = self.first_input_time.map(|t| event.time - t);
-                Some(FrameTimings { input_to_rendered })
-            }
-            _ => None,
+    fn timings(&self) -> FrameTimings {
+        FrameTimings {
+            event_times: self.event_times,
+        }
+    }
+
+    fn should_accept_event(&self, event_type: TimingEventType) -> bool {
+        // if it simply is the next event
+        self.last_event_type.idx() + 1 == event_type.idx() ||
+        // or if it is repeated input event (there can be multiple input events)
+         (self.last_event_type == TimingEventType::Input && event_type == TimingEventType::Input) ||
+        // or we don't have app systems finished event when rendering is finished (we don't have the callback in the browser)
+         (self.last_event_type == TimingEventType::SubmittingGPUCommands && event_type == TimingEventType::RenderingFinished)
+    }
+
+    fn is_accepting_input(&self) -> bool {
+        self.last_event_type == TimingEventType::Input
+    }
+
+    fn is_finished(&self) -> bool {
+        self.last_event_type == TimingEventType::last()
+    }
+
+    fn process_event(&mut self, event: TimingEvent) {
+        if self.should_accept_event(event.event_type) {
+            self.event_times[event.event_type.idx()] =
+                self.event_times[event.event_type.idx()].or(Some(event.time));
+            self.last_event_type = event.event_type;
         }
     }
 }
 impl Default for Frame {
     fn default() -> Self {
         Self {
-            state: FrameState::ReceivingInput,
-            first_input_time: None,
+            last_event_type: TimingEventType::Input,
+            event_times: Default::default(),
         }
     }
 }
@@ -80,13 +129,12 @@ impl Default for Frame {
 #[derive(Debug)]
 pub struct Timings {
     ref_time: Instant,
-    // pub earliest_input_time: Mutex<Option<Instant>>, // FIXME
-    current_frame: Mutex<Frame>,
-    pending_frames: Mutex<Vec<Frame>>,
+    frames: Mutex<VecDeque<Frame>>,
 }
 impl Timings {
     fn report_timings(&self, timings: FrameTimings) {
-        if let Some(input_to_rendered) = timings.input_to_rendered {
+        tracing::error!("TIMINGS: {}", timings);
+        if let Some(input_to_rendered) = timings.input_to_rendered() {
             tracing::error!("INPUT TO RENDERED: {:?}", input_to_rendered);
         }
     }
@@ -100,33 +148,32 @@ impl Timings {
             event.time.duration_since(self.ref_time)
         );
 
-        let mut frames = self.pending_frames.lock().unwrap();
-        frames.retain_mut(|f| {
-            if let Some(ft) = f.process_event(event) {
-                self.report_timings(ft);
-                false
-            } else {
-                true
-            }
-        });
-
-        let mut frame = self.current_frame.lock().unwrap();
-        let ft = frame.process_event(event);
-        if frame.state != FrameState::ReceivingInput {
-            frames.push(*frame);
-            *frame = Default::default();
+        let mut frames = self.frames.lock().unwrap();
+        for f in frames.iter_mut() {
+            f.process_event(event);
         }
-        if let Some(ft) = ft {
-            self.report_timings(ft);
+
+        if !frames.front().unwrap().is_accepting_input() {
+            frames.push_front(Default::default());
+        }
+        while let Some(f) = frames.back() {
+            if f.is_finished() {
+                let timings = frames.pop_back().unwrap().timings();
+                self.report_timings(timings);
+            } else {
+                break;
+            }
         }
     }
 }
 impl Default for Timings {
     fn default() -> Self {
+        // we normally have at most 2 frames in flight
+        let mut frames = VecDeque::with_capacity(2);
+        frames.push_back(Default::default());
         Self {
             ref_time: Instant::now(),
-            current_frame: Default::default(),
-            pending_frames: Default::default(),
+            frames: Mutex::new(frames),
         }
     }
 }
@@ -137,30 +184,38 @@ components!("input", {
 });
 
 #[derive(Debug)]
-pub struct TimingSystem;
-
-impl System for TimingSystem {
+struct TimingSystem<const APP_WORLD_EVENT_TYPE: usize, const CLIENT_WORLD_EVENT_TYPE: usize>;
+impl<const APP_WORLD_EVENT_TYPE: usize, const CLIENT_WORLD_EVENT_TYPE: usize> System
+    for TimingSystem<APP_WORLD_EVENT_TYPE, CLIENT_WORLD_EVENT_TYPE>
+{
     fn run(&mut self, world: &mut World, _event: &FrameEvent) {
-        if world.context() == WorldContext::Client {
-            world
-                .resource(timings())
-                .report_event(TimingEventType::SystemsStarted);
-        }
-        // match world.name() {
-        //     "main_app" => {
-        //         tracing::error!("running main app systems FRAME EVENT {:?} {} {:?}", world as *const World, world.name(), world.context());
-        //         // input gets processed here - no more input gets captured for this frame at this point
-        //     }
-        //     "client_game_world" => {
-        //         tracing::error!("running systems - FRAME EVENT {:?} {} {:?}", world as *const World, world.name(), world.context());
-        //     }
-        //     _ => {
-        //     }
-        // }
+        let time = Instant::now();
+        let event_type = match world.context() {
+            WorldContext::App => TimingEventType::from_usize(APP_WORLD_EVENT_TYPE).unwrap(),
+            WorldContext::Client => TimingEventType::from_usize(CLIENT_WORLD_EVENT_TYPE).unwrap(),
+            _ => return,
+        };
+        world
+            .resource(timings())
+            .report_event(TimingEvent { time, event_type });
     }
 }
 
-impl System<Event<'static, ()>> for TimingSystem {
+pub const fn on_started_timing_system() -> impl System {
+    const APP_WORLD_EVENT_TYPE: usize = TimingEventType::AppSystemsStarted as usize;
+    const CLIENT_WORLD_EVENT_TYPE: usize = TimingEventType::ClientSystemsStarted as usize;
+    TimingSystem::<APP_WORLD_EVENT_TYPE, CLIENT_WORLD_EVENT_TYPE> {}
+}
+
+pub const fn on_finished_timing_system() -> impl System {
+    const APP_WORLD_EVENT_TYPE: usize = TimingEventType::AppSystemsFinished as usize;
+    const CLIENT_WORLD_EVENT_TYPE: usize = TimingEventType::ClientSystemsFinished as usize;
+    TimingSystem::<APP_WORLD_EVENT_TYPE, CLIENT_WORLD_EVENT_TYPE> {}
+}
+
+#[derive(Debug)]
+pub struct InputTimingSystem;
+impl System<Event<'static, ()>> for InputTimingSystem {
     fn run(&mut self, world: &mut World, event: &Event<'static, ()>) {
         if is_user_input_event(event) {
             world

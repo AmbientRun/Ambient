@@ -1550,6 +1550,8 @@ dependencies = [
  "ambient_sys",
  "flume 0.11.0",
  "glam 0.24.2",
+ "num-derive 0.3.3",
+ "num-traits",
  "serde",
  "tracing",
  "winit",

@@ -127,7 +127,10 @@ impl ClientGameState {
                 label: Some("GameState.render"),
             });
         let mut post_submit = Vec::new();
+        let timings = self.world.resource(ambient_timings::timings()).clone();
+
         tracing::trace!("Drawing world");
+        timings.report_event(TimingEventType::DrawingWorld);
         self.renderer.render(
             gpu,
             &mut self.world,
@@ -138,7 +141,7 @@ impl ClientGameState {
         );
 
         tracing::trace!("Drawing ui");
-
+        timings.report_event(TimingEventType::DrawingUI);
         self.ui_renderer.render(
             gpu,
             &mut self.world,
@@ -148,12 +151,11 @@ impl ClientGameState {
             None,
         );
 
-        let timings = self.world.resource(ambient_timings::timings()).clone();
+        timings.report_event(TimingEventType::SubmittingGPUCommands);
         gpu.queue.submit(Some(encoder.finish()));
         for action in post_submit {
             action();
         }
-        // timings.report_gpu_commands_submitted();
         let callback = move || timings.report_event(TimingEventType::RenderingFinished);
         #[cfg(target_os = "unknown")]
         {
