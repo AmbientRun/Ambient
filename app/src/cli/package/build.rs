@@ -157,7 +157,10 @@ pub async fn build<
     while let Some(manifest_path) = queue.pop() {
         pre_build(manifest_path.clone()).await?;
 
-        settings.build_docs = queue.is_empty();
+        // We only build docs if we're deploying (i.e. all packages need docs),
+        // or if we're building the last package in the queue (i.e. we're not deploying
+        // and we're building the main package).
+        settings.build_docs = deploy || queue.is_empty();
 
         let BuildResult {
             build_path,
