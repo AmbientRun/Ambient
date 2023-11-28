@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use ambient_api::{
     animation::{AnimationPlayerRef, PlayClipFromUrlNodeRef},
     core::{
-        animation::components::apply_animation_player,
+        animation::components::{apply_animation_player, speed},
         app::components::name,
         camera::concepts::{
             PerspectiveInfiniteReverseCamera, PerspectiveInfiniteReverseCameraOptional,
@@ -321,17 +321,18 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
     }
 
     // boids with more neighbours are... bigger? sure, whatever
+    // no, does nothing
     {
         change_query(boid_neighbour_count())
             .track_change(boid_neighbour_count())
             .bind(|boids| {
                 for (boid, bnct) in boids {
                     if let Some(model) = entity::get_component(boid, boid_model()) {
-                        entity::add_component(
-                            model,
-                            scale(),
-                            Vec3::splat(2.50 + 0.25 * bnct as f32),
-                        );
+                        // entity::add_component(
+                        //     model,
+                        //     scale(),
+                        //     Vec3::splat(2.50 + 0.25 * bnct as f32),
+                        // );
                     }
                 }
             });
@@ -399,18 +400,17 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
 
     // onspawn - add model and animation
     {
-        let run_clip = PlayClipFromUrlNodeRef::new(assets::url(
-            "Data/Models/Units/Zombie1.x/animations/Run1.anim",
-        ));
-        let _idle_clip = PlayClipFromUrlNodeRef::new(assets::url(
-            "Data/Models/Units/Zombie1.x/animations/Idle1.anim",
-        ));
-        let anim_player = AnimationPlayerRef::new(&run_clip);
-
         spawn_query(())
             .requires((translation(), is_boid()))
             .bind(move |newboids| {
                 for (newboid, _) in newboids {
+                    let run_clip = PlayClipFromUrlNodeRef::new(assets::url(
+                        "Data/Models/Units/Zombie1.x/animations/Run1.anim",
+                    ));
+                    let _idle_clip = PlayClipFromUrlNodeRef::new(assets::url(
+                        "Data/Models/Units/Zombie1.x/animations/Idle1.anim",
+                    ));
+                    let anim_player = AnimationPlayerRef::new(&run_clip);
                     let model = Entity::new()
                         .with(translation(), Vec3::ZERO)
                         .with(
@@ -425,6 +425,10 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                         .spawn();
                     entity::add_child(newboid, model);
                     entity::add_component(newboid, boid_model(), model);
+                    entity::add_child(model, anim_player.0);
+
+                    entity::add_component(anim_player.0, speed(), random::<f32>() * 10.);
+                    // ^the line that should do something but does not
                 }
             });
     }
