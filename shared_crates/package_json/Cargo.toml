@@ -16,4 +16,4 @@ serde = { workspace = true }
 indexmap = { workspace = true }
 pathdiff = { workspace = true }
 
-ambient_primitive_component_definitions = { path = "../primitive_component_definitions" , version = "0.3.2-dev" }
+ambient_primitive_component_definitions = { path = "../primitive_component_definitions" , version = "0.3.2-nightly-2023-11-28" }
