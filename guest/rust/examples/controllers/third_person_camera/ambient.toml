@@ -2,15 +2,15 @@
 id = "ie4hdvkvui6t36yzniyex2hc5i2bradc"
 name = "Third-person camera"
 description = "A simple third-person camera controller."
-version = "0.3.2-nightly-2023-11-28"
+version = "0.3.2-nightly-2023-11-29"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/third_person_camera"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-11-28"
+ambient_version = "0.3.2-nightly-2023-11-29"
 
 [dependencies]
-base_assets = { path = "../../../packages/std/base_assets", deployment = "7D3423A2PVWGuqbEjgcWSO" }
-third_person_controller = { path = "../../../packages/std/third_person_controller", deployment = "qafFKa56VCAYW6L97E8RD" }
-character_animation = { path = "../../../packages/std/character_animation", deployment = "4gI7B0udYvYMiLm3gg6xT3" }
-hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "Uo8lpeSERRy0BuKWlrtYK" }
-nameplates = { path = "../../../packages/std/nameplates", deployment = "BPjCHTrJUHTBsAcfGND1F" }
+base_assets = { path = "../../../packages/std/base_assets", deployment = "lNjMVU4QLIaSgFETKYwUa" }
+third_person_controller = { path = "../../../packages/std/third_person_controller", deployment = "3ElDWoxUG8XL2h7hFI6v9m" }
+character_animation = { path = "../../../packages/std/character_animation", deployment = "5CjAKdg4D6f1Nn0EVV8ckj" }
+hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "zEJRdTrrRghyY3hmlRDXf" }
+nameplates = { path = "../../../packages/std/nameplates", deployment = "1mxNmGCqAQEfVGx1QWsIwy" }

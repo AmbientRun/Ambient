@@ -2,13 +2,13 @@
 id = "fvn74ns4ozf3gn42vmowphmvmpsfklbi"
 name = "Tangent Class: Scout"
 description = "Defines the Scout class, which is fast but weak."
-version = "0.3.2-nightly-2023-11-28"
+version = "0.3.2-nightly-2023-11-29"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.2-nightly-2023-11-28"
+ambient_version = "0.3.2-nightly-2023-11-29"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "67l4JQk4Da5lSznvUXVcPj" }
-gun_laser = { path = "../../core/gun_laser", deployment = "405t8Ai4HpQ8dZYaCkwUu7" }
+tangent_schema = { path = "../../schema", deployment = "3yPILG0RkcLPocNoII8O5g" }
+gun_laser = { path = "../../core/gun_laser", deployment = "2LJQ06pwSiLTna1V7YSAYy" }
 
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "1VOyYY6zqysd2gIedek7lE" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "5SpOU5V0MtwmETvi4tK0lP" }
