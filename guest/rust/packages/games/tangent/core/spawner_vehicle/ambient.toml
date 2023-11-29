@@ -8,9 +8,9 @@ ambient_version = "0.3.2-nightly-2023-11-29"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "67l4JQk4Da5lSznvUXVcPj" }
+tangent_schema = { path = "../../schema", deployment = "3yPILG0RkcLPocNoII8O5g" }
 
-nameplates = { path = "../../../../std/nameplates", deployment = "BPjCHTrJUHTBsAcfGND1F" }
+nameplates = { path = "../../../../std/nameplates", deployment = "1mxNmGCqAQEfVGx1QWsIwy" }
 
 [messages.VehicleSpawn]
 name = "Vehicle Spawn"
