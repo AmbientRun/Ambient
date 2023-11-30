@@ -136,7 +136,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
     );
     describe(
         neighbour_count_opacity_tuner,
-        "At 0 opacity, neighbour count UI is totally disabled",
+        "Opacity of 'neighbour count' digit (at 0.00, disabled)",
     );
 
     // hidden boids param tuners - not important for benchmark
@@ -145,6 +145,22 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
     let velmatch_str_tuner = mk_tuner("Match Velocity (Alignment)", (0, 5, 25), false);
     let repulsive_dist_tuner = mk_tuner("Touching Range", (0, 4, 10), false);
     let repulsive_str_tuner = mk_tuner("Touching Repel (Avoidance)", (0, 6, 20), false);
+
+    // integer tuners.
+    for int_tuner in [
+        &quantity_min_tuner,
+        &quantity_max_tuner,
+        &size_tuner,
+        &reproduction_neighbours_tuner,
+        &birth_confetti_tuner,
+    ] {
+        entity::add_component(*int_tuner, is_int(), ());
+    }
+
+    // tuners that can be MEANINGFULLY, COMPUTATIONALLY disabled at 0.
+    for disableable_tuner in [&neighbour_count_opacity_tuner] {
+        entity::add_component(*disableable_tuner, is_nonpositive_off(), ());
+    }
 
     // boids quantity
     {

@@ -55,6 +55,9 @@ fn Tuners(hooks: &mut Hooks) -> Element {
     FlowColumn::el(tuners.into_iter().map(|(tuner, (tmin, tmax, raw))| {
         let tname = entity::get_component(tuner, name()).unwrap_or("(Noname Tuner)".to_string());
         let tdesc = entity::get_component(tuner, description()).unwrap();
+        let t_int: bool = entity::has_component(tuner, is_int());
+        let output_value = tmin + raw * (tmax - tmin);
+        let t_off: bool = output_value <= 0. && entity::has_component(tuner, is_nonpositive_off());
         FlowColumn::el([
             Text::el(format!("{}", tname))
                 .with(font_size(), 15.)
@@ -62,9 +65,19 @@ fn Tuners(hooks: &mut Hooks) -> Element {
             Text::el(format!("{}", tdesc)).with(font_size(), 10.),
             FlowRow::el([
                 Text::el(format!(" = ")).with(font_size(), 20.),
-                Text::el(format!("{:.2}", tmin + raw * (tmax - tmin)))
-                    .with(font_size(), 20.)
-                    .with(color(), Vec4::splat(1.)),
+                Text::el(match (t_int, t_off) {
+                    (_, true) => "OFF".to_string(),
+                    (true, _) => format!("{:.0}", output_value),
+                    _ => format!("{:.2}", output_value),
+                })
+                .with(font_size(), 20.)
+                .with(
+                    color(),
+                    match t_off {
+                        true => vec4(0.8, 0.2, 0.2, 1.0), // if it's OFF, make it red
+                        false => Vec4::splat(1.),
+                    },
+                ),
             ]),
             Slider::new_for_entity_component(hooks, tuner, client_raw()).el(),
         ])

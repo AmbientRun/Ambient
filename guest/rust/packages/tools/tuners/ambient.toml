@@ -14,6 +14,9 @@ raw_value = { type = "F32", attributes = ["Networked", "Debuggable"] }
 output = { type = "F32", attributes = ["Networked", "Debuggable"] }
 client_raw = { type = "F32" }
 
+is_int = { type = "Empty", attributes = ["Networked"] }
+is_nonpositive_off = { type = "Empty", attributes = ["Networked"] }
+
 [concepts.Tuner]
 name = "Tuner"
 description = "A tuner is a value that is rendered and can be modified in clientside UI."
