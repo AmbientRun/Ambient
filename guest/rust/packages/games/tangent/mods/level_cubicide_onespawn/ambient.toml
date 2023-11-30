@@ -8,4 +8,4 @@ ambient_version = "0.3.2-nightly-2023-11-30"
 authors = ["philpax"]
 
 [dependencies]
-level_cubicide = { path = "../level_cubicide" , deployment = "4eSVzy5oWhkWdMEqLmie8Q" }
+level_cubicide = { path = "../level_cubicide" , deployment = "6YEBoKhYSsFpO00WXXZAbu" }
