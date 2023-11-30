@@ -17,10 +17,12 @@ g_border = { type = "F32" }
 g_speedlimit = { type = "F32" }
 
 is_boid = { type = "Empty" }
+boid_facer = { type = "EntityId" }
 boid_model = { type = "EntityId" }
-boid_velocity = { type = "Vec3" }
 boid_neighbour_count = { type = "U32", attributes = ["Networked"] }
 boid_neighbour_array = { type = { type = "Vec", element_type = "EntityId" } }
+
+is_boids_facer = { type = "Empty" }
 
 is_corpse = { type = "Empty" }
 corpse_age = { type = "F32" }
