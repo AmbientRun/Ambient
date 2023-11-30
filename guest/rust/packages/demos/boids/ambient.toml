@@ -29,3 +29,5 @@ is_confetti = { type = "Empty" }
 # confetti_velocity = { type = "Vec3" } # just use boid_velocity
 
 is_boid_camera = { type = "Empty", attributes = ["Networked"] }
+
+is_tuner_of_ncount_opacity = { type = "Empty", attributes = ["Networked"] }

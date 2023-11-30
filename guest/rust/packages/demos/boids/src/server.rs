@@ -105,7 +105,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
     describe(size_tuner, "Arena size. Boids attempt to stay inside.");
 
     let reproduction_rate_tuner = mk_tuner("Touching % Reproduce Rate/second", (0, 25, 100), true);
-    let reproduction_neighbours_tuner = mk_tuner("Reproduce - Max neighbours", (0, 5, 50), true);
+    let reproduction_neighbours_tuner = mk_tuner("Reproduce - Max neighbours", (0, 5, 50), false);
     let fighting_rate_tuner = mk_tuner("Touching % Kill Rate/second", (0, 5, 100), true);
     let birth_confetti_tuner = mk_tuner("Birth Particles", (0, 10, 100), true);
     let corpse_lifespan_tuner = mk_tuner("Corpse Lifespan", (0, 1, 10), false);
@@ -125,6 +125,18 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
     describe(
         corpse_lifespan_tuner,
         "Note; At 0 the corpse particle is still spawned, it is just deleted immediately.",
+    );
+
+    // global 'neighbour count opacity' value
+    let neighbour_count_opacity_tuner = mk_tuner("Neighbour Count Opacity", (0, 100, 1), true);
+    entity::add_component(
+        neighbour_count_opacity_tuner,
+        is_tuner_of_ncount_opacity(),
+        (),
+    );
+    describe(
+        neighbour_count_opacity_tuner,
+        "At 0 opacity, neighbour count UI is totally disabled",
     );
 
     // hidden boids param tuners - not important for benchmark

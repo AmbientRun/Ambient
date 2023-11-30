@@ -3,6 +3,7 @@ use ambient_api::core::text::components::font_size;
 use ambient_api::core::transform::components::{local_to_world, translation};
 use ambient_api::prelude::*;
 use packages::this::components::*;
+use packages::tuners::components::output;
 
 #[main]
 pub fn main() {
@@ -11,6 +12,18 @@ pub fn main() {
 
 #[element_component]
 fn BoidNeighbours(hooks: &mut Hooks) -> Element {
+    let ncount_opacity =
+        match ambient_api::element::use_query(hooks, (is_tuner_of_ncount_opacity(), output()))
+            .first()
+        {
+            None => 1.0,
+            Some((_, (_, ncount_opacity))) => *ncount_opacity,
+        };
+
+    if ncount_opacity <= 0. {
+        return Element::new();
+    }
+
     let cameras = ambient_api::element::use_query(hooks, is_boid_camera());
 
     if let Some((camera, _)) = cameras.first() {
@@ -53,7 +66,10 @@ fn BoidNeighbours(hooks: &mut Hooks) -> Element {
                 //     .font_body_500()]), // .with_background(C_ALLWHITE.extend(1.))
                 Text::el(format!("{}", bns))
                     .with(font_size(), (10 + bns * 2) as f32)
-                    .with(color(), vec4(1., 1., 1., 0.5 + bns as f32 * 0.05))
+                    .with(
+                        color(),
+                        Vec3::splat(1.).extend((0.5 + bns as f32 * 0.05) * ncount_opacity),
+                    )
                     .with(transparency_group(), 2),
             ])
             .with(fit_vertical(), Fit::None)
