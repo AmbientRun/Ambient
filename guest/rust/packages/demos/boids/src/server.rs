@@ -428,8 +428,9 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                     entity::add_component(newboid, boid_model(), model);
                     entity::add_child(model, anim_player.0);
 
-                    entity::add_component(anim_player.0, speed(), random::<f32>() * 10.);
-                    // ^the line that should do something but does not
+                    // entity::add_component(anim_player.0, speed(), random::<f32>() * 10.);
+                    entity::add_component(run_clip.0.get_entity_id(), speed(), 2.0);
+                    // ^speeds up animation playback, but not looping
                 }
             });
     }
