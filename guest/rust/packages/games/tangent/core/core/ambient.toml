@@ -2,21 +2,21 @@
 id = "itzh3wovmdje4ttrmo6wrravaaxp6b52"
 name = "Tangent Core"
 description = "The core of Tangent. The connective glue between all the other packages. (Will likely be split up.)"
-version = "0.3.2-nightly-2023-11-29"
+version = "0.3.2-nightly-2023-11-30"
 content = { type = "Asset", code = true }
 authors = ["philpax"]
-ambient_version = "0.3.2-nightly-2023-11-29"
+ambient_version = "0.3.2-nightly-2023-11-30"
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "3yPILG0RkcLPocNoII8O5g" }
+tangent_schema = { path = "../../schema", deployment = "6Zn2zJXsDONhGvD3dSd6QN" }
 
-game_object = { path = "../../../../schemas/game_object", deployment = "82UgD7MZkFtrqwSxPPKHh" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "51GOHfvsfjgQZSKNfUFSdY" }
+game_object = { path = "../../../../schemas/game_object", deployment = "60Z0I75LwI4Ey6qA4yr4zh" }
+unit_schema = { path = "../../../../schemas/unit", deployment = "l0X3uSgpJfsUdUKMJTrWj" }
 
-explosion = { path = "../../../../std/explosion", deployment = "2ZiwSfakTAO9fq7gNQ0aoS" }
-nameplates = { path = "../../../../std/nameplates", deployment = "1mxNmGCqAQEfVGx1QWsIwy" }
+explosion = { path = "../../../../std/explosion", deployment = "cAjzAOqdZnMij8VAMF2ec" }
+nameplates = { path = "../../../../std/nameplates", deployment = "5aFBCioREZD8QjQgJa212n" }
 
-kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "4Ec5KJXYCM7yG1scUJx2H" }
+kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "4WhEWiImsavAYjbvS6E6VX" }
 
 [messages.Input]
 name = "Input"

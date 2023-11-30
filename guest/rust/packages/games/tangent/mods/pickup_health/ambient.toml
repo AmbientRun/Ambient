@@ -2,14 +2,14 @@
 id = "skpc6fwjkbidr7a6pmx4mab6zl37oiut"
 name = "Tangent Pickup: Health"
 description = "A health pickup."
-version = "0.3.2-nightly-2023-11-29"
+version = "0.3.2-nightly-2023-11-30"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.2-nightly-2023-11-29"
+ambient_version = "0.3.2-nightly-2023-11-30"
 authors = ["philpax"]
 
 [dependencies]
-kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "6uGzHCuD76Gf56XZgNXjsj" }
-game_object = { path = "../../../../schemas/game_object", deployment = "82UgD7MZkFtrqwSxPPKHh" }
+kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "5bdS7XpBo8ExWztL4y3YN4" }
+game_object = { path = "../../../../schemas/game_object", deployment = "60Z0I75LwI4Ey6qA4yr4zh" }
 
 [components]
 is_health_pickup = { type = "Empty", name = "Is Health Pickup", description = "This entity is a health pickup." }

@@ -2,12 +2,12 @@
 id = "afl5yv5ya35vbuaj3aido22cwjzat25z"
 name = "Unit"
 description = "Schema for units in games. Often used with the Game Object schema."
-version = "0.3.2-nightly-2023-11-29"
+version = "0.3.2-nightly-2023-11-30"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.2-nightly-2023-11-29"
+ambient_version = "0.3.2-nightly-2023-11-30"
 
 [dependencies]
-game_object = { path = "../game_object", deployment = "82UgD7MZkFtrqwSxPPKHh" }
+game_object = { path = "../game_object", deployment = "60Z0I75LwI4Ey6qA4yr4zh" }
 
 [components]
 run_direction = { type = "Vec2", attributes = ["Debuggable", "Networked"] }
