@@ -41,6 +41,7 @@ pub fn main() {
         ..PerspectiveInfiniteReverseCamera::suggested()
     }
     .make()
+    .with(is_boid_camera(), ())
     .with(lookat_target(), vec3(0., 0., -10.))
     .spawn();
 
@@ -93,9 +94,9 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
         make_boid(None, None).spawn();
     }
 
-    let quantity_min_tuner = mk_tuner("Min # Boids", (1, 1, 1001), true);
-    let quantity_max_tuner = mk_tuner("Max # Boids", (1, 201, 1001), true);
-    let size_tuner = mk_tuner("Size of Arena", (10, 60, 210), true);
+    let quantity_min_tuner = mk_tuner("Min # Boids", (1, 21, 1001), true);
+    let quantity_max_tuner = mk_tuner("Max # Boids", (1, 21, 1001), true);
+    let size_tuner = mk_tuner("Size of Arena", (10, 10, 210), true);
     describe(
         quantity_min_tuner,
         "Auto-spawn boids to this minimum value.\n(Rate limited by MAXIMUM_SPAWNS_PER_FRAME)",
