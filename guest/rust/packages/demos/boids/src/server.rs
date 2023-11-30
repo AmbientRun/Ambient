@@ -10,6 +10,7 @@ use ambient_api::{
         },
         model::components::model_from_url,
         network::components::no_sync,
+        physics::components::{linear_velocity, plane_collider},
         primitives::components::{cube, quad},
         rendering::components::{
             cast_shadows, color, light_ambient, light_diffuse, transparency_group,
@@ -45,6 +46,10 @@ pub fn main() {
     .with(lookat_target(), vec3(0., 0., -10.))
     .spawn();
 
+    let _floor_collider = Entity::new()
+        .with(plane_collider(), ())
+        .with(translation(), Vec3::ZERO)
+        .spawn();
     let floor = Entity::new()
         .with(quad(), ())
         .with(scale(), Vec3::splat(60.))
@@ -79,7 +84,7 @@ fn make_boid(pos: Option<Vec3>, vel: Option<Vec3>) -> Entity {
     };
     let boid = Entity::new()
         .with(is_boid(), ())
-        .with(boid_velocity(), starting_vel)
+        .with(linear_velocity(), starting_vel)
         .with(boid_neighbour_count(), 0)
         .with(local_to_world(), Mat4::default());
 
@@ -195,7 +200,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
 
     // basic velocity - speed limit, as well as turning to face
     {
-        query((translation(), boid_velocity()))
+        query((translation(), linear_velocity()))
             .requires(is_boid())
             .each_frame(|boids| {
                 let dt = delta_time();
@@ -206,11 +211,11 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                     if dir.length_squared() > 0.001 {
                         if vel.length_squared() < minspeed * minspeed {
                             vel = vel.normalize_or_zero() * minspeed;
-                            entity::set_component(boid, boid_velocity(), vel);
+                            entity::set_component(boid, linear_velocity(), vel);
                         }
                         if vel.length_squared() > maxspeed * maxspeed {
                             vel = vel.normalize() * maxspeed;
-                            entity::set_component(boid, boid_velocity(), vel);
+                            entity::set_component(boid, linear_velocity(), vel);
                         }
                         pos += vel * dt;
                         entity::add_component(boid, lookat_target(), pos + dir);
@@ -248,7 +253,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                     if bn > 0 {
                         perceived_center /= bn as f32;
 
-                        entity::mutate_component(*boid, boid_velocity(), move |v| {
+                        entity::mutate_component(*boid, linear_velocity(), move |v| {
                             *v += (perceived_center - *pos) * posmatch_strength * dt;
                         });
                     }
@@ -259,7 +264,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
     // velocity matching
     {
         let velmatch_dist_tuner = match_dist_tuner.clone();
-        query((translation(), boid_velocity()))
+        query((translation(), linear_velocity()))
             .requires(is_boid())
             .each_frame(move |boids| {
                 let dt = delta_time();
@@ -280,7 +285,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                     }
                     if bns > 0 {
                         // total_velocity /= bns as f32;
-                        entity::mutate_component(*boid, boid_velocity(), move |v| {
+                        entity::mutate_component(*boid, linear_velocity(), move |v| {
                             *v += (total_velocity / bns as f32 - *v) * velmatch_strength * dt;
                         });
                     }
@@ -330,13 +335,13 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                     {
                         make_boid(
                             Some(*pos + random::<Vec2>().extend(0.) * 2.),
-                            entity::get_component(*boid, boid_velocity()),
+                            entity::get_component(*boid, linear_velocity()),
                         )
                         .spawn();
                     }
 
                     if repulsive_force.length_squared() > 0. {
-                        entity::mutate_component(*boid, boid_velocity(), move |v| {
+                        entity::mutate_component(*boid, linear_velocity(), move |v| {
                             *v += repulsive_force * repulsive_strength * dt;
                         });
                     }
@@ -379,7 +384,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                 entity::add_component(camera_ent, translation(), Vec3::splat(edge_sqradius + 20.)); // move camera out according to size
                 entity::add_component(floor_ent, scale(), Vec3::splat(edge_sqradius + 20.) * 2.); // scale ground quad
                 for (boid, pos) in &boids {
-                    entity::mutate_component(*boid, boid_velocity(), move |v| {
+                    entity::mutate_component(*boid, linear_velocity(), move |v| {
                         if pos.x.abs() > edge_sqradius {
                             v.x -= pos.x.signum() * edge_strength * dt;
                         }
@@ -414,7 +419,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
 
     // onspawn - without lookat_up
     {
-        spawn_query((translation(), boid_velocity()))
+        spawn_query((translation(), linear_velocity()))
             .requires(is_boid())
             .excludes(lookat_up())
             .bind(move |lookless_boids| {
@@ -479,7 +484,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                                 pos + (random::<Vec2>() - 0.5).extend(random::<f32>() * 0.5),
                             ) // anywhere inside the new cube's top half
                             .with(
-                                boid_velocity(),
+                                linear_velocity(),
                                 ((random::<Vec2>() - 0.5) * 10.).extend(random::<f32>() * 20.),
                             )
                             .with(cube(), ())
@@ -497,7 +502,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
     {
         const CONFETTI_GRAVITY: f32 = 40.;
         const CONFETTI_DRAG: f32 = 0.05;
-        query((translation(), boid_velocity()))
+        query((translation(), linear_velocity()))
             .requires(is_confetti())
             .each_frame(|confettis| {
                 let dt = delta_time();
@@ -505,7 +510,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                     if pos.z <= 0. {
                         entity::despawn(confetti);
                     } else {
-                        entity::mutate_component(confetti, boid_velocity(), |vel| {
+                        entity::mutate_component(confetti, linear_velocity(), |vel| {
                             *vel *= 1.00 - CONFETTI_DRAG * dt;
                             vel.z -= CONFETTI_GRAVITY * dt;
                         });
