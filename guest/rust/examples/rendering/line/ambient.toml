@@ -2,11 +2,11 @@
 id = "pdvnxkqc5xuwanvxe2yxasswtk23pqij"
 name = "Line"
 description = "Draw a line in 3D space."
-version = "0.3.2-nightly-2023-11-30"
+version = "0.3.2-nightly-2023-12-01"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/rendering/line"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-11-30"
+ambient_version = "0.3.2-nightly-2023-12-01"
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "4r9QaRoc7fXvhofBUjD0yT" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "4ty9WOXWdftfMFjGIxFZAZ" }
