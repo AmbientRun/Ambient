@@ -2,7 +2,7 @@
 name = "Hierarchy"
 description = "Parent/child relationships."
 content = { type = "Asset", schema = true }
-version = "0.3.2-nightly-2023-12-01"
+version = "0.3.2-dev"
 ambient_version = "0.3.2-nightly-2023-12-01"
 
 [components.parent]
