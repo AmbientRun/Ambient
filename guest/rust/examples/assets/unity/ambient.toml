@@ -2,6 +2,6 @@
 id = "tt7dtctg4qbptrbe6uahkx2lyuudy2gb"
 name = "Unity [WIP]"
 description = "Loading and spawning a Unity prefab. This example currently uses non-redistributable assets that are not included in the example. This will be revised in the near-future."
-version = "0.3.2-nightly-2023-12-01"
+version = "0.3.2-nightly-2023-12-02"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-12-01"
+ambient_version = "0.3.2-nightly-2023-12-02"
