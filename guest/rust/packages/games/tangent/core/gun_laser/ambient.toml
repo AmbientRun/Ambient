@@ -8,11 +8,11 @@ ambient_version = "0.3.2-nightly-2023-12-02"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "75vXRYy082T3faxZ9OzDwV" }
-kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "3wF7hAQwQBhTIzJaIePsyf" }
-kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "5Wb3OEPohnPmdc2KxCGcsd" }
+tangent_schema = { path = "../../schema", deployment = "3YSPjD4YGUYC49cNHznqld" }
+kenney_space_kit = { path = "../../../../assets/kenney_space_kit", deployment = "7Y5fT3N9ui9yaoRAnnt7FE" }
+kenney_digital_audio = { path = "../../../../assets/kenney_digital_audio", deployment = "mHi5L7CUDw2zYUQNZYhy9" }
 
-explosion = { path = "../../../../std/explosion", deployment = "2GlbN01t8gvZ00JhkhAJki" }
+explosion = { path = "../../../../std/explosion", deployment = "6mWEcqt04CUjowWJynuImJ" }
 
 [components]
 is_gun_laser = { type = "Empty", name = "Is Gun (Laser)", description = "This entity is a laser gun." }
