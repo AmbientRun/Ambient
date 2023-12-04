@@ -2,6 +2,6 @@
 id = "n7a4j7htvenss35tsnfvegbhxuwij5il"
 name = "Base Assets [WIP]"
 description = "Assets used by examples."
-version = "0.3.2-nightly-2023-12-01"
+version = "0.3.2-nightly-2023-12-04"
 content = { type = "Asset", models = true }
-ambient_version = "0.3.2-nightly-2023-12-01"
+ambient_version = "0.3.2-nightly-2023-12-04"
