@@ -40,6 +40,8 @@ pub struct Manifest {
     pub includes: HashMap<SnakeCaseIdentifier, PathBuf>,
     #[serde(default)]
     pub dependencies: IndexMap<SnakeCaseIdentifier, Dependency>,
+    #[serde(default)]
+    pub hosting: Hosting,
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, ManifestParseError> {
@@ -258,6 +260,27 @@ impl Dependency {
     }
 }
 
+#[derive(Deserialize, Clone, Debug, Default, PartialEq, Serialize)]
+pub struct Hosting {
+    /// The region to host in
+    #[serde(default)]
+    pub region: Region,
+    /// The maximum number of players that can be connected at once (0 = unlimited)
+    #[serde(default)]
+    pub max_players: usize,
+}
+
+#[derive(Deserialize, Clone, Debug, Default, PartialEq, Serialize)]
+pub enum Region {
+    /// Automatically select the best region based on the player's location
+    #[default]
+    Auto,
+    /// Always use the EU region
+    EU,
+    /// Always use the US region
+    US,
+}
+
 #[cfg(test)]
 mod tests {
     use std::path::PathBuf;
@@ -381,10 +404,7 @@ mod tests {
                         }
                     }
                 )]),
-                messages: Default::default(),
-                enums: Default::default(),
-                includes: Default::default(),
-                dependencies: Default::default(),
+                ..Default::default()
             })
         )
     }
@@ -568,10 +588,7 @@ mod tests {
                         }
                     }
                 )]),
-                messages: Default::default(),
-                enums: Default::default(),
-                includes: Default::default(),
-                dependencies: Default::default(),
+                ..Default::default()
             }
         );
 
@@ -618,10 +635,6 @@ mod tests {
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
-                build: Build::default(),
-                components: Default::default(),
-                concepts: Default::default(),
-                messages: Default::default(),
                 enums: IndexMap::from_iter([(
                     pci("CellState"),
                     Enum {
@@ -632,8 +645,7 @@ mod tests {
                         ])
                     }
                 )]),
-                includes: Default::default(),
-                dependencies: Default::default(),
+                ..Default::default()
             })
         )
     }
@@ -706,11 +718,7 @@ mod tests {
                         }
                     )
                 ]),
-                concepts: Default::default(),
-                messages: Default::default(),
-                enums: Default::default(),
-                includes: Default::default(),
-                dependencies: Default::default(),
+                ..Default::default()
             })
         )
     }
@@ -741,12 +749,6 @@ mod tests {
                     version: Version::parse("0.0.1").unwrap(),
                     ..Default::default()
                 },
-                build: Default::default(),
-                components: Default::default(),
-                concepts: Default::default(),
-                messages: Default::default(),
-                enums: Default::default(),
-                includes: Default::default(),
                 dependencies: IndexMap::from_iter([
                     (
                         sci("deps_assets"),
@@ -780,7 +782,8 @@ mod tests {
                             enabled: None,
                         }
                     )
-                ])
+                ]),
+                ..Default::default()
             })
         )
     }
