@@ -8,12 +8,12 @@ So far what's covered is:
 - Queries, change_queries, spawn_queries, despawn_queries
 - Entity spawning and despawning
 - High number of transparent objects in same transparency group
+- Animations, speed varying by entity
+- High number of frequently-updating UI elements (they can be disabled by sliding "Neighbour Count Opacity" to 0)
 
 What's missing:
 - Physics
-- Animations
 - High volume of client to server messages
-- High number of packages (There are only 3 being used here)
+- High number of packages (There are only a small number being used here)
 - High number of transparent objects in different transparency groups (?)
-- High UI complexity, high number of UI elements
 - Audio
