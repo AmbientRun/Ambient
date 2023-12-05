@@ -2,6 +2,6 @@
 id = "xar372tfo2oswb4pkvx7h7o3rxi6tap6"
 name = "Hide Cursor"
 description = "Locks and hides the cursor when no UI element is in focus, with the Escape key enabling focus reset."
-version = "0.3.2-nightly-2023-12-04"
+version = "0.3.2-nightly-2023-12-05"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-12-04"
+ambient_version = "0.3.2-nightly-2023-12-05"

@@ -1,9 +1,9 @@
 [package]
 id = "jkfalriqol5mtd7hxq7yssldubgpcf5o"
 name = "animations"
-version = "0.3.2-nightly-2023-12-04"
+version = "0.3.2-nightly-2023-12-05"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-12-04"
+ambient_version = "0.3.2-nightly-2023-12-05"
 
 [dependencies]
 base_assets = { path = "../../../packages/std/base_assets", deployment = "7Fl7erhRk1ki5Wu9bFpIUG" }
