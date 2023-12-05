@@ -1,14 +1,17 @@
-use std::{
-    collections::VecDeque,
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::{collections::VecDeque, sync::atomic::AtomicBool, time::Duration};
 
 use ambient_ecs::{components, Debuggable, FrameEvent, Resource, System, World, WorldContext};
 use ambient_sys::time::Instant;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::FromPrimitive;
 use winit::event::{DeviceEvent, Event, WindowEvent};
+
+const MAX_SAMPLES: usize = 128;
+static ENABLED: AtomicBool = AtomicBool::new(false);
+
+pub fn set_enabled(enabled: bool) {
+    ENABLED.store(enabled, std::sync::atomic::Ordering::Relaxed);
+}
 
 /// Frame events being timed (in order!)
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, FromPrimitive, ToPrimitive)]
@@ -127,91 +130,120 @@ impl Default for Frame {
 }
 
 #[derive(Debug)]
-pub struct Timings {
-    ref_time: Instant,
-    frames: Mutex<VecDeque<Frame>>,
+pub struct ProcessTimingEventsSystem {
+    frames: VecDeque<Frame>,
 }
-impl Timings {
-    fn report_timings(&self, timings: FrameTimings) {
-        tracing::error!("TIMINGS: {}", timings);
-        if let Some(input_to_rendered) = timings.input_to_rendered() {
-            tracing::error!("INPUT TO RENDERED: {:?}", input_to_rendered);
-        }
-    }
-
-    pub fn report_event(&self, event: impl Into<TimingEvent>) {
-        let event = event.into();
-
-        tracing::warn!(
-            "TIMING EVENT: {:?} {:?}",
-            event.event_type,
-            event.time.duration_since(self.ref_time)
-        );
-
-        let mut frames = self.frames.lock().unwrap();
-        for f in frames.iter_mut() {
-            f.process_event(event);
-        }
-
-        if !frames.front().unwrap().is_accepting_input() {
-            frames.push_front(Default::default());
-        }
-        while let Some(f) = frames.back() {
-            if f.is_finished() {
-                let timings = frames.pop_back().unwrap().timings();
-                self.report_timings(timings);
-            } else {
-                break;
-            }
-        }
-    }
-}
-impl Default for Timings {
+impl Default for ProcessTimingEventsSystem {
     fn default() -> Self {
         // we normally have at most 2 frames in flight
         let mut frames = VecDeque::with_capacity(2);
         frames.push_back(Default::default());
-        Self {
-            ref_time: Instant::now(),
-            frames: Mutex::new(frames),
+        Self { frames }
+    }
+}
+impl System for ProcessTimingEventsSystem {
+    fn run(&mut self, world: &mut World, _event: &FrameEvent) {
+        // only process timing events in the app world so that they are available for the debugger
+        if world.context() != WorldContext::App {
+            return;
+        }
+
+        let mut pending_samples = Vec::new();
+        let timings = &world.resource(reporter()).receiver;
+        for event in timings.try_iter() {
+            for f in self.frames.iter_mut() {
+                f.process_event(event);
+            }
+
+            if !self.frames.front().unwrap().is_accepting_input() {
+                self.frames.push_front(Default::default());
+            }
+
+            while let Some(f) = self.frames.back() {
+                if f.is_finished() {
+                    let timings = self.frames.pop_back().unwrap().timings();
+                    pending_samples.push(timings);
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if !pending_samples.is_empty() {
+            let samples = world.resource_mut(samples());
+            for sample in pending_samples {
+                while samples.len() + 1 >= MAX_SAMPLES {
+                    samples.pop_front();
+                }
+                samples.push_back(sample);
+            }
         }
     }
 }
 
-components!("input", {
-    @[Debuggable, Resource]
-    timings: Arc<Timings>,
-});
-
-#[derive(Debug)]
-struct TimingSystem<const APP_WORLD_EVENT_TYPE: usize, const CLIENT_WORLD_EVENT_TYPE: usize>;
-impl<const APP_WORLD_EVENT_TYPE: usize, const CLIENT_WORLD_EVENT_TYPE: usize> System
-    for TimingSystem<APP_WORLD_EVENT_TYPE, CLIENT_WORLD_EVENT_TYPE>
-{
-    fn run(&mut self, world: &mut World, _event: &FrameEvent) {
-        let time = Instant::now();
-        let event_type = match world.context() {
-            WorldContext::App => TimingEventType::from_usize(APP_WORLD_EVENT_TYPE).unwrap(),
-            WorldContext::Client => TimingEventType::from_usize(CLIENT_WORLD_EVENT_TYPE).unwrap(),
-            _ => return,
-        };
-        world
-            .resource(timings())
-            .report_event(TimingEvent { time, event_type });
+#[derive(Clone, Debug)]
+pub struct Reporter {
+    sender: flume::Sender<TimingEvent>,
+    receiver: flume::Receiver<TimingEvent>,
+}
+impl Default for Reporter {
+    fn default() -> Self {
+        let (sender, receiver) = flume::unbounded();
+        Self { sender, receiver }
     }
 }
+impl Reporter {
+    pub fn report_event(&self, event: impl Into<TimingEvent>) {
+        if ENABLED.load(std::sync::atomic::Ordering::Relaxed) {
+            self.sender.send(event.into()).ok();
+        }
+    }
+
+    pub fn reporter(&self) -> ThinReporter {
+        if ENABLED.load(std::sync::atomic::Ordering::Relaxed) {
+            ThinReporter::Enabled(self.sender.clone())
+        } else {
+            ThinReporter::Disabled
+        }
+    }
+}
+
+pub enum ThinReporter {
+    Disabled,
+    Enabled(flume::Sender<TimingEvent>),
+}
+impl ThinReporter {
+    pub fn report_event(&self, event: impl Into<TimingEvent>) {
+        match self {
+            Self::Disabled => {}
+            Self::Enabled(sender) => {
+                sender.send(event.into()).ok();
+            }
+        }
+    }
+}
+
+components!("timings", {
+    @[Debuggable, Resource]
+    reporter: Reporter,
+
+    @[Debuggable, Resource]
+    samples: VecDeque<FrameTimings>,
+});
 
 #[derive(Debug)]
 struct ClientWorldTimingSystem<const EVENT_TYPE: usize>;
 impl<const EVENT_TYPE: usize> System for ClientWorldTimingSystem<EVENT_TYPE> {
     fn run(&mut self, world: &mut World, _event: &FrameEvent) {
+        if world.context() != WorldContext::Client {
+            return;
+        }
+
+        // emit timing events in the client world
         let time = Instant::now();
-        let event_type = match world.context() {
-            WorldContext::Client => TimingEventType::from_usize(EVENT_TYPE).unwrap(),
-            _ => return,
-        };
+        let event_type = TimingEventType::from_usize(EVENT_TYPE).unwrap();
         world
-            .resource(timings())
+            .resource(reporter())
             .report_event(TimingEvent { time, event_type });
     }
 }
@@ -237,10 +269,10 @@ where
     S: System<E>,
 {
     fn run(&mut self, world: &mut World, event: &E) {
-        let timings = world.resource(timings()).clone();
-        timings.report_event(TimingEvent::from(self.on_started));
+        let r = world.resource(reporter()).reporter();
+        r.report_event(TimingEvent::from(self.on_started));
         self.system.run(world, event);
-        timings.report_event(TimingEvent::from(self.on_finished));
+        r.report_event(TimingEvent::from(self.on_finished));
     }
 }
 
@@ -262,7 +294,7 @@ impl System<Event<'static, ()>> for InputTimingSystem {
     fn run(&mut self, world: &mut World, event: &Event<'static, ()>) {
         if is_user_input_event(event) {
             world
-                .resource_mut(timings())
+                .resource_mut(reporter())
                 .report_event(TimingEventType::Input);
         }
     }

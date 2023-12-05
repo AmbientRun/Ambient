@@ -130,6 +130,7 @@ impl std::fmt::Display for Measurement {
 pub fn AppStatsView(hooks: &mut Hooks) -> Element {
     let (measurements, set_measurements) =
         use_state(hooks, (Measurement::new(), Measurement::new()));
+    let (input_to_rendered, set_input_to_rendered) = use_state(hooks, Measurement::new());
 
     use_frame(hooks, move |w| {
         let samples = w.resource(performance_samples());
@@ -143,12 +144,23 @@ pub fn AppStatsView(hooks: &mut Hooks) -> Element {
             external_time.apply(sample.external_time);
         }
 
-        set_measurements((frame_time, external_time))
+        set_measurements((frame_time, external_time));
+
+        ambient_timings::set_enabled(true);
+        let timings = w.resource(ambient_timings::samples());
+        let mut input_to_rendered = Measurement::new();
+        for frame_timing in timings {
+            if let Some(time) = frame_timing.input_to_rendered() {
+                input_to_rendered.apply(time);
+            }
+        }
+        set_input_to_rendered(input_to_rendered);
     });
 
     FlowColumn::el(vec![
         Text::el(format!("Frame time    {:<8.1}", measurements.0)),
         Text::el(format!("External time {:<8.1}", measurements.1)),
+        Text::el(format!("Input-Rendered time {:<8.1}", input_to_rendered)),
     ])
 }
 

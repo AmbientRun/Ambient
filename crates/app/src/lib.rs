@@ -125,6 +125,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(bounding_systems()),
             Box::new(camera_systems()),
             Box::new(ambient_procedurals::client_systems()),
+            Box::<ambient_timings::ProcessTimingEventsSystem>::default(),
             Box::new(ambient_timings::on_finished_timing_system()),
         ],
     )
@@ -138,7 +139,7 @@ pub struct AppResources {
     window_physical_size: UVec2,
     window_logical_size: UVec2,
     window_scale_factor: f64,
-    timings: Arc<ambient_timings::Timings>,
+    timings_reporter: ambient_timings::Reporter,
 }
 
 impl AppResources {
@@ -151,7 +152,7 @@ impl AppResources {
             window_physical_size: *world.resource(ambient_core::window::window_physical_size()),
             window_logical_size: *world.resource(ambient_core::window::window_logical_size()),
             window_scale_factor: *world.resource(ambient_core::window::window_scale_factor()),
-            timings: world.resource(ambient_timings::timings()).clone(),
+            timings_reporter: world.resource(ambient_timings::reporter()).clone(),
         }
     }
 }
@@ -192,7 +193,8 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(ambient_core::window::window_ctl(), resources.ctl_tx)
         .with(procedural_storage(), ProceduralStorage::new())
         .with(focus(), Default::default())
-        .with(ambient_timings::timings(), resources.timings)
+        .with(ambient_timings::reporter(), resources.timings_reporter)
+        .with(ambient_timings::samples(), Default::default())
 }
 
 pub struct AppBuilder {
@@ -520,7 +522,7 @@ impl AppBuilder {
             window_physical_size,
             window_logical_size,
             window_scale_factor,
-            timings: Default::default(),
+            timings_reporter: Default::default(),
         };
 
         let resources = world_instance_resources(app_resources);
