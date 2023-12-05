@@ -3,7 +3,7 @@ id = "qn2fv33offpiurjzf4kmzmhtimfyvd7y"
 name = "boids"
 version = "0.0.1"
 content = { type = "Playable" }
-ambient_version = "0.3.2-nightly-2023-11-16"
+ambient_version = "0.3.2-nightly-2023-12-05"
 
 [dependencies]
 tuners = { path = "../../tools/tuners" , deployment = "6s0lmTgHKCVjCFxmNdb5tj" }

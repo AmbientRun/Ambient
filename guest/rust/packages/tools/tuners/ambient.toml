@@ -3,7 +3,7 @@ id = "jkmoentiguhj6r5cpnluwgfe4ryp34xm"
 name = "tuners"
 version = "0.0.1"
 content = { type = "Playable" }
-ambient_version = "0.3.2-nightly-2023-11-16"
+ambient_version = "0.3.2-nightly-2023-12-05"
 
 [components]
 description = { type = "String", attributes = ["Networked"] }
