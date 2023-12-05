@@ -10,9 +10,7 @@ use ambient_api::{
         },
         model::components::model_from_url,
         network::components::no_sync,
-        physics::components::{
-            cube_collider, dynamic, linear_velocity, physics_controlled, plane_collider,
-        },
+        physics::components::{linear_velocity, plane_collider},
         primitives::components::{cube, quad},
         rendering::components::{
             cast_shadows, color, light_ambient, light_diffuse, transparency_group,
@@ -20,7 +18,6 @@ use ambient_api::{
         transform::components::{
             local_to_parent, local_to_world, lookat_target, lookat_up, rotation, scale, translation,
         },
-        transform::concepts::Transformable,
     },
     prelude::*,
 };
@@ -52,7 +49,6 @@ pub fn main() {
     .spawn();
 
     let _floor_collider = Entity::new()
-        .with(physics_controlled(), ())
         .with(plane_collider(), ())
         .with(translation(), Vec3::ZERO)
         .spawn();
@@ -88,18 +84,11 @@ fn make_boid(pos: Option<Vec3>, vel: Option<Vec3>) -> Entity {
         (None, _) | (_, true) => (random::<Vec2>() - 0.5).extend(0.) * 50. * 2.,
         (Some(vel), _) => vel,
     };
-    let boid = Transformable {
-        ..Transformable::suggested()
-    }
-    .make()
-    .with(is_boid(), ())
-    .with(linear_velocity(), starting_vel)
-    .with(boid_neighbour_count(), 0)
-    .with(local_to_world(), Mat4::default())
-    .with(cube_collider(), vec3(1., 1., 1.))
-    .with(cube(), ())
-    .with(physics_controlled(), ())
-    .with(dynamic(), true);
+    let boid = Entity::new()
+        .with(is_boid(), ())
+        .with(linear_velocity(), starting_vel)
+        .with(boid_neighbour_count(), 0)
+        .with(local_to_world(), Mat4::default());
 
     match pos {
         None => boid,
@@ -180,7 +169,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
         entity::add_component(*disableable_tuner, is_nonpositive_off(), ());
     }
 
-    // minimum & maximum boids quantity
+    // boids quantity
     {
         query(()).requires(is_boid()).each_frame(move |mut boids| {
             let min_quantity: usize = entity::get_component(quantity_min_tuner, output())
@@ -211,16 +200,16 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
         });
     }
 
-    // linear_velocity() speed limit
+    // basic velocity - speed limit, as well as turning to face
     {
-        query(linear_velocity())
+        query((translation(), linear_velocity()))
             .requires(is_boid())
             .each_frame(|boids| {
+                let dt = delta_time();
                 let minspeed = 15.;
                 let maxspeed = 30.;
-                for (boid, mut vel) in boids {
+                for (boid, (mut pos, mut vel)) in boids {
                     let dir = vel.normalize_or_zero();
-                    vel.z = 0.; // always remove vertical velocity component
                     if dir.length_squared() > 0.001 {
                         if vel.length_squared() < minspeed * minspeed {
                             vel = vel.normalize_or_zero() * minspeed;
@@ -230,12 +219,15 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                             vel = vel.normalize() * maxspeed;
                             entity::set_component(boid, linear_velocity(), vel);
                         }
+                        pos += vel * dt;
+                        entity::add_component(boid, lookat_target(), pos + dir);
+                        entity::set_component(boid, translation(), pos);
                     }
                 }
             });
     }
 
-    // boid velocity - to center of clique
+    // to center
     {
         let posmatch_dist_tuner = match_dist_tuner.clone();
 
@@ -271,7 +263,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
             });
     }
 
-    // boid velocity - to average velocity of clique
+    // velocity matching
     {
         let velmatch_dist_tuner = match_dist_tuner.clone();
         query((translation(), linear_velocity()))
@@ -303,7 +295,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
             });
     }
 
-    // boid - various - responding to contact with nearby boids
+    // touching
     {
         query(translation())
             .requires(is_boid())
@@ -364,25 +356,25 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
             });
     }
 
-    // // boids with more neighbours are... bigger? sure, whatever
-    // // no, does nothing
-    // {
-    //     change_query(boid_neighbour_count())
-    //         .track_change(boid_neighbour_count())
-    //         .bind(|boids| {
-    //             for (boid, bnct) in boids {
-    //                 if let Some(model) = entity::get_component(boid, boid_model()) {
-    //                     // entity::add_component(
-    //                     //     model,
-    //                     //     scale(),
-    //                     //     Vec3::splat(2.50 + 0.25 * bnct as f32),
-    //                     // );
-    //                 }
-    //             }
-    //         });
-    // }
+    // boids with more neighbours are... bigger? sure, whatever
+    // no, does nothing
+    {
+        change_query(boid_neighbour_count())
+            .track_change(boid_neighbour_count())
+            .bind(|boids| {
+                for (boid, bnct) in boids {
+                    if let Some(model) = entity::get_component(boid, boid_model()) {
+                        // entity::add_component(
+                        //     model,
+                        //     scale(),
+                        //     Vec3::splat(2.50 + 0.25 * bnct as f32),
+                        // );
+                    }
+                }
+            });
+    }
 
-    // boid velocity - edge repulsion
+    // edge repulsion
     {
         query(translation())
             .requires(is_boid())
@@ -455,13 +447,6 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                         "Data/Models/Units/Zombie1.x/animations/Idle1.anim",
                     ));
                     let anim_player = AnimationPlayerRef::new(&run_clip);
-                    let facer = Entity::new()
-                        .with(is_boids_facer(), ())
-                        .with(translation(), Vec3::ZERO)
-                        .with(lookat_up(), vec3(0., 0., 1.))
-                        .with(lookat_target(), vec3(1., 0., 0.))
-                        .with(local_to_parent(), Mat4::default())
-                        .spawn();
                     let model = Entity::new()
                         .with(translation(), Vec3::ZERO)
                         .with(
@@ -474,9 +459,7 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                         .with(cast_shadows(), ())
                         .with(apply_animation_player(), anim_player.0)
                         .spawn();
-                    entity::add_child(newboid, facer);
-                    entity::add_component(newboid, boid_facer(), facer);
-                    entity::add_child(facer, model);
+                    entity::add_child(newboid, model);
                     entity::add_component(newboid, boid_model(), model);
                     entity::add_child(model, anim_player.0);
 
