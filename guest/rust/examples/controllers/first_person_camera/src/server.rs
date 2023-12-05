@@ -12,6 +12,8 @@ use packages::third_person_controller::{
     components::camera_distance, concepts::ThirdPersonController,
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     Entity::new()

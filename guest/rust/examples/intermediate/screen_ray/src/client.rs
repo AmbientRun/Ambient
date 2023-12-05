@@ -11,6 +11,8 @@ use ambient_api::{
 };
 use packages::{orbit_camera::concepts::OrbitCamera, this::messages::Input};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     let camera = OrbitCamera {

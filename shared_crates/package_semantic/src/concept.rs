@@ -3,7 +3,7 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Component, Item, ItemData, ItemId, ItemType, ItemValue, ResolvableItemId, ResolvableValue,
+    Component, Item, ItemData, ItemId, ItemType, ItemVariant, ResolvableItemId, ResolvableValue,
     Resolve, Scope, Semantic,
 };
 
@@ -24,22 +24,22 @@ impl Item for Concept {
     const TYPE: ItemType = ItemType::Concept;
     type Unresolved = ItemPathBuf;
 
-    fn from_item_value(value: &ItemValue) -> Option<&Self> {
+    fn from_item_variant(value: &ItemVariant) -> Option<&Self> {
         match value {
-            ItemValue::Concept(value) => Some(value),
+            ItemVariant::Concept(value) => Some(value),
             _ => None,
         }
     }
 
-    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self> {
+    fn from_item_variant_mut(value: &mut ItemVariant) -> Option<&mut Self> {
         match value {
-            ItemValue::Concept(value) => Some(value),
+            ItemVariant::Concept(value) => Some(value),
             _ => None,
         }
     }
 
-    fn into_item_value(self) -> ItemValue {
-        ItemValue::Concept(self)
+    fn into_item_variant(self) -> ItemVariant {
+        ItemVariant::Concept(self)
     }
 
     fn data(&self) -> &ItemData {

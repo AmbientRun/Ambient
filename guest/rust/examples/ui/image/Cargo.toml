@@ -9,6 +9,9 @@ version = { workspace = true }
 [dependencies]
 ambient_api = { workspace = true }
 
+[build-dependencies]
+ambient_package_projection = { workspace = true }
+
 [[bin]]
 name = "image_client"
 path = "src/client.rs"

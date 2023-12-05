@@ -8,6 +8,9 @@ version = "0.0.1"
 [dependencies]
 ambient_api = { path = "../../../../guest/rust/api" }
 
+[build-dependencies]
+ambient_package_projection = { path = "../../../../guest/rust/api_core/package_projection" }
+
 [[bin]]
 name = "{{id}}_client"
 path = "src/client.rs"

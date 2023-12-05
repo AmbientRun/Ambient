@@ -2,7 +2,7 @@ use ambient_package::ItemPathBuf;
 use anyhow::Context as AnyhowContext;
 
 use crate::{
-    Attribute, Item, ItemData, ItemId, ItemType, ItemValue, ResolvableItemId, ResolvableValue,
+    Attribute, Item, ItemData, ItemId, ItemType, ItemVariant, ResolvableItemId, ResolvableValue,
     Resolve, Semantic, Type,
 };
 
@@ -22,22 +22,22 @@ impl Item for Component {
     const TYPE: ItemType = ItemType::Component;
     type Unresolved = ItemPathBuf;
 
-    fn from_item_value(value: &ItemValue) -> Option<&Self> {
+    fn from_item_variant(value: &ItemVariant) -> Option<&Self> {
         match value {
-            ItemValue::Component(value) => Some(value),
+            ItemVariant::Component(value) => Some(value),
             _ => None,
         }
     }
 
-    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self> {
+    fn from_item_variant_mut(value: &mut ItemVariant) -> Option<&mut Self> {
         match value {
-            ItemValue::Component(value) => Some(value),
+            ItemVariant::Component(value) => Some(value),
             _ => None,
         }
     }
 
-    fn into_item_value(self) -> ItemValue {
-        ItemValue::Component(self)
+    fn into_item_variant(self) -> ItemVariant {
+        ItemVariant::Component(self)
     }
 
     fn data(&self) -> &ItemData {

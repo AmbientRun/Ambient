@@ -11,6 +11,8 @@ mod shared;
 mod server;
 use server::*;
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     let is_main_package = entity::wait_for_component(entity::resources(), main_package_id()).await

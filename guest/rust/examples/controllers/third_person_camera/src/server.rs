@@ -19,6 +19,8 @@ use packages::{
 
 const USE_RIFLE_ANIMATIONS: bool = false;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     Entity::new()

@@ -156,6 +156,7 @@ md-5 = "0.10"
 pollster = "0.3.0"
 rpassword = "7.2"
 sha2 = "0.10"
+pathdiff = "0.2"
 
 cfg-if = "1.0"
 

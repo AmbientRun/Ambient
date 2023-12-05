@@ -14,6 +14,8 @@ use packages::{
     this::{assets, components::is_the_best},
 };
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     OrbitCamera {

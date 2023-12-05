@@ -13,6 +13,13 @@ use ambient_api::{
 };
 use std::f32::consts::PI;
 
+pub mod packages;
+
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
+}
+
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
     let clock_r = 100.;
@@ -58,9 +65,4 @@ fn App(hooks: &mut Hooks) -> Element {
             .with(line_width(), 4.)
             .with(background_color(), vec4(0.5, 0.5, 0.5, 1.)),
     ])
-}
-
-#[main]
-pub fn main() {
-    App.el().spawn_interactive();
 }

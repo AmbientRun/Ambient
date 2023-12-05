@@ -10,6 +10,8 @@ use packages::orbit_camera::concepts::{OrbitCamera, OrbitCameraOptional};
 
 use core::f32::consts::PI;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     // Camera.

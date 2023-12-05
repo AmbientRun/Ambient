@@ -1,3 +1,5 @@
+#![doc = include_str!("./anim_el_example.md")]
+
 use ambient_api_core::{
     core::{
         animation::{
@@ -10,7 +12,8 @@ use ambient_api_core::{
 };
 use ambient_element::{element_component, use_ref_with, Element, ElementComponentExt, Hooks};
 
-/// An animation player
+
+/// A utility component for playing a sequence of animation clips logically driven by transitions
 #[element_component]
 pub fn AnimationPlayer(_hooks: &mut Hooks, root: Element) -> Element {
     Element::new()

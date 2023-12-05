@@ -2,15 +2,15 @@
 id = "c72h7qyqnp4njboj7tu4vomadoj2zu6e"
 name = "Tangent UI: Spawn Menu"
 description = "A spawn menu that lets you spawn vehicles."
-version = "0.3.2-nightly-2023-11-23"
+version = "0.3.2-nightly-2023-12-05"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.2-nightly-2023-11-23"
+ambient_version = "0.3.2-nightly-2023-12-05"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "5Dxfql36E5hkktqsE0Eabx" }
+tangent_schema = { path = "../../schema", deployment = "5irPVH1FINoD2rZhTd1qHS" }
 
-spawner_vehicle = { path = "../../core/spawner_vehicle", deployment = "1WB7NwbfjSBbbrKvjv25Bg" }
+spawner_vehicle = { path = "../../core/spawner_vehicle", deployment = "gHyqm0dFpKSvZTXsWCEI0" }
 
 [messages.VehicleSpawnRequest]
 description = "Sent by the client to request a vehicle spawn."

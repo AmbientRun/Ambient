@@ -7,6 +7,8 @@ use ambient_api::{
 
 use packages::this::{components::*, concepts::Explosion};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     spawn_query(Explosion::as_query()).bind(|explosions| {

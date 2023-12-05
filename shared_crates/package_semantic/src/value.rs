@@ -44,27 +44,25 @@ impl ResolvableValue {
 
 macro_rules! define_scalar_value {
     ($(($value:ident, $type:ty)),*) => {
-        paste::paste! {
-            #[derive(Debug, Clone, PartialEq)]
-            pub enum ScalarValue {
-                $(
-                    $value($type),
-                )*
-            }
+        #[derive(Debug, Clone, PartialEq)]
+        pub enum ScalarValue {
             $(
-                impl From<$type> for ScalarValue {
-                    fn from(value: $type) -> Self {
-                        Self::$value(value)
-                    }
-                }
+                $value($type),
             )*
-            impl fmt::Display for ScalarValue {
-                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    match self {
-                        $(
-                            Self::$value(value) => fmt::Debug::fmt(value, f),
-                        )*
-                    }
+        }
+        $(
+            impl From<$type> for ScalarValue {
+                fn from(value: $type) -> Self {
+                    Self::$value(value)
+                }
+            }
+        )*
+        impl fmt::Display for ScalarValue {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                match self {
+                    $(
+                        Self::$value(value) => fmt::Debug::fmt(value, f),
+                    )*
                 }
             }
         }

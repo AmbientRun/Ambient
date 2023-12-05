@@ -13,6 +13,8 @@ use ambient_api::{
 };
 use packages::tangent_schema::{player::components as pc, vehicle::client::components::speed_kph};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     let camera_id = PerspectiveInfiniteReverseCamera {

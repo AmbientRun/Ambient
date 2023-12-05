@@ -1,5 +1,12 @@
 use ambient_api::{core::layout::components::space_between_items, element::use_state, prelude::*};
 
+pub mod packages;
+
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
+}
+
 #[derive(Debug, Clone, Default, ElementEditor)]
 pub struct MyStruct {
     a_float: f32,
@@ -58,9 +65,4 @@ fn App(hooks: &mut Hooks) -> Element {
         .el()
         .with(space_between_items(), STREET),
     )])
-}
-
-#[main]
-pub fn main() {
-    App.el().spawn_interactive();
 }

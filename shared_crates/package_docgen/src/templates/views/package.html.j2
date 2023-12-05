@@ -1,0 +1,75 @@
+{% extends "views/base" %}
+
+{% block title %}
+    {{ item.name }}
+{% endblock title %}
+
+{% block sidebar %}
+    {% set package_id = item_id %}
+    {% set package = item %}
+    {% include "partials/sidebar_package_heading" %}
+
+    <h3>Packages</h3>
+    <ul>
+        {% for pair in packages %}
+            <li>
+                {{ macros::item_link(item_id=pair[0], highlight=pair[0] == item_id, text=pair[1].name) }}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h3>Package</h3>
+    <ul>
+        <li><a href="#metadata">Metadata</a></li>
+        <li><a href="#description">Description</a></li>
+        {# Dependencies are disabled as they're redundant with imports.
+        {% if item.dependencies %}
+            <li><a href="#dependencies">Dependencies</a></li>
+        {% endif %}
+        #}
+
+        {% include "partials/scope_sidebar" %}
+    </ul>
+{% endblock sidebar %}
+
+{% block content %}
+<h1>{{ item.name }} <small>{{ item.version }}</small></h1>
+
+<h3>Metadata</h3>
+<table>
+    {% if item.repository %}
+        <tr>
+            <th>Repository</th>
+            <td>{{ item.repository }}</td>
+        </tr>
+    {% endif %}
+    {% if item.ambient_version %}
+        <tr>
+            <th>Ambient version</th>
+            <td>{{ item.ambient_version }}</td>
+        </tr>
+    {% endif %}
+</table>
+
+<h3>Description</h3>
+<p>
+    {% if item.description %}
+        {{ item.description | markdown }}
+    {% else %}
+        No description available.
+    {% endif %}
+</p>
+
+{# Dependencies are disabled as they're redundant with imports.
+{% if item.dependencies %}
+    <h3>Dependencies</h3>
+    <ul>
+        {% for dep_id, dep in item.dependencies %}
+            <li>{{macros::item_link(item_id=dep.id, text=dep_id)}}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+#}
+
+{% include "partials/scope" %}
+{% endblock content %}

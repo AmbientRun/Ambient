@@ -13,21 +13,7 @@ use packages::{
 
 const FALLING_VSPEED: f32 = 0.4;
 
-fn get_speed(id: EntityId, data: &CharacterMovement) -> Vec2 {
-    let speed = get_component(id, speed()).unwrap_or(0.06);
-    let run_mul = if data.running {
-        get_component(id, run_speed_multiplier()).unwrap_or(1.5)
-    } else {
-        1.
-    };
-    let air_mul = if !data.is_on_ground {
-        get_component(id, air_speed_multiplier()).unwrap_or(0.1)
-    } else {
-        1.
-    };
-    let strafe_mul = get_component(id, strafe_speed_multiplier()).unwrap_or(0.8);
-    speed * run_mul * air_mul * vec2(strafe_mul, 1.)
-}
+pub mod packages;
 
 #[main]
 pub fn main() {
@@ -54,4 +40,20 @@ pub fn main() {
             }
         }
     });
+}
+
+fn get_speed(id: EntityId, data: &CharacterMovement) -> Vec2 {
+    let speed = get_component(id, speed()).unwrap_or(0.06);
+    let run_mul = if data.running {
+        get_component(id, run_speed_multiplier()).unwrap_or(1.5)
+    } else {
+        1.
+    };
+    let air_mul = if !data.is_on_ground {
+        get_component(id, air_speed_multiplier()).unwrap_or(0.1)
+    } else {
+        1.
+    };
+    let strafe_mul = get_component(id, strafe_speed_multiplier()).unwrap_or(0.8);
+    speed * run_mul * air_mul * vec2(strafe_mul, 1.)
 }

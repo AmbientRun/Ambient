@@ -13,6 +13,8 @@ use ambient_api::{
 };
 use packages::{tangent_schema::character::components as cc, unit_schema::components as uc};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     spawn_query((cc::is_character(), cc::player_ref(), uc::head_ref())).bind(move |characters| {

@@ -4,6 +4,8 @@ use ambient_api::{
 };
 use packages::{orbit_camera::concepts::OrbitCamera, this::assets};
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     // Camera

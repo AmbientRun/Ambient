@@ -30,6 +30,38 @@ These PRs are not directly user-facing, but improve the development experience. 
 ### Removed
 -->
 
+## Unreleased (YYYY-MM-DD)
+
+### Added
+
+#### Headline features
+
+#### Other
+
+### Changed
+
+#### Breaking
+
+- Ambient packages are no longer projected into Rust code using the `#[main]` macro. Instead, a build script is used to generate a `src/packages.rs`. The intent of this change is to make it obvious what's being generated and when, as well as making the macro less error-prone. To update for this:
+  - Add `pub mod packages;` to the Rust modules with `#[main]`.
+  - Add `ambient_package_projection` as a build dependency in `Cargo.toml`.
+  - Add `build.rs` to the project root with the following contents:
+    ```rust
+    fn main() {
+        ambient_package_projection::generate();
+    }
+    ```
+
+#### Non-breaking
+
+### Fixed
+
+### Community PRs to internals
+
+These PRs are not directly user-facing, but improve the development experience. They're just as appreciated!
+
+### Removed
+
 ## Version 0.3.1 (2023-10-24)
 
 ### Added

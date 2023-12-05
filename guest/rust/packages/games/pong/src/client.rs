@@ -17,6 +17,8 @@ use constants::*;
 
 use packages::this::{components::track_audio_url, messages::Input};
 
+pub mod packages;
+
 #[main]
 async fn main() {
     let url_from_server =

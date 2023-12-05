@@ -8,6 +8,8 @@ use packages::this::{
     messages::{Bonk, Hit, Input},
 };
 
+pub mod packages;
+
 #[main]
 fn main() {
     Frame::subscribe(move |_| {

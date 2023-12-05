@@ -17,11 +17,7 @@ use packages::this::{
     messages::{Input, ShowInputLagWindow},
 };
 
-fn unix_timestamp() -> Duration {
-    SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap()
-}
+pub mod packages;
 
 #[main]
 pub fn main() {
@@ -123,4 +119,10 @@ fn InputLagWindowInner(hooks: &mut Hooks) -> Element {
         FlowColumn::el(latencies).with(space_between_items(), 4.0),
     ])
     .with(space_between_items(), 4.0)
+}
+
+fn unix_timestamp() -> Duration {
+    SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap()
 }

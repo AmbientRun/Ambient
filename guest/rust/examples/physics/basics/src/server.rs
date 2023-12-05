@@ -18,6 +18,8 @@ use packages::{
     this::{assets, messages::Bonk},
 };
 
+pub mod packages;
+
 #[main]
 pub async fn main() {
     let camera = OrbitCamera {

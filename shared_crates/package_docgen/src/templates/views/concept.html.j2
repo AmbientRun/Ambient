@@ -1,0 +1,88 @@
+{% extends "views/base" %}
+
+{% block title %}
+    {{ item.data.id }} in {{ item_path(item_id = item.data.parent_id) }}
+{% endblock title %}
+
+{% block sidebar %}
+    {% include "partials/item_sidebar_package_heading" %}
+
+    <h3>Concept</h3>
+    <ul>
+        {% if item.extends %}
+            <li><a href="#metadata">Metadata</a></li>
+        {% endif %}
+
+        <li><a href="#description">Description</a></li>
+
+        {% if item.required_components %}
+            <li><a href="#required-components">Required Components</a></li>
+        {% endif %}
+
+        {% if item.optional_components %}
+            <li><a href="#optional-components">Optional Components</a></li>
+        {% endif %}
+    </ul>
+
+    {% include "partials/item_sidebar" %}
+{% endblock sidebar %}
+
+{% block content %}
+    <h1>Concept {{ macros::item_link(item_id=item_id) }}</h1>
+
+    {% if item.extends %}
+        <h3 id="metadata">Metadata</h3>
+        <table>
+            <tr>
+                <th>Extends</th>
+                <td>{{ macros::list_of_item_links(items=item.extends) }}</td>
+            </tr>
+        </table>
+    {% endif %}
+
+    <h3 id="description">Description</h3>
+    <p>
+        {% if item.name %}
+            <h4>{{ item.name }}</h4>
+        {% else %}
+            <h4><code>{{ item.data.id }}</code></h4>
+        {% endif %}
+
+        {% if item.description %}
+            {{ item.description | markdown }}
+        {% else %}
+            No description available.
+        {% endif %}
+    </p>
+
+    {{ self::render_components(title="Required Components", components=item.required_components) }}
+    {{ self::render_components(title="Optional Components", components=item.optional_components) }}
+{% endblock content %}
+
+{% macro render_components(title, components) %}
+    {% if components %}
+        <h3 id="{{ title | slugify }}">{{ title }}</h3>
+        <ul>
+            {% for component_item_id, value in components %}
+            {% set component = get_item(item_id = component_item_id) %}
+            <li>
+                {{ macros::component_link(component_item_id=component_item_id) }}
+                <p>
+                    {% if value.suggested %}
+                        <em>Suggested:</em> <code>{{ value_string(value=value.suggested) }}</code>
+                    {% endif %}
+                </p>
+                <p>
+                    {% if value.description %}
+                        {{ value.description | markdown }}
+                    {% elif component.description %}
+                        {{ component.description | markdown }}
+                    {% else %}
+                        No description available.
+                    {% endif %}
+                </p>
+            </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro render_components %}

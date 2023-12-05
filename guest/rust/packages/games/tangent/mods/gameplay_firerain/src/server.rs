@@ -15,6 +15,8 @@ use ambient_api::{
 };
 use packages::tangent_schema::player::components::{character_ref, vehicle_ref};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     let sun_id = query(sun())

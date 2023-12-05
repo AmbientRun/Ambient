@@ -95,10 +95,11 @@ fn sample_animation_node_inner(
                 Err(_) => time.as_secs_f64(),
             };
             let speed = world.get(node, speed()).unwrap_or(1.);
+            time *= speed as f64;
             if world.get(node, looping()).unwrap_or(false) {
                 time %= clip.duration() as f64;
             }
-            time * speed as f64
+            time
         };
         let mut output: HashMap<AnimationOutputKey, AnimationOutput> = clip
             .tracks

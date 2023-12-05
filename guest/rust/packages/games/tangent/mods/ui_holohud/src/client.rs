@@ -18,6 +18,8 @@ use packages::{
     },
 };
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     Hud.el().spawn_interactive();

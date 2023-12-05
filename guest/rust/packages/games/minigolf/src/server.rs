@@ -45,68 +45,7 @@ mod utils;
 
 const BALL_RADIUS: f32 = 0.34;
 
-fn create_environment() {
-    Entity::new()
-        .with(water(), ())
-        .with(scale(), Vec3::ONE * 2000.)
-        .spawn();
-
-    Entity::new()
-        .with(sun(), 0.0)
-        .with(rotation(), Quat::from_rotation_y(-45_f32.to_radians()))
-        .with(light_diffuse(), Vec3::ONE)
-        .with(fog_density(), 0.)
-        .with(main_scene(), ())
-        .spawn();
-
-    Entity::new().with(sky(), ()).spawn();
-
-    Entity::new()
-        .with(prefab_from_url(), assets::url("level.glb"))
-        .with(translation(), Vec3::Z * -0.25)
-        .spawn();
-
-    Entity::new()
-        .with(model_from_url(), assets::url("fan.glb"))
-        .with(collider_from_url(), assets::url("fan.glb"))
-        .with(kinematic(), ())
-        .with(dynamic(), true)
-        .with(angular_velocity(), vec3(0., 90_f32.to_radians(), 0.))
-        .with(translation(), vec3(-35., 161., 8.4331))
-        .with(rotation(), Quat::from_rotation_z(180_f32.to_radians()))
-        .spawn();
-}
-
-fn make_golf_ball() -> Entity {
-    Transformable {
-        local_to_world: Mat4::IDENTITY,
-        optional: TransformableOptional {
-            translation: Some(Vec3::ZERO),
-            rotation: Some(Quat::IDENTITY),
-            scale: Some(Vec3::ONE),
-        },
-    }
-    .make()
-    .with(is_ball(), ())
-    .with(physics_controlled(), ())
-    .with(dynamic(), true)
-    .with(sphere_collider(), BALL_RADIUS)
-    .with(model_from_url(), assets::url("ball.glb"))
-}
-
-fn make_text() -> Entity {
-    Entity::new()
-        .with(
-            local_to_parent(),
-            Mat4::from_scale(Vec3::ONE * 0.02) * Mat4::from_rotation_x(-180_f32.to_radians()),
-        )
-        .with(color(), vec4(1., 0., 0., 1.))
-        .with(font_size(), 36.)
-        .with(main_scene(), ())
-        .with(local_to_world(), Default::default())
-        .with(mesh_to_local(), Default::default())
-        .with(mesh_to_world(), Default::default())
-}
+pub mod packages;
 
 #[main]
 pub fn main() {
@@ -443,4 +382,67 @@ pub fn main() {
 
 fn is_vertically_moving(linear_velocity: Vec3) -> bool {
     linear_velocity.z.abs() > 0.1
+}
+
+fn create_environment() {
+    Entity::new()
+        .with(water(), ())
+        .with(scale(), Vec3::ONE * 2000.)
+        .spawn();
+
+    Entity::new()
+        .with(sun(), 0.0)
+        .with(rotation(), Quat::from_rotation_y(-45_f32.to_radians()))
+        .with(light_diffuse(), Vec3::ONE)
+        .with(fog_density(), 0.)
+        .with(main_scene(), ())
+        .spawn();
+
+    Entity::new().with(sky(), ()).spawn();
+
+    Entity::new()
+        .with(prefab_from_url(), assets::url("level.glb"))
+        .with(translation(), Vec3::Z * -0.25)
+        .spawn();
+
+    Entity::new()
+        .with(model_from_url(), assets::url("fan.glb"))
+        .with(collider_from_url(), assets::url("fan.glb"))
+        .with(kinematic(), ())
+        .with(dynamic(), true)
+        .with(angular_velocity(), vec3(0., 90_f32.to_radians(), 0.))
+        .with(translation(), vec3(-35., 161., 8.4331))
+        .with(rotation(), Quat::from_rotation_z(180_f32.to_radians()))
+        .spawn();
+}
+
+fn make_golf_ball() -> Entity {
+    Transformable {
+        local_to_world: Mat4::IDENTITY,
+        optional: TransformableOptional {
+            translation: Some(Vec3::ZERO),
+            rotation: Some(Quat::IDENTITY),
+            scale: Some(Vec3::ONE),
+        },
+    }
+    .make()
+    .with(is_ball(), ())
+    .with(physics_controlled(), ())
+    .with(dynamic(), true)
+    .with(sphere_collider(), BALL_RADIUS)
+    .with(model_from_url(), assets::url("ball.glb"))
+}
+
+fn make_text() -> Entity {
+    Entity::new()
+        .with(
+            local_to_parent(),
+            Mat4::from_scale(Vec3::ONE * 0.02) * Mat4::from_rotation_x(-180_f32.to_radians()),
+        )
+        .with(color(), vec4(1., 0., 0., 1.))
+        .with(font_size(), 36.)
+        .with(main_scene(), ())
+        .with(local_to_world(), Default::default())
+        .with(mesh_to_local(), Default::default())
+        .with(mesh_to_world(), Default::default())
 }

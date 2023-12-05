@@ -1,6 +1,8 @@
 use ambient_api::prelude::*;
 use packages::this::messages::OnHealthPickup;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     OnHealthPickup::subscribe(|ctx, msg| {
