@@ -1,7 +1,7 @@
 [package]
 id = "qn2fv33offpiurjzf4kmzmhtimfyvd7y"
 name = "boids"
-version = "0.0.1"
+version = "0.0.2"
 content = { type = "Playable" }
 ambient_version = "0.3.2-nightly-2023-12-05"
 
