@@ -114,13 +114,25 @@ impl Measurement {
 impl std::fmt::Display for Measurement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("min: ")?;
-        Debug::fmt(&self.min, f)?;
+        if self.min == Duration::MAX {
+            f.write_str("N/A")?;
+        } else {
+            Debug::fmt(&self.min, f)?;
+        }
         f.write_str(" max: ")?;
-        Debug::fmt(&self.max, f)?;
+        if self.max == Duration::ZERO {
+            f.write_str("N/A")?;
+        } else {
+            Debug::fmt(&self.max, f)?;
+        }
         f.write_str(" avg: ")?;
         Debug::fmt(&self.avg(), f)?;
         f.write_str(" current: ")?;
-        Debug::fmt(&self.current, f)?;
+        if self.current == Duration::ZERO {
+            f.write_str("N/A")?;
+        } else {
+            Debug::fmt(&self.current, f)?;
+        }
 
         Ok(())
     }
