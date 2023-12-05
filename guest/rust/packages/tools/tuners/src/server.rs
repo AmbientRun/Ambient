@@ -1,6 +1,8 @@
 use ambient_api::{core::app::components::name, prelude::*};
 use packages::this::{components::*, concepts::Tuner, messages::UpdateTuner};
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     init_tuners();

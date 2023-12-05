@@ -33,6 +33,8 @@ use packages::{
 
 const MAXIMUM_SPAWNS_PER_FRAME: usize = 1;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     let camera_ent = PerspectiveInfiniteReverseCamera {

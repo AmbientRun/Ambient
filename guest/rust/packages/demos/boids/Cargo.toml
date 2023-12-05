@@ -5,9 +5,13 @@ edition = "2021"
 publish = false
 rust-version = {workspace = true}
 version = {workspace = true}
+ambient_package_projection = {workspace = true}
 
 [dependencies]
 ambient_api = { path = "../../../api" }
+
+[build-dependencies]
+ambient_package_projection = { workspace = true }
 
 [[bin]]
 name = "boids_client"

@@ -6,6 +6,9 @@ use ambient_api::{
     prelude::*,
 };
 use packages::this::{components::*, messages::UpdateTuner};
+
+pub mod packages;
+
 #[main]
 pub fn main() {
     Tuners.el().spawn_interactive();

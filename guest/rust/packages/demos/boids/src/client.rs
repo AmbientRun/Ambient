@@ -5,6 +5,8 @@ use ambient_api::prelude::*;
 use packages::this::components::*;
 use packages::tuners::components::output;
 
+pub mod packages;
+
 #[main]
 pub fn main() {
     BoidNeighbours::el().spawn_interactive();
