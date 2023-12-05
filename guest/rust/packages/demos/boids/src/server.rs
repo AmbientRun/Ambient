@@ -464,10 +464,30 @@ fn init_boids_logic(camera_ent: EntityId, floor_ent: EntityId) {
                     entity::add_child(model, anim_player.0);
 
                     // entity::add_component(anim_player.0, speed(), random::<f32>() * 10.);
+                    entity::add_component(
+                        newboid,
+                        boid_run_clip_has_speed_component(),
+                        run_clip.0.get_entity_id(),
+                    );
                     entity::add_component(run_clip.0.get_entity_id(), speed(), 2.0);
                     // ^speeds up animation playback, but not looping
                 }
             });
+    }
+
+    // set speed of 'boid_run_clip_has_speed_component'... really ugly but at least it says what it does :P
+    {
+        query((linear_velocity(), boid_run_clip_has_speed_component())).each_frame(|boids| {
+            for (_boid, (vel, run_clip_ent)) in boids {
+                let current_speed = vel.length();
+                entity::set_component(
+                    run_clip_ent,
+                    speed(),
+                    current_speed.clamp(15., 30.) * 0.05 + 0.5,
+                );
+                // at 15 speed (minimum) anim speed is 1.25, at 30 speed (maximum) anim speed is 2.0
+            }
+        });
     }
 
     // onspawn - make confetti

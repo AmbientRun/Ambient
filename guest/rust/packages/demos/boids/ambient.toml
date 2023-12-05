@@ -22,6 +22,8 @@ boid_velocity = { type = "Vec3" }
 boid_neighbour_count = { type = "U32", attributes = ["Networked"] }
 boid_neighbour_array = { type = { type = "Vec", element_type = "EntityId" } }
 
+boid_run_clip_has_speed_component = { type = "EntityId" }
+
 is_corpse = { type = "Empty" }
 corpse_age = { type = "F32" }
 
