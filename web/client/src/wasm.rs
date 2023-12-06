@@ -7,7 +7,16 @@ use std::sync::Arc;
 
 /// Initiates the wasm client systems
 pub fn systems() -> SystemGroup {
-    ambient_wasm::client::systems()
+    SystemGroup::new(
+        "client",
+        vec![
+            Box::new(ambient_timings::wrap_system(
+                ambient_wasm::client::systems(),
+                ambient_timings::TimingEventType::ScriptingStarted,
+                ambient_timings::TimingEventType::ScriptingFinished,
+            )),
+        ],
+    )
 }
 
 pub fn initialize(world: &mut World) -> anyhow::Result<()> {

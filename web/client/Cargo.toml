@@ -33,6 +33,7 @@ ambient_primitives.workspace = true
 ambient_renderer.workspace = true
 ambient_rpc.workspace = true
 ambient_sys.workspace = true
+ambient_timings.workspace = true
 ambient_ui_native.workspace = true
 ambient_wasm.workspace = true
 ambient_water.workspace = true

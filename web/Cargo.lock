@@ -1045,15 +1045,11 @@ dependencies = [
 name = "ambient_timings"
 version = "0.3.2-dev"
 dependencies = [
- "ambient_core",
  "ambient_ecs",
- "ambient_shared_types",
  "ambient_sys",
  "flume 0.11.0",
- "glam",
  "num-derive",
  "num-traits",
- "serde",
  "tracing",
  "winit",
 ]
@@ -1201,6 +1197,7 @@ dependencies = [
  "ambient_rpc",
  "ambient_sky",
  "ambient_sys",
+ "ambient_timings",
  "ambient_ui_native",
  "ambient_wasm",
  "ambient_water",
