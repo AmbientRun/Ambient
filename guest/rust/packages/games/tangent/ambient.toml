@@ -8,35 +8,35 @@ ambient_version = "0.3.2-nightly-2023-12-06"
 authors = ["philpax"]
 
 [dependencies]
-hide_cursor = { path = "../../std/hide_cursor", deployment = "54Um9Jiw3zR4fLIL6vP34e", enabled = true }
+hide_cursor = { path = "../../std/hide_cursor", enabled = true , id = "xar372tfo2oswb4pkvx7h7o3rxi6tap6", version = "0.3.2-nightly-2023-12-06" }
 
-core = { path = "core/core", deployment = "30GSOEp9uQ07hAHNuTVNM2" }
-behavior_vehicle = { path = "core/behavior_vehicle", deployment = "7IBgiPJXf2Y6WId1MQH3cp" }
-behavior_character = { path = "core/behavior_character", deployment = "6EH5vvMgpzVsy3or33eVkB" }
-camera_follow = { path = "core/camera_follow", deployment = "1YMi10lg71yY0JVwO18RKy" }
-ui_class_selection = { path = "core/ui_class_selection", deployment = "5f0S5ySLnpVpXYDBUXsmFr" }
+core = { path = "core/core", id = "itzh3wovmdje4ttrmo6wrravaaxp6b52", version = "0.3.2-nightly-2023-12-06" }
+behavior_vehicle = { path = "core/behavior_vehicle", id = "mnm43qv33k7kx235bz5hcgoguokwxzwo", version = "0.3.2-nightly-2023-12-06" }
+behavior_character = { path = "core/behavior_character", id = "xgafi5ckk5vhxscb6tqubfvy2fwfyqxo", version = "0.3.2-nightly-2023-12-06" }
+camera_follow = { path = "core/camera_follow", id = "mkd4mhans4bdn3mvmt45vxqbxepdhys3", version = "0.3.2-nightly-2023-12-06" }
+ui_class_selection = { path = "core/ui_class_selection", id = "hs7ygpw4pmpsixtcohdcvzxwmrfzubvi", version = "0.3.2-nightly-2023-12-06" }
 
-camera_topdown = { path = "mods/camera_topdown", enabled = false, deployment = "7274dCm0S0DkBVV6Q4U5GU" }
+camera_topdown = { path = "mods/camera_topdown", enabled = false, id = "vvuixyn4jy3xv4ij4hi75atzfwk2j37k", version = "0.3.2-nightly-2023-12-06" }
 
-ui_holohud = { path = "mods/ui_holohud", enabled = false, deployment = "14OqDnPfCqUsIV85ZWFQuj" }
-ui_flathud = { path = "mods/ui_flathud", enabled = true, deployment = "3cAMDgV3j9T9kyZFzyCC6N" }
-ui_spawn_menu = { path = "mods/ui_spawn_menu", enabled = false, deployment = "MVMARfpnUd2ecg1K7Ldts" }
+ui_holohud = { path = "mods/ui_holohud", enabled = false, id = "xadcwjtmzuagnoydry5h4psaph3hccbw", version = "0.3.2-nightly-2023-12-06" }
+ui_flathud = { path = "mods/ui_flathud", enabled = true, id = "zlu324bqcibov3o4co42eriyfhcnzsus", version = "0.3.2-nightly-2023-12-06" }
+ui_spawn_menu = { path = "mods/ui_spawn_menu", enabled = false, id = "c72h7qyqnp4njboj7tu4vomadoj2zu6e", version = "0.3.2-nightly-2023-12-06" }
 
-pickup_health = { path = "mods/pickup_health", deployment = "2bwTrPGNHxtXuRd5Vcvpp2" }
+pickup_health = { path = "mods/pickup_health", id = "skpc6fwjkbidr7a6pmx4mab6zl37oiut", version = "0.3.2-nightly-2023-12-06" }
 
-level_cubicide = { path = "mods/level_cubicide", deployment = "20j9GTx8gDTaNyfStSng8L" }
-level_cubicide_onespawn = { path = "mods/level_cubicide_onespawn", enabled = false, deployment = "7Ug0eazgUptlxocPI3IKxR" }
+level_cubicide = { path = "mods/level_cubicide", id = "gzbamly2shtnz3siisf3mdzglsi67vul", version = "0.3.2-nightly-2023-12-06" }
+level_cubicide_onespawn = { path = "mods/level_cubicide_onespawn", enabled = false, id = "ggu2h7bk4jrvshq7zteboipyut7wuib2", version = "0.3.2-nightly-2023-12-06" }
 
-class_assault = { path = "mods/class_assault", deployment = "6UoK4eWZ9IUnydqJVNksXx" }
-class_scout = { path = "mods/class_scout", deployment = "1mkbovFVjVn95JUdK0Pg3U", enabled = false }
-class_tank = { path = "mods/class_tank", deployment = "2RkGwuagVRcX5B4IIKHCjZ" }
+class_assault = { path = "mods/class_assault", id = "j32xi2gg5rvgob2cu7uirdbtj5ce4jw7", version = "0.3.2-nightly-2023-12-06" }
+class_scout = { path = "mods/class_scout", enabled = false , id = "fvn74ns4ozf3gn42vmowphmvmpsfklbi", version = "0.3.2-nightly-2023-12-06" }
+class_tank = { path = "mods/class_tank", id = "ys6g5noe72fbhnoj6l3psjq75knd7gko", version = "0.3.2-nightly-2023-12-06" }
 
-vehicle_standard = { path = "mods/vehicle_standard", deployment = "2iyzypn9kXGANDvEyfEdY1" }
+vehicle_standard = { path = "mods/vehicle_standard", id = "mx4o7x2s4zqc6pxmsfcb7hznbv4chxe5", version = "0.3.2-nightly-2023-12-06" }
 
-gameplay_firerain = { path = "mods/gameplay_firerain", enabled = false, deployment = "3615GoIKQivhBJFvV341GD" }
-gameplay_daynight = { path = "mods/gameplay_daynight", enabled = false, deployment = "4Gkh3vPKBMaklf5g6FoVNL" }
+gameplay_firerain = { path = "mods/gameplay_firerain", enabled = false, id = "ianwyihfsaiuc26xjldmwd3duidju2tb", version = "0.3.2-nightly-2023-12-06" }
+gameplay_daynight = { path = "mods/gameplay_daynight", enabled = false, id = "d7rxxncafgtwf7c3brhsw7oh7h2ccfip", version = "0.3.2-nightly-2023-12-06" }
 
-reskin_classes = { path = "mods/reskin_classes", enabled = false, deployment = "4uq8BwRx6JhubgZWB0x19R" }
+reskin_classes = { path = "mods/reskin_classes", enabled = false, id = "oa46hyuls6l24bmqapdm3iqzh3p37di6", version = "0.3.2-nightly-2023-12-06" }
 
-package_manager = { path = "../../tools/package_manager", deployment = "78eEtyB3QMRSGslVb1OLpY" }
-editor = { path = "../../tools/editor", deployment = "3tSi3UM3PPjbT2i4jCg5fq" }
+package_manager = { path = "../../tools/package_manager", id = "hr4pxz7kfhzgimicoyh65ydel3aehuhk", version = "0.3.2-nightly-2023-12-06" }
+editor = { path = "../../tools/editor", id = "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu", version = "0.3.2-nightly-2023-12-06" }

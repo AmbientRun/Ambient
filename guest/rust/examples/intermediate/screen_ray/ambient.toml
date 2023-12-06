@@ -20,4 +20,4 @@ type = "EntityId"
 attributes = ["Networked", "Debuggable"]
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "50gYAKckea6ch8NOd92nNt" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", id = "tijz7x6fimbgu24sbbtp4nllhfxbgblp", version = "0.3.2-nightly-2023-12-06" }
