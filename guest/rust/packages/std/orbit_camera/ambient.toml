@@ -2,9 +2,9 @@
 id = "tijz7x6fimbgu24sbbtp4nllhfxbgblp"
 name = "Orbit Camera"
 description = "Implements a clientside-only orbit camera. Very basic and not interoperable with other cameras; its primary purpose is for demos. Note that it will automatically add a focusable game element that may be incompatible with `hide_cursor` and similar packages."
-version = "0.3.2-nightly-2023-12-05"
+version = "0.3.2-nightly-2023-12-06"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-12-05"
+ambient_version = "0.3.2-nightly-2023-12-06"
 
 [components]
 is_orbit_camera = { type = "Empty", attributes = ["Debuggable", "Networked"] }
