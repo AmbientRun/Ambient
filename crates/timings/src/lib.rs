@@ -148,17 +148,27 @@ impl System for ProcessTimingEventsSystem {
             return;
         }
 
+        // timings of finished frames, to be added to the samples resource
         let mut pending_samples = Vec::new();
+
         let timings = &world.resource(reporter()).receiver;
         for event in timings.try_iter() {
             for f in self.frames.iter_mut() {
                 f.process_event(event);
             }
 
-            if !self.frames.front().unwrap().is_accepting_input() {
+            // the newest frame should always be accepting input
+            if !self
+                .frames
+                .front()
+                .map(Frame::is_accepting_input)
+                .unwrap_or_default()
+            {
+                // the currently newest one is missing or not accepting input, so we need to add a new one
                 self.frames.push_front(Default::default());
             }
 
+            // pop finished frames
             while let Some(f) = self.frames.back() {
                 if f.is_finished() {
                     let timings = self.frames.pop_back().unwrap().timings();
@@ -169,6 +179,7 @@ impl System for ProcessTimingEventsSystem {
             }
         }
 
+        // add pending samples to the samples resource
         if !pending_samples.is_empty() {
             let samples = world.resource_mut(samples());
             for sample in pending_samples {
