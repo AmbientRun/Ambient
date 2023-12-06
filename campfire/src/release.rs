@@ -174,6 +174,33 @@ fn update_version(
         for path in get_all_packages(true, true, true)? {
             edit_toml(path.join("ambient.toml"), |toml| {
                 add_ambient_version(toml, new_version);
+
+                let Some(dependencies) = toml
+                    .get_mut("dependencies")
+                    .and_then(|t| t.as_table_like_mut())
+                else {
+                    return;
+                };
+
+                for (_, value) in dependencies.iter_mut() {
+                    let Some(table) = value.as_table_like_mut() else {
+                        continue;
+                    };
+
+                    let Some(dep_path) = table.get("path").and_then(|t| t.as_str()) else {
+                        continue;
+                    };
+
+                    let dep_ambient_toml_path = path
+                        .join(dep_path)
+                        .join("ambient.toml")
+                        .canonicalize()
+                        .unwrap();
+                    let dep_id = read_id_from_ambient_toml(&dep_ambient_toml_path).unwrap();
+
+                    table.insert("id", toml_edit::value(dep_id));
+                    table.insert("version", toml_edit::value(new_version));
+                }
             })?;
         }
     }
@@ -529,6 +556,21 @@ fn edit_toml(
         toml.to_string()
     })
     .with_context(|| format!("Failed to edit file {:?}", path.as_ref()))
+}
+
+fn read_id_from_ambient_toml(ambient_toml: &Path) -> anyhow::Result<String> {
+    let ambient_toml = std::fs::read_to_string(ambient_toml)?.parse::<toml_edit::Document>()?;
+    let package = ambient_toml
+        .get("package")
+        .context("no package in ambient.toml")?
+        .as_table_like()
+        .context("package is not a table")?;
+    let id = package
+        .get("id")
+        .context("no id in package")?
+        .as_str()
+        .context("id is not a string")?;
+    Ok(id.to_string())
 }
 
 fn check_docker_build() -> anyhow::Result<()> {
