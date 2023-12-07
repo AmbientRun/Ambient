@@ -10,8 +10,8 @@ your content with the world. Any [package](./package.md) can be deployed with:
 ```sh
 $ ambient deploy
 Package "my-project" deployed successfully!
-  Deployment ID: deployment_id
-  Web URL: 'https://ambient.run/packages/package_id/deployment/deployment_id'
+   Join: ambient join 'https://api.ambient.run/servers/ensure-running?package_id=pkgid&package_version=0.0.5'
+   Web URL: 'https://ambient.run/packages/pkgid/version/0.0.5'
 ```
 
 This will package and upload your creation to the platform. The web URL in the output can be used to browse your game or asset. If you're on a WebGPU enabled browser, the game can be played directly on the website. Any content upload to the Ambient platform is subject to our [terms of services](https://www.ambient.run/terms-of-service).

@@ -226,20 +226,23 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                 deployment_id,
                 manifest,
             } => {
+                let package_id = manifest
+                    .package
+                    .id
+                    .as_ref()
+                    .expect("no package ID - this is a bug")
+                    .as_str();
+                let version = manifest.package.version.to_string();
                 let ensure_running_url = ambient_shared_types::urls::ensure_running_url(
-                    ambient_shared_types::urls::ServerSelector::Deployment(&deployment_id),
+                    ambient_shared_types::urls::ServerSelector::Package {
+                        id: package_id,
+                        version: Some(version.as_str()),
+                    },
                 );
-                let web_url = ambient_shared_types::urls::web_package_url(
-                    manifest
-                        .package
-                        .id
-                        .expect("no package ID - this is a bug")
-                        .as_str(),
-                    Some(&deployment_id),
-                );
+                let web_url =
+                    ambient_shared_types::urls::web_package_url(package_id, Some(version.as_str()));
 
                 tracing::info!("Package \"{main_package_name}\" deployed successfully!");
-                tracing::info!("  Deployment ID: {deployment_id}");
                 tracing::info!("  Join: ambient join '{ensure_running_url}'");
                 tracing::info!("  Web URL: '{}'", web_url.bright_green());
 

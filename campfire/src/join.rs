@@ -16,6 +16,9 @@ pub struct Join {
     /// The package to join
     #[arg(long, short)]
     pub package: Option<String>,
+    /// The version of the package to join. Only valid when `package` is specified.
+    #[arg(long, short)]
+    pub version: Option<String>,
     /// The context ID to use while joining
     #[arg(long, short)]
     pub context: Option<String>,
@@ -27,16 +30,19 @@ pub struct Join {
 pub fn main(join: &Join) -> anyhow::Result<()> {
     let mut args = vec!["join"];
 
-    let mut url = match (&join.url, &join.deployment, &join.package) {
-        (Some(url), None, None) => Some(url.to_string()),
-        (None, Some(deployment), None) => Some(urls::ensure_running_url(
+    let mut url = match (&join.url, &join.deployment, &join.package, &join.version) {
+        (Some(url), None, None, None) => Some(url.to_string()),
+        (None, Some(deployment), None, None) => Some(urls::ensure_running_url(
             urls::ServerSelector::Deployment(deployment),
         )),
-        (None, None, Some(package)) => Some(urls::ensure_running_url(
-            urls::ServerSelector::Package(package),
-        )),
+        (None, None, Some(package), version) => {
+            Some(urls::ensure_running_url(urls::ServerSelector::Package {
+                id: package,
+                version: version.as_deref(),
+            }))
+        }
 
-        (None, None, None) => {
+        (None, None, None, None) => {
             tracing::info!("no join method specified, joining local server");
             None
         }
