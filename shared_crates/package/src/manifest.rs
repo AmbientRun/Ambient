@@ -250,6 +250,10 @@ pub struct Dependency {
     #[serde(default)]
     pub path: Option<PathBuf>,
     #[serde(default)]
+    pub id: Option<PackageId>,
+    #[serde(default)]
+    pub version: Option<String>,
+    #[serde(default)]
     pub deployment: Option<String>,
     #[serde(default)]
     pub enabled: Option<bool>,
@@ -257,6 +261,10 @@ pub struct Dependency {
 impl Dependency {
     pub fn has_remote_dependency(&self) -> bool {
         self.deployment.is_some()
+    }
+
+    pub fn id_version(&self) -> Option<(&PackageId, &str)> {
+        self.id.as_ref().zip(self.version.as_deref())
     }
 }
 
@@ -737,12 +745,26 @@ mod tests {
         deps_code = { path = "deps/code" }
         deps_ignore_me = { path = "deps/ignore_me", enabled = false }
         deps_remote_deployment = { deployment = "jhsdfu574S" }
+        deps_remote_deployment_pkg_ver = { id = "cezekiuth6khuiykw66bmepsggaoztyv", version = "0.1.0" }
 
         "#;
 
+        let manifest = Manifest::parse(TOML).unwrap();
         assert_eq!(
-            Manifest::parse(TOML),
-            Ok(Manifest {
+            manifest
+                .dependencies
+                .get(&sci("deps_remote_deployment_pkg_ver"))
+                .unwrap()
+                .id_version(),
+            Some((
+                &PackageId("cezekiuth6khuiykw66bmepsggaoztyv".to_owned()),
+                "0.1.0"
+            ))
+        );
+
+        assert_eq!(
+            manifest,
+            Manifest {
                 package: Package {
                     id: Some(PackageId("lktsfudbjw2qikhyumt573ozxhadkiwm".to_string())),
                     name: "dependencies".to_string(),
@@ -754,6 +776,8 @@ mod tests {
                         sci("deps_assets"),
                         Dependency {
                             path: Some(PathBuf::from("deps/assets")),
+                            id: None,
+                            version: None,
                             deployment: None,
                             enabled: None,
                         }
@@ -762,6 +786,8 @@ mod tests {
                         sci("deps_code"),
                         Dependency {
                             path: Some(PathBuf::from("deps/code")),
+                            id: None,
+                            version: None,
                             deployment: None,
                             enabled: None,
                         }
@@ -770,6 +796,8 @@ mod tests {
                         sci("deps_ignore_me"),
                         Dependency {
                             path: Some(PathBuf::from("deps/ignore_me")),
+                            id: None,
+                            version: None,
                             deployment: None,
                             enabled: Some(false),
                         }
@@ -778,13 +806,25 @@ mod tests {
                         sci("deps_remote_deployment"),
                         Dependency {
                             path: None,
+                            id: None,
+                            version: None,
                             deployment: Some("jhsdfu574S".to_owned()),
                             enabled: None,
                         }
-                    )
+                    ),
+                    (
+                        sci("deps_remote_deployment_pkg_ver"),
+                        Dependency {
+                            path: None,
+                            id: Some(PackageId("cezekiuth6khuiykw66bmepsggaoztyv".to_owned())),
+                            version: Some("0.1.0".to_owned()),
+                            deployment: None,
+                            enabled: None,
+                        }
+                    ),
                 ]),
                 ..Default::default()
-            })
+            }
         )
     }
 }
