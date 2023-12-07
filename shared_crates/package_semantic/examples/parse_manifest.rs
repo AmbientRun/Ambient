@@ -4,10 +4,12 @@ use ambient_package_semantic::{Printer, RetrievableFile, Semantic};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let mut semantic = Semantic::new(false).await?;
     let args: Vec<_> = std::env::args().collect();
     let target = args.get(1).expect("path or 'all' as first arg");
-    let should_resolve = !args.get(2).is_some_and(|s| s == "--no-resolve");
+    let should_resolve = !args.iter().any(|s| s == "--no-resolve");
+    let ignore_local_dependencies = args.iter().any(|s| s == "--ignore-local-dependencies");
+
+    let mut semantic = Semantic::new(ignore_local_dependencies).await?;
 
     let paths = if target == "all" {
         all_examples()?
