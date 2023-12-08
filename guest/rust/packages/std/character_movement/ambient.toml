@@ -2,9 +2,9 @@
 id = "lktsfudbjw2qikhyumt573ozxhadkiwm"
 name = "Character Movement"
 description = "Simulates character movement, including gravity, for a unit."
-version = "0.3.2-nightly-2023-12-06"
+version = "0.3.2-nightly-2023-12-08"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-12-06"
+ambient_version = "0.3.2-nightly-2023-12-08"
 
 [dependencies]
 unit_schema = { path = "../../schemas/unit", deployment = "5usqJ7LlFJhL2WwYE8huXx" }
