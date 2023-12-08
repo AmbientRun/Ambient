@@ -2,11 +2,11 @@
 id = "zlu324bqcibov3o4co42eriyfhcnzsus"
 name = "Tangent UI: Flat HUD"
 description = "A flat 2D HUD for Tangent."
-version = "0.3.2-nightly-2023-12-04"
+version = "0.3.2-nightly-2023-12-06"
 content = { type = "Mod", for_playables = ["t5qdqwpkoxtelvafs7qpvzhaoperwfpt"] }
-ambient_version = "0.3.2-nightly-2023-12-04"
+ambient_version = "0.3.2-nightly-2023-12-06"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "gVbZUjEHM7c9wR6yfkumg" }
-game_object = { path = "../../../../schemas/game_object", deployment = "5m8EWQG4XLFzrmI6wBiYh8" }
+tangent_schema = { path = "../../schema", deployment = "SMc9Hv6WvPfVwzGiySoW3" }
+game_object = { path = "../../../../schemas/game_object", deployment = "1qkGH4gbvSA39rfoy64Egj" }
