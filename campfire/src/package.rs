@@ -288,6 +288,15 @@ fn get_all_examples(include_testcases: bool) -> anyhow::Result<Vec<PathBuf>> {
             }
         }
 
+        for deps_example_deps in all_directories_in(
+            &examples_path
+                .join("intermediate")
+                .join("dependencies")
+                .join("deps"),
+        )? {
+            examples.push(deps_example_deps.path());
+        }
+
         if include_testcases {
             let testcases_path = guest.path().join("testcases");
             if testcases_path.exists() {
