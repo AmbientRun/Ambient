@@ -7,8 +7,8 @@ authors = ["philpax"]
 ambient_version = "0.3.2-nightly-2023-12-09"
 
 [dependencies]
-game_object = { path = "../../../schemas/game_object", deployment = "1qkGH4gbvSA39rfoy64Egj" }
-unit = { path = "../../../schemas/unit" , deployment = "5usqJ7LlFJhL2WwYE8huXx" }
+game_object = { path = "../../../schemas/game_object", deployment = "2fvV1ReBAjWThm2KmLyizS" }
+unit = { path = "../../../schemas/unit" , deployment = "2TXuKy6EhrAPanCyf9xzcW" }
 
 [components]
 # Player
