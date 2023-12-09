@@ -6,42 +6,42 @@ rust-version = { workspace = true }
 repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
-ambient_sys = { path = "../crates/sys" , version = "0.3.2-nightly-2023-12-09" }
-ambient_animation = { path = "../crates/animation" , version = "0.3.2-nightly-2023-12-09" }
-ambient_app = { path = "../crates/app" , version = "0.3.2-nightly-2023-12-09" }
-ambient_audio = { path = "../crates/audio" , version = "0.3.2-nightly-2023-12-09" }
-ambient_build = { path = "../crates/build" , version = "0.3.2-nightly-2023-12-09" }
-ambient_cameras = { path = "../crates/cameras" , version = "0.3.2-nightly-2023-12-09" }
-ambient_cloud_client = { path = "../crates/cloud_client" , version = "0.3.2-nightly-2023-12-09" }
-ambient_core = { path = "../crates/core" , version = "0.3.2-nightly-2023-12-09" }
-ambient_debugger = { path = "../crates/debugger" , version = "0.3.2-nightly-2023-12-09" }
-ambient_decals = { path = "../crates/decals" , version = "0.3.2-nightly-2023-12-09" }
-ambient_deploy = { path = "../crates/deploy" , version = "0.3.2-nightly-2023-12-09" }
-ambient_ecs = { path = "../crates/ecs" , version = "0.3.2-nightly-2023-12-09" }
-ambient_git_rev_init = { path = "../crates/git_rev_init" , version = "0.3.2-nightly-2023-12-09" }
-ambient_gizmos = { path = "../crates/gizmos" , version = "0.3.2-nightly-2023-12-09" }
-ambient_model_import = { path = "../crates/model_import" , version = "0.3.2-nightly-2023-12-09" }
-ambient_network = { path = "../crates/network" , version = "0.3.2-nightly-2023-12-09" }
-ambient_prefab = { path = "../crates/prefab" , version = "0.3.2-nightly-2023-12-09" }
-ambient_physics = { path = "../crates/physics" , version = "0.3.2-nightly-2023-12-09" }
-ambient_primitives = { path = "../crates/primitives" , version = "0.3.2-nightly-2023-12-09" }
-ambient_rpc = { path = "../crates/rpc" , version = "0.3.2-nightly-2023-12-09" }
-ambient_native_std = { path = "../crates/native_std" , version = "0.3.2-nightly-2023-12-09" }
-ambient_ui_native = { path = "../crates/ui_native" , version = "0.3.2-nightly-2023-12-09" }
-ambient_world_audio = { path = "../crates/world_audio" , version = "0.3.2-nightly-2023-12-09" }
-ambient_sky = { path = "../crates/sky" , version = "0.3.2-nightly-2023-12-09" }
-ambient_water = { path = "../crates/water" , version = "0.3.2-nightly-2023-12-09" }
-ambient_client_shared = { path = "../crates/client_shared/" , version = "0.3.2-nightly-2023-12-09" }
-ambient_package_semantic_native = { path = "../crates/package_semantic_native" , version = "0.3.2-nightly-2023-12-09" }
-ambient_settings = { path = "../crates/settings" , version = "0.3.2-nightly-2023-12-09" }
+ambient_sys = { path = "../crates/sys" , version = "0.3.2-dev" }
+ambient_animation = { path = "../crates/animation" , version = "0.3.2-dev" }
+ambient_app = { path = "../crates/app" , version = "0.3.2-dev" }
+ambient_audio = { path = "../crates/audio" , version = "0.3.2-dev" }
+ambient_build = { path = "../crates/build" , version = "0.3.2-dev" }
+ambient_cameras = { path = "../crates/cameras" , version = "0.3.2-dev" }
+ambient_cloud_client = { path = "../crates/cloud_client" , version = "0.3.2-dev" }
+ambient_core = { path = "../crates/core" , version = "0.3.2-dev" }
+ambient_debugger = { path = "../crates/debugger" , version = "0.3.2-dev" }
+ambient_decals = { path = "../crates/decals" , version = "0.3.2-dev" }
+ambient_deploy = { path = "../crates/deploy" , version = "0.3.2-dev" }
+ambient_ecs = { path = "../crates/ecs" , version = "0.3.2-dev" }
+ambient_git_rev_init = { path = "../crates/git_rev_init" , version = "0.3.2-dev" }
+ambient_gizmos = { path = "../crates/gizmos" , version = "0.3.2-dev" }
+ambient_model_import = { path = "../crates/model_import" , version = "0.3.2-dev" }
+ambient_network = { path = "../crates/network" , version = "0.3.2-dev" }
+ambient_prefab = { path = "../crates/prefab" , version = "0.3.2-dev" }
+ambient_physics = { path = "../crates/physics" , version = "0.3.2-dev" }
+ambient_primitives = { path = "../crates/primitives" , version = "0.3.2-dev" }
+ambient_rpc = { path = "../crates/rpc" , version = "0.3.2-dev" }
+ambient_native_std = { path = "../crates/native_std" , version = "0.3.2-dev" }
+ambient_ui_native = { path = "../crates/ui_native" , version = "0.3.2-dev" }
+ambient_world_audio = { path = "../crates/world_audio" , version = "0.3.2-dev" }
+ambient_sky = { path = "../crates/sky" , version = "0.3.2-dev" }
+ambient_water = { path = "../crates/water" , version = "0.3.2-dev" }
+ambient_client_shared = { path = "../crates/client_shared/" , version = "0.3.2-dev" }
+ambient_package_semantic_native = { path = "../crates/package_semantic_native" , version = "0.3.2-dev" }
+ambient_settings = { path = "../crates/settings" , version = "0.3.2-dev" }
 
-ambient_element = { path = "../shared_crates/element" , version = "0.3.2-nightly-2023-12-09" }
-ambient_package = { path = "../shared_crates/package" , version = "0.3.2-nightly-2023-12-09" }
-ambient_package_semantic = { path = "../shared_crates/package_semantic" , version = "0.3.2-nightly-2023-12-09" }
-ambient_std = { path = "../shared_crates/std" , version = "0.3.2-nightly-2023-12-09" }
+ambient_element = { path = "../shared_crates/element" , version = "0.3.2-dev" }
+ambient_package = { path = "../shared_crates/package" , version = "0.3.2-dev" }
+ambient_package_semantic = { path = "../shared_crates/package_semantic" , version = "0.3.2-dev" }
+ambient_std = { path = "../shared_crates/std" , version = "0.3.2-dev" }
 ambient_shared_types = { path = "../shared_crates/shared_types", features = [
     "native",
-] , version = "0.3.2-nightly-2023-12-09" }
+] , version = "0.3.2-dev" }
 
 tracing-tree = { workspace = true, optional = true }
 tracing-stackdriver = { workspace = true, optional = true }
@@ -92,4 +92,4 @@ debug-local-datagram-latency = ["ambient_wasm/debug-local-datagram-latency"]
 axum = { workspace = true }
 axum-server = { workspace = true }
 rustls = { workspace = true }
-ambient_wasm = { path = "../crates/wasm" , version = "0.3.2-nightly-2023-12-09" }
+ambient_wasm = { path = "../crates/wasm" , version = "0.3.2-dev" }
