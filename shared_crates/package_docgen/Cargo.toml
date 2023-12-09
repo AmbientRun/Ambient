@@ -12,7 +12,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 targets = ["wasm32-wasi"]
 
 [dependencies]
-ambient_package_json = { path = "../package_json" , version = "0.3.2-dev" }
+ambient_package_json = { path = "../package_json" , version = "0.3.2-nightly-2023-12-09" }
 
 tera = "1.19"
 markdown = "1.0.0-alpha.14"
