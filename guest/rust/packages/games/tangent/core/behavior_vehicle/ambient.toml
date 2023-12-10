@@ -2,16 +2,16 @@
 id = "mnm43qv33k7kx235bz5hcgoguokwxzwo"
 name = "Tangent Behavior: Vehicle"
 description = "Implements the vehicle behavior for Tangent."
-version = "0.3.2-nightly-2023-12-09"
+version = "0.3.2-nightly-2023-12-10"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-12-09"
+ambient_version = "0.3.2-nightly-2023-12-10"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "2Kg8A9iFon8xyucj34hTMB" }
-game_object = { path = "../../../../schemas/game_object", deployment = "2fvV1ReBAjWThm2KmLyizS" }
-kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "5kutsokq4eUcZ9FBn1Od2J" }
-explosion = { path = "../../../../std/explosion", deployment = "46cPgbhOZqUt9JPf4clZnL" }
+tangent_schema = { path = "../../schema", deployment = "55zQ6rO01LtmMj6hMYAUum" }
+game_object = { path = "../../../../schemas/game_object", deployment = "11w53SvH1K0eEYlcObvM08" }
+kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "2yICqLeY6g4KlnGrtm6zPc" }
+explosion = { path = "../../../../std/explosion", deployment = "7mJJBkWTgiktGDvUBUcoHs" }
 
 [messages.OnCollision]
 name = "On Collision"
