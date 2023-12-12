@@ -2,11 +2,11 @@
 id = "thr5tsq3g3vvf7ilap2jfu6bpoyas53s"
 name = "Tic Tac Toe"
 description = "Aka five-in-a-row."
-version = "0.3.2-nightly-2023-12-11"
+version = "0.3.2-nightly-2023-12-12"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/tictactoe"
 type = "Game"
 content = { type = "Playable" }
-ambient_version = "0.3.2-nightly-2023-12-11"
+ambient_version = "0.3.2-nightly-2023-12-12"
 
 [hosting]
 region = "Auto"
@@ -36,4 +36,4 @@ right = "Bool"
 capture = "Bool"
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "3A8MOjqdGUN0Z2FPCKR0Om" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "6xeP7Zx84iRn2BLDzAEsut" }
