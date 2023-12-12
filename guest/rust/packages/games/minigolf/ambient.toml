@@ -13,7 +13,7 @@ region = "Auto"
 max_players = 10
 
 [dependencies]
-hide_cursor = { path = "../../std/hide_cursor", deployment = "7KoJ8LAFM88SV2UuDlC3fd" }
+hide_cursor = { path = "../../std/hide_cursor", deployment = "3OXCyu3zHz0DYn9AhRXKu1" }
 
 [components]
 next_player_hue = { type = "F32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = [
