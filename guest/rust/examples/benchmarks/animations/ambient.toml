@@ -6,7 +6,7 @@ content = { type = "Playable", example = true }
 ambient_version = "0.3.2-nightly-2023-12-13"
 
 [dependencies]
-base_assets = { path = "../../../packages/std/base_assets", deployment = "2RmjT3YDF5apBc07hdbsK4" }
-character_animation = { path = "../../../packages/std/character_animation", deployment = "5mqEeZyhclVVKMtKxycENd" }
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "6xeP7Zx84iRn2BLDzAEsut" }
-performance_bar = { path = "../../../packages/tools/performance_bar", deployment = "K6oOHm37ZaHJcWzYyspZl" }
+base_assets = { path = "../../../packages/std/base_assets", deployment = "4V4xpDeFhuNIgrvLrJQOmv" }
+character_animation = { path = "../../../packages/std/character_animation", deployment = "7ZqVtjt2IWzmL4eOMaupIo" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "35AFIfbfGDLesxECgSQniX" }
+performance_bar = { path = "../../../packages/tools/performance_bar", deployment = "g9IkCVtyWwaFzyu4tNikw" }
