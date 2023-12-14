@@ -13,9 +13,9 @@ content = { type = "Playable" }
 # package_manager = { path = "../../packages/tools/package_manager" }
 
 # deploy (sep 28)-
-fps_controller = { deployment = "6hF1mGWsce1fEKcB9r1lS8" } # sep 28
-character_animation = { deployment = "s1HU95RShblqYqSuG4Vk1" } # sep 28
-hide_cursor = { deployment = "770oOvKcPfBILw1hNixsJU" } # sep 28
+fps_controller = { deployment = "7Fsh9rgyOqRbh39ZvekZ77" } # oct 3
+hide_cursor = { deployment = "vQiyr351t7pHsYQntZT7j" } # oct 3
+character_animation = { deployment = "6SQ6Rra3CrwR7kbmIbjWyh" } # oct 3
 package_manager = { deployment = "scChmqT301aU5xO75pVCb" } # sep 28
 
 temperature = { path = "../temperature" , deployment = "5wJt3UkQJ90EhEfX0e3P8x" }
