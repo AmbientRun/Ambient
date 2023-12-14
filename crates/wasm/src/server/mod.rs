@@ -21,6 +21,7 @@ pub fn initialize(
             base: Default::default(),
             world_ref: Default::default(),
             id,
+            reqwest_client: reqwest::Client::new(),
         },
         Some(data_path.as_ref()),
     )?;
@@ -95,6 +96,7 @@ struct Bindings {
     base: shared::bindings::BindingsBase,
     world_ref: shared::bindings::WorldRef,
     id: EntityId,
+    reqwest_client: reqwest::Client,
 }
 
 impl Bindings {

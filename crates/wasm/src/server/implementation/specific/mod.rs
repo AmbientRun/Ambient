@@ -2,7 +2,7 @@
 //!
 //! If implementing a trait that is also available on the client, it should go in [super].
 
-use std::str::FromStr;
+use std::{future::Future, str::FromStr};
 
 use ambient_core::{
     asset_cache,
@@ -10,9 +10,13 @@ use ambient_core::{
     player::{is_player, user_id},
     runtime,
 };
-use ambient_ecs::{generated::messages::HttpResponse, query, EntityId, World};
+use ambient_ecs::{
+    generated::{messages::HttpResponse, types::HttpMethod},
+    query, EntityId, World,
+};
 use ambient_native_std::asset_url::AbsAssetUrl;
 use ambient_network::server::player_transport;
+use reqwest::header::{HeaderMap, HeaderName};
 
 use super::super::Bindings;
 
@@ -95,49 +99,109 @@ fn send_networked(
 }
 
 impl shared::wit::server_http::Host for Bindings {
-    fn get(&mut self, url: String) -> wasm_bridge::Result<()> {
-        let id = self.id;
-        let world = self.world_mut();
-        let assets = world.resource(asset_cache());
-        let runtime = world.resource(runtime());
-        let async_run = world.resource(async_run()).clone();
+    fn get(&mut self, url: String, headers: Vec<(String, String)>) -> wasm_bridge::Result<()> {
+        http_request_impl(
+            self.id,
+            self.reqwest_client.clone(),
+            self.world_mut(),
+            HttpMethod::Get,
+            url,
+            headers,
+            None,
+        )
+    }
 
-        async fn make_request(url: String) -> wasm_bridge::Result<(u32, Vec<u8>)> {
-            let response = reqwest::get(url).await?;
-            Ok((
-                response.status().as_u16() as u32,
-                response.bytes().await?.to_vec(),
-            ))
-        }
+    fn post(
+        &mut self,
+        url: String,
+        headers: Vec<(String, String)>,
+        body: Option<Vec<u8>>,
+    ) -> wasm_bridge::Result<()> {
+        http_request_impl(
+            self.id,
+            self.reqwest_client.clone(),
+            self.world_mut(),
+            HttpMethod::Post,
+            url,
+            headers,
+            body,
+        )
+    }
+}
 
-        let resolved_url = AbsAssetUrl::from_str(&url)?
-            .to_download_url(assets)?
-            .to_string();
+fn http_request_impl(
+    id: EntityId,
+    client: reqwest::Client,
+    world: &mut World,
+    method: HttpMethod,
+    url: String,
+    headers: Vec<(String, String)>,
+    body: Option<Vec<u8>>,
+) -> wasm_bridge::Result<()> {
+    let assets = world.resource(asset_cache());
+    let runtime = world.resource(runtime());
+    let async_run = world.resource(async_run()).clone();
 
-        runtime.spawn(async move {
-            let result = make_request(resolved_url).await;
-            let response = match result {
-                Ok((status, body)) => HttpResponse {
-                    url,
-                    body,
-                    status,
-                    error: None,
-                },
-                Err(err) => HttpResponse {
-                    url,
-                    body: Vec::new(),
-                    status: 0,
-                    error: Some(err.to_string()),
-                },
+    let resolved_url = AbsAssetUrl::from_str(&url)?
+        .to_download_url(assets)?
+        .to_string();
+
+    runtime.spawn(async move {
+        let wasm_response = run_with_error(url.clone(), async move {
+            let request = match method {
+                HttpMethod::Get => client.get(&resolved_url),
+                HttpMethod::Post => client.post(&resolved_url),
+            };
+            let request = match body {
+                Some(body) => request.body(body),
+                None => request,
+            };
+            let request = if !headers.is_empty() {
+                let mut header_map = HeaderMap::new();
+                for (key, value) in headers {
+                    header_map.insert(HeaderName::from_str(&key)?, value.parse()?);
+                }
+                request.headers(header_map)
+            } else {
+                request
             };
 
-            async_run.run(move |world| {
-                response.send(world, Some(id)).unwrap();
-            });
-        });
+            let response = request.send().await?;
 
-        Ok(())
+            let status = response.status().as_u16() as u32;
+            let body = response.bytes().await?.to_vec();
+            Ok(HttpResponse {
+                url,
+                method,
+                body,
+                status,
+                error: None,
+            })
+        })
+        .await;
+
+        async_run.run(move |world| {
+            wasm_response.send(world, Some(id)).unwrap();
+        });
+    });
+
+    async fn run_with_error(
+        url: String,
+        fut: impl Future<Output = wasm_bridge::Result<HttpResponse>>,
+    ) -> HttpResponse {
+        match fut.await {
+            Ok(response) => response,
+            Err(err) => HttpResponse {
+                url,
+                method: HttpMethod::Get,
+                body: vec![],
+                status: 0,
+                error: Some(err.to_string()),
+            },
+        }
     }
+
+    Ok(())
 }
 
 impl shared::wit::server_ambient_package::Host for Bindings {

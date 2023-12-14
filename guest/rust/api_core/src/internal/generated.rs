@@ -5378,6 +5378,7 @@ mod raw {
             #[doc = "**HttpResponse**: Sent when an HTTP response is received."]
             pub struct HttpResponse {
                 pub url: String,
+                pub method: crate::ambient_core::types::HttpMethod,
                 pub status: u32,
                 pub body: Vec<u8>,
                 pub error: Option<String>,
@@ -5386,12 +5387,14 @@ mod raw {
                 #[allow(clippy::too_many_arguments)]
                 pub fn new(
                     url: impl Into<String>,
+                    method: impl Into<crate::ambient_core::types::HttpMethod>,
                     status: impl Into<u32>,
                     body: impl Into<Vec<u8>>,
                     error: impl Into<Option<String>>,
                 ) -> Self {
                     Self {
                         url: url.into(),
+                        method: method.into(),
                         status: status.into(),
                         body: body.into(),
                         error: error.into(),
@@ -5405,6 +5408,7 @@ mod raw {
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
                     self.url.serialize_message_part(&mut output)?;
+                    self.method.serialize_message_part(&mut output)?;
                     self.status.serialize_message_part(&mut output)?;
                     self.body.serialize_message_part(&mut output)?;
                     self.error.serialize_message_part(&mut output)?;
@@ -5413,6 +5417,9 @@ mod raw {
                 fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
                     Ok(Self {
                         url: String::deserialize_message_part(&mut input)?,
+                        method: crate::ambient_core::types::HttpMethod::deserialize_message_part(
+                            &mut input,
+                        )?,
                         status: u32::deserialize_message_part(&mut input)?,
                         body: Vec::<u8>::deserialize_message_part(&mut input)?,
                         error: Option::<String>::deserialize_message_part(&mut input)?,
@@ -5449,6 +5456,71 @@ mod raw {
                 }
             }
             impl RuntimeMessage for WasmRebuild {}
+        }
+        #[doc = r" Auto-generated type definitions."]
+        pub mod types {
+            use crate::{global::serde, message::*};
+            #[derive(
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
+            )]
+            #[serde(crate = "self::serde")]
+            #[doc = "**HttpMethod**: The HTTP method."]
+            pub enum HttpMethod {
+                #[default]
+                #[doc = "GET"]
+                Get,
+                #[doc = "POST"]
+                Post,
+            }
+            impl crate::ecs::EnumComponent for HttpMethod {
+                fn to_u32(&self) -> u32 {
+                    match self {
+                        Self::Get => HttpMethod::Get as u32,
+                        Self::Post => HttpMethod::Post as u32,
+                    }
+                }
+                fn from_u32(value: u32) -> Option<Self> {
+                    if value == HttpMethod::Get as u32 {
+                        return Some(Self::Get);
+                    }
+                    if value == HttpMethod::Post as u32 {
+                        return Some(Self::Post);
+                    }
+                    None
+                }
+            }
+            impl crate::ecs::SupportedValue for HttpMethod {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).and_then(Self::from_u32)
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    use crate::ecs::EnumComponent;
+                    self.to_u32().into_result()
+                }
+                fn from_value(value: crate::ecs::ComponentValue) -> Option<Self> {
+                    use crate::ecs::EnumComponent;
+                    u32::from_value(value).and_then(Self::from_u32)
+                }
+                fn into_value(self) -> crate::ecs::ComponentValue {
+                    use crate::ecs::EnumComponent;
+                    self.to_u32().into_value()
+                }
+            }
+            impl MessageSerde for HttpMethod {
+                fn serialize_message_part(
+                    &self,
+                    output: &mut Vec<u8>,
+                ) -> Result<(), MessageSerdeError> {
+                    crate::ecs::EnumComponent::to_u32(self).serialize_message_part(output)
+                }
+                fn deserialize_message_part(
+                    input: &mut dyn std::io::Read,
+                ) -> Result<Self, MessageSerdeError> {
+                    crate::ecs::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                        .ok_or(MessageSerdeError::InvalidValue)
+                }
+            }
         }
     }
 }
