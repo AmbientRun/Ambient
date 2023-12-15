@@ -19,5 +19,5 @@ syn = { workspace = true }
 proc-macro-crate = { workspace = true }
 
 [dev-dependencies]
-ambient_ui_native = { path = "../../crates/ui_native" , version = "0.3.2-dev" }
+ambient_ui_native = { path = "../../crates/ui_native" , version = "0.3.2-internal-package-versions" }
 pretty_assertions = "1.4"
