@@ -12,6 +12,7 @@ use super::PackageArgs;
 use colored::Colorize;
 
 #[derive(Parser, Clone, Debug)]
+#[command(disable_version_flag = true)]
 /// Deploys the package
 pub struct Deploy {
     #[command(flatten)]
@@ -138,37 +139,44 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                             .await?
                             .parse()?;
 
-                    let Some(dependencies) = manifest.as_table_mut().get_mut("dependencies") else {
-                        return Ok(());
-                    };
+                    let mut edited = false;
 
-                    for (_, dependency) in dependencies.as_table_like_mut().unwrap().iter_mut() {
-                        let Some(dependency) = dependency.as_table_like_mut() else {
-                            continue;
-                        };
-                        let Some(dependency_path) = dependency.get("path").and_then(|i| i.as_str())
-                        else {
-                            continue;
-                        };
-
-                        let dependency_manifest_path = ambient_std::path::normalize(
-                            &package_path.join(dependency_path).join("ambient.toml"),
-                        );
-
-                        if let Some((_, version)) = manifest_path_to_version
-                            .lock()
-                            .get(&dependency_manifest_path)
-                            .and_then(|d| d.as_deployed())
+                    if let Some(dependencies) = manifest.as_table_mut().get_mut("dependencies") {
+                        for (_, dependency) in dependencies.as_table_like_mut().unwrap().iter_mut()
                         {
-                            dependency.insert("version", toml_edit::value(version));
+                            let Some(dependency) = dependency.as_table_like_mut() else {
+                                continue;
+                            };
+                            let Some(dependency_path) =
+                                dependency.get("path").and_then(|i| i.as_str())
+                            else {
+                                continue;
+                            };
+
+                            let dependency_manifest_path = ambient_std::path::normalize(
+                                &package_path.join(dependency_path).join("ambient.toml"),
+                            );
+
+                            if let Some((_, version)) = manifest_path_to_version
+                                .lock()
+                                .get(&dependency_manifest_path)
+                                .and_then(|d| d.as_deployed())
+                            {
+                                dependency.insert("version", toml_edit::value(version));
+                            }
                         }
+
+                        edited = true;
                     }
 
                     if let Some(version) = &version {
                         manifest["package"]["version"] = toml_edit::value(version.clone());
+                        edited = true;
                     }
 
-                    tokio::fs::write(&package_manifest_path, manifest.to_string()).await?;
+                    if edited {
+                        tokio::fs::write(&package_manifest_path, manifest.to_string()).await?;
+                    }
 
                     Ok(())
                 }
@@ -179,7 +187,7 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                 let package_path = package_manifest_path.parent().unwrap().to_owned();
                 async move {
                     let deployment = if was_built {
-                        let deployment = ambient_deploy::deploy(
+                        let (_deployment_id, manifest) = ambient_deploy::deploy(
                             api_server,
                             token,
                             &build_path,
@@ -188,8 +196,8 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                         )
                         .await?;
                         Deployment::Deployed {
-                            package_id: deployment.1.package.id.expect("no package ID").to_string(),
-                            version: deployment.1.package.version.to_string(),
+                            package_id: manifest.package.id.expect("no package ID").to_string(),
+                            version: manifest.package.version.to_string(),
                         }
                     } else {
                         // TODO: this check does not actually save much, as the process of deploying

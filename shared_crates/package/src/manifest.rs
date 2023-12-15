@@ -260,7 +260,7 @@ pub struct Dependency {
 }
 impl Dependency {
     pub fn has_remote_dependency(&self) -> bool {
-        self.deployment.is_some()
+        self.deployment.is_some() || self.version.is_some()
     }
 
     pub fn id_version(&self) -> Option<(&PackageId, &str)> {
