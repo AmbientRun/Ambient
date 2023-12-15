@@ -53,6 +53,7 @@ These PRs are not directly user-facing, but improve the development experience. 
         ambient_package_projection::generate();
     }
     ```
+- Ambient will no longer update the `deployment` field of dependencies; instead, it will insert the version of that dependency, and that version is not automatically updated. The new `--version` argument can be used to update the versions of every package in your dependency tree: `ambient deploy --version 0.3`.
 
 #### Non-breaking
 
