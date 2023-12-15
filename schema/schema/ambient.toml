@@ -3,7 +3,7 @@ description = "All core definitions for the Ambient runtime. This is the primary
 name = "Ambient Core"
 version = "0.3.2-dev"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.2-nightly-2023-12-14"
+ambient_version = "0.3.2-nightly-2023-12-15"
 
 [includes]
 animation = "includes/animation.toml"

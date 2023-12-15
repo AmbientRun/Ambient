@@ -1,9 +1,9 @@
 [package]
 id = "viyiawgsl5lsiul6pup6pyv6bbt6o3vw"
 name = "Dependencies (Assets)"
-version = "0.3.2-nightly-2023-12-14"
+version = "0.3.2-nightly-2023-12-15"
 content = { type = "Asset", models = true }
-ambient_version = "0.3.2-nightly-2023-12-14"
+ambient_version = "0.3.2-nightly-2023-12-15"
 
 [components]
 spin_speed = { type = "F32", name = "Spin speed" }
