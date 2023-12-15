@@ -103,7 +103,7 @@ fields = { locked = "Bool" }
 [messages.HttpResponse]
 name = "HTTP Response"
 description = "Sent when an HTTP response is received."
-fields = { url = "String", method = "HttpMethod", status = "U32", body = { type = "Vec", element_type = "U8" }, error = { type = "Option", element_type = "String" } }
+fields = { response_id = "U64", status = "U32", body = { type = "Vec", element_type = "U8" }, error = { type = "Option", element_type = "String" } }
 
 [messages.WasmRebuild]
 name = "WASM Rebuild"

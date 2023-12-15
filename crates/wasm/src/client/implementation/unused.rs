@@ -142,7 +142,7 @@ impl wit::server_message::Host for Bindings {
     }
 }
 impl wit::server_http::Host for Bindings {
-    fn get(&mut self, _: String, _: Vec<(String, String)>) -> anyhow::Result<()> {
+    fn get(&mut self, _: String, _: Vec<(String, String)>) -> anyhow::Result<u64> {
         unsupported()
     }
     fn post(
@@ -150,7 +150,7 @@ impl wit::server_http::Host for Bindings {
         _: String,
         _: Vec<(String, String)>,
         _: Option<Vec<u8>>,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<u64> {
         unsupported()
     }
 }

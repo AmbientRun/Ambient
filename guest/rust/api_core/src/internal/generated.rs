@@ -5377,8 +5377,7 @@ mod raw {
             #[derive(Clone, Debug)]
             #[doc = "**HttpResponse**: Sent when an HTTP response is received."]
             pub struct HttpResponse {
-                pub url: String,
-                pub method: crate::ambient_core::types::HttpMethod,
+                pub response_id: u64,
                 pub status: u32,
                 pub body: Vec<u8>,
                 pub error: Option<String>,
@@ -5386,15 +5385,13 @@ mod raw {
             impl HttpResponse {
                 #[allow(clippy::too_many_arguments)]
                 pub fn new(
-                    url: impl Into<String>,
-                    method: impl Into<crate::ambient_core::types::HttpMethod>,
+                    response_id: impl Into<u64>,
                     status: impl Into<u32>,
                     body: impl Into<Vec<u8>>,
                     error: impl Into<Option<String>>,
                 ) -> Self {
                     Self {
-                        url: url.into(),
-                        method: method.into(),
+                        response_id: response_id.into(),
                         status: status.into(),
                         body: body.into(),
                         error: error.into(),
@@ -5407,8 +5404,7 @@ mod raw {
                 }
                 fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
                     let mut output = vec![];
-                    self.url.serialize_message_part(&mut output)?;
-                    self.method.serialize_message_part(&mut output)?;
+                    self.response_id.serialize_message_part(&mut output)?;
                     self.status.serialize_message_part(&mut output)?;
                     self.body.serialize_message_part(&mut output)?;
                     self.error.serialize_message_part(&mut output)?;
@@ -5416,10 +5412,7 @@ mod raw {
                 }
                 fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
                     Ok(Self {
-                        url: String::deserialize_message_part(&mut input)?,
-                        method: crate::ambient_core::types::HttpMethod::deserialize_message_part(
-                            &mut input,
-                        )?,
+                        response_id: u64::deserialize_message_part(&mut input)?,
                         status: u32::deserialize_message_part(&mut input)?,
                         body: Vec::<u8>::deserialize_message_part(&mut input)?,
                         error: Option::<String>::deserialize_message_part(&mut input)?,

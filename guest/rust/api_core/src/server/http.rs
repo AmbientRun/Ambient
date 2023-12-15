@@ -25,9 +25,9 @@ pub async fn get(
 ) -> Result<Vec<u8>, HttpError> {
     let url = url.as_ref();
     let headers = headers.unwrap_or_default().into_iter().collect::<Vec<_>>();
-    wit::server_http::get(url, &headers);
+    let response_id = wit::server_http::get(url, &headers);
 
-    wait_for_response(url, HttpMethod::Get).await
+    wait_for_response(response_id).await
 }
 
 /// Sends an HTTP POST request to the given URL, and returns the response body.
@@ -43,16 +43,14 @@ pub async fn post(
 ) -> Result<Vec<u8>, HttpError> {
     let url = url.as_ref();
     let headers = headers.unwrap_or_default().into_iter().collect::<Vec<_>>();
-    wit::server_http::post(url, &headers, body);
+    let response_id = wit::server_http::post(url, &headers, body);
 
-    wait_for_response(url, HttpMethod::Post).await
+    wait_for_response(response_id).await
 }
 
-async fn wait_for_response(url: &str, method: HttpMethod) -> Result<Vec<u8>, HttpError> {
-    let response = global::wait_for_runtime_message({
-        let url = url.to_owned();
-        let method = method.to_owned();
-        move |message: &HttpResponse| message.url == url && message.method == method
+async fn wait_for_response(response_id: u64) -> Result<Vec<u8>, HttpError> {
+    let response = global::wait_for_runtime_message(move |message: &HttpResponse| {
+        message.response_id == response_id
     })
     .await;
 

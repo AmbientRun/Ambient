@@ -1,4 +1,4 @@
 interface server-http {
-    get: func(url: string, headers: list<tuple<string, string>>)
-    post: func(url: string, headers: list<tuple<string, string>>, body: option<list<u8>>)
+    get: func(url: string, headers: list<tuple<string, string>>) -> u64
+    post: func(url: string, headers: list<tuple<string, string>>, body: option<list<u8>>) -> u64
 }
