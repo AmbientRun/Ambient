@@ -6,7 +6,7 @@ content = { type = "Asset", code = true }
 ambient_version = "0.3.2-nightly-2023-12-16"
 
 [dependencies]
-ambient_example_deps_assets = { path = "../assets" , deployment = "5AkBreJVO48FFNUt9CqSmx" }
+ambient_example_deps_assets = { path = "../assets" , deployment = "19C1FiyLV3vGCyijbPet12" }
 
 [components]
 spawned_by_us = { type = "Empty" }
