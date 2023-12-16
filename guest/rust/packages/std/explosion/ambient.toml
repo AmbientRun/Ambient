@@ -2,9 +2,9 @@
 id = "cneomdouziieskjvs3szwmigzotofjzs"
 name = "Explosion [WIP]"
 description = "Implements *very* simple explosions."
-version = "0.3.2-nightly-2023-12-15"
+version = "0.3.2-nightly-2023-12-16"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-12-15"
+ambient_version = "0.3.2-nightly-2023-12-16"
 
 [dependencies]
 game_object = { path = "../../schemas/game_object", deployment = "4nOsWHNkVIFg7Q1OmGPuMO" }
