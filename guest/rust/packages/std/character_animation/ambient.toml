@@ -2,13 +2,13 @@
 id = "d3y3wbexrclipsykysumem3fthkudwx2"
 name = "Character Animation"
 description = "Implements basic character animations for a unit."
-version = "0.3.2-nightly-2023-12-16"
+version = "0.3.2-nightly-2023-12-17"
 content = { type = "Asset", animations = true, code = true }
-ambient_version = "0.3.2-nightly-2023-12-16"
+ambient_version = "0.3.2-nightly-2023-12-17"
 
 [dependencies]
-game_object = { path = "../../schemas/game_object", deployment = "3tz2LU7HHH4EClyyGyDVfQ" }
-unit_schema = { path = "../../schemas/unit", deployment = "518axnafLVReq6Ay1gAEdm" }
+game_object = { path = "../../schemas/game_object", deployment = "6nUbFrVkbes8qxO5yr5weP" }
+unit_schema = { path = "../../schemas/unit", deployment = "4dtPru7IBS31D7GN1YBEC5" }
 
 [components]
 basic_character_animations = { type = "EntityId", description = "Apply animations to the model this points to. Parameters such as health etc. is read from the entity this component is attached to.", attributes = [
