@@ -7,31 +7,31 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_native_std = { path = "../native_std" , version = "0.3.2-nightly-2023-12-17" }
-ambient_asset_cache = { path = "../asset_cache" , version = "0.3.2-nightly-2023-12-17" }
-ambient_model_import = { path = "../model_import" , version = "0.3.2-nightly-2023-12-17" }
-ambient_model = { path = "../model" , version = "0.3.2-nightly-2023-12-17" }
-ambient_gpu = { path = "../gpu" , version = "0.3.2-nightly-2023-12-17" }
-ambient_renderer = { path = "../renderer" , version = "0.3.2-nightly-2023-12-17" }
-ambient_core = { path = "../core" , version = "0.3.2-nightly-2023-12-17" }
-ambient_ecs = { path = "../ecs" , version = "0.3.2-nightly-2023-12-17" }
-ambient_world_audio = { path = "../world_audio" , version = "0.3.2-nightly-2023-12-17" }
-ambient_physics = { path = "../physics" , version = "0.3.2-nightly-2023-12-17" }
-ambient_rustc = { path = "../rustc" , version = "0.3.2-nightly-2023-12-17" }
-ambient_decals = { path = "../decals" , version = "0.3.2-nightly-2023-12-17" }
-ambient_wasm = { path = "../wasm" , version = "0.3.2-nightly-2023-12-17" }
-ambient_pipeline_types = { path = "../pipeline_types" , version = "0.3.2-nightly-2023-12-17" }
-ambient_package_semantic_native = { path = "../package_semantic_native" , version = "0.3.2-nightly-2023-12-17" }
+ambient_native_std = { path = "../native_std" , version = "0.3.2-dev" }
+ambient_asset_cache = { path = "../asset_cache" , version = "0.3.2-dev" }
+ambient_model_import = { path = "../model_import" , version = "0.3.2-dev" }
+ambient_model = { path = "../model" , version = "0.3.2-dev" }
+ambient_gpu = { path = "../gpu" , version = "0.3.2-dev" }
+ambient_renderer = { path = "../renderer" , version = "0.3.2-dev" }
+ambient_core = { path = "../core" , version = "0.3.2-dev" }
+ambient_ecs = { path = "../ecs" , version = "0.3.2-dev" }
+ambient_world_audio = { path = "../world_audio" , version = "0.3.2-dev" }
+ambient_physics = { path = "../physics" , version = "0.3.2-dev" }
+ambient_rustc = { path = "../rustc" , version = "0.3.2-dev" }
+ambient_decals = { path = "../decals" , version = "0.3.2-dev" }
+ambient_wasm = { path = "../wasm" , version = "0.3.2-dev" }
+ambient_pipeline_types = { path = "../pipeline_types" , version = "0.3.2-dev" }
+ambient_package_semantic_native = { path = "../package_semantic_native" , version = "0.3.2-dev" }
 
-ambient_package = { path = "../../shared_crates/package" , version = "0.3.2-nightly-2023-12-17" }
-ambient_package_semantic = { path = "../../shared_crates/package_semantic" , version = "0.3.2-nightly-2023-12-17" }
-ambient_package_json = { path = "../../shared_crates/package_json" , version = "0.3.2-nightly-2023-12-17" }
-ambient_package_docgen = { path = "../../shared_crates/package_docgen" , version = "0.3.2-nightly-2023-12-17" }
+ambient_package = { path = "../../shared_crates/package" , version = "0.3.2-dev" }
+ambient_package_semantic = { path = "../../shared_crates/package_semantic" , version = "0.3.2-dev" }
+ambient_package_json = { path = "../../shared_crates/package_json" , version = "0.3.2-dev" }
+ambient_package_docgen = { path = "../../shared_crates/package_docgen" , version = "0.3.2-dev" }
 
-ambient_std = { path = "../../shared_crates/std" , version = "0.3.2-nightly-2023-12-17" }
-ambient_shared_types = { path = "../../shared_crates/shared_types" , version = "0.3.2-nightly-2023-12-17" }
+ambient_std = { path = "../../shared_crates/std" , version = "0.3.2-dev" }
+ambient_shared_types = { path = "../../shared_crates/shared_types" , version = "0.3.2-dev" }
 
-ambient_unity_parser = { path = "../../libs/unity_parser" , version = "0.3.2-nightly-2023-12-17" }
+ambient_unity_parser = { path = "../../libs/unity_parser" , version = "0.3.2-dev" }
 
 walkdir = { workspace = true }
 futures = { workspace = true }
