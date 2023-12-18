@@ -284,17 +284,19 @@ fn get_all_examples(include_testcases: bool) -> anyhow::Result<Vec<PathBuf>> {
 
         for category in dirs {
             for example in all_directories_in(&category.path())? {
-                examples.push(example.path());
-            }
-        }
+                let example_path = example.path();
+                examples.push(example_path.clone());
 
-        for deps_example_deps in all_directories_in(
-            &examples_path
-                .join("intermediate")
-                .join("dependencies")
-                .join("deps"),
-        )? {
-            examples.push(deps_example_deps.path());
+                // Hacky workaround for dependencies example
+                {
+                    let deps_path = example_path.join("deps");
+                    if deps_path.is_dir() {
+                        for deps_package in all_directories_in(&deps_path)? {
+                            examples.push(deps_package.path());
+                        }
+                    }
+                }
+            }
         }
 
         if include_testcases {

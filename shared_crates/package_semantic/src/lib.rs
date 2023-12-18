@@ -9,10 +9,10 @@ use anyhow::Context as AnyhowContext;
 use async_recursion::async_recursion;
 
 use ambient_package::{
-    BuildMetadata, ComponentType, Identifier, ItemPath, ItemPathBuf, Manifest,
+    BuildMetadata, ComponentType, Identifier, ItemPath, ItemPathBuf, Manifest, PackageId,
     PascalCaseIdentifier, SnakeCaseIdentifier,
 };
-use ambient_shared_types::primitive_component_definitions;
+use ambient_shared_types::{primitive_component_definitions, urls::API_URL};
 
 mod scope;
 use package::{GetError, ParentJoinError, RetrievableDeployment};
@@ -46,6 +46,7 @@ mod message;
 pub use message::Message;
 
 mod value;
+use url::Url;
 pub use value::{ResolvableValue, ScalarValue, Value};
 
 mod printer;
@@ -89,12 +90,17 @@ pub enum PackageAddError {
         include_source: RetrievableFile,
         source: ambient_package::ManifestParseError,
     },
+    #[error("The package `{package_id}` does not have a version `{version}`")]
+    InvalidPackageVersion {
+        package_id: PackageId,
+        version: String,
+    },
     #[error("{0}")]
     PackageConflictError(Box<PackageConflictError>),
     #[error("{0}")]
-    GetError(GetError),
+    GetError(#[from] GetError),
     #[error("{0}")]
-    ParentJoinError(ParentJoinError),
+    ParentJoinError(#[from] ParentJoinError),
     #[error("Dependency `{dependency_name}` for {locator} has no supported sources specified (are you trying to deploy a package with a local dependency?)")]
     NoSupportedSources {
         locator: PackageLocator,
@@ -179,9 +185,15 @@ pub struct Semantic {
     ignore_local_dependencies: bool,
 }
 impl Semantic {
+    /// For debugging: `path` dependencies will be ignored when adding packages
+    const ALWAYS_IGNORE_LOCAL_DEPENDENCIES: bool = false;
+
     pub async fn new(ignore_local_dependencies: bool) -> anyhow::Result<Self> {
         let mut items = ItemMap::default();
         let (root_scope_id, standard_definitions) = create_root_scope(&mut items)?;
+
+        let ignore_local_dependencies =
+            ignore_local_dependencies || Self::ALWAYS_IGNORE_LOCAL_DEPENDENCIES;
 
         let mut semantic = Self {
             items,
@@ -305,7 +317,8 @@ impl Semantic {
                 &retrievable_manifest,
                 self.ignore_local_dependencies,
                 &dependency,
-            )?
+            )
+            .await?
             else {
                 return Err(Box::new(PackageAddError::NoSupportedSources {
                     locator,
@@ -700,25 +713,47 @@ pub fn create_root_scope(
     Ok((root_scope, standard_definitions))
 }
 
-pub fn package_dependency_to_retrievable_file(
+pub async fn package_dependency_to_retrievable_file(
     retrievable_manifest: &RetrievableFile,
     ignore_local_dependencies: bool,
     dependency: &ambient_package::Dependency,
-) -> Result<Option<RetrievableFile>, ParentJoinError> {
+) -> Result<Option<RetrievableFile>, PackageAddError> {
     let path = dependency
         .path
         .as_ref()
         .filter(|_| !ignore_local_dependencies);
 
-    // path takes precedence over url
-    Ok(match (path, &dependency.deployment) {
-        (None, None) => None,
-        (Some(path), _) => Some(retrievable_manifest.parent_join(&path.join("ambient.toml"))?),
-        (_, Some(deployment)) => Some(RetrievableFile::Deployment(RetrievableDeployment {
+    // path takes precedence over other remote access
+    let retrievable_file = match (path, dependency.id_version(), &dependency.deployment) {
+        (None, None, None) => None,
+        (Some(path), _, _) => Some(retrievable_manifest.parent_join(&path.join("ambient.toml"))?),
+        (_, Some((id, version)), _) => {
+            let package_version_url = Url::parse(&format!(
+                "{API_URL}/packages/versions/{id}/{version}"
+            ))
+            .map_err(|_| PackageAddError::InvalidPackageVersion {
+                package_id: id.clone(),
+                version: version.to_owned(),
+            })?;
+
+            let deployment = util::retrieve_url(&package_version_url)
+                .await
+                .map_err(|_| PackageAddError::InvalidPackageVersion {
+                    package_id: id.clone(),
+                    version: version.to_owned(),
+                })?;
+
+            Some(RetrievableFile::Deployment(RetrievableDeployment {
+                id: deployment,
+                path: PathBuf::from("ambient.toml"),
+            }))
+        }
+        (_, _, Some(deployment)) => Some(RetrievableFile::Deployment(RetrievableDeployment {
             id: deployment.clone(),
             path: PathBuf::from("ambient.toml"),
         })),
-    })
+    };
+    Ok(retrievable_file)
 }
 
 /// This item supports being resolved by cloning.

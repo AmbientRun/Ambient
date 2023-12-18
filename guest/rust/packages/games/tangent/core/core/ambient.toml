@@ -8,15 +8,15 @@ authors = ["philpax"]
 ambient_version = "0.3.2-nightly-2023-12-17"
 
 [dependencies]
-tangent_schema = { path = "../../schema", deployment = "4AVpoDL9YBFKvwam3fRUjb" }
+tangent_schema = { path = "../../schema", id = "mwrcsok65na7owrbdococ5sthr3ccskc", version = "0.3.2-nightly-2023-12-17" }
 
-game_object = { path = "../../../../schemas/game_object", deployment = "6nUbFrVkbes8qxO5yr5weP" }
-unit_schema = { path = "../../../../schemas/unit", deployment = "4dtPru7IBS31D7GN1YBEC5" }
+game_object = { path = "../../../../schemas/game_object", id = "hvxms7i2px7krvkm23sxfjxsjqlcmtb5", version = "0.3.2-nightly-2023-12-17" }
+unit_schema = { path = "../../../../schemas/unit", id = "afl5yv5ya35vbuaj3aido22cwjzat25z", version = "0.3.2-nightly-2023-12-17" }
 
-explosion = { path = "../../../../std/explosion", deployment = "17UJJp9AoJo5dhUzHPF9Me" }
-nameplates = { path = "../../../../std/nameplates", deployment = "7la3sSp0haRfRsMLENWMlC" }
+explosion = { path = "../../../../std/explosion", id = "cneomdouziieskjvs3szwmigzotofjzs", version = "0.3.2-nightly-2023-12-17" }
+nameplates = { path = "../../../../std/nameplates", id = "per6j2iqhj3jz4da3fqr75jcj2kqjooo", version = "0.3.2-nightly-2023-12-17" }
 
-kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", deployment = "6j27MVFNkhMuS0YXSHlfbm" }
+kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", id = "e4unr4x2lz2ov7dsd5vnjylbykwixvv2", version = "0.3.2-nightly-2023-12-17" }
 
 [messages.Input]
 name = "Input"

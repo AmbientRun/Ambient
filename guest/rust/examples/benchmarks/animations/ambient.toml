@@ -6,7 +6,7 @@ content = { type = "Playable", example = true }
 ambient_version = "0.3.2-nightly-2023-12-17"
 
 [dependencies]
-base_assets = { path = "../../../packages/std/base_assets", deployment = "6HfRVxCV146Y80IVlJPWGk" }
-character_animation = { path = "../../../packages/std/character_animation", deployment = "wSLbcrIuPNKPQqw7J3CdG" }
-orbit_camera = { path = "../../../packages/std/orbit_camera", deployment = "1z2fSr1WWQA8Ku2A1PjApG" }
-performance_bar = { path = "../../../packages/tools/performance_bar", deployment = "VvuHIOz0JIRVYRY7HDi7r" }
+base_assets = { path = "../../../packages/std/base_assets", id = "n7a4j7htvenss35tsnfvegbhxuwij5il", version = "0.3.2-nightly-2023-12-17" }
+character_animation = { path = "../../../packages/std/character_animation", id = "d3y3wbexrclipsykysumem3fthkudwx2", version = "0.3.2-nightly-2023-12-17" }
+orbit_camera = { path = "../../../packages/std/orbit_camera", id = "tijz7x6fimbgu24sbbtp4nllhfxbgblp", version = "0.3.2-nightly-2023-12-17" }
+performance_bar = { path = "../../../packages/tools/performance_bar", id = "kekdhmfpksiukzcvawellrsn5eeevjfd", version = "0.3.2-nightly-2023-12-17" }

@@ -10,7 +10,7 @@ ambient_version = "0.3.2-nightly-2023-12-17"
 
 
 [dependencies]
-base_assets = { path = "../../../packages/std/base_assets", deployment = "6HfRVxCV146Y80IVlJPWGk" }
-third_person_controller = { path = "../../../packages/std/third_person_controller", deployment = "5cnaww6YLwfzbWvDe1OGhu" }
-character_animation = { path = "../../../packages/std/character_animation", deployment = "wSLbcrIuPNKPQqw7J3CdG" }
-hide_cursor = { path = "../../../packages/std/hide_cursor", deployment = "3OeZPcVzWaALSIBYpu3tdZ" }
+base_assets = { path = "../../../packages/std/base_assets", id = "n7a4j7htvenss35tsnfvegbhxuwij5il", version = "0.3.2-nightly-2023-12-17" }
+third_person_controller = { path = "../../../packages/std/third_person_controller", id = "vuph6dqdj6li4apmcgomn3faudcbfz56", version = "0.3.2-nightly-2023-12-17" }
+character_animation = { path = "../../../packages/std/character_animation", id = "d3y3wbexrclipsykysumem3fthkudwx2", version = "0.3.2-nightly-2023-12-17" }
+hide_cursor = { path = "../../../packages/std/hide_cursor", id = "xar372tfo2oswb4pkvx7h7o3rxi6tap6", version = "0.3.2-nightly-2023-12-17" }

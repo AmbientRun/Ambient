@@ -8,10 +8,6 @@ type = "Game"
 content = { type = "Playable" }
 ambient_version = "0.3.2-nightly-2023-12-17"
 
-[hosting]
-region = "Auto"
-max_players = 2
-
 [components]
 cells = { type = { type = "Vec", element_type = "EntityId" }, name = "Cells", description = "The cells in the game", attributes = [
     "Debuggable",
@@ -36,4 +32,4 @@ right = "Bool"
 capture = "Bool"
 
 [dependencies]
-orbit_camera = { path = "../../../packages/std/orbit_camera" , deployment = "1z2fSr1WWQA8Ku2A1PjApG" }
+orbit_camera = { path = "../../../packages/std/orbit_camera" , id = "tijz7x6fimbgu24sbbtp4nllhfxbgblp", version = "0.3.2-nightly-2023-12-17" }

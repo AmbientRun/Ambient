@@ -1,7 +1,6 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
-use ambient_package::Manifest;
 use ambient_settings::SettingsKey;
 use anyhow::Context;
 use clap::Parser;
@@ -13,6 +12,7 @@ use super::PackageArgs;
 use colored::Colorize;
 
 #[derive(Parser, Clone, Debug)]
+#[command(disable_version_flag = true)]
 /// Deploys the package
 pub struct Deploy {
     #[command(flatten)]
@@ -36,6 +36,10 @@ pub struct Deploy {
     /// Context to run the package in
     #[arg(long, requires("ensure_running"), default_value = "")]
     pub context: String,
+    /// When supplied, updates the versions of all packages that will be deployed.
+    /// It is very likely that you will need to use this to deploy a tree of packages.
+    #[arg(long)]
+    pub version: Option<String>,
 }
 
 pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> anyhow::Result<()> {
@@ -47,6 +51,7 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
         force_upload,
         ensure_running,
         context,
+        version,
     } = args;
 
     if !release_build {
@@ -77,22 +82,21 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
     #[derive(Debug, Clone)]
     enum Deployment {
         Skipped,
-        Deployed {
-            deployment_id: String,
-            manifest: Manifest,
-        },
+        Deployed { package_id: String, version: String },
     }
     impl Deployment {
-        fn as_deployed(&self) -> Option<String> {
+        fn as_deployed(&self) -> Option<(String, String)> {
             match self {
-                Self::Deployed { deployment_id, .. } => Some(deployment_id.clone()),
+                Self::Deployed {
+                    package_id,
+                    version,
+                } => Some((package_id.clone(), version.clone())),
                 _ => None,
             }
         }
     }
 
-    let manifest_path_to_deployment_id =
-        Arc::new(Mutex::new(HashMap::<PathBuf, Deployment>::new()));
+    let manifest_path_to_version = Arc::new(Mutex::new(HashMap::<PathBuf, Deployment>::new()));
 
     let Some(main_package_fs_path) = package.package_path()?.fs_path else {
         anyhow::bail!("Can only deploy a local package");
@@ -109,13 +113,9 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
         all_packages
     };
 
-    let mut first_deployment_id = None;
+    let mut first_root_deployment = None;
     for package_path in all_package_paths {
-        let skip_building = manifest_path_to_deployment_id
-            .lock()
-            .keys()
-            .cloned()
-            .collect();
+        let skip_building = manifest_path_to_version.lock().keys().cloned().collect();
 
         let result = build::build(
             assets,
@@ -128,7 +128,9 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
             |package_manifest_path| {
                 // Before the build, rewrite all known dependencies to use their deployed version
                 // if available.
-                let manifest_path_to_deployment_id = manifest_path_to_deployment_id.clone();
+                //
+                // Additionally, update the package's version if required.
+                let manifest_path_to_version = manifest_path_to_version.clone();
                 async move {
                     let package_path = package_manifest_path.parent().unwrap();
 
@@ -137,45 +139,55 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                             .await?
                             .parse()?;
 
-                    let Some(dependencies) = manifest.as_table_mut().get_mut("dependencies") else {
-                        return Ok(());
-                    };
+                    let mut edited = false;
 
-                    for (_, dependency) in dependencies.as_table_like_mut().unwrap().iter_mut() {
-                        let Some(dependency) = dependency.as_table_like_mut() else {
-                            continue;
-                        };
-                        let Some(dependency_path) = dependency.get("path").and_then(|i| i.as_str())
-                        else {
-                            continue;
-                        };
-
-                        let dependency_manifest_path = ambient_std::path::normalize(
-                            &package_path.join(dependency_path).join("ambient.toml"),
-                        );
-
-                        if let Some(deployment_id) = manifest_path_to_deployment_id
-                            .lock()
-                            .get(&dependency_manifest_path)
-                            .cloned()
-                            .and_then(|d| d.as_deployed())
+                    if let Some(dependencies) = manifest.as_table_mut().get_mut("dependencies") {
+                        for (_, dependency) in dependencies.as_table_like_mut().unwrap().iter_mut()
                         {
-                            dependency.insert("deployment", toml_edit::value(deployment_id));
+                            let Some(dependency) = dependency.as_table_like_mut() else {
+                                continue;
+                            };
+                            let Some(dependency_path) =
+                                dependency.get("path").and_then(|i| i.as_str())
+                            else {
+                                continue;
+                            };
+
+                            let dependency_manifest_path = ambient_std::path::normalize(
+                                &package_path.join(dependency_path).join("ambient.toml"),
+                            );
+
+                            if let Some((_, version)) = manifest_path_to_version
+                                .lock()
+                                .get(&dependency_manifest_path)
+                                .and_then(|d| d.as_deployed())
+                            {
+                                dependency.insert("version", toml_edit::value(version));
+                            }
                         }
+
+                        edited = true;
                     }
 
-                    tokio::fs::write(&package_manifest_path, manifest.to_string()).await?;
+                    if let Some(version) = &version {
+                        manifest["package"]["version"] = toml_edit::value(version.clone());
+                        edited = true;
+                    }
+
+                    if edited {
+                        tokio::fs::write(&package_manifest_path, manifest.to_string()).await?;
+                    }
 
                     Ok(())
                 }
             },
             |package_manifest_path, build_path, was_built| {
                 // After build, deploy the package.
-                let manifest_path_to_deployment_id = manifest_path_to_deployment_id.clone();
+                let manifest_path_to_version = manifest_path_to_version.clone();
                 let package_path = package_manifest_path.parent().unwrap().to_owned();
                 async move {
                     let deployment = if was_built {
-                        let deployment = ambient_deploy::deploy(
+                        let (_deployment_id, manifest) = ambient_deploy::deploy(
                             api_server,
                             token,
                             &build_path,
@@ -184,8 +196,8 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                         )
                         .await?;
                         Deployment::Deployed {
-                            deployment_id: deployment.0,
-                            manifest: deployment.1,
+                            package_id: manifest.package.id.expect("no package ID").to_string(),
+                            version: manifest.package.version.to_string(),
                         }
                     } else {
                         // TODO: this check does not actually save much, as the process of deploying
@@ -198,7 +210,7 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
                         Deployment::Skipped
                     };
 
-                    manifest_path_to_deployment_id
+                    manifest_path_to_version
                         .lock()
                         .insert(package_manifest_path.to_owned(), deployment);
 
@@ -210,48 +222,47 @@ pub async fn handle(args: &Deploy, assets: &AssetCache, release_build: bool) -> 
 
         let main_package_name = result.main_package_name;
 
-        let deployment_id = manifest_path_to_deployment_id
+        let deployment = manifest_path_to_version
             .lock()
             .get(&package_path.join("ambient.toml"))
             .cloned()
             .context("Main package was not processed; this is a bug")?;
 
-        match deployment_id {
+        match &deployment {
             Deployment::Skipped => {
                 tracing::info!(
                     "Package \"{main_package_name}\" was already deployed, skipping deployment"
                 );
             }
             Deployment::Deployed {
-                deployment_id,
-                manifest,
+                package_id,
+                version,
             } => {
                 let ensure_running_url = ambient_shared_types::urls::ensure_running_url(
-                    ambient_shared_types::urls::ServerSelector::Deployment(&deployment_id),
+                    ambient_shared_types::urls::ServerSelector::Package {
+                        id: package_id,
+                        version: Some(version.as_str()),
+                    },
                 );
-                let web_url = ambient_shared_types::urls::web_package_url(
-                    manifest
-                        .package
-                        .id
-                        .expect("no package ID - this is a bug")
-                        .as_str(),
-                    Some(&deployment_id),
-                );
+                let web_url =
+                    ambient_shared_types::urls::web_package_url(package_id, Some(version.as_str()));
 
                 tracing::info!("Package \"{main_package_name}\" deployed successfully!");
-                tracing::info!("  Deployment ID: {deployment_id}");
                 tracing::info!("  Join: ambient join '{ensure_running_url}'");
                 tracing::info!("  Web URL: '{}'", web_url.bright_green());
 
-                if first_deployment_id.is_none() {
-                    first_deployment_id = Some(deployment_id);
+                if first_root_deployment.is_none() {
+                    first_root_deployment = Some(deployment);
                 }
             }
         }
     }
 
-    if let Some(deployment_id) = first_deployment_id.filter(|_| *ensure_running) {
-        let spec = ambient_cloud_client::ServerSpec::new_with_deployment(deployment_id)
+    if let Some((package_id, version)) = first_root_deployment
+        .filter(|_| *ensure_running)
+        .and_then(|d| d.as_deployed())
+    {
+        let spec = ambient_cloud_client::ServerSpec::new_with_package(package_id, version)
             .with_context(context.to_string());
         let server =
             ambient_cloud_client::ensure_server_running(assets, api_server, token.into(), spec)

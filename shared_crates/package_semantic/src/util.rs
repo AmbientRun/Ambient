@@ -41,6 +41,7 @@ pub async fn retrieve_url(url: &Url) -> Result<String, RetrieveError> {
 
     reqwest::get(url.clone())
         .await
+        .and_then(|r| r.error_for_status())
         .map_err(|_| RetrieveError::FailedToGetUrl { url: url.clone() })?
         .text()
         .await

@@ -36,6 +36,8 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 #### Headline features
 
+- Packages can now be depended on by ID and version (i.e. `id = "viyiawgsl5lsiul6pup6pyv6bbt6o3vw", version = "0.3.2-nightly-2023-12-06"`) instead of by `deployment`. This is recommended for all future packages, as it makes it easier to understand which package is being used. See the [package documentation](https://ambientrun.github.io/Ambient/reference/package.html) for details.
+
 #### Other
 
 ### Changed
@@ -51,6 +53,7 @@ These PRs are not directly user-facing, but improve the development experience. 
         ambient_package_projection::generate();
     }
     ```
+- Ambient will no longer update the `deployment` field of dependencies; instead, it will insert the version of that dependency, and that version is not automatically updated. The new `--version` argument can be used to update the versions of every package in your dependency tree: `ambient deploy --version 0.3`.
 
 #### Non-breaking
 
