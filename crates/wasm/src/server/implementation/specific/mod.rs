@@ -135,26 +135,26 @@ impl Bindings {
             .to_download_url(assets)?
             .to_string();
 
+        let request = match method {
+            HttpMethod::Get => client.get(&resolved_url),
+            HttpMethod::Post => client.post(&resolved_url),
+        };
+        let request = match body {
+            Some(body) => request.body(body),
+            None => request,
+        };
+        let request = if !headers.is_empty() {
+            let mut header_map = HeaderMap::new();
+            for (key, value) in headers {
+                header_map.insert(HeaderName::from_str(&key)?, value.parse()?);
+            }
+            request.headers(header_map)
+        } else {
+            request
+        };
+
         runtime.spawn(async move {
             let wasm_response = run_with_error(response_id, async move {
-                let request = match method {
-                    HttpMethod::Get => client.get(&resolved_url),
-                    HttpMethod::Post => client.post(&resolved_url),
-                };
-                let request = match body {
-                    Some(body) => request.body(body),
-                    None => request,
-                };
-                let request = if !headers.is_empty() {
-                    let mut header_map = HeaderMap::new();
-                    for (key, value) in headers {
-                        header_map.insert(HeaderName::from_str(&key)?, value.parse()?);
-                    }
-                    request.headers(header_map)
-                } else {
-                    request
-                };
-
                 let response = request.send().await?;
 
                 let status = response.status().as_u16() as u32;
