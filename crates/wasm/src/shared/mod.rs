@@ -243,7 +243,7 @@ pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
     world: &mut World,
     assets: &AssetCache,
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
-    bindings: fn(EntityId) -> Bindings,
+    bindings: Arc<dyn Fn(EntityId) -> Bindings + Send + Sync>,
     _preopened_dir_path: Option<&'a Path>,
 ) -> anyhow::Result<()> {
     world.add_resource(self::messenger(), messenger);

@@ -370,3 +370,12 @@ using [wasm-tools](https://github.com/bytecodealliance/wasm-tools) and a bundled
 Rust is a first-class language for Ambient packages. The default new package template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both.
 
 The API provides a `#[main]` attribute macro that generates code to allow you to access the data and functionality of the packages known to your package. All packages, including your own, will be in the `packages` module.
+
+### Restrictions
+
+When running locally, guest code can:
+
+- use WASI filesystem APIs (e.g. `std::fs` in Rust) to read and write files in the `data` directory of the built package
+- use the Ambient HTTP APIs (e.g. `http` in Rust) to make HTTP GET/POST requests to arbitrary servers
+
+This functionality is disabled when the server is running on a hosted environment (i.e. Ambient deployments) for security reasons. To test if your logic still works in a hosted environment, run Ambient with the `AMBIENT_HOSTED` environment variable set to anything (e.g. `AMBIENT_HOSTED=1 ambient run`).

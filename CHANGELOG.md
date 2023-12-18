@@ -40,6 +40,8 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 #### Other
 
+- `http::post` has been added to the server API to make it possible to make POST requests. It accepts optional `headers` and `body` arguments.
+
 ### Changed
 
 #### Breaking
@@ -54,6 +56,8 @@ These PRs are not directly user-facing, but improve the development experience. 
     }
     ```
 - Ambient will no longer update the `deployment` field of dependencies; instead, it will insert the version of that dependency, and that version is not automatically updated. The new `--version` argument can be used to update the versions of every package in your dependency tree: `ambient deploy --version 0.3`.
+- `http::get` now accepts optional `headers`. To update your code, set `None` for the second argument.
+- File I/O and the `http` APIs are now disabled when used on a hosted environment (i.e. Ambient deployments). To test if your logic still works in a hosted environment, run Ambient with the `AMBIENT_HOSTED` environment variable set to anything (e.g. `AMBIENT_HOSTED=1 ambient run`).
 
 #### Non-breaking
 

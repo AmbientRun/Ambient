@@ -121,6 +121,10 @@ impl Bindings {
         headers: Vec<(String, String)>,
         body: Option<Vec<u8>>,
     ) -> wasm_bridge::Result<u64> {
+        if self.hosted {
+            anyhow::bail!("HTTP requests are not supported on hosted servers");
+        }
+
         let id = self.id;
         let client = self.reqwest_client.clone();
         let response_id = self.last_http_request_id;
