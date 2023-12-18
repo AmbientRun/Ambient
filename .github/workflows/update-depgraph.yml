@@ -1,0 +1,55 @@
+name: Update depgraph
+on:
+  workflow_dispatch: {}
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "docs/src/runtime_internals/dependency_graph.png"
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  DEPGRAPH_PATH: docs/src/runtime_internals/dependency_graph
+  # token for gh command (other operations use GITHUB_TOKEN env var)
+  # we are using bot here so that the PR created by it triggers all the regular CI checks
+  GH_TOKEN: ${{ secrets.MOOSE_JOBS_GH_TOKEN }}
+  BOT_NAME: "Moose Jobs"
+  BOT_EMAIL: ${{ secrets.MOOSE_JOBS_EMAIL }}
+
+jobs:
+  depgraph:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Rust cache
+        uses: Leafwing-Studios/cargo-cache@v1.1.0
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-depgraph
+      - run: |
+          cargo depgraph --workspace-only --root ambient --dedup-transitive-deps > ${{ env.DEPGRAPH_PATH }}.dot
+
+          # early exit if the graph has not changed
+          if git diff --exit-code ${{ env.DEPGRAPH_PATH }}.dot; then
+            echo "No changes to dependency graph"
+            exit 0
+          fi
+
+          # install graphviz to render the graph as PNG
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y graphviz
+
+          # render
+          dot -Tpng ${{ env.DEPGRAPH_PATH }}.dot > ${{ env.DEPGRAPH_PATH }}.png
+
+          # commit
+          base_branch=${GITHUB_REF#refs/heads/}
+          branch=${base_branch}-depgraph-${{ github.sha }}
+          git config --global user.name "${{ env.BOT_NAME }}"
+          git config --global user.email "${{ env.BOT_EMAIL }}"
+          git checkout -b ${branch}
+          git commit -a -m "Update dependency graph for ${{ github.sha }}"
+          git push --set-upstream origin ${branch}
+          pr_url=$(gh pr create --title "Update dependency graph for ${{ github.sha }}" --body "Update dependency graph for ${{ github.sha }}" --base ${base_branch} --head ${branch})
+          gh pr merge --auto --squash --delete-branch ${pr_url}

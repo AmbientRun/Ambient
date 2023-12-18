@@ -1,0 +1,197 @@
+# This workflow expects a version tag like "v0.4.0" or "v0.3.0-nightly".
+# If the version doesn't have a pre-release part (that is it doesn't have any "-") then a full release will be performed.
+# Otherwise it will create and upload an internal build.
+
+name: Release
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags: [v*]
+    branches:
+      # For workflow testing only
+      # This is to simulate pushing to a tag
+      - WORKFLOW-TESTING/release-version/v*
+
+permissions:
+  actions: write
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  meta:
+    runs-on: ubuntu-22.04
+    outputs:
+      kind: ${{ steps.extract.outputs.kind }}
+      tag: ${{ steps.extract.outputs.tag }}
+      version: ${{ steps.extract.outputs.version }}
+    steps:
+      - name: Extract tag and version
+        id: extract
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            tag=${GITHUB_REF#refs/tags/}
+          elif [[ $GITHUB_REF == refs/heads/WORKFLOW-TESTING/release-version/* ]]; then
+            # This is a special case for testing only
+            tag=${GITHUB_REF#refs/heads/WORKFLOW-TESTING/release-version/}
+          else
+            echo "Triggered for unexpected git ref"
+            exit 1
+          fi
+
+          # Version is the tag without the v
+          version=${tag#v}
+
+          if [[ $tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+-(rc|alpha|beta)(\..*)?$ ]]; then
+            # few special cases for full versions, for example: v0.3.0-rc v0.3.0-rc.1 v0.3.0-alpha v0.3.0-beta
+            # but not: v0.3.0-rcNot
+            kind=full
+          elif [[ $tag == v*-* ]]; then
+            # otherwise anything with a dash is internal, for example: v0.3.0-nightly-2023-09-29
+            kind=internal
+          else
+            # no dashes then it's a plain old full version, for example: v0.3.0
+            kind=full
+          fi
+
+          echo "kind=${kind}" >> $GITHUB_OUTPUT
+          echo "tag=${tag}" >> $GITHUB_OUTPUT
+          echo "version=${version}" >> $GITHUB_OUTPUT
+
+          # print out what was set
+          echo "kind=${kind}"
+          echo "tag=${tag}"
+          echo "version=${version}"
+
+  build-app:
+    needs: meta
+    permissions:
+      id-token: write
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            exe_name: ambient
+            symbol_path: ambient
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            exe_name: ambient
+            symbol_path: ambient
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            exe_name: ambient.exe
+            symbol_path: ambient.pdb
+
+    runs-on: ${{ matrix.os }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      EXE_DIR: target/${{ matrix.target }}/release
+    steps:
+      - name: Setup Sentry CLI
+        uses: mathieu-bour/setup-sentry-cli@v1.3.0
+        with:
+          token: ${{ secrets.SENTRY }}
+          organization: dims
+          project: native-client
+      - uses: actions/checkout@v3
+      - name: Install build dependencies
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
+            libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev
+      - name: Install aarch64-apple-darwin
+        if: matrix.target == 'aarch64-apple-darwin'
+        run: rustup target add aarch64-apple-darwin
+      - uses: dtolnay/rust-toolchain@stable
+      # We don't do caching here because we only have 10gb and they'll be occupied by normal builds all the time anyway
+      - name: Build
+        run: cargo build --release -p ambient --target ${{ matrix.target }} --features production
+      - name: Code Sign Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        uses: sslcom/esigner-codesign@develop
+        with:
+          command: sign
+          username: ${{secrets.ES_USERNAME}}
+          password: ${{secrets.ES_PASSWORD}}
+          credential_id: ${{secrets.ES_CREDENTIAL_ID}}
+          totp_secret: ${{secrets.ES_TOTP_SECRET}}
+          file_path: ${{ env.EXE_DIR }}/${{ matrix.exe_name }}
+          dir_path: ${{ env.EXE_DIR }}
+          override: true
+          malware_block: false
+      - name: Install certificate (OSX)
+        if: matrix.os == 'macos-latest'
+        uses: apple-actions/import-codesign-certs@v1
+        with:
+          p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
+          p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+      - name: Codesign executable (OSX)
+        if: matrix.os == 'macos-latest'
+        run: /usr/bin/codesign --force -s ${{ secrets.MAC_CODESIGN }} --options=runtime --entitlements app/osx_entitlements.xml --deep ${{ env.EXE_DIR }}/${{ matrix.exe_name }} -v
+      - name: Bundle
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: "zip"
+          filename: ambient-${{ matrix.target }}.zip
+          directory: ${{ env.EXE_DIR }}
+          path: ${{ matrix.exe_name }}
+      - name: Notarize app bundle (OSX)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd ${{ env.EXE_DIR }}
+          xcrun notarytool store-credentials "notarytool-profile" --apple-id "${{ secrets.APPLE_DEVELOPER_EMAIL }}" --team-id="${{ secrets.APPLE_TEAM_ID }}" --password "${{ secrets.APPLE_DEVELOPER_PASSWORD }}"
+          xcrun notarytool submit "ambient-${{ matrix.target }}.zip" --keychain-profile "notarytool-profile" --wait
+      - name: Authenticate with Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v0
+        with:
+          token_format: access_token
+          workload_identity_provider: projects/549180905870/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github@ambient-733e7.iam.gserviceaccount.com
+          access_token_lifetime: 1800s
+      - name: Upload to Google Cloud
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
+          destination: "ambient-artifacts/ambient-builds/${{ needs.meta.outputs.version }}/${{ matrix.os }}"
+      - name: Upload debug symbols
+        run: sentry-cli upload-dif -o dims -p native-client ${{ env.EXE_DIR }}/${{ matrix.exe_name }} ${{ env.EXE_DIR }}/${{ matrix.symbol_path }}
+
+  trigger-build-jobs:
+    needs: meta
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Trigger build jobs
+        uses: actions/github-script@v6
+        with:
+          script: |
+            for (const workflow_id of ['deploy-server.yml', 'deploy-web.yml', 'deploy-packages.yml', 'deploy-docs.yml']) {
+              github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: workflow_id,
+                ref: '${{ needs.meta.outputs.tag }}',
+              })
+            }
+
+  publish-api:
+    if: needs.meta.outputs.kind == 'full'
+    needs: [meta, build-app]
+    runs-on: ubuntu-22.04
+    env:
+      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'publish-api.yml',
+              ref: '${{ needs.meta.outputs.tag }}',
+            })

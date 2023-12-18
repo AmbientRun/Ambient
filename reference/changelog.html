@@ -1,0 +1,595 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Changelog - Ambient Documentation</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../style.min.css">
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">User Guide</li><li class="chapter-item expanded "><a href="../user/installing.html"><strong aria-hidden="true">1.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../user/setting_up_ide.html"><strong aria-hidden="true">2.</strong> Setting up your IDE</a></li><li class="chapter-item expanded "><a href="../user/overview.html"><strong aria-hidden="true">3.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../user/running_examples.html"><strong aria-hidden="true">4.</strong> Running examples</a></li><li class="chapter-item expanded "><a href="../user/api.html"><strong aria-hidden="true">5.</strong> API</a></li><li class="chapter-item expanded "><a href="../user/debugging.html"><strong aria-hidden="true">6.</strong> Debugging</a></li><li class="chapter-item expanded "><a href="../user/profiling.html"><strong aria-hidden="true">7.</strong> Profiling</a></li><li class="chapter-item expanded "><a href="../user/settings.html"><strong aria-hidden="true">8.</strong> Settings</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorial</li><li class="chapter-item expanded "><a href="../tutorials/game/0_intro.html"><strong aria-hidden="true">9.</strong> Intro</a></li><li class="chapter-item expanded "><a href="../tutorials/game/1_package.html"><strong aria-hidden="true">10.</strong> Chapter 1: Creating a project</a></li><li class="chapter-item expanded "><a href="../tutorials/game/2_player_character.html"><strong aria-hidden="true">11.</strong> Chapter 2: Player character</a></li><li class="chapter-item expanded "><a href="../tutorials/game/3_scene.html"><strong aria-hidden="true">12.</strong> Chapter 3: Scene</a></li><li class="chapter-item expanded "><a href="../tutorials/game/4_player_interaction.html"><strong aria-hidden="true">13.</strong> Chapter 4: Player interaction</a></li><li class="chapter-item expanded "><a href="../tutorials/game/5_models.html"><strong aria-hidden="true">14.</strong> Chapter 5: Models</a></li><li class="chapter-item expanded "><a href="../tutorials/game/6_ui.html"><strong aria-hidden="true">15.</strong> Chapter 6: UI</a></li><li class="chapter-item expanded "><a href="../tutorials/game/7_deploying.html"><strong aria-hidden="true">16.</strong> Chapter 7: Deploying</a></li><li class="chapter-item expanded "><a href="../tutorials/game/8_modding.html"><strong aria-hidden="true">17.</strong> Chapter 8: Modding</a></li><li class="chapter-item expanded affix "><li class="part-title">Reference Guide</li><li class="chapter-item expanded "><a href="../reference/getting_content.html"><strong aria-hidden="true">18.</strong> Getting content</a></li><li class="chapter-item expanded "><a href="../reference/runtime.html"><strong aria-hidden="true">19.</strong> Runtime</a></li><li class="chapter-item expanded "><a href="../reference/package.html"><strong aria-hidden="true">20.</strong> Package</a></li><li class="chapter-item expanded "><a href="../reference/ecs.html"><strong aria-hidden="true">21.</strong> ECS</a></li><li class="chapter-item expanded "><a href="../reference/messages.html"><strong aria-hidden="true">22.</strong> Messages</a></li><li class="chapter-item expanded "><a href="../reference/models.html"><strong aria-hidden="true">23.</strong> Models</a></li><li class="chapter-item expanded "><a href="../reference/hierarchies.html"><strong aria-hidden="true">24.</strong> Hierarchies and transforms</a></li><li class="chapter-item expanded "><a href="../reference/asset_pipeline.html"><strong aria-hidden="true">25.</strong> Asset pipeline</a></li><li class="chapter-item expanded "><a href="../reference/networking.html"><strong aria-hidden="true">26.</strong> Networking</a></li><li class="chapter-item expanded "><a href="../reference/animations.html"><strong aria-hidden="true">27.</strong> Animations</a></li><li class="chapter-item expanded "><a href="../reference/physics.html"><strong aria-hidden="true">28.</strong> Physics</a></li><li class="chapter-item expanded "><a href="../reference/audio.html"><strong aria-hidden="true">29.</strong> Audio</a></li><li class="chapter-item expanded "><a href="../reference/ui.html"><strong aria-hidden="true">30.</strong> UI</a></li><li class="chapter-item expanded "><a href="../reference/distributing.html"><strong aria-hidden="true">31.</strong> Distributing</a></li><li class="chapter-item expanded "><a href="../reference/ci.html"><strong aria-hidden="true">32.</strong> CI</a></li><li class="chapter-item expanded "><a href="../reference/terminology.html"><strong aria-hidden="true">33.</strong> Terminology</a></li><li class="chapter-item expanded "><a href="../reference/common_pitfalls.html"><strong aria-hidden="true">34.</strong> Common pitfalls</a></li><li class="chapter-item expanded "><a href="../reference/advanced_installing.html"><strong aria-hidden="true">35.</strong> Advanced installation</a></li><li class="chapter-item expanded "><a href="../reference/faq.html"><strong aria-hidden="true">36.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="../reference/changelog.html" class="active"><strong aria-hidden="true">37.</strong> Changelog</a></li><li class="chapter-item expanded affix "><li class="part-title">Runtime internals</li><li class="chapter-item expanded "><a href="../runtime_internals/overview.html"><strong aria-hidden="true">38.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../runtime_internals/contributing.html"><strong aria-hidden="true">39.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../runtime_internals/ecs.html"><strong aria-hidden="true">40.</strong> ECS</a></li><li class="chapter-item expanded "><a href="../runtime_internals/renderer.html"><strong aria-hidden="true">41.</strong> Renderer</a></li><li class="chapter-item expanded "><a href="../runtime_internals/asset_cache.html"><strong aria-hidden="true">42.</strong> Asset cache</a></li><li class="chapter-item expanded "><a href="../runtime_internals/guidelines.html"><strong aria-hidden="true">43.</strong> Guidelines</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Ambient Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/AmbientRun/Ambient" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <!-- markdownlint-disable-file MD041 -->
+<h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<!-- markdownlint-disable-file MD024 -->
+<p>This changelog is manually updated. While an effort will be made to keep the <a href="#unreleased-yyyy-mm-dd">Unreleased</a> changes up to date, it may not be fully representative of the current state of the project.</p>
+<!-- If you are updating this file, make sure you copy the unreleased section and change the version and date. Do not remove it. -->
+<!--
+## Unreleased (YYYY-MM-DD)
+
+### Added
+
+#### Headline features
+
+#### Other
+
+### Changed
+
+#### Breaking
+
+#### Non-breaking
+
+### Fixed
+
+### Community PRs to internals
+
+These PRs are not directly user-facing, but improve the development experience. They're just as appreciated!
+
+### Removed
+-->
+<h2 id="unreleased-yyyy-mm-dd"><a class="header" href="#unreleased-yyyy-mm-dd">Unreleased (YYYY-MM-DD)</a></h2>
+<h3 id="added"><a class="header" href="#added">Added</a></h3>
+<h4 id="headline-features"><a class="header" href="#headline-features">Headline features</a></h4>
+<ul>
+<li>Packages can now be depended on by ID and version (i.e. <code>id = &quot;viyiawgsl5lsiul6pup6pyv6bbt6o3vw&quot;, version = &quot;0.3.2-nightly-2023-12-06&quot;</code>) instead of by <code>deployment</code>. This is recommended for all future packages, as it makes it easier to understand which package is being used. See the <a href="https://ambientrun.github.io/Ambient/reference/package.html">package documentation</a> for details.</li>
+</ul>
+<h4 id="other"><a class="header" href="#other">Other</a></h4>
+<ul>
+<li><code>http::post</code> has been added to the server API to make it possible to make POST requests. It accepts optional <code>headers</code> and <code>body</code> arguments.</li>
+</ul>
+<h3 id="changed"><a class="header" href="#changed">Changed</a></h3>
+<h4 id="breaking"><a class="header" href="#breaking">Breaking</a></h4>
+<ul>
+<li>Ambient packages are no longer projected into Rust code using the <code>#[main]</code> macro. Instead, a build script is used to generate a <code>src/packages.rs</code>. The intent of this change is to make it obvious what’s being generated and when, as well as making the macro less error-prone. To update for this:
+<ul>
+<li>Add <code>pub mod packages;</code> to the Rust modules with <code>#[main]</code>.</li>
+<li>Add <code>ambient_package_projection</code> as a build dependency in <code>Cargo.toml</code>.</li>
+<li>Add <code>build.rs</code> to the project root with the following contents:
+<pre><pre class="playground"><code class="language-rust">fn main() {
+    ambient_package_projection::generate();
+}
+</code></pre></pre>
+</li>
+</ul>
+</li>
+<li>Ambient will no longer update the <code>deployment</code> field of dependencies; instead, it will insert the version of that dependency, and that version is not automatically updated. The new <code>--version</code> argument can be used to update the versions of every package in your dependency tree: <code>ambient deploy --version 0.3</code>.</li>
+<li><code>http::get</code> now accepts optional <code>headers</code>. To update your code, set <code>None</code> for the second argument.</li>
+<li>File I/O and the <code>http</code> APIs are now disabled when used on a hosted environment (i.e. Ambient deployments). To test if your logic still works in a hosted environment, run Ambient with the <code>AMBIENT_HOSTED</code> environment variable set to anything (e.g. <code>AMBIENT_HOSTED=1 ambient run</code>).</li>
+</ul>
+<h4 id="non-breaking"><a class="header" href="#non-breaking">Non-breaking</a></h4>
+<h3 id="fixed"><a class="header" href="#fixed">Fixed</a></h3>
+<h3 id="community-prs-to-internals"><a class="header" href="#community-prs-to-internals">Community PRs to internals</a></h3>
+<p>These PRs are not directly user-facing, but improve the development experience. They’re just as appreciated!</p>
+<h3 id="removed"><a class="header" href="#removed">Removed</a></h3>
+<h2 id="version-031-2023-10-24"><a class="header" href="#version-031-2023-10-24">Version 0.3.1 (2023-10-24)</a></h2>
+<h3 id="added-1"><a class="header" href="#added-1">Added</a></h3>
+<h4 id="headline-features-1"><a class="header" href="#headline-features-1">Headline features</a></h4>
+<h4 id="other-1"><a class="header" href="#other-1">Other</a></h4>
+<ul>
+<li><strong>Package/<code>character_movement</code></strong>: <code>CharacterMovement</code> concept added.</li>
+<li><strong>Assets</strong>: Added support for animations and skinning for assimp.</li>
+<li><strong>Examples</strong>: Added assimp example.</li>
+<li><strong>Examples</strong>: Added benchmark/animations example.</li>
+</ul>
+<h3 id="changed-1"><a class="header" href="#changed-1">Changed</a></h3>
+<h4 id="breaking-1"><a class="header" href="#breaking-1">Breaking</a></h4>
+<ul>
+<li><strong>Server</strong>: The logging format has changed to increase consistency, remove unnecessary logs, and improve readability.</li>
+<li><strong>API</strong>: <code>camera::world_to_screen</code> now returns a 3D vector instead of a 2D vector, which can be used to determine if the point is behind the camera.</li>
+<li><strong>Packages</strong>: Renamed the <code>character_controller</code> package to <code>third_person_controller</code> and added a <code>ThirdPersonController</code> concept.</li>
+</ul>
+<h4 id="non-breaking-1"><a class="header" href="#non-breaking-1">Non-breaking</a></h4>
+<ul>
+<li><strong>Physics</strong>: The <code>Collision</code> message now includes the points of collision and their corresponding normals. Thanks to <a href="https://github.com/kevzettler">@kevzettler</a> for fixing this in <a href="https://github.com/AmbientRun/Ambient/pull/1107">#1107</a>!</li>
+<li><strong>Pipeline Types</strong>: A few extra types have been exported. Thanks to <a href="https://github.com/kevzettler">@kevzettler</a> for fixing this in <a href="https://github.com/AmbientRun/Ambient/pull/1082">#1082</a>!</li>
+</ul>
+<h3 id="fixed-1"><a class="header" href="#fixed-1">Fixed</a></h3>
+<ul>
+<li><strong>Debugger</strong>: The debugger has now been re-enabled.</li>
+<li><strong>CLI</strong>: Released <code>crates.io</code> versions are now used as the API dependency in a new project instead of git tags of the Ambient repository.</li>
+<li><strong>Rendering</strong>: Fixed 3D line drawing when they’re behind the camera.</li>
+<li><strong>Networking</strong>: The send queue is now compacted during send to reduce queue growth when backlogged by a slow player connection.</li>
+<li><strong>Web</strong>: The web client will now update its size when the window is resized.</li>
+<li><strong>Rendering</strong>: Fixed an issue where a black border would appear around solid objects with an alpha cutoff (<a href="https://github.com/AmbientRun/Ambient/pull/1104">#1104</a>).</li>
+<li><strong>Rendering</strong>: Fixed water not working on the web.</li>
+<li><strong>Package/<code>orbit_camera</code></strong>: Scrolling the ECS inspector will no longer zoom the camera in and out.</li>
+</ul>
+<h3 id="community-prs-to-internals-1"><a class="header" href="#community-prs-to-internals-1">Community PRs to internals</a></h3>
+<p>These PRs are not directly user-facing, but improve the development experience. They’re just as appreciated!</p>
+<h3 id="removed-1"><a class="header" href="#removed-1">Removed</a></h3>
+<h2 id="version-030-2023-10-04"><a class="header" href="#version-030-2023-10-04">Version 0.3.0 (2023-10-04)</a></h2>
+<p>This release involved a great many changes, including porting Ambient to the web, adding support for deployments, many API changes, and more. Not all changes may be reflected in this changelog; please let us know if you find any omissions.</p>
+<h3 id="added-2"><a class="header" href="#added-2">Added</a></h3>
+<h4 id="headline-features-2"><a class="header" href="#headline-features-2">Headline features</a></h4>
+<ul>
+<li><strong>Client</strong>: The client can now <strong>run on the web</strong>.</li>
+<li><strong>Deploy</strong>: The <code>ambient deploy</code> command can now be used to deploy a package to Ambient runtime services.</li>
+<li><strong>Audio</strong>: Spatial audio is now supported for 3D sounds. See the <a href="https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/physics/basics/src/client.rs">physics example</a> and <a href="https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/controllers/first_person_camera/src/client.rs">first_person_camera example</a></li>
+<li><strong>Networking</strong>: The networking protocol now supports WebTransport for the web client.</li>
+<li><strong>Rendering</strong>: Procedural meshes, textures, samplers and materials are now supported on the client. See the <a href="https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/rendering/procedural_generation">procedural generation example</a>.</li>
+<li><strong>Semantics</strong>: A semantic system to connect packages (previously projects) has been added. This enables dependencies, enums and more. See the breaking changes for more details.</li>
+</ul>
+<h4 id="other-2"><a class="header" href="#other-2">Other</a></h4>
+<ul>
+<li><strong>UI</strong>: Added a new <code>ImageFromUrl</code> element, which can load images from assets or URLs. It also supports rounded corners, borders and a fallback background color. See the <a href="https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/ui/image/src/client.rs">image example</a> for more details.</li>
+<li><strong>Rendering</strong>: Added a <code>torus</code> primitive. Thanks to <a href="https://github.com/mebyz">@mebyz</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/376">#376</a>!</li>
+<li><strong>Physics</strong>: Add <code>set_character_controller_position</code> to the <code>physics</code> API. Thanks to <a href="https://github.com/devjobe">@devjobe</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/398">#398</a>.</li>
+<li><strong>ECS</strong>: <code>Duration</code> is now a supported primitive type.</li>
+<li><strong>ECS</strong>: All integer types from 8-bit to 64-bit are now supported as component types, including signed and unsigned variants. Additionally, all signed and unsigned integer vector types are now supported. This includes <code>U16</code>, <code>IVec2</code>, <code>UVec3</code>, etc.</li>
+<li><strong>Docs</strong>: The IDE documentation has been improved, including information on how to set up Emacs for Ambient development (thanks to <a href="https://github.com/kevzettler">@kevzettler</a> in <a href="https://github.com/AmbientRun/Ambient/pull/505">#505</a>).</li>
+<li><strong>Assets</strong>: <code>ambient assets import</code> can be used to import assets one by one. This will create or modify the <code>pipeline.toml</code> file for you.</li>
+<li><strong>Camera</strong>: Added <code>camera::get_active</code> to get the active camera.</li>
+<li><strong>Client</strong>: When using the native client, you can now use <code>--window-x</code> and <code>--window-y</code> to specify the window position, as well as <code>--window-width</code> and <code>--window-height</code> to specify the window size.</li>
+<li><strong>Packages</strong>: A set of standard packages have been added. Explore <code>guest/rust/packages</code> to find them. These include a character controller, a focus-grabber, a package manager, and more.</li>
+<li><strong>Packages</strong>: Several sample games have been added, including <code>tangent</code>, <code>arkanoid</code>, <code>pong</code>, and more.</li>
+<li><strong>Examples</strong>: Examples have been added for new functionality, including <code>clock</code>, <code>audio_ctrl</code>, <code>dependencies</code>, and more.</li>
+<li><strong>Debugging</strong>: Sentry has been added to the client and server to automatically report crashes. This can be disabled in Ambient’s <code>settings.toml</code>.</li>
+</ul>
+<h4 id="breaking-2"><a class="header" href="#breaking-2">Breaking</a></h4>
+<ul>
+<li>
+<p><strong>Examples</strong>: Examples have been rearranged to be more discoverable. They are now grouped by category.</p>
+</li>
+<li>
+<p><strong>Project</strong>: Projects have been renamed to Packages; see the <a href="https://ambientrun.github.io/Ambient/reference/package.html">package documentation</a> for details.</p>
+</li>
+<li>
+<p><strong>Package</strong>: As mentioned above, a new package semantic system has been added. This comes with several breaking changes:</p>
+<ul>
+<li>
+<p>In your Rust code:</p>
+<ul>
+<li>The modules generated by the Ambient macro are now different in shape. They are namespaced, with each item being present in the namespace as a separate module within the <code>packages</code> module, where your package is <code>this</code>. For example:
+<ul>
+<li><code>components::my_component</code> -&gt; <code>packages::this::components::my_component</code></li>
+<li><code>ambient_api::components::core::app::main_scene</code> -&gt; <code>ambient_api::core::app::components::main_scene</code></li>
+<li>a dependency <code>cool_dependency = { path = &quot;somewhere&quot; }</code> -&gt; <code>packages::cool_dependency::components::my_component</code> (i.e. the name used for the import is used, not the package ID)</li>
+</ul>
+</li>
+<li><code>asset::url</code> has been removed; instead, each package now introduces an <code>assets</code> module, allowing you to access that package’s assets directly. For example:
+<ul>
+<li><code>asset::url(&quot;assets/Teapot.glb&quot;).unwrap()</code> -&gt; <code>packages::ambient_example_asset_loading::assets::url(&quot;Teapot.glb&quot;)</code></li>
+</ul>
+</li>
+<li>UI layout components now use enums to specify their alignment. For example:
+<ul>
+<li><code>with_default(fit_vertical_none())</code> -&gt; <code>with(fit_vertical(), Fit::None)</code></li>
+</ul>
+</li>
+<li>Messages now preserve the order of their fields.
+<ul>
+<li>If your fields are <code>a, c, b</code>, they will be in that order in the generated code.</li>
+<li>Previously, they were sorted alphabetically.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>In your <code>ambient.toml</code>:</p>
+<ul>
+<li>
+<p>Specifying a <code>version</code> is now mandatory.</p>
+</li>
+<li>
+<p>Specifying a <code>content</code> is now mandatory.</p>
+</li>
+<li>
+<p>Messages now have PascalCase IDs:</p>
+<ul>
+<li><code>messages.set_controller</code> -&gt; <code>messages.SetController</code></li>
+</ul>
+</li>
+<li>
+<p>Enums are now supported; they are defined as follows, and can be used anywhere a primitive type can be used, including components and messages.</p>
+<pre><code class="language-toml">[enums.Layout]
+description = &quot;The type of the layout to use.&quot;
+[enums.Layout.members]
+Flow = &quot;Bottom-up flow layout.&quot;
+Dock = &quot;Top-down dock layout.&quot;
+Bookcase = &quot;Min-max bookcase layout.&quot;
+WidthToChildren = &quot;Width to children.&quot;
+
+[components]
+layout = { type = &quot;Layout&quot; }
+</code></pre>
+</li>
+<li>
+<p>Packages can now depend on other packages, allowing for access to their components, messages, etc. This is done by adding a <code>dependencies</code> section to your package. For example:</p>
+<pre><code class="language-toml">[dependencies]
+my_cool_package = { path = &quot;cool_package&quot; }
+</code></pre>
+<p>This will allow you to access the components, messages, etc. of the <code>my_cool_package</code> package from your package. The name that you use to import the package will be used as the namespace, not the package’s original ID.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Components</strong>: Several “tag components” have been prefixed with <code>is_</code> to indicate their tag nature. These include:</p>
+<ul>
+<li><code>core::animation::animation_player</code> -&gt; <code>core::animation::is_animation_player</code></li>
+<li><code>core::audio::audio_player</code> -&gt; <code>core::audio::is_audio_player</code></li>
+<li><code>core::audio::spatial_audio_player</code> -&gt; <code>core::audio::is_spatial_audio_player</code></li>
+<li><code>core::layout::screen</code> -&gt; <code>core::layout::is_screen</code></li>
+<li><code>core::network::persistent_resources</code> -&gt; <code>core::network::is_persistent_resources</code></li>
+<li><code>core::network::synced_resources</code> -&gt; <code>core::network::is_synced_resources</code></li>
+<li><code>core::player::player</code> -&gt; <code>core::player::is_player</code></li>
+<li><code>core::wasm::module</code> -&gt; <code>core::wasm::is_module</code></li>
+<li><code>core::wasm::module_on_server</code> -&gt; <code>core::wasm::is_module_on_server</code></li>
+</ul>
+</li>
+<li>
+<p><strong>API</strong>: Locally-broadcasted messages can now choose to include the originating module in the broadcast; this is an additional boolean parameter to <code>ModuleMessage::send_local_broadcast</code> and <code>message::Target::LocalBroadcast</code>.</p>
+</li>
+<li>
+<p><strong>Camera</strong>: Renamed <code>screen_to_world_direction</code> to <code>screen_position_to_world_ray</code> and <code>clip_space_ray</code> to <code>clip_position_to_world_ray</code>. See <a href="https://github.com/AmbientRun/Ambient/issues/410">#410</a>.</p>
+</li>
+<li>
+<p><strong>Package</strong>: <code>type = { type = &quot;Vec3&quot; }</code> is no longer valid syntax in <code>ambient.toml</code>. Only <code>type = &quot;Vec3&quot;</code> and <code>type = { type = &quot;Vec&quot;, element-type = &quot;Vec3&quot; }</code> are valid.</p>
+</li>
+<li>
+<p><strong>Physics</strong>: Renamed the <code>visualizing</code> component to <code>visualize_collider</code>.</p>
+</li>
+<li>
+<p><strong>Animation</strong>: The animation system has been reworked. See the <a href="https://ambientrun.github.io/Ambient/reference/animations.html">animation documentation</a> for details. Thanks to <a href="https://github.com/devjobe">@devjobe</a> for laying the foundation for this!</p>
+</li>
+<li>
+<p><strong>Physics</strong>: Renamed <code>box_collider</code> to <code>cube_collider</code>.</p>
+</li>
+<li>
+<p><strong>API</strong>: The <code>time</code> function has been split into <code>game_time</code> and <code>epoch_time</code>. The <code>dtime</code> component has been renamed to <code>delta_time</code>. The <code>frametime</code> function has been renamed to <code>delta_time</code>.</p>
+</li>
+<li>
+<p><strong>Assets</strong>: Asset pipelines now use TOML instead of JSON. Use the <code>ambient assets migrate-pipelines-toml</code> command to migrate. (Note that this command will be removed in the next release.)</p>
+</li>
+<li>
+<p><strong>API</strong>: Removed <code>Entity::with_default</code> due to its confusing behaviour (Rust defaults are not necessarily the same as component or concept defaults). You will now have to explicitly specify a value for each component.</p>
+</li>
+<li>
+<p><strong>API</strong>: <code>entity::wait_for_component</code> is now marked as <code>must_use</code> to ensure users consider the possibility of the entity being despawned.</p>
+</li>
+<li>
+<p><strong>Elements</strong>: All hooks are now free functions (i.e. <code>use_state(hooks, ..)</code> instead of <code>hooks.use_state(..)</code>)</p>
+</li>
+<li>
+<p><strong>UI</strong>: Focus is now global across different packages, including the removal of the <code>FocusRoot</code> element component.</p>
+</li>
+<li>
+<p><strong>Hierarchies</strong>: The <code>children</code> component is now automatically derived from <code>parent</code> components (unless the user opts out of this). The <code>children</code> component is also no longer networked, as it is automatically derived on the client.</p>
+</li>
+<li>
+<p><strong>Concepts</strong>: Concept code generation has been changed to generate <code>structs</code> instead, as well as adding support for optional components. See the documentation for more information.</p>
+</li>
+</ul>
+<h4 id="non-breaking-2"><a class="header" href="#non-breaking-2">Non-breaking</a></h4>
+<ul>
+<li><strong>Logging</strong>: The logging output levels have been tweaked to better communicate the state of the system at any given time.</li>
+<li><strong>Debugger</strong>: The debugger has been improved with a resizable sidebar, a scrollable view, and a component filter.</li>
+<li><strong>Animation</strong>: The animation graph is now executed on the server as well.</li>
+<li><strong>CLI</strong>: The <code>ambient new</code> command now takes several parameters to customize the resulting generation.</li>
+<li><strong>Rendering</strong>: The renderer now runs using the direct pipeline on all architectures. This is temporary until platform-specific issues with the multi-draw indirect pipeline are addressed.</li>
+</ul>
+<h3 id="fixed-2"><a class="header" href="#fixed-2">Fixed</a></h3>
+<ul>
+<li><strong>Rendering</strong>: Skinned meshes will no longer be corrupted when there is more than one skinned mesh in a mesh buffer.</li>
+<li><strong>UI</strong>: <code>TextEditor</code> will no longer capture input even when it is not visible.</li>
+<li><strong>Rendering</strong>: Decals now render more consistently.</li>
+<li><strong>API</strong>: <code>entity::wait_for_component</code> will now exit if the entity is despawned.</li>
+<li><strong>API</strong>: The <code>message::Source</code> methods no longer consume the source when returning their data.</li>
+<li><strong>Rendering</strong>: Lines with a <code>from</code> located after a <code>to</code> on the X-dimension will now render correctly.</li>
+<li><strong>API</strong>: The <code>entity::mutate_component</code> documentation now refers to the correct parameter. Thanks to <a href="https://github.com/aldzban">@aldzban</a> for fixing this in <a href="https://github.com/AmbientRun/Ambient/pull/482">#482</a>.</li>
+<li><strong>UI</strong>: The <code>ScrollArea</code> now has a scroll bar.</li>
+<li><strong>Input</strong>: Input is now cleared when the window loses focus, preventing “stuck input” bugs.</li>
+<li><strong>UI</strong>: Layout-related properties, like alignment and fit, did not work correctly for certain values. This has been fixed with the introduction of enums.</li>
+<li><strong>Player</strong>: Player entities are now recursively despawned when disconnecting.</li>
+<li><strong>Build</strong>: Rust compilation errors are now more readable with more colors and fewer unused warnings.</li>
+<li><strong>ECS</strong>: The <code>transformable</code> concept now includes <code>local_to_world</code> to ensure that the world transform is always available.</li>
+<li><strong>Physics</strong>: The <code>physics::raycast[_first]</code> functions will now validate the direction to ensure that they are non-zero, non-NaN and normalized.</li>
+<li><strong>Rendering</strong>: Removing the <code>outline_recursive</code> component from a entity will now remove the outline from its children as well.</li>
+<li><strong>API</strong>: The <code>ambient_ui</code> prelude (and the <code>ambient_api</code> prelude, by extension) no longer glob-imports components into the global namespace. This means that you will need to import components explicitly.</li>
+<li><strong>Messaging</strong>: Messages without empty fields now generate a unit struct, instead of a struct with no fields. That is, they generate <code>struct MyMessage;</code> instead of <code>struct MyMessage {}</code>.</li>
+<li><strong>Physics</strong>: Child collision volumes are now automatically updated when their parent’s transform changes. Thanks to <a href="https://github.com/kevzettler">@kevzettler</a> for fixing this in <a href="https://github.com/AmbientRun/Ambient/pull/885">#885</a>!</li>
+</ul>
+<h3 id="community-prs-to-internals-2"><a class="header" href="#community-prs-to-internals-2">Community PRs to internals</a></h3>
+<p>These PRs are not directly user-facing, but improve the development experience. They’re just as appreciated!</p>
+<h3 id="changed-2"><a class="header" href="#changed-2">Changed</a></h3>
+<ul>
+<li><code>glam</code> was updated to 0.24. Thanks to <a href="https://github.com/devjobe">@devjobe</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/434">#434</a>.</li>
+</ul>
+<h3 id="removed-2"><a class="header" href="#removed-2">Removed</a></h3>
+<h2 id="version-021-2023-05-06"><a class="header" href="#version-021-2023-05-06">Version 0.2.1 (2023-05-06)</a></h2>
+<h3 id="fixed-3"><a class="header" href="#fixed-3">Fixed</a></h3>
+<ul>
+<li><strong>API</strong>: The API documentation is now built only for the <code>wasm</code> target on <code>docs.rs</code>.</li>
+</ul>
+<h2 id="version-020-2023-05-05"><a class="header" href="#version-020-2023-05-05">Version 0.2.0 (2023-05-05)</a></h2>
+<h3 id="added-3"><a class="header" href="#added-3">Added</a></h3>
+<h4 id="headline-features-3"><a class="header" href="#headline-features-3">Headline features</a></h4>
+<ul>
+<li><strong>API</strong>: Guest code can now <strong>create and interact with UI</strong>. See <a href="https://github.com/AmbientRun/Ambient/tree/v0.2.0/guest/rust/examples/ui">the UI examples</a>.</li>
+<li><strong>API</strong>: Guest code can now <strong>run on the client</strong>. See <a href="https://github.com/AmbientRun/Ambient/tree/v0.2.0/guest/rust/examples/basics/clientside">the <code>clientside</code> example</a>.</li>
+<li><strong>API</strong>: Clientside guest code can now play <strong>basic audio</strong>. See <a href="https://github.com/AmbientRun/Ambient/tree/v0.2.0/guest/rust/examples/games/pong">the <code>pong</code> example</a>.</li>
+<li><strong>Server</strong>: By default, a proxy URL is generated for the server on startup. This can be used to access a running server from anywhere on the internet, making it easy to share your work with others. To turn this off, specify <code>--no-proxy</code> on the server command line.</li>
+</ul>
+<h4 id="other-3"><a class="header" href="#other-3">Other</a></h4>
+<ul>
+<li><strong>API</strong>: Kinematic bodies are now exposed. This is used by the minigolf example to provide its moving obstacles.</li>
+<li><strong>API</strong>: Added <code>physics::move_character</code> function to correctly move character controllers. This is used by the third-person camera example.</li>
+<li><strong>API</strong>: <code>Uvec2</code>/<code>Uvec3</code>/<code>Uvec4</code>/<code>U8</code> can now be used for component values.</li>
+<li><strong>API</strong>: A new <code>message</code> API has been added to allow for sending messages between client and server WASM, and from one WASM module to another. Messages are defined in <code>ambient.toml</code> and are structured. Message subscriptions return handles that can be used to cancel their subscriptions.</li>
+<li><strong>API</strong>: A new <code>camera</code> API has been added on the client for operations that involve the camera, including <code>screen_ray</code> for calculating a ray from the camera through a screen position. Thanks to <a href="https://github.com/owenpalmer">@owenpalmer</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/316">#316</a>.</li>
+<li><strong>API</strong>: A new <code>input</code> API has been added for retrieving input and manipulating the cursor (including changing its icon, visibility and lock state).</li>
+<li><strong>API</strong>: <code>physics::{add_impulse, add_force_at_position, add_impulse_at_position, get_velocity_at_position}</code> have been added.</li>
+<li><strong>API</strong>: Added <code>create_revolute_joint</code> to the <code>physics</code> API.</li>
+<li><strong>API</strong>: Added a capsule concept with corresponding components.</li>
+<li><strong>API</strong>: Several animation manipulation functions have been added to <code>entity</code> and <code>asset</code>. Thanks to <a href="https://github.com/devjobe">@devjobe</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/362">#362</a>.</li>
+<li><strong>Physics</strong>: A <code>collider_loaded</code> component will now be automatically attached to an entity once its collider has finished loading.</li>
+<li><strong>Client</strong>: The client’s window title is now automatically changed to the name of the project running on the server. Thanks to <a href="https://github.com/MavethGH">@MavethGH</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/178">#178</a>.</li>
+<li><strong>Client</strong>: Added a basic headless mode to enable automatic CI testing of projects.</li>
+<li><strong>Client</strong>: Added <code>Dump UI World</code> button to inspect the state of the UI. Thanks to <a href="https://github.com/owenpalmer">@owenpalmer</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/216">#216</a>.</li>
+</ul>
+<h4 id="examples"><a class="header" href="#examples">Examples</a></h4>
+<ul>
+<li>A suite of UI examples have been added to demonstrate how to use the UI in guest code.</li>
+<li>The <code>clientside</code> example shows how to use clientside WASM.</li>
+<li>The <code>messaging</code> example shows how to message the server from the client and vice versa, and how to message another module with both broadcasts and directed messages.</li>
+<li>The <code>pong</code> example implements a basic version of Pong to demonstrate a basic multiplayer game.</li>
+<li>The <code>fog</code> example shows how to configure fog in the renderer for more atmospheric scenes.</li>
+<li>The <code>first_person_camera</code> example shows how to implement a first-person camera.</li>
+<li>The <code>music_sequencer</code> example shows how to use the audio and UI API to build a basic music sequencer.</li>
+<li>The <code>decals</code> example shows how to use decals to add detail to a scene. Thanks to <a href="https://github.com/kevzettler">@kevzettler</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/347">#347</a>.</li>
+</ul>
+<h3 id="changed-3"><a class="header" href="#changed-3">Changed</a></h3>
+<h4 id="breaking-3"><a class="header" href="#breaking-3">Breaking</a></h4>
+<ul>
+<li><strong>Client</strong>: <code>--debug</code> is now <code>--debugger</code>, but it can also be accessed through the <code>AMBIENT_DEBUGGER</code> env variable.</li>
+<li><strong>API</strong>: The <code>Cargo.toml</code> has changed to enable clientside builds. Please look at the examples to see how to update your <code>Cargo.toml</code> appropriately.</li>
+<li><strong>API</strong>: <code>ChangeQuery</code> has been split into <code>UntrackedChangeQuery</code> and <code>ChangeQuery</code> to ensure that <code>track_change</code> is called before the query is built.</li>
+<li><strong>API</strong>: <code>asset_url</code> has moved to <code>asset::url</code>.</li>
+<li><strong>API</strong>: <code>EventResult</code> and <code>EventOk</code> have been renamed to <code>ResultEmpty</code> and <code>OkEmpty</code> to better clarify their purpose.</li>
+<li><strong>API</strong>: The physics API has been revamped to better encode the physics engine’s capabilities.
+<ul>
+<li><code>physics::apply_force</code> is now <code>physics::add_force</code>.</li>
+<li><code>physics::explode_bomb</code> is now <code>physics::add_radial_impulse</code>, and takes a <code>FalloffRadius</code> enum.</li>
+</ul>
+</li>
+<li><strong>API</strong>: All input functionality has moved to <code>input</code> on the clientside.</li>
+<li><strong>API</strong>: The <code>lookat_center</code> component has been renamed to <code>lookat_target</code>.</li>
+<li><strong>Physics</strong>: Convex shapes are now used if a body is neither static or kinematic.</li>
+</ul>
+<h4 id="non-breaking-3"><a class="header" href="#non-breaking-3">Non-breaking</a></h4>
+<ul>
+<li><strong>Ambient</strong>: Ambient is now dual-licensed MIT/Apache2, in accordance with the rest of the Rust ecosystem.</li>
+<li><strong>Ambient</strong>: The default logging settings now better communicate what Ambient is doing at any given moment.</li>
+<li><strong>Project</strong>: Concept definitions in projects now support namespaces. Thanks to <a href="https://github.com/ArberSephirotheca">@ArberSephirotheca</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/212">#212</a>.</li>
+<li><strong>API</strong>: Concepts now include the components they use in their doc comments.</li>
+<li><strong>API</strong>: <code>#[main]</code>-attributed functions no longer have to be <code>async</code> or return a <code>Result</code>.</li>
+<li><strong>API</strong>: <code>#[main]</code>-attributed functions, <code>on</code>, <code>once</code>, <code>Query::bind</code> and <code>run_async</code> can now return a <code>Result</code> or nothing.</li>
+<li><strong>Project</strong>: Project manifests can now be split into multiple files using <code>includes</code>.</li>
+</ul>
+<h3 id="fixed-4"><a class="header" href="#fixed-4">Fixed</a></h3>
+<ul>
+<li><strong>Ambient</strong>: Various stability and performance fixes.</li>
+<li><strong>Ambient</strong>: Added attributions for external code.</li>
+<li><strong>Ambient</strong>: Typo fixes. Thanks for the following!
+<ul>
+<li><a href="https://github.com/AmbientRun/Ambient/pull/159">#159: fix: docs broken links to gh-pages</a> by <a href="https://github.com/daniellavoie">@daniellavoie</a></li>
+<li><a href="https://github.com/AmbientRun/Ambient/pull/172">#172: chore: fix typo in gpu.rs</a> by <a href="https://github.com/eltociear">@eltociear</a></li>
+</ul>
+</li>
+<li><strong>Examples</strong>: The Minigolf example now has several gameplay tweaks (including camera movement on right-click) to improve the experience.</li>
+<li><strong>Examples</strong>: The examples no longer occasionally use non-one alpha colours, which led to them rendering black objects.</li>
+<li><strong>Server</strong>: The server no longer shuts down automatically after a period of inactivity.</li>
+<li><strong>ECS</strong>: A bug with ECS component versioning that led to certain components not updating has been fixed. Fixes <a href="https://github.com/AmbientRun/Ambient/issues/113">#113</a>.</li>
+<li><strong>Networking</strong>: Various optimizations have been made to networking and the ECS to reduce unnecessary network traffic.</li>
+</ul>
+<h3 id="community-prs-to-internals-3"><a class="header" href="#community-prs-to-internals-3">Community PRs to internals</a></h3>
+<p>These PRs are not directly user-facing, but improve the development experience. They’re just as appreciated!</p>
+<ul>
+<li><strong>CI</strong>: Linux CI builds now output the tree of their target to assist in debugging CI cache blow-up. Thanks to <a href="https://github.com/daniellavoie">@daniellavoie</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/170">#170</a>.</li>
+<li><strong>ECS</strong>: <code>Entity::assert_all</code> can be used to ensure all components for an <code>Entity</code> on the host have an attribute. Thanks to <a href="https://github.com/MavethGH">@MavethGH</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/211">#211</a>.</li>
+<li><strong>App</strong>: <code>ambient new</code> uses the correct path for relative API when creating a project in <code>guest/rust/examples</code>. Thanks to <a href="https://github.com/owenpalmer">@owenpalmer</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/218">#218</a>.</li>
+<li><strong>Ambient</strong>: The presentation of the license in the repository was improved. Thanks to <a href="https://github.com/C-BJ">@C-BJ</a> for <a href="https://github.com/AmbientRun/Ambient/pull/201">#201</a> and <a href="https://github.com/AmbientRun/Ambient/pull/203">#203</a>.</li>
+<li><strong>Ambient</strong>: The book and build CI workflows now only run when relevant files are updated. Thanks to <a href="https://github.com/C-BJ">@C-BJ</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/202">#202</a>.</li>
+<li><strong>Audio</strong>: The audio asset pipeline now uses Rust libraries for re-encoding files, instead of shelling out to ffmpeg. Thanks to <a href="https://github.com/marceline-cramer">@marceline-cramer</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/317">#317</a>.</li>
+<li><strong>Rendering</strong>: Ambient now runs on wgpu 0.16, improving compatibility and providing access to new features. Thanks to <a href="https://github.com/kevzettler">@kevzettler</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/308">#308</a>.</li>
+<li><strong>Campfire</strong>: The internal development tool Campfire can now automatically check release-readiness. Thanks to <a href="https://github.com/kevzettler">@kevzettler</a> for implementing this in <a href="https://github.com/AmbientRun/Ambient/pull/356">#356</a>.</li>
+</ul>
+<h3 id="removed-3"><a class="header" href="#removed-3">Removed</a></h3>
+<ul>
+<li><strong>API</strong>: <code>player_camera</code> has been removed, and the components it instantiated are now directly exposed. See the <code>multiplayer</code> example to see what’s changed.</li>
+<li><strong>API</strong>: Events have been removed and replaced with the more general-purpose <code>message</code> API.</li>
+</ul>
+<h2 id="version-011-2023-02-22"><a class="header" href="#version-011-2023-02-22">Version 0.1.1 (2023-02-22)</a></h2>
+<h3 id="added-4"><a class="header" href="#added-4">Added</a></h3>
+<ul>
+<li>A <a href="https://github.com/AmbientRun/Ambient/tree/v0.1.1/guest/rust/examples/minigolf">minigolf example</a> by <a href="https://github.com/SK83RJOSH">SK83RJOSH</a>.</li>
+<li>Examples are now bundled into a downloadable <code>examples.zip</code> for each release.</li>
+</ul>
+<h3 id="fixed-5"><a class="header" href="#fixed-5">Fixed</a></h3>
+<ul>
+<li>macOS ARM64 builds are now available after enabling the execution of unsigned executable memory (as required for wasmtime execution).</li>
+<li>The debugging configuration for VSCode was updated to use the new CLI.</li>
+<li>Minor documentation updates.</li>
+</ul>
+<h2 id="version-010-2023-02-22"><a class="header" href="#version-010-2023-02-22">Version 0.1.0 (2023-02-22)</a></h2>
+<p>Initial release. See the <a href="https://www.ambient.run/post/introducing-ambient">announcement blog post</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../reference/faq.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../runtime_internals/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../reference/faq.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../runtime_internals/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

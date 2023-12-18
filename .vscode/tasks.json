@@ -1,0 +1,74 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "command": "~/.cargo/bin/cargo",
+            "label": "Release elements (internal server)",
+            "options": {
+                "env": {
+                    "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
+                    "NO_ELP_TIMEOUT": "true",
+                    "AMBIENT_DISABLE_TIMEOUT": "true",
+                    "RUST_BACKTRACE": "1"
+                },
+                "cwd": "${workspaceFolder}"
+            },
+            "args": [
+                "run",
+                "--release",
+                "--features=profile",
+                "--",
+                "--disable-auto-update",
+                "--projects-dir=workdir"
+            ],
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "type": "cargo",
+            "command": "run",
+            "label": "third_person_camera",
+            "args": [
+                "--",
+                "run",
+                "./guest/rust/examples/basics/third_person_camera"
+            ]
+        },
+        {
+            "type": "shell",
+            "command": "wasm-pack build web --dev",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": "build",
+            "label": "build-web"
+        },
+        {
+            "type": "cargo",
+            "command": "clippy",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "args": [
+                "--workspace"
+            ],
+            "group": "build",
+            "label": "rust: cargo clippy"
+        },
+        {
+            "type": "npm",
+            "script": "start",
+            "path": "www",
+            "problemMatcher": [],
+            "label": "npm: start - www",
+            "detail": "webpack-dev-server",
+            "options": {
+                "env": {
+                    "NODE_OPTIONS": "--openssl-legacy-provider"
+                }
+            },
+        }
+    ]
+}

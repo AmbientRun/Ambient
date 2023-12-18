@@ -1,0 +1,356 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ECS - Ambient Documentation</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../style.min.css">
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">User Guide</li><li class="chapter-item expanded "><a href="../user/installing.html"><strong aria-hidden="true">1.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../user/setting_up_ide.html"><strong aria-hidden="true">2.</strong> Setting up your IDE</a></li><li class="chapter-item expanded "><a href="../user/overview.html"><strong aria-hidden="true">3.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../user/running_examples.html"><strong aria-hidden="true">4.</strong> Running examples</a></li><li class="chapter-item expanded "><a href="../user/api.html"><strong aria-hidden="true">5.</strong> API</a></li><li class="chapter-item expanded "><a href="../user/debugging.html"><strong aria-hidden="true">6.</strong> Debugging</a></li><li class="chapter-item expanded "><a href="../user/profiling.html"><strong aria-hidden="true">7.</strong> Profiling</a></li><li class="chapter-item expanded "><a href="../user/settings.html"><strong aria-hidden="true">8.</strong> Settings</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorial</li><li class="chapter-item expanded "><a href="../tutorials/game/0_intro.html"><strong aria-hidden="true">9.</strong> Intro</a></li><li class="chapter-item expanded "><a href="../tutorials/game/1_package.html"><strong aria-hidden="true">10.</strong> Chapter 1: Creating a project</a></li><li class="chapter-item expanded "><a href="../tutorials/game/2_player_character.html"><strong aria-hidden="true">11.</strong> Chapter 2: Player character</a></li><li class="chapter-item expanded "><a href="../tutorials/game/3_scene.html"><strong aria-hidden="true">12.</strong> Chapter 3: Scene</a></li><li class="chapter-item expanded "><a href="../tutorials/game/4_player_interaction.html"><strong aria-hidden="true">13.</strong> Chapter 4: Player interaction</a></li><li class="chapter-item expanded "><a href="../tutorials/game/5_models.html"><strong aria-hidden="true">14.</strong> Chapter 5: Models</a></li><li class="chapter-item expanded "><a href="../tutorials/game/6_ui.html"><strong aria-hidden="true">15.</strong> Chapter 6: UI</a></li><li class="chapter-item expanded "><a href="../tutorials/game/7_deploying.html"><strong aria-hidden="true">16.</strong> Chapter 7: Deploying</a></li><li class="chapter-item expanded "><a href="../tutorials/game/8_modding.html"><strong aria-hidden="true">17.</strong> Chapter 8: Modding</a></li><li class="chapter-item expanded affix "><li class="part-title">Reference Guide</li><li class="chapter-item expanded "><a href="../reference/getting_content.html"><strong aria-hidden="true">18.</strong> Getting content</a></li><li class="chapter-item expanded "><a href="../reference/runtime.html"><strong aria-hidden="true">19.</strong> Runtime</a></li><li class="chapter-item expanded "><a href="../reference/package.html"><strong aria-hidden="true">20.</strong> Package</a></li><li class="chapter-item expanded "><a href="../reference/ecs.html" class="active"><strong aria-hidden="true">21.</strong> ECS</a></li><li class="chapter-item expanded "><a href="../reference/messages.html"><strong aria-hidden="true">22.</strong> Messages</a></li><li class="chapter-item expanded "><a href="../reference/models.html"><strong aria-hidden="true">23.</strong> Models</a></li><li class="chapter-item expanded "><a href="../reference/hierarchies.html"><strong aria-hidden="true">24.</strong> Hierarchies and transforms</a></li><li class="chapter-item expanded "><a href="../reference/asset_pipeline.html"><strong aria-hidden="true">25.</strong> Asset pipeline</a></li><li class="chapter-item expanded "><a href="../reference/networking.html"><strong aria-hidden="true">26.</strong> Networking</a></li><li class="chapter-item expanded "><a href="../reference/animations.html"><strong aria-hidden="true">27.</strong> Animations</a></li><li class="chapter-item expanded "><a href="../reference/physics.html"><strong aria-hidden="true">28.</strong> Physics</a></li><li class="chapter-item expanded "><a href="../reference/audio.html"><strong aria-hidden="true">29.</strong> Audio</a></li><li class="chapter-item expanded "><a href="../reference/ui.html"><strong aria-hidden="true">30.</strong> UI</a></li><li class="chapter-item expanded "><a href="../reference/distributing.html"><strong aria-hidden="true">31.</strong> Distributing</a></li><li class="chapter-item expanded "><a href="../reference/ci.html"><strong aria-hidden="true">32.</strong> CI</a></li><li class="chapter-item expanded "><a href="../reference/terminology.html"><strong aria-hidden="true">33.</strong> Terminology</a></li><li class="chapter-item expanded "><a href="../reference/common_pitfalls.html"><strong aria-hidden="true">34.</strong> Common pitfalls</a></li><li class="chapter-item expanded "><a href="../reference/advanced_installing.html"><strong aria-hidden="true">35.</strong> Advanced installation</a></li><li class="chapter-item expanded "><a href="../reference/faq.html"><strong aria-hidden="true">36.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="../reference/changelog.html"><strong aria-hidden="true">37.</strong> Changelog</a></li><li class="chapter-item expanded affix "><li class="part-title">Runtime internals</li><li class="chapter-item expanded "><a href="../runtime_internals/overview.html"><strong aria-hidden="true">38.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../runtime_internals/contributing.html"><strong aria-hidden="true">39.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../runtime_internals/ecs.html"><strong aria-hidden="true">40.</strong> ECS</a></li><li class="chapter-item expanded "><a href="../runtime_internals/renderer.html"><strong aria-hidden="true">41.</strong> Renderer</a></li><li class="chapter-item expanded "><a href="../runtime_internals/asset_cache.html"><strong aria-hidden="true">42.</strong> Asset cache</a></li><li class="chapter-item expanded "><a href="../runtime_internals/guidelines.html"><strong aria-hidden="true">43.</strong> Guidelines</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Ambient Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/AmbientRun/Ambient" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="entity-component-system-ecs"><a class="header" href="#entity-component-system-ecs">Entity Component System (ECS)</a></h1>
+<p>An entity component system (ECS) is an architectural pattern that is used in game development to organize the logic of a game. It is a data-oriented approach to programming, which means that it focuses on the data that is being processed, rather than the logic that is processing it.</p>
+<p>The ECS pattern is based on three concepts: <em>entities</em>, <em>components</em>, and <em>systems</em>. Entities are the objects that exist in the game world. Components are the data that describe the entities. Systems are the logic that processes the components.</p>
+<p>Conceptually, the ECS can be considered to be a database, where the entities are the rows, the components are the columns, and the systems are the queries. The ECS is designed to be fast and efficient, and is used in many modern game engines.</p>
+<p>In addition to the three core concepts, Ambient also supports <em>concepts</em>, which are a way of defining a collection of components that correspond to some concept in the game world. For example, a <code>Player</code> concept might be defined as a collection of components that describe the player’s health, inventory, and position.</p>
+<h2 id="entities"><a class="header" href="#entities">Entities</a></h2>
+<p>Entities are the objects that exist in the game world. They consist of a unique identifier (an <code>EntityId</code>, which is 128 bits) and a set of components. Entities are created and destroyed dynamically during runtime.</p>
+<h2 id="components"><a class="header" href="#components">Components</a></h2>
+<p>Components are pieces of data that can be attached to entities. They store information like health, position, velocity, and more. Components are defined in the package manifest, and are attached to entities at runtime.</p>
+<p>They are defined in the manifest (and not your codebase) so that other packages that depend on your package can use them when interacting with the ECS. Additionally, this means that component definitions are not tied to a specific language, and can be used in any language that supports the runtime.</p>
+<p>For more detail on what components can be, see the <a href="./package.html#components--components">package manifest reference</a>. Note that component types cannot be nested - you cannot have a component that is a <code>Vec</code> of <code>Vec</code>s.</p>
+<h3 id="attributes"><a class="header" href="#attributes">Attributes</a></h3>
+<p>Components can have attributes that modify their behavior. These attributes are defined in the package manifest, and are used by the runtime to determine how to handle the component.</p>
+<h4 id="debuggable"><a class="header" href="#debuggable"><code>Debuggable</code></a></h4>
+<p>This component can have its debug value printed. This is most often used for ECS dumps, but can also be used for debugging purposes.</p>
+<h4 id="networked"><a class="header" href="#networked"><code>Networked</code></a></h4>
+<p>This component is networked to the client. This means that the component’s value will be sent to the client when the component is created, and whenever the component’s value changes.</p>
+<p>Note that a component that is <code>Networked</code> on the client will <em>not</em> be networked to the server. Ambient’s ECS networking is strictly server to client; to send data from the client to the server, you must use <a href="./package.html#messages--messages">messages</a>.</p>
+<h4 id="resource"><a class="header" href="#resource"><code>Resource</code></a></h4>
+<p>This component will only ever be attached to the <code>entity::resources()</code> entity, which is always present in the world. This is useful for storing global state that is not tied to a specific entity.</p>
+<p>This component will error when attached to any other entity. Note that the resources entity is not networked; if you want networked global state, consider using <code>entity::synchronized_resources()</code>.</p>
+<h4 id="mayberesource"><a class="header" href="#mayberesource"><code>MaybeResource</code></a></h4>
+<p>This component can be used as either a resource or as a component. This is useful for components that are traditionally attached to entities, but are sometimes attached to the resource entity.</p>
+<p>This is most commonly used for components that are used in the resources of a prefab to provide metadata about the prefab. It is unlikely you will need to interact with this directly as a user.</p>
+<h4 id="store"><a class="header" href="#store"><code>Store</code></a></h4>
+<p>This component’s value will be stored in the world file. This is useful for components that store persistent state, like the player’s inventory.</p>
+<p>At present, Ambient does not support persistency. This functionality will be added in the future.</p>
+<h2 id="systems"><a class="header" href="#systems">Systems</a></h2>
+<p>Systems are the logic that processes the components. Ambient guest code cannot directly define systems; instead, they rely on queries that run every frame. These function identically to systems for now, but systems may be formally introduced in the future to allow for more advanced functionality, including automatic parallelism of the ECS.</p>
+<p>Queries are powerful, and can be used to query for entities that have a specific component, or a specific set of components. At present, they are entirely structural, so they cannot be used to query for entities that have a specific value for a component.</p>
+<p>There are three types of queries in Ambient at present: general queries, (de)spawn queries, and change queries.</p>
+<p>General queries are the most common type of query. They are used to query for entities that have a specific set of components:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>query((player(), player_camera_ref(), translation(), rotation())).each_frame(move |players| {
+    for (_, (_, camera_id, pos, rot)) in players {
+        let forward = rot * Vec3::X;
+        entity::set_component(camera_id, lookat_target(), pos);
+        entity::set_component(camera_id, translation(), pos - forward * 4. + Vec3::Z * 2.);
+    }
+});
+<span class="boring">}
+</span></code></pre></pre>
+<p>Spawn queries are used to query for when specific components are added to entities (including the entire entity being spawned). They are useful for spawning entities when a player joins the game; for example:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>spawn_query(player()).bind(move |players| {
+    // For each player joining, spawn a random colored box somewhere
+    for _ in players {
+        Entity::new()
+            .with_merge(Transformable::suggested())
+            .with(cube(), ())
+            .with(translation(), rand::random())
+            .with(color(), rand::random::&lt;Vec3&gt;().extend(1.0))
+            .spawn();
+    }
+});
+<span class="boring">}
+</span></code></pre></pre>
+<p>Despawn queries are similar to spawn queries, but track the removal of components from entities (including the entire entity being despawned). They are useful for cleaning up entities when a player leaves the game; for example:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>despawn_query(user_id()).requires(player()).bind(move |players| {
+    for (_, user_id) in players {
+        println!(&quot;Player {user_id} left&quot;);
+    }
+});
+<span class="boring">}
+</span></code></pre></pre>
+<p>Finally, change queries are activated when one of the components they track change. Note that the components that are returned by the query are separate from the components that are tracked; this allows you to get more information about the entity than just the components that changed.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>change_query((user_id(), health())).track_change(health()).requires(player()).bind(move |players| {
+    for (_, (user_id, health)) in players {
+        println!(&quot;Player {user_id} now has {health} health&quot;);
+    }
+});
+<span class="boring">}
+</span></code></pre></pre>
+<p>In addition to specifying components in the query, you can also specify components that must be needed using <code>.requires</code> or components that must not be present using <code>.excludes</code>. These are useful for filtering out entities that should not be processed by the query.</p>
+<h2 id="concepts"><a class="header" href="#concepts">Concepts</a></h2>
+<p>Concepts are defined in the package manifest, and are used to define a collection of components that correspond to some concept in the game world. For example, a <code>Player</code> concept might be defined as a collection of components that describe the player’s health, inventory, and position.</p>
+<p>Concepts have an ID (specified as the name of their TOML table), a name, a description, and required/optional components. Additionally, they can extend other concepts, which will cause them to inherit the components of the concepts they extend. Anything that is defined in the concept will override the definition in the concept it extends.</p>
+<p>Required components must be present for an entity to satisfy a concept, while optional components are not required and can be used to provide additional information about the entity. As an example, a <code>CharacterAnimation</code> concept may require components to drive it, but can offer optional components as a way of configuring which animations should be used.</p>
+<p>When specifying a concept’s components, the following optional parameters are available:</p>
+<ul>
+<li><code>suggested</code>: A suggested default for the value of the component. This is shown in documentation.</li>
+<li><code>description</code>: A description of the component in the context of the concept, which may be different to the component’s description. This can be used to clarify how a component may be used within a concept. This is shown in documentation.</li>
+</ul>
+<p>These do not need to be specified, but are useful for providing additional information about the component.</p>
+<p>For illustration, here are two concepts that are defined as part of Ambient’s default manifest:</p>
+<pre><code class="language-toml">[concepts.Transformable]
+name = &quot;Transformable&quot;
+description = &quot;Can be translated, rotated and scaled.&quot;
+
+[concepts.Transformable.components.required]
+local_to_world = { suggested = &quot;Identity&quot; }
+
+[concepts.Transformable.components.optional]
+translation = { suggested = [0.0, 0.0, 0.0] }
+rotation = { suggested = [0.0, 0.0, 0.0, 1.0] }
+scale = { suggested = [1.0, 1.0, 1.0] }
+
+[concepts.Camera]
+name = &quot;Camera&quot;
+description = &quot;Base components for a camera. You will need other components to make a fully-functioning camera.&quot;
+extends = [&quot;transform::Transformable&quot;]
+
+[concepts.Camera.components.required]
+near = { suggested = 0.1 }
+projection = { suggested = &quot;Identity&quot; }
+projection_view = { suggested = &quot;Identity&quot; }
+active_camera = { suggested = 0.0 }
+&quot;transform::local_to_world&quot; = { suggested = &quot;Identity&quot; }
+&quot;transform::inv_local_to_world&quot; = { suggested = &quot;Identity&quot; }
+[concepts.Camera.components.optional]
+&quot;app::main_scene&quot; = { description = &quot;Either the main or UI scene must be specified for this camera to be used.&quot; }
+&quot;app::ui_scene&quot; = { description = &quot;Either the main or UI scene must be specified for this camera to be used.&quot; }
+&quot;player::user_id&quot; = { description = &quot;If set, this camera will only be used for the specified user.&quot; }
+</code></pre>
+<p>In this example, the “Camera” concept contains all of the components from a transformable, as well as components of its own. This means that any entity that has the “camera” concept will also have the components from the “Transformable” concept.</p>
+<p>In your Rust code, this will be represented as a struct that contains the components that are defined in the concept. This is generated as part of the package projection that enables other Ambient functionality within your Rust code. It will be present within <code>src/packages.rs</code>.</p>
+<p>For example, the <code>Camera</code> concept will generate a struct that looks like this:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Clone, Debug)]
+pub struct Camera {
+    pub local_to_world: Mat4,
+    pub near: f32,
+    pub projection: Mat4,
+    pub projection_view: Mat4,
+    pub active_camera: f32,
+    pub inv_local_to_world: Mat4,
+    pub optional: CameraOptional,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct CameraOptional {
+    pub translation: Option&lt;Vec3&gt;,
+    pub rotation: Option&lt;Quat&gt;,
+    pub scale: Option&lt;Vec3&gt;,
+    pub main_scene: Option&lt;()&gt;,
+    pub ui_scene: Option&lt;()&gt;,
+    pub user_id: Option&lt;String&gt;,
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>The <code>Concept</code> struct implements the <code>Concept</code> trait, which offers several operations. Each of these fields represents a specific component from the concept.</p>
+<p>This struct can be filled out with values and then converted to an <code>Entity</code> using the <code>Concept::make</code> method, or spawned using <code>Concept::spawn</code>.
+Alternatively, it can be populated using the <code>Concept::get_{un}spawned</code> method, allowing for easy retrieval of all of the values of a concept from an entity or the ECS.</p>
+<p>If all components of a <code>Concept</code> have a <code>suggested</code> value supplied, an implementation of the <code>ConceptSuggested</code> trait will be generated, allowing you to use <code>ConceptSuggested::suggested</code> to get that concept with all of its suggested values.</p>
+<p>As an example, a <code>Camera</code> can be spawned using the following code:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let camera = Camera {
+    local_to_world: Mat4::IDENTITY,
+    near: 0.1,
+    projection: Mat4::IDENTITY,
+    projection_view: Mat4::IDENTITY,
+    active_camera: 0.0,
+    inv_local_to_world: Mat4::IDENTITY,
+    optional: CameraOptional::default(),
+}.spawn();
+
+// This would also work, as the `Camera` concept has
+// suggested values for all of its components.
+let camera = Camera::suggested().spawn();
+<span class="boring">}
+</span></code></pre></pre>
+<p>For more information, consult <a href="https://docs.rs/ambient_api/latest/ambient_api/ecs/trait.Concept.html">the API documentation on the <code>Concept</code> trait</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../reference/package.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../reference/messages.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../reference/package.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../reference/messages.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

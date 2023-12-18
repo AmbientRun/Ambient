@@ -1,0 +1,231 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Common pitfalls - Ambient Documentation</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../style.min.css">
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">User Guide</li><li class="chapter-item expanded "><a href="../user/installing.html"><strong aria-hidden="true">1.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../user/setting_up_ide.html"><strong aria-hidden="true">2.</strong> Setting up your IDE</a></li><li class="chapter-item expanded "><a href="../user/overview.html"><strong aria-hidden="true">3.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../user/running_examples.html"><strong aria-hidden="true">4.</strong> Running examples</a></li><li class="chapter-item expanded "><a href="../user/api.html"><strong aria-hidden="true">5.</strong> API</a></li><li class="chapter-item expanded "><a href="../user/debugging.html"><strong aria-hidden="true">6.</strong> Debugging</a></li><li class="chapter-item expanded "><a href="../user/profiling.html"><strong aria-hidden="true">7.</strong> Profiling</a></li><li class="chapter-item expanded "><a href="../user/settings.html"><strong aria-hidden="true">8.</strong> Settings</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorial</li><li class="chapter-item expanded "><a href="../tutorials/game/0_intro.html"><strong aria-hidden="true">9.</strong> Intro</a></li><li class="chapter-item expanded "><a href="../tutorials/game/1_package.html"><strong aria-hidden="true">10.</strong> Chapter 1: Creating a project</a></li><li class="chapter-item expanded "><a href="../tutorials/game/2_player_character.html"><strong aria-hidden="true">11.</strong> Chapter 2: Player character</a></li><li class="chapter-item expanded "><a href="../tutorials/game/3_scene.html"><strong aria-hidden="true">12.</strong> Chapter 3: Scene</a></li><li class="chapter-item expanded "><a href="../tutorials/game/4_player_interaction.html"><strong aria-hidden="true">13.</strong> Chapter 4: Player interaction</a></li><li class="chapter-item expanded "><a href="../tutorials/game/5_models.html"><strong aria-hidden="true">14.</strong> Chapter 5: Models</a></li><li class="chapter-item expanded "><a href="../tutorials/game/6_ui.html"><strong aria-hidden="true">15.</strong> Chapter 6: UI</a></li><li class="chapter-item expanded "><a href="../tutorials/game/7_deploying.html"><strong aria-hidden="true">16.</strong> Chapter 7: Deploying</a></li><li class="chapter-item expanded "><a href="../tutorials/game/8_modding.html"><strong aria-hidden="true">17.</strong> Chapter 8: Modding</a></li><li class="chapter-item expanded affix "><li class="part-title">Reference Guide</li><li class="chapter-item expanded "><a href="../reference/getting_content.html"><strong aria-hidden="true">18.</strong> Getting content</a></li><li class="chapter-item expanded "><a href="../reference/runtime.html"><strong aria-hidden="true">19.</strong> Runtime</a></li><li class="chapter-item expanded "><a href="../reference/package.html"><strong aria-hidden="true">20.</strong> Package</a></li><li class="chapter-item expanded "><a href="../reference/ecs.html"><strong aria-hidden="true">21.</strong> ECS</a></li><li class="chapter-item expanded "><a href="../reference/messages.html"><strong aria-hidden="true">22.</strong> Messages</a></li><li class="chapter-item expanded "><a href="../reference/models.html"><strong aria-hidden="true">23.</strong> Models</a></li><li class="chapter-item expanded "><a href="../reference/hierarchies.html"><strong aria-hidden="true">24.</strong> Hierarchies and transforms</a></li><li class="chapter-item expanded "><a href="../reference/asset_pipeline.html"><strong aria-hidden="true">25.</strong> Asset pipeline</a></li><li class="chapter-item expanded "><a href="../reference/networking.html"><strong aria-hidden="true">26.</strong> Networking</a></li><li class="chapter-item expanded "><a href="../reference/animations.html"><strong aria-hidden="true">27.</strong> Animations</a></li><li class="chapter-item expanded "><a href="../reference/physics.html"><strong aria-hidden="true">28.</strong> Physics</a></li><li class="chapter-item expanded "><a href="../reference/audio.html"><strong aria-hidden="true">29.</strong> Audio</a></li><li class="chapter-item expanded "><a href="../reference/ui.html"><strong aria-hidden="true">30.</strong> UI</a></li><li class="chapter-item expanded "><a href="../reference/distributing.html"><strong aria-hidden="true">31.</strong> Distributing</a></li><li class="chapter-item expanded "><a href="../reference/ci.html"><strong aria-hidden="true">32.</strong> CI</a></li><li class="chapter-item expanded "><a href="../reference/terminology.html"><strong aria-hidden="true">33.</strong> Terminology</a></li><li class="chapter-item expanded "><a href="../reference/common_pitfalls.html" class="active"><strong aria-hidden="true">34.</strong> Common pitfalls</a></li><li class="chapter-item expanded "><a href="../reference/advanced_installing.html"><strong aria-hidden="true">35.</strong> Advanced installation</a></li><li class="chapter-item expanded "><a href="../reference/faq.html"><strong aria-hidden="true">36.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="../reference/changelog.html"><strong aria-hidden="true">37.</strong> Changelog</a></li><li class="chapter-item expanded affix "><li class="part-title">Runtime internals</li><li class="chapter-item expanded "><a href="../runtime_internals/overview.html"><strong aria-hidden="true">38.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../runtime_internals/contributing.html"><strong aria-hidden="true">39.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../runtime_internals/ecs.html"><strong aria-hidden="true">40.</strong> ECS</a></li><li class="chapter-item expanded "><a href="../runtime_internals/renderer.html"><strong aria-hidden="true">41.</strong> Renderer</a></li><li class="chapter-item expanded "><a href="../runtime_internals/asset_cache.html"><strong aria-hidden="true">42.</strong> Asset cache</a></li><li class="chapter-item expanded "><a href="../runtime_internals/guidelines.html"><strong aria-hidden="true">43.</strong> Guidelines</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Ambient Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/AmbientRun/Ambient" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="common-pitfalls"><a class="header" href="#common-pitfalls">Common pitfalls</a></h1>
+<p>Be aware that a lot of problems are caused by mismatching versions of Ambient. To check your version, run <code>ambient --version</code> and make sure it matches the version in your <code>Cargo.toml</code> file.</p>
+<h2 id="the-examples-dont-work"><a class="header" href="#the-examples-dont-work">The examples don’t work</a></h2>
+<p>This is most often because of mismatching the ambient version with the
+examples version. See <a href="../user/running_examples.html">running examples</a>.</p>
+<h2 id="my-clientside-wasm-module-crashes-when-accessing-a-component-from-the-server-and-unwrapping-it"><a class="header" href="#my-clientside-wasm-module-crashes-when-accessing-a-component-from-the-server-and-unwrapping-it">My clientside WASM module crashes when accessing a component from the server and unwrapping it</a></h2>
+<p>Your clientside WASM can run before the server has finished running its WASM, so the component you’re trying to access may not have been created yet.</p>
+<p>To fix this, consider using <code>entity::wait_for_component</code>, which is an async helper that will stall execution until the component is available.</p>
+<h2 id="my-object-with-a-random-color-is-black-sometimes"><a class="header" href="#my-object-with-a-random-color-is-black-sometimes">My object with a random color is black sometimes</a></h2>
+<p>The <code>color</code> component is a <code>Vec4</code>. Using <code>rand::random</code> to populate it will
+result in the <code>w</code>/alpha channel also being between 0 and 1, which means your
+object may be black and/or disappear if the alpha is below the default alpha
+cut-off.</p>
+<p>To fix this, use a random <code>Vec3</code> for your color and then extend it to a <code>Vec4</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let color = rand::random::&lt;Vec3&gt;().extend(1.0);
+<span class="boring">}
+</span></code></pre></pre>
+<h2 id="my-character-controller-is-unaffected-by-gravity"><a class="header" href="#my-character-controller-is-unaffected-by-gravity">My character controller is unaffected by gravity</a></h2>
+<p>PhysX, which we use for physics, does not apply gravity to character controllers.</p>
+<p>You can account for this by applying gravity to the character controller yourself;
+an example of this can be found in <a href="https://github.com/AmbientRun/Ambient/blob/main/guest/rust/packages/std/character_movement/src/server.rs">the <code>character_movement</code> standard package</a>
+which maintains a <code>vertical_velocity</code> component and uses it to simulate gravity.</p>
+<h2 id="my-cameras-view-matrix-is-all-nans"><a class="header" href="#my-cameras-view-matrix-is-all-nans">My camera’s view matrix is all NaNs</a></h2>
+<p>This can happen when the transformation used to position the camera in the world is invalid.</p>
+<p>There are several potential causes, including:</p>
+<ul>
+<li>The camera is positioned at the origin, and is looking at the origin.</li>
+<li>The camera’s <code>lookat_up</code> vector is parallel to the <code>lookat_target</code> vector. This can happen by default if your <code>lookat_target</code> is above or below the camera as <code>lookat_up</code> defaults to +Z.</li>
+<li>There is a division by zero somewhere in the camera’s transformation. This could happen if your gameplay code for controlling the camera does not account for the possibility of a zero denominator (i.e. no time passing, or no distance travelled).</li>
+</ul>
+<h2 id="fails-to-start-on-linux-error-in-surfaceconfigure-parent-device-is-lost"><a class="header" href="#fails-to-start-on-linux-error-in-surfaceconfigure-parent-device-is-lost">Fails to start on Linux (Error in <code>Surface::configure: parent device is lost</code>)</a></h2>
+<p>If you’re running Wayland, you may have to start Ambient with <code>WAYLAND_DISPLAY=wayland-1 ambient run</code>.
+See <a href="https://github.com/gfx-rs/wgpu/issues/2519">this issue</a> for details.</p>
+<h2 id="runtime-error-import--has-the-wrong-type"><a class="header" href="#runtime-error-import--has-the-wrong-type">Runtime error: import <code>...</code> has the wrong type</a></h2>
+<p>This can occur when you have <code>.wasm</code> files in your <code>build</code> folder that are using an old version of the Ambient API.
+Delete the <code>build</code> folder and try again - this should force them to be regenerated.</p>
+<h2 id="failed-to-download-file--error-trying-to-connect-tcp-connect-error-etc-os-error-10060"><a class="header" href="#failed-to-download-file--error-trying-to-connect-tcp-connect-error-etc-os-error-10060">Failed to download file / error trying to connect: tcp connect error: <em>etc</em> (OS error 10060)</a></h2>
+<p>This can happen if your anti-virus or firewall is blocking the connection to the Ambient runtime.
+Try deactivating it, then run the Ambient package again with ‘ambient run’.</p>
+<p>If this fixes it, you’ll need to add an exception to your anti-virus/firewall to allow Ambient to connect.
+We do not recommend leaving your anti-virus/firewall disabled.</p>
+<h2 id="ciso646-not-found"><a class="header" href="#ciso646-not-found"><code>&lt;ciso646&gt;</code> not found</a></h2>
+<p>The compilation of <code>physx-sys</code> and other C++ libraries may fail due to a missing <code>ciso646</code> header.
+This header was removed as part of C++20, and distributions no longer ship it by default.</p>
+<p>This can be fixed on Debian-based distributions (i.e. Ubuntu 22.04, Pop!_OS 22.04, etc) by running</p>
+<pre><code class="language-sh">sudo apt install libstdc++-12-dev
+</code></pre>
+<p>to install a version of the GNU C++ standard library that includes the header.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../reference/terminology.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../reference/advanced_installing.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../reference/terminology.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../reference/advanced_installing.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

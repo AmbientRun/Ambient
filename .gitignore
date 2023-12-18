@@ -1,0 +1,19 @@
+target
+**/tmp/**
+**/.vs/**
+.DS_Store
+/example_assets
+/rust
+**/book
+
+# WASM
+web/pkg/
+node_modules/
+bin/
+wasm-pack.log
+www/.bin/create-wasm-app.js
+third_person_camera.cap
+*.dll
+
+guest/rust/examples/assets/unity/assets/TreePack
+fail_screenshot.png

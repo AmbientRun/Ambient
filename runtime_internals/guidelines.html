@@ -1,0 +1,248 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Guidelines - Ambient Documentation</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../style.min.css">
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">User Guide</li><li class="chapter-item expanded "><a href="../user/installing.html"><strong aria-hidden="true">1.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../user/setting_up_ide.html"><strong aria-hidden="true">2.</strong> Setting up your IDE</a></li><li class="chapter-item expanded "><a href="../user/overview.html"><strong aria-hidden="true">3.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../user/running_examples.html"><strong aria-hidden="true">4.</strong> Running examples</a></li><li class="chapter-item expanded "><a href="../user/api.html"><strong aria-hidden="true">5.</strong> API</a></li><li class="chapter-item expanded "><a href="../user/debugging.html"><strong aria-hidden="true">6.</strong> Debugging</a></li><li class="chapter-item expanded "><a href="../user/profiling.html"><strong aria-hidden="true">7.</strong> Profiling</a></li><li class="chapter-item expanded "><a href="../user/settings.html"><strong aria-hidden="true">8.</strong> Settings</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorial</li><li class="chapter-item expanded "><a href="../tutorials/game/0_intro.html"><strong aria-hidden="true">9.</strong> Intro</a></li><li class="chapter-item expanded "><a href="../tutorials/game/1_package.html"><strong aria-hidden="true">10.</strong> Chapter 1: Creating a project</a></li><li class="chapter-item expanded "><a href="../tutorials/game/2_player_character.html"><strong aria-hidden="true">11.</strong> Chapter 2: Player character</a></li><li class="chapter-item expanded "><a href="../tutorials/game/3_scene.html"><strong aria-hidden="true">12.</strong> Chapter 3: Scene</a></li><li class="chapter-item expanded "><a href="../tutorials/game/4_player_interaction.html"><strong aria-hidden="true">13.</strong> Chapter 4: Player interaction</a></li><li class="chapter-item expanded "><a href="../tutorials/game/5_models.html"><strong aria-hidden="true">14.</strong> Chapter 5: Models</a></li><li class="chapter-item expanded "><a href="../tutorials/game/6_ui.html"><strong aria-hidden="true">15.</strong> Chapter 6: UI</a></li><li class="chapter-item expanded "><a href="../tutorials/game/7_deploying.html"><strong aria-hidden="true">16.</strong> Chapter 7: Deploying</a></li><li class="chapter-item expanded "><a href="../tutorials/game/8_modding.html"><strong aria-hidden="true">17.</strong> Chapter 8: Modding</a></li><li class="chapter-item expanded affix "><li class="part-title">Reference Guide</li><li class="chapter-item expanded "><a href="../reference/getting_content.html"><strong aria-hidden="true">18.</strong> Getting content</a></li><li class="chapter-item expanded "><a href="../reference/runtime.html"><strong aria-hidden="true">19.</strong> Runtime</a></li><li class="chapter-item expanded "><a href="../reference/package.html"><strong aria-hidden="true">20.</strong> Package</a></li><li class="chapter-item expanded "><a href="../reference/ecs.html"><strong aria-hidden="true">21.</strong> ECS</a></li><li class="chapter-item expanded "><a href="../reference/messages.html"><strong aria-hidden="true">22.</strong> Messages</a></li><li class="chapter-item expanded "><a href="../reference/models.html"><strong aria-hidden="true">23.</strong> Models</a></li><li class="chapter-item expanded "><a href="../reference/hierarchies.html"><strong aria-hidden="true">24.</strong> Hierarchies and transforms</a></li><li class="chapter-item expanded "><a href="../reference/asset_pipeline.html"><strong aria-hidden="true">25.</strong> Asset pipeline</a></li><li class="chapter-item expanded "><a href="../reference/networking.html"><strong aria-hidden="true">26.</strong> Networking</a></li><li class="chapter-item expanded "><a href="../reference/animations.html"><strong aria-hidden="true">27.</strong> Animations</a></li><li class="chapter-item expanded "><a href="../reference/physics.html"><strong aria-hidden="true">28.</strong> Physics</a></li><li class="chapter-item expanded "><a href="../reference/audio.html"><strong aria-hidden="true">29.</strong> Audio</a></li><li class="chapter-item expanded "><a href="../reference/ui.html"><strong aria-hidden="true">30.</strong> UI</a></li><li class="chapter-item expanded "><a href="../reference/distributing.html"><strong aria-hidden="true">31.</strong> Distributing</a></li><li class="chapter-item expanded "><a href="../reference/ci.html"><strong aria-hidden="true">32.</strong> CI</a></li><li class="chapter-item expanded "><a href="../reference/terminology.html"><strong aria-hidden="true">33.</strong> Terminology</a></li><li class="chapter-item expanded "><a href="../reference/common_pitfalls.html"><strong aria-hidden="true">34.</strong> Common pitfalls</a></li><li class="chapter-item expanded "><a href="../reference/advanced_installing.html"><strong aria-hidden="true">35.</strong> Advanced installation</a></li><li class="chapter-item expanded "><a href="../reference/faq.html"><strong aria-hidden="true">36.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="../reference/changelog.html"><strong aria-hidden="true">37.</strong> Changelog</a></li><li class="chapter-item expanded affix "><li class="part-title">Runtime internals</li><li class="chapter-item expanded "><a href="../runtime_internals/overview.html"><strong aria-hidden="true">38.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../runtime_internals/contributing.html"><strong aria-hidden="true">39.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../runtime_internals/ecs.html"><strong aria-hidden="true">40.</strong> ECS</a></li><li class="chapter-item expanded "><a href="../runtime_internals/renderer.html"><strong aria-hidden="true">41.</strong> Renderer</a></li><li class="chapter-item expanded "><a href="../runtime_internals/asset_cache.html"><strong aria-hidden="true">42.</strong> Asset cache</a></li><li class="chapter-item expanded "><a href="../runtime_internals/guidelines.html" class="active"><strong aria-hidden="true">43.</strong> Guidelines</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Ambient Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/AmbientRun/Ambient" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="guidelines"><a class="header" href="#guidelines">Guidelines</a></h1>
+<p>This document contains guidelines for contributing to Ambient. These will be updated as the project evolves.</p>
+<h2 id="message-style-errors-information"><a class="header" href="#message-style-errors-information">Message style (errors, information)</a></h2>
+<p>When composing text that is shown to the user (including error messages and log messages), follow these guidelines:</p>
+<ul>
+<li>Use American English, as opposed to British English. This is the default for technical writing.
+<ul>
+<li><strong>Example</strong>: “color” is preferable to “colour”.</li>
+</ul>
+</li>
+<li>Use the Oxford comma.
+<ul>
+<li><strong>Example</strong>: “red, white, and blue” is preferable to “red, white and blue”.</li>
+</ul>
+</li>
+<li>Fully capitalize acronyms.
+<ul>
+<li><strong>Example</strong>: “HTTP” is preferable to “http” or “Http”.</li>
+<li>Other common examples: “HTTP”, “URL”, “JSON”, “TOML”, “ECS”</li>
+</ul>
+</li>
+<li>Use sentence case (i.e. capitalize the first word, and any proper nouns). Your errors could be at any layer of the stack, so they should read as complete sentences.
+<ul>
+<li><strong>Example</strong>: “Server running” is preferable to “server running”.</li>
+</ul>
+</li>
+<li>Use the present tense if the message describes the current state of the system, or the past tense if it describes a past state.
+<ul>
+<li><strong>Example</strong>: “Server running” when the server’s started vs. “Server was running” when the server’s stopped.</li>
+</ul>
+</li>
+<li>Use the imperative mood for commands.
+<ul>
+<li><strong>Example</strong>: “Run <code>cargo build</code> to build the project.” is preferable to “You can run <code>cargo build</code> to build the project.” as it is shorter and easier to read.</li>
+</ul>
+</li>
+<li>Avoid being overly verbose, but don’t be terse to the point of confusion.
+<ul>
+<li><strong>Example</strong>: “Server running” is preferable to “The server is running” as it conveys the same amount of information, but is shorter and easier to read.</li>
+<li><strong>Example</strong>: “Error while processing the frobnicator stack” is preferable to “Frobnicator stack processing error” as it provides specific information about the why (“while”) and the what (“the frobnicator stack”), while the latter is ambiguous and could be interpreted in multiple ways.</li>
+</ul>
+</li>
+<li>Object IDs (packages, components, etc) should be referred to with surrounding backticks - except where already surrounded by parentheses - while names should be referred to with quotation marks.
+<ul>
+<li><strong>Example</strong>: <code>The package &quot;Party Starter&quot; (party_starter) does not have the component `boombox`.</code></li>
+</ul>
+</li>
+<li>Paths should be referred to with quotation marks surrounding them. (The Rust debug implementation for paths does this automatically.)
+<ul>
+<li><strong>Example</strong>: <code>Your file is located at &quot;/home/user/file.txt&quot;.</code></li>
+</ul>
+</li>
+<li>The additional context (e.g. <code>anyhow</code>, but this applies to anything where errors are being nested) for an error should be a complete message, not a fragment, as errors at any level of the stack may be displayed.
+<ul>
+<li><strong>Example</strong>: <code>Error while processing single pipeline in &quot;lol.toml&quot;: No such file or directory (os error 2)</code> is preferable to <code>In pipeline &quot;lol.toml&quot;: No such file or directory (os error 2)</code>.</li>
+</ul>
+</li>
+<li>In general, try to optimize for easy copy-ability / clicking. If it’s a link, you should be able to click it in your terminal without having to manually select it.
+<ul>
+<li><strong>Example</strong>: <code>Visit `https://example.com/` for more information.</code> is preferable to <code>Visit https://example.com/ for more information.</code>, as the former is more likely to be clickable in a terminal.</li>
+</ul>
+</li>
+<li>Use tracing instead of <code>println</code>. This is because many events within Ambient have a time component to them, and the output should convey that to ensure the user is aware of the time that the event occurred.
+<ul>
+<li><strong>Example</strong>: <code>tracing::info!(&quot;Server running&quot;)</code> is preferable to <code>println!(&quot;Server running&quot;)</code> as the latter does not convey the time that the event occurred. </li>
+<li>Prefer <code>tracing::info!</code> for user facing events, and <code>tracing::debug!</code> or <code>tracing::trace!</code> for verbose information as the default log filter is <code>info</code>.</li>
+</ul>
+</li>
+</ul>
+<h2 id="performance"><a class="header" href="#performance">Performance</a></h2>
+<h3 id="error-handling"><a class="header" href="#error-handling">Error handling</a></h3>
+<ul>
+<li>Be careful with the use of <code>anyhow</code>, especially <code>context</code> and <code>with_context</code>. The context methods capture a backtrace for their error case, which can be expensive, especially if done in aggregate (i.e. in a hot loop). If your code is likely to discard the error, consider using a dedicated error type or <code>Option</code> instead.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../runtime_internals/asset_cache.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../runtime_internals/asset_cache.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

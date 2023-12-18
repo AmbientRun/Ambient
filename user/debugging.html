@@ -1,0 +1,232 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Debugging - Ambient Documentation</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../style.min.css">
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">User Guide</li><li class="chapter-item expanded "><a href="../user/installing.html"><strong aria-hidden="true">1.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../user/setting_up_ide.html"><strong aria-hidden="true">2.</strong> Setting up your IDE</a></li><li class="chapter-item expanded "><a href="../user/overview.html"><strong aria-hidden="true">3.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../user/running_examples.html"><strong aria-hidden="true">4.</strong> Running examples</a></li><li class="chapter-item expanded "><a href="../user/api.html"><strong aria-hidden="true">5.</strong> API</a></li><li class="chapter-item expanded "><a href="../user/debugging.html" class="active"><strong aria-hidden="true">6.</strong> Debugging</a></li><li class="chapter-item expanded "><a href="../user/profiling.html"><strong aria-hidden="true">7.</strong> Profiling</a></li><li class="chapter-item expanded "><a href="../user/settings.html"><strong aria-hidden="true">8.</strong> Settings</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorial</li><li class="chapter-item expanded "><a href="../tutorials/game/0_intro.html"><strong aria-hidden="true">9.</strong> Intro</a></li><li class="chapter-item expanded "><a href="../tutorials/game/1_package.html"><strong aria-hidden="true">10.</strong> Chapter 1: Creating a project</a></li><li class="chapter-item expanded "><a href="../tutorials/game/2_player_character.html"><strong aria-hidden="true">11.</strong> Chapter 2: Player character</a></li><li class="chapter-item expanded "><a href="../tutorials/game/3_scene.html"><strong aria-hidden="true">12.</strong> Chapter 3: Scene</a></li><li class="chapter-item expanded "><a href="../tutorials/game/4_player_interaction.html"><strong aria-hidden="true">13.</strong> Chapter 4: Player interaction</a></li><li class="chapter-item expanded "><a href="../tutorials/game/5_models.html"><strong aria-hidden="true">14.</strong> Chapter 5: Models</a></li><li class="chapter-item expanded "><a href="../tutorials/game/6_ui.html"><strong aria-hidden="true">15.</strong> Chapter 6: UI</a></li><li class="chapter-item expanded "><a href="../tutorials/game/7_deploying.html"><strong aria-hidden="true">16.</strong> Chapter 7: Deploying</a></li><li class="chapter-item expanded "><a href="../tutorials/game/8_modding.html"><strong aria-hidden="true">17.</strong> Chapter 8: Modding</a></li><li class="chapter-item expanded affix "><li class="part-title">Reference Guide</li><li class="chapter-item expanded "><a href="../reference/getting_content.html"><strong aria-hidden="true">18.</strong> Getting content</a></li><li class="chapter-item expanded "><a href="../reference/runtime.html"><strong aria-hidden="true">19.</strong> Runtime</a></li><li class="chapter-item expanded "><a href="../reference/package.html"><strong aria-hidden="true">20.</strong> Package</a></li><li class="chapter-item expanded "><a href="../reference/ecs.html"><strong aria-hidden="true">21.</strong> ECS</a></li><li class="chapter-item expanded "><a href="../reference/messages.html"><strong aria-hidden="true">22.</strong> Messages</a></li><li class="chapter-item expanded "><a href="../reference/models.html"><strong aria-hidden="true">23.</strong> Models</a></li><li class="chapter-item expanded "><a href="../reference/hierarchies.html"><strong aria-hidden="true">24.</strong> Hierarchies and transforms</a></li><li class="chapter-item expanded "><a href="../reference/asset_pipeline.html"><strong aria-hidden="true">25.</strong> Asset pipeline</a></li><li class="chapter-item expanded "><a href="../reference/networking.html"><strong aria-hidden="true">26.</strong> Networking</a></li><li class="chapter-item expanded "><a href="../reference/animations.html"><strong aria-hidden="true">27.</strong> Animations</a></li><li class="chapter-item expanded "><a href="../reference/physics.html"><strong aria-hidden="true">28.</strong> Physics</a></li><li class="chapter-item expanded "><a href="../reference/audio.html"><strong aria-hidden="true">29.</strong> Audio</a></li><li class="chapter-item expanded "><a href="../reference/ui.html"><strong aria-hidden="true">30.</strong> UI</a></li><li class="chapter-item expanded "><a href="../reference/distributing.html"><strong aria-hidden="true">31.</strong> Distributing</a></li><li class="chapter-item expanded "><a href="../reference/ci.html"><strong aria-hidden="true">32.</strong> CI</a></li><li class="chapter-item expanded "><a href="../reference/terminology.html"><strong aria-hidden="true">33.</strong> Terminology</a></li><li class="chapter-item expanded "><a href="../reference/common_pitfalls.html"><strong aria-hidden="true">34.</strong> Common pitfalls</a></li><li class="chapter-item expanded "><a href="../reference/advanced_installing.html"><strong aria-hidden="true">35.</strong> Advanced installation</a></li><li class="chapter-item expanded "><a href="../reference/faq.html"><strong aria-hidden="true">36.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="../reference/changelog.html"><strong aria-hidden="true">37.</strong> Changelog</a></li><li class="chapter-item expanded affix "><li class="part-title">Runtime internals</li><li class="chapter-item expanded "><a href="../runtime_internals/overview.html"><strong aria-hidden="true">38.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../runtime_internals/contributing.html"><strong aria-hidden="true">39.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../runtime_internals/ecs.html"><strong aria-hidden="true">40.</strong> ECS</a></li><li class="chapter-item expanded "><a href="../runtime_internals/renderer.html"><strong aria-hidden="true">41.</strong> Renderer</a></li><li class="chapter-item expanded "><a href="../runtime_internals/asset_cache.html"><strong aria-hidden="true">42.</strong> Asset cache</a></li><li class="chapter-item expanded "><a href="../runtime_internals/guidelines.html"><strong aria-hidden="true">43.</strong> Guidelines</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Ambient Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/AmbientRun/Ambient" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="debugging"><a class="header" href="#debugging">Debugging</a></h1>
+<h2 id="running-with-the-debugger"><a class="header" href="#running-with-the-debugger">Running with the debugger</a></h2>
+<p>When the client is run with the <code>AMBIENT_DEBUGGER</code> environment variable, or with the <code>--debugger</code> flag, the game is surrounded with a debugger:</p>
+<pre><code class="language-sh">AMBIENT_DEBUGGER=1 ambient run examples/minigolf
+# or `$env:AMBIENT_DEBUGGER=1` on Windows/PowerShell
+# or `ambient run --debugger examples/minigolf`
+</code></pre>
+<p><img src="debugger.png" alt="Debugger surrounding the game with AMBIENT_DEBUGGER" /></p>
+<p>These can be used to inspect the state of the client and server ECSes, as well as the renderer. When one of these buttons are pressed, a YAML file will be created with the corresponding state, and its path will be written to <code>stdout</code>:</p>
+<pre><code class="language-log">[2023-02-23T17:47:36Z INFO  ambient_debugger] Wrote &quot;Ambient/tmp/server_hierarchy.yml&quot;
+</code></pre>
+<p>Here is some sample output for the server ECS:</p>
+<pre><code class="language-yaml">- &quot;id=RsE148MNkdB24bFWQrfeMA loc=48:0&quot;:
+    &quot;core::app::main_scene&quot;: ()
+    &quot;core::ecs::children&quot;: &quot;[EntityId(koK-dbeCZDrcHzsT7QELUw, 110383077981027712353063371358575952530)]&quot;
+    &quot;core::transform::translation&quot;: &quot;Vec3(-5.0, -0.0019752309, 2.8536541)&quot;
+    &quot;core::transform::scale&quot;: &quot;Vec3(1.0, 1.0, 1.0)&quot;
+    &quot;core::transform::rotation&quot;: &quot;Quat(0.0, 0.0, 0.0, 1.0)&quot;
+    &quot;core::transform::local_to_world&quot;: &quot;Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(-5.0, -0.001970334, 2.8387475, 1.0) }&quot;
+    &quot;core::transform::spherical_billboard&quot;: ()
+  children:
+    - &quot;id=koK-dbeCZDrcHzsT7QELUw loc=46:0&quot;:
+        &quot;core::app::main_scene&quot;: ()
+        &quot;core::transform::local_to_world&quot;: &quot;Mat4 { x_axis: Vec4(0.02, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, -0.02, 1.7484555e-9, 0.0), z_axis: Vec4(0.0, -1.7484555e-9, -0.02, 0.0), w_axis: Vec4(-5.0, -0.001970334, 2.8387475, 1.0) }&quot;
+        &quot;core::transform::local_to_parent&quot;: &quot;Mat4 { x_axis: Vec4(0.02, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, -0.02, 1.7484555e-9, 0.0), z_axis: Vec4(0.0, -1.7484555e-9, -0.02, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) }&quot;
+        &quot;core::transform::mesh_to_local&quot;: &quot;Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) }&quot;
+        &quot;core::transform::mesh_to_world&quot;: &quot;Mat4 { x_axis: Vec4(0.02, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, -0.02, 1.7484555e-9, 0.0), z_axis: Vec4(0.0, -1.7484555e-9, -0.02, 0.0), w_axis: Vec4(-5.0, -0.001970334, 2.8387475, 1.0) }&quot;
+        &quot;core::rendering::color&quot;: &quot;Vec4(1.0, 0.3, 0.3, 1.0)&quot;
+        &quot;core::ui::text&quot;: '&quot;user_470i61dDp7FKjGFQetZ53O&quot;'
+        &quot;core::ui::font_size&quot;: &quot;36.0&quot;
+        &quot;core::player::user_id&quot;: &quot;...&quot;
+      children: []
+</code></pre>
+<h2 id="increasing-log-output"><a class="header" href="#increasing-log-output">Increasing log output</a></h2>
+<p>You can also increase the logging output from specific internal modules using the <code>RUST_LOG</code> environment variable,
+which accepts <code>module=log_level</code> pairs that are comma-sepparated. Here are some general tips:</p>
+<ul>
+<li>To debug <strong>your asset pipeline</strong>, set <code>RUST_LOG=ambient_build=info</code>. For even more logs, you can set <code>RUST_LOG=ambient_build=info,ambient_model_import=info</code>.</li>
+<li>To debug <strong>rendering</strong>, set <code>RUST_LOG=ambient_renderer=info</code>.</li>
+<li>To debug <strong>networking</strong>, set <code>RUST_LOG=ambient_network=info</code>.</li>
+<li>To debug <strong>physics</strong>, set <code>RUST_LOG=ambient_physics=info</code>.</li>
+<li>To debug everything, set <code>RUST_LOG=info</code>. To get even more logs set <code>RUST_LOG=debug</code>.</li>
+</ul>
+<h2 id="physics"><a class="header" href="#physics">Physics</a></h2>
+<p>Ambient uses PhysX 4.1 from Nvidia for physics simulation. As a result, the entire physics scene can be visualized using the <a href="https://developer.nvidia.com/physx-visual-debugger">PhysX Visual Debugger (PVD)</a>.</p>
+<p>By default, physics debugging is on. To debug your scene, install and start PVD, then start an Ambient package. Your package’s scene should automatically be visible within PVD. For more details on how to use PVD, see the <a href="https://gameworksdocs.nvidia.com/PhysX/4.1/documentation/physxguide/Manual/VisualDebugger.html">guide</a>.</p>
+<h2 id="assets"><a class="header" href="#assets">Assets</a></h2>
+<p>When assets are compiled by the assets pipeline, the resulting artifacts will be output to the <code>build</code> directory in your package. These can be examined to determine whether or not your source was accurately compiled by the asset pipeline.</p>
+<p>Additionally, if there are fatal errors or warnings, the asset pipeline will report them during the compilation process.</p>
+<h2 id="networking"><a class="header" href="#networking">Networking</a></h2>
+<h3 id="debugging-which-components-are-sent-over-the-network"><a class="header" href="#debugging-which-components-are-sent-over-the-network">Debugging which components are sent over the network</a></h3>
+<p>Use the environment flag <code>AMBIENT_DEBUG_ENTITY_STREAM</code> to debug entities and components sent over the network to the client. <code>AMBIENT_DEBUG_ENTITY_STREAM=FULL</code> will output everything, <code>AMBIENT_DEBUG_ENTITY_STREAM=true</code> (or anything else) will output a summary.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../user/api.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../user/profiling.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../user/api.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../user/profiling.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

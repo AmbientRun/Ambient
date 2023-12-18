@@ -1,0 +1,885 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "cppvsdbg",
+            "request": "launch",
+            "name": "ambient [windows debug]",
+            "program": "${workspaceFolder}/target/debug/ambient.exe",
+            "args": [
+                "run",
+                "guest/rust/examples/basics/primitives",
+            ],
+            "stopAtEntry": false,
+            "enableDebugHeap": false,
+            "cwd": "${workspaceFolder}",
+            "symbolOptions": {
+                "searchMicrosoftSymbolServer": true,
+            },
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "ambient [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--features",
+                    "profile"
+                ],
+                "filter": {
+                    "name": "ambient",
+                    "kind": "bin"
+                }
+            },
+            "env": {
+                "_NO_DEBUG_HEAP": "1",
+                "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error,ambient_gpu=info",
+                "AMBIENT_DISABLE_TIMEOUT": "true",
+                "AMBIENT_DEBUGGER": "true"
+            },
+            "args": [
+                "run",
+                "guest/rust/examples/basics/primitives",
+            ],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "ambient [release]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--release",
+                    "--features",
+                    "profile"
+                ],
+                "filter": {
+                    "name": "ambient",
+                    "kind": "bin"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
+                "AMBIENT_DISABLE_TIMEOUT": "true"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ambient_renderer/lod'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "-p",
+                    "ambient_renderer",
+                    "--example",
+                    "lod"
+                ],
+                "filter": {
+                    "name": "lod",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
+                "AMBIENT_DISABLE_TIMEOUT": "true"
+            },
+            "args": [],
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "name": "ambient (Windows, Internal server) [debug]",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/target/debug/ambient.exe",
+            "env": {
+                "RUST_LOG": "dims=info,dims_shared=info,ambient=info"
+            },
+            "args": [
+                "--internal-server"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [],
+            "externalConsole": true
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/app/hello_world' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=hello_world",
+                    "--package=ambient_app"
+                ],
+                "filter": {
+                    "name": "hello_world",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "warning"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/asset_timeline' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=asset_timeline",
+                    "--package=ambient_asset_timeline"
+                ],
+                "filter": {
+                    "name": "asset_timeline",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/decals/decals' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=decals",
+                    "--package=ambient_decals",
+                    "--features=hotload-includes"
+                ],
+                "filter": {
+                    "name": "decals",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ecs_editor' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=ecs_editor",
+                    "--package=ambient_ecs_editor",
+                    "--release"
+                ],
+                "filter": {
+                    "name": "ecs_editor",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/gizmos' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=gizmos",
+                    "--package=ambient_gizmos"
+                ],
+                "filter": {
+                    "name": "gizmos",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/model_import/assimp' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=assimp",
+                    "--package=ambient_model_import"
+                ],
+                "filter": {
+                    "name": "assimp",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info",
+                "RUST_BACKTRACE": "1"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/model_import/fbx' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=fbx",
+                    "--package=ambient_model_import"
+                ],
+                "filter": {
+                    "name": "fbx",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info",
+                "RUST_BACKTRACE": "1"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/model_import/gltf' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=gltf",
+                    "--package=ambient_model_import"
+                ],
+                "filter": {
+                    "name": "gltf",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "dims=info,ambient_model_import=info,elements=info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/model_import/model_loading' [release]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=model_loading",
+                    "--package=ambient_model_import",
+                    "--release"
+                ],
+                "filter": {
+                    "name": "model_loading",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/model_import/skinmesh' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=skinmesh",
+                    "--package=ambient_model_import"
+                ],
+                "filter": {
+                    "name": "skinmesh",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/physics/physics' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=physics",
+                    "--package=ambient_physics"
+                ],
+                "filter": {
+                    "name": "physics",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/renderer/billboard' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=billboard",
+                    "--package=ambient_renderer"
+                ],
+                "filter": {
+                    "name": "billboard",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/renderer/custom_material' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=custom_material",
+                    "--package=ambient_renderer"
+                ],
+                "filter": {
+                    "name": "custom_material",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {
+                "RUST_BACKTRACE": "1"
+            },
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/renderer/instancing' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=instancing",
+                    "--package=ambient_renderer"
+                ],
+                "filter": {
+                    "name": "instancing",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/renderer/lod' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=lod",
+                    "--package=ambient_renderer"
+                ],
+                "filter": {
+                    "name": "lod",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/renderer/pbr' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=pbr",
+                    "--package=ambient_renderer"
+                ],
+                "filter": {
+                    "name": "pbr",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/renderer/renderer_update' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=renderer_update",
+                    "--package=ambient_renderer"
+                ],
+                "filter": {
+                    "name": "renderer_update",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/renderer/shadow_test' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=shadow_test",
+                    "--package=ambient_renderer"
+                ],
+                "filter": {
+                    "name": "shadow_test",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/renderer/texture' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=texture",
+                    "--package=ambient_renderer"
+                ],
+                "filter": {
+                    "name": "texture",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/renderer/translucency' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=translucency",
+                    "--package=ambient_renderer"
+                ],
+                "filter": {
+                    "name": "translucency",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ui/button' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=button",
+                    "--package=ambient_ui_native"
+                ],
+                "filter": {
+                    "name": "button",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ui/dock_layout' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=dock_layout",
+                    "--package=ambient_ui_native"
+                ],
+                "filter": {
+                    "name": "dock_layout",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "elements=info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ui/element_editor' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=element_editor",
+                    "--package=ambient_ui_native"
+                ],
+                "filter": {
+                    "name": "element_editor",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ui/flow_layout' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=flow_layout",
+                    "--package=ambient_ui_native"
+                ],
+                "filter": {
+                    "name": "flow_layout",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "elements=info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ui/image' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=image",
+                    "--package=ambient_ui_native"
+                ],
+                "filter": {
+                    "name": "image",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ui/input' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=input",
+                    "--package=ambient_ui_native"
+                ],
+                "filter": {
+                    "name": "input",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ui/rect' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=rect",
+                    "--package=ambient_ui_native"
+                ],
+                "filter": {
+                    "name": "rect",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "elements=info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ui/screens' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=screens",
+                    "--package=ambient_ui_native"
+                ],
+                "filter": {
+                    "name": "screens",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ui/slider' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=slider",
+                    "--package=ambient_ui_native"
+                ],
+                "filter": {
+                    "name": "slider",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "elements=info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ui/text' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=text",
+                    "--package=ambient_ui_native"
+                ],
+                "filter": {
+                    "name": "text",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ui/todo' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=todo",
+                    "--package=ambient_ui_native"
+                ],
+                "filter": {
+                    "name": "todo",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ui/ui' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=ui",
+                    "--package=ambient_ui_native"
+                ],
+                "filter": {
+                    "name": "ui",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'parse_ambient_schema' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=parse_ambient_schema",
+                    "--package=ambient_package_semantic"
+                ],
+                "filter": {
+                    "name": "parse_ambient_schema",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Test elements",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--workspace"
+                ],
+                "filter": {
+                    "name": "elements",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        }
+    ]
+}
