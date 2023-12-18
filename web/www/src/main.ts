@@ -91,6 +91,7 @@ import("ambient_web")
 
         const urlParams = new URLSearchParams(window.location.search);
         const packageId = urlParams.get('package_id');
+        const version = urlParams.get('version');
         const deploymentId = urlParams.get('deployment_id');
         const userId = urlParams.get('userId');
         const context = urlParams.get('context');
@@ -101,6 +102,9 @@ import("ambient_web")
         let params = new URLSearchParams();
         if (packageId) {
             params.set('package_id', packageId);
+        }
+        if (version) {
+            params.set('version', version);
         }
         if (deploymentId) {
             params.set('deployment_id', deploymentId);

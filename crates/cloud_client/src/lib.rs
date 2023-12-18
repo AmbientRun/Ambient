@@ -9,8 +9,11 @@ use ambient_sys::task::wasm_nonsend;
 pub enum DeploySource {
     /// Deploy directly from an URL
     Url { deploy_url: String },
-    /// Deploy the latest deployment of a package
-    Package { package_id: String },
+    /// Deploy the latest deployment, or a specific version, of a package
+    Package {
+        package_id: String,
+        version: Option<String>,
+    },
     /// Deploy from a specific deployment
     Deployment { deployment_id: String },
 }
@@ -26,11 +29,14 @@ pub struct ServerSpec {
 }
 
 impl ServerSpec {
-    pub fn new_with_deployment(deployment_id: String) -> Self {
+    pub fn new_with_package(package_id: String, version: String) -> Self {
         Self {
             name: Default::default(),
             context: Default::default(),
-            source: DeploySource::Deployment { deployment_id },
+            source: DeploySource::Package {
+                package_id,
+                version: Some(version),
+            },
         }
     }
 
