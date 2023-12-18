@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt};
 
 use thiserror::Error;
 
-use crate::{core::messages::HttpResponse, core::types::HttpMethod, global, internal::wit};
+use crate::{core::messages::HttpResponse, global, internal::wit};
 
 #[derive(Error, Debug, Clone)]
 /// Errors that can occur when making an HTTP request.
