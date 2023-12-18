@@ -1,9 +1,9 @@
 [package]
 id = "t33j53muycmj4i66en5lheneowad5hbz"
 name = "Dependencies (Code)"
-version = "0.3.2-nightly-2023-12-17"
+version = "0.3.2-nightly-2023-12-18"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-12-17"
+ambient_version = "0.3.2-nightly-2023-12-18"
 
 [dependencies]
 ambient_example_deps_assets = { path = "../assets" , deployment = "2XEVzoFWP5O8YT1O6qx1lk" }
