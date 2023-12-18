@@ -2,14 +2,14 @@
 id = "uigiqyr7qugdncpzkyzinvwxh26daahx"
 name = "Minigolf"
 description = "Can you hit a hole-in-one?"
-version = "0.3.2-nightly-2023-12-15"
+version = "0.3.2-nightly-2023-12-17"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/minigolf"
 type = "Game"
 content = { type = "Playable" }
-ambient_version = "0.3.2-nightly-2023-12-15"
+ambient_version = "0.3.2-nightly-2023-12-17"
 
 [dependencies]
-hide_cursor = { path = "../../std/hide_cursor", id = "xar372tfo2oswb4pkvx7h7o3rxi6tap6", version = "0.3.2-nightly-2023-12-15" }
+hide_cursor = { path = "../../std/hide_cursor", id = "xar372tfo2oswb4pkvx7h7o3rxi6tap6", version = "0.3.2-nightly-2023-12-17" }
 
 [components]
 next_player_hue = { type = "F32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = [
