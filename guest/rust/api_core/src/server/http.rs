@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{collections::HashMap, fmt};
 
 use thiserror::Error;
 
@@ -19,13 +19,38 @@ impl fmt::Display for HttpError {
 ///
 /// **NOTE**: This may be replaced with `wasi-http` support in the future,
 /// which will allow the use of native Rust libraries like `reqwest`.
-pub async fn get(url: impl AsRef<str>) -> Result<Vec<u8>, HttpError> {
+pub async fn get(
+    url: impl AsRef<str>,
+    headers: Option<HashMap<String, String>>,
+) -> Result<Vec<u8>, HttpError> {
     let url = url.as_ref();
-    wit::server_http::get(url);
+    let headers = headers.unwrap_or_default().into_iter().collect::<Vec<_>>();
+    let response_id = wit::server_http::get(url, &headers);
 
-    let response = global::wait_for_runtime_message({
-        let url = url.to_owned();
-        move |message: &HttpResponse| message.url == url
+    wait_for_response(response_id).await
+}
+
+/// Sends an HTTP POST request to the given URL, and returns the response body.
+///
+/// Any errors in sending or receiving will be returned as an [HttpError].
+///
+/// **NOTE**: This may be replaced with `wasi-http` support in the future,
+/// which will allow the use of native Rust libraries like `reqwest`.
+pub async fn post(
+    url: impl AsRef<str>,
+    headers: Option<HashMap<String, String>>,
+    body: Option<&[u8]>,
+) -> Result<Vec<u8>, HttpError> {
+    let url = url.as_ref();
+    let headers = headers.unwrap_or_default().into_iter().collect::<Vec<_>>();
+    let response_id = wit::server_http::post(url, &headers, body);
+
+    wait_for_response(response_id).await
+}
+
+async fn wait_for_response(response_id: u64) -> Result<Vec<u8>, HttpError> {
+    let response = global::wait_for_runtime_message(move |message: &HttpResponse| {
+        message.response_id == response_id
     })
     .await;
 

@@ -10,6 +10,7 @@ mod network;
 pub fn initialize(
     world: &mut World,
     assets: &AssetCache,
+    hosted: bool,
     data_path: PathBuf,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
 ) -> anyhow::Result<()> {
@@ -17,12 +18,19 @@ pub fn initialize(
         world,
         assets,
         messenger,
-        |id| Bindings {
+        Arc::new(move |id| Bindings {
             base: Default::default(),
             world_ref: Default::default(),
             id,
+            reqwest_client: reqwest::Client::new(),
+            last_http_request_id: 0,
+            hosted,
+        }),
+        if hosted {
+            None
+        } else {
+            Some(data_path.as_ref())
         },
-        Some(data_path.as_ref()),
     )?;
 
     network::initialize(world);
@@ -95,6 +103,11 @@ struct Bindings {
     base: shared::bindings::BindingsBase,
     world_ref: shared::bindings::WorldRef,
     id: EntityId,
+    reqwest_client: reqwest::Client,
+    last_http_request_id: u64,
+    /// Whether or not this server is running in a hosted environment,
+    /// and should thus have some of its functionality disabled
+    hosted: bool,
 }
 
 impl Bindings {

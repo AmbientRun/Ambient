@@ -15,11 +15,11 @@ pub fn initialize(
         world,
         assets,
         messenger,
-        |id| Bindings {
+        Arc::new(|id| Bindings {
             base: Default::default(),
             world_ref: Default::default(),
             id,
-        },
+        }),
         None,
     )?;
 

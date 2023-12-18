@@ -160,7 +160,7 @@ active_camera = { suggested = 0.0 }
 
 In this example, the "Camera" concept contains all of the components from a transformable, as well as components of its own. This means that any entity that has the "camera" concept will also have the components from the "Transformable" concept.
 
-In your Rust code, this will be represented as a struct that contains the components that are defined in the concept. This is generated as part of the same macro that enables other Ambient functionality within your Rust code.
+In your Rust code, this will be represented as a struct that contains the components that are defined in the concept. This is generated as part of the package projection that enables other Ambient functionality within your Rust code. It will be present within `src/packages.rs`.
 
 For example, the `Camera` concept will generate a struct that looks like this:
 
@@ -192,4 +192,24 @@ The `Concept` struct implements the `Concept` trait, which offers several operat
 This struct can be filled out with values and then converted to an `Entity` using the `Concept::make` method, or spawned using `Concept::spawn`.
 Alternatively, it can be populated using the `Concept::get_{un}spawned` method, allowing for easy retrieval of all of the values of a concept from an entity or the ECS.
 
-For more information, consult the API documentation on the `Concept` trait.
+If all components of a `Concept` have a `suggested` value supplied, an implementation of the `ConceptSuggested` trait will be generated, allowing you to use `ConceptSuggested::suggested` to get that concept with all of its suggested values.
+
+As an example, a `Camera` can be spawned using the following code:
+
+```rust
+let camera = Camera {
+    local_to_world: Mat4::IDENTITY,
+    near: 0.1,
+    projection: Mat4::IDENTITY,
+    projection_view: Mat4::IDENTITY,
+    active_camera: 0.0,
+    inv_local_to_world: Mat4::IDENTITY,
+    optional: CameraOptional::default(),
+}.spawn();
+
+// This would also work, as the `Camera` concept has
+// suggested values for all of its components.
+let camera = Camera::suggested().spawn();
+```
+
+For more information, consult [the API documentation on the `Concept` trait](https://docs.rs/ambient_api/latest/ambient_api/ecs/trait.Concept.html).
