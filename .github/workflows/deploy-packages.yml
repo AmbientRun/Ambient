@@ -62,7 +62,7 @@ jobs:
           git config --global user.name "${{ env.BOT_NAME }}"
           git config --global user.email "${{ env.BOT_EMAIL }}"
           git checkout -b ${branch}
-          git commit -a -m "Update deployed packages for ${{ github.sha }}"
+          git commit -a -m "Update deployed packages for ${{ github.sha }}" || true
           git push --set-upstream origin ${branch}
           pr_url=$(gh pr create --title "Update deployed packages for ${{ github.sha }}" --body "Deployed packages for ${{ github.sha }}" --base ${base_branch} --head ${branch})
           gh pr merge --auto --squash --delete-branch ${pr_url}
@@ -76,7 +76,7 @@ jobs:
           git config --global user.name "${{ env.BOT_NAME }}"
           git config --global user.email "${{ env.BOT_EMAIL }}"
           git checkout -b ${branch}
-          git commit -a -m "Update deployed packages for ${{ github.sha }}"
+          git commit -a -m "Update deployed packages for ${{ github.sha }}" || true
           git push --set-upstream origin ${branch}
           pr_url=$(gh pr create --title "Update deployed packages for ${{ github.sha }}" --body "Deployed packages for ${{ github.sha }}" --base ${base_branch} --head ${branch})
           gh pr merge --auto --squash --delete-branch ${pr_url}
@@ -91,7 +91,7 @@ jobs:
           git config --global user.name "${{ env.BOT_NAME }}"
           git config --global user.email "${{ env.BOT_EMAIL }}"
           git checkout -b ${branch}
-          git commit -a -m "Update deployed packages for ${{ github.sha }}"
+          git commit -a -m "Update deployed packages for ${{ github.sha }}" || true
 
           # switch back to the main branch version
           version_majminpat=$(echo ${tag} | sed -E -e 's/^v([0-9]+\.[0-9]+\.[0-9]+).*$/\1/')
