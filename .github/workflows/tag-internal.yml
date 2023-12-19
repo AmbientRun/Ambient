@@ -51,6 +51,11 @@ jobs:
           date_suffix=$(date +%Y-%m-%d)
           echo "version_suffix=nightly-${date_suffix}" >> $GITHUB_ENV
 
+      - name: Extract base branch
+        if: github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/')
+        run: |
+          echo "base_branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
       - name: Update version and tag
         id: tag
         run: |
@@ -73,4 +78,7 @@ jobs:
               repo: context.repo.repo,
               workflow_id: 'release-version.yml',
               ref: '${{ steps.tag.outputs.tag }}',
+              inputs: {
+                base: '${{ env.base_branch }}'
+              }
             })

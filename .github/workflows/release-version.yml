@@ -5,7 +5,12 @@
 name: Release
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'Base branch to merge update deployed packages to'
+        required: false
+        default: ''
   push:
     tags: [v*]
     branches:
@@ -162,6 +167,24 @@ jobs:
       - name: Upload debug symbols
         run: sentry-cli upload-dif -o dims -p native-client ${{ env.EXE_DIR }}/${{ matrix.exe_name }} ${{ env.EXE_DIR }}/${{ matrix.symbol_path }}
 
+  trigger-deploy-packages-jobs:
+    needs: meta
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Trigger build jobs
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy-packages.yml',
+              ref: '${{ needs.meta.outputs.tag }}',
+              inputs: {
+                base: '${{ github.event.inputs.base || '' }}',
+              },
+            })
+
   trigger-build-jobs:
     needs: meta
     runs-on: ubuntu-22.04
@@ -170,7 +193,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            for (const workflow_id of ['deploy-server.yml', 'deploy-web.yml', 'deploy-packages.yml', 'deploy-docs.yml']) {
+            for (const workflow_id of ['deploy-server.yml', 'deploy-web.yml', 'deploy-docs.yml']) {
               github.rest.actions.createWorkflowDispatch({
                 owner: context.repo.owner,
                 repo: context.repo.repo,

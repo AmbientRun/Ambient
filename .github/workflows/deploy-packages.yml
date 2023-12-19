@@ -3,7 +3,12 @@
 name: Deploy packages
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'Base branch to merge update deployed packages to'
+        required: false
+        default: ''
 
 env:
   CARGO_TERM_COLOR: always
@@ -48,9 +53,23 @@ jobs:
       - name: Deploy all packages
         run: cargo campfire-slim package deploy-all --token ${{ secrets.AMBIENT_CLOUD_DEPLOY_TOKEN }} --include-examples
 
+      - name: Commit and push changed files (for base input)
+        # only commit and push if this is running in a branch
+        if: github.event.inputs.base
+        run: |
+          base_branch=${{ github.event.inputs.base }}
+          branch=${base_branch}-deployed-${{ github.sha }}
+          git config --global user.name "${{ env.BOT_NAME }}"
+          git config --global user.email "${{ env.BOT_EMAIL }}"
+          git checkout -b ${branch}
+          git commit -a -m "Update deployed packages for ${{ github.sha }}"
+          git push --set-upstream origin ${branch}
+          pr_url=$(gh pr create --title "Update deployed packages for ${{ github.sha }}" --body "Deployed packages for ${{ github.sha }}" --base ${base_branch} --head ${branch})
+          gh pr merge --auto --squash --delete-branch ${pr_url}
+
       - name: Commit and push changed files (for branches)
         # only commit and push if this is running in a branch
-        if: startsWith(github.ref, 'refs/heads/')
+        if: startsWith(github.ref, 'refs/heads/') && !github.event.inputs.base
         run: |
           base_branch=${GITHUB_REF#refs/heads/}
           branch=${base_branch}-deployed-${{ github.sha }}
