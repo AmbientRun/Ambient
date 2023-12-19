@@ -171,7 +171,7 @@ jobs:
     needs: meta
     runs-on: ubuntu-22.04
     steps:
-      - name: Trigger build jobs
+      - name: Trigger deploy packages job
         uses: actions/github-script@v6
         with:
           script: |
