@@ -2,8 +2,8 @@
 id = "xq7xenkzhaefhpt2wp7wrcsrwvxziyjm"
 name = "Raw Text"
 description = "Draw 2D text in 3D."
-version = "0.3.2-nightly-2023-12-17"
+version = "0.3.2-internal-testing-workflow-changes-1806"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/raw_text"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-12-17"
+ambient_version = "0.3.2-internal-testing-workflow-changes-1806"
