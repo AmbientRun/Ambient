@@ -179,7 +179,7 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
         channels,
         Vec::new(),
         0, /* OptiVorbis will randomize this serial */
-    )?
+    )
     .bitrate_management_strategy(bitrate)
     .build()?;
 
