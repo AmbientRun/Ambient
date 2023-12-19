@@ -232,5 +232,5 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
         optimized_output.len()
     );
 
-    Ok(output)
+    Ok(optimized_output)
 }
