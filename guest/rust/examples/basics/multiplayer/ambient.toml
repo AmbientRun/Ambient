@@ -2,8 +2,8 @@
 id = "lkjek6sipx4m4rkufpxy3lybew2khxxu"
 name = "Multiplayer"
 description = "A very minimal multiplayer example."
-version = "0.3.2-nightly-2023-12-17"
+version = "0.3.2-nightly-2023-12-19"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/multiplayer"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2023-12-17"
+ambient_version = "0.3.2-nightly-2023-12-19"
