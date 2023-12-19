@@ -2,16 +2,16 @@
 id = "xgafi5ckk5vhxscb6tqubfvy2fwfyqxo"
 name = "Tangent Behavior: Character"
 description = "Implements the character behavior for Tangent."
-version = "0.3.2-nightly-2023-12-17"
+version = "0.3.2-internal-test-workflow-fix"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-12-17"
+ambient_version = "0.3.2-internal-test-workflow-fix"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", id = "mwrcsok65na7owrbdococ5sthr3ccskc", version = "0.3.2-nightly-2023-12-17" }
-game_object = { path = "../../../../schemas/game_object", id = "hvxms7i2px7krvkm23sxfjxsjqlcmtb5", version = "0.3.2-nightly-2023-12-17" }
-unit_schema = { path = "../../../../schemas/unit", id = "afl5yv5ya35vbuaj3aido22cwjzat25z", version = "0.3.2-nightly-2023-12-17" }
+tangent_schema = { path = "../../schema", id = "mwrcsok65na7owrbdococ5sthr3ccskc", version = "0.3.2-internal-test-workflow-fix" }
+game_object = { path = "../../../../schemas/game_object", id = "hvxms7i2px7krvkm23sxfjxsjqlcmtb5", version = "0.3.2-internal-test-workflow-fix" }
+unit_schema = { path = "../../../../schemas/unit", id = "afl5yv5ya35vbuaj3aido22cwjzat25z", version = "0.3.2-internal-test-workflow-fix" }
 
-base_assets = { path = "../../../../std/base_assets", id = "n7a4j7htvenss35tsnfvegbhxuwij5il", version = "0.3.2-nightly-2023-12-17" }
-character_animation = { path = "../../../../std/character_animation", id = "d3y3wbexrclipsykysumem3fthkudwx2", version = "0.3.2-nightly-2023-12-17" }
-character_movement = { path = "../../../../std/character_movement", id = "lktsfudbjw2qikhyumt573ozxhadkiwm", version = "0.3.2-nightly-2023-12-17" }
+base_assets = { path = "../../../../std/base_assets", id = "n7a4j7htvenss35tsnfvegbhxuwij5il", version = "0.3.2-internal-test-workflow-fix" }
+character_animation = { path = "../../../../std/character_animation", id = "d3y3wbexrclipsykysumem3fthkudwx2", version = "0.3.2-internal-test-workflow-fix" }
+character_movement = { path = "../../../../std/character_movement", id = "lktsfudbjw2qikhyumt573ozxhadkiwm", version = "0.3.2-internal-test-workflow-fix" }
