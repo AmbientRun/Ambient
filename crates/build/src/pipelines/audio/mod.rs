@@ -5,7 +5,6 @@ use anyhow::Context;
 use optivorbis::Remuxer;
 use std::io::Cursor;
 use tracing::{info_span, Instrument};
-use vorbis_rs::VorbisEncoderBuilder;
 
 use super::{
     context::PipelineCtx,
@@ -114,7 +113,7 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
         probe::Hint,
     };
 
-    use vorbis_rs::{VorbisBitrateManagementStrategy, VorbisEncoder};
+    use vorbis_rs::{VorbisBitrateManagementStrategy, VorbisEncoderBuilder};
 
     // this symphonia decoding code is largely based on symphonia's examples:
     // https://github.com/pdeljanov/Symphonia/blob/master/symphonia/examples
