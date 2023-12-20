@@ -2,16 +2,16 @@
 id = "mnm43qv33k7kx235bz5hcgoguokwxzwo"
 name = "Tangent Behavior: Vehicle"
 description = "Implements the vehicle behavior for Tangent."
-version = "0.3.2-internal-testing-workflow-changes-1806"
+version = "0.3.2-nightly-2023-12-17"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-internal-testing-workflow-changes-1806"
+ambient_version = "0.3.2-nightly-2023-12-17"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", id = "mwrcsok65na7owrbdococ5sthr3ccskc", version = "0.3.2-internal-testing-workflow-changes-1806" }
-game_object = { path = "../../../../schemas/game_object", id = "hvxms7i2px7krvkm23sxfjxsjqlcmtb5", version = "0.3.2-internal-testing-workflow-changes-1806" }
-kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", id = "e4unr4x2lz2ov7dsd5vnjylbykwixvv2", version = "0.3.2-internal-testing-workflow-changes-1806" }
-explosion = { path = "../../../../std/explosion", id = "cneomdouziieskjvs3szwmigzotofjzs", version = "0.3.2-internal-testing-workflow-changes-1806" }
+tangent_schema = { path = "../../schema", id = "mwrcsok65na7owrbdococ5sthr3ccskc", version = "0.3.2-nightly-2023-12-17" }
+game_object = { path = "../../../../schemas/game_object", id = "hvxms7i2px7krvkm23sxfjxsjqlcmtb5", version = "0.3.2-nightly-2023-12-17" }
+kenney_impact_sounds = { path = "../../../../assets/kenney_impact_sounds", id = "e4unr4x2lz2ov7dsd5vnjylbykwixvv2", version = "0.3.2-nightly-2023-12-17" }
+explosion = { path = "../../../../std/explosion", id = "cneomdouziieskjvs3szwmigzotofjzs", version = "0.3.2-nightly-2023-12-17" }
 
 [messages.OnCollision]
 name = "On Collision"
