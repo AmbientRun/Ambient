@@ -2,7 +2,7 @@
 name = "Model"
 description = "Information about models attached to entities."
 content = { type = "Asset", schema = true }
-version = "0.3.2-internal-testing-workflow-1113"
+version = "0.3.2-dev"
 ambient_version = "0.3.2-internal-testing-workflow-1113"
 
 [components.model_animatable]
