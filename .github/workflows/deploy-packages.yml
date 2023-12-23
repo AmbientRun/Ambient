@@ -91,5 +91,5 @@ jobs:
           git commit -a -m "Revert version back to ${version}"
 
           git push --set-upstream origin ${branch}
-          pr_url=$(gh pr create --title "Update deployed packages for ${{ github.sha }}" --body "Deployed packages for ${{ github.sha }}" --base ${base_branch} --head ${branch})
+          pr_url=$(gh pr create --title "Update version for ${{ github.sha }}" --body "Deployed packages for ${{ github.sha }} and updated version" --base ${base_branch} --head ${branch})
           gh pr merge --auto --squash --delete-branch ${pr_url}
