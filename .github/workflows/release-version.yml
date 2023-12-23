@@ -5,7 +5,17 @@
 name: Release
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      packages_merge_base:
+        description: 'Base branch to merge update deployed packages to (no merging if not specified)'
+        required: false
+        default: 'main'
+      packages_merge_revert:
+        description: 'Revert version back to the specified version (you should only use this for merging to main)'
+        required: false
+        default: true
+        type: boolean
   push:
     tags: [v*]
     branches:
@@ -162,6 +172,25 @@ jobs:
       - name: Upload debug symbols
         run: sentry-cli upload-dif -o dims -p native-client ${{ env.EXE_DIR }}/${{ matrix.exe_name }} ${{ env.EXE_DIR }}/${{ matrix.symbol_path }}
 
+  trigger-deploy-packages-jobs:
+    needs: meta
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Trigger deploy packages job
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy-packages.yml',
+              ref: '${{ needs.meta.outputs.tag }}',
+              inputs: {
+                base: '${{ github.event.inputs.packages_merge_base || 'main' }}',
+                revert: ${{ github.event.inputs.packages_merge_revert == 'true' }},
+              },
+            })
+
   trigger-build-jobs:
     needs: meta
     runs-on: ubuntu-22.04
@@ -170,7 +199,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            for (const workflow_id of ['deploy-server.yml', 'deploy-web.yml', 'deploy-packages.yml', 'deploy-docs.yml']) {
+            for (const workflow_id of ['deploy-server.yml', 'deploy-web.yml', 'deploy-docs.yml']) {
               github.rest.actions.createWorkflowDispatch({
                 owner: context.repo.owner,
                 repo: context.repo.repo,

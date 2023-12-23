@@ -51,6 +51,17 @@ jobs:
           date_suffix=$(date +%Y-%m-%d)
           echo "version_suffix=nightly-${date_suffix}" >> $GITHUB_ENV
 
+      - name: Extract base branch and revert flag
+        if: github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/')
+        run: |
+          echo "base_branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          echo "revert=false" >> $GITHUB_ENV
+      - name: Extract base branch and revert flag
+        if: github.event_name == 'schedule'
+        run: |
+          echo "base_branch=main" >> $GITHUB_ENV
+          echo "revert=true" >> $GITHUB_ENV
+
       - name: Update version and tag
         id: tag
         run: |
@@ -64,7 +75,7 @@ jobs:
           git tag ${tag}
           git push origin ${tag}
           echo tag=${tag} >> $GITHUB_OUTPUT
-      - name: Trigger build jobs
+      - name: Trigger the release job
         uses: actions/github-script@v6
         with:
           script: |
@@ -73,4 +84,8 @@ jobs:
               repo: context.repo.repo,
               workflow_id: 'release-version.yml',
               ref: '${{ steps.tag.outputs.tag }}',
+              inputs: {
+                packages_merge_base: '${{ env.base_branch }}',
+                packages_merge_revert: '${{ env.revert }}',
+              }
             })
