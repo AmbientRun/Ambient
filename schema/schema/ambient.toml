@@ -1,9 +1,9 @@
 [package]
 description = "All core definitions for the Ambient runtime. This is the primary interface for packages to interact with the Ambient runtime."
 name = "Ambient Core"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-24"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.2-nightly-2023-12-23"
+ambient_version = "0.3.2-nightly-2023-12-24"
 
 [includes]
 animation = "includes/animation.toml"

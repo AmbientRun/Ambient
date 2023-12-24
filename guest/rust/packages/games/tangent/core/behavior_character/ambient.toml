@@ -2,16 +2,16 @@
 id = "xgafi5ckk5vhxscb6tqubfvy2fwfyqxo"
 name = "Tangent Behavior: Character"
 description = "Implements the character behavior for Tangent."
-version = "0.3.2-nightly-2023-12-23"
+version = "0.3.2-nightly-2023-12-24"
 content = { type = "Asset", code = true }
-ambient_version = "0.3.2-nightly-2023-12-23"
+ambient_version = "0.3.2-nightly-2023-12-24"
 authors = ["philpax"]
 
 [dependencies]
-tangent_schema = { path = "../../schema", id = "mwrcsok65na7owrbdococ5sthr3ccskc", version = "0.3.2-nightly-2023-12-23" }
-game_object = { path = "../../../../schemas/game_object", id = "hvxms7i2px7krvkm23sxfjxsjqlcmtb5", version = "0.3.2-nightly-2023-12-23" }
-unit_schema = { path = "../../../../schemas/unit", id = "afl5yv5ya35vbuaj3aido22cwjzat25z", version = "0.3.2-nightly-2023-12-23" }
+tangent_schema = { path = "../../schema", id = "mwrcsok65na7owrbdococ5sthr3ccskc", version = "0.3.2-nightly-2023-12-24" }
+game_object = { path = "../../../../schemas/game_object", id = "hvxms7i2px7krvkm23sxfjxsjqlcmtb5", version = "0.3.2-nightly-2023-12-24" }
+unit_schema = { path = "../../../../schemas/unit", id = "afl5yv5ya35vbuaj3aido22cwjzat25z", version = "0.3.2-nightly-2023-12-24" }
 
-base_assets = { path = "../../../../std/base_assets", id = "n7a4j7htvenss35tsnfvegbhxuwij5il", version = "0.3.2-nightly-2023-12-23" }
-character_animation = { path = "../../../../std/character_animation", id = "d3y3wbexrclipsykysumem3fthkudwx2", version = "0.3.2-nightly-2023-12-23" }
-character_movement = { path = "../../../../std/character_movement", id = "lktsfudbjw2qikhyumt573ozxhadkiwm", version = "0.3.2-nightly-2023-12-23" }
+base_assets = { path = "../../../../std/base_assets", id = "n7a4j7htvenss35tsnfvegbhxuwij5il", version = "0.3.2-nightly-2023-12-24" }
+character_animation = { path = "../../../../std/character_animation", id = "d3y3wbexrclipsykysumem3fthkudwx2", version = "0.3.2-nightly-2023-12-24" }
+character_movement = { path = "../../../../std/character_movement", id = "lktsfudbjw2qikhyumt573ozxhadkiwm", version = "0.3.2-nightly-2023-12-24" }
