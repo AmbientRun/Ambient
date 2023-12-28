@@ -116,7 +116,7 @@ dependencies = [
 
 [[package]]
 name = "ambient"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -191,7 +191,7 @@ checksum = "e9d4ee0d472d1cd2e28c97dfa124b3d8d992e10eb0a035f33f5d12e3a177ba3b"
 
 [[package]]
 name = "ambient_animation"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -208,7 +208,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_api_core"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_api_macros",
  "ambient_package_rt",
@@ -230,7 +230,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_api_macros"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -239,7 +239,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_app"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_animation",
  "ambient_cameras",
@@ -276,7 +276,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_asset_cache"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_sys",
  "as-any",
@@ -293,7 +293,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_asset_timeline"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -316,7 +316,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_audio"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_native_std",
  "ambient_sys",
@@ -353,7 +353,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_build"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_asset_cache",
  "ambient_core",
@@ -408,7 +408,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_cameras"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -421,11 +421,11 @@ dependencies = [
 
 [[package]]
 name = "ambient_cb"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 
 [[package]]
 name = "ambient_client_shared"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_debugger",
@@ -443,7 +443,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_cloud_client"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_asset_cache",
  "ambient_native_std",
@@ -456,7 +456,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_color"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "glam 0.24.2",
  "hex",
@@ -467,7 +467,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_core"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_ecs",
  "ambient_gpu",
@@ -489,7 +489,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_curve"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_native_std",
  "glam 0.24.2",
@@ -497,7 +497,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_debugger"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -518,7 +518,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_decals"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_app",
  "ambient_asset_cache",
@@ -539,7 +539,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_deploy"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_native_std",
  "ambient_package",
@@ -558,14 +558,14 @@ dependencies = [
 
 [[package]]
 name = "ambient_dirs"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "directories",
 ]
 
 [[package]]
 name = "ambient_ecs"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_native_std",
  "ambient_package_macro_common",
@@ -597,7 +597,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ecs_editor"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -616,7 +616,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_editor"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_decals",
@@ -661,7 +661,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_editor_derive"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_ui_native",
  "pretty_assertions",
@@ -673,7 +673,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_cb",
  "ambient_core",
@@ -694,7 +694,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element_component"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "itertools 0.10.5",
  "proc-macro2",
@@ -704,7 +704,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_focus"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_ecs",
  "winit",
@@ -712,28 +712,28 @@ dependencies = [
 
 [[package]]
 name = "ambient_friendly_id"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "rand 0.8.5",
 ]
 
 [[package]]
 name = "ambient_git_rev"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "once_cell",
 ]
 
 [[package]]
 name = "ambient_git_rev_init"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_git_rev",
 ]
 
 [[package]]
 name = "ambient_gizmos"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -756,7 +756,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_gpu"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "aho-corasick",
  "ambient_native_std",
@@ -786,7 +786,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_gpu_ecs"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -808,7 +808,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_guest_bridge"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_api_core",
  "ambient_core",
@@ -826,7 +826,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_input"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -841,7 +841,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_intent"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_ecs",
  "ambient_element",
@@ -861,7 +861,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_layout"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -876,7 +876,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_math"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "glam 0.24.2",
  "rand 0.8.5",
@@ -885,7 +885,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_meshes"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_gpu",
  "ambient_native_std",
@@ -895,7 +895,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_model"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -918,7 +918,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_model_import"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -962,7 +962,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_native_std"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_asset_cache",
  "ambient_cb",
@@ -1002,7 +1002,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_naturals"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1028,7 +1028,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_network"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_app",
  "ambient_core",
@@ -1083,7 +1083,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_shared_types",
  "chrono",
@@ -1107,7 +1107,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_docgen"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_package_json",
  "anyhow",
@@ -1120,7 +1120,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_json"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_primitive_component_definitions",
  "indexmap 2.1.0",
@@ -1130,7 +1130,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_macro_common"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_package",
  "ambient_package_semantic",
@@ -1146,7 +1146,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_rt"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_shared_types",
  "byteorder",
@@ -1158,7 +1158,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_semantic"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_dirs",
  "ambient_package",
@@ -1182,7 +1182,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_package_semantic_native"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_cb",
  "ambient_core",
@@ -1200,7 +1200,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_physics"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -1231,7 +1231,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_pipeline_types"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "glam 0.24.2",
  "serde",
@@ -1241,7 +1241,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_prefab"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_decals",
@@ -1259,11 +1259,11 @@ dependencies = [
 
 [[package]]
 name = "ambient_primitive_component_definitions"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 
 [[package]]
 name = "ambient_primitives"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1276,7 +1276,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_procedurals"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1315,7 +1315,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_rect"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1333,7 +1333,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_renderer"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -1372,7 +1372,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_rpc"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "bincode",
  "futures",
@@ -1383,7 +1383,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_rustc"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "anyhow",
  "is-terminal",
@@ -1393,11 +1393,11 @@ dependencies = [
 
 [[package]]
 name = "ambient_schema"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 
 [[package]]
 name = "ambient_settings"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_dirs",
  "ambient_native_std",
@@ -1412,7 +1412,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_shared_types"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_primitive_component_definitions",
  "bitflags 1.3.2",
@@ -1425,7 +1425,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_sky"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_cameras",
  "ambient_core",
@@ -1447,7 +1447,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_std"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "itertools 0.10.5",
  "thiserror",
@@ -1455,7 +1455,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_sys"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "anyhow",
  "arboard",
@@ -1483,7 +1483,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_terrain"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_app",
  "ambient_core",
@@ -1520,7 +1520,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_text"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1539,7 +1539,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_time"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "itertools 0.10.5",
  "thiserror",
@@ -1547,7 +1547,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ui"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_cb",
  "ambient_color",
@@ -1569,7 +1569,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ui_native"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -1603,7 +1603,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_unity_parser"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_native_std",
  "anyhow",
@@ -1615,7 +1615,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_wasm"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1667,7 +1667,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_water"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1683,7 +1683,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_world_audio"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_app",
  "ambient_audio",
@@ -2279,7 +2279,7 @@ dependencies = [
 
 [[package]]
 name = "campfire"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "ambient_shared_types",
  "anyhow",
@@ -6141,7 +6141,7 @@ dependencies = [
 
 [[package]]
 name = "physxx"
-version = "0.3.2-dev"
+version = "0.3.2-nightly-2023-12-28"
 dependencies = [
  "as-any",
  "bitflags 1.3.2",
