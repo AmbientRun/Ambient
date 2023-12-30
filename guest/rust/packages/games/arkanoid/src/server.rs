@@ -136,7 +136,7 @@ pub fn main() {
         let players = entity::get_all(is_player());
 
         // handle players' input
-        for (_i, player) in players.into_iter().enumerate() {
+        for player in players.into_iter() {
             let Some(direction) = entity::get_component(player, player_movement_direction()) else {
                 continue;
             };
