@@ -2,8 +2,8 @@
 name = "WASM"
 description = "State related to WASM functionality."
 content = { type = "Asset", schema = true }
-version = "0.3.2-dev"
-ambient_version = "0.3.2-nightly-2023-12-30"
+version = "0.3.2-nightly-2024-01-01"
+ambient_version = "0.3.2-nightly-2024-01-01"
 
 [components.is_module]
 name = "Is module"
