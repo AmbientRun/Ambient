@@ -2,8 +2,8 @@
 name = "Network"
 description = "Network-related state."
 content = { type = "Asset", schema = true }
-version = "0.3.2-dev"
-ambient_version = "0.3.2-nightly-2024-01-01"
+version = "0.3.2-nightly-2024-01-02"
+ambient_version = "0.3.2-nightly-2024-01-02"
 
 [components.is_remote_entity]
 type = "Empty"

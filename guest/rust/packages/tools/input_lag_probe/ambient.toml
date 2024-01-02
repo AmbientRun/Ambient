@@ -1,9 +1,9 @@
 [package]
 id = "inputlagprobeaghgqno42orb2j3abay"
 name = "Input Lag Probe"
-version = "0.3.2-nightly-2024-01-01"
+version = "0.3.2-nightly-2024-01-02"
 content = { type = "Tool" }
-ambient_version = "0.3.2-nightly-2024-01-01"
+ambient_version = "0.3.2-nightly-2024-01-02"
 
 [components]
 input_timestamp = { type = "Duration", attributes = [ "Networked" ], description = "Timestamp from the last Input message received from the player" }
