@@ -38,6 +38,14 @@ impl std::fmt::Display for FrameTimings {
     }
 }
 
+const fn is_next_event(last: TimingEventType, event: TimingEventType) -> bool {
+    last.idx() + 1 == event.idx()
+}
+
+fn can_be_repeated(event: TimingEventType) -> bool {
+    event == TimingEventType::Input
+}
+
 #[derive(Clone, Copy, Debug)]
 struct Frame {
     last_event_type: TimingEventType,
@@ -52,11 +60,9 @@ impl Frame {
 
     fn should_accept_event(&self, event_type: TimingEventType) -> bool {
         // if it simply is the next event
-        self.last_event_type.idx() + 1 == event_type.idx() ||
+        is_next_event(self.last_event_type, event_type) ||
         // or if it is repeated input event (there can be multiple input events)
-         (self.last_event_type == TimingEventType::Input && event_type == TimingEventType::Input) ||
-        // or we don't have app systems finished event when rendering is finished (we don't have the callback in the browser)
-         (self.last_event_type == TimingEventType::SubmittingGPUCommands && event_type == TimingEventType::RenderingFinished)
+         (self.last_event_type == event_type && can_be_repeated(event_type))
     }
 
     fn is_accepting_input(&self) -> bool {
