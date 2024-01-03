@@ -31,7 +31,8 @@ pub async fn initialize(
         },
     );
 
-    ambient_wasm::server::initialize(world, assets, data_path, messenger)?;
+    let hosted = std::env::var("AMBIENT_HOSTED").is_ok();
+    ambient_wasm::server::initialize(world, assets, hosted, data_path, messenger)?;
 
     Ok(())
 }

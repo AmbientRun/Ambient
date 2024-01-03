@@ -3,7 +3,7 @@ description = "All core definitions for the Ambient runtime. This is the primary
 name = "Ambient Core"
 version = "0.3.2-dev"
 content = { type = "Asset", schema = true }
-ambient_version = "0.3.2-nightly-2023-12-06"
+ambient_version = "0.3.2-nightly-2024-01-03"
 
 [includes]
 animation = "includes/animation.toml"
@@ -103,9 +103,15 @@ fields = { locked = "Bool" }
 [messages.HttpResponse]
 name = "HTTP Response"
 description = "Sent when an HTTP response is received."
-fields = { url = "String", status = "U32", body = { type = "Vec", element_type = "U8" }, error = { type = "Option", element_type = "String" } }
+fields = { response_id = "U64", status = "U32", body = { type = "Vec", element_type = "U8" }, error = { type = "Option", element_type = "String" } }
 
 [messages.WasmRebuild]
 name = "WASM Rebuild"
 description = "Sent when a request for WASM rebuilding is completed."
 fields = { error = { type = "Option", element_type = "String" } }
+
+[enums.HttpMethod]
+description = "The HTTP method."
+[enums.HttpMethod.members]
+Get = "GET"
+Post = "POST"

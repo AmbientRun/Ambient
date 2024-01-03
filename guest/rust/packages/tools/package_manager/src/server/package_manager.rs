@@ -85,7 +85,7 @@ async fn process_request() -> anyhow::Result<PackageRemoteResponse> {
     let api_url = ambient_shared_types::urls::package_list_url(list_params);
 
     let api_packages =
-        serde_json::from_slice::<Vec<PackageListApiJson>>(&http::get(&api_url).await?)?;
+        serde_json::from_slice::<Vec<PackageListApiJson>>(&http::get(&api_url, None).await?)?;
 
     let mut packages_json = vec![];
     for api_package in api_packages {
@@ -94,7 +94,8 @@ async fn process_request() -> anyhow::Result<PackageRemoteResponse> {
             ambient_shared_types::urls::deployment_url(&api_package.latest_deployment)
         );
 
-        let manifest: Manifest = toml::from_str(std::str::from_utf8(&http::get(&url).await?)?)?;
+        let manifest: Manifest =
+            toml::from_str(std::str::from_utf8(&http::get(&url, None).await?)?)?;
 
         if let Some(id) = &mod_manager_for {
             let ambient_package::PackageContent::Mod { for_playables } = manifest.package.content

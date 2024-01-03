@@ -145,7 +145,7 @@ impl ModuleState {
     async fn new<Bindings: BindingsBound + 'static>(
         assets: &AssetCache,
         args: ModuleStateArgs<'_>,
-        bindings: fn(EntityId) -> Bindings,
+        bindings: Arc<dyn Fn(EntityId) -> Bindings + Send + Sync>,
     ) -> anyhow::Result<Self> {
         Ok(Self {
             inner: Arc::new(RwLock::new(
@@ -156,7 +156,7 @@ impl ModuleState {
 
     pub fn create_state_maker<Bindings: BindingsBound + 'static>(
         assets: &AssetCache,
-        bindings: fn(EntityId) -> Bindings,
+        bindings: Arc<dyn Fn(EntityId) -> Bindings + Send + Sync>,
     ) -> ModuleStateMaker {
         let assets = assets.clone();
         Arc::new(move |args: ModuleStateArgs<'_>| {
@@ -164,6 +164,7 @@ impl ModuleState {
             //
             // I know, it is hacky... but it works and is sound
             let assets = assets.clone();
+            let bindings = bindings.clone();
             PlatformBoxFuture::new(async move { Self::new(&assets, args, bindings).await })
         })
     }
@@ -223,7 +224,7 @@ impl<Bindings: BindingsBound> InstanceState<Bindings> {
     async fn new(
         assets: &AssetCache,
         args: ModuleStateArgs<'_>,
-        bindings: fn(EntityId) -> Bindings,
+        bindings: Arc<dyn Fn(EntityId) -> Bindings + Send + Sync>,
     ) -> anyhow::Result<Self> {
         let bindings = bindings(args.id);
 

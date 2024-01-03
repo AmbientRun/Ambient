@@ -7,10 +7,10 @@ pub const API_URL: &str = "https://api.ambient.run";
 /// The URL for a deployed package on the website.
 ///
 /// What the user would visit to play this package on the website.
-pub fn web_package_url(package_id: &str, deployment_id: Option<&str>) -> String {
+pub fn web_package_url(package_id: &str, version: Option<&str>) -> String {
     let mut output = format!("{AMBIENT_WEB_APP_URL}/packages/{package_id}");
-    if let Some(deployment_id) = deployment_id {
-        output.push_str(&format!("/deployment/{deployment_id}"));
+    if let Some(version) = version {
+        output.push_str(&format!("/version/{version}"));
     }
     output
 }
@@ -25,13 +25,22 @@ pub fn deployment_url(deployment_id: &str) -> String {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ServerSelector<'a> {
     Deployment(&'a str),
-    Package(&'a str),
+    Package {
+        id: &'a str,
+        version: Option<&'a str>,
+    },
 }
 impl Display for ServerSelector<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ServerSelector::Deployment(id) => write!(f, "deployment_id={id}"),
-            ServerSelector::Package(id) => write!(f, "package_id={id}"),
+            ServerSelector::Package { id, version } => {
+                write!(f, "package_id={id}")?;
+                if let Some(version) = version {
+                    write!(f, "&version={version}")?;
+                }
+                Ok(())
+            }
         }
     }
 }
