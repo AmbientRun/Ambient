@@ -4,6 +4,7 @@ use ambient_app::{gpu_world_sync_systems, world_instance_systems};
 use ambient_core::{
     camera::{get_active_camera, projection_view},
     main_scene,
+    timing::{reporter, TimingEventType},
     transform::local_to_world,
     ui_scene,
     window::window_physical_size,
@@ -19,7 +20,6 @@ use ambient_native_std::{
     shapes::Ray,
 };
 use ambient_renderer::{RenderTarget, Renderer, RendererConfig, RendererTarget};
-use ambient_timings::TimingEventType;
 use ambient_world_audio::systems::{audio_systems, setup_audio};
 use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 
@@ -127,7 +127,7 @@ impl ClientGameState {
                 label: Some("GameState.render"),
             });
         let mut post_submit = Vec::new();
-        let timings_reporter = self.world.resource(ambient_timings::reporter()).reporter();
+        let timings_reporter = self.world.resource(reporter()).reporter();
 
         tracing::trace!("Drawing world");
         timings_reporter.report_event(TimingEventType::DrawingWorld);

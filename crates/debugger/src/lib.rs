@@ -7,7 +7,7 @@ use ambient_core::{
     hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_user},
     main_scene, performance_samples,
     player::local_user_id,
-    runtime,
+    runtime, timing,
 };
 use ambient_ecs::{query, World};
 use ambient_element::{
@@ -158,7 +158,7 @@ pub fn AppStatsView(hooks: &mut Hooks) -> Element {
 
         set_measurements((frame_time, external_time));
 
-        ambient_timings::set_enabled(true);
+        timing::set_enabled(true);
         let timings = w.resource(ambient_timings::samples());
         let mut input_to_rendered = Measurement::new();
         for frame_timing in timings {

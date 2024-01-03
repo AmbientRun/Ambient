@@ -6,6 +6,7 @@ use ambient_cameras::UICamera;
 use ambient_client_shared::game_view::GameView;
 use ambient_core::{
     asset_cache, gpu, runtime,
+    timing::TimingEventType,
     window::{window_ctl, ExitStatus, WindowCtl},
 };
 use ambient_ecs::{Entity, SystemGroup};
@@ -410,8 +411,8 @@ fn systems() -> SystemGroup {
             Box::new(ambient_gizmos::client_systems()),
             Box::new(ambient_timings::wrap_system(
                 wasm::systems(),
-                ambient_timings::TimingEventType::ScriptingStarted,
-                ambient_timings::TimingEventType::ScriptingFinished,
+                TimingEventType::ScriptingStarted,
+                TimingEventType::ScriptingFinished,
             )),
             Box::new(ambient_client_shared::player::systems_final()),
         ],

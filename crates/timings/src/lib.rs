@@ -1,56 +1,11 @@
-use std::{collections::VecDeque, sync::atomic::AtomicBool, time::Duration};
+use std::{collections::VecDeque, time::Duration};
 
+use ambient_core::timing::{reporter, TimingEvent, TimingEventType};
 use ambient_ecs::{components, Debuggable, FrameEvent, Resource, System, World, WorldContext};
 use ambient_sys::time::Instant;
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::FromPrimitive;
 use winit::event::{DeviceEvent, Event, WindowEvent};
 
 const MAX_SAMPLES: usize = 128;
-static ENABLED: AtomicBool = AtomicBool::new(false);
-
-pub fn set_enabled(enabled: bool) {
-    ENABLED.store(enabled, std::sync::atomic::Ordering::Relaxed);
-}
-
-/// Frame events being timed (in order!)
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, FromPrimitive, ToPrimitive)]
-pub enum TimingEventType {
-    Input,
-    ScriptingStarted,
-    ScriptingFinished,
-    ClientSystemsStarted,
-    ClientSystemsFinished,
-    DrawingWorld,
-    DrawingUI,
-    SubmittingGPUCommands,
-    RenderingFinished,
-}
-impl TimingEventType {
-    const COUNT: usize = Self::last().idx() + 1;
-
-    const fn last() -> Self {
-        Self::RenderingFinished
-    }
-
-    const fn idx(self) -> usize {
-        self as usize
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct TimingEvent {
-    event_type: TimingEventType,
-    time: Instant,
-}
-impl From<TimingEventType> for TimingEvent {
-    fn from(event_type: TimingEventType) -> Self {
-        Self {
-            event_type,
-            time: Instant::now(),
-        }
-    }
-}
 
 #[derive(Clone, Copy, Debug)]
 pub struct FrameTimings {
@@ -151,8 +106,8 @@ impl System for ProcessTimingEventsSystem {
         // timings of finished frames, to be added to the samples resource
         let mut pending_samples = Vec::new();
 
-        let timings = &world.resource(reporter()).receiver;
-        for event in timings.try_iter() {
+        let reporter = world.resource(reporter());
+        for event in reporter.try_iter() {
             for f in self.frames.iter_mut() {
                 f.process_event(event);
             }
@@ -192,52 +147,7 @@ impl System for ProcessTimingEventsSystem {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct Reporter {
-    sender: flume::Sender<TimingEvent>,
-    receiver: flume::Receiver<TimingEvent>,
-}
-impl Default for Reporter {
-    fn default() -> Self {
-        let (sender, receiver) = flume::unbounded();
-        Self { sender, receiver }
-    }
-}
-impl Reporter {
-    pub fn report_event(&self, event: impl Into<TimingEvent>) {
-        if ENABLED.load(std::sync::atomic::Ordering::Relaxed) {
-            self.sender.send(event.into()).ok();
-        }
-    }
-
-    pub fn reporter(&self) -> ThinReporter {
-        if ENABLED.load(std::sync::atomic::Ordering::Relaxed) {
-            ThinReporter::Enabled(self.sender.clone())
-        } else {
-            ThinReporter::Disabled
-        }
-    }
-}
-
-pub enum ThinReporter {
-    Disabled,
-    Enabled(flume::Sender<TimingEvent>),
-}
-impl ThinReporter {
-    pub fn report_event(&self, event: impl Into<TimingEvent>) {
-        match self {
-            Self::Disabled => {}
-            Self::Enabled(sender) => {
-                sender.send(event.into()).ok();
-            }
-        }
-    }
-}
-
 components!("timings", {
-    @[Debuggable, Resource]
-    reporter: Reporter,
-
     @[Debuggable, Resource]
     samples: VecDeque<FrameTimings>,
 });
@@ -305,7 +215,7 @@ impl System<Event<'static, ()>> for InputTimingSystem {
     fn run(&mut self, world: &mut World, event: &Event<'static, ()>) {
         if is_user_input_event(event) {
             world
-                .resource_mut(reporter())
+                .resource(reporter())
                 .report_event(TimingEventType::Input);
         }
     }

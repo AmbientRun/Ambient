@@ -9,7 +9,7 @@ use ambient_core::{
     camera::camera_systems,
     frame_index,
     hierarchy::dump_world_hierarchy_to_user,
-    name, performance_samples, refcount_system, remove_at_time_system, runtime,
+    name, performance_samples, refcount_system, remove_at_time_system, runtime, timing,
     transform::TransformSystem,
     window::{
         cursor_position, get_window_sizes, window_logical_size, window_physical_size,
@@ -139,7 +139,7 @@ pub struct AppResources {
     window_physical_size: UVec2,
     window_logical_size: UVec2,
     window_scale_factor: f64,
-    timings_reporter: ambient_timings::Reporter,
+    timings_reporter: timing::Reporter,
 }
 
 impl AppResources {
@@ -152,7 +152,7 @@ impl AppResources {
             window_physical_size: *world.resource(ambient_core::window::window_physical_size()),
             window_logical_size: *world.resource(ambient_core::window::window_logical_size()),
             window_scale_factor: *world.resource(ambient_core::window::window_scale_factor()),
-            timings_reporter: world.resource(ambient_timings::reporter()).clone(),
+            timings_reporter: world.resource(timing::reporter()).clone(),
         }
     }
 }
@@ -193,7 +193,7 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(ambient_core::window::window_ctl(), resources.ctl_tx)
         .with(procedural_storage(), ProceduralStorage::new())
         .with(focus(), Default::default())
-        .with(ambient_timings::reporter(), resources.timings_reporter)
+        .with(timing::reporter(), resources.timings_reporter)
         .with(ambient_timings::samples(), Default::default())
 }
 

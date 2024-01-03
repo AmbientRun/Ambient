@@ -1,4 +1,4 @@
-use ambient_core::asset_cache;
+use ambient_core::{asset_cache, timing::TimingEventType};
 // use ambient_audio::AudioMixer;
 use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_wasm::shared::{module_name, MessageType};
@@ -12,8 +12,8 @@ pub fn systems() -> SystemGroup {
         vec![
             Box::new(ambient_timings::wrap_system(
                 ambient_wasm::client::systems(),
-                ambient_timings::TimingEventType::ScriptingStarted,
-                ambient_timings::TimingEventType::ScriptingFinished,
+                TimingEventType::ScriptingStarted,
+                TimingEventType::ScriptingFinished,
             )),
         ],
     )
