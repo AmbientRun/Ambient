@@ -1,6 +1,6 @@
 [package]
 id = "kekdhmfpksiukzcvawellrsn5eeevjfd"
 name = "performance_bar"
-version = "0.3.2-nightly-2024-01-02"
+version = "0.3.2-nightly-2024-01-03"
 content = { type = "Tool" }
-ambient_version = "0.3.2-nightly-2024-01-02"
+ambient_version = "0.3.2-nightly-2024-01-03"
