@@ -2,7 +2,7 @@
 name = "Primitives"
 description = "Components that create primitive (in the geometric sense) objects from their attached entities."
 content = { type = "Asset", schema = true }
-version = "0.3.2-nightly-2024-01-03"
+version = "0.3.2-dev"
 ambient_version = "0.3.2-nightly-2024-01-03"
 
 [components.cube]
