@@ -2,8 +2,8 @@
 id = "nc2wi4w5w276k4duik4f36ltvec2nv4z"
 name = "Image"
 description = "Render 2D images as planes in 3D."
-version = "0.3.2-nightly-2024-01-05"
+version = "0.3.2-nightly-2024-01-06"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/image"
 type = "Game"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2024-01-05"
+ambient_version = "0.3.2-nightly-2024-01-06"
