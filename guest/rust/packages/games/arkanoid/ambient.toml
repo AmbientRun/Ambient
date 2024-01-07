@@ -2,11 +2,11 @@
 id = "t6opuz533binrqqjsbgcezprtfa6vpyy"
 name = "Arkanoid"
 description = "A remake of the classic Arkanoid game."
-version = "0.3.2-nightly-2024-01-05"
+version = "0.3.2-nightly-2024-01-07"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/arkanoid"
 type = "Game"
 content = { type = "Playable" }
-ambient_version = "0.3.2-nightly-2024-01-05"
+ambient_version = "0.3.2-nightly-2024-01-07"
 
 [hosting]
 region = "Auto"

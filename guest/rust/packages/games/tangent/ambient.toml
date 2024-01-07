@@ -2,41 +2,41 @@
 id = "t5qdqwpkoxtelvafs7qpvzhaoperwfpt"
 name = "Tangent"
 description = "Ambient's tech demo game. Third-person, hovercars, and more."
-version = "0.3.2-nightly-2024-01-05"
+version = "0.3.2-nightly-2024-01-07"
 content = { type = "Playable" }
-ambient_version = "0.3.2-nightly-2024-01-05"
+ambient_version = "0.3.2-nightly-2024-01-07"
 authors = ["philpax"]
 
 [dependencies]
-hide_cursor = { path = "../../std/hide_cursor", enabled = true , id = "xar372tfo2oswb4pkvx7h7o3rxi6tap6", version = "0.3.2-nightly-2024-01-05" }
+hide_cursor = { path = "../../std/hide_cursor", enabled = true , id = "xar372tfo2oswb4pkvx7h7o3rxi6tap6", version = "0.3.2-nightly-2024-01-07" }
 
-core = { path = "core/core", id = "itzh3wovmdje4ttrmo6wrravaaxp6b52", version = "0.3.2-nightly-2024-01-05" }
-behavior_vehicle = { path = "core/behavior_vehicle", id = "mnm43qv33k7kx235bz5hcgoguokwxzwo", version = "0.3.2-nightly-2024-01-05" }
-behavior_character = { path = "core/behavior_character", id = "xgafi5ckk5vhxscb6tqubfvy2fwfyqxo", version = "0.3.2-nightly-2024-01-05" }
-camera_follow = { path = "core/camera_follow", id = "mkd4mhans4bdn3mvmt45vxqbxepdhys3", version = "0.3.2-nightly-2024-01-05" }
-ui_class_selection = { path = "core/ui_class_selection", id = "hs7ygpw4pmpsixtcohdcvzxwmrfzubvi", version = "0.3.2-nightly-2024-01-05" }
+core = { path = "core/core", id = "itzh3wovmdje4ttrmo6wrravaaxp6b52", version = "0.3.2-nightly-2024-01-07" }
+behavior_vehicle = { path = "core/behavior_vehicle", id = "mnm43qv33k7kx235bz5hcgoguokwxzwo", version = "0.3.2-nightly-2024-01-07" }
+behavior_character = { path = "core/behavior_character", id = "xgafi5ckk5vhxscb6tqubfvy2fwfyqxo", version = "0.3.2-nightly-2024-01-07" }
+camera_follow = { path = "core/camera_follow", id = "mkd4mhans4bdn3mvmt45vxqbxepdhys3", version = "0.3.2-nightly-2024-01-07" }
+ui_class_selection = { path = "core/ui_class_selection", id = "hs7ygpw4pmpsixtcohdcvzxwmrfzubvi", version = "0.3.2-nightly-2024-01-07" }
 
-camera_topdown = { path = "mods/camera_topdown", enabled = false, id = "vvuixyn4jy3xv4ij4hi75atzfwk2j37k", version = "0.3.2-nightly-2024-01-05" }
+camera_topdown = { path = "mods/camera_topdown", enabled = false, id = "vvuixyn4jy3xv4ij4hi75atzfwk2j37k", version = "0.3.2-nightly-2024-01-07" }
 
-ui_holohud = { path = "mods/ui_holohud", enabled = false, id = "xadcwjtmzuagnoydry5h4psaph3hccbw", version = "0.3.2-nightly-2024-01-05" }
-ui_flathud = { path = "mods/ui_flathud", enabled = true, id = "zlu324bqcibov3o4co42eriyfhcnzsus", version = "0.3.2-nightly-2024-01-05" }
-ui_spawn_menu = { path = "mods/ui_spawn_menu", enabled = false, id = "c72h7qyqnp4njboj7tu4vomadoj2zu6e", version = "0.3.2-nightly-2024-01-05" }
+ui_holohud = { path = "mods/ui_holohud", enabled = false, id = "xadcwjtmzuagnoydry5h4psaph3hccbw", version = "0.3.2-nightly-2024-01-07" }
+ui_flathud = { path = "mods/ui_flathud", enabled = true, id = "zlu324bqcibov3o4co42eriyfhcnzsus", version = "0.3.2-nightly-2024-01-07" }
+ui_spawn_menu = { path = "mods/ui_spawn_menu", enabled = false, id = "c72h7qyqnp4njboj7tu4vomadoj2zu6e", version = "0.3.2-nightly-2024-01-07" }
 
-pickup_health = { path = "mods/pickup_health", id = "skpc6fwjkbidr7a6pmx4mab6zl37oiut", version = "0.3.2-nightly-2024-01-05" }
+pickup_health = { path = "mods/pickup_health", id = "skpc6fwjkbidr7a6pmx4mab6zl37oiut", version = "0.3.2-nightly-2024-01-07" }
 
-level_cubicide = { path = "mods/level_cubicide", id = "gzbamly2shtnz3siisf3mdzglsi67vul", version = "0.3.2-nightly-2024-01-05" }
-level_cubicide_onespawn = { path = "mods/level_cubicide_onespawn", enabled = false, id = "ggu2h7bk4jrvshq7zteboipyut7wuib2", version = "0.3.2-nightly-2024-01-05" }
+level_cubicide = { path = "mods/level_cubicide", id = "gzbamly2shtnz3siisf3mdzglsi67vul", version = "0.3.2-nightly-2024-01-07" }
+level_cubicide_onespawn = { path = "mods/level_cubicide_onespawn", enabled = false, id = "ggu2h7bk4jrvshq7zteboipyut7wuib2", version = "0.3.2-nightly-2024-01-07" }
 
-class_assault = { path = "mods/class_assault", id = "j32xi2gg5rvgob2cu7uirdbtj5ce4jw7", version = "0.3.2-nightly-2024-01-05" }
-class_scout = { path = "mods/class_scout", enabled = false , id = "fvn74ns4ozf3gn42vmowphmvmpsfklbi", version = "0.3.2-nightly-2024-01-05" }
-class_tank = { path = "mods/class_tank", id = "ys6g5noe72fbhnoj6l3psjq75knd7gko", version = "0.3.2-nightly-2024-01-05" }
+class_assault = { path = "mods/class_assault", id = "j32xi2gg5rvgob2cu7uirdbtj5ce4jw7", version = "0.3.2-nightly-2024-01-07" }
+class_scout = { path = "mods/class_scout", enabled = false , id = "fvn74ns4ozf3gn42vmowphmvmpsfklbi", version = "0.3.2-nightly-2024-01-07" }
+class_tank = { path = "mods/class_tank", id = "ys6g5noe72fbhnoj6l3psjq75knd7gko", version = "0.3.2-nightly-2024-01-07" }
 
-vehicle_standard = { path = "mods/vehicle_standard", id = "mx4o7x2s4zqc6pxmsfcb7hznbv4chxe5", version = "0.3.2-nightly-2024-01-05" }
+vehicle_standard = { path = "mods/vehicle_standard", id = "mx4o7x2s4zqc6pxmsfcb7hznbv4chxe5", version = "0.3.2-nightly-2024-01-07" }
 
-gameplay_firerain = { path = "mods/gameplay_firerain", enabled = false, id = "ianwyihfsaiuc26xjldmwd3duidju2tb", version = "0.3.2-nightly-2024-01-05" }
-gameplay_daynight = { path = "mods/gameplay_daynight", enabled = false, id = "d7rxxncafgtwf7c3brhsw7oh7h2ccfip", version = "0.3.2-nightly-2024-01-05" }
+gameplay_firerain = { path = "mods/gameplay_firerain", enabled = false, id = "ianwyihfsaiuc26xjldmwd3duidju2tb", version = "0.3.2-nightly-2024-01-07" }
+gameplay_daynight = { path = "mods/gameplay_daynight", enabled = false, id = "d7rxxncafgtwf7c3brhsw7oh7h2ccfip", version = "0.3.2-nightly-2024-01-07" }
 
-reskin_classes = { path = "mods/reskin_classes", enabled = false, id = "oa46hyuls6l24bmqapdm3iqzh3p37di6", version = "0.3.2-nightly-2024-01-05" }
+reskin_classes = { path = "mods/reskin_classes", enabled = false, id = "oa46hyuls6l24bmqapdm3iqzh3p37di6", version = "0.3.2-nightly-2024-01-07" }
 
-package_manager = { path = "../../tools/package_manager", id = "hr4pxz7kfhzgimicoyh65ydel3aehuhk", version = "0.3.2-nightly-2024-01-05" }
-editor = { path = "../../tools/editor", id = "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu", version = "0.3.2-nightly-2024-01-05" }
+package_manager = { path = "../../tools/package_manager", id = "hr4pxz7kfhzgimicoyh65ydel3aehuhk", version = "0.3.2-nightly-2024-01-07" }
+editor = { path = "../../tools/editor", id = "xr6whcy65gn3vlzrp2ssyn7udcbxb6mu", version = "0.3.2-nightly-2024-01-07" }
