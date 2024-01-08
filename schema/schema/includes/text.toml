@@ -2,8 +2,8 @@
 name = "Text"
 description = "Text rendering."
 content = { type = "Asset", schema = true }
-version = "0.3.2-dev"
-ambient_version = "0.3.2-nightly-2024-01-05"
+version = "0.3.2-nightly-2024-01-08"
+ambient_version = "0.3.2-nightly-2024-01-08"
 
 [components.font_family]
 type = "String"
