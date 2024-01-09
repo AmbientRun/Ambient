@@ -17,6 +17,7 @@ ambient_gizmos = { path = "../gizmos", version = "0.3.2-dev" }
 ambient_rpc = { path = "../rpc", version = "0.3.2-dev" }
 ambient_network = { path = "../network", version = "0.3.2-dev" }
 ambient_sys = { path = "../sys", version = "0.3.2-dev" }
+ambient_timings = { path = "../timings", version = "0.3.2-dev" }
 
 ambient_std = { path = "../../shared_crates/std", version = "0.3.2-dev" }
 ambient_element = { path = "../../shared_crates/element", version = "0.3.2-dev" }

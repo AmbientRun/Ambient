@@ -4,6 +4,7 @@ use ambient_app::{gpu_world_sync_systems, world_instance_systems};
 use ambient_core::{
     camera::{get_active_camera, projection_view},
     main_scene,
+    timing::{reporter, TimingEventType},
     transform::local_to_world,
     ui_scene,
     window::window_physical_size,
@@ -126,7 +127,10 @@ impl ClientGameState {
                 label: Some("GameState.render"),
             });
         let mut post_submit = Vec::new();
+        let timings_reporter = self.world.resource(reporter()).reporter();
+
         tracing::trace!("Drawing world");
+        timings_reporter.report_event(TimingEventType::DrawingWorld);
         self.renderer.render(
             gpu,
             &mut self.world,
@@ -137,7 +141,7 @@ impl ClientGameState {
         );
 
         tracing::trace!("Drawing ui");
-
+        timings_reporter.report_event(TimingEventType::DrawingUI);
         self.ui_renderer.render(
             gpu,
             &mut self.world,
@@ -147,9 +151,19 @@ impl ClientGameState {
             None,
         );
 
+        timings_reporter.report_event(TimingEventType::SubmittingGPUCommands);
         gpu.queue.submit(Some(encoder.finish()));
         for action in post_submit {
             action();
+        }
+        let callback = move || timings_reporter.report_event(TimingEventType::RenderingFinished);
+        #[cfg(target_os = "unknown")]
+        {
+            callback();
+        }
+        #[cfg(not(target_os = "unknown"))]
+        {
+            gpu.queue.on_submitted_work_done(callback);
         }
     }
     /// Adds a temporary system; when it returns true it's removed

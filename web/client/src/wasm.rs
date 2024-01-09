@@ -1,4 +1,4 @@
-use ambient_core::asset_cache;
+use ambient_core::{asset_cache, timing::TimingEventType};
 // use ambient_audio::AudioMixer;
 use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_wasm::shared::{module_name, MessageType};
@@ -7,7 +7,16 @@ use std::sync::Arc;
 
 /// Initiates the wasm client systems
 pub fn systems() -> SystemGroup {
-    ambient_wasm::client::systems()
+    SystemGroup::new(
+        "client",
+        vec![
+            Box::new(ambient_timings::wrap_system(
+                ambient_wasm::client::systems(),
+                TimingEventType::ScriptingStarted,
+                TimingEventType::ScriptingFinished,
+            )),
+        ],
+    )
 }
 
 pub fn initialize(world: &mut World) -> anyhow::Result<()> {

@@ -148,6 +148,7 @@ dependencies = [
  "ambient_sky",
  "ambient_std",
  "ambient_sys",
+ "ambient_timings",
  "ambient_ui_native",
  "ambient_wasm",
  "ambient_water",
@@ -258,6 +259,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_settings",
  "ambient_sys",
+ "ambient_timings",
  "ambient_ui_native",
  "anyhow",
  "flume 0.11.0",
@@ -510,6 +512,7 @@ dependencies = [
  "ambient_shared_types",
  "ambient_std",
  "ambient_sys",
+ "ambient_timings",
  "ambient_ui_native",
  "glam 0.24.2",
  "tracing",
@@ -1543,6 +1546,18 @@ version = "0.3.2-dev"
 dependencies = [
  "itertools 0.10.5",
  "thiserror",
+]
+
+[[package]]
+name = "ambient_timings"
+version = "0.3.2-dev"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_sys",
+ "flume 0.11.0",
+ "tracing",
+ "winit",
 ]
 
 [[package]]

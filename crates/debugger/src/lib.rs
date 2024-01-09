@@ -7,7 +7,7 @@ use ambient_core::{
     hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_user},
     main_scene, performance_samples,
     player::local_user_id,
-    runtime,
+    runtime, timing,
 };
 use ambient_ecs::{query, World};
 use ambient_element::{
@@ -114,13 +114,25 @@ impl Measurement {
 impl std::fmt::Display for Measurement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("min: ")?;
-        Debug::fmt(&self.min, f)?;
+        if self.min == Duration::MAX {
+            f.write_str("N/A")?;
+        } else {
+            Debug::fmt(&self.min, f)?;
+        }
         f.write_str(" max: ")?;
-        Debug::fmt(&self.max, f)?;
+        if self.max == Duration::ZERO {
+            f.write_str("N/A")?;
+        } else {
+            Debug::fmt(&self.max, f)?;
+        }
         f.write_str(" avg: ")?;
         Debug::fmt(&self.avg(), f)?;
         f.write_str(" current: ")?;
-        Debug::fmt(&self.current, f)?;
+        if self.current == Duration::ZERO {
+            f.write_str("N/A")?;
+        } else {
+            Debug::fmt(&self.current, f)?;
+        }
 
         Ok(())
     }
@@ -130,6 +142,7 @@ impl std::fmt::Display for Measurement {
 pub fn AppStatsView(hooks: &mut Hooks) -> Element {
     let (measurements, set_measurements) =
         use_state(hooks, (Measurement::new(), Measurement::new()));
+    let (input_to_rendered, set_input_to_rendered) = use_state(hooks, Measurement::new());
 
     use_frame(hooks, move |w| {
         let samples = w.resource(performance_samples());
@@ -143,12 +156,23 @@ pub fn AppStatsView(hooks: &mut Hooks) -> Element {
             external_time.apply(sample.external_time);
         }
 
-        set_measurements((frame_time, external_time))
+        set_measurements((frame_time, external_time));
+
+        timing::set_enabled(true);
+        let timings = w.resource(ambient_timings::samples());
+        let mut input_to_rendered = Measurement::new();
+        for frame_timing in timings {
+            if let Some(time) = frame_timing.input_to_rendered() {
+                input_to_rendered.apply(time);
+            }
+        }
+        set_input_to_rendered(input_to_rendered);
     });
 
     FlowColumn::el(vec![
         Text::el(format!("Frame time    {:<8.1}", measurements.0)),
         Text::el(format!("External time {:<8.1}", measurements.1)),
+        Text::el(format!("Input-Rendered time {:<8.1}", input_to_rendered)),
     ])
 }
 

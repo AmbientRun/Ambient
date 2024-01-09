@@ -22,6 +22,7 @@ pub mod camera;
 
 pub mod hierarchy;
 pub mod player;
+pub mod timing;
 pub mod transform;
 pub mod window;
 
@@ -78,6 +79,7 @@ pub fn init_all_components() {
     async_ecs::init_components();
     ambient_gpu_ecs::init_components();
     camera::init_components();
+    timing::init_components();
     transform::init_components();
     transform::init_gpu_components();
     bounding::init_components();
