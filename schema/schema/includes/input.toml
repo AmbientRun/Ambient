@@ -3,7 +3,7 @@ name = "Input"
 description = "Mouse, keyboard and controller input."
 content = { type = "Asset", schema = true }
 version = "0.3.2-dev"
-ambient_version = "0.3.2-nightly-2024-01-10"
+ambient_version = "0.3.2-nightly-2024-01-11"
 
 [components.mouse_over_entity]
 type = "EntityId"
