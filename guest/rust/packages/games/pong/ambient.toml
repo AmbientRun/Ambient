@@ -2,11 +2,11 @@
 id = "h3gv2vnpcajq75woh5nmiemeahfpaku4"
 name = "Pong"
 description = "Minimal multiplayer pong."
-version = "0.3.2-nightly-2024-01-10"
+version = "0.3.2-nightly-2024-01-11"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/packages/games/pong"
 type = "Game"
 content = { type = "Playable" }
-ambient_version = "0.3.2-nightly-2024-01-10"
+ambient_version = "0.3.2-nightly-2024-01-11"
 
 [hosting]
 region = "Auto"
