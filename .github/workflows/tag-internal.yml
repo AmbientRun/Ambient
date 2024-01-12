@@ -9,8 +9,9 @@ on:
         description: 'Suffix to add to the version number (e.g. suffix "testing" will create a version like "0.3.0-internal-testing")'
         required: true
         default: "fancy-new-feature"
-  schedule:
-    - cron: "0 2 * * *"
+# nightly builds are disabled for now
+#   schedule:
+#     - cron: "0 2 * * *"
 
 env:
   CARGO_TERM_COLOR: always
