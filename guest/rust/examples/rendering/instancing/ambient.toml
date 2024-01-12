@@ -2,9 +2,9 @@
 id = "vacm77n5q7uil3giqf6wasadjq32mqr3"
 name = "Instancing [WIP]"
 description = "Render lots of objects with a single draw call. [Instancing is currently disabled while we're unifying rendering on desktop and the web]"
-version = "0.3.2-nightly-2024-01-11"
+version = "0.3.2-nightly-2024-01-12"
 content = { type = "Playable", example = true }
-ambient_version = "0.3.2-nightly-2024-01-11"
+ambient_version = "0.3.2-nightly-2024-01-12"
 
 [components]
 instance_index = { type = "Uvec3", name = "Instance Index" }
