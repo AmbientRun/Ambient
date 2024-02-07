@@ -54,7 +54,11 @@ impl Resolve for Message {
                 match type_ {
                     ResolvableItemId::Unresolved(path) => {
                         let id = semantic.get_contextual_type_id(parent_id, path).with_context(|| {
-                            format!("Failed to resolve type `{path:?}` for field `{name}` of message `{}`", self.data.id)
+                            format!(
+                                "Failed to resolve type `{path:?}` for field `{name}` of message `{}`\nSee {} for valid types",
+                                self.data.id,
+                                "https://ambient.run/docs/reference/package#valuetype"
+                            )
                         })?;
                         ResolvableItemId::Resolved(id)
                     }
