@@ -1,3 +1,6 @@
+> [!WARNING]  
+> Work on the Ambient runtime is paused indefinitely. For alternatives to Ambient, see https://arewegameyet.rs/
+
 # Ambient
 
 [![Crates.io](https://img.shields.io/crates/v/ambient_api)](https://crates.io/crates/ambient_api)
