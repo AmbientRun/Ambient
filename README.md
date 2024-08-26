@@ -1,5 +1,8 @@
 > [!WARNING]  
 > Work on the Ambient runtime is paused indefinitely. For alternatives to Ambient, see https://arewegameyet.rs/
+>
+> We are currently working on [Braindump](https://braindump.me/blog-posts/building-an-ai-game-studio). Come
+> talk to us about it in the Discord!
 
 # Ambient
 
@@ -24,7 +27,7 @@ The Ambient runtime itself is an extensible multiplayer game engine with an [in-
 
 The community can be found in the following places:
 
-- [Discord](https://discord.gg/ambient): Ambient's official Discord server.
+- [Discord](https://discord.gg/braindump): Braindump's official Discord server.
 - [GitHub Discussions](https://github.com/AmbientRun/Ambient/discussions): Ask questions, share ideas, and more.
 
 ## License
