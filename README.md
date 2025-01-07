@@ -22,6 +22,7 @@ The Ambient runtime itself is an extensible multiplayer game engine with an [in-
 - [Book](https://ambient.run/docs/): Our reference manual and user guide for Ambient. The latest version of the book is always available here.
 - [Tutorial](https://ambient.run/docs/tutorials/game/0_intro): A step-by-step guide to building a multiplayer game with Ambient.
 - [Examples](https://ambient.run/docs/examples): A collection of examples demonstrating Ambient's features.
+- [Book (GH pages)](https://ambientrun.github.io/Ambient): If the website is down, you can also find the book and tutorial on this link.
 
 ## Community
 
