@@ -53,8 +53,9 @@ impl Resolve for Component {
                 .get_contextual_type_id(parent_id, ty)
                 .with_context(|| {
                     format!(
-                        "Failed to resolve type `{ty:?}` for component `{}`",
-                        self.data.id
+                        "Failed to resolve type `{ty:?}` for component `{}`\nSee {} for valid types",
+                        self.data.id,
+                        "https://ambient.run/docs/reference/package#valuetype"
                     )
                 })?,
             ResolvableItemId::Resolved(id) => *id,
